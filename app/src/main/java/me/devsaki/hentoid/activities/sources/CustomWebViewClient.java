@@ -713,27 +713,6 @@ class CustomWebViewClient extends WebViewClient {
     }
 
     /**
-     * Simplify the given URL :
-     * - Remove parameters
-     * - Remove any duplicate separator
-     * - Replace all separators by .'s
-     *
-     * @param url Url to simplify
-     * @return Simplified URL according to the above rules
-     */
-    private String simplifyUrl(@NonNull String url) {
-        String result = url;
-        // Remove parameters
-        int paramsIndex = result.indexOf("?");
-        if (paramsIndex > -1) result = result.substring(0, paramsIndex);
-        // Simplify & eliminate double separators
-        result = result.trim().replaceAll("\\p{Punct}", ".");
-        if (result.length() < 2) return "";
-        if (result.endsWith(".")) result = result.substring(0, result.length() - 1);
-        return result;
-    }
-
-    /**
      * Process the given HTML document contained in the given stream :
      * - If set, remove nodes using the given list of CSS selectors to identify them
      * - If set, mark book covers or links matching the given list of Urls
@@ -816,7 +795,7 @@ class CustomWebViewClient extends WebViewClient {
                         boolean isForbidden = Stream.of(link.parents()).anyMatch(e -> containsForbiddenClass(site, e.classNames()));
                         if (isForbidden) continue;
                     }
-                    String aHref = simplifyUrl(link.attr("href"));
+                    String aHref = HttpHelper.simplifyUrl(link.attr("href"));
                     if (!aHref.isEmpty() && !elements.containsKey(aHref)) // We only process the first match - usually the cover
                         elements.put(aHref, new Pair<>(link, null));
                 }
@@ -831,7 +810,7 @@ class CustomWebViewClient extends WebViewClient {
                         if (isForbidden) continue;
                     }
 
-                    String aHref = simplifyUrl(parent.attr("href"));
+                    String aHref = HttpHelper.simplifyUrl(parent.attr("href"));
                     Pair<Element, Element> elt = elements.get(aHref);
                     if (elt != null && null == elt.second) // We only process the first match - usually the cover
                         elements.put(aHref, new Pair<>(elt.first, linkedImage));

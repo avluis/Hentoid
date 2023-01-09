@@ -1357,8 +1357,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             downloadedBooksUrls.clear();
             downloadedBooksUrls.addAll(
                     Stream.of(dao.selectAllSourceUrls(getStartSite()))
-                            .map(s -> s.replaceAll("\\p{Punct}", "."))
-                            .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
+                            .map(HttpHelper::simplifyUrl)
                             .filterNot(String::isEmpty)
                             .toList()
             );
@@ -1372,8 +1371,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     Stream.of(dao.selectAllMergedUrls(getStartSite()))
                             .map(s -> s.replace(getStartSite().getUrl(), ""))
                             .map(s -> s.replaceAll("\\b|/galleries|/gallery|/g|/entry\\b", "")) //each sites "gallery" path
-                            .map(s -> s.replaceAll("\\p{Punct}", "."))
-                            .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
+                            .map(HttpHelper::simplifyUrl)
                             .filterNot(String::isEmpty)
                             .toList()
             );

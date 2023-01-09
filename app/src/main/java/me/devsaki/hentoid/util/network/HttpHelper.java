@@ -642,6 +642,26 @@ public class HttpHelper {
     }
 
     /**
+     * Simplify the given URL :
+     * - Remove parameters
+     * - Turn -'s into /'s (Hitomi : /doujinshi/this_is_a_title-lang_code-launch_code.html vs. /launch_code.html)
+     * - Make sure there's a trailing /
+     *
+     * @param url Url to simplify
+     * @return Simplified URL according to the above rules
+     */
+    public static String simplifyUrl(@NonNull String url) {
+        String result = url;
+        // Remove parameters
+        int paramsIndex = result.indexOf("?");
+        if (paramsIndex > -1) result = result.substring(0, paramsIndex);
+        // Simplify & eliminate double separators
+        result = result.trim().replace("-", "/");
+        if (!result.endsWith("/")) result = result + "/";
+        return result;
+    }
+
+    /**
      * Class to parse and manipulate Uri parts
      */
     public static class UriParts {
