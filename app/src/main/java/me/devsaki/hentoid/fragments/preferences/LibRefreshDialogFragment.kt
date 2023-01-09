@@ -46,7 +46,7 @@ const val EXTERNAL_LIBRARY = "external_library"
  * - Set download folder
  * - Library refresh
  */
-class LibRefreshDialogFragment_ : DialogFragment(R.layout.dialog_prefs_refresh) {
+class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     // == UI
     private var _binding1: DialogPrefsRefreshBinding? = null
     private val binding1 get() = _binding1!!
@@ -418,7 +418,7 @@ class LibRefreshDialogFragment_ : DialogFragment(R.layout.dialog_prefs_refresh) 
             chooseFolder: Boolean,
             externalLibrary: Boolean
         ) {
-            val fragment = LibRefreshDialogFragment_()
+            val fragment = LibRefreshDialogFragment()
 
             val args = Bundle()
             args.putBoolean(SHOW_OPTIONS, showOptions)

@@ -130,7 +130,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 } else if (ExternalImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
-                    LibRefreshDialogFragment_.invoke(
+                    LibRefreshDialogFragment.invoke(
                         parentFragmentManager,
                         showOptions = false,
                         chooseFolder = true,
@@ -169,7 +169,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 } else if (PrimaryImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
-                    LibRefreshDialogFragment_.invoke(
+                    LibRefreshDialogFragment.invoke(
                         parentFragmentManager,
                         showOptions = true,
                         chooseFolder = false,
@@ -191,7 +191,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 if (PrimaryImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
-                    LibRefreshDialogFragment_.invoke(
+                    LibRefreshDialogFragment.invoke(
                         parentFragmentManager,
                         showOptions = false,
                         chooseFolder = true,
