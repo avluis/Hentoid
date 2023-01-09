@@ -65,8 +65,8 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     private val compositeDisposable = CompositeDisposable()
 
     private val pickFolder =
-        registerForActivityResult(PickFolderContract()) { result: ImmutablePair<Int?, Uri?> ->
-            onFolderPickerResult(result.left!!, result.right!!)
+        registerForActivityResult(PickFolderContract()) { result: ImmutablePair<Int, Uri> ->
+            onFolderPickerResult(result.left, result.right)
         }
 
 
@@ -292,7 +292,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     }
 
     private fun onScanHentoidFolderResult(@ProcessFolderResult resultCode: Int) {
-        importDisposable!!.dispose()
+        importDisposable?.dispose()
         when (resultCode) {
             ProcessFolderResult.OK_EMPTY_FOLDER -> dismissAllowingStateLoss()
             ProcessFolderResult.OK_LIBRARY_DETECTED ->                 // Hentoid folder is finally selected at this point -> Update UI
