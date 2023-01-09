@@ -81,7 +81,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     // Disposables for RxJava
     private Disposable importDisposable;
-    protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private final ActivityResultLauncher<Integer> pickFolder = registerForActivityResult(
             new ImportHelper.PickFolderContract(),

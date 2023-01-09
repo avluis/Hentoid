@@ -111,7 +111,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.APP_PREVIEW,
             Preferences.Key.FORCE_ENGLISH,
             Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
-            Preferences.Key.SETTINGS_FOLDER,
+            Preferences.Key.PRIMARY_FOLDER,
             Preferences.Key.SD_STORAGE_URI -> onHentoidFolderChanged()
             Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
@@ -130,7 +130,12 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 } else if (ExternalImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
-                    LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
+                    LibRefreshDialogFragment_.invoke(
+                        parentFragmentManager,
+                        showOptions = false,
+                        chooseFolder = true,
+                        externalLibrary = true
+                    )
                 }
                 true
             }
@@ -164,7 +169,12 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 } else if (PrimaryImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
-                    LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
+                    LibRefreshDialogFragment_.invoke(
+                        parentFragmentManager,
+                        showOptions = true,
+                        chooseFolder = false,
+                        externalLibrary = false
+                    )
                 }
                 true
             }
@@ -177,11 +187,16 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                     ToastHelper.toast(R.string.pref_viewer_rendering_no_android5)
                 true
             }
-            Preferences.Key.SETTINGS_FOLDER -> {
+            Preferences.Key.PRIMARY_FOLDER -> {
                 if (PrimaryImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
-                    LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)
+                    LibRefreshDialogFragment_.invoke(
+                        parentFragmentManager,
+                        showOptions = false,
+                        chooseFolder = true,
+                        externalLibrary = false
+                    )
                 }
                 true
             }
@@ -234,7 +249,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     private fun onHentoidFolderChanged() {
         val storageFolderPref: Preference? =
-            findPreference(Preferences.Key.SETTINGS_FOLDER) as Preference?
+            findPreference(Preferences.Key.PRIMARY_FOLDER) as Preference?
         val uri = Uri.parse(Preferences.getStorageUri())
         storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri)
     }

@@ -235,9 +235,11 @@
     <string name="refresh_location_external">External library</string>
     <string name="refresh_options_rename">Rename all folders according to the current naming and max length preference</string>
     <string name="refresh_options_remove_placeholders">Remove placeholder books imported through metadata</string>
+    <string name="refresh_options_renumber_pages">Renumber pages</string>
+    <string name="refresh_renumber_warning">This will check all books and correct any mistaken page counts.\nBe aware this option WILL slow down the process significantly.</string>
     <string name="refresh_options_remove">Remove folders where…</string>
-    <string name="refresh_options_remove_1">JSON file is absent (recommended)</string>
-    <string name="refresh_options_remove_2">No image has been downloaded</string>
+    <string name="refresh_options_remove_1">Remove folders where JSON file is absent (recommended)</string>
+    <string name="refresh_options_remove_2">Remove folders where no image has been downloaded</string>
     <string name="refresh_options_remove_or">or</string>
 
     <!-- Delete all except favs -->
