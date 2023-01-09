@@ -863,7 +863,7 @@ class CustomWebViewClient extends WebViewClient {
                         boolean isForbidden = Stream.of(link.parents()).anyMatch(e -> containsForbiddenClass(site, e.classNames()));
                         if (isForbidden) continue;
                     }
-                    String aHref = simplifyUrl(link.attr("href"));
+                    String aHref = HttpHelper.simplifyUrl(link.attr("href"));
                     elements.put(link, aHref);
                 }
 
