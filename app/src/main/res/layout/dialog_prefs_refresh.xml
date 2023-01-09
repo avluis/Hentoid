@@ -142,9 +142,11 @@
         android:text="@string/refresh_renumber_warning"
         android:textColor="@color/white_opacity_87"
         android:textStyle="italic"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_2" />
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_2"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/warning_img"
@@ -153,25 +155,21 @@
         android:adjustViewBounds="true"
         android:padding="8dp"
         android:src="@drawable/ic_warning"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/refresh_renumber_warning_txt"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/refresh_renumber_warning_txt"
         app:tint="@color/white_opacity_87"
-        tools:ignore="ContentDescription" />
-
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/refresh_options_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="visible"
-        app:constraint_referenced_ids="refresh_options, refresh_options_rename, refresh_options_renumber_pages, refresh_renumber_warning_txt, warning_img, refresh_options_remove_1, refresh_options_remove_2" />
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/refresh_options_subgroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="visible"
-        app:constraint_referenced_ids="refresh_options_rename, refresh_options_renumber_pages, refresh_renumber_warning_txt, warning_img, refresh_options_remove_1, refresh_options_remove_2" />
+        android:visibility="gone"
+        app:constraint_referenced_ids="refresh_options_rename, refresh_options_renumber_pages, refresh_options_remove_1, refresh_options_remove_2"
+        tools:visibility="visible" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_button"

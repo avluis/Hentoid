@@ -100,10 +100,27 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 it.refreshLocation.setOnCheckedChangeListener { _: RadioGroup?, i: Int ->
                     onLocationChanged(i)
                 }
+                it.refreshOptions.setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked) {
+                        it.refreshOptionsSubgroup.visibility = View.VISIBLE
+                        val warningVisibility =
+                            if (it.refreshOptionsRenumberPages.isChecked) View.VISIBLE else View.GONE
+                        it.refreshRenumberWarningTxt.visibility = warningVisibility
+                        it.warningImg.visibility = warningVisibility
+                    } else {
+                        it.refreshOptionsSubgroup.visibility = View.GONE
+                        it.refreshRenumberWarningTxt.visibility = View.GONE
+                        it.warningImg.visibility = View.GONE
+                    }
+                }
+                it.refreshOptionsRenumberPages.setOnCheckedChangeListener { _, isChecked ->
+                    val visibility = if (isChecked) View.VISIBLE else View.GONE
+                    it.refreshRenumberWarningTxt.visibility = visibility
+                    it.warningImg.visibility = visibility
+                }
 
-                if (Preferences.getExternalLibraryUri()
-                        .isNotEmpty()
-                ) it.refreshLocationGroup.visibility = View.VISIBLE
+                if (Preferences.getExternalLibraryUri().isNotEmpty())
+                    it.refreshLocationGroup.visibility = View.VISIBLE
 
                 it.actionButton.setOnClickListener { _ ->
                     launchRefreshImport(
@@ -121,9 +138,12 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     }
 
     private fun onLocationChanged(@IdRes checkedId: Int) {
-        if (checkedId == R.id.refresh_location_external) binding1.refreshOptionsGroup.visibility =
-            View.GONE
-        else binding1.refreshOptionsGroup.visibility = View.VISIBLE
+        binding1.let {
+            if (checkedId == R.id.refresh_location_external)
+                it.refreshOptions.visibility = View.GONE
+            else it.refreshOptions.visibility = View.VISIBLE
+            it.refreshOptions.isChecked = false
+        }
     }
 
     private fun launchRefreshImport(
@@ -150,8 +170,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                             binding1.root, getMessage(res), BaseTransientBottomBar.LENGTH_LONG
                         ).show()
                         Handler(Looper.getMainLooper()).postDelayed(
-                            { dismissAllowingStateLoss() },
-                            3000
+                            { dismissAllowingStateLoss() }, 3000
                         )
                     }
                 }) { t: Throwable? ->
@@ -162,8 +181,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         BaseTransientBottomBar.LENGTH_LONG
                     ).show()
                     Handler(Looper.getMainLooper()).postDelayed(
-                        { dismissAllowingStateLoss() },
-                        3000
+                        { dismissAllowingStateLoss() }, 3000
                     )
                 })
         } else {
@@ -191,8 +209,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                             binding1.root, getMessage(res), BaseTransientBottomBar.LENGTH_LONG
                         ).show()
                         Handler(Looper.getMainLooper()).postDelayed(
-                            { dismissAllowingStateLoss() },
-                            3000
+                            { dismissAllowingStateLoss() }, 3000
                         )
                     }
                 }) { t: Throwable? ->
@@ -203,8 +220,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         BaseTransientBottomBar.LENGTH_LONG
                     ).show()
                     Handler(Looper.getMainLooper()).postDelayed(
-                        { dismissAllowingStateLoss() },
-                        3000
+                        { dismissAllowingStateLoss() }, 3000
                     )
                 })
         }
@@ -287,9 +303,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             }
             ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER -> {
                 Snackbar.make(
-                    binding2.root,
-                    getMessage(resultCode),
-                    BaseTransientBottomBar.LENGTH_LONG
+                    binding2.root, getMessage(resultCode), BaseTransientBottomBar.LENGTH_LONG
                 ).show()
                 isCancelable = true
             }
@@ -322,12 +336,11 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     }
 
     private fun updateOnSelectFolder() {
-        binding2.importStep1Folder.text =
-            FileHelper.getFullPathFromTreeUri(
-                requireContext(), Uri.parse(
-                    Preferences.getStorageUri()
-                )
+        binding2.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
+            requireContext(), Uri.parse(
+                Preferences.getStorageUri()
             )
+        )
         binding2.importStep1Button.visibility = View.INVISIBLE
         binding2.importStep1Check.visibility = View.VISIBLE
         binding2.importStep2.visibility = View.VISIBLE
@@ -403,9 +416,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         if (event.service != R.id.import_service) return
         if (!isServiceGracefulClose) {
             Snackbar.make(
-                binding1.root,
-                R.string.import_unexpected,
-                BaseTransientBottomBar.LENGTH_LONG
+                binding1.root, R.string.import_unexpected, BaseTransientBottomBar.LENGTH_LONG
             ).show()
             Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 3000)
         }
