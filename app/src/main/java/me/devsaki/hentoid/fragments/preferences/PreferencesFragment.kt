@@ -328,7 +328,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     private fun populateMemoryUsage() {
         val folder =
-            FileHelper.getFolderFromTreeUriString(requireContext(), Preferences.getStorageUri())
+            FileHelper.getDocumentFromTreeUriString(requireContext(), Preferences.getStorageUri())
                 ?: return
 
         val memUsagePref: Preference? = findPreference(Preferences.Key.MEMORY_USAGE) as Preference?

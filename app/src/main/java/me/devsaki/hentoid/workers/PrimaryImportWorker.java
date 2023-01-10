@@ -75,7 +75,8 @@ public class PrimaryImportWorker extends BaseWorker {
     public static final int STEP_1 = 1;
     public static final int STEP_2_BOOK_FOLDERS = 2;
     public static final int STEP_3_BOOKS = 3;
-    public static final int STEP_4_QUEUE_FINAL = 4;
+    public static final int STEP_3_PAGES = 4;
+    public static final int STEP_4_QUEUE_FINAL = 5;
 
     final FileHelper.NameFilter imageNames = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
@@ -113,13 +114,14 @@ public class PrimaryImportWorker extends BaseWorker {
     @Override
     void getToWork(@NonNull Data input) {
         PrimaryImportData.Parser data = new PrimaryImportData.Parser(getInputData());
-        boolean doRename = data.getRefreshRename();
-        boolean doRemovePlaceholders = data.getRefreshRemovePlaceholders();
-        boolean doCleanNoJson = data.getRefreshCleanNoJson();
-        boolean doCleanNoImages = data.getRefreshCleanNoImages();
-        boolean doImportGroups = data.getImportGroups();
 
-        startImport(doRename, doRemovePlaceholders, doCleanNoJson, doCleanNoImages, doImportGroups);
+        startImport(
+                data.getRefreshRename(),
+                data.getRefreshRemovePlaceholders(),
+                data.getRefreshRenumberPages(),
+                data.getRefreshCleanNoJson(),
+                data.getRefreshCleanNoImages(),
+                data.getImportGroups());
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -147,11 +149,18 @@ public class PrimaryImportWorker extends BaseWorker {
      *
      * @param rename             True if the user has asked for a folder renaming when calling import from Preferences
      * @param removePlaceholders True if the user has asked for a removal of all books with the status PLACEHOLDER (that do not exist on storage)
+     * @param renumberPages      True if the user has asked to renumber pages on books where there are numbering gaps
      * @param cleanNoJSON        True if the user has asked for a cleanup of folders with no JSONs when calling import from Preferences
      * @param cleanNoImages      True if the user has asked for a cleanup of folders with no images when calling import from Preferences
      * @param importGroups       True if the worker has to import groups from the groups JSON; false if existing groups should be kept
      */
-    private void startImport(boolean rename, boolean removePlaceholders, boolean cleanNoJSON, boolean cleanNoImages, boolean importGroups) {
+    private void startImport(
+            boolean rename,
+            boolean removePlaceholders,
+            boolean renumberPages,
+            boolean cleanNoJSON,
+            boolean cleanNoImages,
+            boolean importGroups) {
         booksOK = 0;
         booksKO = 0;
         nbFolders = 0;
@@ -161,7 +170,7 @@ public class PrimaryImportWorker extends BaseWorker {
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) {
             Timber.e("Root folder is not defined (%s)", Preferences.getStorageUri());
             return;
@@ -224,7 +233,7 @@ public class PrimaryImportWorker extends BaseWorker {
                 dao = new ObjectBoxDAO(context);
                 for (int i = 0; i < bookFolders.size(); i++) {
                     if (isStopped()) throw new InterruptedException();
-                    importFolder(context, explorer, dao, bookFolders, bookFolders.get(i), log, rename, cleanNoJSON, cleanNoImages);
+                    importFolder(context, explorer, dao, bookFolders, bookFolders.get(i), log, rename, renumberPages, cleanNoJSON, cleanNoImages);
                     // Clear the DAO every 2500K iterations to optimize memory
                     if (0 == i % 2500) {
                         dao.cleanup();
@@ -284,7 +293,10 @@ public class PrimaryImportWorker extends BaseWorker {
             @NonNull final List<DocumentFile> bookFolders,
             @NonNull final DocumentFile bookFolder,
             @NonNull final List<LogHelper.LogEntry> log,
-            boolean rename, boolean cleanNoJSON, boolean cleanNoImages
+            boolean rename,
+            boolean renumberPages,
+            boolean cleanNoJSON,
+            boolean cleanNoImages
     ) {
         Content content = null;
         List<DocumentFile> bookFiles = null;
@@ -403,6 +415,8 @@ public class PrimaryImportWorker extends BaseWorker {
                         content.setImageFiles(contentImages);
                         if (cleaned) ContentHelper.persistJson(context, content);
                     }
+
+                    if (renumberPages) renumberPages(context, content, contentImages, log);
                 } else if (Preferences.isImportQueueEmptyBooks()
                         && !content.isManuallyMerged()
                         && content.getDownloadMode() == Content.DownloadMode.DOWNLOAD) { // If no image file found, it goes in the errors queue
@@ -512,6 +526,36 @@ public class PrimaryImportWorker extends BaseWorker {
             Timber.e(e);
         }
         return false;
+    }
+
+    private void renumberPages(@NonNull final Context context, @NonNull Content content, @NonNull List<ImageFile> contentImages, @NonNull final List<LogHelper.LogEntry> log) {
+        int naturalOrder = 0;
+        int nbRenumbered = 0;
+        List<ImageFile> orderedImages = Stream.of(contentImages).sortBy(ImageFile::getOrder).filter(ImageFile::isReadable).toList();
+        int nbMaxDigits = (int) (Math.floor(Math.log10(orderedImages.size())) + 1);
+
+        for (ImageFile img : orderedImages) {
+            naturalOrder++;
+            if (img.getOrder() != naturalOrder) {
+                nbRenumbered++;
+                img.setOrder(naturalOrder);
+                img.computeName(nbMaxDigits);
+                DocumentFile file = FileHelper.getDocumentFromTreeUriString(context, img.getFileUri());
+                if (file != null) {
+                    String extension = FileHelper.getExtension(StringHelper.protect(file.getName()));
+                    file.renameTo(img.getName() + "." + extension);
+                    img.setFileUri(file.getUri().toString());
+                }
+            }
+            if (nbRenumbered > 0)
+                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary_pages, STEP_3_PAGES, "Page " + naturalOrder, naturalOrder, 0, orderedImages.size()));
+        }
+        if (nbRenumbered > 0) {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary_pages, STEP_3_PAGES, orderedImages.size(), 0, orderedImages.size()));
+            trace(Log.INFO, STEP_3_PAGES, log, "Renumbered %d pages", nbRenumbered);
+            content.setImageFiles(contentImages);
+            ContentHelper.persistJson(context, content);
+        }
     }
 
     private void importQueue(@NonNull final Context context, @NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {

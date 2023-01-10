@@ -244,7 +244,7 @@ public class LogHelper {
             String log = buildLog(logInfo);
 
             // Save the log; use primary folder by default
-            DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+            DocumentFile folder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
             if (folder != null) {
                 DocumentFile logDocumentFile = FileHelper.findOrCreateDocumentFile(context, folder, "text/plain", logFileName);
                 if (logDocumentFile != null)

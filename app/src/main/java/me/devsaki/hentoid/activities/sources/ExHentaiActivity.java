@@ -81,7 +81,7 @@ public class ExHentaiActivity extends BaseWebActivity {
 
         private void logCookies(@NonNull final String prefix, @NonNull final String cookieStr) {
             try {
-                DocumentFile root = FileHelper.getFolderFromTreeUriString(getApplication(), Preferences.getStorageUri());
+                DocumentFile root = FileHelper.getDocumentFromTreeUriString(getApplication(), Preferences.getStorageUri());
                 if (root != null) {
                     DocumentFile cookiesLog = FileHelper.findOrCreateDocumentFile(getApplication(), root, "text/plain", "cookies_" + prefix + "_log.txt");
                     if (cookiesLog != null)

@@ -176,7 +176,7 @@ public class DownloadHelper {
                 throw new IOException("Could not create file " + targetFileNameFinal + " : " + targetFolderUri + " has no path");
             }
         } else {
-            DocumentFile targetFolder = FileHelper.getFolderFromTreeUriString(HentoidApp.getInstance(), targetFolderUri.toString());
+            DocumentFile targetFolder = FileHelper.getDocumentFromTreeUriString(HentoidApp.getInstance(), targetFolderUri.toString());
             if (targetFolder != null) {
                 DocumentFile file = FileHelper.findOrCreateDocumentFile(HentoidApp.getInstance(), targetFolder, mimeType, targetFileNameFinal);
                 if (file != null) return file.getUri();

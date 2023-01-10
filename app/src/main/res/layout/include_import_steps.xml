@@ -106,11 +106,11 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
-            android:text="@string/api29_migration_step2"
             android:ellipsize="end"
             android:lines="1"
-            app:layout_constraintStart_toEndOf="@id/import_step2_number"
+            android:text="@string/api29_migration_step2"
             app:layout_constraintEnd_toEndOf="@id/import_step2_bar"
+            app:layout_constraintStart_toEndOf="@id/import_step2_number"
             app:layout_constraintTop_toTopOf="@id/import_step2_number" />
 
         <ProgressBar
@@ -183,6 +183,20 @@
             app:layout_constraintStart_toEndOf="@id/import_step3_number"
             app:layout_constraintTop_toBottomOf="@id/import_step3_text" />
 
+        <ProgressBar
+            android:id="@+id/import_step3_sub_bar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="4dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@id/import_step3_check"
+            app:layout_constraintStart_toEndOf="@id/import_step3_number"
+            app:layout_constraintTop_toBottomOf="@id/import_step3_bar"
+            tools:visibility="visible" />
+
         <ImageView
             android:id="@+id/import_step3_check"
             android:layout_width="32dp"
@@ -207,7 +221,7 @@
         app:layout_constraintTop_toBottomOf="@id/import_step3"
         tools:visibility="visible">
 
-    <TextView
+        <TextView
             android:id="@+id/import_step4_number"
             android:layout_width="40dp"
             android:layout_height="40dp"

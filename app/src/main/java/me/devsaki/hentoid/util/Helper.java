@@ -474,7 +474,7 @@ public final class Helper {
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setBookmarks(bookmarks);
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) return false;
 
         try {
@@ -505,7 +505,7 @@ public final class Helper {
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setRenamingRules(rules);
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) return false;
 
         try {

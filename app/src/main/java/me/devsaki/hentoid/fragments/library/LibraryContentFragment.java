@@ -667,7 +667,7 @@ public class LibraryContentFragment extends Fragment implements
                     return;
                 }
 
-                DocumentFile folder = FileHelper.getFolderFromTreeUriString(requireContext(), c.getStorageUri());
+                DocumentFile folder = FileHelper.getDocumentFromTreeUriString(requireContext(), c.getStorageUri());
                 if (folder != null) {
                     selectExtension.deselect(selectExtension.getSelections());
                     activity.get().getSelectionToolbar().setVisibility(View.GONE);

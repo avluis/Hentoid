@@ -240,7 +240,7 @@ public final class ContentHelper {
         if (content.isArchive())
             return null; // Keep that as is, we can't find the parent folder anyway
 
-        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        DocumentFile folder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return null;
         try {
             DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder, Consts.JSON_FILE_NAME_V2);
@@ -280,7 +280,7 @@ public final class ContentHelper {
         List<Content> queuedContent = Stream.of(queue).map(qr -> qr.getContent().getTarget()).withoutNulls().toList();
         if (errors != null) queuedContent.addAll(errors);
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) return false;
 
         try {
@@ -376,7 +376,7 @@ public final class ContentHelper {
         String storageUri = content.getStorageUri();
 
         Timber.d("Opening: %s from: %s", content.getTitle(), storageUri);
-        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, storageUri);
+        DocumentFile folder = FileHelper.getDocumentFromTreeUriString(context, storageUri);
         if (null == folder) {
             Timber.d("File not found!! Exiting method.");
             return new ArrayList<>();
@@ -422,7 +422,7 @@ public final class ContentHelper {
                 for (File f : images) FileHelper.removeFile(f);
         } else if (/*isInLibrary(content.getStatus()) &&*/ !content.getStorageUri().isEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
-            DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+            DocumentFile folder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
             if (null == folder)
                 throw new FileNotProcessedException(content, "Failed to find directory " + content.getStorageUri());
 
@@ -1336,7 +1336,7 @@ public final class ContentHelper {
             @NonNull final Content content,
             boolean removeJson,
             boolean keepCover) {
-        DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        DocumentFile bookFolder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
             List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, displayName -> !keepCover || !displayName.startsWith(Consts.THUMB_FILE_NAME));
             if (!files.isEmpty())
@@ -1719,7 +1719,7 @@ public final class ContentHelper {
         DocumentFile targetFolder;
         // External library root for external content
         if (mergedContent.getStatus().equals(StatusContent.EXTERNAL)) {
-            DocumentFile externalRootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getExternalLibraryUri());
+            DocumentFile externalRootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri());
             if (null == externalRootFolder || !externalRootFolder.exists())
                 throw new ContentNotProcessedException(mergedContent, "Could not create target directory : external root unreachable");
 

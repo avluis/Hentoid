@@ -98,7 +98,7 @@ public final class GroupHelper {
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setCustomGroups(customGroups);
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) return false;
 
         try {

@@ -888,7 +888,7 @@ public class LibraryViewModel extends AndroidViewModel {
     public Content doArchiveContent(@NonNull final Content content) throws IOException {
         Helper.assertNonUiThread();
         Timber.i(">> archive %s", content.getTitle());
-        DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(getApplication(), content.getStorageUri());
+        DocumentFile bookFolder = FileHelper.getDocumentFromTreeUriString(getApplication(), content.getStorageUri());
         if (null == bookFolder) return null;
 
         List<DocumentFile> files = FileHelper.listFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive

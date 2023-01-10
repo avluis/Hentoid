@@ -122,7 +122,7 @@ public class API29MigrationService extends IntentService {
     private void performMigration() throws InterruptedException {
         List<LogHelper.LogEntry> log = new ArrayList<>();
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(this, Preferences.getStorageUri());
         if (null == rootFolder) {
             Timber.e("rootFolder is not defined (%s)", Preferences.getStorageUri());
             return;

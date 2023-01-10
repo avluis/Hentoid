@@ -155,7 +155,7 @@ class DuplicateHelper {
             try {
                 // Update the book JSON if the book folder still exists
                 if (content.storageUri.isNotEmpty()) {
-                    val folder = FileHelper.getFolderFromTreeUriString(context, content.storageUri)
+                    val folder = FileHelper.getDocumentFromTreeUriString(context, content.storageUri)
                     if (folder != null) {
                         if (content.jsonUri.isNotEmpty()) ContentHelper.updateJson(
                             context,

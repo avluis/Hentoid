@@ -353,11 +353,16 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onImportEvent(event: ProcessEvent) {
-        if (event.processId != R.id.import_external && event.processId != R.id.import_primary) return
+        if (event.processId != R.id.import_external
+            && event.processId != R.id.import_primary
+            && event.processId != R.id.import_primary_pages
+        ) return
+
         binding2.let {
             val progressBar: ProgressBar = when (event.step) {
                 PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> it.importStep2Bar
                 PrimaryImportWorker.STEP_3_BOOKS -> it.importStep3Bar
+                PrimaryImportWorker.STEP_3_PAGES -> it.importStep3SubBar
                 else -> it.importStep4Bar
             }
             if (ProcessEvent.EventType.PROGRESS == event.eventType) {
@@ -368,42 +373,58 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 } else {
                     progressBar.isIndeterminate = true
                 }
-                if (PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step) {
-                    it.importStep2Text.text = event.elementName
-                } else if (PrimaryImportWorker.STEP_3_BOOKS == event.step) {
-                    it.importStep2Bar.isIndeterminate = false
-                    it.importStep2Bar.max = 1
-                    it.importStep2Bar.progress = 1
-                    it.importStep2Text.visibility = View.GONE
-                    it.importStep2Check.visibility = View.VISIBLE
-                    it.importStep3.visibility = View.VISIBLE
-                    it.importStep3Text.text = resources.getString(
-                        R.string.api29_migration_step3,
-                        event.elementsKO + event.elementsOK,
-                        event.elementsTotal
-                    )
-                } else if (PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step) {
-                    it.importStep3Check.visibility = View.VISIBLE
-                    it.importStep4.visibility = View.VISIBLE
+                when (event.step) {
+                    PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> {
+                        it.importStep2Text.text = event.elementName
+                    }
+                    PrimaryImportWorker.STEP_3_BOOKS -> {
+                        it.importStep2Bar.isIndeterminate = false
+                        it.importStep2Bar.max = 1
+                        it.importStep2Bar.progress = 1
+                        it.importStep2Text.visibility = View.GONE
+                        it.importStep2Check.visibility = View.VISIBLE
+                        it.importStep3.visibility = View.VISIBLE
+                        it.importStep3Text.text = resources.getString(
+                            R.string.api29_migration_step3,
+                            event.elementsKO + event.elementsOK,
+                            event.elementsTotal
+                        )
+                    }
+                    PrimaryImportWorker.STEP_3_PAGES -> {
+                        progressBar.visibility = View.VISIBLE
+                    }
+                    PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
+                        it.importStep3Check.visibility = View.VISIBLE
+                        it.importStep4.visibility = View.VISIBLE
+                    }
                 }
             } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-                if (PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step) {
-                    it.importStep2Bar.isIndeterminate = false
-                    it.importStep2Bar.max = 1
-                    it.importStep2Bar.progress = 1
-                    it.importStep2Text.visibility = View.GONE
-                    it.importStep2Check.visibility = View.VISIBLE
-                    it.importStep3.visibility = View.VISIBLE
-                } else if (PrimaryImportWorker.STEP_3_BOOKS == event.step) {
-                    it.importStep3Text.text = resources.getString(
-                        R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal
-                    )
-                    it.importStep3Check.visibility = View.VISIBLE
-                    it.importStep4.visibility = View.VISIBLE
-                } else if (PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step) {
-                    it.importStep4Check.visibility = View.VISIBLE
-                    isServiceGracefulClose = true
-                    dismissAllowingStateLoss()
+                when (event.step) {
+                    PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> {
+                        it.importStep2Bar.isIndeterminate = false
+                        it.importStep2Bar.max = 1
+                        it.importStep2Bar.progress = 1
+                        it.importStep2Text.visibility = View.GONE
+                        it.importStep2Check.visibility = View.VISIBLE
+                        it.importStep3.visibility = View.VISIBLE
+                    }
+                    PrimaryImportWorker.STEP_3_BOOKS -> {
+                        it.importStep3Text.text = resources.getString(
+                            R.string.api29_migration_step3,
+                            event.elementsTotal,
+                            event.elementsTotal
+                        )
+                        it.importStep3Check.visibility = View.VISIBLE
+                        it.importStep4.visibility = View.VISIBLE
+                    }
+                    PrimaryImportWorker.STEP_3_PAGES -> {
+                        progressBar.visibility = View.GONE
+                    }
+                    PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
+                        it.importStep4Check.visibility = View.VISIBLE
+                        isServiceGracefulClose = true
+                        dismissAllowingStateLoss()
+                    }
                 }
             }
         }
@@ -419,9 +440,14 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         if (event.service != R.id.import_service) return
         if (!isServiceGracefulClose) {
             Snackbar.make(
-                binding1.root, R.string.import_unexpected, BaseTransientBottomBar.LENGTH_LONG
+                binding1.root,
+                R.string.import_unexpected,
+                BaseTransientBottomBar.LENGTH_LONG
             ).show()
-            Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 3000)
+            Handler(Looper.getMainLooper()).postDelayed(
+                { dismissAllowingStateLoss() },
+                3000
+            )
         }
     }
 

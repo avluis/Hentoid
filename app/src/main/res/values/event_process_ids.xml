@@ -3,6 +3,7 @@
     <item name="generic_progress" type="id" />
     <item name="import_external" type="id" />
     <item name="import_primary" type="id" />
+    <item name="import_primary_pages" type="id" />
     <item name="import_metadata" type="id" />
     <item name="import_downloads" type="id" />
     <item name="migrate_api29" type="id" />

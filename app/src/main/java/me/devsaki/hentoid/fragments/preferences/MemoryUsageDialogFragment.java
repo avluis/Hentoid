@@ -64,7 +64,7 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         long deviceFreeBytes = -1;
         long deviceTotalBytes = -1;
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(requireActivity(), Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(requireActivity(), Preferences.getStorageUri());
         if (rootFolder != null) {
             FileHelper.MemoryUsageFigures memUsage = new FileHelper.MemoryUsageFigures(requireContext(), rootFolder);
             deviceFreeBytes = memUsage.getfreeUsageBytes();

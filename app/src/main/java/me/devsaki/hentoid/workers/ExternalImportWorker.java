@@ -117,7 +117,7 @@ public class ExternalImportWorker extends BaseWorker {
         int booksKO = 0;                        // Number of folders found with no valid book inside
         List<LogHelper.LogEntry> log = new ArrayList<>();
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getExternalLibraryUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri());
         if (null == rootFolder) {
             Timber.e("External folder is not defined (%s)", Preferences.getExternalLibraryUri());
             return;
@@ -280,9 +280,9 @@ public class ExternalImportWorker extends BaseWorker {
         // Check if the storage URI is valid
         DocumentFile contentFolder;
         if (content.isArchive()) {
-            contentFolder = FileHelper.getFolderFromTreeUriString(context, content.getArchiveLocationUri());
+            contentFolder = FileHelper.getDocumentFromTreeUriString(context, content.getArchiveLocationUri());
         } else {
-            contentFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+            contentFolder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
         }
         if (null == contentFolder) return null;
 

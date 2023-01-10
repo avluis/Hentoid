@@ -221,7 +221,7 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) {
             Timber.i("Download folder has not been found. Please select it again."); // May happen if the folder has been moved or deleted after it has been selected
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
@@ -704,7 +704,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
             if (content.getStorageUri().isEmpty()) return;
 
-            DocumentFile dir = FileHelper.getFolderFromTreeUriString(getApplicationContext(), content.getStorageUri());
+            DocumentFile dir = FileHelper.getDocumentFromTreeUriString(getApplicationContext(), content.getStorageUri());
             if (dir != null) {
                 // Auto-retry when error pages are remaining and conditions are met
                 // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue

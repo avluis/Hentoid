@@ -184,7 +184,7 @@ public class ImportHelper {
 
         // Start the SAF at the specified location
         if (Build.VERSION.SDK_INT >= O && !Preferences.getStorageUri().isEmpty()) {
-            DocumentFile file = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+            DocumentFile file = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
             if (file != null)
                 intent.putExtra(EXTRA_INITIAL_URI, file.getUri());
         }

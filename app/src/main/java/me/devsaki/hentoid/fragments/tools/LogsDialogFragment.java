@@ -108,7 +108,7 @@ public class LogsDialogFragment extends DialogFragment {
     }
 
     private List<DocumentFile> getLogs() {
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(requireContext(), Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(requireContext(), Preferences.getStorageUri());
         if (null == rootFolder) return Collections.emptyList();
 
         List<DocumentFile> files = FileHelper.listFiles(requireContext(), rootFolder, displayName -> displayName.toLowerCase().endsWith("_log.txt"));

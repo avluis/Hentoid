@@ -88,7 +88,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
     private void doMigrate() {
         Timber.d("API 29 migration / Initiated");
-        DocumentFile storageDoc = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
+        DocumentFile storageDoc = FileHelper.getDocumentFromTreeUriString(this, Preferences.getStorageUri());
 
         // If the root folder is already set to a content:// URI (previous use of SAF picker), start scanning at once
         if (storageDoc != null) {

@@ -96,18 +96,18 @@ public class FileHelper {
     }
 
     /**
-     * Build a DocumentFile representing a folder from the given Uri string
+     * Build a DocumentFile from the given Uri string
      *
      * @param context    Context to use for the conversion
      * @param treeUriStr Uri string to use
      * @return DocumentFile built from the given Uri string; null if the DocumentFile couldn't be built
      */
     @Nullable
-    public static DocumentFile getFolderFromTreeUriString(@NonNull final Context context, final String treeUriStr) {
+    public static DocumentFile getDocumentFromTreeUriString(@NonNull final Context context, final String treeUriStr) {
         if (null == treeUriStr || treeUriStr.isEmpty()) return null;
-        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(treeUriStr));
-        if (null == folder || !folder.exists()) return null;
-        else return folder;
+        DocumentFile result = DocumentFile.fromTreeUri(context, Uri.parse(treeUriStr));
+        if (null == result || !result.exists()) return null;
+        else return result;
     }
 
     public static String getFullPathFromUri(@NonNull final Context context, @NonNull final Uri uri) {

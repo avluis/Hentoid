@@ -308,7 +308,7 @@ public class MetadataImportWorker extends BaseWorker {
         Helper.assertNonUiThread();
         Map<Site, DocumentFile> result = new EnumMap<>(Site.class);
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
         if (null != rootFolder) {
             List<DocumentFile> subfolders = FileHelper.listFolders(context, rootFolder);
             String folderName;

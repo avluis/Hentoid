@@ -268,7 +268,7 @@ public class AppStartup {
     private static void createBookmarksJson(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         Timber.i("Create bookmarks JSON : start");
         try {
-            DocumentFile appRoot = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+            DocumentFile appRoot = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
             if (appRoot != null) {
                 DocumentFile bookmarksJson = FileHelper.findFile(context, appRoot, Consts.BOOKMARKS_JSON_FILE_NAME);
                 if (null == bookmarksJson) {

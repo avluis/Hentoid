@@ -984,7 +984,7 @@ public class ReaderViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
         if (!content.getJsonUri().isEmpty() || content.isArchive()) return;
 
-        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        DocumentFile folder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return;
 
         DocumentFile foundFile = FileHelper.findFile(getApplication(), folder, Consts.JSON_FILE_NAME_V2);
@@ -1759,7 +1759,7 @@ public class ReaderViewModel extends AndroidViewModel {
 
         // Compute all renaming tasks
         List<ImmutableTriple<ImageFile, DocumentFile, String>> firstPass = new ArrayList<>();
-        DocumentFile parentFolder = FileHelper.getFolderFromTreeUriString(getApplication(), chapters.get(0).getContent().getTarget().getStorageUri());
+        DocumentFile parentFolder = FileHelper.getDocumentFromTreeUriString(getApplication(), chapters.get(0).getContent().getTarget().getStorageUri());
         if (parentFolder != null) {
             List<DocumentFile> contentFiles = FileHelper.listFiles(getApplication(), parentFolder, null);
             for (DocumentFile doc : contentFiles) {
