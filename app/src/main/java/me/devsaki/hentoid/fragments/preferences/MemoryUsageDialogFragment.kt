@@ -19,7 +19,7 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import org.apache.commons.lang3.tuple.ImmutablePair
 
-class MemoryUsageDialogFragmentK : DialogFragment(R.layout.dialog_prefs_memory) {
+class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
     // == UI
     private var _binding: DialogPrefsMemoryBinding? = null
     private val binding get() = _binding!!
@@ -154,7 +154,7 @@ class MemoryUsageDialogFragmentK : DialogFragment(R.layout.dialog_prefs_memory) 
 
     companion object {
         fun invoke(fragmentManager: FragmentManager) {
-            val fragment = MemoryUsageDialogFragmentK()
+            val fragment = MemoryUsageDialogFragment()
             fragment.show(fragmentManager, null)
         }
     }
