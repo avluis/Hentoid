@@ -201,7 +201,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
             Preferences.Key.MEMORY_USAGE -> {
-                if (!Preferences.isBrowserMode()) MemoryUsageDialogFragment.invoke(
+                if (!Preferences.isBrowserMode()) MemoryUsageDialogFragmentK.invoke(
                     parentFragmentManager
                 )
                 true
