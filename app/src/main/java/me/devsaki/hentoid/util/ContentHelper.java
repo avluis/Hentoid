@@ -648,7 +648,7 @@ public final class ContentHelper {
     }
 
     /**
-     * Define a new cover among a Content's ImageFiles
+     * Set one of the given Content's ImageFile as the Content's cover and persist that new setting to the DB
      *
      * @param newCover ImageFile to be used as a cover for the Content it is related to
      * @param dao      DAO to be used
@@ -676,6 +676,14 @@ public final class ContentHelper {
         if (!content.getJsonUri().isEmpty()) updateJson(context, content);
     }
 
+    /**
+     * Set one of the given Content's ImageFile as the Content's cover
+     * NB : That method doesn't persist the result state to the DB
+     *
+     * @param content  Content to set the new cover for
+     * @param images   Images of the given Content
+     * @param newCover ImageFile to be used as a cover for the Content it is related to
+     */
     public static void setContentCover(@NonNull Content content, @NonNull List<ImageFile> images, @NonNull ImageFile newCover) {
         // Remove current cover from the set
         for (int i = 0; i < images.size(); i++)

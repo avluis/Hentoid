@@ -206,6 +206,13 @@ public final class GroupHelper {
         return artistGroup;
     }
 
+    /**
+     * Indicate wether the given Content is linked to the given Group
+     *
+     * @param content Content to test
+     * @param group   Group to test against
+     * @return True if the given Content is linked to the given Group; false if not
+     */
     private static boolean isContentLinkedToGroup(@NonNull Content content, @NonNull Group group) {
         for (GroupItem item : content.getGroupItems(group.grouping)) {
             if (item.group.getTarget().equals(group)) return true;
@@ -213,7 +220,13 @@ public final class GroupHelper {
         return false;
     }
 
-    // TODO
+    /**
+     * Remove the given Content from the given Grouping
+     *
+     * @param grouping Grouping to remove the given Content from
+     * @param content  Content to remove
+     * @param dao      DAO to use
+     */
     public static void removeContentFromGrouping(@NonNull Grouping grouping, @NonNull Content content, @NonNull CollectionDAO dao) {
         List<GroupItem> toRemove = new ArrayList<>();
         List<Group> needCoverUpdate = new ArrayList<>();
