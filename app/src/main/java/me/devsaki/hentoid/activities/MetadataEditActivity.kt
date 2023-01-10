@@ -338,7 +338,13 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
             // Cover
             it.ivCover.setOnClickListener {
                 binding?.let { b2 ->
-                    if (1 == contents.size) {
+                    if (contents.size > 1) {
+                        Snackbar.make(
+                            b2.root,
+                            R.string.meta_cover_multiple_warning,
+                            BaseTransientBottomBar.LENGTH_SHORT
+                        ).show()
+                    } else {
                         if (contents[0].isArchive) {
                             Snackbar.make(
                                 b2.root,
@@ -349,20 +355,10 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                             val imgs = contents[0].imageFiles?.filter { i -> i.isReadable }
                             if (imgs != null) {
                                 b2.titleNew.visibility = View.GONE
-                                b2.tags.visibility = View.GONE
                                 b2.tagsFab.visibility = View.GONE
-                                GalleyPickerDialogFragment.invoke(
-                                    supportFragmentManager,
-                                    imgs
-                                )
+                                GalleyPickerDialogFragment.invoke(supportFragmentManager, imgs)
                             }
                         }
-                    } else {
-                        Snackbar.make(
-                            b2.root,
-                            R.string.meta_cover_multiple_warning,
-                            BaseTransientBottomBar.LENGTH_SHORT
-                        ).show()
                     }
                 }
             }
