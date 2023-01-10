@@ -42,7 +42,7 @@ class SourcesIntroFragment : Fragment(R.layout.intro_slide_06) {
     }
 
     fun getSelection(): List<Site> {
-        val result: MutableList<Site> = java.util.ArrayList()
+        val result: MutableList<Site> = ArrayList()
         for (s in itemAdapter.adapterItems) if (s.isSelected) result.add(s.site)
         return result
     }

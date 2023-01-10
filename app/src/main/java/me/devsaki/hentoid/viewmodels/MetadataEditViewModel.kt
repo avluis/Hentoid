@@ -97,7 +97,7 @@ class MetadataEditViewModel(
      */
     fun loadContent(contentId: LongArray) {
         val contents = dao.selectContent(contentId.filter { id -> id > 0 }.toLongArray())
-        val rawAttrs = java.util.ArrayList<Attribute>()
+        val rawAttrs = ArrayList<Attribute>()
         contents.forEach { c ->
             rawAttrs.addAll(c.attributes)
         }
