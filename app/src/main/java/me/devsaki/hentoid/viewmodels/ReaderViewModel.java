@@ -858,7 +858,7 @@ public class ReaderViewModel extends AndroidViewModel {
      */
     public void setCover(ImageFile page) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> ContentHelper.setContentCover(page, dao, getApplication()))
+                Completable.fromRunnable(() -> ContentHelper.setAndSaveContentCover(page, dao, getApplication()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(

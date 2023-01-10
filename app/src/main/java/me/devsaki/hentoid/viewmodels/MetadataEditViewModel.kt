@@ -115,11 +115,10 @@ class MetadataEditViewModel(
         val img = imageFiles.find { it.order == order }
         if (img != null)
             compositeDisposable.add(
-                Single.fromCallable { ContentHelper.setContentCover(img, dao, getApplication()) }
+                Single.fromCallable { ContentHelper.setContentCover(content, imageFiles, img) }
                     .subscribeOn(Schedulers.io())
                     .subscribe({
-                        val newContent = dao.selectContent(content.id)
-                        if (newContent != null) contentList.postValue(mutableListOf(newContent))
+                        contentList.postValue(mutableListOf(content))
                     }
                     ) { t: Throwable? -> Timber.e(t) }
             )
@@ -265,12 +264,19 @@ class MetadataEditViewModel(
         contentList.value?.forEach {
             it.lastEditDate = Instant.now().toEpochMilli()
             it.author = ContentHelper.formatBookAuthor(it)
+
+            // Save Content itself
+            it.imageFiles?.let { imgs->
+                dao.insertImageFiles(imgs)
+            }
+            dao.insertContent(it)
+
             // Assign Content to each artist/circle group
             GroupHelper.removeContentFromGrouping(
                 me.devsaki.hentoid.enums.Grouping.ARTIST,
                 it,
                 dao
-            ) // Saves content to DAO
+            )
             var artistFound = false
             it.attributes.forEach { attr ->
                 if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {

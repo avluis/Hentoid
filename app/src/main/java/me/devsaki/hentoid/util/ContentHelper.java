@@ -654,7 +654,7 @@ public final class ContentHelper {
      * @param dao      DAO to be used
      * @param context  Context to be used
      */
-    public static void setContentCover(@NonNull ImageFile newCover, @NonNull CollectionDAO dao, @NonNull final Context context) {
+    public static void setAndSaveContentCover(@NonNull ImageFile newCover, @NonNull CollectionDAO dao, @NonNull final Context context) {
         Helper.assertNonUiThread();
 
         // Get all images from the DB
@@ -663,6 +663,20 @@ public final class ContentHelper {
         List<ImageFile> images = content.getImageFiles();
         if (null == images) return;
 
+        // Remove current cover from the set
+        setContentCover(content, images, newCover);
+
+        // Update images directly
+        dao.insertImageFiles(images);
+
+        // Update the whole list
+        dao.insertContent(content);
+
+        // Update content JSON if it exists (i.e. if book is not queued)
+        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
+    }
+
+    public static void setContentCover(@NonNull Content content, @NonNull List<ImageFile> images, @NonNull ImageFile newCover) {
         // Remove current cover from the set
         for (int i = 0; i < images.size(); i++)
             if (images.get(i).isCover()) {
@@ -673,21 +687,12 @@ public final class ContentHelper {
                 break;
             }
 
-        dao.insertImageFiles(images);
-
         // Duplicate given picture and set it as a cover
         ImageFile cover = ImageFile.newCover(newCover.getUrl(), newCover.getStatus()).setFileUri(newCover.getFileUri()).setMimeType(newCover.getMimeType());
         images.add(0, cover);
 
         // Update cover URL to "ping" the content to be updated too (useful for library screen that only detects "direct" content updates)
         content.setCoverImageUrl(newCover.getUrl());
-
-        // Update the whole list
-        dao.insertContent(content);
-
-        // Update content JSON if it exists (i.e. if book is not queued)
-        if (!content.getJsonUri().isEmpty())
-            updateJson(context, content);
     }
 
     /**
