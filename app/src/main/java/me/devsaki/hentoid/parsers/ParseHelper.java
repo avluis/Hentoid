@@ -168,9 +168,12 @@ public class ParseHelper {
      * @param childElementClass     If set, the parser will look for sub-elements of the given class
      */
     public static void parseAttribute(
-            @NonNull Element element, @NonNull AttributeMap map,
+            @NonNull Element element,
+            @NonNull AttributeMap map,
             @NonNull AttributeType type,
-            @NonNull Site site, @NonNull final String prefix, boolean removeTrailingNumbers,
+            @NonNull Site site,
+            @NonNull final String prefix,
+            boolean removeTrailingNumbers,
             @Nullable String childElementClass) {
         String name;
         if (null == childElementClass) {
@@ -379,6 +382,15 @@ public class ParseHelper {
         return getChaptersFromLinks(chapterLinks, contentId, null, null);
     }
 
+    /**
+     * Extract a list of Chapters from the given list of links, for the given Content ID
+     *
+     * @param chapterLinks List of HTML links to extract Chapters from
+     * @param contentId    Content ID to associate with all extracted Chapters
+     * @param dateCssQuery CSS query to select the chapter upload date (optional)
+     * @param datePattern  Pattern to parse the chapter upload date (optional)
+     * @return Chapters detected from the given list of links, associated with the given Content ID
+     */
     public static List<Chapter> getChaptersFromLinks(
             @NonNull List<Element> chapterLinks,
             long contentId,
@@ -436,7 +448,13 @@ public class ParseHelper {
         return (parts[parts.length - 1].isEmpty()) ? parts[parts.length - 2] : parts[parts.length - 1];
     }
 
-    // TODO doc
+    /**
+     * Find extra chapters within the given "detected" list, that are not among the "stored list", based on their URL
+     *
+     * @param storedChapters   Stored list of chapters to compare against
+     * @param detectedChapters Detected list of chapters where to find extra ones
+     * @return Extra chapters that exist within the "detected" list, if any
+     */
     public static List<Chapter> getExtraChaptersbyUrl(
             @NonNull List<Chapter> storedChapters,
             @NonNull List<Chapter> detectedChapters
@@ -457,7 +475,13 @@ public class ParseHelper {
         return Stream.of(result).sortBy(Chapter::getOrder).toList();
     }
 
-    // TODO doc
+    /**
+     * Find extra chapter IDs within the given "detected" list, that are not among the "stored list"
+     *
+     * @param storedChapters Stored list of chapters to compare against
+     * @param detectedIds    Detected list of chapter IDs where to find extra ones
+     * @return Extra chapter IDs that exist within the "detected" list, if any
+     */
     public static List<String> getExtraChaptersbyId(
             @NonNull List<Chapter> storedChapters,
             @NonNull List<String> detectedIds
@@ -474,10 +498,15 @@ public class ParseHelper {
         return result;
     }
 
-    // TODO doc
-    public static int getMaxImageOrder(@NonNull List<Chapter> storedChapters) {
-        if (!storedChapters.isEmpty()) {
-            Optional<Integer> optOrder = Stream.of(storedChapters)
+    /**
+     * Return the highest image order within the given chapters
+     *
+     * @param chapters List of chapters to process
+     * @return Highest image order within the given chapters; 0 if not found
+     */
+    public static int getMaxImageOrder(@NonNull List<Chapter> chapters) {
+        if (!chapters.isEmpty()) {
+            Optional<Integer> optOrder = Stream.of(chapters)
                     .map(Chapter::getImageFiles)
                     .withoutNulls()
                     .flatMap(Stream::of)
@@ -488,10 +517,15 @@ public class ParseHelper {
         return 0;
     }
 
-    // TODO doc
-    public static int getMaxChapterOrder(@NonNull List<Chapter> storedChapters) {
-        if (!storedChapters.isEmpty()) {
-            Optional<Integer> optOrder = Stream.of(storedChapters)
+    /**
+     * Return the highest chapter order within the given chapters
+     *
+     * @param chapters List of chapters to process
+     * @return Highest chapter order within the given chapters; 0 if not found
+     */
+    public static int getMaxChapterOrder(@NonNull List<Chapter> chapters) {
+        if (!chapters.isEmpty()) {
+            Optional<Integer> optOrder = Stream.of(chapters)
                     .withoutNulls()
                     .map(Chapter::getOrder)
                     .max(Integer::compareTo);
