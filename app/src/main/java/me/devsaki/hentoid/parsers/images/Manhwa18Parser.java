@@ -2,10 +2,9 @@ package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-import androidx.core.util.Pair;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.Stream;
 
@@ -66,7 +65,9 @@ public class Manhwa18Parser extends BaseImageListParser {
 
         // 2. Open each chapter URL and get the image data until all images are found
         long minEpoch = Long.MAX_VALUE;
+        int storedOrderOffset = ParseHelper.getMaxChapterOrder(storedChapters);
         for (Chapter chp : extraChapters) {
+            chp.setOrder(++storedOrderOffset);
             if (chp.getUploadDate() > 0) minEpoch = Math.min(minEpoch, chp.getUploadDate());
             if (processHalted.get()) break;
             doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA18.useHentoidAgent(), Site.MANHWA18.useWebviewAgent());

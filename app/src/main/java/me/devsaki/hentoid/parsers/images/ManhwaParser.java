@@ -111,8 +111,10 @@ public class ManhwaParser extends BaseImageListParser {
         int imgOffset = ParseHelper.getMaxImageOrder(storedChapters);
 
         // 2- Open each chapter URL and get the image data until all images are found
+        int storedOrderOffset = ParseHelper.getMaxChapterOrder(storedChapters);
         for (Chapter chp : extraChapters) {
             if (processHalted.get()) break;
+            chp.setOrder(++storedOrderOffset);
             doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");

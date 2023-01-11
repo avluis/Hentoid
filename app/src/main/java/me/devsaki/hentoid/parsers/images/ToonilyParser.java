@@ -2,11 +2,11 @@ package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-import androidx.core.util.Pair;
 import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.Stream;
 
@@ -108,7 +108,9 @@ public class ToonilyParser extends BaseImageListParser {
         int imgOffset = ParseHelper.getMaxImageOrder(storedChapters);
 
         // 2. Open each chapter URL and get the image data until all images are found
+        int storedOrderOffset = ParseHelper.getMaxChapterOrder(storedChapters);
         for (Chapter chp : extraChapters) {
+            chp.setOrder(++storedOrderOffset);
             if (processHalted.get()) break;
             doc = getOnlineDocument(chp.getUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
             if (doc != null) {

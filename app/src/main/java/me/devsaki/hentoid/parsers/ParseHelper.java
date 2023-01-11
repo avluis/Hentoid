@@ -459,20 +459,35 @@ public class ParseHelper {
             @NonNull List<Chapter> storedChapters,
             @NonNull List<Chapter> detectedChapters
     ) {
-        List<Chapter> result = new ArrayList<>();
+        List<Chapter> tmpList = new ArrayList<>();
         Map<String, List<Chapter>> storedChps = Stream.of(storedChapters).collect(Collectors.groupingBy(c -> getLastPathPart(c.getUrl())));
         Map<String, List<Chapter>> detectedChps = Stream.of(detectedChapters).collect(Collectors.groupingBy(c -> getLastPathPart(c.getUrl())));
 
-        if (null == storedChps || null == detectedChps) return result;
+        if (null == storedChps || null == detectedChps) return tmpList;
 
         Set<String> storedUrlParts = storedChps.keySet();
         for (Map.Entry<String, List<Chapter>> detectedEntry : detectedChps.entrySet()) {
             if (!storedUrlParts.contains(detectedEntry.getKey())) {
                 List<Chapter> chps = detectedEntry.getValue();
-                if (!chps.isEmpty()) result.add(chps.get(0));
+                if (!chps.isEmpty()) tmpList.add(chps.get(0));
             }
         }
-        return Stream.of(result).sortBy(Chapter::getOrder).toList();
+
+        // Only keep the latest contiguous chapters (no in-between chapters)
+        tmpList = Stream.of(tmpList).sortBy(Chapter::getOrder).toList();
+
+        List<Chapter> result = new ArrayList<>();
+        int order = -1;
+        for (Chapter ch : tmpList) {
+            if (order > -1 && ch.getOrder() > order + 1) {
+                result.clear();
+                order = -1;
+                continue;
+            }
+            order = ch.getOrder();
+            result.add(ch);
+        }
+        return result;
     }
 
     /**
