@@ -216,9 +216,9 @@
     <string name="refresh_location_external">外部ライブラリ</string>
     <string name="refresh_options_rename">現在の名前と最大長の設定に従って、すべてのフォルダの名前を変更します</string>
     <string name="refresh_options_remove_placeholders">メタデータを介してインポートされたプレースホルダーブックを削除する</string>
+
     <string name="refresh_options_remove">次の場所にあるフォルダを削除します…</string>
-    <string name="refresh_options_remove_1">JSONファイルがありません（推奨）</string>
-    <string name="refresh_options_remove_2">画像がダウンロードされていません</string>
+
     <string name="refresh_options_remove_or">又は</string>
 <string name="delete_title">お気に入りを除くすべてを削除する</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g><x:g example="books" id="type">%3$s</x:g></string>

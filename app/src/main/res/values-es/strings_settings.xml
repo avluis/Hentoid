@@ -92,6 +92,9 @@
     <string name="pref_browser_mark_merged_title">Marcar libros unidos</string>
     <string name="pref_browser_mark_merged_off">Los libros unidos no muestran de forma especial</string>
     <string name="pref_browser_mark_merged_on">Los libros unidos son marcados\nNota: no funciona en todos los sitios</string>
+
+
+    <string name="pref_browser_blocked_tags_title">Etiquetas bloqueadas</string>
     <string name="pref_browser_visuals">Visuales</string>
     <string name="pref_browser_augmented_title">Navegador aumentado</string>
     <string name="pref_browser_augmented_off">Comportamiento por defecto</string>

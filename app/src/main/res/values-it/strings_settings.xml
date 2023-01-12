@@ -92,6 +92,9 @@
     <string name="pref_browser_mark_merged_title">Segna libri uniti</string>
     <string name="pref_browser_mark_merged_off">I libri uniti non saranno diversi</string>
     <string name="pref_browser_mark_merged_on">I libri uniti sono segnati\nNB: non funziona su tutti i siti</string>
+
+
+    <string name="pref_browser_blocked_tags_title">Tag bloccati</string>
     <string name="pref_browser_visuals">Visualizzazione</string>
     <string name="pref_browser_augmented_title">Browser avanzato</string>
     <string name="pref_browser_augmented_off">Usando il comportamento predefinito</string>

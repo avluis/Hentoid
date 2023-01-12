@@ -216,9 +216,9 @@
     <string name="refresh_location_external">Külső könyvtár</string>
     <string name="refresh_options_rename">Az összes mappa átnevezése az aktuális elnevezési és maximális hosszúsági beállításoknak megfelelően</string>
     <string name="refresh_options_remove_placeholders">Metaadatokon keresztül importált helyőrző könyvek eltávolítása*</string>
+
     <string name="refresh_options_remove">Távolítsa el a mappákat, ahol...</string>
-    <string name="refresh_options_remove_1">JSON fájl hiányzik (ajánlott)</string>
-    <string name="refresh_options_remove_2">Nincsen letöltött kép</string>
+
     <string name="refresh_options_remove_or">vagy</string>
 <string name="delete_title">Törölje az összeset, a kedvencek kivételével</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>

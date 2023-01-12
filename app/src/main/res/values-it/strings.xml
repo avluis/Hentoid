@@ -216,9 +216,9 @@
     <string name="refresh_location_external">Libreria esterna</string>
     <string name="refresh_options_rename">Rinomina tutte le cartelle in base alla denominazione corrente e alla preferenza di lunghezza massima</string>
     <string name="refresh_options_remove_placeholders">Rimuovi segnalibri dei libri importati dal metadata</string>
+
     <string name="refresh_options_remove">Rimuovi le cartelle in cui…</string>
-    <string name="refresh_options_remove_1">Il file JSON è assente (raccomandato)</string>
-    <string name="refresh_options_remove_2">Nessuna immagine è stata scaricata</string>
+
     <string name="refresh_options_remove_or">o</string>
 <string name="delete_title">Elimina tutti tranne i preferiti</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>

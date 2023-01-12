@@ -92,6 +92,9 @@
     <string name="pref_browser_mark_merged_title">병합된 작품 표시</string>
     <string name="pref_browser_mark_merged_off">병합된 작품에 아무런 표시가 나타나지 않습니다</string>
     <string name="pref_browser_mark_merged_on">병합된 작품에 구분 가능한 표시가 생깁니다\n주의: 모든 사이트에서 작동하지는 않습니다</string>
+
+
+    <string name="pref_browser_blocked_tags_title">태그 차단</string>
     <string name="pref_browser_visuals">화면</string>
     <string name="pref_browser_augmented_title">브라우저 향상</string>
     <string name="pref_browser_augmented_off">기본 브라우저를 사용합니다</string>

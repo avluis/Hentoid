@@ -216,9 +216,9 @@
     <string name="refresh_location_external">외부 라이브러리</string>
     <string name="refresh_options_rename">모든 폴더의 이름을 최대 길이 설정에 맞게 바꿉니다.</string>
     <string name="refresh_options_remove_placeholders">메타데이터로 생성된 임시 작품 삭제</string>
+
     <string name="refresh_options_remove">폴더 삭제 옵션</string>
-    <string name="refresh_options_remove_1">JSON 파일이 없는 폴더 (권장)</string>
-    <string name="refresh_options_remove_2">이미지 파일이 없는 폴더</string>
+
     <string name="refresh_options_remove_or">또는</string>
 <string name="delete_title">전체 삭제 (즐겨찾기 제외)</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>
