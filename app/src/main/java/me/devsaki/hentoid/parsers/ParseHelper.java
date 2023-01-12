@@ -459,12 +459,11 @@ public class ParseHelper {
             @NonNull List<Chapter> storedChapters,
             @NonNull List<Chapter> detectedChapters
     ) {
-        List<Chapter> tmpList = new ArrayList<>();
         Map<String, List<Chapter>> storedChps = Stream.of(storedChapters).collect(Collectors.groupingBy(c -> getLastPathPart(c.getUrl())));
         Map<String, List<Chapter>> detectedChps = Stream.of(detectedChapters).collect(Collectors.groupingBy(c -> getLastPathPart(c.getUrl())));
+        if (null == storedChps || null == detectedChps) return Collections.emptyList();
 
-        if (null == storedChps || null == detectedChps) return tmpList;
-
+        List<Chapter> tmpList = new ArrayList<>();
         Set<String> storedUrlParts = storedChps.keySet();
         for (Map.Entry<String, List<Chapter>> detectedEntry : detectedChps.entrySet()) {
             if (!storedUrlParts.contains(detectedEntry.getKey())) {
@@ -475,19 +474,16 @@ public class ParseHelper {
 
         // Only keep the latest contiguous chapters (no in-between chapters)
         tmpList = Stream.of(tmpList).sortBy(Chapter::getOrder).toList();
+        Optional<String> lastStoredUrl = Stream.of(storedChapters).sortBy(Chapter::getOrder).map(c -> getLastPathPart(c.getUrl())).findLast();
+        if (lastStoredUrl.isEmpty()) return tmpList;
 
-        List<Chapter> result = new ArrayList<>();
-        int order = -1;
-        for (Chapter ch : tmpList) {
-            if (order > -1 && ch.getOrder() > order + 1) {
-                result.clear();
-                order = -1;
-                continue;
-            }
-            order = ch.getOrder();
-            result.add(ch);
-        }
-        return result;
+        Optional<Integer> lastStoredOnlineOrder = Stream.of(detectedChapters)
+                .filter(c -> getLastPathPart(c.getUrl()).equals(lastStoredUrl.get()))
+                .map(Chapter::getOrder)
+                .findLast();
+        if (lastStoredOnlineOrder.isEmpty()) return tmpList;
+
+        return Stream.of(tmpList).filter(c -> c.getOrder() > lastStoredOnlineOrder.get()).toList();
     }
 
     /**
