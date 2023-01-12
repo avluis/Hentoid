@@ -6,10 +6,8 @@
   "sourceAlerts":[
 	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"204" },
 	  {"sourceName":"LUSCIOUS", "status":"ORANGE", "fixedByBuild":"206" },
-	  {"sourceName":"PORNCOMIX", "status":"ORANGE", "fixedByBuild":"206" },
 	  {"sourceName":"MUSES", "status":"RED", "fixedByBuild":"233" },
 	  {"sourceName":"NHENTAI", "status":"ORANGE", "fixedByBuild":"233" },
-	  {"sourceName":"HENTAI2READ", "status":"ORANGE", "fixedByBuild":"236"},
 	  {"sourceName":"HENTAI2READ", "status":"RED", "fixedByBuild":"585"},
 	  {"sourceName":"EHENTAI", "status":"ORANGE", "fixedByBuild":"244"},
 	  {"sourceName":"ASMHENTAI", "status":"RED", "fixedByBuild":"255"},
@@ -25,6 +23,7 @@
 	  {"sourceName":"MRM", "status":"ORANGE", "fixedByBuild":"467"},
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"500"},
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"565"},
+	  {"sourceName":"PORNCOMIX", "status":"RED"},
 	  {"sourceName":"IMHENTAI", "status":"GREY"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
