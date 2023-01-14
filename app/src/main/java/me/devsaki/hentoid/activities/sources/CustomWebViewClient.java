@@ -870,7 +870,7 @@ class CustomWebViewClient extends WebViewClient {
                 for (Map.Entry<Element, String> entry : elements.entrySet()) {
                     if (site.getGalleryHeight() != -1) {
                         for (String blockedTag : blockedTags) {
-                            if (entry.getValue().contains(".tag.") || entry.getValue().contains(".category.")) {
+                            if (entry.getValue().contains("/tag/") || entry.getValue().contains("/category/")) {
                                 String tag = null;
                                 if (entry.getKey().childNodeSize() != 0)
                                     tag = entry.getKey().childNode(0).toString();
