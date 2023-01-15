@@ -8,6 +8,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.QueueActivity
+import me.devsaki.hentoid.activities.QueueActivityK
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.notification.Notification
@@ -26,7 +27,7 @@ class UserActionNotification(val site: Site, private val oldCookie: String) : No
             .build()
 
     private fun getDefaultIntent(context: Context): PendingIntent {
-        val resultIntent = Intent(context, QueueActivity::class.java)
+        val resultIntent = Intent(context, QueueActivityK::class.java)
         resultIntent.flags =
             Intent.FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_NEW_TASK// or Intent.FLAG_ACTIVITY_SINGLE_TOP
         val bundleBuilder = QueueActivityBundle()

@@ -163,7 +163,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (!(requireActivity() instanceof QueueActivity))
-            throw new IllegalStateException("Parent activity has to be a LibraryActivity");
+            throw new IllegalStateException("Parent activity has to be a QueueActivity");
         activity = new WeakReference<>((QueueActivity) requireActivity());
 
         listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);

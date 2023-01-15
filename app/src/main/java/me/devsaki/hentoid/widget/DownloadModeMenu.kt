@@ -19,6 +19,30 @@ class DownloadModeMenu {
             listener: OnMenuItemClickListener<PowerMenuItem?>,
             dismissListener: OnDismissedListener?
         ) {
+            show(
+                build(context, lifecycle, null == dismissListener),
+                anchor,
+                listener,
+                dismissListener
+            )
+        }
+
+        fun show(
+            powerMenu: PowerMenu,
+            anchor: View,
+            listener: OnMenuItemClickListener<PowerMenuItem?>,
+            dismissListener: OnDismissedListener?
+        ) {
+            powerMenu.onMenuItemClickListener = listener
+            powerMenu.setOnDismissedListener(dismissListener)
+            powerMenu.showAtCenter(anchor)
+        }
+
+        fun build(
+            context: Context,
+            lifecycle: LifecycleOwner,
+            autoDismiss: Boolean = false
+        ): PowerMenu {
             val res = context.resources
             val powerMenu = PowerMenu.Builder(context)
                 .addItem(
@@ -43,12 +67,10 @@ class DownloadModeMenu {
                 .setMenuColor(ContextCompat.getColor(context, R.color.dark_gray))
                 .setTextSize(Helper.dimensAsDp(context, R.dimen.text_subtitle_1))
                 .setWidth(res.getDimension(R.dimen.popup_menu_width).toInt())
-                .setAutoDismiss(true)
+                .setAutoDismiss(autoDismiss)
                 .build()
-            powerMenu.onMenuItemClickListener = listener
-            powerMenu.setOnDismissedListener(dismissListener)
             powerMenu.setIconColor(ContextCompat.getColor(context, R.color.white_opacity_87))
-            powerMenu.showAtCenter(anchor)
+            return powerMenu
         }
     }
 }

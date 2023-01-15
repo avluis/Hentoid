@@ -89,6 +89,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.MetadataEditActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.QueueActivityK;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle;
@@ -1505,7 +1506,7 @@ public class LibraryContentFragment extends Fragment implements
      * Navigate to the queue screen
      */
     private void viewQueue() {
-        Intent intent = new Intent(requireContext(), QueueActivity.class);
+        Intent intent = new Intent(requireContext(), QueueActivityK.class);
         requireContext().startActivity(intent);
     }
 

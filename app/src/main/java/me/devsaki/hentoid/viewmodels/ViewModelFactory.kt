@@ -17,7 +17,7 @@ class ViewModelFactory(val application: Application) : ViewModelProvider.Factory
         return when (modelClass) {
             LibraryViewModel::class.java -> LibraryViewModel(application, ObjectBoxDAO(application))
             SearchViewModel::class.java -> SearchViewModel(ObjectBoxDAO(application), Preferences.getSearchAttributesSortOrder())
-            QueueViewModel::class.java -> QueueViewModel(application, ObjectBoxDAO(application))
+            QueueViewModelK::class.java -> QueueViewModelK(application, ObjectBoxDAO(application))
             ReaderViewModel::class.java -> ReaderViewModel(application,ObjectBoxDAO(application))
             PreferencesViewModel::class.java -> PreferencesViewModel(application, ObjectBoxDAO(application))
             DuplicateViewModel::class.java -> DuplicateViewModel(application, ObjectBoxDAO(application), DuplicatesDAO(application))

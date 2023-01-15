@@ -4,7 +4,7 @@
     android:id="@+id/fragment_errors_queue"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.QueueActivity">
+    tools:context=".activities.QueueActivityK">
 
     <TextView
         android:id="@+id/errors_empty_txt"
