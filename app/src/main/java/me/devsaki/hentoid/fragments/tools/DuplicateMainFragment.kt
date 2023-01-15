@@ -118,7 +118,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     private fun onCustomBackPress() {
         callback?.remove()
-        requireActivity().onBackPressed()
+        requireActivity().finish()
     }
 
     private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
@@ -156,13 +156,13 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         val entries: MutableList<DuplicateEntry> = ArrayList()
         // TODO use groupingBy + eachCount
         val map =
-            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumOf { 1 as Int } }
+            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumOf { 1L } }
                 .toMap()
         for (mapEntry in map) {
             if (mapEntry.key != null) {
                 val entry = DuplicateEntry(mapEntry.key!!.id, mapEntry.key!!.size)
                 entry.referenceContent = mapEntry.key!!
-                entry.nbDuplicates = mapEntry.value
+                entry.nbDuplicates = mapEntry.value.toInt()
                 entries.add(entry)
             }
         }

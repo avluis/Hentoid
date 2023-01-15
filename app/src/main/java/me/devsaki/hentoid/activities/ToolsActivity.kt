@@ -38,7 +38,7 @@ class ToolsActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            finish()
             true
         } else {
             super.onOptionsItemSelected(item)

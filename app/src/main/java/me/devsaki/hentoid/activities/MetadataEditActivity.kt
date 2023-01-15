@@ -516,7 +516,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     }
 
     private fun cancelEdit() {
-        onBackPressed()
+        finish()
     }
 
     /**
