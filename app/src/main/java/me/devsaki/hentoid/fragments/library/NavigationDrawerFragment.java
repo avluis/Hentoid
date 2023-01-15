@@ -31,7 +31,7 @@ import java.util.Map;
 import me.devsaki.hentoid.activities.AboutActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
-import me.devsaki.hentoid.activities.QueueActivityK;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.ToolsActivity;
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding;
 import me.devsaki.hentoid.enums.Site;
@@ -202,7 +202,7 @@ public final class NavigationDrawerFragment extends Fragment {
     }
 
     private void onQueueClick() {
-        launchActivity(QueueActivityK.class);
+        launchActivity(QueueActivity.class);
     }
 
     /**

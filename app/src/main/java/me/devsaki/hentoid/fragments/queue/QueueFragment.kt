@@ -40,7 +40,7 @@ import com.skydoves.powermenu.PowerMenuItem
 import io.reactivex.disposables.CompositeDisposable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PrefsActivity
-import me.devsaki.hentoid.activities.QueueActivityK
+import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -80,7 +80,7 @@ import kotlin.math.max
 /**
  * Presents the list of downloads with errors
  */
-class QueueFragmentK : Fragment(R.layout.fragment_queue), ItemTouchCallback,
+class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     // == UI
@@ -96,7 +96,7 @@ class QueueFragmentK : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     private lateinit var viewModel: QueueViewModelK
 
     // Activity
-    private lateinit var activity: WeakReference<QueueActivityK>
+    private lateinit var activity: WeakReference<QueueActivity>
 
 
     // == FASTADAPTER COMPONENTS AND HELPERS
@@ -146,8 +146,8 @@ class QueueFragmentK : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        check(requireActivity() is QueueActivityK) { "Parent activity has to be a QueueActivity" }
-        activity = WeakReference(requireActivity() as QueueActivityK)
+        check(requireActivity() is QueueActivity) { "Parent activity has to be a QueueActivity" }
+        activity = WeakReference(requireActivity() as QueueActivity)
 
         listRefreshDebouncer = Debouncer(
             context,
@@ -842,7 +842,7 @@ class QueueFragmentK : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     private fun showErrorStats() {
         if (itemAdapter.adapterItemCount > 0) {
             val c = itemAdapter.getAdapterItem(0).content
-            if (c != null) ErrorStatsDialogFragmentK.invoke(parentFragmentManager, c.id)
+            if (c != null) ErrorStatsDialogFragment.invoke(parentFragmentManager, c.id)
         }
     }
 

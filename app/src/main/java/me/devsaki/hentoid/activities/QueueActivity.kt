@@ -30,8 +30,8 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadReviveEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
-import me.devsaki.hentoid.fragments.queue.ErrorsFragmentK
-import me.devsaki.hentoid.fragments.queue.QueueFragmentK
+import me.devsaki.hentoid.fragments.queue.ErrorsFragment
+import me.devsaki.hentoid.fragments.queue.QueueFragment
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 
-class QueueActivityK : BaseActivity() {
+class QueueActivity : BaseActivity() {
 
     // == Communication
     private lateinit var viewModel: QueueViewModelK
@@ -203,7 +203,7 @@ class QueueActivityK : BaseActivity() {
     private class ScreenSlidePagerAdapter(fa: FragmentActivity?) :
         FragmentStateAdapter(fa!!) {
         override fun createFragment(position: Int): Fragment {
-            return if (0 == position) QueueFragmentK() else ErrorsFragmentK()
+            return if (0 == position) QueueFragment() else ErrorsFragment()
         }
 
         override fun getItemCount(): Int {

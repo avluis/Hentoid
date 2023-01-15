@@ -6,7 +6,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.QueueActivityK
+import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.receiver.DownloadNotificationPauseReceiver
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.notification.Notification
@@ -48,7 +48,7 @@ class DownloadProgressNotification(
     }
 
     private fun getDefaultIntent(context: Context): PendingIntent {
-        val resultIntent = Intent(context, QueueActivityK::class.java)
+        val resultIntent = Intent(context, QueueActivity::class.java)
         resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         val flags =
             if (Build.VERSION.SDK_INT > 30)

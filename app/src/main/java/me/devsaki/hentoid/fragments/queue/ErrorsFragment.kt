@@ -30,7 +30,7 @@ import com.mikepenz.fastadapter.select.getSelectExtension
 import com.mikepenz.fastadapter.swipe.SimpleSwipeDrawerCallback
 import io.reactivex.disposables.CompositeDisposable
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.QueueActivityK
+import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentQueueErrorsBinding
 import me.devsaki.hentoid.events.ProcessEvent
@@ -52,8 +52,8 @@ import java.util.*
 /**
  * Presents the list of downloads with errors
  */
-class ErrorsFragmentK : Fragment(R.layout.fragment_queue_errors), ItemTouchCallback,
-    ErrorsDialogFragmentK.Parent, SimpleSwipeDrawerCallback.ItemSwipeCallback {
+class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallback,
+    ErrorsDialogFragment.Parent, SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     // == UI
     private var _binding: FragmentQueueErrorsBinding? = null
@@ -64,7 +64,7 @@ class ErrorsFragmentK : Fragment(R.layout.fragment_queue_errors), ItemTouchCallb
     private lateinit var viewModel: QueueViewModelK
 
     // Activity
-    private lateinit var activity: WeakReference<QueueActivityK>
+    private lateinit var activity: WeakReference<QueueActivity>
 
 
     // == FASTADAPTER COMPONENTS AND HELPERS
@@ -97,8 +97,8 @@ class ErrorsFragmentK : Fragment(R.layout.fragment_queue_errors), ItemTouchCallb
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        check(requireActivity() is QueueActivityK) { "Parent activity has to be a QueueActivity" }
-        activity = WeakReference(requireActivity() as QueueActivityK)
+        check(requireActivity() is QueueActivity) { "Parent activity has to be a QueueActivity" }
+        activity = WeakReference(requireActivity() as QueueActivity)
 
         listRefreshDebouncer = Debouncer(context, 75)
         { topItemPosition: Int -> this.onRecyclerUpdated(topItemPosition) }
@@ -426,7 +426,7 @@ class ErrorsFragmentK : Fragment(R.layout.fragment_queue_errors), ItemTouchCallb
     }
 
     private fun showErrorLogDialog(content: Content) {
-        ErrorsDialogFragmentK.invoke(this, content.id)
+        ErrorsDialogFragment.invoke(this, content.id)
     }
 
     private fun onErrorsChanged(result: List<Content>) {

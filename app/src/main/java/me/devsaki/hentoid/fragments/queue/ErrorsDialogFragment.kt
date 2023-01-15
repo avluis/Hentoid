@@ -24,7 +24,7 @@ import me.devsaki.hentoid.util.file.FileHelper
  */
 const val ID = "ID"
 
-class ErrorsDialogFragmentK : DialogFragment(R.layout.dialog_library_errors) {
+class ErrorsDialogFragment : DialogFragment(R.layout.dialog_library_errors) {
 
     // == UI
     private var _binding: DialogLibraryErrorsBinding? = null
@@ -133,7 +133,7 @@ class ErrorsDialogFragmentK : DialogFragment(R.layout.dialog_library_errors) {
 
     companion object {
         fun invoke(parentFragment: Fragment, id: Long) {
-            val fragment = ErrorsDialogFragmentK()
+            val fragment = ErrorsDialogFragment()
 
             val args = Bundle()
             args.putLong(ID, id)
@@ -141,16 +141,6 @@ class ErrorsDialogFragmentK : DialogFragment(R.layout.dialog_library_errors) {
 
             fragment.show(parentFragment.childFragmentManager, null)
         }
-        /*
-        fun invoke(fragmentManager: FragmentManager, id: Long) {
-            val fragment = ErrorsDialogFragmentK()
-            val args = Bundle()
-            args.putLong(ID, id)
-            fragment.arguments = args
-            fragment.show(fragmentManager, null)
-        }
-
-         */
     }
 
     interface Parent {

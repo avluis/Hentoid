@@ -28,7 +28,7 @@ import java.util.*
 /**
  * Info dialog for download errors details
  */
-class ErrorStatsDialogFragmentK : DialogFragment(R.layout.dialog_queue_errors) {
+class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
     // == UI
     private var _binding: DialogQueueErrorsBinding? = null
     private val binding get() = _binding!!
@@ -167,7 +167,7 @@ class ErrorStatsDialogFragmentK : DialogFragment(R.layout.dialog_queue_errors) {
 
     companion object {
         fun invoke(fragmentManager: FragmentManager, id: Long) {
-            val fragment = ErrorStatsDialogFragmentK()
+            val fragment = ErrorStatsDialogFragment()
 
             val args = Bundle()
             args.putLong(ID, id)

@@ -140,7 +140,7 @@
                 android:resource="@xml/searchable" />
         </activity>
         <activity
-            android:name=".activities.QueueActivityK"
+            android:name=".activities.QueueActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_queue"
             android:parentActivityName=".activities.LibraryActivity"

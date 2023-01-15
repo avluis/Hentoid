@@ -73,7 +73,7 @@ import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.MissingWebViewActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
-import me.devsaki.hentoid.activities.QueueActivityK;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
@@ -1073,7 +1073,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * Take the user to the queue screen
      */
     private void goToQueue() {
-        Intent intent = new Intent(this, QueueActivityK.class);
+        Intent intent = new Intent(this, QueueActivity.class);
 
         if (currentContent != null) {
             QueueActivityBundle builder = new QueueActivityBundle();
