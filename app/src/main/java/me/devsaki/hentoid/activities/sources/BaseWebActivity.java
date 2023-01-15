@@ -73,7 +73,6 @@ import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.MissingWebViewActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
-import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.QueueActivityK;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.PrefsBundle;

@@ -88,7 +88,6 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.MetadataEditActivity;
-import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.QueueActivityK;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
