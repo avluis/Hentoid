@@ -315,7 +315,7 @@
     },
     {
       "id": "4:3086874109297661629",
-      "lastPropertyId": "4:1209356155950397260",
+      "lastPropertyId": "5:5044275535899232012",
       "name": "QueueRecord",
       "properties": [
         {
@@ -336,6 +336,11 @@
           "type": 11,
           "flags": 520,
           "relationTarget": "Content"
+        },
+        {
+          "id": "5:5044275535899232012",
+          "name": "frozen",
+          "type": 1
         }
       ],
       "relations": []

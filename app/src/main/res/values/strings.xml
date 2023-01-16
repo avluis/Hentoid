@@ -36,6 +36,7 @@
     <string name="resume">Resume</string>
     <string name="cancel">Cancel</string>
     <string name="cancel_all">Cancel all</string>
+    <string name="freeze">Toggle freeze</string>
     <string name="menu_completed_single">Mark as completed</string>
     <string name="menu_reset_read">Mark as unread</string>
     <string name="service_running">Service is already running</string>

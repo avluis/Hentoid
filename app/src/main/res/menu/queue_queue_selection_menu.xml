@@ -28,6 +28,11 @@
         android:tooltipText="@string/menu_change_dl_mode"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_freeze"
+        android:icon="@drawable/ic_action_freeze_toggle"
+        android:title="@string/freeze"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_select_queue_cancel"
         android:icon="@drawable/ic_action_delete"
         android:title="@string/cancel"

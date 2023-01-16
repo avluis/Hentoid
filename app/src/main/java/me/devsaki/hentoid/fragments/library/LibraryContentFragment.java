@@ -249,7 +249,7 @@ public class LibraryContentFragment extends Fragment implements
 
     }).build();
 
-    // The one for "classic" List (paged mode)
+    // The one for "legacy" List (paged mode)
     public static final DiffCallback<ContentItem> CONTENT_ITEM_DIFF_CALLBACK = new DiffCallback<ContentItem>() {
         @Override
         public boolean areItemsTheSame(ContentItem oldItem, ContentItem newItem) {
@@ -258,7 +258,11 @@ public class LibraryContentFragment extends Fragment implements
 
         @Override
         public boolean areContentsTheSame(ContentItem oldContentItem, ContentItem newContentItem) {
-            return Objects.equals(oldContentItem.getContent(), newContentItem.getContent());
+            boolean result = Objects.equals(oldContentItem.getContent(), newContentItem.getContent());
+            if (oldContentItem.getQueueRecord() != null && newContentItem.getQueueRecord() != null) {
+                result &= oldContentItem.getQueueRecord().isFrozen() == newContentItem.getQueueRecord().isFrozen();
+            }
+            return result;
         }
 
         @Override
@@ -293,6 +297,11 @@ public class LibraryContentFragment extends Fragment implements
             }
             if (oldItem.getDownloadMode() != newItem.getDownloadMode()) {
                 diffBundleBuilder.setDownloadMode(newItem.getDownloadMode());
+            }
+            if (oldContentItem.getQueueRecord() != null
+                    && newContentItem.getQueueRecord() != null
+                    && oldContentItem.getQueueRecord().isFrozen() != newContentItem.getQueueRecord().isFrozen()) {
+                diffBundleBuilder.setFrozen(newContentItem.getQueueRecord().isFrozen());
             }
 
             if (diffBundleBuilder.isEmpty()) return null;

@@ -25,7 +25,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.mikepenz.fastadapter.FastAdapter
-import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
@@ -63,7 +62,7 @@ import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
-import me.devsaki.hentoid.viewmodels.QueueViewModelK
+import me.devsaki.hentoid.viewmodels.QueueViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.build
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
@@ -93,7 +92,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     // === COMMUNICATION
     private var callback: OnBackPressedCallback? = null
-    private lateinit var viewModel: QueueViewModelK
+    private lateinit var viewModel: QueueViewModel
 
     // Activity
     private lateinit var activity: WeakReference<QueueActivity>
@@ -208,17 +207,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         }
         val helper = FastAdapterPreClickSelectHelper(selectExtension)
         fastAdapter.onPreClickListener =
-            { v: View?, adapter: IAdapter<ContentItem>?, item: ContentItem, position: Int? ->
-                helper.onPreClickListener(
-                    v, adapter, item, position
-                )
-            }
+            { v, adapter, item, pos -> helper.onPreClickListener(v, adapter, item, pos) }
         fastAdapter.onPreLongClickListener =
-            { v: View?, adapter: IAdapter<ContentItem>?, item: ContentItem, position: Int? ->
-                helper.onPreLongClickListener(
-                    v, adapter, item, position
-                )
-            }
+            { v, adapter, item, pos -> helper.onPreLongClickListener(v, adapter, item, pos) }
 
         binding.queueList.adapter = fastAdapter
         binding.queueList.setHasFixedSize(true)
@@ -245,10 +236,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         // Item click listener
 
         // Item click listener
-        fastAdapter.onClickListener =
-            { _: View?, _: IAdapter<ContentItem>?, i: ContentItem, _: Int ->
-                onItemClick(i)
-            }
+        fastAdapter.onClickListener = { _, _, i, _ -> onItemClick(i) }
 
         initToolbar()
         initSelectionToolbar()
@@ -342,15 +330,13 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                             requireContext(), R.style.Theme_Light_Dialog
                         )
                     ).setIcon(R.drawable.ic_warning).setCancelable(false)
-                        .setTitle(R.string.app_name).setMessage(R.string.confirm_cancel_all)
-                        .setPositiveButton(
-                            R.string.yes
-                        ) { dialog1, _ ->
+                        .setTitle(R.string.app_name)
+                        .setMessage(R.string.confirm_cancel_all)
+                        .setPositiveButton(R.string.yes) { dialog1, _ ->
                             dialog1.dismiss()
                             onCancelAll()
-                        }.setNegativeButton(
-                            R.string.no
-                        ) { dialog12, _ -> dialog12.dismiss() }.create().show()
+                        }.setNegativeButton(R.string.no) { dialog12, _ -> dialog12.dismiss() }
+                        .create().show()
                 true
             }
             it.menu.findItem(R.id.action_queue_prefs).setOnMenuItemClickListener {
@@ -459,7 +445,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val vmFactory = ViewModelFactory(requireActivity().application)
-        viewModel = ViewModelProvider(requireActivity(), vmFactory)[QueueViewModelK::class.java]
+        viewModel = ViewModelProvider(requireActivity(), vmFactory)[QueueViewModel::class.java]
         viewModel.getQueue().observe(viewLifecycleOwner) { result: List<QueueRecord> ->
             onQueueChanged(result)
         }
@@ -730,9 +716,10 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 onCancelSwipedBook(item)
             }
         }.distinct()
-        if (newSearch) itemAdapter.setNewList(contentItems, false) else set(
-            itemAdapter, contentItems, LibraryContentFragment.CONTENT_ITEM_DIFF_CALLBACK
-        )
+
+        if (newSearch) itemAdapter.setNewList(contentItems, false)
+        else set(itemAdapter, contentItems, LibraryContentFragment.CONTENT_ITEM_DIFF_CALLBACK)
+
         Handler(Looper.getMainLooper()).postDelayed({ differEndCallback() }, 150)
         updateControlBar()
 
@@ -1024,8 +1011,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 if (selectedContent.isNotEmpty()) askDeleteSelected(selectedContent)
             }
             R.id.action_select_queue_top -> {
-                selectedPositions =
-                    selectedItems.map { item -> fastAdapter.getPosition(item) }.sorted()
+                selectedPositions = selectedItems.map { i -> fastAdapter.getPosition(i) }.sorted()
                 selectExtension.apply {
                     deselect(selections.toMutableSet())
                 }
@@ -1036,16 +1022,14 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 }
             }
             R.id.action_select_queue_bottom -> {
-                selectedPositions =
-                    selectedItems.map { item -> fastAdapter.getPosition(item) }.sorted()
+                selectedPositions = selectedItems.map { i -> fastAdapter.getPosition(i) }.sorted()
                 selectExtension.apply {
                     deselect(selections.toMutableSet())
                 }
-                if (selectedPositions.isNotEmpty()) processMove(
-                    selectedPositions
-                ) { relativePositions: List<Int> ->
-                    viewModel.moveBottom(relativePositions)
-                }
+                if (selectedPositions.isNotEmpty())
+                    processMove(selectedPositions) { relativePositions: List<Int> ->
+                        viewModel.moveBottom(relativePositions)
+                    }
             }
             R.id.action_download_scratch -> {
                 askRedownloadSelectedScratch()
@@ -1061,6 +1045,13 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     },
                     { leaveSelectionMode() }
                 )
+            }
+            R.id.action_freeze -> {
+                val selectedIds = selectedItems.mapNotNull { i -> i.queueRecord?.id }
+                selectExtension.apply {
+                    deselect(selections.toMutableSet())
+                }
+                if (selectedIds.isNotEmpty()) viewModel.toogleFreeze(selectedIds)
             }
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)

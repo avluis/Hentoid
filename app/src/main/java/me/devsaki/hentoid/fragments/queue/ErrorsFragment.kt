@@ -38,7 +38,7 @@ import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.util.*
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
-import me.devsaki.hentoid.viewmodels.QueueViewModelK
+import me.devsaki.hentoid.viewmodels.QueueViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
@@ -61,7 +61,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
 
     // === COMMUNICATION
     private var callback: OnBackPressedCallback? = null
-    private lateinit var viewModel: QueueViewModelK
+    private lateinit var viewModel: QueueViewModel
 
     // Activity
     private lateinit var activity: WeakReference<QueueActivity>
@@ -200,7 +200,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val vmFactory = ViewModelFactory(requireActivity().application)
-        viewModel = ViewModelProvider(requireActivity(), vmFactory)[QueueViewModelK::class.java]
+        viewModel = ViewModelProvider(requireActivity(), vmFactory)[QueueViewModel::class.java]
         viewModel.getErrors().observe(viewLifecycleOwner)
         { result: List<Content> -> onErrorsChanged(result) }
         viewModel.getContentHashToShowFirst().observe(viewLifecycleOwner)

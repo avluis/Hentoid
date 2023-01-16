@@ -13,6 +13,9 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -37,7 +40,7 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 
 
-class QueueViewModelK(
+class QueueViewModel(
     application: Application,
     private val dao: CollectionDAO
 ) : AndroidViewModel(application) {
@@ -393,15 +396,17 @@ class QueueViewModelK(
         contentHashToShowFirst.value = hash
     }
 
-    fun setDownloadMode(contentIds: List<Long>?, downloadMode: Int) {
+    fun setDownloadMode(contentIds: List<Long>, downloadMode: Int) {
         compositeDisposable.add(
             Observable.fromIterable(contentIds)
                 .observeOn(Schedulers.io())
-                .map { id: Long? ->
-                    doSetDownloadMode(
-                        id,
-                        downloadMode
-                    )
+                .map { id: Long ->
+                    doSetDownloadMode(id, downloadMode)
+                }
+                .doOnComplete { -> // Update queue JSON
+                    ContentHelper.updateQueueJson(getApplication(), dao)
+                    // Force display by updating queue
+                    dao.updateQueue(dao.selectQueue())
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -410,21 +415,32 @@ class QueueViewModelK(
         )
     }
 
-    private fun doSetDownloadMode(contentId: Long?, downloadMode: Int): Content? {
+    private fun doSetDownloadMode(contentId: Long, downloadMode: Int): Content? {
         Helper.assertNonUiThread()
 
         // Check if given content still exists in DB
-        val theContent = dao.selectContent(contentId!!)
+        val theContent = dao.selectContent(contentId)
         if (theContent != null && !theContent.isBeingDeleted) {
             theContent.downloadMode = downloadMode
             // Persist in it DB
             dao.insertContent(theContent)
-            // Update queue JSON
-            ContentHelper.updateQueueJson(getApplication(), dao)
-            // Force display by updating queue
-            dao.updateQueue(dao.selectQueue())
         }
         return theContent
     }
 
+    fun toogleFreeze(recordId: List<Long>) {
+        runBlocking {
+            launch(Dispatchers.IO) {
+                Helper.assertNonUiThread() // TODO
+
+                val queue = dao.selectQueue()
+                queue.forEach {
+                    if (recordId.contains(it.id)) it.isFrozen = !it.isFrozen
+                }
+                dao.updateQueue(queue)
+                // Update queue JSON
+                ContentHelper.updateQueueJson(getApplication(), dao)
+            }
+        }
+    }
 }

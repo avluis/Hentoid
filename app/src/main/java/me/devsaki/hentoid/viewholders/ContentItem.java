@@ -82,6 +82,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     private final Content content;
+
+    private final QueueRecord queueRecord;
     private final @ViewType
     int viewType;
     private final boolean isSearchActive;
@@ -117,6 +119,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     // Constructor for empty placeholder
     public ContentItem(@ViewType int viewType) {
         content = null;
+        queueRecord = null;
         isSearchActive = false;
         this.viewType = viewType;
         touchHelper = null;
@@ -132,6 +135,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             @ViewType int viewType,
             @Nullable final Consumer<ContentItem> deleteAction) {
         this.content = content;
+        queueRecord = null;
         isSearchActive = false;
         this.viewType = viewType;
         this.touchHelper = touchHelper;
@@ -149,6 +153,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             ItemTouchHelper touchHelper,
             @Nullable final Consumer<ContentItem> deleteAction) {
         content = record.getContent().getTarget();
+        queueRecord = record;
         viewType = ViewType.QUEUE;
         this.isSearchActive = isSearchActive;
         this.touchHelper = touchHelper;
@@ -163,6 +168,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     @Nullable
     public Content getContent() {
         return content;
+    }
+
+    @Nullable
+    public QueueRecord getQueueRecord() {
+        return queueRecord;
     }
 
     @NotNull
@@ -333,6 +343,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (stringValue != null) item.content.setTitle(stringValue);
                 intValue = bundleParser.getDownloadMode();
                 if (intValue != null) item.content.setDownloadMode(intValue);
+                boolValue = bundleParser.getFrozen();
+                if (boolValue != null) item.queueRecord.setFrozen(boolValue);
             }
             debugStr = "objectBox ID=" + item.content.getId() + "; site ID=" + item.content.getUniqueSiteId() + "; hashCode=" + item.content.hashCode();
 
@@ -353,7 +365,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             updateLayoutVisibility(item);
             attachCover(item.content);
             attachFlag(item.content);
-            attachTitle(item.content);
+            attachTitle(item.content, item.queueRecord);
 
             if (ivCompleted != null)
                 attachCompleted(item.content);
@@ -428,7 +440,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
         }
 
-        private void attachTitle(@NonNull final Content content) {
+        private void attachTitle(@NonNull final Content content, final QueueRecord queueRecord) {
             CharSequence title;
             if (content.getTitle() == null) {
                 title = tvTitle.getContext().getText(R.string.work_untitled);
@@ -436,7 +448,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 title = content.getTitle();
             }
             tvTitle.setText(title);
-            tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
+
+            int colorId = R.color.card_title_light;
+            if (queueRecord != null && queueRecord.isFrozen()) colorId = R.color.frozen_blue;
+            tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), colorId));
         }
 
         private void attachCompleted(@NonNull final Content content) {

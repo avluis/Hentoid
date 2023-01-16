@@ -30,5 +30,7 @@ class ContentItemBundle(val bundle: Bundle = Bundle()) {
 
     var downloadMode by bundle.int()
 
+    var frozen by bundle.boolean()
+
     val isEmpty get() = bundle.isEmpty
 }

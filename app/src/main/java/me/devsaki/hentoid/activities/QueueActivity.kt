@@ -39,7 +39,7 @@ import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.notification.NotificationManager
-import me.devsaki.hentoid.viewmodels.QueueViewModelK
+import me.devsaki.hentoid.viewmodels.QueueViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
 import org.greenrobot.eventbus.EventBus
@@ -53,7 +53,7 @@ import kotlin.math.roundToInt
 class QueueActivity : BaseActivity() {
 
     // == Communication
-    private lateinit var viewModel: QueueViewModelK
+    private lateinit var viewModel: QueueViewModel
 
     // == UI
     private var binding: ActivityQueueBinding? = null
@@ -103,7 +103,7 @@ class QueueActivity : BaseActivity() {
         }
 
         val vmFactory = ViewModelFactory(application)
-        viewModel = ViewModelProvider(this, vmFactory)[QueueViewModelK::class.java]
+        viewModel = ViewModelProvider(this, vmFactory)[QueueViewModel::class.java]
         viewModel.getQueue().observe(this) { onQueueChanged(it) }
         viewModel.getErrors().observe(this) { onErrorsChanged(it) }
 
