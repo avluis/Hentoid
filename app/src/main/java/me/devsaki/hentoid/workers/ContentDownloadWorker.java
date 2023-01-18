@@ -263,7 +263,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         if (null == content) {
-            Timber.i("No available Content to download. Queue paused.");
+            Timber.i("No available downloads remaining. Queue paused.");
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_AVAILABLE_DOWNLOADS, spaceLeftBytes));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }

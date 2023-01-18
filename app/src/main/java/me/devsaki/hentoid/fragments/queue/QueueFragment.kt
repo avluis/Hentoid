@@ -117,6 +117,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
 
     // === VARIABLES
+    // Currenty content ID
+    private var contentId = -1L
+
     // Current text search query
     private var query = ""
 
@@ -218,14 +221,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         FastScrollerBuilder(binding.queueList).build()
 
         // Drag, drop & swiping
-        val dragSwipeCallback = SimpleSwipeDrawerDragCallback(
-            this,
-            ItemTouchHelper.LEFT,
-            this
-        ).withSwipeLeft(Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list))
-            .withSensitivity(1.5f).withSurfaceThreshold(0.3f).withNotifyAllDrops(true)
+        val dragSwipeCallback = SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
+            .withSwipeLeft(Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list))
+            .withSensitivity(1.5f)
+            .withSurfaceThreshold(0.3f)
+            .withNotifyAllDrops(true)
         dragSwipeCallback.setIsDragEnabled(false) // Despite its name, that's actually to disable drag on long tap
-
 
         touchHelper = ItemTouchHelper(dragSwipeCallback)
         touchHelper.attachToRecyclerView(binding.queueList)
@@ -444,17 +445,10 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         viewModel.getQueue().observe(viewLifecycleOwner) { result: List<QueueRecord> ->
             onQueueChanged(result)
         }
-        viewModel.getContentHashToShowFirst().observe(viewLifecycleOwner) { contentHash: Long ->
-            onContentHashToShowFirstChanged(contentHash)
+        viewModel.getContentHashToShowFirst().observe(viewLifecycleOwner) { hash: Long ->
+            contentHashToDisplayFirst = hash
         }
-        viewModel.getNewSearch().observe(viewLifecycleOwner) { b: Boolean -> onNewSearch(b) }
-    }
-
-    /**
-     * LiveData callback when a new search takes place
-     */
-    private fun onNewSearch(value: Boolean) {
-        newSearch = value
+        viewModel.getNewSearch().observe(viewLifecycleOwner) { b: Boolean -> newSearch = b }
     }
 
     /**
@@ -475,6 +469,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 event.content
             )
             DownloadEvent.Type.EV_PROGRESS -> updateProgress(
+                event.content,
                 event.pagesOK,
                 event.pagesKO,
                 event.pagesTotal,
@@ -621,6 +616,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      * @param forceDisplay    True to force display even if the queue is paused
      */
     private fun updateProgress(
+        content: Content,
         pagesOK: Int,
         pagesKO: Int,
         totalPages: Int,
@@ -629,20 +625,22 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         forceDisplay: Boolean
     ) {
         if ((!ContentQueueManager.getInstance().isQueuePaused || forceDisplay) && itemAdapter.adapterItemCount > 0) {
-            val content = itemAdapter.getAdapterItem(0).content
-
+            contentId = content.id
             // Pages download has started
-            if (content != null && (pagesKO + pagesOK > 1 || forceDisplay)) {
+            if (pagesKO + pagesOK > 1 || forceDisplay) {
                 // Downloader reports about the cover thumbnail too
                 // Display one less page to avoid confusing the user
                 val totalPagesDisplay = max(0, totalPages - 1)
                 val pagesOKDisplay = max(0, pagesOK - 1)
 
                 // Update book progress bar
-                content.setProgress(pagesOKDisplay.toLong() + pagesKO)
-                content.setDownloadedBytes(downloadedSizeB)
-                content.qtyPages = totalPagesDisplay
-                updateProgress(content, false)
+                // NB : use the instance _inside the adapter_ to pass values
+                fastAdapter.getItemById(content.uniqueHash())?.first?.content?.let { c ->
+                    c.setProgress(pagesOKDisplay.toLong() + pagesKO)
+                    c.setDownloadedBytes(downloadedSizeB)
+                    c.qtyPages = totalPagesDisplay
+                    updateProgress(content, false)
+                }
 
                 // Update information bar
                 val message = StringBuilder()
@@ -680,21 +678,24 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      * @param eventType Event type that triggered the update, if any (See types described in DownloadEvent); -1 if none
      */
     private fun update(eventType: Int) {
-        val bookDiff =
-            if (eventType == DownloadEvent.Type.EV_CANCEL) 1 else 0 // Cancel event means a book will be removed very soon from the queue
+        // Cancel event means a book will be removed very soon from the queue
+        val bookDiff = if (eventType == DownloadEvent.Type.EV_CANCEL) 1 else 0
         isEmpty = 0 == itemAdapter.adapterItemCount - bookDiff
-        isPaused =
-            !isEmpty && (eventType == DownloadEvent.Type.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused || !ContentQueueManager.getInstance()
-                .isQueueActive(requireActivity()))
+        isPaused = !isEmpty && (
+                eventType == DownloadEvent.Type.EV_PAUSE
+                        || ContentQueueManager.getInstance().isQueuePaused
+                        || !ContentQueueManager.getInstance().isQueueActive(requireActivity())
+                )
         updateControlBar()
     }
 
     private fun onQueueChanged(result: List<QueueRecord>) {
         Timber.d(">>Queue changed ! Size=%s", result.size)
         isEmpty = result.isEmpty()
-        isPaused =
-            !isEmpty && (ContentQueueManager.getInstance().isQueuePaused || !ContentQueueManager.getInstance()
-                .isQueueActive(requireActivity()))
+        isPaused = !isEmpty && (
+                ContentQueueManager.getInstance().isQueuePaused
+                        || !ContentQueueManager.getInstance().isQueueActive(requireActivity())
+                )
 
         // Don't process changes while everything is being canceled, it usually kills the UI as too many changes are processed at the same time
         if (isCancelingAll && !isEmpty) return
@@ -724,11 +725,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             viewLifecycleOwner
         )
         newSearch = false
-    }
-
-    private fun onContentHashToShowFirstChanged(contentHash: Long) {
-        Timber.d(">>onContentIdToShowFirstChanged %s", contentHash)
-        contentHashToDisplayFirst = contentHash
     }
 
     /**
@@ -765,12 +761,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         ) // Used to restore position after activity has been stopped and recreated
     }
 
-    private fun updateControlBar() {
-        updateControlBar(DownloadEvent.Step.NONE)
-    }
-
     private fun updateControlBar(
-        @DownloadEvent.Step preparationStep: Int,
+        @DownloadEvent.Step preparationStep: Int = DownloadEvent.Step.NONE,
         log: String? = null,
         content: Content? = null
     ) {
@@ -796,9 +788,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             if (isActive) {
                 it.btnPause.visibility = View.VISIBLE
                 it.btnStart.visibility = View.GONE
-                if (content != null) bottomBarBinding.queueStatus.text = resources.getString(
-                    R.string.queue_dl, content.title
-                )
+                if (content != null)
+                    it.queueStatus.text = resources.getString(R.string.queue_dl, content.title)
 
                 // Stop blinking animation, if any
                 it.queueInfo.clearAnimation()
@@ -807,9 +798,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 it.btnPause.visibility = View.GONE
                 if (isEmpty) {
                     it.btnStart.visibility = View.GONE
-                    val errorStatsMenu =
-                        activity.get()?.getToolbar()?.menu?.findItem(R.id.action_error_stats)
-                    errorStatsMenu?.isVisible = false
+                    activity.get()
+                        ?.getToolbar()?.menu?.findItem(R.id.action_error_stats)?.isVisible = false
                     it.queueStatus.text = ""
                 } else if (isPaused) {
                     it.btnStart.visibility = View.VISIBLE
@@ -826,22 +816,25 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     private fun showErrorStats() {
         if (itemAdapter.adapterItemCount > 0) {
-            val c = itemAdapter.getAdapterItem(0).content
-            if (c != null) ErrorStatsDialogFragment.invoke(parentFragmentManager, c.id)
+            if (contentId > -1) ErrorStatsDialogFragment.invoke(parentFragmentManager, contentId)
         }
     }
 
     private fun updateProgress(isPausedevent: Boolean) {
         itemAdapter.adapterItems.forEach {
-            it.content?.let { c -> updateProgress(c, isPausedevent) }
+            it.content?.let { c -> updateProgress(c, isPausedevent, false) }
         }
     }
 
-    private fun updateProgress(content: Content, isPausedevent: Boolean) {
+    private fun updateProgress(
+        content: Content,
+        isPausedevent: Boolean,
+        isIndividual: Boolean = true
+    ) {
         fastAdapter.getItemById(content.uniqueHash())?.first?.updateProgress(
             binding.queueList.findViewHolderForItemId(content.uniqueHash()),
             isPausedevent,
-            ContentQueueManager.getInstance().isQueueActive(requireActivity())
+            isIndividual
         )
     }
 
@@ -910,8 +903,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     private fun onCancelComplete() {
         isCancelingAll = false
         viewModel.refresh()
-        if (selectExtension.selections.isEmpty())
-            updateSelectionToolbarVis(false)
+        if (selectExtension.selections.isEmpty()) updateSelectionToolbarVis(false)
     }
 
     /**
@@ -934,8 +926,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     private fun recordMoveFromFirstPos(positions: List<Int>) {
         // Only useful when moving the 1st item to the bottom
-        if (positions.isNotEmpty() && 0 == positions[0]) itemToRefreshIndex =
-            itemAdapter.adapterItemCount - positions.size
+        if (positions.isNotEmpty() && 0 == positions[0])
+            itemToRefreshIndex = itemAdapter.adapterItemCount - positions.size
     }
 
     override fun itemTouchOnMove(oldPosition: Int, newPosition: Int): Boolean {
@@ -1160,8 +1152,13 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     reparseContent = true,
                     reparseImages = true
                 )
-                // If the 1st item is selected, visually reset its progress
-                if (selectExtension.selections.contains(0)) updateProgress(0, 0, 1, 0, 0, true)
+
+                // Visually reset the progress of selected items
+                selectedItems.forEach {
+                    if (it.content != null)
+                        updateProgress(it.content!!, 0, 0, 1, 0, 0, true)
+                }
+
                 selectExtension.apply {
                     deselect(selections.toMutableSet())
                 }

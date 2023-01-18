@@ -221,8 +221,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         else return null;
     }
 
-    public void updateProgress(RecyclerView.ViewHolder vh, boolean isPausedEvent, boolean isContentQueueActive) {
-        boolean isQueueReady = isContentQueueActive && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
+    public void updateProgress(RecyclerView.ViewHolder vh, boolean isPausedEvent, boolean isIndividual) {
+        boolean isQueueReady = ContentQueueManager.getInstance().isQueueActive(vh.itemView.getContext())
+                && !ContentQueueManager.getInstance().isQueuePaused()
+                && !isPausedEvent;
 
         content.computeProgress();
         content.computeDownloadedBytes();
@@ -230,14 +232,14 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         ProgressBar pb = vh.itemView.findViewById(R.id.pbDownload);
         if (isQueueReady || content.getPercent() > 0) {
             TextView tvPages = vh.itemView.findViewById(R.id.tvPages);
-            pb.setVisibility(View.VISIBLE);
             if (content.getPercent() > 0) {
                 pb.setIndeterminate(false);
                 pb.setMax(100);
                 pb.setProgress((int) (content.getPercent() * 100));
+                pb.setVisibility(View.VISIBLE);
 
                 int color;
-                if (isQueueReady)
+                if (isQueueReady && isIndividual)
                     color = ThemeHelper.getColor(pb.getContext(), R.color.secondary_light);
                 else
                     color = ContextCompat.getColor(pb.getContext(), R.color.medium_gray);
@@ -254,14 +256,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                     pagesText = pagesText + "; " + pb.getContext().getResources().getString(R.string.queue_content_size_estimate, content.getBookSizeEstimate() / (1024 * 1024));
                     tvPages.setText(pagesText);
                 }
-            } else {
-                if (isQueueReady) {
-                    pb.setIndeterminate(true);
-                    // fixes <= Lollipop progressBar tinting
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
-                } else pb.setVisibility(View.GONE);
-            }
+            } else if (isQueueReady) {
+                pb.setVisibility(isIndividual ? View.VISIBLE : View.GONE);
+                pb.setIndeterminate(true);
+                // fixes <= Lollipop progressBar tinting
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                    pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
+            } else pb.setVisibility(View.GONE);
         } else {
             pb.setVisibility(View.GONE);
         }
@@ -423,7 +424,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             attachButtons(item);
 
             if (progressBar != null)
-                item.updateProgress(this, false, ContentQueueManager.getInstance().isQueueActive(baseLayout.getContext()));
+                item.updateProgress(this, false, true);
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
         }

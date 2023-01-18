@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.events;
 
 /**
- * Tracks download preparation events for interested subscribers.
+ * Tracks download preparation events (parsing events) for interested subscribers.
  */
 public class DownloadPreparationEvent {
     public final long contentId;// ID of the corresponding content (<=0 if not defined)
