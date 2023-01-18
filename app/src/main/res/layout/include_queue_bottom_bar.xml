@@ -62,7 +62,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/vertical_barrier"
         app:layout_constraintTop_toTopOf="@id/horizontal_barrier"
-        tools:text="@string/app_intro" />
+        tools:text="Downloading BOOK TITLE" />
 
     <TextView
         android:id="@+id/queueInfo"
@@ -73,7 +73,7 @@
         app:layout_constraintEnd_toEndOf="@id/queueStatus"
         app:layout_constraintStart_toStartOf="@id/queueStatus"
         app:layout_constraintTop_toBottomOf="@id/queueStatus"
-        tools:text="@string/app_intro" />
+        tools:text="In progress (25/5644 pages) [1 error]" />
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/horizontal_barrier"
