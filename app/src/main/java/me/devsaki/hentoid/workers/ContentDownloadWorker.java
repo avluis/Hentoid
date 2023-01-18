@@ -188,7 +188,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         Context context = getApplicationContext();
 
-        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT));
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null));
 
         // Clear previously created requests
         compositeDisposable.clear();
@@ -292,7 +292,7 @@ public class ContentDownloadWorker extends BaseWorker {
         boolean hasError = false;
         int nbErrors = 0;
 
-        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PROCESS_IMG));
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PROCESS_IMG, content));
 
         List<ImageFile> images = content.getImageFiles();
         if (null == images)
@@ -307,7 +307,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 || nbErrors == images.size()
                 || (nbErrors > 0 && content.getSite().hasBackupURLs())
         ) {
-            EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.FETCH_IMG));
+            EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.FETCH_IMG, content));
             try {
                 List<ImageFile> newImages = ContentHelper.fetchImageURLs(content, targetImageStatus);
                 // Cases 1 and 2 : Replace existing images with the parsed images
@@ -378,7 +378,7 @@ public class ContentDownloadWorker extends BaseWorker {
         if (downloadInterrupted.get())
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
-        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER));
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER, content));
 
         // Create destination folder for images to be downloaded
         DocumentFile dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content, false, null);
@@ -416,7 +416,7 @@ public class ContentDownloadWorker extends BaseWorker {
         // Wait until the end of purge if the content is being purged (e.g. redownload from scratch)
         boolean isBeingDeleted = content.isBeingDeleted();
         if (isBeingDeleted)
-            EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.WAIT_PURGE));
+            EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.WAIT_PURGE, content));
         while (content.isBeingDeleted()) {
             Timber.d("Waiting for purge to complete");
             content = dao.selectContent(content.getId());
@@ -431,7 +431,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         // == DOWNLOAD PHASE ==
 
-        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_DOWNLOAD));
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_DOWNLOAD, content));
 
         // Set up downloader constraints
         if (content.getSite().getParallelDownloadCap() > 0 &&
@@ -519,13 +519,13 @@ public class ContentDownloadWorker extends BaseWorker {
             }
         }
 
-        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.SAVE_QUEUE));
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.SAVE_QUEUE, content));
 
         if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
             Timber.i(context.getString(R.string.queue_json_saved));
         else Timber.w(context.getString(R.string.queue_json_failed));
 
-        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.START_DOWNLOAD));
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.START_DOWNLOAD, content));
 
         return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);
     }
@@ -673,7 +673,7 @@ public class ContentDownloadWorker extends BaseWorker {
             return;
         }
 
-        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.COMPLETE_DOWNLOAD));
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.COMPLETE_DOWNLOAD, content));
 
         if (!downloadInterrupted.get()) {
             List<ImageFile> images = content.getImageFiles();
@@ -780,7 +780,7 @@ public class ContentDownloadWorker extends BaseWorker {
                             }
                         }
 
-                        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.REMOVE_DUPLICATE));
+                        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.REMOVE_DUPLICATE, content));
                         try {
                             ContentHelper.removeContent(getApplicationContext(), dao, contentToReplace);
                         } catch (ContentNotProcessedException e) {

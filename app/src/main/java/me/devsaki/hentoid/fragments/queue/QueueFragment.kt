@@ -469,7 +469,11 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         errorStatsMenu?.isVisible = event.pagesKO > 0
         displayMotive(event)
         when (event.eventType) {
-            DownloadEvent.Type.EV_PREPARATION -> updateControlBar(event.step, event.log)
+            DownloadEvent.Type.EV_PREPARATION -> updateControlBar(
+                event.step,
+                event.log,
+                event.content
+            )
             DownloadEvent.Type.EV_PROGRESS -> updateProgress(
                 event.pagesOK,
                 event.pagesKO,
@@ -671,17 +675,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     }
 
     /**
-     * Update book title in bottom progress panel
-     */
-    private fun updateBookTitle() {
-        if (0 == itemAdapter.adapterItemCount) return
-        val content = itemAdapter.getAdapterItem(0).content ?: return
-        bottomBarBinding.queueStatus.text = resources.getString(
-            R.string.queue_dl, content.title
-        )
-    }
-
-    /**
      * Update the entire Download queue screen
      *
      * @param eventType Event type that triggered the update, if any (See types described in DownloadEvent); -1 if none
@@ -773,10 +766,14 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     }
 
     private fun updateControlBar() {
-        updateControlBar(DownloadEvent.Step.NONE, null)
+        updateControlBar(DownloadEvent.Step.NONE)
     }
 
-    private fun updateControlBar(@DownloadEvent.Step preparationStep: Int, log: String?) {
+    private fun updateControlBar(
+        @DownloadEvent.Step preparationStep: Int,
+        log: String? = null,
+        content: Content? = null
+    ) {
         val isActive = !isEmpty && !isPaused
         Timber.d(
             "Queue state : E/P/A > %s/%s/%s -- %s elements",
@@ -799,7 +796,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             if (isActive) {
                 it.btnPause.visibility = View.VISIBLE
                 it.btnStart.visibility = View.GONE
-                updateBookTitle()
+                if (content != null) bottomBarBinding.queueStatus.text = resources.getString(
+                    R.string.queue_dl, content.title
+                )
 
                 // Stop blinking animation, if any
                 it.queueInfo.clearAnimation()

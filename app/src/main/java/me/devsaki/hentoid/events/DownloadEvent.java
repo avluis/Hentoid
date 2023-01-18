@@ -111,14 +111,11 @@ public class DownloadEvent {
     /**
      * Use for EV_PREPARATION event
      *
-     * @param step step code for the event
+     * @param step    step code for the event
+     * @param content Content that is being downloaded; null if inapplicable
      */
-    public static DownloadEvent fromPreparationStep(@Step int step) {
-        return new DownloadEvent(Type.EV_PREPARATION, Motive.NONE, step, 0);
-    }
-
-    public static DownloadEvent fromPreparationStepLog(@Step int step, @NonNull String log) {
-        return new DownloadEvent(Type.EV_PREPARATION, Motive.NONE, step, 0).setLog(log);
+    public static DownloadEvent fromPreparationStep(@Step int step, Content content) {
+        return new DownloadEvent(Type.EV_PREPARATION, Motive.NONE, step, content);
     }
 
     /**
@@ -149,6 +146,25 @@ public class DownloadEvent {
         this.pagesKO = 0;
         this.pagesTotal = 0;
         this.downloadedSizeB = spaceLeftBytes;
+        this.motive = motive;
+        this.step = step;
+    }
+
+    /**
+     * Use for EV_PREPARATION event
+     *
+     * @param eventType event type code (among DownloadEvent public static EV_ values)
+     * @param motive    motive for the event
+     * @param step      step for the event
+     * @param content   Content that is being downloaded; null if inapplicable
+     */
+    DownloadEvent(@Type int eventType, @Motive int motive, @Step int step, Content content) {
+        this.content = content;
+        this.eventType = eventType;
+        this.pagesOK = 0;
+        this.pagesKO = 0;
+        this.pagesTotal = 0;
+        this.downloadedSizeB = 0;
         this.motive = motive;
         this.step = step;
     }
