@@ -33,12 +33,14 @@
         android:id="@+id/queue_tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:contentDescription="Tabs"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/queue_toolbar"
         app:tabIconTint="@color/selector_tab_icon"
         app:tabInlineLabel="true"
         app:tabSelectedTextColor="@color/white_opacity_87"
-        app:tabTextColor="@color/white_opacity_25" />
+        app:tabTextColor="@color/white_opacity_25"
+        tools:ignore="HardcodedText" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/queue_pager"
@@ -83,21 +85,25 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/download_revive_cancel"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
         android:text="@string/cancel"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="?colorSecondary"
         android:visibility="gone"
+        app:icon="@drawable/ic_action_refresh"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/download_revive_progress"
         tools:visibility="visible" />
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/snackbar_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="64dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

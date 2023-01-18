@@ -241,7 +241,8 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
-        // Work on first item of queue
+
+        // == Work on first item of queue
 
         // Check if there is a first item to process
         List<QueueRecord> queue = dao.selectQueue();
@@ -250,20 +251,26 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
-        Content content = queue.get(0).getContent().getTarget();
+        // Look for the next unfrozen record
+        Content content = null;
+        int index = 0;
+        for (QueueRecord rec : queue) {
+            if (!rec.isFrozen()) {
+                content = rec.getContent().getTarget();
+                if (content != null) break; // Don't take broken links
+            }
+            index++;
+        }
 
         if (null == content) {
-            Timber.i("Content is unavailable. Download aborted.");
-            dao.deleteQueue(0);
-            content = new Content().setId(queue.get(0).getContent().getTargetId()); // Must supply content ID to the event for the UI to update properly
-            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0));
-            notificationManager.notify(new DownloadErrorNotification());
-            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
+            Timber.i("No available Content to download. Queue paused.");
+            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_AVAILABLE_DOWNLOADS, spaceLeftBytes));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
         if (StatusContent.DOWNLOADED == content.getStatus()) {
             Timber.i("Content is already downloaded. Download aborted.");
-            dao.deleteQueue(0);
+            dao.deleteQueue(index);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification(content));
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);

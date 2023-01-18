@@ -28,7 +28,7 @@ public class DownloadEvent {
     }
 
     @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI, Motive.NO_STORAGE, Motive.NO_DOWNLOAD_FOLDER
-            , Motive.DOWNLOAD_FOLDER_NOT_FOUND, Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS, Motive.STALE_CREDENTIALS})
+            , Motive.DOWNLOAD_FOLDER_NOT_FOUND, Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS, Motive.STALE_CREDENTIALS, Motive.NO_AVAILABLE_DOWNLOADS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Motive {
         int NONE = -1;
@@ -39,6 +39,7 @@ public class DownloadEvent {
         int DOWNLOAD_FOLDER_NOT_FOUND = 4;
         int DOWNLOAD_FOLDER_NO_CREDENTIALS = 5;
         int STALE_CREDENTIALS = 6;
+        int NO_AVAILABLE_DOWNLOADS = 7;
     }
 
     @IntDef({Step.NONE, Step.INIT, Step.PROCESS_IMG, Step.FETCH_IMG, Step.PREPARE_FOLDER, Step.PREPARE_DOWNLOAD, Step.SAVE_QUEUE, Step.WAIT_PURGE, Step.START_DOWNLOAD, Step.COMPLETE_DOWNLOAD, Step.REMOVE_DUPLICATE})

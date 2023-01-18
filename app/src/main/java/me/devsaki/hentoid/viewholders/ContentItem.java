@@ -160,7 +160,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
         isSwipeable = true;
-//        setIdentifier(record.id);
         if (content != null) setIdentifier(content.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
     }
@@ -220,6 +219,52 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         if (viewHolder instanceof ContentViewHolder)
             return ((ContentViewHolder) viewHolder).ivReorder;
         else return null;
+    }
+
+    public void updateProgress(RecyclerView.ViewHolder vh, boolean isPausedEvent, boolean isContentQueueActive) {
+        boolean isQueueReady = isContentQueueActive && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
+
+        content.computeProgress();
+        content.computeDownloadedBytes();
+
+        ProgressBar pb = vh.itemView.findViewById(R.id.pbDownload);
+        if (isQueueReady || content.getPercent() > 0) {
+            TextView tvPages = vh.itemView.findViewById(R.id.tvPages);
+            pb.setVisibility(View.VISIBLE);
+            if (content.getPercent() > 0) {
+                pb.setIndeterminate(false);
+                pb.setMax(100);
+                pb.setProgress((int) (content.getPercent() * 100));
+
+                int color;
+                if (isQueueReady)
+                    color = ThemeHelper.getColor(pb.getContext(), R.color.secondary_light);
+                else
+                    color = ContextCompat.getColor(pb.getContext(), R.color.medium_gray);
+                // fixes <= Lollipop progressBar tinting
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                    pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+                else
+                    pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
+
+                if (content.getBookSizeEstimate() > 0 && tvPages != null && View.VISIBLE == tvPages.getVisibility()) {
+                    String pagesText = tvPages.getText().toString();
+                    int separator = pagesText.indexOf(";");
+                    if (separator > -1) pagesText = pagesText.substring(0, separator);
+                    pagesText = pagesText + "; " + pb.getContext().getResources().getString(R.string.queue_content_size_estimate, content.getBookSizeEstimate() / (1024 * 1024));
+                    tvPages.setText(pagesText);
+                }
+            } else {
+                if (isQueueReady) {
+                    pb.setIndeterminate(true);
+                    // fixes <= Lollipop progressBar tinting
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                        pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
+                } else pb.setVisibility(View.GONE);
+            }
+        } else {
+            pb.setVisibility(View.GONE);
+        }
     }
 
 
@@ -378,7 +423,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             attachButtons(item);
 
             if (progressBar != null)
-                updateProgress(item.content, baseLayout, getAbsoluteAdapterPosition(), false, ContentQueueManager.getInstance().isQueueActive(baseLayout.getContext()));
+                item.updateProgress(this, false, ContentQueueManager.getInstance().isQueueActive(baseLayout.getContext()));
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
         }
@@ -605,53 +650,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
                 if (ivRating != null)
                     ivRating.setImageResource(ContentHelper.getRatingResourceId(content.getRating()));
-            }
-        }
-
-        public static void updateProgress(@NonNull final Content content, @NonNull View rootCardView, int position, boolean isPausedEvent, boolean isContentQueueActive) {
-            boolean isQueueReady = isContentQueueActive && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
-            boolean isFirstItem = (0 == position);
-            ProgressBar pb = rootCardView.findViewById(R.id.pbDownload);
-
-            content.computeProgress();
-            content.computeDownloadedBytes();
-
-            if ((isFirstItem && isQueueReady) || content.getPercent() > 0) {
-                TextView tvPages = rootCardView.findViewById(R.id.tvPages);
-                pb.setVisibility(View.VISIBLE);
-                if (content.getPercent() > 0) {
-                    pb.setIndeterminate(false);
-                    pb.setMax(100);
-                    pb.setProgress((int) (content.getPercent() * 100));
-
-                    int color;
-                    if (isFirstItem && isQueueReady)
-                        color = ThemeHelper.getColor(pb.getContext(), R.color.secondary_light);
-                    else
-                        color = ContextCompat.getColor(pb.getContext(), R.color.medium_gray);
-                    // fixes <= Lollipop progressBar tinting
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-                    else
-                        pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
-
-                    if (content.getBookSizeEstimate() > 0 && tvPages != null && View.VISIBLE == tvPages.getVisibility()) {
-                        String pagesText = tvPages.getText().toString();
-                        int separator = pagesText.indexOf(";");
-                        if (separator > -1) pagesText = pagesText.substring(0, separator);
-                        pagesText = pagesText + "; " + pb.getContext().getResources().getString(R.string.queue_content_size_estimate, content.getBookSizeEstimate() / (1024 * 1024));
-                        tvPages.setText(pagesText);
-                    }
-                } else {
-                    if (isFirstItem && isQueueReady) {
-                        pb.setIndeterminate(true);
-                        // fixes <= Lollipop progressBar tinting
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                            pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
-                    } else pb.setVisibility(View.GONE);
-                }
-            } else {
-                pb.setVisibility(View.GONE);
             }
         }
 

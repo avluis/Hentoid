@@ -278,7 +278,8 @@ class QueueActivity : BaseActivity() {
                     nbSuccess, nbSuccess, contentList.size
                 )
                 binding?.let {
-                    Snackbar.make(it.queueTabs, message, BaseTransientBottomBar.LENGTH_LONG).show()
+                    Snackbar.make(it.root, message, BaseTransientBottomBar.LENGTH_LONG)
+                        .setAnchorView(it.snackbarLocation).show()
                 }
             }, { t: Throwable -> Timber.i(t) }
         )

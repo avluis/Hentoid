@@ -14,7 +14,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.ViewCompat
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -77,7 +76,7 @@ import java.util.*
 import kotlin.math.max
 
 /**
- * Presents the list of downloads with errors
+ * Downloads queue screen
  */
 class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     SimpleSwipeDrawerCallback.ItemSwipeCallback {
@@ -219,8 +218,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         FastScrollerBuilder(binding.queueList).build()
 
         // Drag, drop & swiping
-
-        // Drag, drop & swiping
         val dragSwipeCallback = SimpleSwipeDrawerDragCallback(
             this,
             ItemTouchHelper.LEFT,
@@ -232,8 +229,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
         touchHelper = ItemTouchHelper(dragSwipeCallback)
         touchHelper.attachToRecyclerView(binding.queueList)
-
-        // Item click listener
 
         // Item click listener
         fastAdapter.onClickListener = { _, _, i, _ -> onItemClick(i) }
@@ -485,7 +480,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             )
             DownloadEvent.Type.EV_UNPAUSE -> {
                 viewModel.unpauseQueue()
-                updateProgressFirstItem(false)
+                updateProgress(false)
                 update(event.eventType)
             }
             DownloadEvent.Type.EV_SKIP -> {
@@ -502,13 +497,15 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 // Don't update the UI if it is in the process of canceling all items
                 if (isCancelingAll) return
                 bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.GONE
-                updateProgressFirstItem(true)
+                if (null == event.content) updateProgress(true)
+                else updateProgress(event.content, true)
                 update(event.eventType)
             }
             else -> {
                 if (isCancelingAll) return
                 bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.GONE
-                updateProgressFirstItem(true)
+                if (null == event.content) updateProgress(true)
+                else updateProgress(event.content, true)
                 update(event.eventType)
             }
         }
@@ -525,10 +522,10 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     event.downloadedSizeB, resources
                 )
                 Snackbar.make(
-                    binding.queueList,
+                    binding.root,
                     getString(R.string.paused_no_storage, spaceLeft),
                     BaseTransientBottomBar.LENGTH_SHORT
-                ).show()
+                ).setAnchorView(bottomBarBinding.backgroundBottomBar).show()
                 return
             }
             DownloadEvent.Motive.NO_DOWNLOAD_FOLDER -> motiveMsg = R.string.paused_no_dl_folder
@@ -542,12 +539,14 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }
             DownloadEvent.Motive.STALE_CREDENTIALS -> motiveMsg =
                 R.string.paused_dl_stale_online_credentials
+            DownloadEvent.Motive.NO_AVAILABLE_DOWNLOADS -> motiveMsg =
+                R.string.paused_dl_no_available_downloads
             DownloadEvent.Motive.NONE -> motiveMsg = -1
             else -> motiveMsg = -1
         }
         if (motiveMsg != -1) Snackbar.make(
-            binding.queueList, getString(motiveMsg), BaseTransientBottomBar.LENGTH_SHORT
-        ).show()
+            binding.root, getString(motiveMsg), BaseTransientBottomBar.LENGTH_SHORT
+        ).setAnchorView(bottomBarBinding.backgroundBottomBar).show()
     }
 
     private fun formatStep(@DownloadEvent.Step step: Int, log: String?): String {
@@ -586,7 +585,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 it.visibility = View.VISIBLE
                 bottomBarBinding.queueInfo.setText(R.string.queue_preparing)
                 isPreparingDownload = true
-                updateProgressFirstItem(false)
+                updateProgress(false)
             } else if (it.isShown && event.isCompleted) {
                 it.visibility = View.GONE
             }
@@ -603,7 +602,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     fun onServiceDestroyed(event: ServiceDestroyedEvent) {
         if (event.service != R.id.download_service) return
         isPaused = true
-        updateProgressFirstItem(true)
+        updateProgress(true)
         updateControlBar()
     }
 
@@ -639,7 +638,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 content.setProgress(pagesOKDisplay.toLong() + pagesKO)
                 content.setDownloadedBytes(downloadedSizeB)
                 content.qtyPages = totalPagesDisplay
-                updateProgressFirstItem(false)
+                updateProgress(content, false)
 
                 // Update information bar
                 val message = StringBuilder()
@@ -833,19 +832,18 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         }
     }
 
-    private fun updateProgressFirstItem(isPausedevent: Boolean) {
-        if (itemAdapter.adapterItemCount > 0 && 0 == llm.findFirstVisibleItemPosition()) {
-            val content = itemAdapter.getAdapterItem(0).content ?: return
-
-            // Hack to update the 1st visible card even though it is controlled by the PagedList
-            ContentItem.ContentViewHolder.updateProgress(
-                content,
-                ViewCompat.requireViewById(binding.root, R.id.item_card),
-                0,
-                isPausedevent,
-                ContentQueueManager.getInstance().isQueueActive(requireActivity())
-            )
+    private fun updateProgress(isPausedevent: Boolean) {
+        itemAdapter.adapterItems.forEach {
+            it.content?.let { c -> updateProgress(c, isPausedevent) }
         }
+    }
+
+    private fun updateProgress(content: Content, isPausedevent: Boolean) {
+        fastAdapter.getItemById(content.uniqueHash())?.first?.updateProgress(
+            binding.queueList.findViewHolderForItemId(content.uniqueHash()),
+            isPausedevent,
+            ContentQueueManager.getInstance().isQueueActive(requireActivity())
+        )
     }
 
     private fun onItemClick(item: ContentItem): Boolean {
@@ -1158,7 +1156,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 R.string.yes
             ) { dialog1, _ ->
                 dialog1.dismiss()
-                activity.get()!!.redownloadContent(
+                activity.get()?.redownloadContent(
                     contents,
                     reparseContent = true,
                     reparseImages = true

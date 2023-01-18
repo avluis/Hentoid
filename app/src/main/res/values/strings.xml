@@ -147,6 +147,7 @@
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
     <string name="paused_dl_stale_online_credentials">Cannot download - Stale Cookies or credentials. Use the notification to regenerate them</string>
+    <string name="paused_dl_no_available_downloads">Cannot download - No available downloads (are they all frozen?)</string>
     <string name="step_init">Initializing</string>
     <string name="step_prepare_img">Preparing images</string>
     <string name="step_fetch_img">Fetching images</string>
