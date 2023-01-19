@@ -819,6 +819,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isDownloadEhHires() {
+        return sharedPreferences.getBoolean(Key.DL_EH_HIRES, Default.DL_EH_HIRES);
+    }
+
+    public static void setDownloadEhHires(boolean value) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DL_EH_HIRES, value)
+                .apply();
+    }
+
     public static long getViewerCurrentContent() {
         return Long.parseLong(sharedPreferences.getString(Key.VIEWER_CURRENT_CONTENT, "-1") + "");
     }
@@ -941,6 +951,7 @@ public final class Preferences {
         public static final String DL_SPEED_CAP = "dl_speed_cap";
         public static final String DL_BLOCKED_TAGS = "pref_dl_blocked_tags";
         static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
+        static final String DL_EH_HIRES = "pref_dl_eh_hires";
         public static final String DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
         static final String LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
@@ -1048,6 +1059,7 @@ public final class Preferences {
         static final boolean DL_RETRIES_ACTIVE = false;
         static final int DL_RETRIES_NUMBER = 3;
         static final int DL_RETRIES_MEM_LIMIT = 100;
+        static final boolean DL_EH_HIRES = false;
         static final int DL_SPEED_CAP = Constant.DL_SPEED_CAP_NONE;
         static final int DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
         static final boolean CHECK_UPDATES = true;

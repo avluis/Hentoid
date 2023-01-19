@@ -37,6 +37,7 @@ import me.devsaki.hentoid.json.sources.EHentaiImageQuery;
 import me.devsaki.hentoid.json.sources.EHentaiImageResponse;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
@@ -149,8 +150,10 @@ public class EHentaiParser implements ImageListParser {
             boolean useWebviewAgent) throws EmptyResultException, IOException {
         EHentaiImageQuery query = new EHentaiImageQuery(imageInfo.gid, imageInfo.image.getKey(), imageInfo.mpvkey, imageInfo.pageNum);
         String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
-        Response response = HttpHelper.postOnlineResource(imageInfo.api_url, headers, true, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
-        ResponseBody body = response.body();
+        ResponseBody body;
+        try (Response response = HttpHelper.postOnlineResource(imageInfo.api_url, headers, true, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE)) {
+            body = response.body();
+        }
         if (null == body)
             throw new EmptyResultException("API " + imageInfo.api_url + " returned an empty body");
         String bodyStr = body.string();
@@ -245,16 +248,18 @@ public class EHentaiParser implements ImageListParser {
     }
 
     static String getDisplayedImageUrl(@Nonnull Document doc) {
-        Elements elements = doc.select("img#img");
-        if (!elements.isEmpty()) {
-            Element e = elements.first();
-            if (e != null) return ParseHelper.getImgSrc(e);
-        }
-        elements = doc.select("#i3.img");
-        if (!elements.isEmpty()) {
-            Element e = elements.first();
-            if (e != null) return ParseHelper.getImgSrc(e);
-        }
+        Element element = doc.selectFirst("img#img");
+        if (element != null) return ParseHelper.getImgSrc(element);
+
+        element = doc.selectFirst("#i3.img");
+        if (element != null) return ParseHelper.getImgSrc(element);
+
+        return "";
+    }
+
+    static String getFullImageUrl(@Nonnull Document doc) {
+        Element element = doc.selectFirst("a[href*=fullimg]");
+        if (element != null) return element.attr("href");
         return "";
     }
 
@@ -353,6 +358,9 @@ public class EHentaiParser implements ImageListParser {
         if (imageUrl.contains(LIMIT_509_URL))
             throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
 
+        if (Preferences.isDownloadEhHires())
+            imageUrl = site.getUrl() + imageMetadata.getFullUrlRelative();
+
         return new ImmutablePair<>(imageUrl, Optional.empty());
     }
 
@@ -363,6 +371,8 @@ public class EHentaiParser implements ImageListParser {
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
             if (imageUrl.contains(LIMIT_509_URL))
                 throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
+
+            if (Preferences.isDownloadEhHires()) imageUrl = getFullImageUrl(doc).toLowerCase();
 
             Optional<String> backupUrl = getBackupPageUrl(doc, url);
 

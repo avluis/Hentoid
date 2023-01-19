@@ -96,8 +96,9 @@ public class HttpHelper {
      */
     @Nullable
     public static Document getOnlineDocument(String url, List<Pair<String, String>> headers, boolean useHentoidAgent, boolean useWebviewAgent) throws IOException {
-        ResponseBody resource = getOnlineResource(url, headers, true, useHentoidAgent, useWebviewAgent).body();
-        if (resource != null) return Jsoup.parse(resource.string());
+        try (ResponseBody resource = getOnlineResource(url, headers, true, useHentoidAgent, useWebviewAgent).body()) {
+            if (resource != null) return Jsoup.parse(resource.string());
+        }
         return null;
     }
 
@@ -108,9 +109,8 @@ public class HttpHelper {
             boolean useHentoidAgent, boolean useWebviewAgent,
             @NonNull final String body,
             @NonNull final String mimeType) throws IOException {
-        ResponseBody resource = postOnlineResource(url, headers, true, useHentoidAgent, useWebviewAgent, body, mimeType).body();
-        if (resource != null) {
-            return Jsoup.parse(resource.string());
+        try (ResponseBody resource = postOnlineResource(url, headers, true, useHentoidAgent, useWebviewAgent, body, mimeType).body()) {
+            if (resource != null) return Jsoup.parse(resource.string());
         }
         return null;
     }

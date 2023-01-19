@@ -56,6 +56,7 @@
     <string name="pref_external_library_delete_off">Hentoid can\'t delete books nor pages in the external library</string>
     <string name="pref_external_library_detach_title">Detach external library</string>
     <string name="pref_external_library_detach_summary">Don\'t include the external library into Hentoid anymore</string>
+    <string name="pref_cat_eh">E-hentai / ExHentai</string>
     <string name="pref_cat_advanced">Advanced</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
@@ -142,6 +143,9 @@
     <string name="pref_dl_blocked_tags_title">Blocked tags</string>
     <string name="pref_dl_blocked_tags_summary">Block the download of books with specific tags\nTip: separate tags with commas</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Blocking behaviour</string>
+    <string name="download_eh_hires_title">Download hi-res pictures</string>
+    <string name="pref_dl_eh_hires_on">Download hi-res pictures when available\nCAUTION:Your Gallery Points will be consumed much faster</string>
+    <string name="pref_dl_eh_hires_off">Download pictures that are displayed on the website</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">Download speed limit</string>
