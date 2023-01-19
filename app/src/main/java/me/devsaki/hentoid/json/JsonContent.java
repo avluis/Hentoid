@@ -53,6 +53,10 @@ public class JsonContent {
     private final List<JsonErrorRecord> errorRecords = new ArrayList<>();
     private final List<JsonGroupItem> groups = new ArrayList<>();
 
+    // Specific data for queued items
+    private boolean isFrozen;
+
+
     private JsonContent() {
     }
 
@@ -96,6 +100,7 @@ public class JsonContent {
         result.bookPreferences = c.getBookPreferences();
         result.downloadMode = c.getDownloadMode();
         result.manuallyMerged = c.isManuallyMerged();
+        result.isFrozen = c.isFrozen();
 
         result.attributes = new EnumMap<>(AttributeType.class);
         for (Attribute a : c.getAttributes()) {
@@ -150,6 +155,7 @@ public class JsonContent {
         result.setBookPreferences(bookPreferences);
         result.setDownloadMode(downloadMode);
         result.setManuallyMerged(manuallyMerged);
+        result.setFrozen(isFrozen);
 
         // ATTRIBUTES
         if (attributes != null) {

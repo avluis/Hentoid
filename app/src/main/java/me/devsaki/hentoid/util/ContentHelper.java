@@ -277,7 +277,13 @@ public final class ContentHelper {
         List<Content> errors = dao.selectErrorContent();
 
         // Save current queue (to be able to restore it in case the app gets uninstalled)
-        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.getContent().getTarget()).withoutNulls().toList();
+        List<Content> queuedContent = Stream.of(queue)
+                .map(qr -> {
+                    Content c = qr.getContent().getTarget();
+                    if (c != null) c.setFrozen(qr.isFrozen());
+                    return c;
+                })
+                .withoutNulls().toList();
         if (errors != null) queuedContent.addAll(errors);
 
         DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());

@@ -103,8 +103,6 @@ public interface CollectionDAO {
 
     LiveData<Integer> countAllQueueBooksLive();
 
-    List<Content> selectAllQueueBooks();
-
     void deleteAllQueuedBooks();
 
     // Flagging

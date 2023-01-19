@@ -176,6 +176,8 @@ public class Content implements Serializable {
     @Transient
     private String archiveLocationUri;  // Only used when importing external archives
     @Transient
+    private boolean isFrozen;  // Only used when importing queued items (temp location to simplify JSON structure; definite storage in QueueRecord)
+    @Transient
     private boolean updatedProperties = false;  // Only used when using ImageListParsers to indicate the passed Content has been updated
 
     public Content() { // Required by ObjectBox when an alternate constructor exists
@@ -999,6 +1001,14 @@ public class Content implements Serializable {
 
     public void setContentIdToReplace(long contentIdToReplace) {
         this.contentToReplace.setTargetId(contentIdToReplace);
+    }
+
+    public boolean isFrozen() {
+        return isFrozen;
+    }
+
+    public void setFrozen(boolean frozen) {
+        isFrozen = frozen;
     }
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {

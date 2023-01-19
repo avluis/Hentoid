@@ -245,7 +245,11 @@ public class ObjectBoxDB {
 
     Query<Content> selectAllQueueBooksQ() {
         // Strong check to make sure selected books are _actually_ part of the queue (i.e. attached to a QueueRecord)
-        return store.boxFor(Content.class).query().in(Content_.status, ContentHelper.getQueueStatuses()).filter(c -> (StatusContent.ERROR == c.getStatus() || (c.getQueueRecords() != null && !c.getQueueRecords().isEmpty()))).build();
+        // NB : Can't use QueryCondition here because there's no way to query the existence of a relation (see https://github.com/objectbox/objectbox-java/issues/1110)
+        return store.boxFor(Content.class).query()
+                .in(Content_.status, ContentHelper.getQueueStatuses())
+                .filter(c -> (StatusContent.ERROR == c.getStatus() || (c.getQueueRecords() != null && !c.getQueueRecords().isEmpty())))
+                .build();
     }
 
     Query<Content> selectAllFlaggedBooksQ() {

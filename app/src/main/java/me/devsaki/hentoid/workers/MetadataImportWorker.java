@@ -46,12 +46,12 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.MetadataImportData;
 import timber.log.Timber;
@@ -196,6 +196,7 @@ public class MetadataImportWorker extends BaseWorker {
                 nextKO(context, e);
             }
         }
+        ContentHelper.updateQueueJson(context, dao);
         if (!isStopped()) onFinish.run();
     }
 
@@ -227,7 +228,9 @@ public class MetadataImportWorker extends BaseWorker {
                 if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
                     long newContentId = ContentHelper.addContent(context, dao, c);
                     List<QueueRecord> lst = new ArrayList<>();
-                    lst.add(new QueueRecord(newContentId, queueSize++));
+                    QueueRecord qr = new QueueRecord(newContentId, queueSize++);
+                    qr.setFrozen(c.isFrozen());
+                    lst.add(qr);
                     dao.updateQueue(lst);
                     return;
                 }

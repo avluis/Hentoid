@@ -188,7 +188,7 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
             }
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map { c: JsonContentCollection? ->
+                .map { c: JsonContentCollection ->
                     it.exportProgressBar.max = 3
                     it.exportProgressBar.progress = 1
                     it.exportProgressBar.isIndeterminate = false
@@ -231,14 +231,21 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
         exportBookmarks: Boolean
     ): JsonContentCollection {
         val jsonContentCollection = JsonContentCollection()
-        if (exportLibrary) dao.streamAllInternalBooks(
-            exportFavsOnly
-        ) { content: Content? ->
-            jsonContentCollection.addToLibrary(
-                content!!
-            )
+        if (exportLibrary) dao.streamAllInternalBooks(exportFavsOnly) { content: Content ->
+            jsonContentCollection.addToLibrary(content)
         } // Using streaming here to support large collections
-        if (exportQueue) jsonContentCollection.queue = dao.selectAllQueueBooks()
+        if (exportQueue) {
+            val regularQueue = dao.selectQueue()
+            val errorsQueue = dao.selectErrorContent()
+            val exportedQueue = regularQueue.filter { qr -> qr.contentId > 0 }
+                .map { qr ->
+                    val c = qr.content.target
+                    c.isFrozen = qr.isFrozen
+                    return@map c
+                }.toMutableList()
+            exportedQueue.addAll(errorsQueue)
+            jsonContentCollection.queue = exportedQueue
+        }
         if (exportCustomgroups) jsonContentCollection.customGroups =
             dao.selectGroups(Grouping.CUSTOM.id)
         if (exportBookmarks) jsonContentCollection.bookmarks = dao.selectAllBookmarks()
@@ -271,12 +278,7 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
                 JsonHelper.JSON_MIME_TYPE
             ).use { newDownload ->
                 ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
-                    .use { input ->
-                        Helper.copy(
-                            input,
-                            newDownload
-                        )
-                    }
+                    .use { input -> Helper.copy(input, newDownload) }
             }
             binding?.let {
                 Snackbar.make(

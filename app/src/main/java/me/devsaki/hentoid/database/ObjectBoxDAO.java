@@ -620,11 +620,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteGroupItems(Helper.getPrimitiveArrayFromList(groupItemIds));
     }
 
-
-    public List<Content> selectAllQueueBooks() {
-        return db.selectAllQueueBooksQ().find();
-    }
-
     public void flagAllInternalBooks(boolean includePlaceholders) {
         db.flagContentsForDeletion(db.selectAllInternalBooksQ(false, includePlaceholders).find(), true);
     }

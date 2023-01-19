@@ -52,7 +52,7 @@ public class JsonContentCollection {
         return queue;
     }
 
-    public void setQueue(@NonNull List<Content> queue) {
+    public void  setQueue(@NonNull List<Content> queue) {
         this.queue = Stream.of(queue).map(c -> JsonContent.fromEntity(c, false)).toList();
     }
 
