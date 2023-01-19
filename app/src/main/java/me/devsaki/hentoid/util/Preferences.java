@@ -57,84 +57,6 @@ public final class Preferences {
             sharedPreferences.edit().putBoolean(Key.VIEWER_SWIPE_TO_FLING, flingFactor > 0).apply();
             sharedPreferences.edit().remove(Key.VIEWER_FLING_FACTOR).apply();
         }
-
-        if (sharedPreferences.contains(Key.ANALYTICS_TRACKING)) {
-            boolean analyticsTracking = sharedPreferences.getBoolean(Key.ANALYTICS_TRACKING, false);
-            sharedPreferences.edit().putBoolean(Key.ANALYTICS_PREFERENCE, !analyticsTracking).apply();
-            sharedPreferences.edit().remove(Key.ANALYTICS_TRACKING).apply();
-        }
-
-        if (sharedPreferences.contains(Key.HIDE_RECENT)) {
-            boolean hideRecent = sharedPreferences.getBoolean(Key.HIDE_RECENT, !BuildConfig.DEBUG);
-            sharedPreferences.edit().putBoolean(Key.APP_PREVIEW, !hideRecent).apply();
-            sharedPreferences.edit().remove(Key.HIDE_RECENT).apply();
-        }
-
-        if (sharedPreferences.contains(Key.CHECK_UPDATES_LISTS)) {
-            boolean checkUpdates = sharedPreferences.getBoolean(Key.CHECK_UPDATES_LISTS, Default.CHECK_UPDATES);
-            sharedPreferences.edit().putBoolean(Key.CHECK_UPDATES, checkUpdates).apply();
-            sharedPreferences.edit().remove(Key.CHECK_UPDATES_LISTS).apply();
-        }
-
-        if (sharedPreferences.contains(Key.DARK_MODE)) {
-            int darkMode = Integer.parseInt(sharedPreferences.getString(Key.DARK_MODE, "0") + "");
-            int colorTheme = (0 == darkMode) ? Constant.COLOR_THEME_LIGHT : Constant.COLOR_THEME_DARK;
-            sharedPreferences.edit().putString(Key.COLOR_THEME, colorTheme + "").apply();
-            sharedPreferences.edit().remove(Key.DARK_MODE).apply();
-        }
-
-        if (sharedPreferences.contains(Key.ORDER_CONTENT_LISTS)) {
-            int field;
-            boolean isDesc = false;
-
-            switch (sharedPreferences.getInt(Key.ORDER_CONTENT_LISTS, Constant.ORDER_CONTENT_TITLE_ALPHA)) {
-                case (Constant.ORDER_CONTENT_TITLE_ALPHA):
-                    field = Constant.ORDER_FIELD_TITLE;
-                    break;
-                case (Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED):
-                    field = Constant.ORDER_FIELD_TITLE;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST):
-                    field = Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_LAST_DL_DATE_LAST):
-                    field = Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE;
-                    break;
-                case (Constant.ORDER_CONTENT_RANDOM):
-                    field = Constant.ORDER_FIELD_RANDOM;
-                    break;
-                case (Constant.ORDER_CONTENT_LAST_UL_DATE_FIRST):
-                    field = Constant.ORDER_FIELD_UPLOAD_DATE;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_LEAST_READ):
-                    field = Constant.ORDER_FIELD_READS;
-                    break;
-                case (Constant.ORDER_CONTENT_MOST_READ):
-                    field = Constant.ORDER_FIELD_READS;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_LAST_READ):
-                    field = Constant.ORDER_FIELD_READ_DATE;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_PAGES_DESC):
-                    field = Constant.ORDER_FIELD_NB_PAGES;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_PAGES_ASC):
-                    field = Constant.ORDER_FIELD_NB_PAGES;
-                    break;
-                default:
-                    // Nothing there
-                    field = 0;
-            }
-            sharedPreferences.edit().putInt(Key.ORDER_CONTENT_FIELD, field).apply();
-            sharedPreferences.edit().putBoolean(Key.ORDER_CONTENT_DESC, isDesc).apply();
-            sharedPreferences.edit().remove(Key.ORDER_CONTENT_LISTS).apply();
-        }
     }
 
     public static void registerPrefsChangedListener(SharedPreferences.OnSharedPreferenceChangeListener listener) {
@@ -1046,12 +968,7 @@ public final class Preferences {
         public static final String DOWNLOAD_PLUS_DUPLICATE_TRY = "download_plus_duplicate_try";
 
         // Deprecated values kept for housekeeping/migration
-        static final String ANALYTICS_TRACKING = "pref_analytics_tracking";
-        static final String HIDE_RECENT = "pref_hide_recent";
         static final String VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
-        static final String CHECK_UPDATES_LISTS = "pref_check_updates_lists";
-        static final String DARK_MODE = "pref_dark_mode";
-        static final String ORDER_CONTENT_LISTS = "pref_order_content_lists";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -1288,29 +1205,5 @@ public final class Preferences {
         public static final int VIEWER_CAP_TAP_ZOOM_2X = 2;
         public static final int VIEWER_CAP_TAP_ZOOM_4X = 4;
         public static final int VIEWER_CAP_TAP_ZOOM_6X = 6;
-
-        // Deprecated values kept for housekeeping/migration
-        @Deprecated
-        public static final int ORDER_CONTENT_TITLE_ALPHA = 0;
-        @Deprecated
-        public static final int ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
-        @Deprecated
-        public static final int ORDER_CONTENT_TITLE_ALPHA_INVERTED = 2;
-        @Deprecated
-        public static final int ORDER_CONTENT_LAST_DL_DATE_LAST = 3;
-        @Deprecated
-        public static final int ORDER_CONTENT_RANDOM = 4;
-        @Deprecated
-        public static final int ORDER_CONTENT_LAST_UL_DATE_FIRST = 5;
-        @Deprecated
-        public static final int ORDER_CONTENT_LEAST_READ = 6;
-        @Deprecated
-        public static final int ORDER_CONTENT_MOST_READ = 7;
-        @Deprecated
-        public static final int ORDER_CONTENT_LAST_READ = 8;
-        @Deprecated
-        public static final int ORDER_CONTENT_PAGES_DESC = 9;
-        @Deprecated
-        public static final int ORDER_CONTENT_PAGES_ASC = 10;
     }
 }
