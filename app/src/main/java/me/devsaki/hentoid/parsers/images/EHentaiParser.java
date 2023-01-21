@@ -2,6 +2,7 @@ package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
+import android.webkit.CookieManager;
 import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
@@ -46,6 +47,10 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public class EHentaiParser implements ImageListParser {
+
+    public enum EhAuthState {
+        UNLOGGED, UNLOGGED_ABNORMAL, LOGGED
+    }
 
     public static final String MPV_LINK_CSS = "#gmid a[href*='/mpv/']";
 
@@ -358,8 +363,14 @@ public class EHentaiParser implements ImageListParser {
         if (imageUrl.contains(LIMIT_509_URL))
             throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
 
-        if (Preferences.isDownloadEhHires())
-            imageUrl = site.getUrl() + imageMetadata.getFullUrlRelative();
+        if (Preferences.isDownloadEhHires()) {
+            // Check if the user is logged in
+            if (getAuthState(site.getUrl()) != EhAuthState.LOGGED)
+                throw new EmptyResultException("You need to be logged in to download full-size images.");
+            // Use full image URL, if available
+            String fullUrl = imageMetadata.getFullUrlRelative();
+            if (!fullUrl.isEmpty()) imageUrl = site.getUrl() + fullUrl;
+        }
 
         return new ImmutablePair<>(imageUrl, Optional.empty());
     }
@@ -372,12 +383,20 @@ public class EHentaiParser implements ImageListParser {
             if (imageUrl.contains(LIMIT_509_URL))
                 throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
 
-            if (Preferences.isDownloadEhHires()) imageUrl = getFullImageUrl(doc).toLowerCase();
+            Optional<String> backupUrl;
+            if (Preferences.isDownloadEhHires()) {
+                // Check if the user is logged in
+                if (getAuthState(site.getUrl()) != EhAuthState.LOGGED)
+                    throw new EmptyResultException("You need to be logged in to download full-size images.");
+                // Use full image URL, if available
+                String fullUrl = getFullImageUrl(doc).toLowerCase();
+                if (!fullUrl.isEmpty()) imageUrl = fullUrl;
+                backupUrl = Optional.empty();
+            } else {
+                backupUrl = getBackupPageUrl(doc, url);
+            }
 
-            Optional<String> backupUrl = getBackupPageUrl(doc, url);
-
-            if (!imageUrl.isEmpty())
-                return new ImmutablePair<>(imageUrl, backupUrl);
+            if (!imageUrl.isEmpty()) return new ImmutablePair<>(imageUrl, backupUrl);
         }
         throw new EmptyResultException("Page contains no picture data : " + url);
     }
@@ -403,6 +422,26 @@ public class EHentaiParser implements ImageListParser {
         if (cookieStr.isEmpty())
             return "nw=1"; // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         else return cookieStr;
+    }
+
+    public static EhAuthState getAuthState(@NonNull final String url) {
+        String domain = "";
+        if (url.startsWith("https://exhentai.org")) domain = ".exhentai.org";
+        else if (url.contains("e-hentai.org")) domain = ".e-hentai.org";
+        if (domain.isEmpty()) return EhAuthState.UNLOGGED;
+
+        String cookiesStr = CookieManager.getInstance().getCookie(domain);
+        if (cookiesStr != null) {
+            if (cookiesStr.contains("igneous=mystery")) return EhAuthState.UNLOGGED_ABNORMAL;
+            else if (cookiesStr.contains("ipb_member_id=")) {
+                // may contain ipb_member_id=0, e.g. after unlogging manually
+                Map<String, String> cookies = HttpHelper.parseCookies(cookiesStr);
+                String memberId = cookies.get("ipb_member_id");
+                if (memberId != null && !memberId.equals("0")) return EhAuthState.LOGGED;
+                else return EhAuthState.UNLOGGED;
+            }
+        }
+        return EhAuthState.UNLOGGED;
     }
 
     /**

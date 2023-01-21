@@ -20,8 +20,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.ExhentaiContent;
-import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.parsers.images.EHentaiParser;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.file.FileHelper;
 import timber.log.Timber;
 
 /**
@@ -56,24 +57,18 @@ public class ExHentaiActivity extends BaseWebActivity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
 
-            if (url.startsWith("https://exhentai.org")) {
-                CookieManager mgr = CookieManager.getInstance();
-                String cookiesStr = mgr.getCookie(DOMAIN);
-                if (cookiesStr != null && (!cookiesStr.contains("ipb_member_id=") || cookiesStr.contains("igneous=mystery"))) {
-                    mgr.removeAllCookies(null);
-                    webView.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/");
-                    if (cookiesStr.contains("igneous=mystery"))
-                        showTooltip(R.string.help_web_incomplete_exh_credentials, true);
-                    else
-                        showTooltip(R.string.help_web_invalid_exh_credentials, true);
-                }
+            EHentaiParser.EhAuthState authState = EHentaiParser.getAuthState(url);
+            if (url.startsWith("https://exhentai.org") && authState != EHentaiParser.EhAuthState.LOGGED) {
+                CookieManager.getInstance().removeAllCookies(null);
+                webView.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/");
+                if (authState == EHentaiParser.EhAuthState.UNLOGGED_ABNORMAL)
+                    showTooltip(R.string.help_web_incomplete_exh_credentials, true);
+                else
+                    showTooltip(R.string.help_web_invalid_exh_credentials, true);
             }
 
-            if (url.startsWith("https://forums.e-hentai.org/index.php")) {
-                CookieManager mgr = CookieManager.getInstance();
-                String cookiesStr = mgr.getCookie(".e-hentai.org");
-                if (cookiesStr != null && cookiesStr.contains("ipb_member_id="))
-                    webView.loadUrl("https://exhentai.org/");
+            if (url.startsWith("https://forums.e-hentai.org/index.php") && authState == EHentaiParser.EhAuthState.LOGGED) {
+                webView.loadUrl("https://exhentai.org/");
             }
 
             showTooltip(R.string.help_web_exh_account, false);
