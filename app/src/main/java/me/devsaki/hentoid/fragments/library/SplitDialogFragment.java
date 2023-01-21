@@ -33,6 +33,7 @@ import me.devsaki.hentoid.databinding.DialogLibrarySplitBinding;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
 import me.devsaki.hentoid.widget.DragSelectTouchListener;
+import me.devsaki.hentoid.widget.DragSelectionProcessor;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 
 public final class SplitDialogFragment extends DialogFragment implements ItemTouchCallback {
@@ -118,9 +119,27 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         binding.list.setAdapter(fastAdapter);
 
         // Select on swipe
-        DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
-        mDragSelectTouchListener = new DragSelectTouchListener()
-                .withSelectListener(onDragSelectionListener);
+        DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = new DragSelectionProcessor(new DragSelectionProcessor.ISelectionHandler() {
+            @Override
+            public Set<Integer> getSelection() {
+                return selectExtension.getSelections();
+            }
+
+            @Override
+            public boolean isSelected(int index) {
+                return selectExtension.getSelections().contains(index);
+            }
+
+            @Override
+            public void updateSelection(int start, int end, boolean isSelected, boolean calledFromOnStart) {
+                if (isSelected)
+                    selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
+                else
+                    selectExtension.deselect(IntStream.rangeClosed(start, end).boxed().toList());
+            }
+        }).withMode(DragSelectionProcessor.Mode.Simple);
+
+        mDragSelectTouchListener = new DragSelectTouchListener().withSelectListener(onDragSelectionListener);
         binding.list.addOnItemTouchListener(mDragSelectTouchListener);
 
         binding.nochapterAction.setOnClickListener(v -> onCreateChaptersClick());
