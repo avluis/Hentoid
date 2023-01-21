@@ -75,11 +75,15 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
+import org.threeten.bp.Instant;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.format.DateTimeFormatter;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -123,6 +127,7 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
+import me.zhanghai.android.fastscroll.PopupTextProvider;
 import timber.log.Timber;
 
 @SuppressLint("NonConstantResourceId")
@@ -131,6 +136,7 @@ public class LibraryContentFragment extends Fragment implements
         MergeDialogFragment.Parent,
         SplitDialogFragment.Parent,
         RatingDialogFragment.Parent,
+        PopupTextProvider,
         ItemTouchCallback,
         SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
@@ -382,7 +388,9 @@ public class LibraryContentFragment extends Fragment implements
             llm = new AutofitGridLayoutManager(requireContext(), (int) getResources().getDimension(R.dimen.card_grid_width));
         recyclerView.setLayoutManager(llm);
         recyclerView.addOnScrollListener(scrollListener);
-        new FastScrollerBuilder(recyclerView).build();
+        new FastScrollerBuilder(recyclerView)
+                .setPopupTextProvider(this)
+                .build();
 
         // Top FAB
         topFab = requireViewById(rootView, R.id.top_fab);
@@ -1666,6 +1674,53 @@ public class LibraryContentFragment extends Fragment implements
                 topFab.setVisibility(View.VISIBLE);
             else
                 topFab.setVisibility(View.GONE);
+        }
+    }
+
+    @NonNull
+    @Override
+    public CharSequence getPopupText(int position) {
+        IAdapter<ContentItem> adapter = getItemAdapter();
+        if (null == adapter) return "";
+        Content c = adapter.getAdapterItem(position).getContent();
+        if (null == c) return "";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd", Locale.ENGLISH);
+
+        switch (Preferences.getContentSortField()) {
+            case (Preferences.Constant.ORDER_FIELD_TITLE):
+                return (c.getTitle().isEmpty()) ? "" : (c.getTitle().charAt(0) + "").toUpperCase();
+            case (Preferences.Constant.ORDER_FIELD_ARTIST):
+                return (c.getAuthor().isEmpty()) ? "" : (c.getAuthor().charAt(0) + "").toUpperCase();
+            case (Preferences.Constant.ORDER_FIELD_NB_PAGES):
+                return Long.toString(c.getQtyPages());
+            case (Preferences.Constant.ORDER_FIELD_READS):
+                return Long.toString(c.getReads());
+            case (Preferences.Constant.ORDER_FIELD_SIZE):
+                return FileHelper.formatHumanReadableSize(c.getSize(), getResources());
+            case (Preferences.Constant.ORDER_FIELD_READ_PROGRESS):
+                return String.format(Locale.ENGLISH, "%d %%", Math.round(c.getReadProgress() * 100));
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE): {
+                Instant i = Instant.ofEpochMilli(c.getDownloadDate());
+                return i.atZone(ZoneId.systemDefault()).format(formatter);
+            }
+            case (Preferences.Constant.ORDER_FIELD_UPLOAD_DATE): {
+                Instant i = Instant.ofEpochMilli(c.getUploadDate());
+                return i.atZone(ZoneId.systemDefault()).format(formatter);
+            }
+            case (Preferences.Constant.ORDER_FIELD_READ_DATE): {
+                Instant i = Instant.ofEpochMilli(c.getLastReadDate());
+                return i.atZone(ZoneId.systemDefault()).format(formatter);
+            }
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE): {
+                Instant i = Instant.ofEpochMilli(c.getDownloadCompletionDate());
+                return i.atZone(ZoneId.systemDefault()).format(formatter);
+            }
+            case (Preferences.Constant.ORDER_FIELD_NONE):
+            case (Preferences.Constant.ORDER_FIELD_CUSTOM):
+            case (Preferences.Constant.ORDER_FIELD_RANDOM):
+            default:
+                return "";
         }
     }
 }

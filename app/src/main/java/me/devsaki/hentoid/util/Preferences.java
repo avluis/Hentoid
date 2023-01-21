@@ -1113,8 +1113,8 @@ public final class Preferences {
         public static final int ORDER_FIELD_CHILDREN = 8; // Groups only
         public static final int ORDER_FIELD_READ_PROGRESS = 9;
         public static final int ORDER_FIELD_DOWNLOAD_COMPLETION_DATE = 10;
-        public static final int ORDER_FIELD_SOURCE_NAME = 11;
-        public static final int ORDER_FIELD_TARGET_NAME = 12;
+        public static final int ORDER_FIELD_SOURCE_NAME = 11; // Rules only
+        public static final int ORDER_FIELD_TARGET_NAME = 12; // Rules only
         public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 
