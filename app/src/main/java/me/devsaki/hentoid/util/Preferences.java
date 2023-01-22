@@ -47,7 +47,6 @@ public final class Preferences {
         }
     }
 
-    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     public static void performHousekeeping() {
         // Fling factor -> Swipe to fling (v1.9.0)
         if (sharedPreferences.contains(Key.VIEWER_FLING_FACTOR)) {
@@ -155,11 +154,6 @@ public final class Preferences {
 
     public static boolean isImportQueueEmptyBooks() {
         return getBoolPref(Key.IMPORT_QUEUE_EMPTY, Default.IMPORT_QUEUE_EMPTY);
-    }
-
-    @Deprecated
-    public static String getSettingsFolder() {
-        return sharedPreferences.getString(Key.PRIMARY_FOLDER, "");
     }
 
     public static int getLibraryDisplay() {
