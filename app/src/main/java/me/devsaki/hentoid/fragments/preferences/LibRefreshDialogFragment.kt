@@ -11,6 +11,7 @@ import android.widget.ProgressBar
 import android.widget.RadioGroup
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -253,8 +254,10 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     Preferences.getStorageUri()
                 )
             )
-            binding2.importStep1Check.visibility = View.VISIBLE
-            binding2.importStep2.visibility = View.VISIBLE
+            binding2.importStep1Folder.isVisible = true
+            binding2.importStep1Text.isVisible = true
+            binding2.importStep1Check.isVisible = true
+            binding2.importStep2.isVisible = true
             binding2.importStep2Bar.isIndeterminate = true
         }
     }
@@ -344,9 +347,11 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 Preferences.getStorageUri()
             )
         )
-        binding2.importStep1Button.visibility = View.INVISIBLE
-        binding2.importStep1Check.visibility = View.VISIBLE
-        binding2.importStep2.visibility = View.VISIBLE
+        binding2.importStep1Folder.isVisible = true
+        binding2.importStep1Text.isVisible = true
+        binding2.importStep1Button.isVisible = true
+        binding2.importStep1Check.isVisible = true
+        binding2.importStep2.isVisible = true
         binding2.importStep2Bar.isIndeterminate = true
         isCancelable = false
     }

@@ -957,20 +957,6 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
 
-    // API29 migration query
-    @Override
-    public Single<List<Long>> selectOldStoredBookIds() {
-        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectOldStoredContentQ().findIds()))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-    }
-
-    // API29 migration query
-    @Override
-    public long countOldStoredContent() {
-        return db.selectOldStoredContentQ().count();
-    }
-
     @Override
     public long[] selectContentIdsWithUpdatableJson() {
         return db.selectContentIdsWithUpdatableJson();

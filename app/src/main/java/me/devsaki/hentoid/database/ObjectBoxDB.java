@@ -1615,14 +1615,6 @@ public class ObjectBoxDB {
         return store.boxFor(Chapter.class).query().isNull(Chapter_.uploadDate).build().find();
     }
 
-    Query<Content> selectOldStoredContentQ() {
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode(), StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()});
-        query.notNull(Content_.storageFolder);
-        query.notEqual(Content_.storageFolder, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        return query.build();
-    }
-
     QueryBuilder<Content> selectStoredContentQ(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         if (includeQueued) query.in(Content_.status, libraryQueueStatus);

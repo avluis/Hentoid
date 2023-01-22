@@ -343,9 +343,5 @@ public interface CollectionDAO {
 
     // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
 
-    Single<List<Long>> selectOldStoredBookIds();
-
-    long countOldStoredContent();
-
     long[] selectContentIdsWithUpdatableJson();
 }

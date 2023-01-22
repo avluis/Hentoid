@@ -68,7 +68,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import timber.log.Timber;
 
 /**
@@ -118,11 +117,6 @@ public class Content implements Serializable {
     @Index
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
-    /**
-     * @deprecated Replaced by {@link PrimaryImportWorker} methods; class is kept for retrocompatibilty
-     */
-    @Deprecated
-    private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite = false;
     private int rating = 0;
@@ -758,25 +752,6 @@ public class Content implements Serializable {
     public Content setSite(Site site) {
         this.site = site;
         return this;
-    }
-
-
-    /**
-     * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
-     */
-    @SuppressWarnings("deprecation")
-    @Deprecated
-    public String getStorageFolder() {
-        return storageFolder == null ? "" : storageFolder;
-    }
-
-    /**
-     * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
-     */
-    @SuppressWarnings("deprecation")
-    @Deprecated
-    public void resetStorageFolder() {
-        storageFolder = "";
     }
 
     public String getStorageUri() {
