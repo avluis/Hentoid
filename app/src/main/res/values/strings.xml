@@ -51,7 +51,6 @@
 
 
     <!-- Activities -->
-    <string name="title_activity_api29_migration">API 29 migration</string>
     <string name="title_activity_downloads">Library</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
@@ -61,20 +60,17 @@
     <string name="title_activity_meta_edit">Edit metadata</string>
     <string name="title_activity_rules">Renaming rules</string>
 
-    <!-- API29 migration / library refresh screen -->
-    <string name="api29_migration_title">Hentoid v12\nFile management update</string>
-    <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
-    <string name="api29_migration_location">Current Hentoid folder location\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Hentoid folder</string>
-    <string name="api29_migration_step1_external">External folder</string>
-    <string name="api29_migration_step1_select">Select Hentoid folder</string>
-    <string name="api29_migration_step1_select_external">Select external folder</string>
-    <string name="api29_migration_step2">Scan site folders</string>
-    <string name="api29_migration_step3_init">Scanning library…</string>
-    <string name="api29_migration_step3">Scan library (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">Importing queue…</string>
-    <string name="api29_migration_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
-    <string name="api29_migration_allow_write">Please allow write permission</string>
+    <!-- Library refresh screen -->
+    <string name="refresh_step1">Hentoid folder</string>
+    <string name="refresh_step1_external">External folder</string>
+    <string name="refresh_step1_select">Select Hentoid folder</string>
+    <string name="refresh_step1_select_external">Select external folder</string>
+    <string name="refresh_step2">Scan site folders</string>
+    <string name="refresh_step3_init">Scanning library…</string>
+    <string name="refresh_step3">Scan library (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">Importing queue…</string>
+    <string name="refresh_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
+    <string name="refresh_allow_write">Please allow write permission</string>
 
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>

@@ -56,16 +56,16 @@
 <string name="api29_migration_title">Hentoid v12\nFájlkezelő frissítés</string>
     <string name="api29_migration_subtitle">Hentoid elkezdte frissíteni az Ön gyűjteményét!\Ez pár percet igénybe vehet.</string>
     <string name="api29_migration_location">A jelenlegi Hentoid mappa helye\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Hentoid mappa</string>
-    <string name="api29_migration_step1_external">Külső mappa</string>
-    <string name="api29_migration_step1_select">Hentoid mappa kiválasztása</string>
-    <string name="api29_migration_step1_select_external">Külső mappa kiválasztása</string>
-    <string name="api29_migration_step2">Weboldal mappáinak beolvasása</string>
-    <string name="api29_migration_step3_init">Könyvtár beolvasása...</string>
-    <string name="api29_migration_step3">Könyvtár olvasása (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">Várólista importálása...</string>
-    <string name="api29_migration_select_folder">Kérjük, válasszon ki, egy már létező Hentoid mappát. A mappa helye, majd megjelenik a képernyőn.</string>
-    <string name="api29_migration_allow_write">Kérjük, adjon írási jogosultságot az alkalmazásnak</string>
+    <string name="refresh_step1">Hentoid mappa</string>
+    <string name="refresh_step1_external">Külső mappa</string>
+    <string name="refresh_step1_select">Hentoid mappa kiválasztása</string>
+    <string name="refresh_step1_select_external">Külső mappa kiválasztása</string>
+    <string name="refresh_step2">Weboldal mappáinak beolvasása</string>
+    <string name="refresh_step3_init">Könyvtár beolvasása...</string>
+    <string name="refresh_step3">Könyvtár olvasása (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">Várólista importálása...</string>
+    <string name="refresh_select_folder">Kérjük, válasszon ki, egy már létező Hentoid mappát. A mappa helye, majd megjelenik a képernyőn.</string>
+    <string name="refresh_allow_write">Kérjük, adjon írási jogosultságot az alkalmazásnak</string>
 <string name="menu_search">Keresés</string>
     <string name="menu_fav">Kedvencek szűrése</string>
     <string name="menu_mark_fav">Kedvencek mutatása</string>

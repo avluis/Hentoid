@@ -195,7 +195,7 @@ public class PrimaryImportWorker extends BaseWorker {
             }
 
             // 2nd pass : count subfolders of every site folder
-            eventProgress(STEP_2_BOOK_FOLDERS, 1, 0, 0, context.getString(R.string.api29_migration_step1));
+            eventProgress(STEP_2_BOOK_FOLDERS, 1, 0, 0, context.getString(R.string.refresh_step1));
             List<DocumentFile> siteFolders = explorer.listFolders(context, rootFolder);
             int foldersProcessed = 0;
             for (DocumentFile f : siteFolders) {

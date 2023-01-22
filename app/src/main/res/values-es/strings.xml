@@ -56,16 +56,16 @@
 <string name="api29_migration_title">Hentoid v12 Actualización del manejo de archivos</string>
     <string name="api29_migration_subtitle">Hentoid esta actualizando tu colección. Esto puede tomar algunos minutos.</string>
     <string name="api29_migration_location">Ubicación actual de la carpeta de Hentoid<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Carpeta de Hentoid</string>
-    <string name="api29_migration_step1_external">Carpeta externa</string>
-    <string name="api29_migration_step1_select">Selecciona la carpeta de Hentoid</string>
-    <string name="api29_migration_step1_select_external">Selecciona la carpeta externa</string>
-    <string name="api29_migration_step2">Escanear las carpetas de los sitios web</string>
-    <string name="api29_migration_step3_init">Escaneando la librería…</string>
-    <string name="api29_migration_step3">Escanear la librería ( <x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g> )</string>
-    <string name="api29_migration_step4_init">Importando la cola de descarga…</string>
-    <string name="api29_migration_select_folder">Por favor seleccionar una carpeta de Hentoid existente. La ubicación de esta se muestra en la pantalla.</string>
-    <string name="api29_migration_allow_write">Por favor autoriza el permiso de escritura</string>
+    <string name="refresh_step1">Carpeta de Hentoid</string>
+    <string name="refresh_step1_external">Carpeta externa</string>
+    <string name="refresh_step1_select">Selecciona la carpeta de Hentoid</string>
+    <string name="refresh_step1_select_external">Selecciona la carpeta externa</string>
+    <string name="refresh_step2">Escanear las carpetas de los sitios web</string>
+    <string name="refresh_step3_init">Escaneando la librería…</string>
+    <string name="refresh_step3">Escanear la librería ( <x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g> )</string>
+    <string name="refresh_step4_init">Importando la cola de descarga…</string>
+    <string name="refresh_select_folder">Por favor seleccionar una carpeta de Hentoid existente. La ubicación de esta se muestra en la pantalla.</string>
+    <string name="refresh_allow_write">Por favor autoriza el permiso de escritura</string>
 <string name="menu_search">Búsqueda</string>
     <string name="menu_fav">Cambiar el filtro de favoritos</string>
     <string name="menu_mark_fav">Cambiar favorito</string>

@@ -56,16 +56,16 @@
 <string name="api29_migration_title">Hentoid v12\nファイル管理の更新</string>
     <string name="api29_migration_subtitle">Hentoidがコレクションを更新しています。\n数分かかる場合があります。</string>
     <string name="api29_migration_location">現在のHentoidフォルダの場所\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Hentoidのフォルダー</string>
-    <string name="api29_migration_step1_external">外部フォルダー</string>
-    <string name="api29_migration_step1_select">Hentoidのフォルダを選択</string>
-    <string name="api29_migration_step1_select_external">外部フォルダを選択</string>
-    <string name="api29_migration_step2">サイトフォルダをスキャンする</string>
-    <string name="api29_migration_step3_init">スキャンライブラリ…</string>
-    <string name="api29_migration_step3">ライブラリをスキャン(<x:g example="1" id="number">%1$d</x:g>/ <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">キューをインポートしています…</string>
-    <string name="api29_migration_select_folder">既存のHentoidフォルダを選択してください。 その場所が画面に表示されます。</string>
-    <string name="api29_migration_allow_write">書き込み許可を許可してください</string>
+    <string name="refresh_step1">Hentoidのフォルダー</string>
+    <string name="refresh_step1_external">外部フォルダー</string>
+    <string name="refresh_step1_select">Hentoidのフォルダを選択</string>
+    <string name="refresh_step1_select_external">外部フォルダを選択</string>
+    <string name="refresh_step2">サイトフォルダをスキャンする</string>
+    <string name="refresh_step3_init">スキャンライブラリ…</string>
+    <string name="refresh_step3">ライブラリをスキャン(<x:g example="1" id="number">%1$d</x:g>/ <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">キューをインポートしています…</string>
+    <string name="refresh_select_folder">既存のHentoidフォルダを選択してください。 その場所が画面に表示されます。</string>
+    <string name="refresh_allow_write">書き込み許可を許可してください</string>
 <string name="menu_search">検索</string>
     <string name="menu_fav">お気に入りのフィルターを切り替えます</string>
     <string name="menu_mark_fav">お気に入りを切り替える</string>

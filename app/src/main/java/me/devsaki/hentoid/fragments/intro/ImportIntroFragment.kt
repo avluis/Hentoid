@@ -240,7 +240,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 mergedBinding.importStep2Check.visibility = View.VISIBLE
                 mergedBinding.importStep3.visibility = View.VISIBLE
                 mergedBinding.importStep3Text.text = resources.getString(
-                    R.string.api29_migration_step3,
+                    R.string.refresh_step3,
                     event.elementsKO + event.elementsOK,
                     event.elementsTotal
                 )
@@ -256,7 +256,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 }
                 PrimaryImportWorker.STEP_3_BOOKS == event.step -> {
                     mergedBinding.importStep3Text.text = resources.getString(
-                        R.string.api29_migration_step3,
+                        R.string.refresh_step3,
                         event.elementsTotal,
                         event.elementsTotal
                     )

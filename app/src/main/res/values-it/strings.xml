@@ -56,16 +56,16 @@
 <string name="api29_migration_title">Hentoid v12 \nAggiornamento gestione file</string>
     <string name="api29_migration_subtitle">Hentoid sta aggiornando la tua raccolta. \nPotrebbero essere necessari alcuni minuti.</string>
     <string name="api29_migration_location">L\'attuale posizione della cartelle di Hentoid è \n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Cartella Hentoid</string>
-    <string name="api29_migration_step1_external">Cartella esterna</string>
-    <string name="api29_migration_step1_select">Seleziona la cartella Hentoid</string>
-    <string name="api29_migration_step1_select_external">Seleziona cartella esterna</string>
-    <string name="api29_migration_step2">Analizza le cartelle del sito</string>
-    <string name="api29_migration_step3_init">Scansionando la libreria…</string>
-    <string name="api29_migration_step3">Scansiona libreria (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">Importazione coda…</string>
-    <string name="api29_migration_select_folder">Seleziona una cartella Hentoid esistente. La sua posizione è visualizzata sullo schermo.</string>
-    <string name="api29_migration_allow_write">Si prega di consentire il permesso di scrittura</string>
+    <string name="refresh_step1">Cartella Hentoid</string>
+    <string name="refresh_step1_external">Cartella esterna</string>
+    <string name="refresh_step1_select">Seleziona la cartella Hentoid</string>
+    <string name="refresh_step1_select_external">Seleziona cartella esterna</string>
+    <string name="refresh_step2">Analizza le cartelle del sito</string>
+    <string name="refresh_step3_init">Scansionando la libreria…</string>
+    <string name="refresh_step3">Scansiona libreria (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">Importazione coda…</string>
+    <string name="refresh_select_folder">Seleziona una cartella Hentoid esistente. La sua posizione è visualizzata sullo schermo.</string>
+    <string name="refresh_allow_write">Si prega di consentire il permesso di scrittura</string>
 <string name="menu_search">Cerca</string>
     <string name="menu_fav">Attiva/disattiva filtro preferito</string>
     <string name="menu_mark_fav">Attiva/disattiva preferito</string>

@@ -56,16 +56,16 @@
 <string name="api29_migration_title">Hentoid v12\n파일 관리 업데이트</string>
     <string name="api29_migration_subtitle">Hentoid가 컬렉션을 업데이트하는 중입니다.\n몇 분이 소요될 수 있습니다.</string>
     <string name="api29_migration_location">현재 Hentoid 폴더 위치\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Hentoid 폴더</string>
-    <string name="api29_migration_step1_external">외부 폴더</string>
-    <string name="api29_migration_step1_select">Hentoid 폴더 선택</string>
-    <string name="api29_migration_step1_select_external">외부 폴더 선택</string>
-    <string name="api29_migration_step2">사이트 폴더 탐색</string>
-    <string name="api29_migration_step3_init">라이브러리 탐색 중...</string>
-    <string name="api29_migration_step3">라이브러리 탐색 (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">대기열 불러오는 중...</string>
-    <string name="api29_migration_select_folder">기존 Hentoid 폴더를 선택하세요. 화면에 위치가 표시됩니다.</string>
-    <string name="api29_migration_allow_write">쓰기 권한을 허용해주세요</string>
+    <string name="refresh_step1">Hentoid 폴더</string>
+    <string name="refresh_step1_external">외부 폴더</string>
+    <string name="refresh_step1_select">Hentoid 폴더 선택</string>
+    <string name="refresh_step1_select_external">외부 폴더 선택</string>
+    <string name="refresh_step2">사이트 폴더 탐색</string>
+    <string name="refresh_step3_init">라이브러리 탐색 중...</string>
+    <string name="refresh_step3">라이브러리 탐색 (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">대기열 불러오는 중...</string>
+    <string name="refresh_select_folder">기존 Hentoid 폴더를 선택하세요. 화면에 위치가 표시됩니다.</string>
+    <string name="refresh_allow_write">쓰기 권한을 허용해주세요</string>
 <string name="menu_search">검색</string>
     <string name="menu_fav">즐겨찾기 필터 켜기/끄기</string>
     <string name="menu_mark_fav">즐겨찾기 켜기/끄기</string>

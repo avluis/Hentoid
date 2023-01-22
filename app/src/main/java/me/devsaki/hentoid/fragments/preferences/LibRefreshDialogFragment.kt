@@ -238,11 +238,11 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
         // Memorize UI elements that will be updated during the import events
         if (isExternal) {
-            binding2.importStep1Button.setText(R.string.api29_migration_step1_select_external)
-            binding2.importStep1Text.setText(R.string.api29_migration_step1_external)
+            binding2.importStep1Button.setText(R.string.refresh_step1_select_external)
+            binding2.importStep1Text.setText(R.string.refresh_step1_external)
         } else {
-            binding2.importStep1Button.setText(R.string.api29_migration_step1_select)
-            binding2.importStep1Text.setText(R.string.api29_migration_step1)
+            binding2.importStep1Button.setText(R.string.refresh_step1_select)
+            binding2.importStep1Text.setText(R.string.refresh_step1)
         }
         if (askFolder) {
             binding2.importStep1Button.visibility = View.VISIBLE
@@ -390,7 +390,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         it.importStep2Check.visibility = View.VISIBLE
                         it.importStep3.visibility = View.VISIBLE
                         it.importStep3Text.text = resources.getString(
-                            R.string.api29_migration_step3,
+                            R.string.refresh_step3,
                             event.elementsKO + event.elementsOK,
                             event.elementsTotal
                         )
@@ -415,7 +415,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     }
                     PrimaryImportWorker.STEP_3_BOOKS -> {
                         it.importStep3Text.text = resources.getString(
-                            R.string.api29_migration_step3,
+                            R.string.refresh_step3,
                             event.elementsTotal,
                             event.elementsTotal
                         )
