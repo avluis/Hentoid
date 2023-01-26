@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.RenamingRulesActivity"
+    tools:ignore="AlwaysShowAction"
+    tools:targetApi="o">
+    <item
+        android:id="@+id/action_help"
+        android:icon="@drawable/ic_help_outline"
+        android:title="@string/help"
+        android:tooltipText="@string/help"
+        app:showAsAction="always" />
+</menu>

@@ -734,7 +734,7 @@ public class LibraryActivity extends BaseActivity {
                 finish();
                 startActivity(intent);
                 break;
-            case Preferences.Key.SD_STORAGE_URI:
+            case Preferences.Key.PRIMARY_STORAGE_URI:
             case Preferences.Key.EXTERNAL_LIBRARY_URI:
                 updateDisplay(Grouping.FLAT.getId());
                 viewModel.setGrouping(Grouping.FLAT.getId());

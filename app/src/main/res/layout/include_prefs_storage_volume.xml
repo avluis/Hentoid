@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
+
+    <TextView
+        android:id="@+id/number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_header_4"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="1" />
+
+    <TextView
+        android:id="@+id/path"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textSize="@dimen/text_subtitle_2"
+        app:layout_constraintEnd_toStartOf="@id/queueBottomBtn"
+        app:layout_constraintStart_toEndOf="@id/number"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="/storage/emulated/0/.Hentoid" />
+
+    <me.devsaki.hentoid.views.CircularProgressView
+        android:id="@+id/stats_graph"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toEndOf="@id/number"
+        app:layout_constraintTop_toBottomOf="@id/path" />
+
+    <TextView
+        android:id="@+id/stats_txt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textSize="@dimen/text_header_6"
+        app:layout_constraintBottom_toBottomOf="@id/stats_graph"
+        app:layout_constraintStart_toEndOf="@id/stats_graph"
+        app:layout_constraintTop_toTopOf="@id/stats_graph"
+        tools:text="4.5 GB (30%) free" />
+
+    <ImageView
+        android:id="@+id/queueBottomBtn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="8dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_action_remove"
+        android:tooltipText="@string/remove_generic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
+</merge>

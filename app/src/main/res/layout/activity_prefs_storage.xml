@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MetadataEditActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:minHeight="?android:attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/storage_menu"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/title_activity_storage"
+        tools:ignore="UnusedAttribute" />
+
+    <TextView
+        android:id="@+id/browse_mode_warning"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/white_opacity_25"
+        android:clickable="true"
+        android:focusable="true"
+        android:lineSpacingExtra="8sp"
+        android:paddingStart="64dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="16dp"
+        android:text="@string/browse_mode_warning"
+        android:textColor="@color/white_opacity_87"
+        android:textStyle="italic"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/answer_img"
+        android:layout_width="54dp"
+        android:layout_height="55dp"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_attribute_source"
+        app:layout_constraintBottom_toBottomOf="@id/browse_mode_warning"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/browse_mode_warning"
+        app:tint="@color/white_opacity_87"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/primary_library"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="8dp"
+        android:text="@string/primary_library"
+        android:textSize="@dimen/text_header_6"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/browse_mode_warning" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/add_primary_1"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:backgroundTint="?colorSecondary"
+        android:padding="16dp"
+        android:text="@string/add_primary_1"
+        android:textColor="@color/white_opacity_87"
+        android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add"
+        app:iconTint="@color/white_opacity_87"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/primary_library"
+        tools:visibility="gone" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/primary_volume_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/black_opacity_12"
+        android:padding="8dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/primary_library"
+        tools:visibility="visible">
+
+        <include layout="@layout/include_prefs_storage_volume" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/add_primary_2"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:backgroundTint="?colorSecondary"
+        android:padding="16dp"
+        android:text="@string/add_primary_2"
+        android:textColor="@color/white_opacity_87"
+        android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add"
+        app:iconTint="@color/white_opacity_87"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/primary_volume_1"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/primary_volume_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/black_opacity_12"
+        android:padding="8dp"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/primary_library">
+
+        <include layout="@layout/include_prefs_storage_volume" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/external_library"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:paddingStart="8dp"
+        android:text="@string/external_library"
+        android:textSize="@dimen/text_header_6"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/add_primary_2" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/import_external"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:backgroundTint="?colorSecondary"
+        android:padding="16dp"
+        android:text="@string/add_external"
+        android:textColor="@color/white_opacity_87"
+        android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add"
+        app:iconTint="@color/white_opacity_87"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/external_library"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/external_volume"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/black_opacity_12"
+        android:padding="8dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/external_library">
+
+        <include layout="@layout/include_prefs_storage_volume" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

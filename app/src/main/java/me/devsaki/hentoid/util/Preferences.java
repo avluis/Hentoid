@@ -70,7 +70,7 @@ public final class Preferences {
         // Remove non-exportable settings that make no sense on another instance
         result.remove(Key.FIRST_RUN);
         result.remove(Key.WELCOME_DONE);
-        result.remove(Key.SD_STORAGE_URI);
+        result.remove(Key.PRIMARY_STORAGE_URI);
         result.remove(Key.EXTERNAL_LIBRARY_URI);
         result.remove(Key.LAST_KNOWN_APP_VERSION_CODE);
         result.remove(Key.REFRESH_JSON_1_DONE);
@@ -253,11 +253,35 @@ public final class Preferences {
     }
 
     public static String getStorageUri() {
-        return sharedPreferences.getString(Key.SD_STORAGE_URI, "");
+        return sharedPreferences.getString(Key.PRIMARY_STORAGE_URI, "");
     }
 
     public static void setStorageUri(String uri) {
-        sharedPreferences.edit().putString(Key.SD_STORAGE_URI, uri).apply();
+        sharedPreferences.edit().putString(Key.PRIMARY_STORAGE_URI, uri).apply();
+    }
+
+    public static String getStorageUri2() {
+        return sharedPreferences.getString(Key.PRIMARY_STORAGE_URI_2, "");
+    }
+
+    public static void setStorageUri2(String uri) {
+        sharedPreferences.edit().putString(Key.PRIMARY_STORAGE_URI_2, uri).apply();
+    }
+
+    public static int getStorageFillMethod() {
+        return getIntPref(Key.PRIMARY_STORAGE_FILL_METHOD, Default.PRIMARY_STORAGE_FILL_METHOD);
+    }
+
+    public static void setStorageFillMethod(int value) {
+        sharedPreferences.edit().putInt(Key.PRIMARY_STORAGE_FILL_METHOD, value).apply();
+    }
+
+    public static int getStorageSwitchThresholdPc() {
+        return getIntPref(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, Default.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC);
+    }
+
+    public static void setStorageSwitchThresholdPc(int value) {
+        sharedPreferences.edit().putInt(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, value).apply();
     }
 
     public static int getMemoryAlertThreshold() {
@@ -466,13 +490,11 @@ public final class Preferences {
     }
 
     public static int getViewerRatioCompletedThreshold() {
-        return getIntPref(Key.VIEWER_RATIO_COMPLETED_THRESHOLD, Default.VIEWER_RATIO_COMPLETED_THRESHOLD)
-                ;
+        return getIntPref(Key.VIEWER_RATIO_COMPLETED_THRESHOLD, Default.VIEWER_RATIO_COMPLETED_THRESHOLD);
     }
 
     public static int getViewerSlideshowDelay() {
-        return getIntPref(Key.VIEWER_SLIDESHOW_DELAY, Default.VIEWER_SLIDESHOW_DELAY)
-                ;
+        return getIntPref(Key.VIEWER_SLIDESHOW_DELAY, Default.VIEWER_SLIDESHOW_DELAY);
     }
 
     public static void setViewerSlideshowDelay(int value) {
@@ -480,8 +502,7 @@ public final class Preferences {
     }
 
     public static int getViewerSlideshowDelayVertical() {
-        return getIntPref(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Default.VIEWER_SLIDESHOW_DELAY_VERTICAL)
-                ;
+        return getIntPref(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Default.VIEWER_SLIDESHOW_DELAY_VERTICAL);
     }
 
     public static void setViewerSlideshowDelayVertical(int value) {
@@ -489,8 +510,7 @@ public final class Preferences {
     }
 
     public static int getViewerSeparatingBars() {
-        return getIntPref(Key.VIEWER_SEPARATING_BARS, Default.VIEWER_SEPARATING_BARS)
-                ;
+        return getIntPref(Key.VIEWER_SEPARATING_BARS, Default.VIEWER_SEPARATING_BARS);
     }
 
     public static boolean isViewerHoldToZoom() {
@@ -498,8 +518,7 @@ public final class Preferences {
     }
 
     public static int getViewerCapTapZoom() {
-        return getIntPref(Key.VIEWER_CAP_TAP_ZOOM, Default.VIEWER_CAP_TAP_ZOOM)
-                ;
+        return getIntPref(Key.VIEWER_CAP_TAP_ZOOM, Default.VIEWER_CAP_TAP_ZOOM);
     }
 
     public static boolean isViewerMaintainHorizontalZoom() {
@@ -535,13 +554,11 @@ public final class Preferences {
     }
 
     public static int getDownloadLargeOnlyWifiThresholdMB() {
-        return getIntPref(Key.DL_SIZE_WIFI_THRESHOLD, Default.DL_SIZE_WIFI_THRESHOLD)
-                ;
+        return getIntPref(Key.DL_SIZE_WIFI_THRESHOLD, Default.DL_SIZE_WIFI_THRESHOLD);
     }
 
     public static int getDownloadLargeOnlyWifiThresholdPages() {
-        return getIntPref(Key.DL_PAGES_WIFI_THRESHOLD, Default.DL_PAGES_WIFI_THRESHOLD)
-                ;
+        return getIntPref(Key.DL_PAGES_WIFI_THRESHOLD, Default.DL_PAGES_WIFI_THRESHOLD);
     }
 
     public static boolean isDlRetriesActive() {
@@ -565,8 +582,7 @@ public final class Preferences {
     }
 
     public static int getTagBlockingBehaviour() {
-        return getIntPref(Key.DL_BLOCKED_TAG_BEHAVIOUR, Default.DL_BLOCKED_TAGS_BEHAVIOUR)
-                ;
+        return getIntPref(Key.DL_BLOCKED_TAG_BEHAVIOUR, Default.DL_BLOCKED_TAGS_BEHAVIOUR);
     }
 
     public static List<Site> getActiveSites() {
@@ -786,7 +802,10 @@ public final class Preferences {
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
         public static final String ENDLESS_SCROLL = "pref_endless_scroll";
         public static final String TOP_FAB = "pref_top_fab";
-        public static final String SD_STORAGE_URI = "pref_sd_storage_uri";
+        public static final String PRIMARY_STORAGE_URI = "pref_sd_storage_uri";
+        public static final String PRIMARY_STORAGE_URI_2 = "pref_sd_storage_uri_2";
+        public static final String PRIMARY_STORAGE_FILL_METHOD = "pref_storage_fill_method";
+        public static final String PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = "pref_storage_switch_threshold_pc";
         public static final String EXTERNAL_LIBRARY = "pref_external_library";
         public static final String EXTERNAL_LIBRARY_URI = "pref_external_library_uri";
         public static final String EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete";
@@ -890,6 +909,10 @@ public final class Preferences {
         }
 
         public static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
+
+        static final int PRIMARY_STORAGE_FILL_METHOD = Constant.STORAGE_FILL_BALANCE_OCCUPIED;
+        static final int PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = 90;
+
         static final boolean FORCE_ENGLISH = false;
         static final int QUANTITY_PER_PAGE = 20;
         public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
@@ -995,6 +1018,10 @@ public final class Preferences {
         private Constant() {
             throw new IllegalStateException("Utility class");
         }
+
+        public static final int STORAGE_FILL_BALANCE_OCCUPIED = 0;
+        public static final int STORAGE_FILL_SWITCH_THRESHOLD = 1;
+
 
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
 

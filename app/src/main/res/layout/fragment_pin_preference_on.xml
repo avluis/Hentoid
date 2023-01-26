@@ -13,8 +13,7 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_close"
-        app:title="@string/title_activity_app_lock"
-        tools:targetApi="lollipop" />
+        app:title="@string/title_activity_app_lock" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_off"
@@ -60,7 +59,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/switch_lock_on_restore"
-        tools:visibility="visible"/>
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/text_reset_pin"

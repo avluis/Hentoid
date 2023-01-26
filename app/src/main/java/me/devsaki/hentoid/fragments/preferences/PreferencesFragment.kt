@@ -112,7 +112,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.FORCE_ENGLISH,
             Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
             Preferences.Key.PRIMARY_FOLDER,
-            Preferences.Key.SD_STORAGE_URI -> onHentoidFolderChanged()
+            Preferences.Key.PRIMARY_STORAGE_URI -> onHentoidFolderChanged()
             Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
         }

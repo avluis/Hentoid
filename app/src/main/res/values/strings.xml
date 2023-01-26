@@ -44,6 +44,7 @@
     <string name="_default">default</string>
     <string name="empty">empty</string>
     <string name="none">None</string>
+    <string name="help">Help</string>
     <string name="disabled_generic">Disabled</string>
     <string name="create_generic">Create</string>
     <string name="edit_generic">Edit</string>
@@ -59,6 +60,7 @@
     <string name="title_activity_search">Advanced Search</string>
     <string name="title_activity_meta_edit">Edit metadata</string>
     <string name="title_activity_rules">Renaming rules</string>
+    <string name="title_activity_storage">Storage management</string>
 
     <!-- Library refresh screen -->
     <string name="refresh_step1">Hentoid folder</string>
@@ -224,6 +226,14 @@
     <string name="errortype_wifi">Book skipped because of Wi-Fi download size limitations</string>
     <string name="errortype_blocked">Book contains a blocked tag</string>
     <string name="errortype_undefined">Undefined</string>
+
+    <!-- Storage management -->
+    <string name="browse_mode_warning">Browse-only mode is active\nYou are using the app without storage permissions.</string>
+    <string name="primary_library">Primary library (downloads)</string>
+    <string name="add_primary_1">Add primary location 1</string>
+    <string name="add_primary_2">Add primary location 2</string>
+    <string name="external_library">External library (archives, 3rd party books)</string>
+    <string name="add_external">Add external location</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
