@@ -6,8 +6,9 @@
 
     <TextView
         android:id="@+id/number"
-        android:layout_width="wrap_content"
+        android:layout_width="24dp"
         android:layout_height="wrap_content"
+        android:text="@string/empty_string"
         android:textSize="@dimen/text_header_4"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -20,19 +21,23 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:gravity="center_vertical"
+        android:lines="2"
         android:textSize="@dimen/text_subtitle_2"
-        app:layout_constraintEnd_toStartOf="@id/queueBottomBtn"
+        app:layout_constraintEnd_toStartOf="@id/remove_btn"
         app:layout_constraintStart_toEndOf="@id/number"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="/storage/emulated/0/.Hentoid" />
 
-    <me.devsaki.hentoid.views.CircularProgressView
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/stats_graph"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
+        android:progress="50"
+        app:indicatorColor="@color/secondary_light"
+        app:indicatorSize="24dp"
         app:layout_constraintStart_toEndOf="@id/number"
         app:layout_constraintTop_toBottomOf="@id/path" />
 
@@ -48,7 +53,7 @@
         tools:text="4.5 GB (30%) free" />
 
     <ImageView
-        android:id="@+id/queueBottomBtn"
+        android:id="@+id/remove_btn"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="8dp"

@@ -62,15 +62,15 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
         val primaryUsageBytes = primaryMemUsage.map { e -> e.value.right }.sum()
         val externalUsageBytes = externalMemUsage.map { e -> e.value.right }.sum()
 
-        binding.memoryGlobalGraph.let { donut ->
-            donut.setTotalColor(R.color.primary_light)
-            donut.setProgress1Color(R.color.secondary_light)
-            donut.setProgress2Color(R.color.secondary_variant_light)
-            donut.setProgress3Color(R.color.white_opacity_25)
-            donut.setTotal(1)
-            donut.setProgress1(primaryUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid primary library
-            donut.setProgress2(externalUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid external library
-            donut.setProgress3(1 - deviceFreeBytes * 1f / deviceTotalBytes) // Total size taken on the device
+        binding.memoryGlobalGraph.apply {
+            setTotalColor(R.color.primary_light)
+            setProgress1Color(R.color.secondary_light)
+            setProgress2Color(R.color.secondary_variant_light)
+            setProgress3Color(R.color.white_opacity_25)
+            setTotal(1)
+            setProgress1(primaryUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid primary library
+            setProgress2(externalUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid external library
+            setProgress3(1 - deviceFreeBytes * 1f / deviceTotalBytes) // Total size taken on the device
         }
 
         binding.memoryTotal.text = resources.getString(

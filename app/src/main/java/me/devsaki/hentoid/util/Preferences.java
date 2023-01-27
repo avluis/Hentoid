@@ -812,6 +812,7 @@ public final class Preferences {
         public static final String EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library";
         static final String FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         public static final String PRIMARY_FOLDER = "folder";
+        public static final String STORAGE_MANAGEMENT = "storage_mgt";
         public static final String MEMORY_USAGE = "pref_memory_usage";
         public static final String MEMORY_ALERT = "pref_memory_alert";
         static final String WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";

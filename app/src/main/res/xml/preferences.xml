@@ -100,6 +100,10 @@
             android:title="@string/pref_cat_downloads_folder"
             app:iconSpaceReserved="false">
             <Preference
+                android:key="storage_mgt"
+                android:title="@string/title_activity_storage"
+                app:iconSpaceReserved="false" />
+            <Preference
                 android:key="folder"
                 android:summary="@string/pref_select_folder_summary"
                 android:title="@string/pref_select_folder_title"

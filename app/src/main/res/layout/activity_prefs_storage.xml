@@ -41,7 +41,7 @@
         tools:visibility="visible" />
 
     <ImageView
-        android:id="@+id/answer_img"
+        android:id="@+id/browse_mode_img"
         android:layout_width="54dp"
         android:layout_height="55dp"
         android:adjustViewBounds="true"
@@ -59,6 +59,7 @@
         android:id="@+id/primary_library"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:paddingStart="8dp"
         android:text="@string/primary_library"
         android:textSize="@dimen/text_header_6"
@@ -129,7 +130,8 @@
         android:visibility="visible"
         app:layout_constraintStart_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/primary_library">
+        app:layout_constraintTop_toBottomOf="@id/primary_library"
+        tools:visibility="gone">
 
         <include layout="@layout/include_prefs_storage_volume" />
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -146,7 +148,7 @@
         app:layout_constraintTop_toBottomOf="@id/add_primary_2" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/import_external"
+        android:id="@+id/add_external"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

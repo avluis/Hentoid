@@ -26,7 +26,13 @@ import me.devsaki.hentoid.databinding.DialogPrefsRefreshBinding
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
-import me.devsaki.hentoid.util.ImportHelper.*
+import me.devsaki.hentoid.util.ImportHelper.ImportOptions
+import me.devsaki.hentoid.util.ImportHelper.PickFolderContract
+import me.devsaki.hentoid.util.ImportHelper.PickerResult
+import me.devsaki.hentoid.util.ImportHelper.ProcessFolderResult
+import me.devsaki.hentoid.util.ImportHelper.setAndScanExternalFolder
+import me.devsaki.hentoid.util.ImportHelper.setAndScanHentoidFolder
+import me.devsaki.hentoid.util.ImportHelper.showExistingLibraryDialog
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
@@ -40,7 +46,7 @@ import timber.log.Timber
 
 const val SHOW_OPTIONS = "show_options"
 const val CHOOSE_FOLDER = "choose_folder"
-const val EXTERNAL_LIBRARY = "external_library"
+const val LOCATION = "location"
 
 /**
  * Launcher dialog for the following features :
@@ -57,13 +63,17 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     private var showOptions = false
     private var chooseFolder = false
-    private var externalLibrary = false
+    private var location = Location.NONE
 
     private var isServiceGracefulClose = false
 
     // Disposables for RxJava
     private var importDisposable: Disposable? = null
     private val compositeDisposable = CompositeDisposable()
+
+    enum class Location {
+        NONE, PRIMARY_1, PRIMARY_2, EXTERNAL
+    }
 
     private val pickFolder =
         registerForActivityResult(PickFolderContract()) { result: ImmutablePair<Int, Uri> ->
@@ -76,10 +86,10 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     ): View {
         _binding1 = DialogPrefsRefreshBinding.inflate(inflater, container, false)
         requireNotNull(arguments) { "No arguments found" }
-        arguments?.let {
-            showOptions = it.getBoolean(SHOW_OPTIONS, false)
-            chooseFolder = it.getBoolean(CHOOSE_FOLDER, false)
-            externalLibrary = it.getBoolean(EXTERNAL_LIBRARY, false)
+        arguments?.apply {
+            showOptions = getBoolean(SHOW_OPTIONS, false)
+            chooseFolder = getBoolean(CHOOSE_FOLDER, false)
+            location = Location.values()[getInt(LOCATION, Location.NONE.ordinal)]
         }
 
         EventBus.getDefault().register(this)
@@ -135,7 +145,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 }
             }
         } else { // Show import progress layout immediately
-            showImportProgressLayout(chooseFolder, externalLibrary)
+            showImportProgressLayout(chooseFolder, location)
         }
     }
 
@@ -156,7 +166,10 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         cleanAbsent: Boolean,
         cleanNoImages: Boolean
     ) {
-        showImportProgressLayout(false, isExternal)
+        showImportProgressLayout(
+            false,
+            if (isExternal) Location.EXTERNAL else Location.PRIMARY_1
+        ) // TODO
         isCancelable = false
 
         // Run import
@@ -230,14 +243,14 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         }
     }
 
-    private fun showImportProgressLayout(askFolder: Boolean, isExternal: Boolean) {
+    private fun showImportProgressLayout(askFolder: Boolean, location: Location) {
         // Replace launch options layout with import progress layout
         binding1.root.removeAllViews()
         _binding2 =
             IncludeImportStepsBinding.inflate(requireActivity().layoutInflater, binding1.root)
 
         // Memorize UI elements that will be updated during the import events
-        if (isExternal) {
+        if (location == Location.EXTERNAL) {
             binding2.importStep1Button.setText(R.string.refresh_step1_select_external)
             binding2.importStep1Text.setText(R.string.refresh_step1_external)
         } else {
@@ -275,7 +288,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     private fun onFolderPickerResult(resultCode: Int, uri: Uri) {
         when (resultCode) {
             PickerResult.OK -> importDisposable = Single.fromCallable {
-                if (externalLibrary) return@fromCallable setAndScanExternalFolder(
+                if (location == Location.EXTERNAL) return@fromCallable setAndScanExternalFolder(
                     requireContext(), uri
                 ) else return@fromCallable setAndScanHentoidFolder(
                     requireContext(), uri, true, null
@@ -284,15 +297,18 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 .subscribe({ code: Int ->
                     onScanHentoidFolderResult(code)
                 }) { t: Throwable? -> Timber.w(t) }
+
             PickerResult.KO_CANCELED -> Snackbar.make(
                 binding2.root, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG
             ).show()
+
             PickerResult.KO_OTHER, PickerResult.KO_NO_URI -> {
                 Snackbar.make(
                     binding2.root, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG
                 ).show()
                 isCancelable = true
             }
+
             else -> {}
         }
     }
@@ -303,16 +319,19 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             ProcessFolderResult.OK_EMPTY_FOLDER -> dismissAllowingStateLoss()
             ProcessFolderResult.OK_LIBRARY_DETECTED ->                 // Hentoid folder is finally selected at this point -> Update UI
                 updateOnSelectFolder()
+
             ProcessFolderResult.OK_LIBRARY_DETECTED_ASK -> {
                 updateOnSelectFolder()
                 showExistingLibraryDialog(requireContext()) { onCancelExistingLibraryDialog() }
             }
+
             ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER -> {
                 Snackbar.make(
                     binding2.root, getMessage(resultCode), BaseTransientBottomBar.LENGTH_LONG
                 ).show()
                 isCancelable = true
             }
+
             else -> {}
         }
     }
@@ -328,6 +347,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             ProcessFolderResult.KO_OTHER -> R.string.import_other
             ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK ->                 // Nothing should happen here
                 R.string.none
+
             else -> R.string.none
         }
     }
@@ -382,6 +402,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> {
                         it.importStep2Text.text = event.elementName
                     }
+
                     PrimaryImportWorker.STEP_3_BOOKS -> {
                         it.importStep2Bar.isIndeterminate = false
                         it.importStep2Bar.max = 1
@@ -395,9 +416,11 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                             event.elementsTotal
                         )
                     }
+
                     PrimaryImportWorker.STEP_3_PAGES -> {
                         progressBar.visibility = View.VISIBLE
                     }
+
                     PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
                         it.importStep3Check.visibility = View.VISIBLE
                         it.importStep4.visibility = View.VISIBLE
@@ -413,6 +436,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         it.importStep2Check.visibility = View.VISIBLE
                         it.importStep3.visibility = View.VISIBLE
                     }
+
                     PrimaryImportWorker.STEP_3_BOOKS -> {
                         it.importStep3Text.text = resources.getString(
                             R.string.refresh_step3,
@@ -422,9 +446,11 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         it.importStep3Check.visibility = View.VISIBLE
                         it.importStep4.visibility = View.VISIBLE
                     }
+
                     PrimaryImportWorker.STEP_3_PAGES -> {
                         progressBar.visibility = View.GONE
                     }
+
                     PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
                         it.importStep4Check.visibility = View.VISIBLE
                         isServiceGracefulClose = true
@@ -461,14 +487,14 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             fragmentManager: FragmentManager,
             showOptions: Boolean,
             chooseFolder: Boolean,
-            externalLibrary: Boolean
+            location: Location
         ) {
             val fragment = LibRefreshDialogFragment()
 
             val args = Bundle()
             args.putBoolean(SHOW_OPTIONS, showOptions)
             args.putBoolean(CHOOSE_FOLDER, chooseFolder)
-            args.putBoolean(EXTERNAL_LIBRARY, externalLibrary)
+            args.putInt(LOCATION, location.ordinal)
             fragment.arguments = args
 
             fragment.show(fragmentManager, null)

@@ -27,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
+import me.devsaki.hentoid.activities.StoragePreferenceActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -45,8 +46,6 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.workers.ExternalImportWorker
-import me.devsaki.hentoid.workers.PrimaryImportWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import kotlin.properties.Delegates
 
@@ -111,8 +110,10 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.APP_PREVIEW,
             Preferences.Key.FORCE_ENGLISH,
             Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
+
             Preferences.Key.PRIMARY_FOLDER,
             Preferences.Key.PRIMARY_STORAGE_URI -> onHentoidFolderChanged()
+
             Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
         }
@@ -124,21 +125,12 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 requireContext().startLocalActivity<DrawerEditActivity>()
                 true
             }
-            Preferences.Key.EXTERNAL_LIBRARY -> {
-                if (Preferences.isBrowserMode()) {
-                    ToastHelper.toast(R.string.pref_import_browser_mode)
-                } else if (ExternalImportWorker.isRunning(requireContext())) {
-                    ToastHelper.toast(R.string.pref_import_running)
-                } else {
-                    LibRefreshDialogFragment.invoke(
-                        parentFragmentManager,
-                        showOptions = false,
-                        chooseFolder = true,
-                        externalLibrary = true
-                    )
-                }
+
+            Preferences.Key.STORAGE_MANAGEMENT -> {
+                requireContext().startLocalActivity<StoragePreferenceActivity>()
                 true
             }
+
             Preferences.Key.EXTERNAL_LIBRARY_DETACH -> {
                 MaterialAlertDialogBuilder(
                     requireContext(),
@@ -163,6 +155,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                     .show()
                 true
             }
+            /*
             Preferences.Key.REFRESH_LIBRARY -> {
                 if (Preferences.isBrowserMode()) {
                     ToastHelper.toast(R.string.pref_import_browser_mode)
@@ -178,50 +171,46 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 }
                 true
             }
+
+             */
             Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
                 onDeleteAllExceptFavourites()
                 true
             }
+
             Preferences.Key.VIEWER_RENDERING -> {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
                     ToastHelper.toast(R.string.pref_viewer_rendering_no_android5)
                 true
             }
-            Preferences.Key.PRIMARY_FOLDER -> {
-                if (PrimaryImportWorker.isRunning(requireContext())) {
-                    ToastHelper.toast(R.string.pref_import_running)
-                } else {
-                    LibRefreshDialogFragment.invoke(
-                        parentFragmentManager,
-                        showOptions = false,
-                        chooseFolder = true,
-                        externalLibrary = false
-                    )
-                }
-                true
-            }
+
             Preferences.Key.MEMORY_USAGE -> {
                 if (!Preferences.isBrowserMode()) MemoryUsageDialogFragment.invoke(
                     parentFragmentManager
                 )
                 true
             }
+
             Preferences.Key.APP_LOCK -> {
                 requireContext().startLocalActivity<PinPreferenceActivity>()
                 true
             }
+
             Preferences.Key.CHECK_UPDATE_MANUAL -> {
                 onCheckUpdatePrefClick()
                 true
             }
+
             Preferences.Key.DL_SPEED_CAP -> {
                 DownloadSpeedLimiter.setSpeedLimitKbps(Preferences.getDlSpeedCap())
                 true
             }
+
             Preferences.Key.BROWSER_CLEAR_COOKIES -> {
                 onClearCookies()
                 true
             }
+
             else -> super.onPreferenceTreeClick(preference)
         }
 

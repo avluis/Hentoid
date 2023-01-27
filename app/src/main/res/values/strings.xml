@@ -234,6 +234,7 @@
     <string name="add_primary_2">Add primary location 2</string>
     <string name="external_library">External library (archives, 3rd party books)</string>
     <string name="add_external">Add external location</string>
+    <string name="location_storage">%s (%d%%) free</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>

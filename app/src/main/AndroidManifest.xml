@@ -207,6 +207,10 @@
             android:label="@string/title_activity_rules"
             tools:ignore="UnusedAttribute" />
         <activity
+            android:name=".activities.StoragePreferenceActivity"
+            android:label="@string/title_activity_storage"
+            tools:ignore="UnusedAttribute" />
+        <activity
             android:name=".activities.IntentActivity"
             android:exported="true"
             android:theme="@style/Theme.Invisible">
