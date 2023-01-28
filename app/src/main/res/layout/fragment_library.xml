@@ -4,25 +4,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/library_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?colorPrimary"
-        android:elevation="@dimen/toolbar_layout_elevation"
-        android:minHeight="?android:attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
+        app:title="aaa"
         app:menu="@menu/library_menu"
         app:navigationIcon="@drawable/ic_drawer"
         app:navigationContentDescription="@string/open_drawer"/>
 
-    <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/library_selection_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?colorPrimary"
-        android:elevation="@dimen/toolbar_layout_elevation"
-        android:minHeight="?android:attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/library_selection_menu"

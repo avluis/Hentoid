@@ -10,13 +10,13 @@
         <item name="android:focusable">true</item>
     </style>
 
-    <style name="HentoidButtonOutlinedStyle" parent="Widget.MaterialComponents.Button.OutlinedButton">
+    <style name="HentoidButtonOutlinedStyle" parent="Widget.Material3.Button.OutlinedButton">
         <item name="strokeColor">@color/secondary_color_selector_check</item>
         <item name="android:textColor">@color/secondary_text_color_selector_check</item>
         <item name="iconTint">@color/secondary_text_color_selector_check</item>
     </style>
 
-    <style name="HentoidMaterialButtonOutlinedStyle" parent="Widget.MaterialComponents.Button.OutlinedButton">
+    <style name="HentoidMaterialButtonOutlinedStyle" parent="Widget.Material3.Button.OutlinedButton">
         <item name="strokeColor">@color/secondary_color_selector</item>
         <item name="android:textColor">@color/secondary_text_color_selector</item>
         <item name="iconTint">@color/secondary_text_color_selector</item>
@@ -102,18 +102,27 @@
         <item name="android:background">?colorPrimary</item>
     </style>
 
-    <style name="App.Slider" parent="@style/Widget.MaterialComponents.Slider">
+    <style name="App.Slider" parent="@style/Widget.Material3.Slider">
         <item name="labelStyle">@style/App.Tooltip</item>
     </style>
 
-    <style name="App.Tooltip" parent="Widget.MaterialComponents.Tooltip">
+    <style name="App.Tooltip" parent="Widget.Material3.Tooltip">
         <!-- background color of the Tooltip -->
         <item name="backgroundTint">@color/medium_gray</item>
         <!-- textAppearance of the Tooltip -->
         <item name="android:textAppearance">@style/TextAppearance.App.Tooltip</item>
     </style>
 
-    <style name="TextAppearance.App.Tooltip" parent="TextAppearance.MaterialComponents.Tooltip">
+    <style name="TextAppearance.App.Tooltip" parent="Widget.Material3.Tooltip">
+        <item name="android:textColor">@color/white_opacity_87</item>
+    </style>
+
+    <!-- Dialog button -->
+    <style name="Widget.App.DialogButton" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">?colorSecondary</item>
+    </style>
+
+    <style name="MaterialAlertDialog.App.Title.Text" parent="MaterialAlertDialog.Material3.Title.Text">
         <item name="android:textColor">@color/white_opacity_87</item>
     </style>
 </resources>

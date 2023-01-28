@@ -219,8 +219,9 @@ class StoragePreferenceActivity : BaseActivity() {
 
                 else -> { // Remove
                     MaterialAlertDialogBuilder(
-                        baseContext,
-                        ThemeHelper.getIdForCurrentTheme(baseContext, R.style.Theme_Light_Dialog)
+                        this
+                        //ThemeHelper.getIdForCurrentTheme(baseContext, R.style.Theme_Light_Dialog)
+                        //R.style.ThemeOverlay_Material3_MaterialAlertDialog
                     )
                         .setIcon(R.drawable.ic_warning)
                         .setCancelable(true)
@@ -229,6 +230,7 @@ class StoragePreferenceActivity : BaseActivity() {
                         .setPositiveButton(R.string.yes) { dialog1: DialogInterface, _: Int ->
                             dialog1.dismiss()
                             viewModel.remove(location)
+                            // TODO update view
                             ToastHelper.toast(R.string.storage_remove_confirm)
                         }
                         .setNegativeButton(R.string.no) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
