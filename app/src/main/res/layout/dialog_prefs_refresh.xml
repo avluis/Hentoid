@@ -21,51 +21,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <RadioGroup
-        android:id="@+id/refresh_location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_caption">
-
-        <RadioButton
-            android:id="@+id/refresh_location_internal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:checked="true"
-            android:text="@string/refresh_location_internal"
-            android:textColor="?colorOnSurface"
-            android:textSize="@dimen/text_body_1" />
-
-        <RadioButton
-            android:id="@+id/refresh_location_external"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/refresh_location_external"
-            android:textColor="?colorOnSurface"
-            android:textSize="@dimen/text_body_1" />
-    </RadioGroup>
-
-    <View
-        android:id="@+id/refresh_divider"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="?colorSecondary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_location" />
-
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/refresh_location_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:constraint_referenced_ids="refresh_divider, refresh_location"
-        tools:visibility="visible" />
-
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/refresh_options"
         android:layout_width="wrap_content"
@@ -73,7 +28,7 @@
         android:text="@string/refresh_options"
         android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_divider" />
+        app:layout_constraintTop_toBottomOf="@id/refresh_caption" />
 
     <CheckBox
         android:id="@+id/refresh_options_rename"

@@ -52,6 +52,7 @@ import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
@@ -221,13 +222,15 @@ public class ImportHelper {
     int setAndScanHentoidFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri,
+            LibRefreshDialogFragment.Location location,
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
         // Persist I/O permissions; keep existing ones if present
-        Uri externalUri = null;
-        if (!Preferences.getExternalLibraryUri().isEmpty())
-            externalUri = Uri.parse(Preferences.getExternalLibraryUri());
-        FileHelper.persistNewUriPermission(context, treeUri, externalUri);
+        persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.EXTERNAL);
+        if (location == LibRefreshDialogFragment.Location.PRIMARY_1)
+            persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.PRIMARY_2);
+        else
+            persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.PRIMARY_1);
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
@@ -264,7 +267,7 @@ public class ImportHelper {
         // Scan the folder for an existing library; start the import
         if (hasBooks(context, hentoidFolder)) {
             if (!askScanExisting) {
-                runPrimaryImport(context, options);
+                runPrimaryImport(context, location, options);
                 return ProcessFolderResult.OK_LIBRARY_DETECTED;
             } else return ProcessFolderResult.OK_LIBRARY_DETECTED_ASK;
         } else {
@@ -292,10 +295,8 @@ public class ImportHelper {
             @NonNull final Uri treeUri) {
 
         // Persist I/O permissions; keep existing ones if present
-        Uri hentoidUri = null;
-        if (!Preferences.getStorageUri().isEmpty())
-            hentoidUri = Uri.parse(Preferences.getStorageUri());
-        FileHelper.persistNewUriPermission(context, treeUri, hentoidUri);
+        persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.PRIMARY_1);
+        persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.PRIMARY_2);
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
@@ -316,6 +317,17 @@ public class ImportHelper {
         else return ProcessFolderResult.KO_ALREADY_RUNNING;
     }
 
+    // TODO doc
+    private static void persistLocationCredentials(@NonNull final Context context,
+                                                   @NonNull final Uri treeUri,
+                                                   LibRefreshDialogFragment.Location location) {
+        String locationUriStr = Preferences.getStorageUri(location);
+        if (!locationUriStr.isEmpty()) {
+            Uri locationUri = Uri.parse(locationUriStr);
+            FileHelper.persistNewUriPermission(context, treeUri, locationUri);
+        }
+    }
+
     /**
      * Show the dialog to ask the user if he wants to import existing books
      *
@@ -324,6 +336,7 @@ public class ImportHelper {
      */
     public static void showExistingLibraryDialog(
             @NonNull final Context context,
+            LibRefreshDialogFragment.Location location,
             @Nullable Runnable cancelCallback
     ) {
         new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
@@ -334,7 +347,7 @@ public class ImportHelper {
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            runPrimaryImport(context, null);
+                            runPrimaryImport(context, location, null);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog2, which) -> {
@@ -423,6 +436,7 @@ public class ImportHelper {
      */
     private static void runPrimaryImport(
             @NonNull final Context context,
+            LibRefreshDialogFragment.Location location,
             @Nullable final ImportOptions options
     ) {
         ImportNotificationChannel.init(context);
@@ -435,6 +449,7 @@ public class ImportHelper {
             builder.setRefreshCleanNoJson(options.cleanNoJson);
             builder.setRefreshCleanNoImages(options.cleanNoImages);
             builder.setImportGroups(options.importGroups);
+            builder.setLocation(location);
         }
 
         WorkManager workManager = WorkManager.getInstance(context);

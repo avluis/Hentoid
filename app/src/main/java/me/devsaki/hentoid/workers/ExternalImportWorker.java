@@ -134,7 +134,7 @@ public class ExternalImportWorker extends BaseWorker {
 
             // Write JSON file for every found book and persist it in the DB
             trace(Log.DEBUG, 0, log, "Import books starting - initial detected count : %s", library.size() + "");
-            ContentHelper.removeAllExternalContent(context, dao);
+            ContentHelper.detachAllExternalContent(context, dao);
 
             for (Content content : library) {
                 if (isStopped()) break;

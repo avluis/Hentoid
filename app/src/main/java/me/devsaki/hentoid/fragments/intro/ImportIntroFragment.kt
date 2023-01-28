@@ -19,6 +19,7 @@ import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
 import me.devsaki.hentoid.databinding.IntroSlide04Binding
 import me.devsaki.hentoid.events.ProcessEvent
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.ImportHelper.setAndScanHentoidFolder
@@ -117,6 +118,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     setAndScanHentoidFolder(
                         requireContext(),
                         treeUri,
+                        LibRefreshDialogFragment.Location.PRIMARY_1,
                         true,
                         null
                     )
@@ -135,6 +137,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                         { t: Throwable? -> Timber.w(t) }
                     )
             }
+
             ImportHelper.PickerResult.KO_CANCELED -> {
                 Snackbar.make(
                     binding.root,
@@ -143,6 +146,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 ).show()
                 binding.skipBtn.visibility = View.VISIBLE
             }
+
             ImportHelper.PickerResult.KO_OTHER, ImportHelper.PickerResult.KO_NO_URI -> {
                 Snackbar.make(
                     binding.root,
@@ -162,36 +166,46 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 updateOnSelectFolder()
                 return
             }
+
             ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED_ASK -> {
                 updateOnSelectFolder()
-                ImportHelper.showExistingLibraryDialog(requireContext()) { onCancelExistingLibraryDialog() }
+                ImportHelper.showExistingLibraryDialog(
+                    requireContext(),
+                    LibRefreshDialogFragment.Location.PRIMARY_1
+                ) { onCancelExistingLibraryDialog() }
                 return
             }
+
             ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER -> Snackbar.make(
                 binding.root,
                 R.string.import_invalid,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
+
             ImportHelper.ProcessFolderResult.KO_APP_FOLDER -> Snackbar.make(
                 binding.root,
                 R.string.import_invalid,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
+
             ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER -> Snackbar.make(
                 binding.root,
                 R.string.import_download_folder,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
+
             ImportHelper.ProcessFolderResult.KO_CREATE_FAIL -> Snackbar.make(
                 binding.root,
                 R.string.import_create_fail,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
+
             ImportHelper.ProcessFolderResult.KO_ALREADY_RUNNING -> Snackbar.make(
                 binding.root,
                 R.string.service_running,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
+
             ImportHelper.ProcessFolderResult.KO_OTHER -> Snackbar.make(
                 binding.root,
                 R.string.import_other,
@@ -254,6 +268,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     mergedBinding.importStep2Check.visibility = View.VISIBLE
                     mergedBinding.importStep3.visibility = View.VISIBLE
                 }
+
                 PrimaryImportWorker.STEP_3_BOOKS == event.step -> {
                     mergedBinding.importStep3Text.text = resources.getString(
                         R.string.refresh_step3,
@@ -263,6 +278,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     mergedBinding.importStep3Check.visibility = View.VISIBLE
                     mergedBinding.importStep4.visibility = View.VISIBLE
                 }
+
                 PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step -> {
                     mergedBinding.importStep4Check.visibility = View.VISIBLE
                     nextStep()

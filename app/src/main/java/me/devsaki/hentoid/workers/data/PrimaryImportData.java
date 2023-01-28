@@ -4,6 +4,7 @@ import androidx.work.Data;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import me.devsaki.hentoid.workers.PrimaryImportWorker;
 
 /**
@@ -19,6 +20,8 @@ public class PrimaryImportData {
     private static final String KEY_REFRESH_CLEAN_NO_JSON = "cleanNoJson";
     private static final String KEY_REFRESH_CLEAN_NO_IMAGES = "cleanNoImages";
     private static final String KEY_IMPORT_GROUPS = "importGroups";
+
+    private static final String KEY_LOCATION = "location";
 
     private PrimaryImportData() {
         throw new UnsupportedOperationException();
@@ -50,6 +53,10 @@ public class PrimaryImportData {
 
         public void setImportGroups(boolean value) {
             builder.putBoolean(KEY_IMPORT_GROUPS, value);
+        }
+
+        public void setLocation(LibRefreshDialogFragment.Location value) {
+            builder.putInt(KEY_LOCATION, value.ordinal());
         }
 
         public Data getData() {
@@ -87,6 +94,10 @@ public class PrimaryImportData {
 
         public boolean getImportGroups() {
             return data.getBoolean(KEY_IMPORT_GROUPS, true);
+        }
+
+        public LibRefreshDialogFragment.Location getLocation() {
+            return LibRefreshDialogFragment.Location.values()[data.getInt(KEY_LOCATION, LibRefreshDialogFragment.Location.NONE.ordinal())];
         }
     }
 }

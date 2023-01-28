@@ -235,6 +235,18 @@ public class ObjectBoxDB {
         return query.build();
     }
 
+    Query<Content> selectAllInternalBooksQ(@NonNull String rootPath, boolean includePlaceholders) {
+        // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
+        // and EXTERNAL because we only want to manage internal books here
+        int[] storedContentStatus = {StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.IGNORED.getCode(), StatusContent.UNHANDLED_ERROR.getCode(), StatusContent.CANCELED.getCode()};
+        if (includePlaceholders)
+            storedContentStatus = ArrayUtils.addAll(storedContentStatus, StatusContent.PLACEHOLDER.getCode());
+        QueryBuilder<Content> query = store.boxFor(Content.class).query()
+                .in(Content_.status, storedContentStatus)
+                .startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        return query.build();
+    }
+
     Query<Content> selectAllExternalBooksQ() {
         return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.EXTERNAL.getCode()).build();
     }

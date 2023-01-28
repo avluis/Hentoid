@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -19,11 +20,28 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
         dao.cleanup()
     }
 
-    fun removeAllExternalContent() {
-        ContentHelper.removeAllExternalContent(
-            getApplication<Application>().applicationContext,
-            dao
-        )
+    fun remove(location: LibRefreshDialogFragment.Location) {
+        when (location) {
+            LibRefreshDialogFragment.Location.PRIMARY_1,
+            LibRefreshDialogFragment.Location.PRIMARY_2 -> {
+                ContentHelper.detachAllPrimaryContent(
+                    getApplication<Application>().applicationContext,
+                    dao,
+                    location
+                )
+            }
+
+            LibRefreshDialogFragment.Location.EXTERNAL -> {
+                ContentHelper.detachAllExternalContent(
+                    getApplication<Application>().applicationContext,
+                    dao
+                )
+            }
+
+            else -> {
+                // Nothing
+            }
+        }
     }
 
     fun deleteAllItemsExceptFavourites() {

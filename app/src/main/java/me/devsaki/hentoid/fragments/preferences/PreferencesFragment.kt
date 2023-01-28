@@ -131,48 +131,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
 
-            Preferences.Key.EXTERNAL_LIBRARY_DETACH -> {
-                MaterialAlertDialogBuilder(
-                    requireContext(),
-                    ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
-                )
-                    .setIcon(R.drawable.ic_warning)
-                    .setCancelable(true)
-                    .setTitle(R.string.app_name)
-                    .setMessage(R.string.prefs_ask_detach_external_library)
-                    .setPositiveButton(
-                        R.string.yes
-                    ) { dialog1: DialogInterface, _: Int ->
-                        dialog1.dismiss()
-                        Preferences.setExternalLibraryUri("")
-                        viewModel.removeAllExternalContent()
-                        ToastHelper.toast(R.string.prefs_external_library_detached)
-                    }
-                    .setNegativeButton(
-                        R.string.no
-                    ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
-                    .create()
-                    .show()
-                true
-            }
-            /*
-            Preferences.Key.REFRESH_LIBRARY -> {
-                if (Preferences.isBrowserMode()) {
-                    ToastHelper.toast(R.string.pref_import_browser_mode)
-                } else if (PrimaryImportWorker.isRunning(requireContext())) {
-                    ToastHelper.toast(R.string.pref_import_running)
-                } else {
-                    LibRefreshDialogFragment.invoke(
-                        parentFragmentManager,
-                        showOptions = true,
-                        chooseFolder = false,
-                        externalLibrary = false
-                    )
-                }
-                true
-            }
-
-             */
             Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
                 onDeleteAllExceptFavourites()
                 true
@@ -181,13 +139,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.VIEWER_RENDERING -> {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
                     ToastHelper.toast(R.string.pref_viewer_rendering_no_android5)
-                true
-            }
-
-            Preferences.Key.MEMORY_USAGE -> {
-                if (!Preferences.isBrowserMode()) MemoryUsageDialogFragment.invoke(
-                    parentFragmentManager
-                )
                 true
             }
 

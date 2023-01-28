@@ -635,6 +635,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
     }
 
+    public void deleteAllInternalBooks(String rootPath) {
+        db.deleteContentById(db.selectAllInternalBooksQ(rootPath, false).findIds());
+    }
+
     public void deleteAllFlaggedBooks(boolean resetRemainingImagesStatus) {
         db.deleteContentById(db.selectAllFlaggedBooksQ().findIds());
 

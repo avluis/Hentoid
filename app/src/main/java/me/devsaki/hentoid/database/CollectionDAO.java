@@ -95,6 +95,8 @@ public interface CollectionDAO {
 
     void deleteAllInternalBooks(boolean resetRemainingImagesStatus);
 
+    void deleteAllInternalBooks(String rootPath);
+
     // Queued books
 
     void flagAllErrorBooksWithJson();

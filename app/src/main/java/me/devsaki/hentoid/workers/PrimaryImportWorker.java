@@ -43,6 +43,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import me.devsaki.hentoid.json.ContentV1;
 import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
@@ -116,12 +117,14 @@ public class PrimaryImportWorker extends BaseWorker {
         PrimaryImportData.Parser data = new PrimaryImportData.Parser(getInputData());
 
         startImport(
+                data.getLocation(),
                 data.getRefreshRename(),
                 data.getRefreshRemovePlaceholders(),
                 data.getRefreshRenumberPages(),
                 data.getRefreshCleanNoJson(),
                 data.getRefreshCleanNoImages(),
-                data.getImportGroups());
+                data.getImportGroups()
+        );
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -155,6 +158,7 @@ public class PrimaryImportWorker extends BaseWorker {
      * @param importGroups       True if the worker has to import groups from the groups JSON; false if existing groups should be kept
      */
     private void startImport(
+            LibRefreshDialogFragment.Location location,
             boolean rename,
             boolean removePlaceholders,
             boolean renumberPages,
@@ -170,9 +174,10 @@ public class PrimaryImportWorker extends BaseWorker {
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
+        String uriStr = Preferences.getStorageUri(location);
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, uriStr);
         if (null == rootFolder) {
-            Timber.e("Root folder is not defined (%s)", Preferences.getStorageUri());
+            Timber.e("Root folder is not defined (%s)", uriStr);
             return;
         }
 

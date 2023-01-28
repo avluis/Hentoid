@@ -69,6 +69,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
@@ -469,12 +470,12 @@ public final class ContentHelper {
     }
 
     /**
-     * Remove all external content from DB without removing files
+     * Remove all external content from DB without removing files (=detach)
      *
      * @param context Context to use
      * @param dao     DAO to use
      */
-    public static void removeAllExternalContent(
+    public static void detachAllExternalContent(
             @NonNull final Context context,
             @NonNull final CollectionDAO dao
     ) {
@@ -487,6 +488,31 @@ public final class ContentHelper {
         File appFolder = context.getFilesDir();
         File[] images = appFolder.listFiles((file, s) -> ImageHelper.isSupportedImage(s));
         if (images != null) for (File f : images) FileHelper.removeFile(f);
+    }
+
+    /**
+     * Remove all content from the given primary location from DB without removing files (=detach)
+     *
+     * @param context  Context to use
+     * @param dao      DAO to use
+     * @param location Location to detach
+     */
+    public static void detachAllPrimaryContent(
+            @NonNull final Context context,
+            @NonNull final CollectionDAO dao,
+            LibRefreshDialogFragment.Location location
+    ) {
+        // Remove all external books from DB
+        // NB : do NOT use ContentHelper.removeContent as it would remove files too
+        // here we just want to remove DB entries without removing files
+        String locationUriStr = Preferences.getStorageUri(location);
+        if (!locationUriStr.isEmpty()) {
+            Uri locationUri = Uri.parse(locationUriStr);
+            int pathDivider = locationUriStr.lastIndexOf("%3A");
+            dao.deleteAllInternalBooks(locationUriStr.substring(0, pathDivider));
+        }
+
+        // TODO groups
     }
 
     /**

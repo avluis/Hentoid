@@ -44,7 +44,8 @@
     <string name="_default">default</string>
     <string name="empty">empty</string>
     <string name="none">None</string>
-    <string name="help">Help</string>
+    <string name="help_generic">Help</string>
+    <string name="actions_generic">Actions</string>
     <string name="disabled_generic">Disabled</string>
     <string name="create_generic">Create</string>
     <string name="edit_generic">Edit</string>
@@ -64,8 +65,10 @@
 
     <!-- Library refresh screen -->
     <string name="refresh_step1">Hentoid folder</string>
+    <string name="refresh_step1_2">Hentoid folder (secondary location)</string>
     <string name="refresh_step1_external">External folder</string>
     <string name="refresh_step1_select">Select Hentoid folder</string>
+    <string name="refresh_step1_select_2">Select Hentoid folder (secondary location)</string>
     <string name="refresh_step1_select_external">Select external folder</string>
     <string name="refresh_step2">Scan site folders</string>
     <string name="refresh_step3_init">Scanning library…</string>
@@ -234,10 +237,13 @@
     <string name="add_primary_2">Add primary location 2</string>
     <string name="external_library">External library (archives, 3rd party books)</string>
     <string name="add_external">Add external location</string>
-    <string name="location_storage">%s (%d%%) free</string>
+    <string name="location_storage">%1$%s (%2$d%%) free</string>
+    <string name="storage_stats">Statistics</string>
+    <string name="storage_remove_ask">Detach selected location?\nNB : Books will not be deleted</string>
+    <string name="storage_remove_confirm">Location detached</string>
 
     <!-- Refresh library -->
-    <string name="refresh_title">Refresh library</string>
+    <string name="refresh_title">Refresh location</string>
     <string name="refresh_caption">Automatically refresh library data by rescanning files and folders.</string>
     <string name="refresh_options">Cleanup options</string>
     <string name="refresh_location_internal">Hentoid library</string>
@@ -304,7 +310,7 @@
 
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>
-    <string name="export_question">Do you want to transfer your library to another phone ?</string>
+    <string name="export_question">Do you want to transfer your library to another phone?</string>
 
     <string name="export_answer_yes">This feature is NOT made to transfer your collection to another phone. It does work in certain cases, but some of your books might prove impossible to redownload!</string>
     <string name="export_transfer_tutorial"><u>Check out our wiki about library transfers</u></string>
@@ -854,7 +860,7 @@
     <string name="meta_choose_type">Choose a type for \'%s\'</string>
     <string name="meta_replace_with">Replace with…</string>
     <string name="meta_tag_all_selected">Tag all selected books</string>
-    <string name="meta_tag_all_selected_confirm">Tag all %1$d selected books with \'%2$s\' ?</string>
+    <string name="meta_tag_all_selected_confirm">Tag all %1$d selected books with \'%2$s\'?</string>
     <string name="meta_rename_new_name">New name</string>
     <string name="meta_rename_new_rule">Remember for future downloads</string>
 

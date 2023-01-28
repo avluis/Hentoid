@@ -8,8 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import android.widget.RadioGroup
-import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -108,9 +106,6 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         super.onViewCreated(rootView, savedInstanceState)
         if (showOptions) { // Show option screen first
             binding1.let {
-                it.refreshLocation.setOnCheckedChangeListener { _: RadioGroup?, i: Int ->
-                    onLocationChanged(i)
-                }
                 it.refreshOptions.setOnCheckedChangeListener { _, isChecked ->
                     if (isChecked) {
                         it.refreshOptionsSubgroup.visibility = View.VISIBLE
@@ -130,12 +125,9 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     it.warningImg.visibility = visibility
                 }
 
-                if (Preferences.getExternalLibraryUri().isNotEmpty())
-                    it.refreshLocationGroup.visibility = View.VISIBLE
-
                 it.actionButton.setOnClickListener { _ ->
                     launchRefreshImport(
-                        it.refreshLocationExternal.isChecked,
+                        location,
                         it.refreshOptionsRename.isChecked,
                         it.refreshOptionsRemovePlaceholders.isChecked,
                         it.refreshOptionsRenumberPages.isChecked,
@@ -149,17 +141,8 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         }
     }
 
-    private fun onLocationChanged(@IdRes checkedId: Int) {
-        binding1.let {
-            if (checkedId == R.id.refresh_location_external)
-                it.refreshOptions.visibility = View.GONE
-            else it.refreshOptions.visibility = View.VISIBLE
-            it.refreshOptions.isChecked = false
-        }
-    }
-
     private fun launchRefreshImport(
-        isExternal: Boolean,
+        location: Location,
         rename: Boolean,
         removePlaceholders: Boolean,
         renumberPages: Boolean,
@@ -168,12 +151,12 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     ) {
         showImportProgressLayout(
             false,
-            if (isExternal) Location.EXTERNAL else Location.PRIMARY_1
-        ) // TODO
+            location
+        )
         isCancelable = false
 
         // Run import
-        if (isExternal) {
+        if (location == Location.EXTERNAL) {
             val externalUri = Uri.parse(Preferences.getExternalLibraryUri())
             compositeDisposable.add(Single.fromCallable {
                 setAndScanExternalFolder(
@@ -208,7 +191,8 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             options.cleanNoJson = cleanAbsent
             options.cleanNoImages = cleanNoImages
             options.importGroups = false
-            val uriStr = Preferences.getStorageUri()
+            val uriStr =
+                if (location == Location.PRIMARY_1) Preferences.getStorageUri() else Preferences.getStorageUri2()
             if (uriStr.isEmpty()) {
                 ToastHelper.toast(requireContext(), R.string.import_invalid_uri)
                 dismissAllowingStateLoss()
@@ -217,7 +201,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             val rootUri = Uri.parse(uriStr)
             compositeDisposable.add(Single.fromCallable {
                 setAndScanHentoidFolder(
-                    requireContext(), rootUri, false, options
+                    requireContext(), rootUri, location, false, options
                 )
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ res: Int ->
@@ -250,12 +234,25 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             IncludeImportStepsBinding.inflate(requireActivity().layoutInflater, binding1.root)
 
         // Memorize UI elements that will be updated during the import events
-        if (location == Location.EXTERNAL) {
-            binding2.importStep1Button.setText(R.string.refresh_step1_select_external)
-            binding2.importStep1Text.setText(R.string.refresh_step1_external)
-        } else {
-            binding2.importStep1Button.setText(R.string.refresh_step1_select)
-            binding2.importStep1Text.setText(R.string.refresh_step1)
+        when (location) {
+            Location.PRIMARY_1 -> {
+                binding2.importStep1Button.setText(R.string.refresh_step1)
+                binding2.importStep1Text.setText(R.string.refresh_step1_select)
+            }
+
+            Location.PRIMARY_2 -> {
+                binding2.importStep1Button.setText(R.string.refresh_step1_2)
+                binding2.importStep1Text.setText(R.string.refresh_step1_select_2)
+            }
+
+            Location.EXTERNAL -> {
+                binding2.importStep1Button.setText(R.string.refresh_step1_select_external)
+                binding2.importStep1Text.setText(R.string.refresh_step1_external)
+            }
+
+            else -> {
+                // Nothing
+            }
         }
         if (askFolder) {
             binding2.importStep1Button.visibility = View.VISIBLE
@@ -291,7 +288,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 if (location == Location.EXTERNAL) return@fromCallable setAndScanExternalFolder(
                     requireContext(), uri
                 ) else return@fromCallable setAndScanHentoidFolder(
-                    requireContext(), uri, true, null
+                    requireContext(), uri, location, true, null
                 )
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ code: Int ->
@@ -322,7 +319,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
             ProcessFolderResult.OK_LIBRARY_DETECTED_ASK -> {
                 updateOnSelectFolder()
-                showExistingLibraryDialog(requireContext()) { onCancelExistingLibraryDialog() }
+                showExistingLibraryDialog(requireContext(), location) { onCancelExistingLibraryDialog() }
             }
 
             ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER -> {

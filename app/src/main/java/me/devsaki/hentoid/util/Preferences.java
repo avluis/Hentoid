@@ -19,6 +19,7 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.Theme;
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import timber.log.Timber;
 
 /**
@@ -266,6 +267,40 @@ public final class Preferences {
 
     public static void setStorageUri2(String uri) {
         sharedPreferences.edit().putString(Key.PRIMARY_STORAGE_URI_2, uri).apply();
+    }
+
+    public static String getStorageUri(LibRefreshDialogFragment.Location location) {
+        switch (location) {
+            case PRIMARY_1:
+                return getStorageUri();
+
+            case PRIMARY_2:
+                return getStorageUri2();
+
+            case EXTERNAL:
+                return getExternalLibraryUri();
+
+            default:
+                return "";
+        }
+    }
+
+    public static void setStorageUri(LibRefreshDialogFragment.Location location, String uri) {
+        switch (location) {
+            case PRIMARY_1:
+                setStorageUri(uri);
+                break;
+
+            case PRIMARY_2:
+                setStorageUri2(uri);
+                break;
+
+            case EXTERNAL:
+                setExternalLibraryUri(uri);
+                break;
+            default:
+                // Nothing
+        }
     }
 
     public static int getStorageFillMethod() {
