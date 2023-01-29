@@ -9,12 +9,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import com.skydoves.powermenu.MenuAnimation
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.ActivityPrefsStorageBinding
 import me.devsaki.hentoid.databinding.IncludePrefsStorageVolumeBinding
+import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
 import me.devsaki.hentoid.fragments.preferences.MemoryUsageDialogFragment
 import me.devsaki.hentoid.util.Helper
@@ -26,6 +29,9 @@ import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 class StoragePreferenceActivity : BaseActivity() {
 
@@ -55,6 +61,16 @@ class StoragePreferenceActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         binding = null
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
+        super.onStop()
     }
 
     private fun bindUI() {
@@ -218,11 +234,7 @@ class StoragePreferenceActivity : BaseActivity() {
                 }
 
                 else -> { // Remove
-                    MaterialAlertDialogBuilder(
-                        this
-                        //ThemeHelper.getIdForCurrentTheme(baseContext, R.style.Theme_Light_Dialog)
-                        //R.style.ThemeOverlay_Material3_MaterialAlertDialog
-                    )
+                    MaterialAlertDialogBuilder(this)
                         .setIcon(R.drawable.ic_warning)
                         .setCancelable(true)
                         .setTitle(R.string.app_name)
@@ -242,5 +254,19 @@ class StoragePreferenceActivity : BaseActivity() {
 
         powerMenu.setIconColor(ContextCompat.getColor(this, R.color.white_opacity_87))
         powerMenu.showAsAnchorRightTop(anchor)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onImportEventComplete(event: ProcessEvent) {
+        if (ProcessEvent.EventType.COMPLETE == event.eventType
+            && event.logFile != null
+            && (event.processId == R.id.import_external || event.processId == R.id.import_primary)
+        ) {
+            val contentView = findViewById<View>(android.R.id.content)
+            val snackbar =
+                Snackbar.make(contentView, R.string.task_done, BaseTransientBottomBar.LENGTH_LONG)
+            snackbar.setAction(R.string.read_log) { FileHelper.openFile(this, event.logFile) }
+            snackbar.show()
+        }
     }
 }

@@ -100,7 +100,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         setPreferencesFromResource(R.xml.preferences, rootKey)
         onHentoidFolderChanged()
         onExternalFolderChanged()
-        populateMemoryUsage()
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
@@ -264,18 +263,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 showSnackBar(caption)
             }
         }
-    }
-
-    private fun populateMemoryUsage() {
-        val folder =
-            FileHelper.getDocumentFromTreeUriString(requireContext(), Preferences.getStorageUri())
-                ?: return
-
-        val memUsagePref: Preference? = findPreference(Preferences.Key.MEMORY_USAGE) as Preference?
-        memUsagePref?.summary = resources.getString(
-            R.string.pref_memory_usage_summary,
-            FileHelper.MemoryUsageFigures(requireContext(), folder).freeUsageRatio100
-        )
     }
 
     private fun onDeleteAllExceptFavourites() {
