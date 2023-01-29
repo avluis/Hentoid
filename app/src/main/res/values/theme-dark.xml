@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme. -->
+    <!-- "Dark" application theme. -->
     <style name="Theme.Dark" parent="Theme.Material3.Dark.NoActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary_dark</item>
@@ -50,8 +50,9 @@
     <!-- Picture viewer -->
     <style name="Theme.Dark.Monochrome">
         <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/black_opacity_50</item>
         <item name="colorOnPrimary">@color/light_gray</item>
-        <item name="android:windowBackground">@color/cod_gray</item>
+        <item name="android:windowBackground">@color/black</item>
     </style>
 
     <!-- Prefs Activity -->
