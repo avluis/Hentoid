@@ -8,6 +8,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Handler;
@@ -579,5 +580,15 @@ public final class Helper {
             return new Point(p.leftMargin + view.getWidth() / 2, p.topMargin + view.getHeight() / 2);
         }
         return null;
+    }
+
+    public static int getPrefsIndex(@NonNull Resources res, int valuesRes, String value) {
+        String[] values = res.getStringArray(valuesRes);
+        int index = 0;
+        for (String val : values) {
+            if (val.equals(value)) return index;
+            index++;
+        }
+        return -1;
     }
 }

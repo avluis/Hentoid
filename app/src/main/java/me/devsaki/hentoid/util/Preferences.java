@@ -100,6 +100,11 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(key, Integer.toString(defaultValue)) + "");
     }
 
+    private static void setIntPref(@NonNull String key, int value) {
+        if (null == sharedPreferences) return;
+        sharedPreferences.edit().putString(key, Integer.toString(value)).apply();
+    }
+
     private static long getLongPref(@NonNull String key, long defaultValue) {
         if (null == sharedPreferences) return defaultValue;
         return Long.parseLong(sharedPreferences.getString(key, Long.toString(defaultValue)) + "");
@@ -323,6 +328,10 @@ public final class Preferences {
         return getIntPref(Key.MEMORY_ALERT, Default.MEMORY_ALERT);
     }
 
+    public static void setMemoryAlertThreshold(int value) {
+        setIntPref(Key.MEMORY_ALERT, value);
+    }
+
     public static String getExternalLibraryUri() {
         return sharedPreferences.getString(Key.EXTERNAL_LIBRARY_URI, "");
     }
@@ -439,8 +448,7 @@ public final class Preferences {
     }
 
     public static int getViewerBrowseMode() {
-        return getIntPref(Key.VIEWER_BROWSE_MODE, Default.VIEWER_BROWSE_MODE)
-                ;
+        return getIntPref(Key.VIEWER_BROWSE_MODE, Default.VIEWER_BROWSE_MODE);
     }
 
     public static void setViewerBrowseMode(int browseMode) {

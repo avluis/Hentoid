@@ -128,14 +128,6 @@
                 android:summary="@string/pref_folder_trunc_summary"
                 android:title="@string/pref_folder_trunc_title"
                 app:iconSpaceReserved="false" />
-            <ListPreference
-                android:defaultValue="@string/pref_memory_alert_default"
-                android:entries="@array/pref_memory_alert_entries"
-                android:entryValues="@array/pref_memory_alert_values"
-                android:key="pref_memory_alert"
-                android:summary="@string/pref_attributes_list_order_summary"
-                android:title="@string/pref_memory_alert_title"
-                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_external"

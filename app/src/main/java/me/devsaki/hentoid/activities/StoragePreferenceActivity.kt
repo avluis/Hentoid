@@ -95,6 +95,27 @@ class StoragePreferenceActivity : BaseActivity() {
                 if (ExternalImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
                 else importLocation(Location.EXTERNAL)
             }
+
+            alertLowPanel.setOnClickListener {
+                MaterialAlertDialogBuilder(this@StoragePreferenceActivity)
+                    .setCancelable(true)
+                    .setTitle(R.string.pref_memory_alert_title)
+                    .setSingleChoiceItems(
+                        R.array.pref_memory_alert_entries,
+                        Helper.getPrefsIndex(
+                            resources,
+                            R.array.pref_memory_alert_values,
+                            Preferences.getMemoryAlertThreshold().toString()
+                        )
+                    ) { dialog, which ->
+                        val array = resources.getStringArray(R.array.pref_memory_alert_values)
+                        Preferences.setMemoryAlertThreshold(array[which].toInt())
+                        refreshDisplay()
+                        dialog.dismiss()
+                    }
+                    .create()
+                    .show()
+            }
         }
     }
 
@@ -126,6 +147,29 @@ class StoragePreferenceActivity : BaseActivity() {
                 )
             }
             addPrimary2.isVisible = Preferences.getStorageUri2().isEmpty()
+
+            alertLowPanel.isVisible = (primaryVolume1.isVisible || primaryVolume2.isVisible)
+            val textArray = resources.getStringArray(R.array.pref_memory_alert_entries)
+            alertDesc.text = textArray[Helper.getPrefsIndex(
+                resources,
+                R.array.pref_memory_alert_values,
+                Preferences.getMemoryAlertThreshold().toString()
+            )]
+
+            /*
+            val valuesArray = resources.getStringArray(R.array.pref_memory_alert_values)
+
+            run loop@{
+                valuesArray.forEachIndexed { index, s ->
+                    if (Preferences.getMemoryAlertThreshold().toString() == s) {
+                        val textArray = resources.getStringArray(R.array.pref_memory_alert_entries)
+                        alertDesc.text = textArray[index]
+                        return@loop // break
+                    }
+                }
+            }
+
+             */
 
             externalVolume.isVisible = Preferences.getExternalLibraryUri().isNotEmpty()
             if (externalVolume.isVisible) {
