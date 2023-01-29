@@ -19,6 +19,7 @@ import me.devsaki.hentoid.databinding.ActivityPrefsStorageBinding
 import me.devsaki.hentoid.databinding.IncludePrefsStorageVolumeBinding
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment.Location
 import me.devsaki.hentoid.fragments.preferences.MemoryUsageDialogFragment
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -55,7 +56,6 @@ class StoragePreferenceActivity : BaseActivity() {
         viewModel = ViewModelProvider(this, vmFactory)[PreferencesViewModel::class.java]
 
         bindUI()
-        init()
     }
 
     override fun onDestroy() {
@@ -73,36 +73,43 @@ class StoragePreferenceActivity : BaseActivity() {
         super.onStop()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Make sure display is up to date even after leaving the app in the background during import
+        refreshDisplay()
+    }
+
     private fun bindUI() {
         binding?.apply {
+            toolbar.setNavigationOnClickListener { finish() }
+
             addPrimary1.setOnClickListener {
                 if (PrimaryImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
-                else importLocation(LibRefreshDialogFragment.Location.PRIMARY_1)
+                else importLocation(Location.PRIMARY_1)
             }
             addPrimary2.setOnClickListener {
                 if (PrimaryImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
-                else importLocation(LibRefreshDialogFragment.Location.PRIMARY_2)
+                else importLocation(Location.PRIMARY_2)
             }
             addExternal.setOnClickListener {
                 if (ExternalImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
-                else importLocation(LibRefreshDialogFragment.Location.EXTERNAL)
+                else importLocation(Location.EXTERNAL)
             }
         }
     }
 
-    private fun init() {
+    private fun refreshDisplay() {
         binding?.apply {
-            toolbar.setNavigationOnClickListener { finish() }
-
             browseModeWarning.isVisible = Preferences.isBrowserMode()
             browseModeImg.isVisible = Preferences.isBrowserMode()
 
             primaryVolume1.isVisible = Preferences.getStorageUri().isNotEmpty()
             if (primaryVolume1.isVisible) {
-                binding1 = IncludePrefsStorageVolumeBinding.bind(primaryVolume1)
+                if (null == binding1) binding1 =
+                    IncludePrefsStorageVolumeBinding.bind(primaryVolume1)
                 bindLocation(
                     binding1,
-                    LibRefreshDialogFragment.Location.PRIMARY_1,
+                    Location.PRIMARY_1,
                     Preferences.getStorageUri()
                 )
             }
@@ -110,10 +117,11 @@ class StoragePreferenceActivity : BaseActivity() {
 
             primaryVolume2.isVisible = Preferences.getStorageUri2().isNotEmpty()
             if (primaryVolume2.isVisible) {
-                binding2 = IncludePrefsStorageVolumeBinding.bind(primaryVolume2)
+                if (null == binding2) binding2 =
+                    IncludePrefsStorageVolumeBinding.bind(primaryVolume2)
                 bindLocation(
                     binding2,
-                    LibRefreshDialogFragment.Location.PRIMARY_2,
+                    Location.PRIMARY_2,
                     Preferences.getStorageUri2()
                 )
             }
@@ -121,11 +129,11 @@ class StoragePreferenceActivity : BaseActivity() {
 
             externalVolume.isVisible = Preferences.getExternalLibraryUri().isNotEmpty()
             if (externalVolume.isVisible) {
-                bindingExt =
+                if (null == bindingExt) bindingExt =
                     IncludePrefsStorageVolumeBinding.bind(externalVolume)
                 bindLocation(
                     bindingExt,
-                    LibRefreshDialogFragment.Location.EXTERNAL,
+                    Location.EXTERNAL,
                     Preferences.getExternalLibraryUri()
                 )
             }
@@ -135,13 +143,13 @@ class StoragePreferenceActivity : BaseActivity() {
 
     private fun bindLocation(
         binding: IncludePrefsStorageVolumeBinding?,
-        location: LibRefreshDialogFragment.Location,
+        location: Location,
         uriStr: String
     ) {
         binding?.apply {
             when (location) {
-                LibRefreshDialogFragment.Location.PRIMARY_1 -> number.text = "1"
-                LibRefreshDialogFragment.Location.PRIMARY_2 -> number.text = "2"
+                Location.PRIMARY_1 -> number.text = "1"
+                Location.PRIMARY_2 -> number.text = "2"
                 else -> number.text = " "
             }
             val uri = Uri.parse(uriStr)
@@ -166,7 +174,7 @@ class StoragePreferenceActivity : BaseActivity() {
         }
     }
 
-    private fun importLocation(location: LibRefreshDialogFragment.Location) {
+    private fun importLocation(location: Location) {
         LibRefreshDialogFragment.invoke(
             supportFragmentManager,
             showOptions = false,
@@ -175,7 +183,7 @@ class StoragePreferenceActivity : BaseActivity() {
         )
     }
 
-    private fun onActionClick(location: LibRefreshDialogFragment.Location, anchor: View) {
+    private fun onActionClick(location: Location, anchor: View) {
         val powerMenuBuilder = PowerMenu.Builder(this)
             .addItem(
                 PowerMenuItem(
@@ -241,8 +249,8 @@ class StoragePreferenceActivity : BaseActivity() {
                         .setMessage(R.string.storage_remove_ask)
                         .setPositiveButton(R.string.yes) { dialog1: DialogInterface, _: Int ->
                             dialog1.dismiss()
-                            viewModel.remove(location)
-                            // TODO update view
+                            viewModel.detach(location)
+                            refreshDisplay()
                             ToastHelper.toast(R.string.storage_remove_confirm)
                         }
                         .setNegativeButton(R.string.no) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
@@ -262,9 +270,13 @@ class StoragePreferenceActivity : BaseActivity() {
             && event.logFile != null
             && (event.processId == R.id.import_external || event.processId == R.id.import_primary)
         ) {
-            val contentView = findViewById<View>(android.R.id.content)
+            refreshDisplay()
             val snackbar =
-                Snackbar.make(contentView, R.string.task_done, BaseTransientBottomBar.LENGTH_LONG)
+                Snackbar.make(
+                    findViewById(android.R.id.content),
+                    R.string.task_done,
+                    BaseTransientBottomBar.LENGTH_LONG
+                )
             snackbar.setAction(R.string.read_log) { FileHelper.openFile(this, event.logFile) }
             snackbar.show()
         }

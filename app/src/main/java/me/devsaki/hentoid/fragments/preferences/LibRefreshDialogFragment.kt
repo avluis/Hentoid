@@ -354,7 +354,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         binding2.importStep1Check.visibility = View.INVISIBLE
         binding2.importStep2.visibility = View.INVISIBLE
         binding2.importStep1Folder.text = ""
-        binding2.importStep1Button.visibility = View.VISIBLE
+        binding2.importStep1Button.isVisible = true
         isCancelable = true
     }
 
@@ -366,7 +366,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         )
         binding2.importStep1Folder.isVisible = true
         binding2.importStep1Text.isVisible = true
-        binding2.importStep1Button.isVisible = true
+        binding2.importStep1Button.visibility = View.INVISIBLE
         binding2.importStep1Check.isVisible = true
         binding2.importStep2.isVisible = true
         binding2.importStep2Bar.isIndeterminate = true
