@@ -1,22 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base application theme. -->
-    <style name="Theme.Dark" parent="Theme.MaterialComponents">
+    <style name="Theme.Dark" parent="Theme.Material3.Dark.NoActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary_dark</item>
-        <item name="colorPrimaryVariant">@color/primary_variant_dark</item>
         <item name="colorOnPrimary">@color/on_primary_dark</item>
         <item name="colorSecondary">@color/secondary_dark</item>
-        <item name="colorSecondaryVariant">@color/secondary_variant_dark</item>
         <item name="colorOnSecondary">@color/on_secondary_dark</item>
+        <item name="colorTertiary">@color/primary_dark</item>
+        <item name="colorOnTertiary">@color/on_secondary_dark</item>
+
         <item name="colorSurface">@color/window_background_dark</item>
         <item name="colorOnSurface">@color/on_surface_dark</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_dark</item>
+        <item name="colorContainer">@color/window_background_dark</item>
+        <item name="colorOnContainer">@color/on_surface_dark</item>
+        <item name="colorSecondaryContainer">@color/window_background_dark</item>
+        <item name="colorOnSecondaryContainer">@color/on_surface_dark</item>
+        <item name="colorTertiaryContainer">@color/window_background_dark</item>
+        <item name="colorOnTertiaryContainer">@color/on_surface_dark</item>
+
         <item name="android:windowBackground">@color/window_background_dark</item>
         <item name="android:colorBackground">@color/window_background_dark</item>
         <item name="colorOnBackground">@color/on_background_dark</item>
+        <!-- Toolbars -->
+        <item name="toolbarStyle">@style/Theme.Dark.Toolbar</item>
+        <!-- Dialogs -->
         <item name="materialAlertDialogTheme">@style/Theme.Dark.Dialog</item>
         <item name="dialogTheme">@style/Theme.Dark.DialogFragment</item>
         <item name="android:dialogTheme">@style/Theme.Dark.DialogFragment</item>
+        <!-- Preferences -->
+        <item name="alertDialogTheme">@style/Theme.Dark.Dialog</item>
+        <!-- Text -->
+        <item name="android:editTextColor">@color/on_primary_dark</item>
+        <item name="android:textColorPrimary">@color/on_primary_dark</item>
+        <item name="android:textColorSecondary">@color/on_secondary_dark</item>
+        <item name="android:textColorTertiary">@color/on_primary_dark</item>
         <!-- Custom items for specific places of the app -->
         <item name="drawer_header_diagonal">@color/drawer_header_diagonal_dark</item>
         <item name="card_surface">@color/card_surface_dark</item>
@@ -31,7 +50,6 @@
     <!-- Picture viewer -->
     <style name="Theme.Dark.Monochrome">
         <item name="colorPrimary">@color/white</item>
-        <item name="colorPrimaryVariant">@color/black_opacity_50</item>
         <item name="colorOnPrimary">@color/light_gray</item>
         <item name="android:windowBackground">@color/cod_gray</item>
     </style>
@@ -53,9 +71,8 @@
 
     <!-- Dialog themes -->
 
-    <style name="Theme.Dark.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+    <style name="Theme.Dark.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="colorPrimary">@color/secondary_dark</item>
-        <item name="colorPrimaryVariant">@color/primary_variant_dark</item>
         <item name="colorSecondary">@color/secondary_dark</item>
         <!-- colorSurface is the actual dialog background -->
         <item name="colorSurface">@color/window_background_dark</item>
@@ -69,6 +86,8 @@
         <item name="android:textColorHint">@color/on_primary_dark</item>
         <item name="textColorAlertDialogListItem">@color/on_primary_dark</item>
         <item name="android:checkboxStyle">@style/Theme.Dark.DialogCheckbox</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.App.DialogButton</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.App.DialogButton</item>
     </style>
 
     <style name="Theme.Dark.DialogFragment" parent="Theme.Dark.Dialog">
@@ -81,17 +100,15 @@
     </style>
 
     <!-- Search Activity -->
-    <style name="Theme.Dark.BottomSheetDialog" parent="Theme.Design.BottomSheetDialog">
+    <style name="Theme.Dark.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
         <item name="colorPrimary">@color/primary_dark</item>
-        <item name="colorPrimaryVariant">@color/primary_variant_dark</item>
         <item name="colorSecondary">@color/secondary_dark</item>
         <item name="android:colorBackground">@color/window_background_dark</item>
     </style>
 
     <!-- PIN screens -->
-    <style name="Theme.Dark.PinEntryDialog" parent="Theme.MaterialComponents.Dialog">
+    <style name="Theme.Dark.PinEntryDialog" parent="ThemeOverlay.Material3.Dialog">
         <item name="colorPrimary">@color/primary_dark</item>
-        <item name="colorPrimaryVariant">@color/primary_variant_dark</item>
         <item name="colorSecondary">@color/secondary_dark</item>
         <item name="android:windowBackground">@drawable/bg_pin_dialog</item>
         <item name="actionMenuTextColor">@color/on_primary_dark</item>
@@ -104,7 +121,12 @@
         <item name="colorOnSurface">@color/on_primary_dark</item>
     </style>
 
-    <style name="Theme.Dark.DialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+    <style name="Theme.Dark.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextColor">?attr/colorOnPrimary</item>
+        <item name="android:background">?attr/colorPrimary</item>
+    </style>
+
+    <style name="Theme.Dark.DialogCheckbox" parent="Widget.Material3.CompoundButton.CheckBox">
         <item name="android:textColor">@color/on_primary_dark</item>
     </style>
 </resources>

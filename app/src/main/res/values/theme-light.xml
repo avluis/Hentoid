@@ -7,17 +7,40 @@
         <item name="colorOnPrimary">@color/on_primary_light</item>
         <item name="colorSecondary">@color/secondary_light</item>
         <item name="colorOnSecondary">@color/on_secondary_light</item>
+        <item name="colorTertiary">@color/primary_light</item>
+        <item name="colorOnTertiary">@color/on_secondary_light</item>
+
         <item name="colorSurface">@color/window_background_light</item>
         <item name="colorOnSurface">@color/on_surface_light</item>
         <item name="colorOnSurfaceVariant">@color/on_surface_light</item>
+        <item name="colorContainer">@color/window_background_light</item>
         <item name="colorOnContainer">@color/on_surface_light</item>
+        <item name="colorSecondaryContainer">@color/window_background_light</item>
+        <item name="colorOnSecondaryContainer">@color/on_surface_light</item>
+        <item name="colorTertiaryContainer">@color/window_background_light</item>
+        <item name="colorOnTertiaryContainer">@color/on_surface_light</item>
+
         <item name="android:windowBackground">@color/window_background_light</item>
         <item name="android:colorBackground">@color/window_background_light</item>
         <item name="colorOnBackground">@color/on_background_light</item>
+        <!-- Toolbars -->
+        <item name="toolbarStyle">@style/Theme.Light.Toolbar</item>
+        <!-- Dialogs -->
         <item name="materialAlertDialogTheme">@style/Theme.Light.Dialog</item>
         <item name="dialogTheme">@style/Theme.Light.DialogFragment</item>
         <item name="android:dialogTheme">@style/Theme.Light.DialogFragment</item>
-        <item name="toolbarStyle">@style/Theme.Light.Toolbar</item>
+        <!-- Preferences -->
+        <item name="alertDialogTheme">@style/Theme.Light.Dialog</item>
+        <!-- Text -->
+        <item name="android:editTextColor">@color/on_primary_light</item>
+        <item name="android:textColorPrimary">@color/on_primary_light</item>
+        <item name="android:textColorSecondary">@color/on_secondary_light</item>
+        <item name="android:textColorTertiary">@color/on_primary_light</item>
+        <!--
+        <item name="android:textColorPrimaryInverse">#009900</item>
+        <item name="android:textColorSecondaryInverse">#000099</item>
+        <item name="android:textColorTertiaryInverse">#550000</item>
+        -->
         <!-- Custom items for specific places of the app -->
         <item name="drawer_header_diagonal">@color/drawer_header_diagonal_light</item>
         <item name="card_surface">@color/card_surface_light</item>
@@ -39,6 +62,7 @@
     <!-- Picture viewer -->
     <style name="Theme.Light.Monochrome">
         <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/black_opacity_50</item>
         <item name="colorOnPrimary">@color/light_gray</item>
         <item name="android:windowBackground">@color/cod_gray</item>
     </style>
@@ -61,17 +85,11 @@
     <!-- Dialog themes -->
 
     <style name="Theme.Light.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <!-- colorSurface is the actual dialog background -->
-        <!--
         <item name="colorPrimary">@color/secondary_light</item>
         <item name="colorSecondary">@color/secondary_light</item>
-
+        <!-- colorSurface is the actual dialog background -->
         <item name="colorSurface">@color/window_background_light</item>
         <item name="colorOnSurface">@color/on_primary_light</item>
-
-        <item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.App.Title.Text
-        </item>
-
         <item name="android:windowBackground">@color/window_background_light</item>
         <item name="android:colorBackground">@color/window_background_light</item>
         <item name="android:textColor">@color/on_primary_light</item>
@@ -81,7 +99,6 @@
         <item name="android:textColorHint">@color/on_primary_light</item>
         <item name="textColorAlertDialogListItem">@color/on_primary_light</item>
         <item name="android:checkboxStyle">@style/Theme.DialogCheckbox</item>
-        -->
         <item name="buttonBarNegativeButtonStyle">@style/Widget.App.DialogButton</item>
         <item name="buttonBarPositiveButtonStyle">@style/Widget.App.DialogButton</item>
     </style>
