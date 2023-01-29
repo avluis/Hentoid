@@ -237,7 +237,7 @@
     <string name="add_primary_2">Add primary location 2</string>
     <string name="external_library">External library (archives, 3rd party books)</string>
     <string name="add_external">Add external location</string>
-    <string name="location_storage">%1$%s (%2$d%%) free</string>
+    <string name="location_storage">%1$s (%2$d%%) free</string>
     <string name="storage_stats">Statistics</string>
     <string name="storage_remove_ask">Detach selected location?\nNB : Books will not be deleted</string>
     <string name="storage_remove_confirm">Location detached</string>
