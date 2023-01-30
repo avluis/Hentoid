@@ -95,6 +95,7 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.core:core-ktx:+'
     def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
     def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
 
@@ -326,4 +327,5 @@ sonarqube {
     }
 }
 
-apply plugin: 'io.objectbox' // apply last
+apply plugin: 'io.objectbox'
+apply plugin: 'org.jetbrains.kotlin.android'// apply last
