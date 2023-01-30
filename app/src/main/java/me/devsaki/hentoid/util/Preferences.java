@@ -313,7 +313,7 @@ public final class Preferences {
     }
 
     public static void setStorageFillMethod(int value) {
-        sharedPreferences.edit().putInt(Key.PRIMARY_STORAGE_FILL_METHOD, value).apply();
+        setIntPref(Key.PRIMARY_STORAGE_FILL_METHOD, value);
     }
 
     public static int getStorageSwitchThresholdPc() {
@@ -321,7 +321,7 @@ public final class Preferences {
     }
 
     public static void setStorageSwitchThresholdPc(int value) {
-        sharedPreferences.edit().putInt(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, value).apply();
+        setIntPref(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, value);
     }
 
     public static int getMemoryAlertThreshold() {
@@ -1064,7 +1064,7 @@ public final class Preferences {
         }
 
         public static final int STORAGE_FILL_BALANCE_OCCUPIED = 0;
-        public static final int STORAGE_FILL_SWITCH_THRESHOLD = 1;
+        public static final int STORAGE_FILL_FALLOVER = 1;
 
 
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/dialog_width"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:clipToPadding="false"
+    android:padding="16dp">
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/selector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:checkedButton="@id/choice_balance"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/choice_balance"
+            style="@style/HentoidButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:text="@string/storage_strategy_balance"
+            app:icon="@drawable/ic_balance"
+            app:iconSize="64dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/choice_fallover"
+            style="@style/HentoidButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:text="@string/storage_strategy_fallover"
+            app:icon="@drawable/ic_fallover"
+            app:iconSize="64dp" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/threshold"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="@string/storage_fallover_threshold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selector"
+        tools:visibility="visible">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:inputType="number"
+            android:lines="1"
+            android:maxLines="1"
+            tools:text="80" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/white_opacity_25"
+        android:padding="8dp"
+        android:text="@string/storage_strategy_fallover_desc"
+        app:layout_constraintTop_toBottomOf="@id/threshold" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_button"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginTop="8dp"
+        android:text="@string/storage_set_strategy"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_download_strategy"
+        app:iconTint="?colorSecondary"
+        app:layout_constraintTop_toBottomOf="@id/description"
+        tools:layout_editor_absoluteX="16dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

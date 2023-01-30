@@ -398,19 +398,6 @@ public class FileHelper {
     }
 
     /**
-     * Check if the given folder is valid; if it is, set it as the app's root folder
-     *
-     * @param context Context to use
-     * @param folder  Folder to check and set
-     * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials could not be set
-     */
-    public static int checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
-        int result = createNoMedia(context, folder);
-        if (0 == result) Preferences.setStorageUri(folder.getUri().toString());
-        return result;
-    }
-
-    /**
      * Try to create the .nomedia file inside the given folder
      *
      * @param context Context to use

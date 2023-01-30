@@ -55,6 +55,14 @@
         <item>95</item>
         <item>98</item>
     </string-array>
+    <string-array name="pref_storage_strategy_name" translatable="false">
+        <item>@string/storage_strategy_balance</item>
+        <item>@string/storage_strategy_fallover</item>
+    </string-array>
+    <string-array name="pref_storage_strategy_desc" translatable="false">
+        <item>@string/storage_strategy_balance_desc</item>
+        <item>@string/storage_strategy_fallover_desc</item>
+    </string-array>
     <string-array name="pref_browser_quick_dl_threshold_entries" translatable="false">
         <item>@string/pref_browser_quick_dl_threshold_entries_1</item>
         <item>@string/pref_browser_quick_dl_threshold_entries_2</item>

@@ -18,6 +18,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.ActivityPrefsStorageBinding
 import me.devsaki.hentoid.databinding.IncludePrefsStorageVolumeBinding
 import me.devsaki.hentoid.events.ProcessEvent
+import me.devsaki.hentoid.fragments.preferences.DownloadStrategyDialogFragment
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment.Location
 import me.devsaki.hentoid.fragments.preferences.MemoryUsageDialogFragment
@@ -34,7 +35,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class StoragePreferenceActivity : BaseActivity() {
+class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment.Parent {
 
     // == Communication
     private lateinit var viewModel: PreferencesViewModel
@@ -116,6 +117,10 @@ class StoragePreferenceActivity : BaseActivity() {
                     .create()
                     .show()
             }
+
+            strategyPanel.setOnClickListener {
+                DownloadStrategyDialogFragment.invoke(supportFragmentManager)
+            }
         }
     }
 
@@ -134,7 +139,7 @@ class StoragePreferenceActivity : BaseActivity() {
                     Preferences.getStorageUri()
                 )
             }
-            addPrimary1.isVisible = Preferences.getStorageUri().isEmpty()
+            addPrimary1.isVisible = !primaryVolume1.isVisible
 
             primaryVolume2.isVisible = Preferences.getStorageUri2().isNotEmpty()
             if (primaryVolume2.isVisible) {
@@ -146,30 +151,21 @@ class StoragePreferenceActivity : BaseActivity() {
                     Preferences.getStorageUri2()
                 )
             }
-            addPrimary2.isVisible = Preferences.getStorageUri2().isEmpty()
+            addPrimary2.isVisible = primaryVolume1.isVisible && !primaryVolume2.isVisible
 
             alertLowPanel.isVisible = (primaryVolume1.isVisible || primaryVolume2.isVisible)
-            val textArray = resources.getStringArray(R.array.pref_memory_alert_entries)
+            var textArray = resources.getStringArray(R.array.pref_memory_alert_entries)
             alertDesc.text = textArray[Helper.getPrefsIndex(
                 resources,
                 R.array.pref_memory_alert_values,
                 Preferences.getMemoryAlertThreshold().toString()
             )]
 
-            /*
-            val valuesArray = resources.getStringArray(R.array.pref_memory_alert_values)
-
-            run loop@{
-                valuesArray.forEachIndexed { index, s ->
-                    if (Preferences.getMemoryAlertThreshold().toString() == s) {
-                        val textArray = resources.getStringArray(R.array.pref_memory_alert_entries)
-                        alertDesc.text = textArray[index]
-                        return@loop // break
-                    }
-                }
-            }
-
-             */
+            strategyPanel.isVisible = (primaryVolume1.isVisible && primaryVolume2.isVisible)
+            textArray = resources.getStringArray(R.array.pref_storage_strategy_name)
+            strategyTitle.text = resources.getString(R.string.storage_strategy_title, textArray[Preferences.getStorageFillMethod()])
+            textArray = resources.getStringArray(R.array.pref_storage_strategy_desc)
+            strategyDesc.text = textArray[Preferences.getStorageFillMethod()]
 
             externalVolume.isVisible = Preferences.getExternalLibraryUri().isNotEmpty()
             if (externalVolume.isVisible) {
@@ -308,12 +304,17 @@ class StoragePreferenceActivity : BaseActivity() {
         powerMenu.showAsAnchorRightTop(anchor)
     }
 
+    override fun onStrategySelected() {
+        refreshDisplay()
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onImportEventComplete(event: ProcessEvent) {
         if (ProcessEvent.EventType.COMPLETE == event.eventType
             && event.logFile != null
             && (event.processId == R.id.import_external || event.processId == R.id.import_primary)
         ) {
+            // TODO doesn't update when things get too fast
             refreshDisplay()
             val snackbar =
                 Snackbar.make(

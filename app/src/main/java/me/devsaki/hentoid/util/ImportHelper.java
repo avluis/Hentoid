@@ -52,7 +52,7 @@ import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment.Location;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
@@ -184,6 +184,7 @@ public class ImportHelper {
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
 
         // Start the SAF at the specified location
+        // TODO take storage 2 into account
         if (Build.VERSION.SDK_INT >= O && !Preferences.getStorageUri().isEmpty()) {
             DocumentFile file = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
             if (file != null)
@@ -209,6 +210,20 @@ public class ImportHelper {
     }
 
     /**
+     * Check if the given folder is valid; if it is, set it as the app's root folder
+     *
+     * @param context  Context to use
+     * @param location Location to set
+     * @param folder   Folder to check and set
+     * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials could not be set
+     */
+    public static int checkAndSetRootFolder(@NonNull final Context context, Location location, @NonNull final DocumentFile folder) {
+        int result = FileHelper.createNoMedia(context, folder);
+        if (0 == result) Preferences.setStorageUri(location, folder.getUri().toString());
+        return result;
+    }
+
+    /**
      * Scan the given tree URI for a Hentoid folder
      * If none is found there, try to create one
      *
@@ -222,15 +237,15 @@ public class ImportHelper {
     int setAndScanHentoidFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri,
-            LibRefreshDialogFragment.Location location,
+            Location location,
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
         // Persist I/O permissions; keep existing ones if present
-        persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.EXTERNAL);
-        if (location == LibRefreshDialogFragment.Location.PRIMARY_1)
-            persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.PRIMARY_2);
+        persistLocationCredentials(context, treeUri, Location.EXTERNAL);
+        if (location == Location.PRIMARY_1)
+            persistLocationCredentials(context, treeUri, Location.PRIMARY_2);
         else
-            persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.PRIMARY_1);
+            persistLocationCredentials(context, treeUri, Location.PRIMARY_1);
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
@@ -258,7 +273,7 @@ public class ImportHelper {
         }
 
         // Set the folder as the app's downloads folder
-        int result = FileHelper.checkAndSetRootFolder(context, hentoidFolder);
+        int result = checkAndSetRootFolder(context, location, hentoidFolder);
         if (result < 0) {
             Timber.e("Could not set the selected root folder (error = %d) %s", result, hentoidFolder.getUri().toString());
             return ProcessFolderResult.KO_INVALID_FOLDER;
@@ -295,8 +310,8 @@ public class ImportHelper {
             @NonNull final Uri treeUri) {
 
         // Persist I/O permissions; keep existing ones if present
-        persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.PRIMARY_1);
-        persistLocationCredentials(context, treeUri, LibRefreshDialogFragment.Location.PRIMARY_2);
+        persistLocationCredentials(context, treeUri, Location.PRIMARY_1);
+        persistLocationCredentials(context, treeUri, Location.PRIMARY_2);
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
@@ -305,7 +320,7 @@ public class ImportHelper {
             return ProcessFolderResult.KO_INVALID_FOLDER;
         }
         String folderUri = docFile.getUri().toString();
-        if (folderUri.equalsIgnoreCase(Preferences.getStorageUri())) {
+        if (folderUri.equalsIgnoreCase(Preferences.getStorageUri()) || folderUri.equalsIgnoreCase(Preferences.getStorageUri2())) {
             Timber.w("Trying to set the app folder as the external library %s", treeUri.toString());
             return ProcessFolderResult.KO_APP_FOLDER;
         }
@@ -320,7 +335,7 @@ public class ImportHelper {
     // TODO doc
     private static void persistLocationCredentials(@NonNull final Context context,
                                                    @NonNull final Uri treeUri,
-                                                   LibRefreshDialogFragment.Location location) {
+                                                   Location location) {
         String locationUriStr = Preferences.getStorageUri(location);
         if (!locationUriStr.isEmpty()) {
             Uri locationUri = Uri.parse(locationUriStr);
@@ -336,7 +351,7 @@ public class ImportHelper {
      */
     public static void showExistingLibraryDialog(
             @NonNull final Context context,
-            LibRefreshDialogFragment.Location location,
+            Location location,
             @Nullable Runnable cancelCallback
     ) {
         new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
@@ -436,7 +451,7 @@ public class ImportHelper {
      */
     private static void runPrimaryImport(
             @NonNull final Context context,
-            LibRefreshDialogFragment.Location location,
+            Location location,
             @Nullable final ImportOptions options
     ) {
         ImportNotificationChannel.init(context);
@@ -849,13 +864,11 @@ public class ImportHelper {
      *
      * @param dao   CollectionDAO to use
      * @param rules List of rules to add to the existing rules
-     * @return Quantity of new integrated rules
      */
-    public static int importRenamingRules(@NonNull final CollectionDAO dao, List<RenamingRule> rules) {
+    public static void importRenamingRules(@NonNull final CollectionDAO dao, List<RenamingRule> rules) {
         Set<RenamingRule> existingRules = new HashSet<>(dao.selectRenamingRules(AttributeType.UNDEFINED, null));
         List<RenamingRule> rulesToImport = Stream.of(new HashSet<>(rules)).filterNot(existingRules::contains).toList();
         dao.insertRenamingRules(rulesToImport);
-        return rulesToImport.size();
     }
 
     /**

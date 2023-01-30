@@ -30,8 +30,6 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                     dao,
                     location
                 )
-                if (location == Location.PRIMARY_1) Preferences.setStorageUri("")
-                else Preferences.setStorageUri2("")
             }
 
             Location.EXTERNAL -> {
@@ -39,13 +37,13 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                     getApplication<Application>().applicationContext,
                     dao
                 )
-                Preferences.setExternalLibraryUri("")
             }
 
             else -> {
                 // Nothing
             }
         }
+        Preferences.setStorageUri(location, "")
     }
 
     fun deleteAllItemsExceptFavourites() {

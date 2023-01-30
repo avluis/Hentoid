@@ -97,7 +97,7 @@
         android:visibility="gone"
         app:layout_constraintStart_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/primary_library"
+        app:layout_constraintTop_toBottomOf="@id/add_primary_1"
         tools:visibility="visible">
 
         <include layout="@layout/include_prefs_storage_volume" />
@@ -134,12 +134,13 @@
         android:visibility="visible"
         app:layout_constraintStart_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/primary_library"
+        app:layout_constraintTop_toBottomOf="@id/add_primary_2"
         tools:visibility="gone">
 
         <include layout="@layout/include_prefs_storage_volume" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- PRIMARY STORAGE OPTIONS -->
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/alert_low_panel"
@@ -153,7 +154,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/add_primary_2"
+        app:layout_constraintTop_toBottomOf="@id/primary_volume_2"
         tools:visibility="visible">
 
         <ImageView
@@ -182,13 +183,66 @@
 
         <TextView
             android:id="@+id/alert_desc"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:duplicateParentState="true"
+            app:layout_constraintEnd_toEndOf="parent"
             android:text="@string/pref_generic_summary"
             app:layout_constraintStart_toEndOf="@id/alert_icon"
             app:layout_constraintTop_toBottomOf="@id/alert_title"
             tools:text="On 95% full" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/strategy_panel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:paddingStart="64dp"
+        android:text="@string/browse_mode_warning"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/alert_low_panel"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/strategy_icon"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:adjustViewBounds="true"
+            android:duplicateParentState="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_download_strategy"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white_opacity_87"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/strategy_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:text="@string/storage_strategy_title"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/strategy_icon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/strategy_desc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:textStyle="italic"
+            android:text="@string/storage_strategy_balance_desc"
+            app:layout_constraintStart_toEndOf="@id/strategy_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/strategy_title" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -202,7 +256,7 @@
         android:text="@string/external_library"
         android:textSize="@dimen/text_header_6"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/alert_low_panel" />
+        app:layout_constraintTop_toBottomOf="@id/strategy_panel" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/add_external"

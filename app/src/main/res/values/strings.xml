@@ -241,6 +241,13 @@
     <string name="storage_stats">Statistics</string>
     <string name="storage_remove_ask">Detach selected location?\nNB : Books will not be deleted</string>
     <string name="storage_remove_confirm">Location detached</string>
+    <string name="storage_strategy_title">Download strategy : %s</string>
+    <string name="storage_strategy_balance">Balance free space</string>
+    <string name="storage_strategy_balance_desc">Hentoid downloads to whichever location has more free space, trying to maintain balance. Does not move books already in the library.</string>
+    <string name="storage_strategy_fallover">Fallover</string>
+    <string name="storage_strategy_fallover_desc">Hentoid downloads to Location 1 until the low space threshold is hit, then downloads to Location 2.</string>
+    <string name="storage_fallover_threshold">Low space threshold (%%)</string>
+    <string name="storage_set_strategy">Set download strategy</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh location</string>
