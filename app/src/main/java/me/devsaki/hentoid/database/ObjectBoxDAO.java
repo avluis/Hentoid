@@ -89,11 +89,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public long countStoredContent(boolean nonFavouritesOnly, boolean includeQueued) {
-        return db.selectStoredContentQ(nonFavouritesOnly, includeQueued, -1, false).build().count();
-    }
-
-    @Override
     public long countContentWithUnhashedCovers() {
         return db.selectNonHashedContent().count();
     }
@@ -397,11 +392,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public void shuffleContent() {
         db.shuffleContentIds();
-    }
-
-    @Override
-    public long countAllExternalBooks() {
-        return db.selectAllExternalBooksQ().count();
     }
 
     public long countAllInternalBooks(boolean favsOnly) {
@@ -943,10 +933,6 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteRenamingRules(List<Long> ids) {
         db.deleteRenamingRules(Helper.getPrimitiveArrayFromList(ids));
-    }
-
-    public void deleteAllRenamingRules() {
-        db.deleteAllRenamingRules();
     }
 
 

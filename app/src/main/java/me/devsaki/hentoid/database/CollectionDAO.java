@@ -111,9 +111,8 @@ public interface CollectionDAO {
 
     void deleteAllFlaggedBooks(@NonNull String pathRoot, boolean resetRemainingImagesStatus);
 
-    // External library
 
-    long countAllExternalBooks();
+    // External library
 
     void deleteAllExternalBooks();
 
@@ -156,8 +155,6 @@ public interface CollectionDAO {
     // High-level queries (internal and external locations)
 
     List<Long> selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc);
-
-    long countStoredContent(boolean nonFavouriteOnly, boolean includeQueued);
 
     List<Content> selectContentWithUnhashedCovers();
 
@@ -332,8 +329,6 @@ public interface CollectionDAO {
     void insertRenamingRules(@NonNull List<RenamingRule> rules);
 
     void deleteRenamingRules(List<Long> ids);
-
-    void deleteAllRenamingRules();
 
 
     // RESOURCES
