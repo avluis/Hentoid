@@ -169,11 +169,11 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             textArray = resources.getStringArray(R.array.pref_storage_strategy_name)
             strategyTitle.text = resources.getString(
                 R.string.storage_strategy_title,
-                textArray[Preferences.getStorageFillMethod()]
+                textArray[Preferences.getStorageDownloadStrategy()]
             )
             textArray = resources.getStringArray(R.array.pref_storage_strategy_desc)
             strategyDesc.text = String.format(
-                textArray[Preferences.getStorageFillMethod()],
+                textArray[Preferences.getStorageDownloadStrategy()],
                 Preferences.getStorageSwitchThresholdPc()
             )
 

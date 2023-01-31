@@ -52,6 +52,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadReviveEvent;
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.sources.PixivIllustMetadata;
 import me.devsaki.hentoid.notification.action.UserActionNotification;
@@ -215,13 +216,14 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         // Check for download folder existence, available free space and credentials
-        if (Preferences.getStorageUri().trim().isEmpty()) {
+        String targetUriStr = selectDownloadUriStr(context);
+        if (targetUriStr.isEmpty()) {
             Timber.i("No download folder set"); // May happen if user has skipped it during the intro
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, targetUriStr);
         if (null == rootFolder) {
             Timber.i("Download folder has not been found. Please select it again."); // May happen if the folder has been moved or deleted after it has been selected
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
@@ -1224,5 +1226,36 @@ public class ContentDownloadWorker extends BaseWorker {
     private String processNewName(@NonNull String attrName, @NonNull RenamingRule rule) {
         if (rule.doesMatchSourceName(attrName)) return rule.getTargetName(attrName);
         else return null;
+    }
+
+    private String selectDownloadUriStr(@NonNull Context context) {
+        String uriStr1 = Preferences.getStorageUri(LibRefreshDialogFragment.Location.PRIMARY_1).trim();
+        String uriStr2 = Preferences.getStorageUri(LibRefreshDialogFragment.Location.PRIMARY_2).trim();
+
+        // Obvious cases
+        if (uriStr1.isEmpty() && uriStr2.isEmpty()) return "";
+        if (!uriStr1.isEmpty() && uriStr2.isEmpty()) return uriStr1;
+        if (uriStr1.isEmpty()) return uriStr2;
+
+        // Broken cases
+        DocumentFile root1 = FileHelper.getDocumentFromTreeUriString(context, uriStr1);
+        DocumentFile root2 = FileHelper.getDocumentFromTreeUriString(context, uriStr2);
+        if (null == root1 && null == root2) return "";
+        if (root1 != null && null == root2) return uriStr1;
+        if (null == root1) return uriStr2;
+
+        // Apply download strategy
+        FileHelper.MemoryUsageFigures memUsage1 = new FileHelper.MemoryUsageFigures(context, root1);
+        FileHelper.MemoryUsageFigures memUsage2 = new FileHelper.MemoryUsageFigures(context, root2);
+
+        int strategy = Preferences.getStorageDownloadStrategy();
+        if (Preferences.Constant.STORAGE_FILL_FALLOVER == strategy) {
+            if (100 - memUsage1.getFreeUsageRatio100() > Preferences.getStorageSwitchThresholdPc())
+                return uriStr2;
+            else return uriStr1;
+        } else {
+            if (memUsage1.getfreeUsageBytes() > memUsage2.getfreeUsageBytes()) return uriStr1;
+            else return uriStr2;
+        }
     }
 }

@@ -62,8 +62,8 @@ class DownloadStrategyDialogFragment : DialogFragment() {
                 }
             }
             check(
-                when (Preferences.getStorageFillMethod()) {
-                    Preferences.Constant.STORAGE_FILL_BALANCE_OCCUPIED -> binding.choiceBalance.id
+                when (Preferences.getStorageDownloadStrategy()) {
+                    Preferences.Constant.STORAGE_FILL_BALANCE_FREE -> binding.choiceBalance.id
                     else -> binding.choiceFallover.id
                 }
             )
@@ -81,9 +81,9 @@ class DownloadStrategyDialogFragment : DialogFragment() {
     }
 
     private fun onOkClick() {
-        Preferences.setStorageFillMethod(
+        Preferences.setStorageDownloadStrategy(
             when (binding.selector.checkedButtonId) {
-                binding.choiceBalance.id -> Preferences.Constant.STORAGE_FILL_BALANCE_OCCUPIED
+                binding.choiceBalance.id -> Preferences.Constant.STORAGE_FILL_BALANCE_FREE
                 else -> Preferences.Constant.STORAGE_FILL_FALLOVER
             }
         )
