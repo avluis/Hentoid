@@ -26,7 +26,6 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
             Location.PRIMARY_1,
             Location.PRIMARY_2 -> {
                 ContentHelper.detachAllPrimaryContent(
-                    getApplication<Application>().applicationContext,
                     dao,
                     location
                 )

@@ -143,7 +143,7 @@ public class MetadataImportWorker extends BaseWorker {
 
         dao = new ObjectBoxDAO(context);
         if (!add) {
-            if (importLibrary) dao.deleteAllInternalBooks(false);
+            if (importLibrary) dao.deleteAllInternalBooks("", false);
             if (importQueue) dao.deleteAllQueuedBooks();
             if (importCustomGroups) dao.deleteAllGroups(Grouping.CUSTOM);
             if (importBookmarks) dao.deleteAllBookmarks();

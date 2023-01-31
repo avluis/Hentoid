@@ -405,7 +405,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public long countAllInternalBooks(boolean favsOnly) {
-        return db.selectAllInternalBooksQ(favsOnly, true).count();
+        return db.selectAllInternalBooksQ("", favsOnly, true).count();
     }
 
     public long countAllQueueBooks() {
@@ -424,7 +424,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer) {
-        Query<Content> query = db.selectAllInternalBooksQ(favsOnly, true);
+        Query<Content> query = db.selectAllInternalBooksQ("", favsOnly, true);
         query.forEach(consumer::accept);
     }
 
@@ -620,34 +620,25 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteGroupItems(Helper.getPrimitiveArrayFromList(groupItemIds));
     }
 
-    public void flagAllInternalBooks(boolean includePlaceholders) {
-        db.flagContentsForDeletion(db.selectAllInternalBooksQ(false, includePlaceholders).find(), true);
+    public void flagAllInternalBooks(@NonNull String rootPath, boolean includePlaceholders) {
+        db.flagContentsForDeletion(db.selectAllInternalBooksQ(rootPath, false, includePlaceholders).find(), true);
     }
 
-    public void deleteAllInternalBooks(boolean resetRemainingImagesStatus) {
-        db.deleteContentById(db.selectAllInternalBooksQ(false, true).findIds());
-
-        // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        if (resetRemainingImagesStatus) {
-            long[] remainingContentIds = db.selectAllQueueBooksQ().findIds();
-            for (long contentId : remainingContentIds)
-                db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
-        }
-    }
-
-    public void deleteAllInternalBooks(String rootPath) {
+    public void deleteAllInternalBooks(@NonNull String rootPath, boolean resetRemainingImagesStatus) {
         db.deleteContentById(db.selectAllInternalBooksQ(rootPath, false).findIds());
+        if (resetRemainingImagesStatus) resetRemainingImagesStatus(rootPath);
     }
 
-    public void deleteAllFlaggedBooks(boolean resetRemainingImagesStatus) {
+    public void deleteAllFlaggedBooks(@NonNull String rootPath, boolean resetRemainingImagesStatus) {
         db.deleteContentById(db.selectAllFlaggedBooksQ().findIds());
+        if (resetRemainingImagesStatus) resetRemainingImagesStatus(rootPath);
+    }
 
-        // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        if (resetRemainingImagesStatus) {
-            long[] remainingContentIds = db.selectAllQueueBooksQ().findIds();
-            for (long contentId : remainingContentIds)
-                db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
-        }
+    // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
+    private void resetRemainingImagesStatus(@NonNull String rootPath) {
+        long[] remainingContentIds = db.selectAllQueueBooksQ(rootPath).findIds();
+        for (long contentId : remainingContentIds)
+            db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
     }
 
     public void flagAllErrorBooksWithJson() {

@@ -290,7 +290,7 @@ public class ImportHelper {
             // New library created - drop and recreate db (in case user is re-importing)
             CollectionDAO dao = new ObjectBoxDAO(context);
             try {
-                dao.deleteAllInternalBooks(true);
+                ContentHelper.detachAllPrimaryContent(dao, location);
             } finally {
                 dao.cleanup();
             }

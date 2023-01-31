@@ -85,17 +85,16 @@ public interface CollectionDAO {
 
     // MASS OPERATIONS
 
-    // Internal library (i.e. managed in the Hentoid folder)
+    // Primary library ("internal books")
 
     long countAllInternalBooks(boolean favsOnly);
 
     void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer);
 
-    void flagAllInternalBooks(boolean includePlaceholders);
+    void flagAllInternalBooks(@NonNull String rootPath, boolean includePlaceholders);
 
-    void deleteAllInternalBooks(boolean resetRemainingImagesStatus);
+    void deleteAllInternalBooks(@NonNull String rootPath, boolean resetRemainingImagesStatus);
 
-    void deleteAllInternalBooks(String rootPath);
 
     // Queued books
 
@@ -107,9 +106,10 @@ public interface CollectionDAO {
 
     void deleteAllQueuedBooks();
 
+
     // Flagging
 
-    void deleteAllFlaggedBooks(boolean resetRemainingImagesStatus);
+    void deleteAllFlaggedBooks(@NonNull String pathRoot, boolean resetRemainingImagesStatus);
 
     // External library
 

@@ -228,7 +228,7 @@ public class PrimaryImportWorker extends BaseWorker {
             // Flag DB content for cleanup
             CollectionDAO dao = new ObjectBoxDAO(context);
             try {
-                dao.flagAllInternalBooks(removePlaceholders);
+                dao.flagAllInternalBooks(ContentHelper.getPathRoot(location), removePlaceholders);
                 dao.flagAllErrorBooksWithJson();
             } finally {
                 dao.cleanup();
@@ -279,7 +279,7 @@ public class PrimaryImportWorker extends BaseWorker {
             if (!isStopped()) { // Should only be done when things have run properly
                 CollectionDAO dao = new ObjectBoxDAO(context);
                 try {
-                    dao.deleteAllFlaggedBooks(true);
+                    dao.deleteAllFlaggedBooks(ContentHelper.getPathRoot(location), true);
                     dao.deleteAllFlaggedGroups();
                 } finally {
                     dao.cleanup();

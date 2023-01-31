@@ -191,8 +191,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             options.cleanNoJson = cleanAbsent
             options.cleanNoImages = cleanNoImages
             options.importGroups = false
-            val uriStr =
-                if (location == Location.PRIMARY_1) Preferences.getStorageUri() else Preferences.getStorageUri2()
+            val uriStr = Preferences.getStorageUri(location)
             if (uriStr.isEmpty()) {
                 ToastHelper.toast(requireContext(), R.string.import_invalid_uri)
                 dismissAllowingStateLoss()
@@ -319,7 +318,10 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
             ProcessFolderResult.OK_LIBRARY_DETECTED_ASK -> {
                 updateOnSelectFolder()
-                showExistingLibraryDialog(requireContext(), location) { onCancelExistingLibraryDialog() }
+                showExistingLibraryDialog(
+                    requireContext(),
+                    location
+                ) { onCancelExistingLibraryDialog() }
             }
 
             ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER -> {

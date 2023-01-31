@@ -224,13 +224,16 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, statusCodes).build().find();
     }
 
-    Query<Content> selectAllInternalBooksQ(boolean favsOnly, boolean includePlaceholders) {
+    Query<Content> selectAllInternalBooksQ(@NonNull String rootPath, boolean favsOnly, boolean includePlaceholders) {
         // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
         // and EXTERNAL because we only want to manage internal books here
         int[] storedContentStatus = {StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.IGNORED.getCode(), StatusContent.UNHANDLED_ERROR.getCode(), StatusContent.CANCELED.getCode()};
         if (includePlaceholders)
             storedContentStatus = ArrayUtils.addAll(storedContentStatus, StatusContent.PLACEHOLDER.getCode());
-        QueryBuilder<Content> query = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus);
+        QueryBuilder<Content> query = store.boxFor(Content.class)
+                .query()
+                .in(Content_.status, storedContentStatus)
+                .startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (favsOnly) query.equal(Content_.favourite, true);
         return query.build();
     }
@@ -260,6 +263,16 @@ public class ObjectBoxDB {
         // NB : Can't use QueryCondition here because there's no way to query the existence of a relation (see https://github.com/objectbox/objectbox-java/issues/1110)
         return store.boxFor(Content.class).query()
                 .in(Content_.status, ContentHelper.getQueueStatuses())
+                .filter(c -> (StatusContent.ERROR == c.getStatus() || (c.getQueueRecords() != null && !c.getQueueRecords().isEmpty())))
+                .build();
+    }
+
+    Query<Content> selectAllQueueBooksQ(@NonNull String rootPath) {
+        // Strong check to make sure selected books are _actually_ part of the queue (i.e. attached to a QueueRecord)
+        // NB : Can't use QueryCondition here because there's no way to query the existence of a relation (see https://github.com/objectbox/objectbox-java/issues/1110)
+        return store.boxFor(Content.class).query()
+                .in(Content_.status, ContentHelper.getQueueStatuses())
+                .startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 .filter(c -> (StatusContent.ERROR == c.getStatus() || (c.getQueueRecords() != null && !c.getQueueRecords().isEmpty())))
                 .build();
     }

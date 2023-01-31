@@ -498,21 +498,22 @@ public final class ContentHelper {
      * @param location Location to detach
      */
     public static void detachAllPrimaryContent(
-            @NonNull final Context context,
             @NonNull final CollectionDAO dao,
             LibRefreshDialogFragment.Location location
     ) {
         // Remove all external books from DB
         // NB : do NOT use ContentHelper.removeContent as it would remove files too
         // here we just want to remove DB entries without removing files
-        String locationUriStr = Preferences.getStorageUri(location);
-        if (!locationUriStr.isEmpty()) {
-            Uri locationUri = Uri.parse(locationUriStr);
-            int pathDivider = locationUriStr.lastIndexOf("%3A");
-            dao.deleteAllInternalBooks(locationUriStr.substring(0, pathDivider));
-        }
+        dao.deleteAllInternalBooks(getPathRoot(location), true);
 
         // TODO groups
+    }
+
+    public static String getPathRoot(LibRefreshDialogFragment.Location location) {
+        String locationUriStr = Preferences.getStorageUri(location);
+        int pathDivider = locationUriStr.lastIndexOf("%3A");
+        if (pathDivider > -1) return locationUriStr.substring(0, pathDivider);
+        return locationUriStr;
     }
 
     /**
