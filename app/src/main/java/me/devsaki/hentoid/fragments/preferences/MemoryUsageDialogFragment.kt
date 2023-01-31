@@ -14,6 +14,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogPrefsMemoryBinding
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
@@ -42,13 +43,18 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
         var deviceFreeBytes: Long = -1
         var deviceTotalBytes: Long = -1
 
-        val rootFolder =
-            FileHelper.getDocumentFromTreeUriString(requireActivity(), Preferences.getStorageUri())
-        if (rootFolder != null) {
-            val memUsage = MemoryUsageFigures(requireContext(), rootFolder)
-            deviceFreeBytes = memUsage.getfreeUsageBytes()
-            deviceTotalBytes = memUsage.totalSpaceBytes
-        }
+        // Get free space and capacity for every location
+        val stats1 = getStats(Location.PRIMARY_1)
+        val stats2 = getStats(Location.PRIMARY_2)
+        val statsExt = getStats(Location.EXTERNAL)
+
+        // Remove duplicates by keeping capacities that are different (-> different volumes)
+        val distinctVolumes = listOf(stats1, stats2, statsExt)
+            .filterNot { p -> -1L == p.second }
+            .distinctBy { p -> p.first.toString() + "." + p.second.toString() }
+
+        deviceFreeBytes = distinctVolumes.sumOf { p -> p.first }
+        deviceTotalBytes = distinctVolumes.sumOf { p -> p.second }
 
         val primaryMemUsage: Map<Site, ImmutablePair<Int, Long>>
         val externalMemUsage: Map<Site, ImmutablePair<Int, Long>>
@@ -121,6 +127,18 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
                     resources
                 ), dao.dbSizeBytes * 100 / 1024f / dbMaxSizeKb
             )
+    }
+
+    private fun getStats(location: Location): Pair<Long, Long> {
+        val root = Preferences.getStorageUri(location)
+        if (root.isNotEmpty()) {
+            val rootFolder = FileHelper.getDocumentFromTreeUriString(requireActivity(), root)
+            if (rootFolder != null) {
+                val memUsage = MemoryUsageFigures(requireContext(), rootFolder)
+                return Pair(memUsage.getfreeUsageBytes(), memUsage.totalSpaceBytes)
+            }
+        }
+        return Pair(-1, -1)
     }
 
     private fun onDetailsClick() {
