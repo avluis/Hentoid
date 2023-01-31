@@ -163,9 +163,15 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
             strategyPanel.isVisible = (primaryVolume1.isVisible && primaryVolume2.isVisible)
             textArray = resources.getStringArray(R.array.pref_storage_strategy_name)
-            strategyTitle.text = resources.getString(R.string.storage_strategy_title, textArray[Preferences.getStorageFillMethod()])
+            strategyTitle.text = resources.getString(
+                R.string.storage_strategy_title,
+                textArray[Preferences.getStorageFillMethod()]
+            )
             textArray = resources.getStringArray(R.array.pref_storage_strategy_desc)
-            strategyDesc.text = textArray[Preferences.getStorageFillMethod()]
+            strategyDesc.text = String.format(
+                textArray[Preferences.getStorageFillMethod()],
+                Preferences.getStorageSwitchThresholdPc()
+            )
 
             externalVolume.isVisible = Preferences.getExternalLibraryUri().isNotEmpty()
             if (externalVolume.isVisible) {

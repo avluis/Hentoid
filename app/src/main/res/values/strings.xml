@@ -245,7 +245,7 @@
     <string name="storage_strategy_balance">Balance free space</string>
     <string name="storage_strategy_balance_desc">Hentoid downloads to whichever location has more free space, trying to maintain balance. Does not move books already in the library.</string>
     <string name="storage_strategy_fallover">Fallover</string>
-    <string name="storage_strategy_fallover_desc">Hentoid downloads to Location 1 until the low space threshold is hit, then downloads to Location 2.</string>
+    <string name="storage_strategy_fallover_desc">Hentoid downloads to Location 1 until %d%% of capacity is filled, then downloads to Location 2.</string>
     <string name="storage_fallover_threshold">Low space threshold (%%)</string>
     <string name="storage_set_strategy">Set download strategy</string>
 

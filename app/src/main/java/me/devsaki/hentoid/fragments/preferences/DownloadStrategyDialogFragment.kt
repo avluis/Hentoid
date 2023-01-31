@@ -4,9 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsDlStrategyBinding
+import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 
 class DownloadStrategyDialogFragment : DialogFragment() {
@@ -42,28 +46,56 @@ class DownloadStrategyDialogFragment : DialogFragment() {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        binding.selector.check(
-            when (Preferences.getStorageFillMethod()) {
-                Preferences.Constant.STORAGE_FILL_BALANCE_OCCUPIED -> binding.choiceBalance.id
-                else -> binding.choiceFallover.id
+        binding.selector.apply {
+            addOnButtonCheckedListener { _, checkedId, isChecked ->
+                if (!isChecked) return@addOnButtonCheckedListener
+                if (checkedId == binding.choiceBalance.id) {
+                    binding.description.text =
+                        resources.getString(R.string.storage_strategy_balance_desc)
+                    binding.threshold.isVisible = false
+                } else {
+                    binding.description.text = String.format(
+                        resources.getString(R.string.storage_strategy_fallover_desc),
+                        Preferences.getStorageSwitchThresholdPc()
+                    )
+                    binding.threshold.isVisible = true
+                }
             }
-        )
-        // TODO description changes
-        // TODO display threshold
+            check(
+                when (Preferences.getStorageFillMethod()) {
+                    Preferences.Constant.STORAGE_FILL_BALANCE_OCCUPIED -> binding.choiceBalance.id
+                    else -> binding.choiceFallover.id
+                }
+            )
+        }
+        binding.threshold.editText?.apply {
+            addTextChangedListener { text ->
+                binding.description.text = String.format(
+                    resources.getString(R.string.storage_strategy_fallover_desc),
+                    text.toString().toInt()
+                )
+            }
+            setText(Preferences.getStorageSwitchThresholdPc().toString())
+        }
         binding.actionButton.setOnClickListener { onOkClick() }
     }
 
     private fun onOkClick() {
-        // TODO save threshold
         Preferences.setStorageFillMethod(
             when (binding.selector.checkedButtonId) {
                 binding.choiceBalance.id -> Preferences.Constant.STORAGE_FILL_BALANCE_OCCUPIED
                 else -> Preferences.Constant.STORAGE_FILL_FALLOVER
             }
         )
+        binding.threshold.editText?.apply {
+            Preferences.setStorageSwitchThresholdPc(
+                Helper.coerceIn(text.toString().toFloat(), 0f, 100f)
+                    .toInt()
+            )
+        }
 
         parent?.onStrategySelected()
-        dismiss()
+        dismissAllowingStateLoss()
     }
 
 
