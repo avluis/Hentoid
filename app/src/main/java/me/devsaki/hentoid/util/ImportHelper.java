@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -241,11 +242,11 @@ public class ImportHelper {
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
         // Persist I/O permissions; keep existing ones if present
-        persistLocationCredentials(context, treeUri, Location.EXTERNAL);
-        if (location == Location.PRIMARY_1)
-            persistLocationCredentials(context, treeUri, Location.PRIMARY_2);
-        else
-            persistLocationCredentials(context, treeUri, Location.PRIMARY_1);
+        List<Location> locs = new ArrayList<>();
+        locs.add(Location.EXTERNAL);
+        if (location == Location.PRIMARY_1) locs.add(Location.PRIMARY_2);
+        else locs.add(Location.PRIMARY_1);
+        persistLocationCredentials(context, treeUri, locs);
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
@@ -308,10 +309,8 @@ public class ImportHelper {
     int setAndScanExternalFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri) {
-
         // Persist I/O permissions; keep existing ones if present
-        persistLocationCredentials(context, treeUri, Location.PRIMARY_1);
-        persistLocationCredentials(context, treeUri, Location.PRIMARY_2);
+        persistLocationCredentials(context, treeUri, Arrays.asList(Location.PRIMARY_1, Location.PRIMARY_2));
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
@@ -321,7 +320,7 @@ public class ImportHelper {
         }
         String folderUri = docFile.getUri().toString();
         if (folderUri.equalsIgnoreCase(Preferences.getStorageUri()) || folderUri.equalsIgnoreCase(Preferences.getStorageUri2())) {
-            Timber.w("Trying to set the app folder as the external library %s", treeUri.toString());
+            Timber.w("Trying to set the external library inside a primary library location %s", treeUri.toString());
             return ProcessFolderResult.KO_APP_FOLDER;
         }
         // Set the folder as the app's external library folder
@@ -335,12 +334,13 @@ public class ImportHelper {
     // TODO doc
     private static void persistLocationCredentials(@NonNull final Context context,
                                                    @NonNull final Uri treeUri,
-                                                   Location location) {
-        String locationUriStr = Preferences.getStorageUri(location);
-        if (!locationUriStr.isEmpty()) {
-            Uri locationUri = Uri.parse(locationUriStr);
-            FileHelper.persistNewUriPermission(context, treeUri, locationUri);
-        }
+                                                   List<Location> location) {
+        List<Uri> uri = Stream.of(location)
+                .map(Preferences::getStorageUri)
+                .filterNot(String::isEmpty)
+                .map(Uri::parse)
+                .toList();
+        FileHelper.persistNewUriPermission(context, treeUri, uri);
     }
 
     /**
@@ -457,6 +457,7 @@ public class ImportHelper {
         ImportNotificationChannel.init(context);
 
         PrimaryImportData.Builder builder = new PrimaryImportData.Builder();
+        builder.setLocation(location);
         if (options != null) {
             builder.setRefreshRename(options.rename);
             builder.setRefreshRemovePlaceholders(options.removePlaceholders);
@@ -464,7 +465,6 @@ public class ImportHelper {
             builder.setRefreshCleanNoJson(options.cleanNoJson);
             builder.setRefreshCleanNoImages(options.cleanNoImages);
             builder.setImportGroups(options.importGroups);
-            builder.setLocation(location);
         }
 
         WorkManager workManager = WorkManager.getInstance(context);
