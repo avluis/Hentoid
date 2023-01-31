@@ -232,13 +232,14 @@
 
     <!-- Storage management -->
     <string name="browse_mode_warning">Browse-only mode is active\nYou are using the app without storage permissions.</string>
-    <string name="primary_library">Primary library (downloads)</string>
+    <string name="primary_library">Primary library</string>
+    <string name="primary_library_subtitle">Downloads</string>
     <string name="add_primary_1">Add primary location 1</string>
     <string name="add_primary_2">Add primary location 2</string>
-    <string name="external_library">External library (archives, 3rd party books)</string>
+    <string name="external_library">External library</string>
+    <string name="external_library_subtitle">Archives, 3rd party books</string>
     <string name="add_external">Add external location</string>
     <string name="location_storage">%1$s (%2$d%%) free</string>
-    <string name="storage_stats">Statistics</string>
     <string name="storage_remove_ask">Detach selected location?\nNB : Books will not be deleted</string>
     <string name="storage_remove_confirm">Location detached</string>
     <string name="storage_strategy_title">Download strategy : %s</string>
@@ -248,6 +249,8 @@
     <string name="storage_strategy_fallover_desc">Hentoid downloads to Location 1 until %d%% of capacity is filled, then downloads to Location 2.</string>
     <string name="storage_fallover_threshold">Low space threshold (%%)</string>
     <string name="storage_set_strategy">Set download strategy</string>
+    <string name="storage_stats">Statistics</string>
+    <string name="storage_stats_view">View usage statistics</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh location</string>

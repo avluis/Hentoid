@@ -121,6 +121,10 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             strategyPanel.setOnClickListener {
                 DownloadStrategyDialogFragment.invoke(supportFragmentManager)
             }
+
+            statsPanel.setOnClickListener {
+                MemoryUsageDialogFragment.invoke(supportFragmentManager)
+            }
         }
     }
 
@@ -233,18 +237,10 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
         val powerMenuBuilder = PowerMenu.Builder(this)
             .addItem(
                 PowerMenuItem(
-                    resources.getString(R.string.storage_stats),
-                    R.drawable.ic_stats,
-                    false,
-                    0
-                )
-            )
-            .addItem(
-                PowerMenuItem(
                     resources.getString(R.string.refresh_title),
                     R.drawable.ic_replace,
                     false,
-                    1
+                    0
                 )
             )
             .addItem(
@@ -252,7 +248,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     resources.getString(R.string.remove_generic),
                     R.drawable.ic_action_remove,
                     false,
-                    3
+                    1
                 )
             )
             .setAnimation(MenuAnimation.SHOWUP_TOP_RIGHT)
@@ -269,12 +265,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
         powerMenu.setOnMenuItemClickListener { _, item ->
             when (item.tag) {
-                0 -> { // Stats
-                    // TODO adapt dialog
-                    MemoryUsageDialogFragment.invoke(supportFragmentManager)
-                }
-
-                1 -> { // Refresh
+                0 -> { // Refresh
                     if (PrimaryImportWorker.isRunning(baseContext)) {
                         ToastHelper.toast(R.string.pref_import_running)
                     } else {
@@ -320,7 +311,6 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             && event.logFile != null
             && (event.processId == R.id.import_external || event.processId == R.id.import_primary)
         ) {
-            // TODO doesn't update when things get too fast
             refreshDisplay()
             val snackbar =
                 Snackbar.make(
