@@ -664,7 +664,6 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (c.isPresent()) {
                                 Content content = c.get();
                                 // Non-blocking performance bottleneck; run in a dedicated worker
-                                // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
                                 if (reparseImages) purgeItem(content, false);
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position, -1,
