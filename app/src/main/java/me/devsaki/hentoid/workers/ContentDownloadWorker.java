@@ -215,35 +215,6 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
-        // Check for download folder existence, available free space and credentials
-        StorageLocation location = DownloadHelper.selectDownloadLocation(context);
-        String targetUriStr = Preferences.getStorageUri(location);
-        if (targetUriStr.isEmpty()) {
-            Timber.i("No download folder set"); // May happen if user has skipped it during the intro
-            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
-            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
-        }
-
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, targetUriStr);
-        if (null == rootFolder) {
-            Timber.i("Download folder has not been found. Please select it again."); // May happen if the folder has been moved or deleted after it has been selected
-            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
-            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
-        }
-
-        if (!FileHelper.isUriPermissionPersisted(context.getContentResolver(), rootFolder.getUri())) {
-            Timber.i("Insufficient credentials on download folder. Please select it again.");
-            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
-            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
-        }
-
-        long spaceLeftBytes = new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes();
-        if (spaceLeftBytes < 2L * 1024 * 1024) {
-            Timber.i("Device very low on storage space (<2 MB). Queue paused.");
-            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_STORAGE, spaceLeftBytes));
-            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
-        }
-
 
         // == Work on first item of queue
 
@@ -267,7 +238,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         if (null == content) {
             Timber.i("No available downloads remaining. Queue paused.");
-            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_AVAILABLE_DOWNLOADS, spaceLeftBytes));
+            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_AVAILABLE_DOWNLOADS));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
@@ -277,6 +248,20 @@ public class ContentDownloadWorker extends BaseWorker {
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification(content));
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
+        }
+
+        // Check for download folder existence, available free space and credentials
+        DocumentFile dir = null;
+        StorageLocation location = StorageLocation.NONE;
+        // Folder already set (e.g. resume paused download)
+        if (!content.getStorageUri().isEmpty()) {
+            ImmutablePair<QueuingResult, Content> result = testFolder(context, content.getStorageUri());
+            if (result != null) return result;
+            dir = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
+        } else {
+            location = DownloadHelper.selectDownloadLocation(context);
+            ImmutablePair<QueuingResult, Content> result = testFolder(context, Preferences.getStorageUri(location));
+            if (result != null) return result;
         }
 
         downloadCanceled.set(false);
@@ -384,7 +369,8 @@ public class ContentDownloadWorker extends BaseWorker {
         EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER, content));
 
         // Create destination folder for images to be downloaded
-        DocumentFile dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content, location, false, null);
+        if (null == dir)
+            dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content, location, false, null);
         // Folder creation failed
         if (null == dir || !dir.exists()) {
             String title = content.getTitle();
@@ -403,7 +389,8 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         // Folder creation succeeds -> memorize its path
-        content.setStorageUri(dir.getUri().toString());
+        final DocumentFile targetFolder = dir;
+        content.setStorageUri(targetFolder.getUri().toString());
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
         if (0 == content.getQtyPages()) content.setQtyPages(images.size() - 1);
@@ -464,7 +451,7 @@ public class ContentDownloadWorker extends BaseWorker {
             if (coverOptional.isPresent()) {
                 ImageFile cover = coverOptional.get();
                 enrichImageDownloadParams(cover, content);
-                requestQueueManager.queueRequest(buildImageDownloadRequest(cover, dir, content));
+                requestQueueManager.queueRequest(buildImageDownloadRequest(cover, targetFolder, content));
             }
         } else { // Regular downloads
             ImageFile cover = null;
@@ -483,13 +470,13 @@ public class ContentDownloadWorker extends BaseWorker {
                     else if (img.getDownloadParams().contains(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES))
                         ugoirasToDownload.add(img);
                     else if (!img.isCover())
-                        requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
+                        requestQueueManager.queueRequest(buildImageDownloadRequest(img, targetFolder, content));
                 }
             }
 
             // Download cover last, to avoid being blocked by the server when downloading cover and page 1 back to back when they are the same resource
             if (cover != null)
-                requestQueueManager.queueRequest(buildImageDownloadRequest(cover, dir, content));
+                requestQueueManager.queueRequest(buildImageDownloadRequest(cover, targetFolder, content));
 
             // Parse pages for images
             if (!pagesToParse.isEmpty()) {
@@ -498,7 +485,7 @@ public class ContentDownloadWorker extends BaseWorker {
                         Observable.fromIterable(pagesToParse)
                                 .observeOn(Schedulers.io())
                                 .subscribe(
-                                        img -> parsePageforImage(img, dir, contentFinal),
+                                        img -> parsePageforImage(img, targetFolder, contentFinal),
                                         t -> {
                                             // Nothing; just exit the Rx chain
                                         }
@@ -513,7 +500,7 @@ public class ContentDownloadWorker extends BaseWorker {
                         Observable.fromIterable(ugoirasToDownload)
                                 .observeOn(Schedulers.io())
                                 .subscribe(
-                                        img -> downloadAndUnzipUgoira(img, dir, siteFinal),
+                                        img -> downloadAndUnzipUgoira(img, targetFolder, siteFinal),
                                         t -> {
                                             // Nothing; just exit the Rx chain
                                         }
@@ -1227,5 +1214,35 @@ public class ContentDownloadWorker extends BaseWorker {
     private String processNewName(@NonNull String attrName, @NonNull RenamingRule rule) {
         if (rule.doesMatchSourceName(attrName)) return rule.getTargetName(attrName);
         else return null;
+    }
+
+    private ImmutablePair<QueuingResult, Content> testFolder(@NonNull Context context, @NonNull String uriString) {
+        if (uriString.isEmpty()) {
+            Timber.i("No download folder set"); // May happen if user has skipped it during the intro
+            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
+
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, uriString);
+        if (null == rootFolder) {
+            Timber.i("Download folder has not been found. Please select it again."); // May happen if the folder has been moved or deleted after it has been selected
+            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
+
+        if (!FileHelper.isUriPermissionPersisted(context.getContentResolver(), rootFolder.getUri())) {
+            Timber.i("Insufficient credentials on download folder. Please select it again.");
+            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
+
+        long spaceLeftBytes = new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes();
+        if (spaceLeftBytes < 2L * 1024 * 1024) {
+            Timber.i("Device very low on storage space (<2 MB). Queue paused.");
+            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_STORAGE, spaceLeftBytes));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
+
+        return null;
     }
 }
