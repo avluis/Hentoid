@@ -18,8 +18,8 @@ import java.util.Map;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.enums.Theme;
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import timber.log.Timber;
 
 /**
@@ -258,23 +258,23 @@ public final class Preferences {
         return getBoolPref(Key.APP_PREVIEW, BuildConfig.DEBUG);
     }
 
-    public static String getStorageUri() {
+    private static String getStorageUri() {
         return sharedPreferences.getString(Key.PRIMARY_STORAGE_URI, "");
     }
 
-    public static void setStorageUri(String uri) {
+    private static void setStorageUri(String uri) {
         sharedPreferences.edit().putString(Key.PRIMARY_STORAGE_URI, uri).apply();
     }
 
-    public static String getStorageUri2() {
+    private static String getStorageUri2() {
         return sharedPreferences.getString(Key.PRIMARY_STORAGE_URI_2, "");
     }
 
-    public static void setStorageUri2(String uri) {
+    private static void setStorageUri2(String uri) {
         sharedPreferences.edit().putString(Key.PRIMARY_STORAGE_URI_2, uri).apply();
     }
 
-    public static String getStorageUri(LibRefreshDialogFragment.Location location) {
+    public static String getStorageUri(StorageLocation location) {
         switch (location) {
             case PRIMARY_1:
                 return getStorageUri();
@@ -290,7 +290,7 @@ public final class Preferences {
         }
     }
 
-    public static void setStorageUri(LibRefreshDialogFragment.Location location, String uri) {
+    public static void setStorageUri(StorageLocation location, String uri) {
         switch (location) {
             case PRIMARY_1:
                 setStorageUri(uri);
@@ -308,11 +308,11 @@ public final class Preferences {
         }
     }
 
-    public static int getStorageFillMethod() {
+    public static int getStorageDownloadStrategy() {
         return getIntPref(Key.PRIMARY_STORAGE_FILL_METHOD, Default.PRIMARY_STORAGE_FILL_METHOD);
     }
 
-    public static void setStorageFillMethod(int value) {
+    public static void setStorageDownloadStrategy(int value) {
         setIntPref(Key.PRIMARY_STORAGE_FILL_METHOD, value);
     }
 
@@ -954,7 +954,7 @@ public final class Preferences {
 
         public static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
 
-        static final int PRIMARY_STORAGE_FILL_METHOD = Constant.STORAGE_FILL_BALANCE_OCCUPIED;
+        static final int PRIMARY_STORAGE_FILL_METHOD = Constant.STORAGE_FILL_BALANCE_FREE;
         static final int PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = 90;
 
         static final boolean FORCE_ENGLISH = false;
@@ -1063,7 +1063,7 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        public static final int STORAGE_FILL_BALANCE_OCCUPIED = 0;
+        public static final int STORAGE_FILL_BALANCE_FREE = 0;
         public static final int STORAGE_FILL_FALLOVER = 1;
 
 

@@ -36,6 +36,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -108,7 +109,7 @@ public class LogsDialogFragment extends DialogFragment {
     }
 
     private List<DocumentFile> getLogs() {
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(requireContext(), Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(requireContext(), Preferences.getStorageUri(StorageLocation.PRIMARY_1));
         if (null == rootFolder) return Collections.emptyList();
 
         List<DocumentFile> files = FileHelper.listFiles(requireContext(), rootFolder, displayName -> displayName.toLowerCase().endsWith("_log.txt"));

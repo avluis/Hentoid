@@ -37,6 +37,7 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.json.core.JsonSiteSettings;
 import me.devsaki.hentoid.notification.action.UserActionNotificationChannel;
@@ -47,10 +48,10 @@ import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.notification.updateJson.UpdateJsonNotificationChannel;
 import me.devsaki.hentoid.receiver.PlugEventsReceiver;
 import me.devsaki.hentoid.services.UpdateCheckService;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.workers.StartupWorker;
 import timber.log.Timber;
 
@@ -268,7 +269,7 @@ public class AppStartup {
     private static void createBookmarksJson(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         Timber.i("Create bookmarks JSON : start");
         try {
-            DocumentFile appRoot = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
+            DocumentFile appRoot = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
             if (appRoot != null) {
                 DocumentFile bookmarksJson = FileHelper.findFile(context, appRoot, Consts.BOOKMARKS_JSON_FILE_NAME);
                 if (null == bookmarksJson) {

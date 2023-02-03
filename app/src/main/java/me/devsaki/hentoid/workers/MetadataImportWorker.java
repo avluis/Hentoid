@@ -38,6 +38,7 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.fragments.tools.MetaImportDialogFragment;
 import me.devsaki.hentoid.json.JsonContent;
@@ -51,6 +52,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.MetadataImportData;
@@ -68,7 +70,7 @@ public class MetadataImportWorker extends BaseWorker {
     private int nbOK = 0;
     private int nbKO = 0;
     private int queueSize;
-    private Map<Site, DocumentFile> siteFoldersCache = null;
+    private Map<Site, List<DocumentFile>> siteFoldersCache = null;
     private final Map<Site, List<DocumentFile>> bookFoldersCache = new EnumMap<>(Site.class);
 
     private final CompositeDisposable notificationDisposables = new CompositeDisposable();
@@ -106,7 +108,7 @@ public class MetadataImportWorker extends BaseWorker {
 
         startImport(
                 getApplicationContext(),
-                data.getJsonUri(),
+                StringHelper.protect(data.getJsonUri()),
                 data.isAdd(),
                 data.isImportLibrary(),
                 data.getEmptyBooksOption(),
@@ -206,72 +208,67 @@ public class MetadataImportWorker extends BaseWorker {
         else if (o instanceof Group) importGroup((Group) o, dao);
     }
 
+    // Try to map the given imported content to an existing book in the downloads folders
+    // Folder names can be formatted in many ways _but_ they always contain the book unique ID !
     private void importContent(@NonNull Context context, @NonNull final JsonContent jsonContent, int emptyBooksOption, @NonNull final CollectionDAO dao) {
-        // Try to map the imported content to an existing book in the downloads folder
-        // Folder names can be formatted in many ways _but_ they always contain the book unique ID !
         if (null == siteFoldersCache) siteFoldersCache = getSiteFolders(context);
         Content c = jsonContent.toEntity(dao);
 
         Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), "");
         if (duplicate != null) return;
 
-        DocumentFile siteFolder = siteFoldersCache.get(c.getSite());
-        if (null == siteFolder) {
-            siteFolder = ContentHelper.getOrCreateSiteDownloadDir(context, null, c.getSite());
-            if (siteFolder != null) siteFoldersCache.put(c.getSite(), siteFolder);
+        boolean mappedToFiles = false;
+        List<DocumentFile> siteFolders = siteFoldersCache.get(c.getSite());
+        if (siteFolders != null) {
+            for (DocumentFile siteFolder : siteFolders) {
+                mappedToFiles = mapFilesToContent(context, c, siteFolder);
+                if (mappedToFiles) break;
+            }
         }
-        if (siteFolder != null) {
-            boolean mappedToFiles = mapFilesToContent(context, c, siteFolder);
-            // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
-            if (!mappedToFiles) {
-                // Insert queued content into the queue
-                if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
-                    long newContentId = ContentHelper.addContent(context, dao, c);
-                    List<QueueRecord> lst = new ArrayList<>();
-                    QueueRecord qr = new QueueRecord(newContentId, queueSize++);
-                    qr.setFrozen(c.isFrozen());
-                    lst.add(qr);
-                    dao.updateQueue(lst);
+
+        // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
+        if (!mappedToFiles) {
+            // Insert queued content into the queue
+            if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
+                long newContentId = ContentHelper.addContent(context, dao, c);
+                List<QueueRecord> lst = new ArrayList<>();
+                QueueRecord qr = new QueueRecord(newContentId, queueSize++);
+                qr.setFrozen(c.isFrozen());
+                lst.add(qr);
+                dao.updateQueue(lst);
+                return;
+            }
+            switch (emptyBooksOption) {
+                case MetaImportDialogFragment.IMPORT_AS_STREAMED:
+                    // Greenlighted if images exist and are available online
+                    if (c.getImageFiles() != null && c.getImageFiles().size() > 0 && ContentHelper.isDownloadable(c)) {
+                        c.setDownloadMode(Content.DownloadMode.STREAM);
+                        c.setStatus(StatusContent.DOWNLOADED);
+                        List<ImageFile> imgs = c.getImageFiles();
+                        if (imgs != null) {
+                            List<ImageFile> newImages = Stream.of(imgs).map(i -> ImageFile.fromImageUrl(i.getOrder(), i.getUrl(), StatusContent.ONLINE, imgs.size())).toList();
+                            c.setImageFiles(newImages);
+                        }
+                        c.forceSize(0);
+                        break;
+                    }
+                    // no break here - import as empty if content unavailable online
+                case MetaImportDialogFragment.IMPORT_AS_EMPTY:
+                    c.setImageFiles(Collections.emptyList());
+                    c.clearChapters();
+                    c.setStatus(StatusContent.PLACEHOLDER);
+                    // Don't create any folder for a placeholder book
+                    break;
+                case MetaImportDialogFragment.IMPORT_AS_ERROR:
+                    if (!ContentHelper.isInQueue(c.getStatus()))
+                        c.setStatus(StatusContent.ERROR);
+                    List<ErrorRecord> errors = new ArrayList<>();
+                    errors.add(new ErrorRecord(ErrorType.IMPORT, "", context.getResources().getQuantityString(R.plurals.book, 1), "No local images found when importing - Please redownload", Instant.now()));
+                    c.setErrorLog(errors);
+                    break;
+                default:
+                case MetaImportDialogFragment.DONT_IMPORT:
                     return;
-                }
-                switch (emptyBooksOption) {
-                    case MetaImportDialogFragment.IMPORT_AS_STREAMED:
-                        // Greenlighted if images exist and are available online
-                        if (c.getImageFiles() != null && c.getImageFiles().size() > 0 && ContentHelper.isDownloadable(c)) {
-                            c.setDownloadMode(Content.DownloadMode.STREAM);
-                            c.setStatus(StatusContent.DOWNLOADED);
-                            List<ImageFile> imgs = c.getImageFiles();
-                            if (imgs != null) {
-                                List<ImageFile> newImages = Stream.of(imgs).map(i -> ImageFile.fromImageUrl(i.getOrder(), i.getUrl(), StatusContent.ONLINE, imgs.size())).toList();
-                                c.setImageFiles(newImages);
-                            }
-                            c.forceSize(0);
-                            break;
-                        }
-                        // no break here - import as empty if content unavailable online
-                    case MetaImportDialogFragment.IMPORT_AS_EMPTY:
-                        c.setImageFiles(Collections.emptyList());
-                        c.clearChapters();
-                        c.setStatus(StatusContent.PLACEHOLDER);
-                        /*
-                        DocumentFile bookFolder = ContentHelper.getOrCreateContentDownloadDir(context, c, siteFolder);
-                        if (bookFolder != null) {
-                            c.setStorageUri(bookFolder.getUri().toString());
-                            ContentHelper.persistJson(context, c);
-                        }
-                         */
-                        break;
-                    case MetaImportDialogFragment.IMPORT_AS_ERROR:
-                        if (!ContentHelper.isInQueue(c.getStatus()))
-                            c.setStatus(StatusContent.ERROR);
-                        List<ErrorRecord> errors = new ArrayList<>();
-                        errors.add(new ErrorRecord(ErrorType.IMPORT, "", context.getResources().getQuantityString(R.plurals.book, 1), "No local images found when importing - Please redownload", Instant.now()));
-                        c.setErrorLog(errors);
-                        break;
-                    default:
-                    case MetaImportDialogFragment.DONT_IMPORT:
-                        return;
-                }
             }
         }
 
@@ -307,11 +304,20 @@ public class MetadataImportWorker extends BaseWorker {
         return filesFound;
     }
 
-    private Map<Site, DocumentFile> getSiteFolders(@NonNull Context context) {
+    private Map<Site, List<DocumentFile>> getSiteFolders(@NonNull Context context) {
         Helper.assertNonUiThread();
-        Map<Site, DocumentFile> result = new EnumMap<>(Site.class);
+        Map<Site, List<DocumentFile>> result = new EnumMap<>(Site.class);
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
+        String storageUri = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
+        if (!storageUri.isEmpty()) mapSiteFolders(context, result, storageUri);
+        storageUri = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
+        if (!storageUri.isEmpty()) mapSiteFolders(context, result, storageUri);
+
+        return result;
+    }
+
+    private void mapSiteFolders(@NonNull Context context, Map<Site, List<DocumentFile>> data, String storageUri) {
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, storageUri);
         if (null != rootFolder) {
             List<DocumentFile> subfolders = FileHelper.listFolders(context, rootFolder);
             String folderName;
@@ -320,13 +326,17 @@ public class MetadataImportWorker extends BaseWorker {
                     folderName = f.getName().toLowerCase();
                     for (Site s : Site.values()) {
                         if (folderName.equalsIgnoreCase(s.getFolder())) {
-                            result.put(s, f);
+                            if (data.containsKey(s)) {
+                                List<DocumentFile> list = data.get(s);
+                                if (list != null) list.add(f);
+                            } else {
+                                data.put(s, Collections.singletonList(f));
+                            }
                             break;
                         }
                     }
                 }
         }
-        return result;
     }
 
     private void importGroup(@NonNull final Group group, @NonNull final CollectionDAO dao) {

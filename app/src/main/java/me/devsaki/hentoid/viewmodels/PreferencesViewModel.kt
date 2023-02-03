@@ -7,7 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment.Location
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -21,17 +21,17 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
         dao.cleanup()
     }
 
-    fun detach(location: Location) {
+    fun detach(location: StorageLocation) {
         when (location) {
-            Location.PRIMARY_1,
-            Location.PRIMARY_2 -> {
+            StorageLocation.PRIMARY_1,
+            StorageLocation.PRIMARY_2 -> {
                 ContentHelper.detachAllPrimaryContent(
                     dao,
                     location
                 )
             }
 
-            Location.EXTERNAL -> {
+            StorageLocation.EXTERNAL -> {
                 ContentHelper.detachAllExternalContent(
                     getApplication<Application>().applicationContext,
                     dao

@@ -18,6 +18,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.ExhentaiContent;
 import me.devsaki.hentoid.parsers.images.EHentaiParser;
@@ -76,7 +77,7 @@ public class ExHentaiActivity extends BaseWebActivity {
 
         private void logCookies(@NonNull final String prefix, @NonNull final String cookieStr) {
             try {
-                DocumentFile root = FileHelper.getDocumentFromTreeUriString(getApplication(), Preferences.getStorageUri());
+                DocumentFile root = FileHelper.getDocumentFromTreeUriString(getApplication(), Preferences.getStorageUri(StorageLocation.PRIMARY_1));
                 if (root != null) {
                     DocumentFile cookiesLog = FileHelper.findOrCreateDocumentFile(getApplication(), root, "text/plain", "cookies_" + prefix + "_log.txt");
                     if (cookiesLog != null)

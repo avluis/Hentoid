@@ -41,9 +41,9 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import me.devsaki.hentoid.json.ContentV1;
 import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
@@ -158,7 +158,7 @@ public class PrimaryImportWorker extends BaseWorker {
      * @param importGroups       True if the worker has to import groups from the groups JSON; false if existing groups should be kept
      */
     private void startImport(
-            LibRefreshDialogFragment.Location location,
+            StorageLocation location,
             boolean rename,
             boolean removePlaceholders,
             boolean renumberPages,

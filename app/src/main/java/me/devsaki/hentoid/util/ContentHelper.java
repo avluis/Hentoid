@@ -67,14 +67,15 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
+import me.devsaki.hentoid.util.download.DownloadHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.FileNotProcessedException;
@@ -287,7 +288,7 @@ public final class ContentHelper {
                 .withoutNulls().toList();
         if (errors != null) queuedContent.addAll(errors);
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
         if (null == rootFolder) return false;
 
         try {
@@ -493,13 +494,12 @@ public final class ContentHelper {
     /**
      * Remove all content from the given primary location from DB without removing files (=detach)
      *
-     * @param context  Context to use
      * @param dao      DAO to use
      * @param location Location to detach
      */
     public static void detachAllPrimaryContent(
             @NonNull final CollectionDAO dao,
-            LibRefreshDialogFragment.Location location
+            StorageLocation location
     ) {
         // Remove all external books from DB
         // NB : do NOT use ContentHelper.removeContent as it would remove files too
@@ -509,7 +509,7 @@ public final class ContentHelper {
         // TODO groups
     }
 
-    public static String getPathRoot(LibRefreshDialogFragment.Location location) {
+    public static String getPathRoot(StorageLocation location) {
         String locationUriStr = Preferences.getStorageUri(location);
         int pathDivider = locationUriStr.lastIndexOf("%3A");
         if (pathDivider > -1) return locationUriStr.substring(0, pathDivider);
@@ -746,10 +746,10 @@ public final class ContentHelper {
      * @return Created or existing directory
      */
     @Nullable
-    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content, boolean createOnly, @Nullable DocumentFile siteDlDir) {
+    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content, @NonNull StorageLocation location, boolean createOnly, @Nullable DocumentFile siteDlDir) {
         DocumentFile siteDownloadDir = siteDlDir;
         if (null == siteDownloadDir)
-            siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
+            siteDownloadDir = getOrCreateSiteDownloadDir(context, location, null, content.getSite());
         if (null == siteDownloadDir) return null;
 
         ImmutablePair<String, String> bookFolderName = formatBookFolderName(content);
@@ -872,8 +872,8 @@ public final class ContentHelper {
      * @return Download directory of the given Site
      */
     @Nullable
-    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @Nullable FileExplorer explorer, @NonNull Site site) {
-        String appUriStr = Preferences.getStorageUri();
+    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @NonNull StorageLocation location, @Nullable FileExplorer explorer, @NonNull Site site) {
+        String appUriStr = Preferences.getStorageUri(location);
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for the app");
             return null;
@@ -1781,8 +1781,9 @@ public final class ContentHelper {
                     }
                 }
             }
-        } else { // Hentoid download folder for non-external content
-            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, true, null);
+        } else { // Primary folder for non-external content; using download strategy
+            StorageLocation location = DownloadHelper.selectDownloadLocation(context);
+            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, location, true, null);
         }
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
@@ -1892,6 +1893,13 @@ public final class ContentHelper {
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
     }
 
+    public static StorageLocation getLocation(Content content) {
+        for (StorageLocation location : StorageLocation.values()) {
+            String rootUri = Preferences.getStorageUri(location);
+            if (!rootUri.isEmpty() && content.getStorageUri().startsWith(rootUri)) return location;
+        }
+        return StorageLocation.NONE;
+    }
 
     /**
      * Comparator to be used to sort files according to their names

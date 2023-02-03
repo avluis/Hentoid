@@ -18,8 +18,8 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
 import me.devsaki.hentoid.databinding.IntroSlide04Binding
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.ImportHelper.setAndScanHentoidFolder
@@ -73,7 +73,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
      */
     fun reset() {
         if (!isDone) return
-        Preferences.setStorageUri("")
+        Preferences.setStorageUri(StorageLocation.PRIMARY_1, "")
 
         mergedBinding.importStep1Button.visibility = View.VISIBLE
         mergedBinding.importStep1Folder.text = ""
@@ -94,7 +94,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         mergedBinding.importStep1Button.setOnClickListener {
             binding.skipBtn.visibility = View.INVISIBLE
-            pickFolder.launch(0)
+            pickFolder.launch(StorageLocation.PRIMARY_1)
         }
         mergedBinding.importStep1Button.visibility = View.VISIBLE
 
@@ -118,7 +118,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     setAndScanHentoidFolder(
                         requireContext(),
                         treeUri,
-                        LibRefreshDialogFragment.Location.PRIMARY_1,
+                        StorageLocation.PRIMARY_1,
                         true,
                         null
                     )
@@ -171,7 +171,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 updateOnSelectFolder()
                 ImportHelper.showExistingLibraryDialog(
                     requireContext(),
-                    LibRefreshDialogFragment.Location.PRIMARY_1
+                    StorageLocation.PRIMARY_1
                 ) { onCancelExistingLibraryDialog() }
                 return
             }
@@ -219,7 +219,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         mergedBinding.importStep1Button.visibility = View.INVISIBLE
         mergedBinding.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
             requireContext(),
-            Uri.parse(Preferences.getStorageUri())
+            Uri.parse(Preferences.getStorageUri(StorageLocation.PRIMARY_1))
         )
         mergedBinding.importStep1Check.visibility = View.VISIBLE
         mergedBinding.importStep2.visibility = View.VISIBLE

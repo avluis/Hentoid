@@ -50,9 +50,9 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadReviveEvent;
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.sources.PixivIllustMetadata;
 import me.devsaki.hentoid.notification.action.UserActionNotification;
@@ -216,7 +216,8 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         // Check for download folder existence, available free space and credentials
-        String targetUriStr = selectDownloadUriStr(context);
+        StorageLocation location = DownloadHelper.selectDownloadLocation(context);
+        String targetUriStr = Preferences.getStorageUri(location);
         if (targetUriStr.isEmpty()) {
             Timber.i("No download folder set"); // May happen if user has skipped it during the intro
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
@@ -383,7 +384,7 @@ public class ContentDownloadWorker extends BaseWorker {
         EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER, content));
 
         // Create destination folder for images to be downloaded
-        DocumentFile dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content, false, null);
+        DocumentFile dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content, location, false, null);
         // Folder creation failed
         if (null == dir || !dir.exists()) {
             String title = content.getTitle();
@@ -1226,36 +1227,5 @@ public class ContentDownloadWorker extends BaseWorker {
     private String processNewName(@NonNull String attrName, @NonNull RenamingRule rule) {
         if (rule.doesMatchSourceName(attrName)) return rule.getTargetName(attrName);
         else return null;
-    }
-
-    private String selectDownloadUriStr(@NonNull Context context) {
-        String uriStr1 = Preferences.getStorageUri(LibRefreshDialogFragment.Location.PRIMARY_1).trim();
-        String uriStr2 = Preferences.getStorageUri(LibRefreshDialogFragment.Location.PRIMARY_2).trim();
-
-        // Obvious cases
-        if (uriStr1.isEmpty() && uriStr2.isEmpty()) return "";
-        if (!uriStr1.isEmpty() && uriStr2.isEmpty()) return uriStr1;
-        if (uriStr1.isEmpty()) return uriStr2;
-
-        // Broken cases
-        DocumentFile root1 = FileHelper.getDocumentFromTreeUriString(context, uriStr1);
-        DocumentFile root2 = FileHelper.getDocumentFromTreeUriString(context, uriStr2);
-        if (null == root1 && null == root2) return "";
-        if (root1 != null && null == root2) return uriStr1;
-        if (null == root1) return uriStr2;
-
-        // Apply download strategy
-        FileHelper.MemoryUsageFigures memUsage1 = new FileHelper.MemoryUsageFigures(context, root1);
-        FileHelper.MemoryUsageFigures memUsage2 = new FileHelper.MemoryUsageFigures(context, root2);
-
-        int strategy = Preferences.getStorageDownloadStrategy();
-        if (Preferences.Constant.STORAGE_FILL_FALLOVER == strategy) {
-            if (100 - memUsage1.getFreeUsageRatio100() > Preferences.getStorageSwitchThresholdPc())
-                return uriStr2;
-            else return uriStr1;
-        } else {
-            if (memUsage1.getfreeUsageBytes() > memUsage2.getfreeUsageBytes()) return uriStr1;
-            else return uriStr2;
-        }
     }
 }

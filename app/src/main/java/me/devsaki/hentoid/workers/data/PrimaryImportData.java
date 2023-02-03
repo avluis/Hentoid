@@ -4,7 +4,7 @@ import androidx.work.Data;
 
 import javax.annotation.Nonnull;
 
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.workers.PrimaryImportWorker;
 
 /**
@@ -55,7 +55,7 @@ public class PrimaryImportData {
             builder.putBoolean(KEY_IMPORT_GROUPS, value);
         }
 
-        public void setLocation(LibRefreshDialogFragment.Location value) {
+        public void setLocation(StorageLocation value) {
             builder.putInt(KEY_LOCATION, value.ordinal());
         }
 
@@ -96,8 +96,8 @@ public class PrimaryImportData {
             return data.getBoolean(KEY_IMPORT_GROUPS, true);
         }
 
-        public LibRefreshDialogFragment.Location getLocation() {
-            return LibRefreshDialogFragment.Location.values()[data.getInt(KEY_LOCATION, LibRefreshDialogFragment.Location.NONE.ordinal())];
+        public StorageLocation getLocation() {
+            return StorageLocation.values()[data.getInt(KEY_LOCATION, StorageLocation.NONE.ordinal())];
         }
     }
 }

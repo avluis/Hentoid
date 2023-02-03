@@ -240,7 +240,10 @@
     <string name="external_library_subtitle">Archives, 3rd party books</string>
     <string name="add_external">Add external location</string>
     <string name="location_storage">%1$s (%2$d%%) free</string>
+    <string name="storage_action_replace">Replace location…</string>
+    <string name="storage_action_remove">Detach</string>
     <string name="storage_remove_ask">Detach selected location?\nNB : Books will not be deleted</string>
+    <string name="storage_remove_ko1">Cannot detach Location 1 when Location 2 is set</string>
     <string name="storage_remove_confirm">Location detached</string>
     <string name="storage_strategy_title">Download strategy : %s</string>
     <string name="storage_strategy_balance">Balance free space</string>

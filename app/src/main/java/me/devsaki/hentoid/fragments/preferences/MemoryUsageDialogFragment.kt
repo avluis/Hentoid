@@ -14,7 +14,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogPrefsMemoryBinding
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment.Location
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
@@ -44,9 +44,9 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
         var deviceTotalBytes: Long = -1
 
         // Get free space and capacity for every location
-        val stats1 = getStats(Location.PRIMARY_1)
-        val stats2 = getStats(Location.PRIMARY_2)
-        val statsExt = getStats(Location.EXTERNAL)
+        val stats1 = getStats(StorageLocation.PRIMARY_1)
+        val stats2 = getStats(StorageLocation.PRIMARY_2)
+        val statsExt = getStats(StorageLocation.EXTERNAL)
 
         // Remove duplicates by keeping capacities that are different (-> different volumes)
         val distinctVolumes = listOf(stats1, stats2, statsExt)
@@ -129,7 +129,7 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
             )
     }
 
-    private fun getStats(location: Location): Pair<Long, Long> {
+    private fun getStats(location: StorageLocation): Pair<Long, Long> {
         val root = Preferences.getStorageUri(location)
         if (root.isNotEmpty()) {
             val rootFolder = FileHelper.getDocumentFromTreeUriString(requireActivity(), root)

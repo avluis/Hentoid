@@ -53,7 +53,7 @@ import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment.Location;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
@@ -124,13 +124,13 @@ public class ImportHelper {
         return hentoidFolderNames.accept(folderName);
     }
 
-    public static class PickFolderContract extends ActivityResultContract<Integer, ImmutablePair<Integer, Uri>> {
+    public static class PickFolderContract extends ActivityResultContract<StorageLocation, ImmutablePair<Integer, Uri>> {
 
         @NonNull
         @Override
-        public Intent createIntent(@NonNull Context context, Integer input) {
+        public Intent createIntent(@NonNull Context context, StorageLocation input) {
             HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
-            return getFolderPickerIntent(context);
+            return getFolderPickerIntent(context, input);
         }
 
         @Override
@@ -176,7 +176,7 @@ public class ImportHelper {
      * @param context Context to be used
      * @return Intent for the SAF folder picker
      */
-    private static Intent getFolderPickerIntent(@NonNull final Context context) {
+    private static Intent getFolderPickerIntent(@NonNull final Context context, @NonNull StorageLocation location) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             intent.putExtra(DocumentsContract.EXTRA_PROMPT, context.getString(R.string.dialog_prompt));
@@ -185,9 +185,8 @@ public class ImportHelper {
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
 
         // Start the SAF at the specified location
-        // TODO take storage 2 into account
-        if (Build.VERSION.SDK_INT >= O && !Preferences.getStorageUri().isEmpty()) {
-            DocumentFile file = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
+        if (Build.VERSION.SDK_INT >= O && !Preferences.getStorageUri(location).isEmpty()) {
+            DocumentFile file = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(location));
             if (file != null)
                 intent.putExtra(EXTRA_INITIAL_URI, file.getUri());
         }
@@ -218,7 +217,7 @@ public class ImportHelper {
      * @param folder   Folder to check and set
      * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials could not be set
      */
-    public static int checkAndSetRootFolder(@NonNull final Context context, Location location, @NonNull final DocumentFile folder) {
+    public static int checkAndSetRootFolder(@NonNull final Context context, StorageLocation location, @NonNull final DocumentFile folder) {
         int result = FileHelper.createNoMedia(context, folder);
         if (0 == result) Preferences.setStorageUri(location, folder.getUri().toString());
         return result;
@@ -238,14 +237,14 @@ public class ImportHelper {
     int setAndScanHentoidFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri,
-            Location location,
+            StorageLocation location,
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
         // Persist I/O permissions; keep existing ones if present
-        List<Location> locs = new ArrayList<>();
-        locs.add(Location.EXTERNAL);
-        if (location == Location.PRIMARY_1) locs.add(Location.PRIMARY_2);
-        else locs.add(Location.PRIMARY_1);
+        List<StorageLocation> locs = new ArrayList<>();
+        locs.add(StorageLocation.EXTERNAL);
+        if (location == StorageLocation.PRIMARY_1) locs.add(StorageLocation.PRIMARY_2);
+        else locs.add(StorageLocation.PRIMARY_1);
         persistLocationCredentials(context, treeUri, locs);
 
         // Check if the folder exists
@@ -310,7 +309,7 @@ public class ImportHelper {
             @NonNull final Context context,
             @NonNull final Uri treeUri) {
         // Persist I/O permissions; keep existing ones if present
-        persistLocationCredentials(context, treeUri, Arrays.asList(Location.PRIMARY_1, Location.PRIMARY_2));
+        persistLocationCredentials(context, treeUri, Arrays.asList(StorageLocation.PRIMARY_1, StorageLocation.PRIMARY_2));
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
@@ -319,7 +318,8 @@ public class ImportHelper {
             return ProcessFolderResult.KO_INVALID_FOLDER;
         }
         String folderUri = docFile.getUri().toString();
-        if (folderUri.equalsIgnoreCase(Preferences.getStorageUri()) || folderUri.equalsIgnoreCase(Preferences.getStorageUri2())) {
+        if (folderUri.equalsIgnoreCase(Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+                || folderUri.equalsIgnoreCase(Preferences.getStorageUri(StorageLocation.PRIMARY_2))) {
             Timber.w("Trying to set the external library inside a primary library location %s", treeUri.toString());
             return ProcessFolderResult.KO_APP_FOLDER;
         }
@@ -334,7 +334,7 @@ public class ImportHelper {
     // TODO doc
     private static void persistLocationCredentials(@NonNull final Context context,
                                                    @NonNull final Uri treeUri,
-                                                   List<Location> location) {
+                                                   List<StorageLocation> location) {
         List<Uri> uri = Stream.of(location)
                 .map(Preferences::getStorageUri)
                 .filterNot(String::isEmpty)
@@ -351,7 +351,7 @@ public class ImportHelper {
      */
     public static void showExistingLibraryDialog(
             @NonNull final Context context,
-            Location location,
+            StorageLocation location,
             @Nullable Runnable cancelCallback
     ) {
         new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
@@ -451,7 +451,7 @@ public class ImportHelper {
      */
     private static void runPrimaryImport(
             @NonNull final Context context,
-            Location location,
+            StorageLocation location,
             @Nullable final ImportOptions options
     ) {
         ImportNotificationChannel.init(context);

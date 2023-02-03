@@ -63,6 +63,7 @@ import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.GroupHelper;
@@ -901,7 +902,8 @@ public class LibraryViewModel extends AndroidViewModel {
             try {
                 try {
                     destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
-                } catch (IOException e) { // ...if it fails, try creating the file with the old sanitized naming
+                } catch (
+                        IOException e) { // ...if it fails, try creating the file with the old sanitized naming
                     destName = bookFolderName.right + ".zip";
                     destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
                 }
@@ -1254,7 +1256,8 @@ public class LibraryViewModel extends AndroidViewModel {
             Content splitContent = createContentFromChapter(content, chap);
 
             // Create a new folder for the split content
-            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, true, null);
+            StorageLocation location = ContentHelper.getLocation(content);
+            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, location, true, null);
             if (null == targetFolder || !targetFolder.exists())
                 throw new ContentNotProcessedException(splitContent, "Could not create target directory");
 

@@ -20,7 +20,7 @@ import me.devsaki.hentoid.databinding.IncludePrefsStorageVolumeBinding
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.preferences.DownloadStrategyDialogFragment
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment.Location
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.preferences.MemoryUsageDialogFragment
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -86,15 +86,15 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
             addPrimary1.setOnClickListener {
                 if (PrimaryImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
-                else importLocation(Location.PRIMARY_1)
+                else importLocation(StorageLocation.PRIMARY_1)
             }
             addPrimary2.setOnClickListener {
                 if (PrimaryImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
-                else importLocation(Location.PRIMARY_2)
+                else importLocation(StorageLocation.PRIMARY_2)
             }
             addExternal.setOnClickListener {
                 if (ExternalImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
-                else importLocation(Location.EXTERNAL)
+                else importLocation(StorageLocation.EXTERNAL)
             }
 
             alertLowPanel.setOnClickListener {
@@ -133,26 +133,26 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             browseModeWarning.isVisible = Preferences.isBrowserMode()
             browseModeImg.isVisible = Preferences.isBrowserMode()
 
-            primaryVolume1.isVisible = Preferences.getStorageUri().isNotEmpty()
+            primaryVolume1.isVisible = Preferences.getStorageUri(StorageLocation.PRIMARY_1).isNotEmpty()
             if (primaryVolume1.isVisible) {
                 if (null == binding1) binding1 =
                     IncludePrefsStorageVolumeBinding.bind(primaryVolume1)
                 bindLocation(
                     binding1,
-                    Location.PRIMARY_1,
-                    Preferences.getStorageUri()
+                    StorageLocation.PRIMARY_1,
+                    Preferences.getStorageUri(StorageLocation.PRIMARY_1)
                 )
             }
             addPrimary1.isVisible = !primaryVolume1.isVisible
 
-            primaryVolume2.isVisible = Preferences.getStorageUri2().isNotEmpty()
+            primaryVolume2.isVisible = Preferences.getStorageUri(StorageLocation.PRIMARY_2).isNotEmpty()
             if (primaryVolume2.isVisible) {
                 if (null == binding2) binding2 =
                     IncludePrefsStorageVolumeBinding.bind(primaryVolume2)
                 bindLocation(
                     binding2,
-                    Location.PRIMARY_2,
-                    Preferences.getStorageUri2()
+                    StorageLocation.PRIMARY_2,
+                    Preferences.getStorageUri(StorageLocation.PRIMARY_2)
                 )
             }
             addPrimary2.isVisible = primaryVolume1.isVisible && !primaryVolume2.isVisible
@@ -183,7 +183,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     IncludePrefsStorageVolumeBinding.bind(externalVolume)
                 bindLocation(
                     bindingExt,
-                    Location.EXTERNAL,
+                    StorageLocation.EXTERNAL,
                     Preferences.getExternalLibraryUri()
                 )
             }
@@ -193,13 +193,13 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
     private fun bindLocation(
         binding: IncludePrefsStorageVolumeBinding?,
-        location: Location,
+        location: StorageLocation,
         uriStr: String
     ) {
         binding?.apply {
             when (location) {
-                Location.PRIMARY_1 -> number.text = "1"
-                Location.PRIMARY_2 -> number.text = "2"
+                StorageLocation.PRIMARY_1 -> number.text = "1"
+                StorageLocation.PRIMARY_2 -> number.text = "2"
                 else -> number.text = " "
             }
             val uri = Uri.parse(uriStr)
@@ -224,7 +224,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
         }
     }
 
-    private fun importLocation(location: Location) {
+    private fun importLocation(location: StorageLocation) {
         LibRefreshDialogFragment.invoke(
             supportFragmentManager,
             showOptions = false,
@@ -233,19 +233,27 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
         )
     }
 
-    private fun onActionClick(location: Location, anchor: View) {
+    private fun onActionClick(location: StorageLocation, anchor: View) {
         val powerMenuBuilder = PowerMenu.Builder(this)
             .addItem(
                 PowerMenuItem(
+                    resources.getString(R.string.storage_action_replace),
+                    R.drawable.ic_folder_edit,
+                    false,
+                    2
+                )
+            )
+            .addItem(
+                PowerMenuItem(
                     resources.getString(R.string.refresh_title),
-                    R.drawable.ic_replace,
+                    R.drawable.ic_action_refresh,
                     false,
                     0
                 )
             )
             .addItem(
                 PowerMenuItem(
-                    resources.getString(R.string.remove_generic),
+                    resources.getString(R.string.storage_action_remove),
                     R.drawable.ic_action_remove,
                     false,
                     1
@@ -265,6 +273,19 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
         powerMenu.setOnMenuItemClickListener { _, item ->
             when (item.tag) {
+                2 -> { // Replace with
+                    if (PrimaryImportWorker.isRunning(baseContext)) {
+                        ToastHelper.toast(R.string.pref_import_running)
+                    } else {
+                        LibRefreshDialogFragment.invoke(
+                            supportFragmentManager,
+                            showOptions = false,
+                            chooseFolder = true,
+                            location
+                        )
+                    }
+                }
+
                 0 -> { // Refresh
                     if (PrimaryImportWorker.isRunning(baseContext)) {
                         ToastHelper.toast(R.string.pref_import_running)
@@ -278,27 +299,43 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     }
                 }
 
-                else -> { // Remove
-                    MaterialAlertDialogBuilder(this)
-                        .setIcon(R.drawable.ic_warning)
-                        .setCancelable(true)
-                        .setTitle(R.string.app_name)
-                        .setMessage(R.string.storage_remove_ask)
-                        .setPositiveButton(R.string.yes) { dialog1: DialogInterface, _: Int ->
-                            dialog1.dismiss()
-                            viewModel.detach(location)
-                            refreshDisplay()
-                            ToastHelper.toast(R.string.storage_remove_confirm)
-                        }
-                        .setNegativeButton(R.string.no) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
-                        .create()
-                        .show()
-                }
+                else -> onDetachSelected(location)
             }
         }
 
         powerMenu.setIconColor(ContextCompat.getColor(this, R.color.white_opacity_87))
         powerMenu.showAsAnchorRightTop(anchor)
+    }
+
+    private fun onDetachSelected(location: StorageLocation) {
+        if (StorageLocation.PRIMARY_1 == location
+            && Preferences.getStorageUri(StorageLocation.PRIMARY_2).isNotBlank()
+        ) {
+            Snackbar.make(
+                findViewById(android.R.id.content),
+                R.string.storage_remove_ko1,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
+        } else {
+            confirmDetach(location)
+        }
+    }
+
+    private fun confirmDetach(location: StorageLocation) {
+        MaterialAlertDialogBuilder(this)
+            .setIcon(R.drawable.ic_warning)
+            .setCancelable(true)
+            .setTitle(R.string.app_name)
+            .setMessage(R.string.storage_remove_ask)
+            .setPositiveButton(R.string.yes) { dialog1: DialogInterface, _: Int ->
+                dialog1.dismiss()
+                viewModel.detach(location)
+                refreshDisplay()
+                ToastHelper.toast(R.string.storage_remove_confirm)
+            }
+            .setNegativeButton(R.string.no) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
+            .create()
+            .show()
     }
 
     override fun onStrategySelected() {

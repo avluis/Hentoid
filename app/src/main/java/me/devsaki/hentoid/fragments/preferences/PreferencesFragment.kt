@@ -98,7 +98,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
-        onHentoidFolderChanged()
         onExternalFolderChanged()
     }
 
@@ -109,9 +108,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.APP_PREVIEW,
             Preferences.Key.FORCE_ENGLISH,
             Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
-
-            Preferences.Key.PRIMARY_FOLDER,
-            Preferences.Key.PRIMARY_STORAGE_URI -> onHentoidFolderChanged()
 
             Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
@@ -184,13 +180,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     private fun onPrefRequiringRestartChanged() {
         ToastHelper.toast(R.string.restart_needed)
-    }
-
-    private fun onHentoidFolderChanged() {
-        val storageFolderPref: Preference? =
-            findPreference(Preferences.Key.PRIMARY_FOLDER) as Preference?
-        val uri = Uri.parse(Preferences.getStorageUri())
-        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri)
     }
 
     private fun onExternalFolderChanged() {

@@ -22,6 +22,7 @@ import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsRefreshBinding
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.util.ImportHelper.ImportOptions
@@ -61,17 +62,13 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     private var showOptions = false
     private var chooseFolder = false
-    private var location = Location.NONE
+    private var location = StorageLocation.NONE
 
     private var isServiceGracefulClose = false
 
     // Disposables for RxJava
     private var importDisposable: Disposable? = null
     private val compositeDisposable = CompositeDisposable()
-
-    enum class Location {
-        NONE, PRIMARY_1, PRIMARY_2, EXTERNAL
-    }
 
     private val pickFolder =
         registerForActivityResult(PickFolderContract()) { result: ImmutablePair<Int, Uri> ->
@@ -87,7 +84,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         arguments?.apply {
             showOptions = getBoolean(SHOW_OPTIONS, false)
             chooseFolder = getBoolean(CHOOSE_FOLDER, false)
-            location = Location.values()[getInt(LOCATION, Location.NONE.ordinal)]
+            location = StorageLocation.values()[getInt(LOCATION, StorageLocation.NONE.ordinal)]
         }
 
         EventBus.getDefault().register(this)
@@ -142,7 +139,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     }
 
     private fun launchRefreshImport(
-        location: Location,
+        location: StorageLocation,
         rename: Boolean,
         removePlaceholders: Boolean,
         renumberPages: Boolean,
@@ -156,7 +153,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         isCancelable = false
 
         // Run import
-        if (location == Location.EXTERNAL) {
+        if (location == StorageLocation.EXTERNAL) {
             val externalUri = Uri.parse(Preferences.getExternalLibraryUri())
             compositeDisposable.add(Single.fromCallable {
                 setAndScanExternalFolder(
@@ -226,7 +223,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         }
     }
 
-    private fun showImportProgressLayout(askFolder: Boolean, location: Location) {
+    private fun showImportProgressLayout(askFolder: Boolean, location: StorageLocation) {
         // Replace launch options layout with import progress layout
         binding1.root.removeAllViews()
         _binding2 =
@@ -234,17 +231,17 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
         // Memorize UI elements that will be updated during the import events
         when (location) {
-            Location.PRIMARY_1 -> {
+            StorageLocation.PRIMARY_1 -> {
                 binding2.importStep1Button.setText(R.string.refresh_step1)
                 binding2.importStep1Text.setText(R.string.refresh_step1_select)
             }
 
-            Location.PRIMARY_2 -> {
+            StorageLocation.PRIMARY_2 -> {
                 binding2.importStep1Button.setText(R.string.refresh_step1_2)
                 binding2.importStep1Text.setText(R.string.refresh_step1_select_2)
             }
 
-            Location.EXTERNAL -> {
+            StorageLocation.EXTERNAL -> {
                 binding2.importStep1Button.setText(R.string.refresh_step1_select_external)
                 binding2.importStep1Text.setText(R.string.refresh_step1_external)
             }
@@ -260,7 +257,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         } else {
             binding2.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
                 requireContext(), Uri.parse(
-                    Preferences.getStorageUri()
+                    Preferences.getStorageUri(location)
                 )
             )
             binding2.importStep1Folder.isVisible = true
@@ -277,14 +274,14 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             )
         ) { // Make sure permissions are set
             Preferences.setBrowserMode(false)
-            pickFolder.launch(0) // Run folder picker
+            pickFolder.launch(location) // Run folder picker
         }
     }
 
     private fun onFolderPickerResult(resultCode: Int, uri: Uri) {
         when (resultCode) {
             PickerResult.OK -> importDisposable = Single.fromCallable {
-                if (location == Location.EXTERNAL) return@fromCallable setAndScanExternalFolder(
+                if (location == StorageLocation.EXTERNAL) return@fromCallable setAndScanExternalFolder(
                     requireContext(), uri
                 ) else return@fromCallable setAndScanHentoidFolder(
                     requireContext(), uri, location, true, null
@@ -363,7 +360,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     private fun updateOnSelectFolder() {
         binding2.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
             requireContext(), Uri.parse(
-                Preferences.getStorageUri()
+                Preferences.getStorageUri(location)
             )
         )
         binding2.importStep1Folder.isVisible = true
@@ -486,7 +483,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             fragmentManager: FragmentManager,
             showOptions: Boolean,
             chooseFolder: Boolean,
-            location: Location
+            location: StorageLocation
         ) {
             val fragment = LibRefreshDialogFragment()
 
