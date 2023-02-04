@@ -30,7 +30,7 @@ import me.devsaki.hentoid.util.ImportHelper.PickFolderContract
 import me.devsaki.hentoid.util.ImportHelper.PickerResult
 import me.devsaki.hentoid.util.ImportHelper.ProcessFolderResult
 import me.devsaki.hentoid.util.ImportHelper.setAndScanExternalFolder
-import me.devsaki.hentoid.util.ImportHelper.setAndScanHentoidFolder
+import me.devsaki.hentoid.util.ImportHelper.setAndScanPrimaryFolder
 import me.devsaki.hentoid.util.ImportHelper.showExistingLibraryDialog
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ToastHelper
@@ -198,7 +198,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             runBlocking {
                 val res = withContext(Dispatchers.IO) {
                     try {
-                        val res = setAndScanHentoidFolder(
+                        val res = setAndScanPrimaryFolder(
                             requireContext(), rootUri, location, false, options
                         )
                         return@withContext res.left
@@ -288,7 +288,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     val res = withContext(Dispatchers.IO) {
                         return@withContext if (location == StorageLocation.EXTERNAL) setAndScanExternalFolder(
                             requireContext(), uri
-                        ) else setAndScanHentoidFolder(
+                        ) else setAndScanPrimaryFolder(
                             requireContext(), uri, location, true, null
                         )
                     }

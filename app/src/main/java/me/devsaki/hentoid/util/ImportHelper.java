@@ -210,17 +210,19 @@ public class ImportHelper {
     }
 
     /**
-     * Scan the given tree URI for a Hentoid folder
+     * Scan the given tree URI for a primary folder
      * If none is found there, try to create one
-     * TODO update
      *
      * @param context         Context to be used
      * @param treeUri         Tree URI of the folder where to find or create the Hentoid folder
+     * @param location        Location to associate the folder with
      * @param askScanExisting If true and an existing non-empty Hentoid folder is found, the user will be asked if he wants to import its contents
      * @param options         Import options - See ImportHelper.ImportOptions
-     * @return Standardized result - see ImportHelper.Result
+     * @return Pair containing :
+     * - Left : Standardized result - see ImportHelper.Result
+     * - Right : URI of the detected or created primary folder
      */
-    public static ImmutablePair<Integer, String> setAndScanHentoidFolder(
+    public static ImmutablePair<Integer, String> setAndScanPrimaryFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri,
             StorageLocation location,
@@ -286,12 +288,13 @@ public class ImportHelper {
     }
 
     /**
-     * Scan the given tree URI for external books or Hentoid books
-     * TODO update
+     * Scan the given tree URI for 3rd party books, archives or Hentoid books
      *
      * @param context Context to be used
-     * @param treeUri Tree URI of the folder where to find external books or Hentoid books
-     * @return Standardized result - see ImportHelper.Result
+     * @param treeUri Tree URI of the folder where to find 3rd party books, archives or Hentoid books
+     * @return Pair containing :
+     * - Left : Standardized result - see ImportHelper.Result
+     * - Right : URI of the detected or created primary folder
      */
     public static ImmutablePair<Integer, String> setAndScanExternalFolder(
             @NonNull final Context context,
@@ -320,7 +323,13 @@ public class ImportHelper {
         else return new ImmutablePair<>(ProcessFolderResult.KO_ALREADY_RUNNING, folderUri);
     }
 
-    // TODO doc
+    /**
+     * Persist I/O credentials for the given location, keeping the given existing credentials
+     *
+     * @param context  Context to use
+     * @param treeUri  Uri to add credentials for
+     * @param location Locations to keep credentials for
+     */
     private static void persistLocationCredentials(@NonNull final Context context,
                                                    @NonNull final Uri treeUri,
                                                    List<StorageLocation> location) {
@@ -336,6 +345,8 @@ public class ImportHelper {
      * Show the dialog to ask the user if he wants to import existing books
      *
      * @param context        Context to be used
+     * @param location       Location we're working on
+     * @param rootUri        Uri of the selected folder
      * @param cancelCallback Callback to run when the dialog is canceled
      */
     public static void showExistingLibraryDialog(

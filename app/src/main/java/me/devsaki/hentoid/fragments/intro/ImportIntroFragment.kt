@@ -24,7 +24,7 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ImportHelper
-import me.devsaki.hentoid.util.ImportHelper.setAndScanHentoidFolder
+import me.devsaki.hentoid.util.ImportHelper.setAndScanPrimaryFolder
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.workers.PrimaryImportWorker
@@ -116,7 +116,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
                 runBlocking {
                     val result = withContext(Dispatchers.IO) {
-                        setAndScanHentoidFolder(
+                        setAndScanPrimaryFolder(
                             requireContext(),
                             treeUri,
                             StorageLocation.PRIMARY_1,
