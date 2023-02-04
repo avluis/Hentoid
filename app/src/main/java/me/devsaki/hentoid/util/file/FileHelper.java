@@ -748,9 +748,9 @@ public class FileHelper {
         if (null == targetFolder || !targetFolder.exists()) return null;
         DocumentFile newFile = targetFolder.createFile(mimeType, newName);
         if (null == newFile || !newFile.exists()) return null;
-        try (OutputStream newDownload = FileHelper.getOutputStream(context, newFile)) {
+        try (OutputStream output = FileHelper.getOutputStream(context, newFile)) {
             try (InputStream input = FileHelper.getInputStream(context, sourceFileUri)) {
-                Helper.copy(input, newDownload);
+                Helper.copy(input, output);
             }
         }
         return newFile.getUri();
@@ -1004,8 +1004,8 @@ public class FileHelper {
      * <p>
      * NB : if the optional Uris have no persisted permissions, this call won't create them
      *
-     * @param context Context to use
-     * @param newUri  New Uri to add to the persisted I/O permission
+     * @param context  Context to use
+     * @param newUri   New Uri to add to the persisted I/O permission
      * @param keepUris List of Uri to keep in the persisted I/O permissions, if already set (can be empty)
      */
     public static void persistNewUriPermission(@NonNull final Context context, @NonNull final Uri newUri, final List<Uri> keepUris) {
