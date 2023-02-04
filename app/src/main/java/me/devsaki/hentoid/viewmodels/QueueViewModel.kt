@@ -9,13 +9,11 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.annimon.stream.Optional
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -26,7 +24,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.exception.EmptyResultException
@@ -44,9 +41,6 @@ class QueueViewModel(
     application: Application,
     private val dao: CollectionDAO
 ) : AndroidViewModel(application) {
-
-    // Cleanup for all RxJava calls
-    private val compositeDisposable = CompositeDisposable()
 
     // Collection data for queue
     private var currentQueueSource: LiveData<List<QueueRecord>>? = null
@@ -70,7 +64,6 @@ class QueueViewModel(
     override fun onCleared() {
         super.onCleared()
         dao.cleanup()
-        compositeDisposable.clear()
     }
 
     fun getQueue(): LiveData<List<QueueRecord>> {
@@ -292,18 +285,13 @@ class QueueViewModel(
         val targetImageStatus = if (reparseImages) StatusContent.ERROR else null
         val errorCount = AtomicInteger(0)
         val okCount = AtomicInteger(0)
-        compositeDisposable.add(
-            Observable.fromIterable(contentList)
-                .observeOn(Schedulers.io())
-                .map { c: Content ->
-                    if (reparseContent) ContentHelper.reparseFromScratch(
-                        c
-                    ) else ImmutablePair(
-                        c,
-                        Optional.of(c)
-                    )
-                }
-                .doOnNext { res: ImmutablePair<Content, Optional<Content>> ->
+
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                contentList.forEach {
+                    val res = if (reparseContent) ContentHelper.reparseFromScratch(it)
+                    else ImmutablePair(it, Optional.of(it))
+
                     if (res.right.isPresent) {
                         val content = res.right.get()
                         // Non-blocking performance bottleneck; run in a dedicated worker
@@ -316,8 +304,7 @@ class QueueViewModel(
                         )
                     } else {
                         // As we're in the download queue, an item whose content is unreachable should directly get to the error queue
-                        val c =
-                            dao.selectContent(res.left.id)
+                        val c = dao.selectContent(res.left.id)
                         if (c != null) {
                             // Remove the content from the regular queue
                             ContentHelper.removeQueuedContent(
@@ -328,8 +315,7 @@ class QueueViewModel(
                             )
                             // Put it in the error queue
                             c.status = StatusContent.ERROR
-                            val errors: MutableList<ErrorRecord> =
-                                ArrayList()
+                            val errors: MutableList<ErrorRecord> = ArrayList()
                             errors.add(
                                 ErrorRecord(
                                     c.id,
@@ -358,38 +344,24 @@ class QueueViewModel(
                             contentList.size
                         )
                     )
-                }
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnComplete {
-                    if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance()
-                        .resumeQueue(getApplication())
-                    EventBus.getDefault().post(
-                        ProcessEvent(
-                            ProcessEvent.EventType.COMPLETE,
-                            R.id.generic_progress,
-                            0,
-                            okCount.get(),
-                            errorCount.get(),
-                            contentList.size
-                        )
+                } // For each content
+                if (Preferences.isQueueAutostart())
+                    ContentQueueManager.getInstance().resumeQueue(getApplication())
+                EventBus.getDefault().post(
+                    ProcessEvent(
+                        ProcessEvent.EventType.COMPLETE,
+                        R.id.generic_progress,
+                        0,
+                        okCount.get(),
+                        errorCount.get(),
+                        contentList.size
                     )
-                    onSuccess.invoke(contentList.size - errorCount.get())
-                }
-                .subscribe(
-                    {
-                        EventBus.getDefault().post(
-                            ProcessEvent(
-                                ProcessEvent.EventType.COMPLETE,
-                                R.id.generic_progress,
-                                0,
-                                contentList.size - errorCount.get(),
-                                errorCount.get(),
-                                contentList.size
-                            )
-                        )
-                    }
-                ) { t: Throwable -> onError.invoke(t) }
-        )
+                )
+            }
+            coroutineScope {
+                onSuccess.invoke(contentList.size - errorCount.get())
+            }
+        }
     }
 
     fun setContentToShowFirst(hash: Long) {
@@ -397,35 +369,20 @@ class QueueViewModel(
     }
 
     fun setDownloadMode(contentIds: List<Long>, downloadMode: Int) {
-        compositeDisposable.add(
-            Observable.fromIterable(contentIds)
-                .observeOn(Schedulers.io())
-                .map { id: Long ->
-                    doSetDownloadMode(id, downloadMode)
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                contentIds.forEach {
+                    val theContent = dao.selectContent(it)
+                    if (theContent != null && !theContent.isBeingDeleted) {
+                        theContent.downloadMode = downloadMode
+                        dao.insertContent(theContent)
+                    }
                 }
-                .doOnComplete { -> // Update queue JSON
-                    ContentHelper.updateQueueJson(getApplication(), dao)
-                    // Force display by updating queue
-                    dao.updateQueue(dao.selectQueue())
-                }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { }
-                ) { t: Throwable? -> Timber.w(t) }
-        )
-    }
-
-    private fun doSetDownloadMode(contentId: Long, downloadMode: Int): Content? {
-        Helper.assertNonUiThread()
-
-        // Check if given content still exists in DB
-        val theContent = dao.selectContent(contentId)
-        if (theContent != null && !theContent.isBeingDeleted) {
-            theContent.downloadMode = downloadMode
-            // Persist in it DB
-            dao.insertContent(theContent)
+                ContentHelper.updateQueueJson(getApplication(), dao)
+                // Force display by updating queue
+                dao.updateQueue(dao.selectQueue())
+            }
         }
-        return theContent
     }
 
     fun toogleFreeze(recordId: List<Long>) {
