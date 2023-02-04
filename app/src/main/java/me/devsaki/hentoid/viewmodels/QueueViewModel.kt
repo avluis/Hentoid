@@ -431,8 +431,6 @@ class QueueViewModel(
     fun toogleFreeze(recordId: List<Long>) {
         runBlocking {
             launch(Dispatchers.IO) {
-                Helper.assertNonUiThread() // TODO
-
                 val queue = dao.selectQueue()
                 queue.forEach {
                     if (recordId.contains(it.id)) it.isFrozen = !it.isFrozen
