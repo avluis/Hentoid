@@ -210,22 +210,9 @@ public class ImportHelper {
     }
 
     /**
-     * Check if the given folder is valid; if it is, set it as the app's root folder
-     *
-     * @param context  Context to use
-     * @param location Location to set
-     * @param folder   Folder to check and set
-     * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials could not be set
-     */
-    public static int checkAndSetRootFolder(@NonNull final Context context, StorageLocation location, @NonNull final DocumentFile folder) {
-        int result = FileHelper.createNoMedia(context, folder);
-        if (0 == result) Preferences.setStorageUri(location, folder.getUri().toString());
-        return result;
-    }
-
-    /**
      * Scan the given tree URI for a Hentoid folder
      * If none is found there, try to create one
+     * TODO update
      *
      * @param context         Context to be used
      * @param treeUri         Tree URI of the folder where to find or create the Hentoid folder
@@ -233,8 +220,7 @@ public class ImportHelper {
      * @param options         Import options - See ImportHelper.ImportOptions
      * @return Standardized result - see ImportHelper.Result
      */
-    public static @ProcessFolderResult
-    int setAndScanHentoidFolder(
+    public static ImmutablePair<Integer, String> setAndScanHentoidFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri,
             StorageLocation location,
@@ -251,7 +237,7 @@ public class ImportHelper {
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
         if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
-            return ProcessFolderResult.KO_INVALID_FOLDER;
+            return new ImmutablePair<>(ProcessFolderResult.KO_INVALID_FOLDER, treeUri.toString());
         }
 
         // Check if the folder is not the device's Download folder
@@ -261,7 +247,7 @@ public class ImportHelper {
             firstSegment = firstSegment.split(File.separator)[0];
             if (firstSegment.startsWith("download") || firstSegment.startsWith("primary:download")) {
                 Timber.e("Device's download folder detected : %s", treeUri.toString());
-                return ProcessFolderResult.KO_DOWNLOAD_FOLDER;
+                return new ImmutablePair<>(ProcessFolderResult.KO_DOWNLOAD_FOLDER, treeUri.toString());
             }
         }
 
@@ -269,22 +255,23 @@ public class ImportHelper {
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
             Timber.e("Could not create Hentoid folder in folder %s", docFile.getUri().toString());
-            return ProcessFolderResult.KO_CREATE_FAIL;
+            return new ImmutablePair<>(ProcessFolderResult.KO_CREATE_FAIL, treeUri.toString());
         }
 
         // Set the folder as the app's downloads folder
-        int result = checkAndSetRootFolder(context, location, hentoidFolder);
+        int result = FileHelper.createNoMedia(context, hentoidFolder);
         if (result < 0) {
             Timber.e("Could not set the selected root folder (error = %d) %s", result, hentoidFolder.getUri().toString());
-            return ProcessFolderResult.KO_INVALID_FOLDER;
+            return new ImmutablePair<>(ProcessFolderResult.KO_INVALID_FOLDER, hentoidFolder.getUri().toString());
         }
 
         // Scan the folder for an existing library; start the import
         if (hasBooks(context, hentoidFolder)) {
             if (!askScanExisting) {
-                runPrimaryImport(context, location, options);
-                return ProcessFolderResult.OK_LIBRARY_DETECTED;
-            } else return ProcessFolderResult.OK_LIBRARY_DETECTED_ASK;
+                runPrimaryImport(context, location, hentoidFolder.getUri().toString(), options);
+                return new ImmutablePair<>(ProcessFolderResult.OK_LIBRARY_DETECTED, hentoidFolder.getUri().toString());
+            } else
+                return new ImmutablePair<>(ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, hentoidFolder.getUri().toString());
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
             CollectionDAO dao = new ObjectBoxDAO(context);
@@ -293,19 +280,20 @@ public class ImportHelper {
             } finally {
                 dao.cleanup();
             }
-            return ProcessFolderResult.OK_EMPTY_FOLDER;
+            Preferences.setStorageUri(location, hentoidFolder.getUri().toString());
+            return new ImmutablePair<>(ProcessFolderResult.OK_EMPTY_FOLDER, hentoidFolder.getUri().toString());
         }
     }
 
     /**
      * Scan the given tree URI for external books or Hentoid books
+     * TODO update
      *
      * @param context Context to be used
      * @param treeUri Tree URI of the folder where to find external books or Hentoid books
      * @return Standardized result - see ImportHelper.Result
      */
-    public static @ProcessFolderResult
-    int setAndScanExternalFolder(
+    public static ImmutablePair<Integer, String> setAndScanExternalFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri) {
         // Persist I/O permissions; keep existing ones if present
@@ -315,20 +303,21 @@ public class ImportHelper {
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
         if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
-            return ProcessFolderResult.KO_INVALID_FOLDER;
+            return new ImmutablePair<>(ProcessFolderResult.KO_INVALID_FOLDER, treeUri.toString());
         }
         String folderUri = docFile.getUri().toString();
         if (folderUri.equalsIgnoreCase(Preferences.getStorageUri(StorageLocation.PRIMARY_1))
                 || folderUri.equalsIgnoreCase(Preferences.getStorageUri(StorageLocation.PRIMARY_2))) {
             Timber.w("Trying to set the external library inside a primary library location %s", treeUri.toString());
-            return ProcessFolderResult.KO_APP_FOLDER;
+            return new ImmutablePair<>(ProcessFolderResult.KO_APP_FOLDER, treeUri.toString());
         }
         // Set the folder as the app's external library folder
         Preferences.setExternalLibraryUri(folderUri);
 
         // Start the import
-        if (runExternalImport(context)) return ProcessFolderResult.OK_LIBRARY_DETECTED;
-        else return ProcessFolderResult.KO_ALREADY_RUNNING;
+        if (runExternalImport(context))
+            return new ImmutablePair<>(ProcessFolderResult.OK_LIBRARY_DETECTED, folderUri);
+        else return new ImmutablePair<>(ProcessFolderResult.KO_ALREADY_RUNNING, folderUri);
     }
 
     // TODO doc
@@ -352,6 +341,7 @@ public class ImportHelper {
     public static void showExistingLibraryDialog(
             @NonNull final Context context,
             StorageLocation location,
+            @NonNull final String rootUri,
             @Nullable Runnable cancelCallback
     ) {
         new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
@@ -362,7 +352,7 @@ public class ImportHelper {
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            runPrimaryImport(context, location, null);
+                            runPrimaryImport(context, location, rootUri, null);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog2, which) -> {
@@ -452,12 +442,14 @@ public class ImportHelper {
     private static void runPrimaryImport(
             @NonNull final Context context,
             StorageLocation location,
+            @NonNull final String targetRoot,
             @Nullable final ImportOptions options
     ) {
         ImportNotificationChannel.init(context);
 
         PrimaryImportData.Builder builder = new PrimaryImportData.Builder();
         builder.setLocation(location);
+        builder.setTargetRoot(targetRoot);
         if (options != null) {
             builder.setRefreshRename(options.rename);
             builder.setRefreshRemovePlaceholders(options.removePlaceholders);

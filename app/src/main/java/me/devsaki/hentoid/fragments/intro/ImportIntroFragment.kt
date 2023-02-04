@@ -12,8 +12,10 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
@@ -29,7 +31,6 @@ import me.devsaki.hentoid.workers.PrimaryImportWorker
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import timber.log.Timber
 
 class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
@@ -40,7 +41,6 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
     // True when that screen has been validated once
     private var isDone = false
-    private lateinit var importDisposable: Disposable
 
     private val pickFolder = registerForActivityResult(ImportHelper.PickFolderContract()) { res ->
         onFolderPickerResult(res.left, res.right)
@@ -114,28 +114,22 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 val animation = BlinkAnimation(750, 20)
                 binding.waitTxt.startAnimation(animation)
 
-                importDisposable = io.reactivex.Single.fromCallable {
-                    setAndScanHentoidFolder(
-                        requireContext(),
-                        treeUri,
-                        StorageLocation.PRIMARY_1,
-                        true,
-                        null
-                    )
+                runBlocking {
+                    val result = withContext(Dispatchers.IO) {
+                        setAndScanHentoidFolder(
+                            requireContext(),
+                            treeUri,
+                            StorageLocation.PRIMARY_1,
+                            true,
+                            null
+                        )
+                    }
+                    coroutineScope {
+                        binding.waitTxt.clearAnimation()
+                        binding.waitTxt.visibility = View.GONE
+                        onScanHentoidFolderResult(result.left, result.right)
+                    }
                 }
-                    .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { result: Int ->
-                            run {
-                                binding.waitTxt.clearAnimation()
-                                binding.waitTxt.visibility = View.GONE
-                                onScanHentoidFolderResult(result)
-                            }
-
-                        },
-                        { t: Throwable? -> Timber.w(t) }
-                    )
             }
 
             ImportHelper.PickerResult.KO_CANCELED -> {
@@ -158,8 +152,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         }
     }
 
-    private fun onScanHentoidFolderResult(resultCode: Int) {
-        importDisposable.dispose()
+    private fun onScanHentoidFolderResult(resultCode: Int, rootUri: String) {
         when (resultCode) {
             ImportHelper.ProcessFolderResult.OK_EMPTY_FOLDER -> nextStep()
             ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED -> { // Import service is already launched by the Helper; nothing else to do
@@ -171,7 +164,8 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 updateOnSelectFolder()
                 ImportHelper.showExistingLibraryDialog(
                     requireContext(),
-                    StorageLocation.PRIMARY_1
+                    StorageLocation.PRIMARY_1,
+                    rootUri
                 ) { onCancelExistingLibraryDialog() }
                 return
             }

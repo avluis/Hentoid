@@ -118,6 +118,7 @@ public class PrimaryImportWorker extends BaseWorker {
 
         startImport(
                 data.getLocation(),
+                data.getTargetRoot(),
                 data.getRefreshRename(),
                 data.getRefreshRemovePlaceholders(),
                 data.getRefreshRenumberPages(),
@@ -159,6 +160,7 @@ public class PrimaryImportWorker extends BaseWorker {
      */
     private void startImport(
             StorageLocation location,
+            String targetRootUri,
             boolean rename,
             boolean removePlaceholders,
             boolean renumberPages,
@@ -174,10 +176,11 @@ public class PrimaryImportWorker extends BaseWorker {
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
 
-        String uriStr = Preferences.getStorageUri(location);
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, uriStr);
+        String previousUriStr = Preferences.getStorageUri(location);
+        Preferences.setStorageUri(location, targetRootUri);
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, targetRootUri);
         if (null == rootFolder) {
-            Timber.e("Root folder is not defined (%s)", uriStr);
+            Timber.e("Root folder is not defined (%s)", targetRootUri);
             return;
         }
 
@@ -228,7 +231,7 @@ public class PrimaryImportWorker extends BaseWorker {
             // Flag DB content for cleanup
             CollectionDAO dao = new ObjectBoxDAO(context);
             try {
-                dao.flagAllInternalBooks(ContentHelper.getPathRoot(location), removePlaceholders);
+                dao.flagAllInternalBooks(ContentHelper.getPathRoot(previousUriStr), removePlaceholders);
                 dao.flagAllErrorBooksWithJson();
             } finally {
                 dao.cleanup();
@@ -279,7 +282,7 @@ public class PrimaryImportWorker extends BaseWorker {
             if (!isStopped()) { // Should only be done when things have run properly
                 CollectionDAO dao = new ObjectBoxDAO(context);
                 try {
-                    dao.deleteAllFlaggedBooks(ContentHelper.getPathRoot(location), true);
+                    dao.deleteAllFlaggedBooks(ContentHelper.getPathRoot(previousUriStr), true);
                     dao.deleteAllFlaggedGroups();
                 } finally {
                     dao.cleanup();

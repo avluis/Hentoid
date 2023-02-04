@@ -510,7 +510,10 @@ public final class ContentHelper {
     }
 
     public static String getPathRoot(StorageLocation location) {
-        String locationUriStr = Preferences.getStorageUri(location);
+        return getPathRoot(Preferences.getStorageUri(location));
+    }
+
+    public static String getPathRoot(String locationUriStr) {
         int pathDivider = locationUriStr.lastIndexOf("%3A");
         if (pathDivider > -1) return locationUriStr.substring(0, pathDivider);
         return locationUriStr;

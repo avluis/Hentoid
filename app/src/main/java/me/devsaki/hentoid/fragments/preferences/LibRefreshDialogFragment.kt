@@ -154,7 +154,8 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             runBlocking {
                 val res = withContext(Dispatchers.IO) {
                     try {
-                        setAndScanExternalFolder(requireContext(), externalUri)
+                        val res = setAndScanExternalFolder(requireContext(), externalUri)
+                        return@withContext res.left
                     } catch (e: Exception) {
                         Timber.w(e)
                         return@withContext ProcessFolderResult.KO_OTHER
@@ -197,9 +198,10 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             runBlocking {
                 val res = withContext(Dispatchers.IO) {
                     try {
-                        setAndScanHentoidFolder(
+                        val res = setAndScanHentoidFolder(
                             requireContext(), rootUri, location, false, options
                         )
+                        return@withContext res.left
                     } catch (e: Exception) {
                         Timber.w(e)
                         return@withContext ProcessFolderResult.KO_OTHER
@@ -283,7 +285,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         when (resultCode) {
             PickerResult.OK -> {
                 runBlocking {
-                    val code = withContext(Dispatchers.IO) {
+                    val res = withContext(Dispatchers.IO) {
                         return@withContext if (location == StorageLocation.EXTERNAL) setAndScanExternalFolder(
                             requireContext(), uri
                         ) else setAndScanHentoidFolder(
@@ -291,7 +293,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         )
                     }
                     coroutineScope {
-                        onScanHentoidFolderResult(code)
+                        onScanHentoidFolderResult(res.left, res.right)
                     }
                 }
             }
@@ -311,7 +313,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         }
     }
 
-    private fun onScanHentoidFolderResult(@ProcessFolderResult resultCode: Int) {
+    private fun onScanHentoidFolderResult(@ProcessFolderResult resultCode: Int, rootUri: String) {
         when (resultCode) {
             ProcessFolderResult.OK_EMPTY_FOLDER -> dismissAllowingStateLoss()
             ProcessFolderResult.OK_LIBRARY_DETECTED ->                 // Hentoid folder is finally selected at this point -> Update UI
@@ -321,7 +323,8 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 updateOnSelectFolder()
                 showExistingLibraryDialog(
                     requireContext(),
-                    location
+                    location,
+                    rootUri
                 ) { onCancelExistingLibraryDialog() }
             }
 
