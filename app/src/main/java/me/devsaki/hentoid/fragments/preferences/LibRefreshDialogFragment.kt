@@ -14,11 +14,11 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsRefreshBinding
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
@@ -49,7 +49,7 @@ const val LOCATION = "location"
 
 /**
  * Launcher dialog for the following features :
- * - Set download folder
+ * - Set/replace download folder
  * - Library refresh
  */
 class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
@@ -65,10 +65,6 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     private var location = StorageLocation.NONE
 
     private var isServiceGracefulClose = false
-
-    // Disposables for RxJava
-    private var importDisposable: Disposable? = null
-    private val compositeDisposable = CompositeDisposable()
 
     private val pickFolder =
         registerForActivityResult(PickFolderContract()) { result: ImmutablePair<Int, Uri> ->
@@ -93,7 +89,6 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     override fun onDestroyView() {
         EventBus.getDefault().unregister(this)
-        compositeDisposable.clear()
         _binding1 = null
         _binding2 = null
         super.onDestroyView()
@@ -123,7 +118,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 }
 
                 it.actionButton.setOnClickListener { _ ->
-                    launchRefreshImport(
+                    onImportClick(
                         location,
                         it.refreshOptionsRename.isChecked,
                         it.refreshOptionsRemovePlaceholders.isChecked,
@@ -138,7 +133,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         }
     }
 
-    private fun launchRefreshImport(
+    private fun onImportClick(
         location: StorageLocation,
         rename: Boolean,
         removePlaceholders: Boolean,
@@ -155,31 +150,34 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         // Run import
         if (location == StorageLocation.EXTERNAL) {
             val externalUri = Uri.parse(Preferences.getExternalLibraryUri())
-            compositeDisposable.add(Single.fromCallable {
-                setAndScanExternalFolder(
-                    requireContext(), externalUri
-                )
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ res: Int ->
-                    if (ProcessFolderResult.KO_INVALID_FOLDER == res || ProcessFolderResult.KO_CREATE_FAIL == res || ProcessFolderResult.KO_APP_FOLDER == res || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res || ProcessFolderResult.KO_ALREADY_RUNNING == res || ProcessFolderResult.KO_OTHER == res) {
-                        Snackbar.make(
-                            binding1.root, getMessage(res), BaseTransientBottomBar.LENGTH_LONG
-                        ).show()
-                        Handler(Looper.getMainLooper()).postDelayed(
-                            { dismissAllowingStateLoss() }, 3000
-                        )
+
+            runBlocking {
+                val res = withContext(Dispatchers.IO) {
+                    try {
+                        setAndScanExternalFolder(requireContext(), externalUri)
+                    } catch (e: Exception) {
+                        Timber.w(e)
+                        return@withContext ProcessFolderResult.KO_OTHER
                     }
-                }) { t: Throwable? ->
-                    Timber.w(t)
-                    Snackbar.make(
-                        binding1.root,
-                        getMessage(ProcessFolderResult.KO_OTHER),
-                        BaseTransientBottomBar.LENGTH_LONG
-                    ).show()
-                    Handler(Looper.getMainLooper()).postDelayed(
-                        { dismissAllowingStateLoss() }, 3000
-                    )
-                })
+                }
+                coroutineScope {
+                    if (ProcessFolderResult.KO_INVALID_FOLDER == res
+                        || ProcessFolderResult.KO_CREATE_FAIL == res
+                        || ProcessFolderResult.KO_APP_FOLDER == res
+                        || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res
+                        || ProcessFolderResult.KO_ALREADY_RUNNING == res
+                        || ProcessFolderResult.KO_OTHER == res
+                    ) {
+                        Snackbar.make(
+                            binding1.root,
+                            getMessage(res),
+                            BaseTransientBottomBar.LENGTH_LONG
+                        ).show()
+                        delay(3000)
+                        dismissAllowingStateLoss()
+                    }
+                }
+            }
         } else {
             val options = ImportOptions()
             options.rename = rename
@@ -195,31 +193,34 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 return
             }
             val rootUri = Uri.parse(uriStr)
-            compositeDisposable.add(Single.fromCallable {
-                setAndScanHentoidFolder(
-                    requireContext(), rootUri, location, false, options
-                )
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ res: Int ->
-                    if (ProcessFolderResult.KO_INVALID_FOLDER == res || ProcessFolderResult.KO_CREATE_FAIL == res || ProcessFolderResult.KO_APP_FOLDER == res || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res || ProcessFolderResult.KO_ALREADY_RUNNING == res || ProcessFolderResult.KO_OTHER == res) {
+
+            runBlocking {
+                val res = withContext(Dispatchers.IO) {
+                    try {
+                        setAndScanHentoidFolder(
+                            requireContext(), rootUri, location, false, options
+                        )
+                    } catch (e: Exception) {
+                        Timber.w(e)
+                        return@withContext ProcessFolderResult.KO_OTHER
+                    }
+                }
+                coroutineScope {
+                    if (ProcessFolderResult.KO_INVALID_FOLDER == res
+                        || ProcessFolderResult.KO_CREATE_FAIL == res
+                        || ProcessFolderResult.KO_APP_FOLDER == res
+                        || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res
+                        || ProcessFolderResult.KO_ALREADY_RUNNING == res
+                        || ProcessFolderResult.KO_OTHER == res
+                    ) {
                         Snackbar.make(
                             binding1.root, getMessage(res), BaseTransientBottomBar.LENGTH_LONG
                         ).show()
-                        Handler(Looper.getMainLooper()).postDelayed(
-                            { dismissAllowingStateLoss() }, 3000
-                        )
+                        delay(3000)
+                        dismissAllowingStateLoss()
                     }
-                }) { t: Throwable? ->
-                    Timber.w(t)
-                    Snackbar.make(
-                        binding1.root,
-                        getMessage(ProcessFolderResult.KO_OTHER),
-                        BaseTransientBottomBar.LENGTH_LONG
-                    ).show()
-                    Handler(Looper.getMainLooper()).postDelayed(
-                        { dismissAllowingStateLoss() }, 3000
-                    )
-                })
+                }
+            }
         }
     }
 
@@ -280,16 +281,20 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     private fun onFolderPickerResult(resultCode: Int, uri: Uri) {
         when (resultCode) {
-            PickerResult.OK -> importDisposable = Single.fromCallable {
-                if (location == StorageLocation.EXTERNAL) return@fromCallable setAndScanExternalFolder(
-                    requireContext(), uri
-                ) else return@fromCallable setAndScanHentoidFolder(
-                    requireContext(), uri, location, true, null
-                )
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ code: Int ->
-                    onScanHentoidFolderResult(code)
-                }) { t: Throwable? -> Timber.w(t) }
+            PickerResult.OK -> {
+                runBlocking {
+                    val code = withContext(Dispatchers.IO) {
+                        return@withContext if (location == StorageLocation.EXTERNAL) setAndScanExternalFolder(
+                            requireContext(), uri
+                        ) else setAndScanHentoidFolder(
+                            requireContext(), uri, location, true, null
+                        )
+                    }
+                    coroutineScope {
+                        onScanHentoidFolderResult(code)
+                    }
+                }
+            }
 
             PickerResult.KO_CANCELED -> Snackbar.make(
                 binding2.root, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG
@@ -307,7 +312,6 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     }
 
     private fun onScanHentoidFolderResult(@ProcessFolderResult resultCode: Int) {
-        importDisposable?.dispose()
         when (resultCode) {
             ProcessFolderResult.OK_EMPTY_FOLDER -> dismissAllowingStateLoss()
             ProcessFolderResult.OK_LIBRARY_DETECTED ->                 // Hentoid folder is finally selected at this point -> Update UI
