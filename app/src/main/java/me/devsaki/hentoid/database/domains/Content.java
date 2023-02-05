@@ -267,9 +267,11 @@ public class Content implements Serializable {
             case IMHENTAI:
             case HENTAIFOX:
                 return url.replace(site.getUrl(), "").replace("/gallery", "");
+                /*
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
-                return url.substring(url.indexOf("/gallery/") + 8, url.length() - 2);
+                return
+                 */
             case PIXIV:
                 return url.replace(site.getUrl(), "").replaceAll("^[a-z]{2}/", "");
             case ALLPORNCOMIC:
@@ -284,6 +286,8 @@ public class Content implements Serializable {
                 return url.replace(site.getUrl(), "");
             case EHENTAI:
             case EXHENTAI:
+            case ASMHENTAI:
+            case ASMHENTAI_COMICS:
                 return url.replace(site.getUrl() + "/g", "");
             case LUSCIOUS:
                 return url.replace(site.getUrl().replace("/manga/", ""), "");
