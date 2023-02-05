@@ -80,22 +80,27 @@ class ToolsFragment : PreferenceFragmentCompat() {
                 requireContext().startLocalActivity<DuplicateDetectorActivity>()
                 true
             }
+
             EXPORT_LIBRARY -> {
                 MetaExportDialogFragment.invoke(parentFragmentManager)
                 true
             }
+
             IMPORT_LIBRARY -> {
                 MetaImportDialogFragment.invoke(parentFragmentManager)
                 true
             }
+
             EXPORT_SETTINGS -> {
                 onExportSettings()
                 true
             }
+
             IMPORT_SETTINGS -> {
                 SettingsImportDialogFragment.invoke(parentFragmentManager)
                 true
             }
+
             CLEAR_BROWSER_CACHE -> {
                 context?.clearWebviewCache {
                     ToastHelper.toast(
@@ -106,19 +111,23 @@ class ToolsFragment : PreferenceFragmentCompat() {
                 }
                 true
             }
+
             CLEAR_APP_CACHE -> {
                 context?.clearAppCache()
                 ToastHelper.toast(R.string.tools_cache_app_success)
                 true
             }
+
             ACCESS_RENAMING_RULES -> {
                 requireContext().startLocalActivity<RenamingRulesActivity>()
                 true
             }
+
             ACCESS_LATEST_LOGS -> {
-                LogsDialogFragment.invoke(parentFragmentManager)
+                LogsDialogFragmentK.invoke(parentFragmentManager)
                 true
             }
+
             else -> super.onPreferenceTreeClick(preference)
         }
 
