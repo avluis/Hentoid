@@ -9,11 +9,10 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CompoundButton
-import android.widget.RadioGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Single
@@ -29,7 +28,9 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogToolsMetaExportBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.json.JsonContentCollection
+import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.ThemeHelper
@@ -44,8 +45,9 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
     // == UI
     private var binding: DialogToolsMetaExportBinding? = null
 
-    // Variable used during the import process
+    // == VARIABLES
     private lateinit var dao: CollectionDAO
+    private var locationIndex = 0
 
     // Disposable for RxJava
     private var exportDisposable = Disposables.empty()
@@ -71,59 +73,82 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
         val nbLibraryBooks = dao.countAllInternalBooks("", false)
         val nbQueueBooks = dao.countAllQueueBooks()
         val nbBookmarks = dao.countAllBookmarks()
-        binding?.let {
-            it.exportQuestion.setOnCheckedChangeListener { _: RadioGroup?, id: Int ->
+        binding?.apply {
+            exportQuestion.setOnCheckedChangeListener { _, id ->
                 run {
-                    it.exportQuestion.isEnabled = false
-                    it.exportQuestionYes.isEnabled = false
-                    it.exportQuestionNo.isEnabled = false
+                    exportQuestion.isEnabled = false
+                    exportQuestionYes.isEnabled = false
+                    exportQuestionNo.isEnabled = false
                     val yes = (R.id.export_question_yes == id)
-                    it.exportGroupYes.isVisible = yes
-                    it.exportGroupNo.isVisible = !yes
+                    exportGroupYes.isVisible = yes
+                    exportGroupNo.isVisible = !yes
                 }
             }
 
-            it.exportFavsOnly.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> refreshFavsDisplay() }
+            exportLocation.text = resources.getString(
+                R.string.export_location,
+                resources.getString(R.string.refresh_location_internal)
+            )
+            exportLocation.setOnClickListener {
+                MaterialAlertDialogBuilder(requireActivity())
+                    .setCancelable(true)
+                    .setSingleChoiceItems(
+                        R.array.export_location_entries,
+                        locationIndex
+                    ) { dialog, which ->
+                        locationIndex = which
+                        exportLocation.text = resources.getString(
+                            R.string.export_location,
+                            resources.getStringArray(R.array.export_location_entries)[locationIndex]
+                        )
+                        refreshFavsDisplay()
+                        dialog.dismiss()
+                    }
+                    .create()
+                    .show()
+            }
+
+            exportFavsOnly.setOnCheckedChangeListener { _, _ -> refreshFavsDisplay() }
             if (nbLibraryBooks > 0) {
-                it.exportFileLibraryChk.text = resources.getQuantityString(
+                exportFileLibraryChk.text = resources.getQuantityString(
                     R.plurals.export_file_library,
                     nbLibraryBooks.toInt(),
                     nbLibraryBooks.toInt()
                 )
-                it.exportFileLibraryChk.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> refreshDisplay() }
-                it.exportGroupNo.addView(it.exportFileLibraryChk)
+                exportFileLibraryChk.setOnCheckedChangeListener { _, _ -> refreshDisplay() }
+                exportGroupNo.addView(exportFileLibraryChk)
             }
             if (nbQueueBooks > 0) {
-                it.exportFileQueueChk.text = resources.getQuantityString(
+                exportFileQueueChk.text = resources.getQuantityString(
                     R.plurals.export_file_queue,
                     nbQueueBooks.toInt(),
                     nbQueueBooks.toInt()
                 )
-                it.exportFileQueueChk.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> refreshDisplay() }
-                it.exportGroupNo.addView(it.exportFileQueueChk)
+                exportFileQueueChk.setOnCheckedChangeListener { _, _ -> refreshDisplay() }
+                exportGroupNo.addView(exportFileQueueChk)
             }
             if (nbBookmarks > 0) {
-                it.exportFileBookmarksChk.text = resources.getQuantityString(
+                exportFileBookmarksChk.text = resources.getQuantityString(
                     R.plurals.export_file_bookmarks,
                     nbBookmarks.toInt(),
                     nbBookmarks.toInt()
                 )
-                it.exportFileBookmarksChk.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> refreshDisplay() }
-                it.exportGroupNo.addView(it.exportFileBookmarksChk)
+                exportFileBookmarksChk.setOnCheckedChangeListener { _, _ -> refreshDisplay() }
+                exportGroupNo.addView(exportFileBookmarksChk)
             }
 
             // Open library transfer FAQ
-            it.exportWikiLink.setOnClickListener { requireActivity().startBrowserActivity(Consts.URL_WIKI_TRANSFER) }
-            it.exportRunBtn.isEnabled = false
+            exportWikiLink.setOnClickListener { requireActivity().startBrowserActivity(Consts.URL_WIKI_TRANSFER) }
+            exportRunBtn.isEnabled = false
             if (0L == nbLibraryBooks + nbQueueBooks + nbBookmarks)
-                it.exportRunBtn.visibility = View.GONE
-            else it.exportRunBtn.setOnClickListener { _ ->
+                exportRunBtn.visibility = View.GONE
+            else exportRunBtn.setOnClickListener {
                 runExport(
-                    it.exportFileLibraryChk.isChecked,
-                    it.exportFavsOnly.isChecked,
-                    it.exportGroups.isChecked,
-                    it.exportFileQueueChk.isChecked,
-                    it.exportFileBookmarksChk.isChecked
+                    exportFileLibraryChk.isChecked,
+                    exportFavsOnly.isChecked,
+                    exportGroups.isChecked,
+                    exportFileQueueChk.isChecked,
+                    exportFileBookmarksChk.isChecked
                 )
             }
         }
@@ -131,25 +156,34 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
 
     // Gray out run button if no option is selected
     private fun refreshDisplay() {
-        binding?.let {
-            it.exportRunBtn.isEnabled =
-                it.exportFileQueueChk.isChecked || it.exportFileLibraryChk.isChecked || it.exportFileBookmarksChk.isChecked
-            it.exportFavsOnly.visibility =
-                if (it.exportFileLibraryChk.isChecked) View.VISIBLE else View.GONE
-            it.exportGroups.visibility =
-                if (it.exportFileLibraryChk.isChecked) View.VISIBLE else View.GONE
+        binding?.apply {
+            exportRunBtn.isEnabled =
+                exportFileQueueChk.isChecked || exportFileLibraryChk.isChecked || exportFileBookmarksChk.isChecked
+            exportLocation.isVisible = exportFileLibraryChk.isChecked
+            exportFavsOnly.isVisible = exportFileLibraryChk.isChecked
+            exportGroups.isVisible = exportFileLibraryChk.isChecked
         }
     }
 
     private fun refreshFavsDisplay() {
         binding?.let {
-            val nbLibraryBooks = dao.countAllInternalBooks("", it.exportFavsOnly.isChecked)
+            val nbLibraryBooks = dao.countAllInternalBooks(
+                getSelectedRootPath(locationIndex),
+                it.exportFavsOnly.isChecked
+            )
             it.exportFileLibraryChk.text = resources.getQuantityString(
                 R.plurals.export_file_library,
                 nbLibraryBooks.toInt(),
                 nbLibraryBooks.toInt()
             )
+            refreshDisplay()
         }
+    }
+
+    private fun getSelectedRootPath(locationIndex: Int): String {
+        return if (locationIndex > 0)
+            ContentHelper.getPathRoot(if (1 == locationIndex) StorageLocation.PRIMARY_1 else StorageLocation.PRIMARY_2)
+        else ""
     }
 
     private fun runExport(
@@ -231,7 +265,11 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
         exportBookmarks: Boolean
     ): JsonContentCollection {
         val jsonContentCollection = JsonContentCollection()
-        if (exportLibrary) dao.streamAllInternalBooks("", exportFavsOnly) { content: Content ->
+
+        if (exportLibrary) dao.streamAllInternalBooks(
+            getSelectedRootPath(locationIndex),
+            exportFavsOnly
+        ) { content: Content ->
             jsonContentCollection.addToLibrary(content)
         } // Using streaming here to support large collections
         if (exportQueue) {

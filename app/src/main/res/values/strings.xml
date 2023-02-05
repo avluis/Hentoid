@@ -265,7 +265,7 @@
     <string name="refresh_title">Refresh location</string>
     <string name="refresh_caption">Automatically refresh library data by rescanning files and folders.</string>
     <string name="refresh_options">Cleanup options</string>
-    <string name="refresh_location_internal">Primary library</string>
+    <string name="refresh_location_internal">Primary library (all)</string>
     <string name="refresh_location_internal_1">Primary library 1</string>
     <string name="refresh_location_internal_2">Primary library 2</string>
     <string name="refresh_location_external">External library</string>
@@ -337,9 +337,10 @@
     <string name="export_transfer_tutorial"><u>Check out our wiki about library transfers</u></string>
 
     <plurals name="export_file_library">
-        <item quantity="one">Export library (<x:g example="1" id="number">%d</x:g> book)</item>
-        <item quantity="other">Export library (<x:g example="2" id="number">%d</x:g> books)</item>
+        <item quantity="one">Export primary library (<x:g example="1" id="number">%d</x:g> book)</item>
+        <item quantity="other">Export primary library (<x:g example="2" id="number">%d</x:g> books)</item>
     </plurals>
+    <string name="export_location">Location : %s</string>
     <string name="export_favs_only">Only export favourites</string>
     <string name="export_groups">Export custom groups</string>
     <plurals name="export_file_queue">

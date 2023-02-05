@@ -391,6 +391,11 @@
         <item>@string/search_type_entries_4</item>
         <item>@string/search_type_entries_5</item>
     </string-array>
+    <string-array name="export_location_entries" translatable="false">
+        <item>@string/refresh_location_internal</item>
+        <item>@string/refresh_location_internal_1</item>
+        <item>@string/refresh_location_internal_2</item>
+    </string-array>
 
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>
