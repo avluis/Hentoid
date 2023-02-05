@@ -112,12 +112,14 @@ public final class ContentHelper {
     // == Used for advanced search
     // NB : Needs to be in sync with the dropdown lists on the advanced search screen
 
-    @IntDef({Location.ANY, Location.PRIMARY, Location.EXTERNAL})
+    @IntDef({Location.ANY, Location.PRIMARY, Location.PRIMARY_1, Location.PRIMARY_2, Location.EXTERNAL})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Location {
         int ANY = 0;
-        int PRIMARY = 1; // Primary library
-        int EXTERNAL = 2; // External library
+        int PRIMARY = 1; // Primary library - Any location
+        int PRIMARY_1 = 2; // Primary library - Location 1
+        int PRIMARY_2 = 3; // Primary library - Location 2
+        int EXTERNAL = 4; // External library
     }
 
     @IntDef({Type.ANY, Type.FOLDER, Type.STREAMED, Type.ARCHIVE, Type.PLACEHOLDER})

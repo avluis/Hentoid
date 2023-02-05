@@ -68,6 +68,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -1138,12 +1139,18 @@ public class ObjectBoxDB {
     }
 
     private QueryCondition<Content> applyContentLocationFilter(@NonNull QueryCondition<Content> qc, @ContentHelper.Location int location) {
-        if (ContentHelper.Location.PRIMARY == location) {
-            return qc.and(Content_.status.notEqual(StatusContent.EXTERNAL.getCode()));
-        } else if (ContentHelper.Location.EXTERNAL == location) {
-            return qc.and(Content_.status.equal(StatusContent.EXTERNAL.getCode()));
+        switch (location) {
+            case ContentHelper.Location.PRIMARY:
+                return qc.and(Content_.status.notEqual(StatusContent.EXTERNAL.getCode()));
+            case ContentHelper.Location.PRIMARY_1:
+                return qc.and(Content_.storageUri.startsWith(Preferences.getStorageUri(StorageLocation.PRIMARY_1), QueryBuilder.StringOrder.CASE_INSENSITIVE));
+            case ContentHelper.Location.PRIMARY_2:
+                return qc.and(Content_.storageUri.startsWith(Preferences.getStorageUri(StorageLocation.PRIMARY_2), QueryBuilder.StringOrder.CASE_INSENSITIVE));
+            case ContentHelper.Location.EXTERNAL:
+                return qc.and(Content_.status.equal(StatusContent.EXTERNAL.getCode()));
+            default:
+                return qc;
         }
-        return qc;
     }
 
     private QueryCondition<Content> applyContentTypeFilter(@NonNull QueryCondition<Content> qc, @ContentHelper.Type int contentType) {

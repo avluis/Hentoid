@@ -53,9 +53,9 @@ public class SearchViewModel extends ViewModel {
 
     // Location and type (bottom spinners)
     private @ContentHelper.Location
-    int location = 0;
+    int location = ContentHelper.Location.ANY;
     private @ContentHelper.Type
-    int contentType = 0;
+    int contentType = ContentHelper.Type.ANY;
 
 
     public SearchViewModel(@NonNull CollectionDAO dao, int attributeSortOrder) {

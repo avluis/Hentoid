@@ -284,6 +284,10 @@ public class LibraryViewModel extends AndroidViewModel {
         switch (value) {
             case ContentHelper.Location.PRIMARY:
                 return R.string.refresh_location_internal;
+            case ContentHelper.Location.PRIMARY_1:
+                return R.string.refresh_location_internal_1;
+            case ContentHelper.Location.PRIMARY_2:
+                return R.string.refresh_location_internal_2;
             case ContentHelper.Location.EXTERNAL:
                 return R.string.refresh_location_external;
             case ContentHelper.Location.ANY:

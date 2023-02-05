@@ -380,6 +380,8 @@
     <string-array name="search_location_entries" translatable="false">
         <item>@string/search_location_entries_1</item>
         <item>@string/refresh_location_internal</item>
+        <item>@string/refresh_location_internal_1</item>
+        <item>@string/refresh_location_internal_2</item>
         <item>@string/refresh_location_external</item>
     </string-array>
     <string-array name="search_type_entries" translatable="false">
