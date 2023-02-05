@@ -275,12 +275,17 @@ public class ImportHelper {
             } else
                 return new ImmutablePair<>(ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, hentoidFolder.getUri().toString());
         } else {
-            // New library created - drop and recreate db (in case user is re-importing)
-            CollectionDAO dao = new ObjectBoxDAO(context);
-            try {
-                ContentHelper.detachAllPrimaryContent(dao, location);
-            } finally {
-                dao.cleanup();
+            // Create a new library or import an Hentoid folder without books
+            // => Don't run the import worker and settle things here
+
+            // In case that Location was previously populated, drop all books
+            if (!Preferences.getStorageUri(location).isEmpty()) {
+                CollectionDAO dao = new ObjectBoxDAO(context);
+                try {
+                    ContentHelper.detachAllPrimaryContent(dao, location);
+                } finally {
+                    dao.cleanup();
+                }
             }
             Preferences.setStorageUri(location, hentoidFolder.getUri().toString());
             return new ImmutablePair<>(ProcessFolderResult.OK_EMPTY_FOLDER, hentoidFolder.getUri().toString());
