@@ -114,6 +114,17 @@ public class FileExplorer implements Closeable {
     }
 
     /**
+     * Count all folders inside the given parent folder (non recursive) that match the given name filter
+     *
+     * @param parent Parent folder to count folders from
+     * @param filter Name filter to use to filter the folders to count
+     * @return Number of folders inside the given parent folder matching the given name filter
+     */
+    public int countFolders(@NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
+        return countDocumentFiles(parent, filter, true, false);
+    }
+
+    /**
      * Find the folder inside the given parent folder (non recursive) that has the given name
      *
      * @param context       Context to use

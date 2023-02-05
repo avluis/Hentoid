@@ -182,7 +182,7 @@ public class PrimaryImportWorker extends BaseWorker {
         Preferences.setStorageUri(location, targetRootUri);
         DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, targetRootUri);
         if (null == rootFolder) {
-            Timber.e("Root folder is not defined (%s)", targetRootUri);
+            Timber.e("Root folder is invalid for location %s (%s)", location.name(), targetRootUri);
             return;
         }
 

@@ -703,16 +703,19 @@ public final class ContentHelper {
      * @param context    Context to use
      * @param content    Content for which the directory to create
      * @param createOnly Set to true to exclusively create a new folder; set to false if one can reuse an existing folder
-     * @param siteDlDir  Provide the DocumentFile representing the site's folder (optional; will look for it if null)
      * @return Created or existing directory
      */
     @Nullable
-    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content, @NonNull StorageLocation location, boolean createOnly, @Nullable DocumentFile siteDlDir) {
-        DocumentFile siteDownloadDir = siteDlDir;
-        if (null == siteDownloadDir)
-            siteDownloadDir = getOrCreateSiteDownloadDir(context, location, null, content.getSite());
+    public static DocumentFile getOrCreateContentDownloadDir(
+            @NonNull Context context,
+            @NonNull Content content,
+            @NonNull StorageLocation location,
+            boolean createOnly) {
+        // == Site folder
+        DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, location, content.getSite());
         if (null == siteDownloadDir) return null;
 
+        // == Book folder
         ImmutablePair<String, String> bookFolderName = formatBookFolderName(content);
 
         // First try finding the folder with new naming...
@@ -823,35 +826,68 @@ public final class ContentHelper {
 
     /**
      * Return the given site's download directory. Create it if it doesn't exist.
+     * <p>
+     * Avoid overloading the Android folder structure (not designed for that :/)
+     * by preventing any site folder from storing more than 250 books/subfolders
+     * => create a new "siteN" folder when needed (e.g. nhentai1, nhentai2, nhentai3...)
      *
      * @param context  Context to use for the action
-     * @param explorer FileExplorer to use for the action
+     * @param location Location to get/create the folder in
      * @param site     Site to get the download directory for
      * @return Download directory of the given Site
      */
     @Nullable
-    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @NonNull StorageLocation location, @Nullable FileExplorer explorer, @NonNull Site site) {
+    public static DocumentFile getOrCreateSiteDownloadDir(
+            @NonNull Context context,
+            @NonNull StorageLocation location,
+            @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri(location);
         if (appUriStr.isEmpty()) {
-            Timber.e("No storage URI defined for the app");
+            Timber.e("No storage URI defined for location %s", location.name());
             return null;
         }
-
-        DocumentFile appFolder = DocumentFile.fromTreeUri(context, Uri.parse(appUriStr));
-        if (null == appFolder || !appFolder.exists()) {
+        DocumentFile appFolder = FileHelper.getDocumentFromTreeUriString(context, appUriStr);
+        if (null == appFolder) {
             Timber.e("App folder %s does not exist", appUriStr);
             return null;
         }
 
-        String siteFolderName = site.getFolder();
-        DocumentFile siteFolder;
-        if (null == explorer)
-            siteFolder = FileHelper.findFolder(context, appFolder, siteFolderName);
-        else siteFolder = explorer.findFolder(context, appFolder, siteFolderName);
+        try (FileExplorer explorer = new FileExplorer(context, appFolder)) {
+            String siteFolderName = site.getFolder();
+            List<DocumentFile> siteFolders = explorer.listDocumentFiles(
+                    context,
+                    appFolder,
+                    displayName -> displayName.startsWith(siteFolderName),
+                    true,
+                    false,
+                    false);
+            // Order by name (nhentai, nhentai1, ..., nhentai10)
+            siteFolders = Stream.of(siteFolders).withoutNulls().sorted(new InnerNameNumberFileComparator()).toList();
 
-        if (null == siteFolder) // Create
-            return appFolder.createDirectory(siteFolderName);
-        else return siteFolder;
+            if (siteFolders.isEmpty()) // Create
+                return appFolder.createDirectory(siteFolderName);
+            else {
+                // Check number of subfolders
+                for (DocumentFile siteFolder : siteFolders) {
+                    int nbSubfolders = explorer.countFolders(siteFolder, displayName -> true);
+                    if (nbSubfolders < 250) return siteFolder;
+                }
+
+                // Create new one with the next number (taken from the name of the last folder itself, to handle cases where numbering is not contiguous)
+                int newDigits = siteFolders.size();
+                String lastDigits =
+                        StringHelper.keepDigits(
+                                StringHelper.protect(siteFolders.get(siteFolders.size() - 1).getName())
+                                        .toLowerCase()
+                                        .replace(site.getFolder().toLowerCase(), "")
+                        );
+                if (!lastDigits.isEmpty()) newDigits = Integer.parseInt(lastDigits) + 1;
+                return appFolder.createDirectory(siteFolderName + newDigits);
+            }
+        } catch (IOException e) {
+            Timber.w(e);
+        }
+        return null;
     }
 
     /**
@@ -1693,7 +1729,7 @@ public final class ContentHelper {
             }
         } else { // Primary folder for non-external content; using download strategy
             StorageLocation location = DownloadHelper.selectDownloadLocation(context);
-            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, location, true, null);
+            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, location, true);
         }
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");

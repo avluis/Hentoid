@@ -1260,7 +1260,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
             // Create a new folder for the split content
             StorageLocation location = ContentHelper.getLocation(content);
-            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, location, true, null);
+            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, location, true);
             if (null == targetFolder || !targetFolder.exists())
                 throw new ContentNotProcessedException(splitContent, "Could not create target directory");
 

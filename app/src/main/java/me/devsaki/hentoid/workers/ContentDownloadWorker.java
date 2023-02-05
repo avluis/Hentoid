@@ -257,7 +257,7 @@ public class ContentDownloadWorker extends BaseWorker {
         if (!content.getStorageUri().isEmpty()) {
             ImmutablePair<QueuingResult, Content> result = testFolder(context, content.getStorageUri());
             if (result != null) return result;
-            dir = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
+            dir = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri()); // Will come out null if invalid
         } else {
             location = DownloadHelper.selectDownloadLocation(context);
             ImmutablePair<QueuingResult, Content> result = testFolder(context, Preferences.getStorageUri(location));
@@ -370,7 +370,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         // Create destination folder for images to be downloaded
         if (null == dir)
-            dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content, location, false, null);
+            dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content, location, false);
         // Folder creation failed
         if (null == dir || !dir.exists()) {
             String title = content.getTitle();

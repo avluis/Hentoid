@@ -92,8 +92,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                     getApplication(),
                     c,
                     StorageLocation.PRIMARY_1,
-                    false,
-                    null
+                    false
                 )
                 if (targetFolder != null) {
                     // Transfer files
