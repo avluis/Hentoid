@@ -277,7 +277,7 @@ public class PrimaryImportWorker extends BaseWorker {
             Thread.currentThread().interrupt();
         } finally {
             // Write log in root folder
-            DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
+            DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, location, log));
 
             if (!isStopped()) { // Should only be done when things have run properly
                 CollectionDAO dao = new ObjectBoxDAO(context);
@@ -510,10 +510,10 @@ public class PrimaryImportWorker extends BaseWorker {
         eventProgress(STEP_3_BOOKS, bookFolders.size() - nbFolders, booksOK, booksKO);
     }
 
-    private LogHelper.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogHelper.LogEntry> log) {
+    private LogHelper.LogInfo buildLogInfo(boolean cleanup, StorageLocation location, @NonNull List<LogHelper.LogEntry> log) {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
         logInfo.setHeaderName(cleanup ? "Cleanup" : "Import");
-        logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
+        logInfo.setFileName((cleanup ? "cleanup_log_" : "import_log_") + location.name());
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);
         return logInfo;

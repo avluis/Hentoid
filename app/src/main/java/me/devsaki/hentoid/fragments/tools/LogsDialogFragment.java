@@ -37,9 +37,9 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.StorageLocation;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
 import timber.log.Timber;
 
@@ -88,21 +88,10 @@ public class LogsDialogFragment extends DialogFragment {
             String fileName = file.getName();
             fileName = (null == fileName) ? "" : fileName.toLowerCase();
 
-            String label;
-            if (fileName.startsWith("import_external"))
-                label = getResources().getString(R.string.log_import_external);
-            else if (fileName.startsWith("import"))
-                label = getResources().getString(R.string.log_import);
-            else if (fileName.startsWith("cleanup"))
-                label = getResources().getString(R.string.log_cleanup);
-            else if (fileName.startsWith("api29_migration"))
-                label = getResources().getString(R.string.log_api29_migration);
-            else label = "[" + fileName + "]";
-
             Instant lastModified = Instant.ofEpochMilli(file.lastModified());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm", Locale.ENGLISH);
             String timeStr = lastModified.atZone(ZoneId.systemDefault()).format(formatter);
-            label += " (" + timeStr + ")";
+            String label = fileName + " (" + timeStr + ")";
 
             itemAdapter.add(new TextItem<>(label, file, false));
         }
