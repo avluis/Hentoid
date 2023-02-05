@@ -245,8 +245,16 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
         val powerMenuBuilder = PowerMenu.Builder(this)
             .addItem(
                 PowerMenuItem(
-                    resources.getString(R.string.storage_action_replace),
-                    R.drawable.ic_folder_edit,
+                    resources.getString(R.string.open_folder),
+                    R.drawable.ic_folder,
+                    false,
+                    4
+                )
+            )
+            .addItem(
+                PowerMenuItem(
+                    resources.getString(R.string.storage_action_change),
+                    R.drawable.ic_edit,
                     false,
                     2
                 )
@@ -279,7 +287,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
         if (location == StorageLocation.PRIMARY_2)
             powerMenuBuilder.addItem(
-                2,
+                3,
                 PowerMenuItem(
                     resources.getString(R.string.storage_action_merge_to_1),
                     R.drawable.ic_action_merge,
@@ -321,6 +329,15 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                 1 -> onDetachSelected(location)
 
                 3 -> onMergeToPrimaryOne()
+
+                4 -> {
+                    val folder =
+                        FileHelper.getDocumentFromTreeUriString(
+                            this,
+                            Preferences.getStorageUri(location)
+                        )
+                    if (folder != null) FileHelper.openFile(this, folder)
+                }
             }
         }
 
