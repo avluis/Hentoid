@@ -8,20 +8,26 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.skydoves.powermenu.MenuAnimation
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
+import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.database.CollectionDAO
+import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.ActivityPrefsStorageBinding
 import me.devsaki.hentoid.databinding.IncludePrefsStorageVolumeBinding
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.ProcessEvent
+import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.preferences.DownloadStrategyDialogFragment
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
-import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.preferences.MemoryUsageDialogFragment
+import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
@@ -133,7 +139,8 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             browseModeWarning.isVisible = Preferences.isBrowserMode()
             browseModeImg.isVisible = Preferences.isBrowserMode()
 
-            primaryVolume1.isVisible = Preferences.getStorageUri(StorageLocation.PRIMARY_1).isNotEmpty()
+            primaryVolume1.isVisible =
+                Preferences.getStorageUri(StorageLocation.PRIMARY_1).isNotEmpty()
             if (primaryVolume1.isVisible) {
                 if (null == binding1) binding1 =
                     IncludePrefsStorageVolumeBinding.bind(primaryVolume1)
@@ -145,7 +152,8 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             }
             addPrimary1.isVisible = !primaryVolume1.isVisible
 
-            primaryVolume2.isVisible = Preferences.getStorageUri(StorageLocation.PRIMARY_2).isNotEmpty()
+            primaryVolume2.isVisible =
+                Preferences.getStorageUri(StorageLocation.PRIMARY_2).isNotEmpty()
             if (primaryVolume2.isVisible) {
                 if (null == binding2) binding2 =
                     IncludePrefsStorageVolumeBinding.bind(primaryVolume2)
@@ -269,6 +277,17 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             .setTextSize(Helper.dimensAsDp(this, R.dimen.text_subtitle_1))
             .setAutoDismiss(true)
 
+        if (location == StorageLocation.PRIMARY_2)
+            powerMenuBuilder.addItem(
+                2,
+                PowerMenuItem(
+                    resources.getString(R.string.storage_action_merge_to_1),
+                    R.drawable.ic_action_merge,
+                    false,
+                    3
+                )
+            )
+
         val powerMenu = powerMenuBuilder.build()
 
         powerMenu.setOnMenuItemClickListener { _, item ->
@@ -299,7 +318,9 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     }
                 }
 
-                else -> onDetachSelected(location)
+                1 -> onDetachSelected(location)
+
+                3 -> onMergeToPrimaryOne()
             }
         }
 
@@ -331,7 +352,78 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                 dialog1.dismiss()
                 viewModel.detach(location)
                 refreshDisplay()
-                ToastHelper.toast(R.string.storage_remove_confirm)
+                ToastHelper.toast(R.string.storage_remove_complete)
+            }
+            .setNegativeButton(R.string.no) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
+            .create()
+            .show()
+    }
+
+    // Check if merging is possible
+    private fun onMergeToPrimaryOne() {
+        val location2Usage: Long
+        val nbBooks: Long
+        val dao: CollectionDAO = ObjectBoxDAO(this)
+        try {
+            val location2Usages =
+                dao.selectPrimaryMemoryUsagePerSource(ContentHelper.getPathRoot(StorageLocation.PRIMARY_2))
+            location2Usage = location2Usages.map { e -> e.value.right }.sum()
+            nbBooks = dao.countAllInternalBooks(
+                ContentHelper.getPathRoot(StorageLocation.PRIMARY_2),
+                false
+            )
+        } finally {
+            dao.cleanup()
+        }
+
+        var location1free = -1L
+        val root1 = Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+        if (root1.isNotEmpty()) {
+            val root1Folder = FileHelper.getDocumentFromTreeUriString(this, root1)
+            if (root1Folder != null) {
+                location1free = FileHelper.MemoryUsageFigures(this, root1Folder).getfreeUsageBytes()
+            }
+        }
+
+        // Test if there are books to merge
+        if (0L == nbBooks) {
+            Snackbar.make(
+                findViewById(android.R.id.content),
+                R.string.storage_merge_ko2,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        // Test if enough free space is availkable; take 2% margin
+        if (location1free > location2Usage * 1.02) confirmMerge(nbBooks)
+        else {
+            Snackbar.make(
+                findViewById(android.R.id.content),
+                R.string.storage_merge_ko1,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun confirmMerge(nbBooks: Long) {
+        MaterialAlertDialogBuilder(this)
+            .setIcon(R.drawable.ic_warning)
+            .setCancelable(true)
+            .setTitle(R.string.app_name)
+            .setMessage(resources.getString(R.string.storage_merge_ask, nbBooks))
+            .setPositiveButton(R.string.yes) { dialog1: DialogInterface, _: Int ->
+                ProgressDialogFragment.invoke(
+                    supportFragmentManager,
+                    resources.getString(R.string.storage_merge_progress),
+                    R.plurals.book
+                )
+                dialog1.dismiss()
+                lifecycleScope.launch {
+                    viewModel.merge2to1(nbBooks.toInt())
+                    refreshDisplay()
+                    ToastHelper.toast(R.string.storage_merge_complete)
+                }
             }
             .setNegativeButton(R.string.no) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
             .create()

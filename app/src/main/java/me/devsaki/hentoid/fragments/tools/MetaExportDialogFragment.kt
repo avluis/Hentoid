@@ -68,7 +68,7 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
         dao = ObjectBoxDAO(requireContext())
-        val nbLibraryBooks = dao.countAllInternalBooks(false)
+        val nbLibraryBooks = dao.countAllInternalBooks("", false)
         val nbQueueBooks = dao.countAllQueueBooks()
         val nbBookmarks = dao.countAllBookmarks()
         binding?.let {
@@ -143,7 +143,7 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
 
     private fun refreshFavsDisplay() {
         binding?.let {
-            val nbLibraryBooks = dao.countAllInternalBooks(it.exportFavsOnly.isChecked)
+            val nbLibraryBooks = dao.countAllInternalBooks("", it.exportFavsOnly.isChecked)
             it.exportFileLibraryChk.text = resources.getQuantityString(
                 R.plurals.export_file_library,
                 nbLibraryBooks.toInt(),
@@ -231,7 +231,7 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
         exportBookmarks: Boolean
     ): JsonContentCollection {
         val jsonContentCollection = JsonContentCollection()
-        if (exportLibrary) dao.streamAllInternalBooks(exportFavsOnly) { content: Content ->
+        if (exportLibrary) dao.streamAllInternalBooks("", exportFavsOnly) { content: Content ->
             jsonContentCollection.addToLibrary(content)
         } // Using streaming here to support large collections
         if (exportQueue) {

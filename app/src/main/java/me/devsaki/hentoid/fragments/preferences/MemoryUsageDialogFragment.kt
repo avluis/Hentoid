@@ -40,9 +40,6 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
 
         rowPadding = resources.getDimension(R.dimen.mem_row_padding).toInt()
 
-        var deviceFreeBytes: Long = -1
-        var deviceTotalBytes: Long = -1
-
         // Get free space and capacity for every location
         val stats1 = getStats(StorageLocation.PRIMARY_1)
         val stats2 = getStats(StorageLocation.PRIMARY_2)
@@ -53,8 +50,8 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
             .filterNot { p -> -1L == p.second }
             .distinctBy { p -> p.first.toString() + "." + p.second.toString() }
 
-        deviceFreeBytes = distinctVolumes.sumOf { p -> p.first }
-        deviceTotalBytes = distinctVolumes.sumOf { p -> p.second }
+        val deviceFreeBytes = distinctVolumes.sumOf { p -> p.first }
+        val deviceTotalBytes = distinctVolumes.sumOf { p -> p.second }
 
         val primaryMemUsage: Map<Site, ImmutablePair<Int, Long>>
         val externalMemUsage: Map<Site, ImmutablePair<Int, Long>>

@@ -87,9 +87,9 @@ public interface CollectionDAO {
 
     // Primary library ("internal books")
 
-    long countAllInternalBooks(boolean favsOnly);
+    long countAllInternalBooks(@NonNull String rootPath, boolean favsOnly);
 
-    void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer);
+    void streamAllInternalBooks(@NonNull String rootPath, boolean favsOnly, Consumer<Content> consumer);
 
     void flagAllInternalBooks(@NonNull String rootPath, boolean includePlaceholders);
 
@@ -219,6 +219,8 @@ public interface CollectionDAO {
     Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId);
 
     Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource();
+
+    Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource(@NonNull String rootPath);
 
     Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource();
 

@@ -244,7 +244,13 @@
     <string name="storage_action_remove">Detach</string>
     <string name="storage_remove_ask">Detach selected location?\nNB : Books will not be deleted</string>
     <string name="storage_remove_ko1">Cannot detach Location 1 when Location 2 is set</string>
-    <string name="storage_remove_confirm">Location detached</string>
+    <string name="storage_remove_complete">Location detached</string>
+    <string name="storage_action_merge_to_1">Merge to Location 1</string>
+    <string name="storage_merge_ask">Merge %d books from Location 2 to Location 1?\nNB : Books will be deleted after merge is complete</string>
+    <string name="storage_merge_ko1">Cannot merge to Location 1 : not enough free storage left</string>
+    <string name="storage_merge_ko2">Cannot merge : no books on Location 2</string>
+    <string name="storage_merge_progress">Merging books to Location 1</string>
+    <string name="storage_merge_complete">Merge complete</string>
     <string name="storage_strategy_title">Download strategy : %s</string>
     <string name="storage_strategy_balance">Balance free space</string>
     <string name="storage_strategy_balance_desc">Hentoid downloads to whichever location has more free space, trying to maintain balance. Does not move books already in the library.</string>

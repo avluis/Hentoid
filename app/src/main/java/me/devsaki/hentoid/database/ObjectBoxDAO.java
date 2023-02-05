@@ -394,8 +394,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.shuffleContentIds();
     }
 
-    public long countAllInternalBooks(boolean favsOnly) {
-        return db.selectAllInternalBooksQ("", favsOnly, true).count();
+    public long countAllInternalBooks(@NonNull String rootPath, boolean favsOnly) {
+        return db.selectAllInternalBooksQ(rootPath, favsOnly, true).count();
     }
 
     public long countAllQueueBooks() {
@@ -413,8 +413,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
-    public void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer) {
-        Query<Content> query = db.selectAllInternalBooksQ("", favsOnly, true);
+    public void streamAllInternalBooks(@NonNull String rootPath, boolean favsOnly, Consumer<Content> consumer) {
+        Query<Content> query = db.selectAllInternalBooksQ(rootPath, favsOnly, true);
         query.forEach(consumer::accept);
     }
 
@@ -702,7 +702,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource() {
-        return db.selectPrimaryMemoryUsagePerSource();
+        return db.selectPrimaryMemoryUsagePerSource("");
+    }
+
+    public Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource(@NonNull String rootPath) {
+        return db.selectPrimaryMemoryUsagePerSource(rootPath);
     }
 
     public Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource() {
