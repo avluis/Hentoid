@@ -281,13 +281,11 @@ public final class ContentHelper {
         List<Content> errors = dao.selectErrorContent();
 
         // Save current queue (to be able to restore it in case the app gets uninstalled)
-        List<Content> queuedContent = Stream.of(queue)
-                .map(qr -> {
-                    Content c = qr.getContent().getTarget();
-                    if (c != null) c.setFrozen(qr.isFrozen());
-                    return c;
-                })
-                .withoutNulls().toList();
+        List<Content> queuedContent = Stream.of(queue).map(qr -> {
+            Content c = qr.getContent().getTarget();
+            if (c != null) c.setFrozen(qr.isFrozen());
+            return c;
+        }).withoutNulls().toList();
         if (errors != null) queuedContent.addAll(errors);
 
         DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
@@ -320,12 +318,7 @@ public final class ContentHelper {
      *                         is faithful to the library screen's order)
      * @param forceShowGallery True to force the gallery screen to show first; false to follow app settings
      */
-    public static boolean openReader(
-            @NonNull Context context,
-            @NonNull Content content,
-            int pageNumber,
-            Bundle searchParams,
-            boolean forceShowGallery) {
+    public static boolean openReader(@NonNull Context context, @NonNull Content content, int pageNumber, Bundle searchParams, boolean forceShowGallery) {
         // Check if the book has at least its own folder
         if (content.getStorageUri().isEmpty()) return false;
         if (content.getStatus().equals(StatusContent.PLACEHOLDER)) return false;
@@ -356,14 +349,7 @@ public final class ContentHelper {
      * @param updateReads             True to increment the reads counter and to set the last read date to now
      * @param markAsCompleted         True to mark as completed
      */
-    public static void updateContentReadStats(
-            @NonNull Context context,
-            @Nonnull CollectionDAO dao,
-            @NonNull Content content,
-            @NonNull List<ImageFile> images,
-            int targetLastReadPageIndex,
-            boolean updateReads,
-            boolean markAsCompleted) {
+    public static void updateContentReadStats(@NonNull Context context, @Nonnull CollectionDAO dao, @NonNull Content content, @NonNull List<ImageFile> images, int targetLastReadPageIndex, boolean updateReads, boolean markAsCompleted) {
         content.setLastReadPageIndex(targetLastReadPageIndex);
         if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         if (markAsCompleted) content.setCompleted(true);
@@ -392,12 +378,7 @@ public final class ContentHelper {
             return new ArrayList<>();
         }
 
-        return FileHelper.listFoldersFilter(context,
-                folder,
-                displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME)
-                        && ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName))
-                )
-        );
+        return FileHelper.listFoldersFilter(context, folder, displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME) && ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName))));
     }
 
     /**
@@ -428,8 +409,7 @@ public final class ContentHelper {
             // Remove the cover stored in the app's persistent folder
             File appFolder = context.getFilesDir();
             File[] images = appFolder.listFiles((dir, name) -> FileHelper.getFileNameWithoutExtension(name).equals(content.getId() + ""));
-            if (images != null)
-                for (File f : images) FileHelper.removeFile(f);
+            if (images != null) for (File f : images) FileHelper.removeFile(f);
         } else if (/*isInLibrary(content.getStatus()) &&*/ !content.getStorageUri().isEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
             DocumentFile folder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
@@ -478,10 +458,7 @@ public final class ContentHelper {
      * @param context Context to use
      * @param dao     DAO to use
      */
-    public static void detachAllExternalContent(
-            @NonNull final Context context,
-            @NonNull final CollectionDAO dao
-    ) {
+    public static void detachAllExternalContent(@NonNull final Context context, @NonNull final CollectionDAO dao) {
         // Remove all external books from DB
         // NB : do NOT use ContentHelper.removeContent as it would remove files too
         // here we just want to remove DB entries without removing files
@@ -499,10 +476,7 @@ public final class ContentHelper {
      * @param dao      DAO to use
      * @param location Location to detach
      */
-    public static void detachAllPrimaryContent(
-            @NonNull final CollectionDAO dao,
-            StorageLocation location
-    ) {
+    public static void detachAllPrimaryContent(@NonNull final CollectionDAO dao, StorageLocation location) {
         // Remove all external books from DB
         // NB : do NOT use ContentHelper.removeContent as it would remove files too
         // here we just want to remove DB entries without removing files
@@ -516,8 +490,9 @@ public final class ContentHelper {
     }
 
     public static String getPathRoot(String locationUriStr) {
-        int pathDivider = locationUriStr.lastIndexOf("%3A");
-        if (pathDivider > -1) return locationUriStr.substring(0, pathDivider);
+        int pathDivider = locationUriStr.lastIndexOf(FileHelper.URI_ELEMENTS_SEPARATOR);
+        if (pathDivider > -1)
+            return locationUriStr.substring(0, pathDivider + FileHelper.URI_ELEMENTS_SEPARATOR.length()); // Include separator
         return locationUriStr;
     }
 
@@ -529,10 +504,7 @@ public final class ContentHelper {
      * @param content Content to add to the library
      * @return ID of the newly added Content
      */
-    public static long addContent(
-            @NonNull final Context context,
-            @NonNull final CollectionDAO dao,
-            @NonNull final Content content) {
+    public static long addContent(@NonNull final Context context, @NonNull final CollectionDAO dao, @NonNull final Content content) {
         long newContentId = dao.insertContent(content);
         content.setId(newContentId);
 
@@ -548,11 +520,9 @@ public final class ContentHelper {
                         AttributeMap attrs = content.getAttributeMap();
                         List<Attribute> artists = new ArrayList<>();
                         List<Attribute> sublist = attrs.get(AttributeType.ARTIST);
-                        if (sublist != null)
-                            artists.addAll(sublist);
+                        if (sublist != null) artists.addAll(sublist);
                         sublist = attrs.get(AttributeType.CIRCLE);
-                        if (sublist != null)
-                            artists.addAll(sublist);
+                        if (sublist != null) artists.addAll(sublist);
 
                         if (artists.isEmpty()) { // Add to the "no artist" group if no artist has been found
                             Group group = GroupHelper.getOrCreateNoArtistGroup(context, dao);
@@ -583,16 +553,9 @@ public final class ContentHelper {
                     List<Pair<String, String>> extractInstructions = new ArrayList<>();
                     extractInstructions.add(new Pair<>(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, ""), newContentId + ""));
 
-                    Disposable unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
-                                    context,
-                                    archive,
-                                    targetFolder,
-                                    extractInstructions,
-                                    null)
-                            .subscribeOn(Schedulers.io())
+                    Disposable unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(context, archive, targetFolder, extractInstructions, null).subscribeOn(Schedulers.io())
                             // Save the pic as low-res JPG
-                            .observeOn(Schedulers.computation())
-                            .map(uri -> {
+                            .observeOn(Schedulers.computation()).map(uri -> {
                                 File extractedFile = new File(uri.getPath()); // These are file URI's
                                 try (InputStream is = FileHelper.getInputStream(context, uri)) {
                                     Bitmap b = BitmapFactory.decodeStream(is);
@@ -617,14 +580,11 @@ public final class ContentHelper {
                                 }
                             })
                             // Add it as the book's cover
-                            .subscribe(
-                                    uri -> {
-                                        Timber.i(">> Set cover for %s", content.getTitle());
-                                        content.getCover().setFileUri(uri.toString());
-                                        dao.replaceImageList(newContentId, content.getImageFiles());
-                                    },
-                                    Timber::e
-                            );
+                            .subscribe(uri -> {
+                                Timber.i(">> Set cover for %s", content.getTitle());
+                                content.getCover().setFileUri(uri.toString());
+                                dao.replaceImageList(newContentId, content.getImageFiles());
+                            }, Timber::e);
 
                     // Not ideal, but better than attaching it to the calling service that may not have enough longevity
                     new Helper.LifecycleRxCleaner(unarchiveDisposable).publish();
@@ -645,8 +605,7 @@ public final class ContentHelper {
      * @param dao  DAO to use
      * @return Newly created Attribute
      */
-    public static Attribute addAttribute(
-            @NonNull final AttributeType type, @NonNull final String name, @NonNull final CollectionDAO dao) {
+    public static Attribute addAttribute(@NonNull final AttributeType type, @NonNull final String name, @NonNull final CollectionDAO dao) {
         Group artistGroup = null;
         if (type.equals(AttributeType.ARTIST) || type.equals(AttributeType.CIRCLE))
             artistGroup = GroupHelper.addArtistToAttributesGroup(name, dao);
@@ -680,8 +639,7 @@ public final class ContentHelper {
         // Update content JSON if it exists (i.e. if book is not queued)
         for (Long contentId : contents) {
             Content content = dao.selectContent(contentId);
-            if (content != null && !content.getJsonUri().isEmpty())
-                updateJson(context, content);
+            if (content != null && !content.getJsonUri().isEmpty()) updateJson(context, content);
         }
     }
 
@@ -726,10 +684,8 @@ public final class ContentHelper {
         // Remove current cover from the set
         for (int i = 0; i < images.size(); i++)
             if (images.get(i).isCover()) {
-                if (images.get(i).isReadable())
-                    images.get(i).setIsCover(false);
-                else
-                    images.remove(i);
+                if (images.get(i).isReadable()) images.get(i).setIsCover(false);
+                else images.remove(i);
                 break;
             }
 
@@ -788,10 +744,7 @@ public final class ContentHelper {
         title = (null == title) ? "" : title;
         String author = formatBookAuthor(content).toLowerCase();
 
-        return new ImmutablePair<>(
-                formatBookFolderName(content, FileHelper.cleanFileName(title), FileHelper.cleanFileName(author)),
-                formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_"))
-        );
+        return new ImmutablePair<>(formatBookFolderName(content, FileHelper.cleanFileName(title), FileHelper.cleanFileName(author)), formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_")));
     }
 
     private static String formatBookFolderName(@NonNull final Content content, @NonNull final String title, @NonNull final String author) {
@@ -894,8 +847,7 @@ public final class ContentHelper {
         DocumentFile siteFolder;
         if (null == explorer)
             siteFolder = FileHelper.findFolder(context, appFolder, siteFolderName);
-        else
-            siteFolder = explorer.findFolder(context, appFolder, siteFolderName);
+        else siteFolder = explorer.findFolder(context, appFolder, siteFolderName);
 
         if (null == siteFolder) // Create
             return appFolder.createDirectory(siteFolderName);
@@ -1029,8 +981,7 @@ public final class ContentHelper {
                     img.setIsCover(true);
                 }
                 result.add(img.setFileUri(property.left).setSize(property.right).setStatus(isOnline ? StatusContent.ONLINE : StatusContent.DOWNLOADED));
-            } else
-                Timber.i(">> image not found among files : %s", imgName);
+            } else Timber.i(">> image not found among files : %s", imgName);
         }
 
         // If no thumb found, set the 1st image as cover
@@ -1047,8 +998,7 @@ public final class ContentHelper {
      */
     public static List<ImageFile> createImageListFromFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
         List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, ImageHelper.getImageNamesFilter());
-        if (!imageFiles.isEmpty())
-            return createImageListFromFiles(imageFiles);
+        if (!imageFiles.isEmpty()) return createImageListFromFiles(imageFiles);
         else return Collections.emptyList();
     }
 
@@ -1071,11 +1021,7 @@ public final class ContentHelper {
      * @param namePrefix    Prefix to add in front of the name of the ImageFiles to create
      * @return List of ImageFiles corresponding to all supported pictures among the given files, sorted numerically then alphabetically
      */
-    public static List<ImageFile> createImageListFromFiles(
-            @NonNull final List<DocumentFile> files,
-            @NonNull final StatusContent targetStatus,
-            int startingOrder,
-            @NonNull final String namePrefix) {
+    public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files, @NonNull final StatusContent targetStatus, int startingOrder, @NonNull final String namePrefix) {
         Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
         int order = startingOrder;
@@ -1108,12 +1054,7 @@ public final class ContentHelper {
      * @param namePrefix     Prefix to add to image names
      * @return List of ImageFiles contructed from the given parameters
      */
-    public static List<ImageFile> createImageListFromArchiveEntries(
-            @NonNull final Uri archiveFileUri,
-            @NonNull final List<ArchiveHelper.ArchiveEntry> files,
-            @NonNull final StatusContent targetStatus,
-            int startingOrder,
-            @NonNull final String namePrefix) {
+    public static List<ImageFile> createImageListFromArchiveEntries(@NonNull final Uri archiveFileUri, @NonNull final List<ArchiveHelper.ArchiveEntry> files, @NonNull final StatusContent targetStatus, int startingOrder, @NonNull final String namePrefix) {
         Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
         int order = startingOrder;
@@ -1167,10 +1108,7 @@ public final class ContentHelper {
     public static List<String> getBlockedTags(@NonNull final Content content) {
         List<String> result = Collections.emptyList();
         if (!Preferences.getBlockedTags().isEmpty()) {
-            List<String> tags = Stream.of(content.getAttributes())
-                    .filter(a -> a.getType().equals(AttributeType.TAG) || a.getType().equals(AttributeType.LANGUAGE))
-                    .map(Attribute::getName)
-                    .toList();
+            List<String> tags = Stream.of(content.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG) || a.getType().equals(AttributeType.LANGUAGE)).map(Attribute::getName).toList();
             for (String blocked : Preferences.getBlockedTags())
                 for (String tag : tags)
                     if (blocked.equalsIgnoreCase(tag) || StringHelper.isPresentAsWord(blocked, tag)) {
@@ -1382,18 +1320,13 @@ public final class ContentHelper {
      * @param removeJson True to remove the Hentoid JSON file; false to keep it
      * @param keepCover  True to keep the cover picture; false to remove it
      */
-    public static void purgeFiles(
-            @NonNull final Context context,
-            @NonNull final Content content,
-            boolean removeJson,
-            boolean keepCover) {
+    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content, boolean removeJson, boolean keepCover) {
         DocumentFile bookFolder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
             List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, displayName -> !keepCover || !displayName.startsWith(Consts.THUMB_FILE_NAME));
-            if (!files.isEmpty())
-                for (DocumentFile file : files)
-                    if (removeJson || !HttpHelper.getExtensionFromUri(file.getUri().toString()).toLowerCase().endsWith("json"))
-                        file.delete();
+            if (!files.isEmpty()) for (DocumentFile file : files)
+                if (removeJson || !HttpHelper.getExtensionFromUri(file.getUri().toString()).toLowerCase().endsWith("json"))
+                    file.delete();
         }
     }
 
@@ -1419,8 +1352,7 @@ public final class ContentHelper {
      * @param content Content to get the flag resource ID for
      * @return Resource ID (DrawableRes) of the given Content's language flag; 0 if no matching flag found
      */
-    public static @DrawableRes
-    int getFlagResourceId(@NonNull final Context context, @NonNull final Content content) {
+    public static @DrawableRes int getFlagResourceId(@NonNull final Context context, @NonNull final Content content) {
         List<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
         if (langAttributes != null && !langAttributes.isEmpty())
             for (Attribute lang : langAttributes) {
@@ -1436,8 +1368,7 @@ public final class ContentHelper {
      * @param rating Rating to get the resource ID for (0 to 5)
      * @return Resource ID representing the given rating
      */
-    public static @DrawableRes
-    int getRatingResourceId(int rating) {
+    public static @DrawableRes int getRatingResourceId(int rating) {
         switch (rating) {
             case 1:
                 return R.drawable.ic_star_1;
@@ -1465,11 +1396,9 @@ public final class ContentHelper {
         List<Attribute> attributes = new ArrayList<>();
 
         List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
-        if (artistAttributes != null)
-            attributes.addAll(artistAttributes);
+        if (artistAttributes != null) attributes.addAll(artistAttributes);
         List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
-        if (circleAttributes != null)
-            attributes.addAll(circleAttributes);
+        if (circleAttributes != null) attributes.addAll(circleAttributes);
 
         if (attributes.isEmpty()) {
             return context.getString(R.string.work_artist, context.getResources().getString(R.string.work_untitled));
@@ -1528,10 +1457,7 @@ public final class ContentHelper {
             if (null == cookieStr) cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
             if (null == referer) referer = content.getGalleryUrl();
 
-            LazyHeaders.Builder builder = new LazyHeaders.Builder()
-                    .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
-                    .addHeader(HttpHelper.HEADER_REFERER_KEY, referer)
-                    .addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
+            LazyHeaders.Builder builder = new LazyHeaders.Builder().addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr).addHeader(HttpHelper.HEADER_REFERER_KEY, referer).addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
 
             return new GlideUrl(imageUrl, builder.build()); // From URL
         }
@@ -1554,15 +1480,7 @@ public final class ContentHelper {
      * - Right side : Similarity score (between 0 and 1; 1=100%)
      */
     @Nullable
-    public static ImmutablePair<Content, Float> findDuplicate(
-            @NonNull final Context context,
-            @NonNull final Content content,
-            boolean useTitle,
-            boolean useArtist,
-            boolean useLanguage,
-            boolean useCover,
-            long pHash,
-            @NonNull final CollectionDAO dao) {
+    public static ImmutablePair<Content, Float> findDuplicate(@NonNull final Context context, @NonNull final Content content, boolean useTitle, boolean useArtist, boolean useLanguage, boolean useCover, long pHash, @NonNull final CollectionDAO dao) {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted((o1, o2) -> Integer.compare(o1.length(), o2.length())).findLast();
@@ -1606,10 +1524,7 @@ public final class ContentHelper {
      * @param content Content to process
      * @param dao     Dao used to save cover hash
      */
-    public static void computeAndSaveCoverHash(
-            @NonNull final Context context,
-            @NonNull final Content content,
-            @NonNull final CollectionDAO dao) {
+    public static void computeAndSaveCoverHash(@NonNull final Context context, @NonNull final Content content, @NonNull final CollectionDAO dao) {
         Bitmap coverBitmap = DuplicateHelper.Companion.getCoverBitmapFromContent(context, content);
         long pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), coverBitmap);
         if (coverBitmap != null) coverBitmap.recycle();
@@ -1640,8 +1555,7 @@ public final class ContentHelper {
                 // Get cookies from the app jar
                 String cookieStr = HttpHelper.getCookies(img.getPageUrl());
                 // If nothing found, peek from the site
-                if (cookieStr.isEmpty())
-                    cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                if (cookieStr.isEmpty()) cookieStr = HttpHelper.peekCookies(img.getPageUrl());
                 if (!cookieStr.isEmpty())
                     headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPictureFromPage(content.getSite(), img, headers);
@@ -1672,9 +1586,7 @@ public final class ContentHelper {
      * @throws LimitReachedException If the site's download limit has been reached
      * @throws EmptyResultException  If no picture has been detected
      */
-    public static boolean testDownloadPictureFromPage(@NonNull Site site,
-                                                      @NonNull ImageFile img,
-                                                      List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+    public static boolean testDownloadPictureFromPage(@NonNull Site site, @NonNull ImageFile img, List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
         ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
@@ -1700,10 +1612,7 @@ public final class ContentHelper {
      * @return True if the given picture is downloadable; false if not
      * @throws IOException If something happens during the download attempt
      */
-    public static boolean testDownloadPicture(
-            @NonNull Site site,
-            @NonNull ImageFile img,
-            List<Pair<String, String>> requestHeaders) throws IOException {
+    public static boolean testDownloadPicture(@NonNull Site site, @NonNull ImageFile img, List<Pair<String, String>> requestHeaders) throws IOException {
 
         Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         if (response.code() >= 300) throw new IOException("Network error " + response.code());
@@ -1734,11 +1643,7 @@ public final class ContentHelper {
      * @param dao         DAO to use
      * @throws ContentNotProcessedException If something terrible happens
      */
-    public static void mergeContents(
-            @NonNull Context context,
-            @NonNull List<Content> contentList,
-            @NonNull String newTitle,
-            @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
+    public static void mergeContents(@NonNull Context context, @NonNull List<Content> contentList, @NonNull String newTitle, @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
         // New book inherits properties of the first content of the list
@@ -1809,16 +1714,9 @@ public final class ContentHelper {
             // Set cover
             if (isInLibrary(coverPic.getStatus())) {
                 String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
-                Uri newUri = FileHelper.copyFile(
-                        context,
-                        Uri.parse(firstCover.getFileUri()),
-                        targetFolder.getUri(),
-                        firstCover.getMimeType(),
-                        firstCover.getName() + "." + extension);
-                if (newUri != null)
-                    coverPic.setFileUri(newUri.toString());
-                else
-                    Timber.w("Could not move file %s", firstCover.getFileUri());
+                Uri newUri = FileHelper.copyFile(context, Uri.parse(firstCover.getFileUri()), targetFolder.getUri(), firstCover.getMimeType(), firstCover.getName() + "." + extension);
+                if (newUri != null) coverPic.setFileUri(newUri.toString());
+                else Timber.w("Could not move file %s", firstCover.getFileUri());
             }
             mergedImages.add(coverPic);
 
@@ -1855,23 +1753,15 @@ public final class ContentHelper {
                     // If exists, move the picture to the merged books' folder
                     if (isInLibrary(newImg.getStatus())) {
                         String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
-                        Uri newUri = FileHelper.copyFile(
-                                context,
-                                Uri.parse(img.getFileUri()),
-                                targetFolder.getUri(),
-                                newImg.getMimeType(),
-                                newImg.getName() + "." + extension);
-                        if (newUri != null)
-                            newImg.setFileUri(newUri.toString());
-                        else
-                            Timber.w("Could not move file %s", img.getFileUri());
+                        Uri newUri = FileHelper.copyFile(context, Uri.parse(img.getFileUri()), targetFolder.getUri(), newImg.getMimeType(), newImg.getName() + "." + extension);
+                        if (newUri != null) newImg.setFileUri(newUri.toString());
+                        else Timber.w("Could not move file %s", img.getFileUri());
                         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
                     }
                     mergedImages.add(newImg);
                 }
             }
-        } catch (
-                IOException e) {
+        } catch (IOException e) {
             Timber.w(e);
             isError = true;
         }

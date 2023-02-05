@@ -76,6 +76,8 @@ public class FileHelper {
 
     private static final String ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"; // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
 
+    public static final String URI_ELEMENTS_SEPARATOR = "%3A";
+
     public static final int FILE_IO_BUFFER_SIZE = 32 * 1024;
 
 

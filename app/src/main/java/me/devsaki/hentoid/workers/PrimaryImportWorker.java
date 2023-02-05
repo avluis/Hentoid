@@ -177,6 +177,8 @@ public class PrimaryImportWorker extends BaseWorker {
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
 
         String previousUriStr = Preferences.getStorageUri(location);
+        if (previousUriStr.isEmpty()) previousUriStr = "FAIL"; // Auto-fails if location is not set
+
         Preferences.setStorageUri(location, targetRootUri);
         DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, targetRootUri);
         if (null == rootFolder) {
