@@ -4,6 +4,7 @@
     <style name="Theme.Black" parent="Theme.Material3.Light.NoActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary_black</item>
+        <item name="colorPrimaryInverse">@color/secondary_black</item>
         <item name="colorOnPrimary">@color/on_primary_black</item>
         <item name="colorSecondary">@color/secondary_black</item>
         <item name="colorOnSecondary">@color/on_secondary_black</item>

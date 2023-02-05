@@ -15,7 +15,7 @@
         app:navigationIcon="@drawable/ic_close"
         app:title="@string/title_activity_app_lock" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/switch_off"
         android:layout_width="0dp"
         android:layout_height="56dp"
@@ -30,7 +30,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/switch_lock_on_restore"
         android:layout_width="0dp"
         android:layout_height="56dp"

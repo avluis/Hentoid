@@ -143,7 +143,7 @@
         tools:text="Export library (235 books)"
         tools:visibility="visible" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/export_favs_only"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -155,7 +155,7 @@
         app:layout_constraintTop_toBottomOf="@id/export_file_library_chk"
         tools:visibility="visible" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/export_groups"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
