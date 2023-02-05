@@ -12,13 +12,15 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposables
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.core.startBrowserActivity
@@ -48,9 +50,6 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
     // == VARIABLES
     private lateinit var dao: CollectionDAO
     private var locationIndex = 0
-
-    // Disposable for RxJava
-    private var exportDisposable = Disposables.empty()
 
 
     override fun onCreateView(
@@ -211,49 +210,52 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
                     ), PorterDuff.Mode.SRC_IN
                 )
             it.exportProgressBar.visibility = View.VISIBLE
-            exportDisposable = Single.fromCallable {
-                getExportedCollection(
-                    exportLibrary,
-                    exportFavsOnly,
-                    exportCustomGroups,
-                    exportQueue,
-                    exportBookmarks
-                )
-            }
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .map { c: JsonContentCollection ->
-                    it.exportProgressBar.max = 3
-                    it.exportProgressBar.progress = 1
-                    it.exportProgressBar.isIndeterminate = false
-                    JsonHelper.serializeToJson(c, JsonContentCollection::class.java)
+
+            lifecycleScope.launch {
+                val result = withContext(Dispatchers.IO) {
+                    try {
+                        val collection = getExportedCollection(
+                            exportLibrary,
+                            exportFavsOnly,
+                            exportCustomGroups,
+                            exportQueue,
+                            exportBookmarks
+                        )
+                        it.exportProgressBar.max = 3
+                        it.exportProgressBar.progress = 1
+                        it.exportProgressBar.isIndeterminate = false
+                        return@withContext JsonHelper.serializeToJson(
+                            collection,
+                            JsonContentCollection::class.java
+                        )
+                    } catch (e: Exception) {
+                        Timber.w(e)
+                        Helper.logException(e)
+                        Snackbar.make(
+                            it.root,
+                            R.string.export_failed,
+                            BaseTransientBottomBar.LENGTH_LONG
+                        ).show()
+                        // Dismiss after 3s, for the user to be able to see and use the snackbar
+                        delay(3000)
+                        dismissAllowingStateLoss()
+                    }
+                    return@withContext ""
                 }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { s: String ->
-                        it.exportProgressBar.progress = 2
+                coroutineScope {
+                    it.exportProgressBar.progress = 2
+                    if (result.isNotEmpty())
                         onJsonSerialized(
-                            s,
+                            result,
                             exportLibrary,
                             exportFavsOnly,
                             exportQueue,
                             exportBookmarks
                         )
-                        it.exportProgressBar.progress = 3
-                    }
-                ) { t: Throwable? ->
-                    Timber.w(t)
-                    Helper.logException(t)
-                    Snackbar.make(
-                        it.root,
-                        R.string.export_failed,
-                        BaseTransientBottomBar.LENGTH_LONG
-                    )
-                        .show()
-                    // Dismiss after 3s, for the user to be able to see and use the snackbar
-                    Handler(Looper.getMainLooper())
-                        .postDelayed({ this.dismissAllowingStateLoss() }, 3000)
+                    it.exportProgressBar.progress = 3
+
                 }
+            }
         }
     }
 
@@ -299,8 +301,6 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
         exportQueue: Boolean,
         exportBookmarks: Boolean
     ) {
-        exportDisposable.dispose()
-
         // Use a random number to avoid erasing older exports by mistake
         var targetFileName = Helper.getRandomInt(9999).toString() + ".json"
         if (exportBookmarks) targetFileName = "bkmks-$targetFileName"
