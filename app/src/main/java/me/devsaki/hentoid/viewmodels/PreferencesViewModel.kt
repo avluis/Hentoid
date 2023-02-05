@@ -63,7 +63,6 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
             ids.forEach {
                 mergeTo1(it, nbOK, nbKO, nbBooks)
             }
-
             EventBus.getDefault().post(
                 ProcessEvent(
                     ProcessEvent.EventType.COMPLETE,

@@ -413,7 +413,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             .setTitle(R.string.app_name)
             .setMessage(resources.getString(R.string.storage_merge_ask, nbBooks))
             .setPositiveButton(R.string.yes) { dialog1: DialogInterface, _: Int ->
-                ProgressDialogFragment.invoke(
+                val fragment = ProgressDialogFragment.invoke(
                     supportFragmentManager,
                     resources.getString(R.string.storage_merge_progress),
                     R.plurals.book
@@ -422,6 +422,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                 lifecycleScope.launch {
                     viewModel.merge2to1(nbBooks.toInt())
                     refreshDisplay()
+                    fragment.dismissAllowingStateLoss()
                     ToastHelper.toast(R.string.storage_merge_complete)
                 }
             }

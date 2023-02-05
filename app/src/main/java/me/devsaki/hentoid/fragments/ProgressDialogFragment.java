@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.PluralsRes;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -32,7 +33,7 @@ public class ProgressDialogFragment extends DialogFragment {
     private @PluralsRes
     int progressUnit;
 
-    public static void invoke(
+    public static DialogFragment invoke(
             @NonNull final FragmentManager fragmentManager,
             @NonNull final String title,
             @PluralsRes final int progressUnit) {
@@ -44,6 +45,7 @@ public class ProgressDialogFragment extends DialogFragment {
         fragment.setArguments(args);
 
         fragment.show(fragmentManager, null);
+        return fragment;
     }
 
     @Override
@@ -69,6 +71,7 @@ public class ProgressDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
         binding.title.setText(dialogTitle);
+        binding.bar.setIndeterminate(true);
     }
 
     @Override
@@ -83,6 +86,7 @@ public class ProgressDialogFragment extends DialogFragment {
         if (event.processId != R.id.generic_progress) return;
 
         binding.bar.setMax(event.elementsTotal);
+        binding.bar.setIndeterminate(false);
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             binding.progress.setText(getString(
                     R.string.generic_progress,
