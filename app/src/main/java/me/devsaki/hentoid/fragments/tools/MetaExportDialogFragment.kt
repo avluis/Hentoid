@@ -180,9 +180,12 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
     }
 
     private fun getSelectedRootPath(locationIndex: Int): String {
-        return if (locationIndex > 0)
-            ContentHelper.getPathRoot(if (1 == locationIndex) StorageLocation.PRIMARY_1 else StorageLocation.PRIMARY_2)
-        else ""
+        return if (locationIndex > 0) {
+            var root =
+                ContentHelper.getPathRoot(if (1 == locationIndex) StorageLocation.PRIMARY_1 else StorageLocation.PRIMARY_2)
+            if (root.isEmpty()) root = "FAIL" // Auto-fails condition if location is not set
+            root
+        } else ""
     }
 
     private fun runExport(

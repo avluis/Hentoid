@@ -1143,9 +1143,13 @@ public class ObjectBoxDB {
             case ContentHelper.Location.PRIMARY:
                 return qc.and(Content_.status.notEqual(StatusContent.EXTERNAL.getCode()));
             case ContentHelper.Location.PRIMARY_1:
-                return qc.and(Content_.storageUri.startsWith(Preferences.getStorageUri(StorageLocation.PRIMARY_1), QueryBuilder.StringOrder.CASE_INSENSITIVE));
+                String root = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
+                if (root.isEmpty()) root = "FAIL"; // Auto-fails condition
+                return qc.and(Content_.storageUri.startsWith(root, QueryBuilder.StringOrder.CASE_INSENSITIVE));
             case ContentHelper.Location.PRIMARY_2:
-                return qc.and(Content_.storageUri.startsWith(Preferences.getStorageUri(StorageLocation.PRIMARY_2), QueryBuilder.StringOrder.CASE_INSENSITIVE));
+                root = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
+                if (root.isEmpty()) root = "FAIL"; // Auto-fails condition
+                return qc.and(Content_.storageUri.startsWith(root, QueryBuilder.StringOrder.CASE_INSENSITIVE));
             case ContentHelper.Location.EXTERNAL:
                 return qc.and(Content_.status.equal(StatusContent.EXTERNAL.getCode()));
             default:
