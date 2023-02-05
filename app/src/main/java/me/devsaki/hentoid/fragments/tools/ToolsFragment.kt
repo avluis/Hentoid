@@ -124,7 +124,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
             }
 
             ACCESS_LATEST_LOGS -> {
-                LogsDialogFragmentK.invoke(parentFragmentManager)
+                LogsDialogFragment.invoke(parentFragmentManager)
                 true
             }
 

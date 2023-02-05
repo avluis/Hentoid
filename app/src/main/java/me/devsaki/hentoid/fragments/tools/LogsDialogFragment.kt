@@ -32,7 +32,7 @@ import org.threeten.bp.format.DateTimeFormatter
 import timber.log.Timber
 import java.util.Locale
 
-class LogsDialogFragmentK : DialogFragment(R.layout.dialog_tools_app_logs) {
+class LogsDialogFragment : DialogFragment(R.layout.dialog_tools_app_logs) {
 
     // == UI
     private var binding: DialogToolsAppLogsBinding? = null
@@ -162,7 +162,7 @@ class LogsDialogFragmentK : DialogFragment(R.layout.dialog_tools_app_logs) {
 
     companion object {
         fun invoke(fragmentManager: FragmentManager) {
-            val fragment = LogsDialogFragmentK()
+            val fragment = LogsDialogFragment()
             fragment.show(fragmentManager, null)
         }
     }
