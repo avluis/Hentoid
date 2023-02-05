@@ -37,11 +37,6 @@
         <item name="android:textColorPrimary">@color/on_primary_light</item>
         <item name="android:textColorSecondary">@color/on_secondary_light</item>
         <item name="android:textColorTertiary">@color/on_primary_light</item>
-        <!--
-        <item name="android:textColorPrimaryInverse">#009900</item>
-        <item name="android:textColorSecondaryInverse">#000099</item>
-        <item name="android:textColorTertiaryInverse">#550000</item>
-        -->
         <!-- Custom items for specific places of the app -->
         <item name="drawer_header_diagonal">@color/drawer_header_diagonal_light</item>
         <item name="card_surface">@color/card_surface_light</item>
