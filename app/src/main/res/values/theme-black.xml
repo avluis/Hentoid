@@ -16,6 +16,8 @@
         <item name="colorOnSurfaceVariant">@color/on_surface_black</item>
         <item name="colorContainer">@color/window_background_black</item>
         <item name="colorOnContainer">@color/on_surface_black</item>
+        <item name="colorPrimaryContainer">@color/window_background_black</item>
+        <item name="colorOnPrimaryContainer">@color/on_surface_black</item>
         <item name="colorSecondaryContainer">@color/window_background_black</item>
         <item name="colorOnSecondaryContainer">@color/on_surface_black</item>
         <item name="colorTertiaryContainer">@color/window_background_black</item>
