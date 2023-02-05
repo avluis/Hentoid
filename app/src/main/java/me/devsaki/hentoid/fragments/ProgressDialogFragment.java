@@ -69,6 +69,7 @@ public class ProgressDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
         binding.title.setText(dialogTitle);
+        binding.bar.setIndeterminate(true);
     }
 
     @Override
@@ -83,6 +84,7 @@ public class ProgressDialogFragment extends DialogFragment {
         if (event.processId != R.id.generic_progress) return;
 
         binding.bar.setMax(event.elementsTotal);
+        binding.bar.setIndeterminate(false);
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             binding.progress.setText(getString(
                     R.string.generic_progress,
