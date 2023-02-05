@@ -3,14 +3,16 @@ package me.devsaki.hentoid.fragments.tools
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.commit
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
 import me.devsaki.hentoid.activities.RenamingRulesActivity
@@ -25,8 +27,6 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
-import me.devsaki.hentoid.viewmodels.PreferencesViewModel
-import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -46,9 +46,6 @@ class ToolsFragment : PreferenceFragmentCompat() {
     private val CLEAR_BROWSER_CACHE = "cache_browser"
     private val CLEAR_APP_CACHE = "cache_app"
 
-
-    lateinit var viewModel: PreferencesViewModel
-    private lateinit var exportDisposable: Disposable
     private var rootView: View? = null
 
     companion object {
@@ -60,9 +57,6 @@ class ToolsFragment : PreferenceFragmentCompat() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rootView = view
-        val vmFactory = ViewModelFactory(requireActivity().application)
-        viewModel =
-            ViewModelProvider(requireActivity(), vmFactory)[PreferencesViewModel::class.java]
     }
 
     override fun onDestroy() {
@@ -143,19 +137,23 @@ class ToolsFragment : PreferenceFragmentCompat() {
     }
 
     private fun onExportSettings() {
-        exportDisposable = io.reactivex.Single.fromCallable { getExportedSettings() }
-            .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-            .observeOn(io.reactivex.schedulers.Schedulers.io())
-            .map { c: JsonSettings? ->
-                JsonHelper.serializeToJson<JsonSettings?>(
-                    c,
-                    JsonSettings::class.java
-                )
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val settings = getExportedSettings()
+                    return@withContext JsonHelper.serializeToJson(
+                        settings,
+                        JsonSettings::class.java
+                    )
+                } catch (e: Exception) {
+                    Timber.w(e)
+                }
+                return@withContext ""
             }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { s: String -> onJsonSerialized(s) }, { t: Throwable? -> Timber.w(t) }
-            )
+            coroutineScope {
+                if (result.isNotEmpty()) onJsonSerialized(result)
+            }
+        }
     }
 
     private fun getExportedSettings(): JsonSettings {
@@ -167,8 +165,6 @@ class ToolsFragment : PreferenceFragmentCompat() {
     }
 
     private fun onJsonSerialized(json: String) {
-        exportDisposable.dispose()
-
         // Use a random number to avoid erasing older exports by mistake
         var targetFileName = Helper.getRandomInt(9999).toString() + ".json"
         targetFileName = "settings-$targetFileName"

@@ -70,18 +70,6 @@ class LogsDialogFragment : DialogFragment(R.layout.dialog_tools_app_logs) {
                 Timber.w(e)
             }
         }
-        /*
-                disposable = Single.fromCallable { getLogs() }
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { files: List<DocumentFile?> ->
-                            onGetSuccess(
-                                files
-                            )
-                        }
-                    ) { t: Throwable? -> Timber.w(t) }
-         */
     }
 
     private fun onGetSuccess(files: List<DocumentFile>) {
