@@ -34,7 +34,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 33
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.17.4-dev'
+        versionName '1.17.4-beta'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -95,7 +95,6 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:+'
     def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
     def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
 
@@ -133,6 +132,8 @@ dependencies {
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    implementation 'androidx.core:core-ktx:1.9.0'
+
     def android_work_version = '2.7.1'
     implementation "androidx.work:work-runtime:$android_work_version"
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
