@@ -13,8 +13,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.IntroActivity
@@ -114,7 +114,8 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 val animation = BlinkAnimation(750, 20)
                 binding.waitTxt.startAnimation(animation)
 
-                runBlocking {
+                val scope = CoroutineScope(Dispatchers.Main)
+                scope.launch {
                     val result = withContext(Dispatchers.IO) {
                         setAndScanPrimaryFolder(
                             requireContext(),
@@ -124,11 +125,9 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                             null
                         )
                     }
-                    coroutineScope {
-                        binding.waitTxt.clearAnimation()
-                        binding.waitTxt.visibility = View.GONE
-                        onScanHentoidFolderResult(result.left, result.right)
-                    }
+                    binding.waitTxt.clearAnimation()
+                    binding.waitTxt.visibility = View.GONE
+                    onScanHentoidFolderResult(result.left, result.right)
                 }
             }
 
