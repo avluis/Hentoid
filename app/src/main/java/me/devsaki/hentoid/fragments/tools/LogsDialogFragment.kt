@@ -73,12 +73,11 @@ class LogsDialogFragment : DialogFragment(R.layout.dialog_tools_app_logs) {
     }
 
     private fun onGetSuccess(files: List<DocumentFile>) {
+        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm", Locale.ENGLISH)
         for (file in files) {
             var fileName = file.name
             fileName = fileName?.lowercase(Locale.getDefault()) ?: ""
-            val lastModified = Instant.ofEpochMilli(file.lastModified())
-            val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm", Locale.ENGLISH)
-            val timeStr = lastModified.atZone(ZoneId.systemDefault()).format(formatter)
+            val timeStr = Helper.formatEpochToDate(file.lastModified(), formatter)
             val label = "$fileName ($timeStr)"
             itemAdapter.add(TextItem(label, file, false))
         }
