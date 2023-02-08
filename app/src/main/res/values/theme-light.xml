@@ -49,6 +49,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <!-- Intent activity -->
     <style name="Theme.Invisible" parent="Theme.Light">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@color/transparent</item>
