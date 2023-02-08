@@ -6,11 +6,12 @@
     tools:context=".activities.sources.BaseWebActivity">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBarLayout"
+        android:id="@+id/top_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:liftOnScroll="true">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
@@ -26,7 +27,7 @@
         android:id="@+id/swipe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_anchor="@id/appBarLayout"
+        app:layout_anchor="@id/top_bar"
         app:layout_behavior="me.devsaki.hentoid.widget.KeepWithinParentBoundsScrollingBehavior">
         <!-- webview inserted here programmatically -->
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -43,15 +44,18 @@
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
 
-    <me.devsaki.hentoid.views.CircularProgressView
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/quick_dl_feedback"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="0.75in"
-        android:layout_height="0.75in"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:clickable="false"
         android:focusable="false"
-        android:visibility="invisible"
-        app:width="8dp"
+        android:indeterminate="true"
+        android:progress="100"
+        android:visibility="gone"
+        app:indicatorColor="@color/secondary_light"
+        app:indicatorSize="0.75in"
+        app:trackThickness="8dp"
         tools:ignore="InOrMmUsage"
         tools:visibility="visible" />
 
@@ -61,7 +65,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:visibility="gone"
-        app:layout_anchor="@id/appBarLayout"
+        app:layout_anchor="@id/top_bar"
         app:layout_anchorGravity="bottom"
         tools:visibility="visible">
 
@@ -162,16 +166,38 @@
         app:layout_anchorGravity="top"
         tools:visibility="visible" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
+    <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottom_navigation"
+        style="@style/Widget.Material3.BottomAppBar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_gravity="bottom"
         android:background="?colorPrimary"
-        app:itemIconTint="@color/white"
-        app:itemTextColor="@color/white"
-        app:labelVisibilityMode="unlabeled"
-        app:layout_behavior="me.devsaki.hentoid.widget.BottomNavigationBehavior"
+        app:fabAlignmentMode="end"
+        app:hideOnScroll="true"
+        app:layout_scrollFlags="scroll|enterAlways"
         app:menu="@menu/web_menu_bottom" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/action_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:backgroundTint="?colorPrimaryDark"
+        android:contentDescription="@string/menu_download_streamed"
+        app:layout_anchor="@id/bottom_navigation"
+        app:srcCompat="@drawable/selector_download_action" />
+
+    <TextView
+        android:id="@+id/action_btn_badge"
+        style="@style/Badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_anchor="@id/action_button"
+        app:layout_anchorGravity="end"
+        android:layout_gravity="center_vertical"
+        tools:text="99+"
+        tools:visibility="visible" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
