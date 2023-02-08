@@ -100,7 +100,7 @@
     <string name="pref_browser_mark_merged_on">Merged books are marked\nNB: does not work on all sites</string>
     <string name="pref_browser_mark_blocked_title">Mark books with blocked tags</string>
     <string name="pref_browser_mark_blocked_off">Books with blocked tags have no special display</string>
-    <string name="pref_browser_mark_blocked_on">Books with blocked tags are marked\nNB: dose not work on all sites</string>
+    <string name="pref_browser_mark_blocked_on">Books with blocked tags are marked\nNB: does not work on all sites</string>
     <string name="pref_browser_blocked_tags_title">Blocked tags</string>
     <string name="pref_browser_blocked_tags_summary">Tip: separate tags with commas</string>
     <string name="pref_browser_visuals">Visuals</string>
