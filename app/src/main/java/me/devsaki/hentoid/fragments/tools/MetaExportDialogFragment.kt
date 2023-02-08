@@ -137,7 +137,7 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
             }
 
             // Open library transfer FAQ
-            exportWikiLink.setOnClickListener { requireActivity().startBrowserActivity(Consts.URL_WIKI_TRANSFER) }
+            exportWikiLink.setOnClickListener { requireActivity().startBrowserActivity(Consts.URL_GITHUB_WIKI_TRANSFER) }
             exportRunBtn.isEnabled = false
             if (0L == nbLibraryBooks + nbQueueBooks + nbBookmarks)
                 exportRunBtn.visibility = View.GONE

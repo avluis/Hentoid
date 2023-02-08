@@ -4,6 +4,7 @@ import android.content.DialogInterface
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -17,6 +18,8 @@ import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.Consts
+import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.ActivityPrefsStorageBinding
@@ -89,6 +92,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
     private fun bindUI() {
         binding?.apply {
             toolbar.setNavigationOnClickListener { finish() }
+            toolbar.setOnMenuItemClickListener { i -> onMenuItemSelected(i) }
 
             addPrimary1.setOnClickListener {
                 if (PrimaryImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
@@ -450,6 +454,14 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
     override fun onStrategySelected() {
         refreshDisplay()
+    }
+
+    private fun onMenuItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_help -> startBrowserActivity(Consts.URL_GITHUB_WIKI_STORAGE)
+            else -> return false
+        }
+        return true
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
