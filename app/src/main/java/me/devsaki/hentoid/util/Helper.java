@@ -462,6 +462,16 @@ public final class Helper {
         return 0;
     }
 
+    public static String formatEpochToDate(long epoch, String pattern) {
+        return formatEpochToDate(epoch, DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH));
+    }
+
+    public static String formatEpochToDate(long epoch, DateTimeFormatter formatter) {
+        if (0 == epoch) return "";
+        Instant i = Instant.ofEpochMilli(epoch);
+        return i.atZone(ZoneId.systemDefault()).format(formatter);
+    }
+
     /**
      * Update the JSON file that stores bookmarks with the current bookmarks
      *

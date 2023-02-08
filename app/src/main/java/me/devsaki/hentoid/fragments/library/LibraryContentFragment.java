@@ -75,8 +75,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
-import org.threeten.bp.Instant;
-import org.threeten.bp.ZoneId;
 import org.threeten.bp.format.DateTimeFormatter;
 
 import java.lang.ref.WeakReference;
@@ -1700,22 +1698,14 @@ public class LibraryContentFragment extends Fragment implements
                 return FileHelper.formatHumanReadableSize(c.getSize(), getResources());
             case (Preferences.Constant.ORDER_FIELD_READ_PROGRESS):
                 return String.format(Locale.ENGLISH, "%d %%", Math.round(c.getReadProgress() * 100));
-            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE): {
-                Instant i = Instant.ofEpochMilli(c.getDownloadDate());
-                return i.atZone(ZoneId.systemDefault()).format(formatter);
-            }
-            case (Preferences.Constant.ORDER_FIELD_UPLOAD_DATE): {
-                Instant i = Instant.ofEpochMilli(c.getUploadDate());
-                return i.atZone(ZoneId.systemDefault()).format(formatter);
-            }
-            case (Preferences.Constant.ORDER_FIELD_READ_DATE): {
-                Instant i = Instant.ofEpochMilli(c.getLastReadDate());
-                return i.atZone(ZoneId.systemDefault()).format(formatter);
-            }
-            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE): {
-                Instant i = Instant.ofEpochMilli(c.getDownloadCompletionDate());
-                return i.atZone(ZoneId.systemDefault()).format(formatter);
-            }
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE):
+                return Helper.formatEpochToDate(c.getDownloadDate(), formatter);
+            case (Preferences.Constant.ORDER_FIELD_UPLOAD_DATE):
+                return Helper.formatEpochToDate(c.getUploadDate(), formatter);
+            case (Preferences.Constant.ORDER_FIELD_READ_DATE):
+                return Helper.formatEpochToDate(c.getLastReadDate(), formatter);
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE):
+                return Helper.formatEpochToDate(c.getDownloadCompletionDate(), formatter);
             case (Preferences.Constant.ORDER_FIELD_NONE):
             case (Preferences.Constant.ORDER_FIELD_CUSTOM):
             case (Preferences.Constant.ORDER_FIELD_RANDOM):
