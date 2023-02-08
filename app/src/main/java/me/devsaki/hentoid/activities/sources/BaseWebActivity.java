@@ -186,10 +186,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // Top toolbar buttons
     private MenuItem refreshStopMenu;
     private MenuItem bookmarkMenu;
-    // Bottom toolbar buttons
-    private MenuItem backMenu;
-    private MenuItem forwardMenu;
-    private MenuItem seekMenu;
     private @DrawableRes
     int downloadIcon;
 
@@ -266,10 +262,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
 
         binding.bottomNavigation.setOnMenuItemClickListener(this::onMenuItemSelected);
-        binding.actionButton.setOnClickListener(v -> onActionClick());
-        backMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_back);
-        forwardMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_forward);
-        seekMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_seek);
+        binding.menuHome.setOnClickListener(v -> goHome());
+        binding.menuSeek.setOnClickListener(v -> onSeekClick());
+        binding.menuBack.setOnClickListener(v -> onBackClick());
+        binding.menuForward.setOnClickListener(v -> onForwardClick());
 
         // Webview
         initWebview();
@@ -326,18 +322,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     @SuppressLint("NonConstantResourceId")
     private boolean onMenuItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.web_menu_home:
-                this.goHome();
-                break;
-            case R.id.web_menu_back:
-                this.onBackClick();
-                break;
-            case R.id.web_menu_forward:
-                this.onForwardClick();
-                break;
-            case R.id.web_menu_seek:
-                this.onSeekClick();
-                break;
             case R.id.web_menu_bookmark:
                 this.onBookmarkClick();
                 break;
@@ -676,8 +660,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * Refresh the visuals of the buttons of the navigation menu
      */
     private void refreshNavigationMenu(boolean isResultsPage) {
-        backMenu.setEnabled(webView.canGoBack());
-        forwardMenu.setEnabled(webView.canGoForward());
+        binding.menuBack.setEnabled(webView.canGoBack());
+        binding.menuForward.setEnabled(webView.canGoForward());
         changeSeekMode(isResultsPage ? BaseWebActivity.SeekMode.PAGE : BaseWebActivity.SeekMode.GALLERY, isResultsPage || backListContainsGallery(webView.copyBackForwardList()) > -1);
     }
 
@@ -890,8 +874,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         @DrawableRes int resId = R.drawable.selector_back_gallery;
         if (SeekMode.PAGE == mode) resId = R.drawable.selector_page_seek;
         seekButtonMode = mode;
-        seekMenu.setIcon(resId);
-        seekMenu.setEnabled(enabled);
+        binding.menuSeek.setImageDrawable(ContextCompat.getDrawable(this, resId));
+        binding.menuSeek.setEnabled(enabled);
     }
 
     /**
