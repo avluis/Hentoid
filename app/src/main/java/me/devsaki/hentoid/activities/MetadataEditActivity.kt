@@ -296,6 +296,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                         count: Int,
                         after: Int
                     ) {
+                        // Nothing to override here
                     }
 
                     override fun onTextChanged(
@@ -304,6 +305,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                         before: Int,
                         count: Int
                     ) {
+                        // Nothing to override here
                     }
                 }
             )
