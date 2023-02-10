@@ -12,12 +12,12 @@ import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsRefreshBinding
@@ -151,7 +151,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         if (location == StorageLocation.EXTERNAL) {
             val externalUri = Uri.parse(Preferences.getExternalLibraryUri())
 
-            runBlocking {
+            lifecycleScope.launch {
                 val res = withContext(Dispatchers.IO) {
                     try {
                         val res = setAndScanExternalFolder(requireContext(), externalUri)
@@ -161,22 +161,20 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         return@withContext ProcessFolderResult.KO_OTHER
                     }
                 }
-                coroutineScope {
-                    if (ProcessFolderResult.KO_INVALID_FOLDER == res
-                        || ProcessFolderResult.KO_CREATE_FAIL == res
-                        || ProcessFolderResult.KO_APP_FOLDER == res
-                        || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res
-                        || ProcessFolderResult.KO_ALREADY_RUNNING == res
-                        || ProcessFolderResult.KO_OTHER == res
-                    ) {
-                        Snackbar.make(
-                            binding1.root,
-                            getMessage(res),
-                            BaseTransientBottomBar.LENGTH_LONG
-                        ).show()
-                        delay(3000)
-                        dismissAllowingStateLoss()
-                    }
+                if (ProcessFolderResult.KO_INVALID_FOLDER == res
+                    || ProcessFolderResult.KO_CREATE_FAIL == res
+                    || ProcessFolderResult.KO_APP_FOLDER == res
+                    || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res
+                    || ProcessFolderResult.KO_ALREADY_RUNNING == res
+                    || ProcessFolderResult.KO_OTHER == res
+                ) {
+                    Snackbar.make(
+                        binding1.root,
+                        getMessage(res),
+                        BaseTransientBottomBar.LENGTH_LONG
+                    ).show()
+                    delay(3000)
+                    dismissAllowingStateLoss()
                 }
             }
         } else {
@@ -195,7 +193,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             }
             val rootUri = Uri.parse(uriStr)
 
-            runBlocking {
+            lifecycleScope.launch {
                 val res = withContext(Dispatchers.IO) {
                     try {
                         val res = setAndScanPrimaryFolder(
@@ -207,20 +205,20 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         return@withContext ProcessFolderResult.KO_OTHER
                     }
                 }
-                coroutineScope {
-                    if (ProcessFolderResult.KO_INVALID_FOLDER == res
-                        || ProcessFolderResult.KO_CREATE_FAIL == res
-                        || ProcessFolderResult.KO_APP_FOLDER == res
-                        || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res
-                        || ProcessFolderResult.KO_ALREADY_RUNNING == res
-                        || ProcessFolderResult.KO_OTHER == res
-                    ) {
-                        Snackbar.make(
-                            binding1.root, getMessage(res), BaseTransientBottomBar.LENGTH_LONG
-                        ).show()
-                        delay(3000)
-                        dismissAllowingStateLoss()
-                    }
+
+                if (ProcessFolderResult.KO_INVALID_FOLDER == res
+                    || ProcessFolderResult.KO_CREATE_FAIL == res
+                    || ProcessFolderResult.KO_APP_FOLDER == res
+                    || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res
+                    || ProcessFolderResult.KO_ALREADY_RUNNING == res
+                    || ProcessFolderResult.OK_EMPTY_FOLDER == res
+                    || ProcessFolderResult.KO_OTHER == res
+                ) {
+                    Snackbar.make(
+                        binding1.root, getMessage(res), BaseTransientBottomBar.LENGTH_LONG
+                    ).show()
+                    delay(3000)
+                    dismissAllowingStateLoss()
                 }
             }
         }
@@ -284,7 +282,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     private fun onFolderPickerResult(resultCode: Int, uri: Uri) {
         when (resultCode) {
             PickerResult.OK -> {
-                runBlocking {
+                lifecycleScope.launch {
                     val res = withContext(Dispatchers.IO) {
                         return@withContext if (location == StorageLocation.EXTERNAL) setAndScanExternalFolder(
                             requireContext(), uri
@@ -292,9 +290,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                             requireContext(), uri, location, true, null
                         )
                     }
-                    coroutineScope {
-                        onScanHentoidFolderResult(res.left, res.right)
-                    }
+                    onScanHentoidFolderResult(res.left, res.right)
                 }
             }
 
@@ -347,8 +343,9 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             ProcessFolderResult.KO_DOWNLOAD_FOLDER -> R.string.import_download_folder
             ProcessFolderResult.KO_CREATE_FAIL -> R.string.import_create_fail
             ProcessFolderResult.KO_ALREADY_RUNNING -> R.string.service_running
+            ProcessFolderResult.OK_EMPTY_FOLDER -> R.string.import_empty
             ProcessFolderResult.KO_OTHER -> R.string.import_other
-            ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK ->                 // Nothing should happen here
+            ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK ->                 // Nothing should happen here
                 R.string.none
 
             else -> R.string.none
@@ -357,25 +354,29 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     private fun onCancelExistingLibraryDialog() {
         // Revert back to initial state where only the "Select folder" button is visible
-        binding2.importStep1Check.visibility = View.INVISIBLE
-        binding2.importStep2.visibility = View.INVISIBLE
-        binding2.importStep1Folder.text = ""
-        binding2.importStep1Button.isVisible = true
+        binding2.apply {
+            importStep1Check.visibility = View.INVISIBLE
+            importStep2.visibility = View.INVISIBLE
+            importStep1Folder.text = ""
+            importStep1Button.isVisible = true
+        }
         isCancelable = true
     }
 
     private fun updateOnSelectFolder() {
-        binding2.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
-            requireContext(), Uri.parse(
-                Preferences.getStorageUri(location)
+        binding2.apply {
+            importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
+                requireContext(), Uri.parse(
+                    Preferences.getStorageUri(location)
+                )
             )
-        )
-        binding2.importStep1Folder.isVisible = true
-        binding2.importStep1Text.isVisible = true
-        binding2.importStep1Button.visibility = View.INVISIBLE
-        binding2.importStep1Check.isVisible = true
-        binding2.importStep2.isVisible = true
-        binding2.importStep2Bar.isIndeterminate = true
+            importStep1Folder.isVisible = true
+            importStep1Text.isVisible = true
+            importStep1Button.visibility = View.INVISIBLE
+            importStep1Check.isVisible = true
+            importStep2.isVisible = true
+            importStep2Bar.isIndeterminate = true
+        }
         isCancelable = false
     }
 
