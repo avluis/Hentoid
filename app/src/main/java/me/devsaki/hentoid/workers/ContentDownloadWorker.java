@@ -69,7 +69,6 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.download.ContentQueueManagerK;
 import me.devsaki.hentoid.util.download.DownloadHelper;
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter;
 import me.devsaki.hentoid.util.download.RequestOrder;
@@ -161,7 +160,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
     private void iterateQueue() {
         // Process these here to avoid initializing notifications for downloads that will never start
-        if (ContentQueueManagerK.INSTANCE.isQueuePaused()) {
+        if (ContentQueueManager.INSTANCE.isQueuePaused()) {
             Timber.i("Queue is paused. Download aborted.");
             return;
         }
@@ -196,7 +195,7 @@ public class ContentDownloadWorker extends BaseWorker {
         compositeDisposable.clear();
 
         // Check if queue has been paused
-        if (ContentQueueManagerK.INSTANCE.isQueuePaused()) {
+        if (ContentQueueManager.INSTANCE.isQueuePaused()) {
             Timber.i("Queue is paused. Download aborted.");
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
@@ -563,7 +562,7 @@ public class ContentDownloadWorker extends BaseWorker {
         // Compute total downloadable pages; online (stream) pages do not count
         int totalPages = (null == images) ? 0 : (int) Stream.of(images).filter(i -> !i.getStatus().equals(StatusContent.ONLINE)).count();
 
-        ContentQueueManagerK contentQueueManager = ContentQueueManagerK.INSTANCE;
+        ContentQueueManager contentQueueManager = ContentQueueManager.INSTANCE;
         do {
             Map<StatusContent, ImmutablePair<Integer, Long>> statuses = dao.countProcessedImagesById(content.getId());
             ImmutablePair<Integer, Long> status = statuses.get(StatusContent.DOWNLOADED);
@@ -656,7 +655,7 @@ public class ContentDownloadWorker extends BaseWorker {
      */
     private void completeDownload(final long contentId, @NonNull final String title,
                                   final int pagesOK, final int pagesKO, final long sizeDownloadedBytes) {
-        ContentQueueManagerK contentQueueManager = ContentQueueManagerK.INSTANCE;
+        ContentQueueManager contentQueueManager = ContentQueueManager.INSTANCE;
         // Get the latest value of Content
         Content content = dao.selectContent(contentId);
         if (null == content) {
@@ -1112,7 +1111,7 @@ public class ContentDownloadWorker extends BaseWorker {
             case DownloadEvent.Type.EV_PAUSE:
                 dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 requestQueueManager.cancelQueue();
-                ContentQueueManagerK.INSTANCE.pauseQueue();
+                ContentQueueManager.INSTANCE.pauseQueue();
                 notificationManager.cancel();
                 break;
             case DownloadEvent.Type.EV_CANCEL:

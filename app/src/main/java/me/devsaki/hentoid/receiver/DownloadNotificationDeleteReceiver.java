@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.download.ContentQueueManagerK;
 import timber.log.Timber;
 
 /**
@@ -15,7 +14,7 @@ public class DownloadNotificationDeleteReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        ContentQueueManagerK.INSTANCE.resetDownloadCount();
+        ContentQueueManager.INSTANCE.resetDownloadCount();
         Timber.d("Download count reset to 0");
     }
 }

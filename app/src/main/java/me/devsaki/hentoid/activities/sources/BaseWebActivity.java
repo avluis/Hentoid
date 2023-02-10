@@ -108,7 +108,6 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.download.ContentQueueManagerK;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.file.PermissionHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
@@ -1047,9 +1046,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 null,
                 position,
                 (isReplaceDuplicate) ? duplicateId : -1,
-                ContentQueueManagerK.INSTANCE.isQueueActive(this)
+                ContentQueueManager.INSTANCE.isQueueActive(this)
         );
-        if (Preferences.isQueueAutostart()) ContentQueueManagerK.INSTANCE.resumeQueue(this);
+        if (Preferences.isQueueAutostart()) ContentQueueManager.INSTANCE.resumeQueue(this);
         setActionMode(ActionMode.VIEW_QUEUE);
     }
 

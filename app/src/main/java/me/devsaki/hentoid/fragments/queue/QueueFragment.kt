@@ -54,7 +54,7 @@ import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.*
-import me.devsaki.hentoid.util.download.ContentQueueManagerK
+import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
@@ -635,7 +635,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         downloadedSizeB: Long,
         forceDisplay: Boolean
     ) {
-        if ((!ContentQueueManagerK.isQueuePaused() || forceDisplay) && itemAdapter.adapterItemCount > 0) {
+        if ((!ContentQueueManager.isQueuePaused() || forceDisplay) && itemAdapter.adapterItemCount > 0) {
             contentId = content.id
             // Pages download has started
             if (pagesKO + pagesOK > 1 || forceDisplay) {
@@ -694,8 +694,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         isEmpty = 0 == itemAdapter.adapterItemCount - bookDiff
         isPaused = !isEmpty && (
                 eventType == DownloadEvent.Type.EV_PAUSE
-                        || ContentQueueManagerK.isQueuePaused()
-                        || !ContentQueueManagerK.isQueueActive(requireActivity())
+                        || ContentQueueManager.isQueuePaused()
+                        || !ContentQueueManager.isQueueActive(requireActivity())
                 )
         updateControlBar()
     }
@@ -704,8 +704,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         Timber.d(">>Queue changed ! Size=%s", result.size)
         isEmpty = result.isEmpty()
         isPaused = !isEmpty && (
-                ContentQueueManagerK.isQueuePaused()
-                        || !ContentQueueManagerK.isQueueActive(requireActivity())
+                ContentQueueManager.isQueuePaused()
+                        || !ContentQueueManager.isQueueActive(requireActivity())
                 )
 
         // Don't process changes while everything is being canceled, it usually kills the UI as too many changes are processed at the same time

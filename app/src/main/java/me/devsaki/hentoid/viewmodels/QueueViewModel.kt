@@ -25,7 +25,7 @@ import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.download.ContentQueueManagerK
+import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.PurgeWorker
@@ -187,8 +187,8 @@ class QueueViewModel(
 
     fun unpauseQueue() {
         dao.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING)
-        ContentQueueManagerK.unpauseQueue()
-        ContentQueueManagerK.resumeQueue(getApplication())
+        ContentQueueManager.unpauseQueue()
+        ContentQueueManager.resumeQueue(getApplication())
     }
 
     fun invertQueue() {
@@ -299,7 +299,7 @@ class QueueViewModel(
                         okCount.incrementAndGet()
                         dao.addContentToQueue(
                             content, targetImageStatus, position, -1,
-                            ContentQueueManagerK.isQueueActive(getApplication())
+                            ContentQueueManager.isQueueActive(getApplication())
                         )
                     } else {
                         // As we're in the download queue, an item whose content is unreachable should directly get to the error queue
@@ -345,7 +345,7 @@ class QueueViewModel(
                     )
                 } // For each content
                 if (Preferences.isQueueAutostart())
-                    ContentQueueManagerK.resumeQueue(getApplication())
+                    ContentQueueManager.resumeQueue(getApplication())
                 EventBus.getDefault().post(
                     ProcessEvent(
                         ProcessEvent.EventType.COMPLETE,

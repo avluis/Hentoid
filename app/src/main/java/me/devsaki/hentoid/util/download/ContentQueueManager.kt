@@ -8,7 +8,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.workers.ContentDownloadWorker
 
-object ContentQueueManagerK {
+object ContentQueueManager {
     // True if queue paused; false if not
     private var isQueuePaused = false
 

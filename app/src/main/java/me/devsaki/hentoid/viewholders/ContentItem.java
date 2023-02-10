@@ -64,7 +64,6 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.download.ContentQueueManagerK;
 import me.devsaki.hentoid.views.CircularProgressView;
 
 public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable, ISwipeable {
@@ -223,8 +222,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     public void updateProgress(RecyclerView.ViewHolder vh, boolean isPausedEvent, boolean isIndividual) {
-        boolean isQueueReady = ContentQueueManagerK.INSTANCE.isQueueActive(vh.itemView.getContext())
-                && !ContentQueueManagerK.INSTANCE.isQueuePaused()
+        boolean isQueueReady = ContentQueueManager.INSTANCE.isQueueActive(vh.itemView.getContext())
+                && !ContentQueueManager.INSTANCE.isQueuePaused()
                 && !isPausedEvent;
 
         content.computeProgress();
