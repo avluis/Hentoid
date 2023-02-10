@@ -266,6 +266,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         binding.menuSeek.setOnClickListener(v -> onSeekClick());
         binding.menuBack.setOnClickListener(v -> onBackClick());
         binding.menuForward.setOnClickListener(v -> onForwardClick());
+        binding.actionButton.setOnClickListener(v -> onActionClick());
 
         // Webview
         initWebview();
