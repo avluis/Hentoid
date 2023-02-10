@@ -44,7 +44,8 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment.Parent {
+class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment.Parent,
+    LibRefreshDialogFragment.Parent {
 
     // == Communication
     private lateinit var viewModel: PreferencesViewModel
@@ -308,12 +309,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     if (PrimaryImportWorker.isRunning(baseContext)) {
                         ToastHelper.toast(R.string.pref_import_running)
                     } else {
-                        LibRefreshDialogFragment.invoke(
-                            supportFragmentManager,
-                            showOptions = false,
-                            chooseFolder = true,
-                            location
-                        )
+                        importLocation(location)
                     }
                 }
 
@@ -452,16 +448,20 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             .show()
     }
 
-    override fun onStrategySelected() {
-        refreshDisplay()
-    }
-
     private fun onMenuItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_help -> startBrowserActivity(Consts.URL_GITHUB_WIKI_STORAGE)
             else -> return false
         }
         return true
+    }
+
+    override fun onStrategySelected() {
+        refreshDisplay()
+    }
+
+    override fun onFolderSuccess() {
+        refreshDisplay()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

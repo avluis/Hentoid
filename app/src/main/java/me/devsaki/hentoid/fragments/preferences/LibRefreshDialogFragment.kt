@@ -60,10 +60,12 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     private var _binding2: IncludeImportStepsBinding? = null
     private val binding2 get() = _binding2!!
 
+    // === VARIABLES
     private var showOptions = false
     private var chooseFolder = false
     private var location = StorageLocation.NONE
 
+    private var parent: Parent? = null
     private var isServiceGracefulClose = false
 
     private val pickFolder =
@@ -71,6 +73,11 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             onFolderPickerResult(result.left, result.right)
         }
 
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        parent = activity as Parent
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
@@ -89,6 +96,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     override fun onDestroyView() {
         EventBus.getDefault().unregister(this)
+        parent = null
         _binding1 = null
         _binding2 = null
         super.onDestroyView()
@@ -117,7 +125,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     warningImg.visibility = visibility
                 }
 
-                actionButton.setOnClickListener { _ ->
+                actionButton.setOnClickListener {
                     onImportClick(
                         location,
                         refreshOptionsRename.isChecked,
@@ -219,6 +227,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         binding1.root, getMessage(res), BaseTransientBottomBar.LENGTH_LONG
                     ).show()
                     delay(3000)
+                    if (ProcessFolderResult.OK_EMPTY_FOLDER == res) parent?.onFolderSuccess()
                     dismissAllowingStateLoss()
                 }
             }
@@ -312,7 +321,11 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     private fun onScanHentoidFolderResult(@ProcessFolderResult resultCode: Int, rootUri: String) {
         when (resultCode) {
-            ProcessFolderResult.OK_EMPTY_FOLDER -> dismissAllowingStateLoss()
+            ProcessFolderResult.OK_EMPTY_FOLDER -> {
+                parent?.onFolderSuccess()
+                dismissAllowingStateLoss()
+            }
+
             ProcessFolderResult.OK_LIBRARY_DETECTED ->                 // Hentoid folder is finally selected at this point -> Update UI
                 updateOnSelectFolder()
 
@@ -512,5 +525,9 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
             fragment.show(fragmentManager, null)
         }
+    }
+
+    interface Parent {
+        fun onFolderSuccess()
     }
 }
