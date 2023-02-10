@@ -5,7 +5,7 @@ import org.isomorphism.util.TokenBuckets
 import java.util.concurrent.TimeUnit
 
 object DownloadRateLimiter {
-    var bucket: TokenBucket? = null
+    private var bucket: TokenBucket? = null
 
     fun setRateLimit(perSecond: Long) {
         bucket = if (perSecond <= 0) null
