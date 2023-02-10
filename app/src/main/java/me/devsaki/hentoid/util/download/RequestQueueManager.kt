@@ -5,15 +5,15 @@ import android.content.Context
 import android.net.Uri
 import com.annimon.stream.function.BiConsumer
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import io.reactivex.Completable
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton
-import org.threeten.bp.Instant
 import timber.log.Timber
-import java.util.*
+import java.util.LinkedList
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -34,20 +34,11 @@ class RequestQueueManager private constructor(
     // Actual number of allowed parallel download threads
     private var downloadThreadCount = 0
 
-    // Maximum number of allowed requests per second (-1 = not capped)
-    private var nbRequestsPerSecond = -1
-
-    // Used when waiting between requests
-    private val waitDisposable = CompositeDisposable()
-
     // Requests waiting to be executed
     private val waitingRequestQueue = LinkedList<RequestOrder>()
 
     // Requests being currently executed
     private val currentRequests: MutableSet<RequestOrder> = HashSet()
-
-    // Measurement of the number of requests per second
-    private val previousRequestsTimestamps: Queue<Long> = LinkedList()
 
 
     init {
@@ -113,7 +104,6 @@ class RequestQueueManager private constructor(
         mRequestQueue?.stop()
         synchronized(waitingRequestQueue) { waitingRequestQueue.clear() }
         synchronized(currentRequests) { currentRequests.clear() }
-        waitDisposable.clear()
         Timber.d("RequestQueue ::: canceled")
     }
 
@@ -123,48 +113,30 @@ class RequestQueueManager private constructor(
      * @param order Request to add to the queue
      */
     fun queueRequest(order: RequestOrder) {
-        val now = Instant.now().toEpochMilli()
-        if (getAllowedNewRequests(now) > 0) executeRequest(order, now) else {
-            synchronized(waitingRequestQueue) {
-                waitingRequestQueue.add(order)
-                Timber.d(
-                    "Waiting requests queue ::: added new request - current total %d",
-                    waitingRequestQueue.size
-                )
+        CoroutineScope(Dispatchers.Default).launch {
+            withContext(Dispatchers.Default) {
+                if (isNewRequestAllowed()) executeRequest(order) else {
+                    synchronized(waitingRequestQueue) {
+                        waitingRequestQueue.add(order)
+                        Timber.d(
+                            "Waiting requests queue ::: added new request - current total %d",
+                            waitingRequestQueue.size
+                        )
+                    }
+                }
             }
         }
     }
 
     /**
-     * Get the number of new requests that can be executed at the given timestamp
-     * This method is where the number of parallel downloads and the download rate limitations
-     * are actually used
-     *
-     * @param now Timestamp to consider
-     * @return Number of new requests that can be executed at the given timestamp
+     * Indicates whether a new request can be executed or not
+     * NB : This call might _block_ the calling thread according to the current download rate limit
      */
-    private fun getAllowedNewRequests(now: Long): Int {
+    private fun isNewRequestAllowed(): Boolean {
         val remainingSlots = downloadThreadCount - nbActiveRequests
-        if (0 == remainingSlots) return 0
-        return if (nbRequestsPerSecond > -1) {
-            synchronized(previousRequestsTimestamps) {
-                var polled: Boolean
-                do {
-                    polled = false
-                    val earliestRequestTimestamp = previousRequestsTimestamps.peek() ?: break
-                    // Empty collection
-                    if (now - earliestRequestTimestamp > 1000) {
-                        previousRequestsTimestamps.poll()
-                        polled = true
-                    }
-                } while (polled)
-                val nbRequestsLastSecond = previousRequestsTimestamps.size
-                return min(
-                    remainingSlots,
-                    nbRequestsPerSecond - nbRequestsLastSecond
-                )
-            }
-        } else remainingSlots
+        if (0 == remainingSlots) return false
+        DownloadRateLimiter.take()
+        return true
     }
 
     /**
@@ -172,17 +144,15 @@ class RequestQueueManager private constructor(
      */
     private fun refill() {
         if (nbActiveRequests < downloadThreadCount) {
-            waitDisposable.add(Completable.fromRunnable { doRefill() }
-                .subscribeOn(Schedulers.computation())
-                .observeOn(Schedulers.computation())
-                .subscribe(
-                    Helper.EMPTY_ACTION
-                ) { t: Throwable? ->
-                    Timber.e(
-                        t
-                    )
+            CoroutineScope(Dispatchers.Default).launch {
+                withContext(Dispatchers.IO) {
+                    try {
+                        doRefill()
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
                 }
-            )
+            }
         }
     }
 
@@ -191,19 +161,16 @@ class RequestQueueManager private constructor(
      */
     @Synchronized
     private fun doRefill() {
-        var now = Instant.now().toEpochMilli()
-        var allowedNewRequests = getAllowedNewRequests(now)
-        while (0 == allowedNewRequests && 0 == nbActiveRequests) { // Dry queue
+        var newRequestAllowed = isNewRequestAllowed()
+        while (!newRequestAllowed && 0 == nbActiveRequests) { // Dry queue
             Helper.pause(250)
-            now = Instant.now().toEpochMilli()
-            allowedNewRequests = getAllowedNewRequests(now)
+            newRequestAllowed = isNewRequestAllowed()
         }
-        if (allowedNewRequests > 0) {
+        if (newRequestAllowed) {
             synchronized(waitingRequestQueue) {
-                for (i in 0 until allowedNewRequests) {
-                    if (waitingRequestQueue.isEmpty()) break
+                if (!waitingRequestQueue.isEmpty()) {
                     val o = waitingRequestQueue.removeFirst()
-                    o?.let { executeRequest(it, now) }
+                    o?.let { executeRequest(it) }
                 }
             }
         }
@@ -214,14 +181,10 @@ class RequestQueueManager private constructor(
      * NB : if we're here, that means all quota checks have already passed
      *
      * @param order Request order to execute
-     * @param now   Timestamp to record the execution for
      */
-    private fun executeRequest(order: RequestOrder, now: Long = Instant.now().toEpochMilli()) {
+    private fun executeRequest(order: RequestOrder) {
         synchronized(currentRequests) { currentRequests.add(order) }
         mRequestQueue?.executeRequest(order)
-        if (nbRequestsPerSecond > -1) {
-            synchronized(previousRequestsTimestamps) { previousRequestsTimestamps.add(now) }
-        }
         synchronized(waitingRequestQueue) {
             Timber.d(
                 "Requests queue ::: request executed for host %s - current total (%d active + %d waiting)",
@@ -247,11 +210,7 @@ class RequestQueueManager private constructor(
             )
         }
 
-        if (!waitingRequestQueue.isEmpty()) {
-            refill()
-        } else { // No more requests to add
-            waitDisposable.clear()
-        }
+        if (!waitingRequestQueue.isEmpty()) refill()
     }
 
     private fun onRequestSuccess(request: RequestOrder, resultFileUri: Uri) {
@@ -269,7 +228,7 @@ class RequestQueueManager private constructor(
     }
 
     fun setNbRequestsPerSecond(value: Int) {
-        nbRequestsPerSecond = value
+        DownloadRateLimiter.setRateLimit(value.toLong())
     }
 
     private val nbActiveRequests: Int
