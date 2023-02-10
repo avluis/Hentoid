@@ -165,6 +165,7 @@ dependencies {
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
     implementation 'com.github.penfeizhou.android.animation:apng:2.24.0'
+    implementation 'com.github.penfeizhou.android.animation:gif:2.24.0'
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     implementation 'io.github.waynejo:androidndkgif:1.0.1'
