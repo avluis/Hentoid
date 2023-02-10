@@ -1530,6 +1530,13 @@ public class ObjectBoxDB {
         return qb.build();
     }
 
+    List<Group> selectEditedGroups(int grouping) {
+        QueryCondition<Group> qcFavs = Group_.favourite.equal(true);
+        QueryCondition<Group> qcRating = Group_.rating.greater(0);
+        QueryCondition<Group> qc = Group_.grouping.equal(grouping).and(qcFavs.or(qcRating));
+        return store.boxFor(Group.class).query(qc).build().find();
+    }
+
     @Nullable
     Group selectGroup(long groupId) {
         return store.boxFor(Group.class).get(groupId);

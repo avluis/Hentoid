@@ -41,6 +41,7 @@ import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.databinding.DialogToolsMetaImportBinding;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.JsonContentCollection;
@@ -180,7 +181,7 @@ public class MetaImportDialogFragment extends DialogFragment {
                 binding.importFileQueueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
                 binding.importFileQueueChk.setVisibility(View.VISIBLE);
             }
-            int mGroupsSize = collection.getCustomGroups().size();
+            int mGroupsSize = collection.getGroups(Grouping.CUSTOM).size();
             if (mGroupsSize > 0) {
                 binding.importFileGroupsChk.setText(getResources().getQuantityString(R.plurals.import_file_groups, mGroupsSize, mGroupsSize));
                 binding.importFileGroupsChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());

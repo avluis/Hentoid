@@ -602,29 +602,51 @@ public class PrimaryImportWorker extends BaseWorker {
     }
 
     private void importGroups(@NonNull final Context context, @NonNull DocumentFile groupsFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
-        trace(Log.INFO, STEP_GROUPS, log, "Custom groups JSON found");
+        trace(Log.INFO, STEP_GROUPS, log, "Groups JSON found");
         eventProgress(STEP_GROUPS, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseCollectionJson(context, groupsFile);
         if (null != contentCollection) {
-            List<Group> groups = contentCollection.getCustomGroups();
-            eventProgress(STEP_GROUPS, groups.size(), 0, 0);
-            trace(Log.INFO, STEP_GROUPS, log, "Custom groups JSON deserialized : %s custom groups detected", groups.size() + "");
-            int count = 1;
-            for (Group g : groups) {
-                // Only add if it isn't a duplicate
-                Group duplicate = dao.selectGroupByName(Grouping.CUSTOM.getId(), g.name);
-                if (null == duplicate)
-                    dao.insertGroup(g);
-                else { // If it is, unflag existing group
-                    duplicate.setFlaggedForDeletion(false);
-                    dao.insertGroup(duplicate);
-                }
-                eventProgress(STEP_GROUPS, groups.size(), count++, 0);
-            }
-            trace(Log.INFO, STEP_GROUPS, log, "Import custom groups succeeded");
+            trace(Log.INFO, STEP_GROUPS, log, "Groups JSON deserialized");
+            importCustomGroups(contentCollection, dao, log);
+            importEditedGroups(contentCollection, Grouping.ARTIST, dao, log);
+            importEditedGroups(contentCollection, Grouping.DL_DATE, dao, log);
         } else {
-            trace(Log.INFO, STEP_GROUPS, log, "Import custom groups failed : Custom groups JSON unreadable");
+            trace(Log.INFO, STEP_GROUPS, log, "Import groups failed : Groups JSON unreadable");
         }
+    }
+
+    private void importCustomGroups(JsonContentCollection contentCollection, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+        List<Group> groups = contentCollection.getGroups(Grouping.CUSTOM);
+        eventProgress(STEP_GROUPS, groups.size(), 0, 0);
+        trace(Log.INFO, STEP_GROUPS, log, "%s custom groups detected", groups.size() + "");
+        int count = 1;
+        for (Group g : groups) {
+            // Only add if it isn't a duplicate
+            Group duplicate = dao.selectGroupByName(Grouping.CUSTOM.getId(), g.name);
+            if (null == duplicate) dao.insertGroup(g);
+            else { // If it is, unflag existing group
+                duplicate.setFlaggedForDeletion(false);
+                dao.insertGroup(duplicate);
+            }
+            eventProgress(STEP_GROUPS, groups.size(), count++, 0);
+        }
+        trace(Log.INFO, STEP_GROUPS, log, "Import custom groups succeeded");
+    }
+
+    private void importEditedGroups(JsonContentCollection contentCollection, Grouping grouping, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+        List<Group> editedArtistGroups = contentCollection.getGroups(grouping);
+        trace(Log.INFO, STEP_GROUPS, log, "%d edited %s groups detected", editedArtistGroups.size(), grouping.getName());
+        for (Group g : editedArtistGroups) {
+            // Only add if it isn't a duplicate
+            Group duplicate = dao.selectGroupByName(grouping.getId(), g.name);
+            if (null == duplicate) dao.insertGroup(g);
+            else { // If it is, copy attributes
+                duplicate.setFavourite(g.isFavourite());
+                duplicate.setRating(g.getRating());
+                dao.insertGroup(duplicate);
+            }
+        }
+        trace(Log.INFO, STEP_GROUPS, log, "Import edited %s groups succeeded", grouping.getName());
     }
 
     private void importBookmarks(@NonNull final Context context, @NonNull DocumentFile bookmarksFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {

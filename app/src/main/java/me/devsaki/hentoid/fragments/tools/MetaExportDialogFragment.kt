@@ -289,8 +289,10 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
             exportedQueue.addAll(errorsQueue)
             jsonContentCollection.queue = exportedQueue
         }
-        if (exportCustomgroups) jsonContentCollection.customGroups =
+        if (exportCustomgroups) jsonContentCollection.setGroups(
+            Grouping.CUSTOM,
             dao.selectGroups(Grouping.CUSTOM.id)
+        )
         if (exportBookmarks) jsonContentCollection.bookmarks = dao.selectAllBookmarks()
         jsonContentCollection.renamingRules =
             dao.selectRenamingRules(AttributeType.UNDEFINED, null)

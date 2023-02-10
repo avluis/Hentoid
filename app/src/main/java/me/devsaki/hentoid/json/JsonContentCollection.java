@@ -52,17 +52,22 @@ public class JsonContentCollection {
         return queue;
     }
 
-    public void  setQueue(@NonNull List<Content> queue) {
+    public void setQueue(@NonNull List<Content> queue) {
         this.queue = Stream.of(queue).map(c -> JsonContent.fromEntity(c, false)).toList();
     }
 
-    public List<Group> getCustomGroups() {
-        return Stream.of(groupings).flatMap(gr -> Stream.of(gr.getGroups())).map(g -> g.toEntity(Grouping.CUSTOM)).toList();
+    public List<Group> getGroups(Grouping grouping) {
+        return Stream.of(groupings)
+                .filter(gr -> gr.getGroupingId() == grouping.getId())
+                .flatMap(gr -> Stream.of(gr.getGroups()))
+                .map(g -> g.toEntity(grouping))
+                .toList();
     }
 
-    public void setCustomGroups(@NonNull List<Group> customGroups) {
-        this.groupings = new ArrayList<>();
-        this.groupings.add(JsonCustomGrouping.fromEntity(Grouping.CUSTOM, customGroups)); // Just one for now
+    public void setGroups(Grouping grouping, @NonNull List<Group> groups) {
+        // Clear previous entries of the same grouping
+        this.groupings = Stream.of(groupings).filterNot(jcg -> jcg.getGroupingId() == grouping.getId()).toList();
+        this.groupings.add(JsonCustomGrouping.fromEntity(grouping, groups));
     }
 
     public List<SiteBookmark> getBookmarks() {

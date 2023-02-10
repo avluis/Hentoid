@@ -123,9 +123,11 @@ public interface CollectionDAO {
 
     LiveData<List<Group>> selectGroupsLive(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly, int filterRating);
 
+    List<Group> selectGroups(int grouping);
+
     List<Group> selectGroups(int grouping, int subType);
 
-    List<Group> selectGroups(int grouping);
+    List<Group> selectEditedGroups(int grouping);
 
     @Nullable
     Group selectGroup(long groupId);

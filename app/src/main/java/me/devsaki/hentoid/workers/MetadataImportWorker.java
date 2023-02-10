@@ -167,7 +167,7 @@ public class MetadataImportWorker extends BaseWorker {
         totalItems += contentToImport.size();
 
         if (importCustomGroups) {
-            List<Group> customGroups = collection.getCustomGroups();
+            List<Group> customGroups = collection.getGroups(Grouping.CUSTOM);
             totalItems += customGroups.size();
             // Chain group import followed by content import
             runImportItems(

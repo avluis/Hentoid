@@ -440,6 +440,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public List<Group> selectEditedGroups(int grouping) {
+        return db.selectEditedGroups(grouping);
+    }
+
+    @Override
     public LiveData<List<Group>> selectGroupsLive(
             int grouping,
             @Nullable String query,
