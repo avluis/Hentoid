@@ -8,7 +8,6 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton
@@ -38,7 +37,7 @@ class RequestQueueManager private constructor(
     private val waitingRequestQueue = LinkedList<RequestOrder>()
 
     // Requests being currently executed
-    private val currentRequests: MutableSet<RequestOrder> = HashSet()
+    private val activeRequests: MutableSet<RequestOrder> = HashSet()
 
 
     init {
@@ -90,9 +89,11 @@ class RequestQueueManager private constructor(
     fun resetRequestQueue(resetOkHttp: Boolean) {
         init(true, cancelQueue = false, resetOkHttp = resetOkHttp)
         // Requeue interrupted requests
-        synchronized(currentRequests) {
-            Timber.d("resetRequestQueue :: Requeuing %d requests", currentRequests.size)
-            for (order in currentRequests) executeRequest(order)
+        synchronized(activeRequests) {
+            Timber.d("resetRequestQueue :: Requeuing %d requests", activeRequests.size)
+            CoroutineScope(Dispatchers.Default).launch {
+                for (order in activeRequests) executeRequest(order)
+            }
         }
         refill()
     }
@@ -103,7 +104,7 @@ class RequestQueueManager private constructor(
     fun cancelQueue() {
         mRequestQueue?.stop()
         synchronized(waitingRequestQueue) { waitingRequestQueue.clear() }
-        synchronized(currentRequests) { currentRequests.clear() }
+        synchronized(activeRequests) { activeRequests.clear() }
         Timber.d("RequestQueue ::: canceled")
     }
 
@@ -114,15 +115,13 @@ class RequestQueueManager private constructor(
      */
     fun queueRequest(order: RequestOrder) {
         CoroutineScope(Dispatchers.Default).launch {
-            withContext(Dispatchers.Default) {
-                if (isNewRequestAllowed()) executeRequest(order) else {
-                    synchronized(waitingRequestQueue) {
-                        waitingRequestQueue.add(order)
-                        Timber.d(
-                            "Waiting requests queue ::: added new request - current total %d",
-                            waitingRequestQueue.size
-                        )
-                    }
+            if (isNewRequestAllowed()) executeRequest(order) else {
+                synchronized(waitingRequestQueue) {
+                    waitingRequestQueue.add(order)
+                    Timber.d(
+                        "Waiting requests queue ::: added new request - current total %d",
+                        waitingRequestQueue.size
+                    )
                 }
             }
         }
@@ -145,12 +144,10 @@ class RequestQueueManager private constructor(
     private fun refill() {
         if (nbActiveRequests < downloadThreadCount) {
             CoroutineScope(Dispatchers.Default).launch {
-                withContext(Dispatchers.IO) {
-                    try {
-                        doRefill()
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
+                try {
+                    doRefill()
+                } catch (e: Exception) {
+                    Timber.e(e)
                 }
             }
         }
@@ -159,20 +156,21 @@ class RequestQueueManager private constructor(
     /**
      * Refill the queue with the allowed number of requests
      */
-    @Synchronized
-    private fun doRefill() {
+    private suspend fun doRefill() {
         var newRequestAllowed = isNewRequestAllowed()
         while (!newRequestAllowed && 0 == nbActiveRequests) { // Dry queue
             Helper.pause(250)
             newRequestAllowed = isNewRequestAllowed()
         }
         if (newRequestAllowed) {
+            val o: RequestOrder?
             synchronized(waitingRequestQueue) {
-                if (!waitingRequestQueue.isEmpty()) {
-                    val o = waitingRequestQueue.removeFirst()
-                    o?.let { executeRequest(it) }
-                }
+                o = if (!waitingRequestQueue.isEmpty())
+                    waitingRequestQueue.removeFirst()
+                else
+                    null
             }
+            o?.let { executeRequest(it) }
         }
     }
 
@@ -182,8 +180,8 @@ class RequestQueueManager private constructor(
      *
      * @param order Request order to execute
      */
-    private fun executeRequest(order: RequestOrder) {
-        synchronized(currentRequests) { currentRequests.add(order) }
+    private suspend fun executeRequest(order: RequestOrder) {
+        synchronized(activeRequests) { activeRequests.add(order) }
         mRequestQueue?.executeRequest(order)
         synchronized(waitingRequestQueue) {
             Timber.d(
@@ -201,8 +199,8 @@ class RequestQueueManager private constructor(
      * @param request Completed request
      */
     private fun onRequestCompleted(request: RequestOrder) {
-        synchronized(currentRequests) {
-            currentRequests.remove(request)
+        synchronized(activeRequests) {
+            activeRequests.remove(request)
             Timber.v(
                 "Global requests queue ::: request removed for host %s - current total %s",
                 Uri.parse(request.url).host,
@@ -233,7 +231,7 @@ class RequestQueueManager private constructor(
 
     private val nbActiveRequests: Int
         get() {
-            synchronized(currentRequests) { return currentRequests.size }
+            synchronized(activeRequests) { return activeRequests.size }
         }
 
     /**
