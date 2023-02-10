@@ -1128,6 +1128,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 downloadInterrupted.set(true);
                 // Tracking Event (Download Skipped)
                 HentoidApp.trackDownloadEvent("Skipped");
+                break;
             case DownloadEvent.Type.EV_COMPLETE:
             case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
             case DownloadEvent.Type.EV_PREPARATION:
