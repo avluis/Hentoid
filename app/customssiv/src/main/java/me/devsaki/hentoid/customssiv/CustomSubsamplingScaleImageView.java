@@ -453,8 +453,8 @@ public class CustomSubsamplingScaleImageView extends View {
         }
 
         quickScaleThreshold = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, context.getResources().getDisplayMetrics());
-        scaleDebouncer = new Debouncer<>(context, 200, scale -> {
-            if (scaleListener != null) scaleListener.accept(scale);
+        scaleDebouncer = new Debouncer<>(context, 200, scaleOut -> {
+            if (scaleListener != null) scaleListener.accept(scaleOut);
         });
     }
 
@@ -2162,8 +2162,6 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     private static class SingleImage {
-        //        private int sampleSize;
-//        private Bitmap bitmap;
         private float scale = 1;
         private int rawWidth = -1;
         private int rawHeight = -1;
