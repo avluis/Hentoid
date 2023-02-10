@@ -32,6 +32,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.download.ContentQueueManagerK;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.network.CloudflareHelper;
 import me.devsaki.hentoid.util.notification.Notification;
@@ -133,7 +134,7 @@ public class DownloadsImportWorker extends BaseWorker {
         }
 
         if (Preferences.isQueueAutostart())
-            ContentQueueManager.getInstance().resumeQueue(getApplicationContext());
+            ContentQueueManagerK.INSTANCE.resumeQueue(getApplicationContext());
 
         notifyProcessEnd();
     }
@@ -168,7 +169,7 @@ public class DownloadsImportWorker extends BaseWorker {
                         null,
                         queuePosition,
                         -1,
-                        ContentQueueManager.getInstance().isQueueActive(getApplicationContext())
+                        ContentQueueManagerK.INSTANCE.isQueueActive(getApplicationContext())
                 );
                 nextOK(getApplicationContext());
             }

@@ -73,6 +73,7 @@ import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.download.ContentQueueManagerK;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
@@ -671,7 +672,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 if (reparseImages) purgeItem(content, false);
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position, -1,
-                                        ContentQueueManager.getInstance().isQueueActive(getApplication()));
+                                        ContentQueueManagerK.INSTANCE.isQueueActive(getApplication()));
                             } else {
                                 errorCount.incrementAndGet();
                                 onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
@@ -680,7 +681,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
-                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                                ContentQueueManagerK.INSTANCE.resumeQueue(getApplication());
                             onSuccess.accept(contentList.size() - errorCount.get());
                         })
                         .subscribe(
@@ -728,7 +729,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 c.get().setDownloadMode(Content.DownloadMode.DOWNLOAD);
                                 dao.addContentToQueue(
                                         c.get(), StatusContent.SAVED, position, -1,
-                                        ContentQueueManager.getInstance().isQueueActive(getApplication()));
+                                        ContentQueueManagerK.INSTANCE.isQueueActive(getApplication()));
                             } else {
                                 nbErrors.incrementAndGet();
                                 onError.accept(new EmptyResultException(getApplication().getString(R.string.download_canceled)));
@@ -737,7 +738,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
-                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                                ContentQueueManagerK.INSTANCE.resumeQueue(getApplication());
                             onSuccess.accept(contentList.size() - nbErrors.get());
                         })
                         .observeOn(AndroidSchedulers.mainThread())

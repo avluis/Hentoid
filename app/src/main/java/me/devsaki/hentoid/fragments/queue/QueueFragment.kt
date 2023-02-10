@@ -54,7 +54,7 @@ import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.*
-import me.devsaki.hentoid.util.download.ContentQueueManager
+import me.devsaki.hentoid.util.download.ContentQueueManagerK
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
@@ -468,6 +468,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 event.log,
                 event.content
             )
+
             DownloadEvent.Type.EV_PROGRESS -> updateProgress(
                 event.content,
                 event.pagesOK,
@@ -477,21 +478,25 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 event.downloadedSizeB,
                 false
             )
+
             DownloadEvent.Type.EV_UNPAUSE -> {
                 viewModel.unpauseQueue()
                 updateProgress(false)
                 update(event.eventType)
             }
+
             DownloadEvent.Type.EV_SKIP -> {
                 // Books switch / display handled directly by the adapter
                 bottomBarBinding.queueInfo.text = ""
                 bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.GONE
             }
+
             DownloadEvent.Type.EV_COMPLETE -> {
                 bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.GONE
                 if (0 == itemAdapter.adapterItemCount) errorStatsMenu?.isVisible = false
                 update(event.eventType)
             }
+
             DownloadEvent.Type.EV_PAUSE, DownloadEvent.Type.EV_CANCEL, DownloadEvent.Type.EV_INTERRUPT_CONTENT -> {
                 // Don't update the UI if it is in the process of canceling all items
                 if (isCancelingAll) return
@@ -500,6 +505,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 else updateProgress(event.content, true)
                 update(event.eventType)
             }
+
             else -> {
                 if (isCancelingAll) return
                 bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.GONE
@@ -527,19 +533,24 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 ).setAnchorView(bottomBarBinding.backgroundBottomBar).show()
                 return
             }
+
             DownloadEvent.Motive.NO_DOWNLOAD_FOLDER -> motiveMsg = R.string.paused_no_dl_folder
             DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND -> motiveMsg =
                 R.string.paused_dl_folder_not_found
+
             DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS -> {
                 motiveMsg = R.string.paused_dl_folder_credentials
                 PermissionHelper.requestExternalStorageReadWritePermission(
                     getActivity(), PermissionHelper.RQST_STORAGE_PERMISSION
                 )
             }
+
             DownloadEvent.Motive.STALE_CREDENTIALS -> motiveMsg =
                 R.string.paused_dl_stale_online_credentials
+
             DownloadEvent.Motive.NO_AVAILABLE_DOWNLOADS -> motiveMsg =
                 R.string.paused_dl_no_available_downloads
+
             DownloadEvent.Motive.NONE -> motiveMsg = -1
             else -> motiveMsg = -1
         }
@@ -624,7 +635,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         downloadedSizeB: Long,
         forceDisplay: Boolean
     ) {
-        if ((!ContentQueueManager.getInstance().isQueuePaused || forceDisplay) && itemAdapter.adapterItemCount > 0) {
+        if ((!ContentQueueManagerK.isQueuePaused() || forceDisplay) && itemAdapter.adapterItemCount > 0) {
             contentId = content.id
             // Pages download has started
             if (pagesKO + pagesOK > 1 || forceDisplay) {
@@ -683,8 +694,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         isEmpty = 0 == itemAdapter.adapterItemCount - bookDiff
         isPaused = !isEmpty && (
                 eventType == DownloadEvent.Type.EV_PAUSE
-                        || ContentQueueManager.getInstance().isQueuePaused
-                        || !ContentQueueManager.getInstance().isQueueActive(requireActivity())
+                        || ContentQueueManagerK.isQueuePaused()
+                        || !ContentQueueManagerK.isQueueActive(requireActivity())
                 )
         updateControlBar()
     }
@@ -693,8 +704,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         Timber.d(">>Queue changed ! Size=%s", result.size)
         isEmpty = result.isEmpty()
         isPaused = !isEmpty && (
-                ContentQueueManager.getInstance().isQueuePaused
-                        || !ContentQueueManager.getInstance().isQueueActive(requireActivity())
+                ContentQueueManagerK.isQueuePaused()
+                        || !ContentQueueManagerK.isQueueActive(requireActivity())
                 )
 
         // Don't process changes while everything is being canceled, it usually kills the UI as too many changes are processed at the same time
@@ -999,6 +1010,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 val selectedContent = selectedItems.mapNotNull { obj: ContentItem -> obj.content }
                 if (selectedContent.isNotEmpty()) askDeleteSelected(selectedContent)
             }
+
             R.id.action_select_queue_top -> {
                 selectedPositions = selectedItems.map { i -> fastAdapter.getPosition(i) }.sorted()
                 selectExtension.apply {
@@ -1010,6 +1022,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     viewModel.moveTop(relativePositions)
                 }
             }
+
             R.id.action_select_queue_bottom -> {
                 selectedPositions = selectedItems.map { i -> fastAdapter.getPosition(i) }.sorted()
                 selectExtension.apply {
@@ -1020,10 +1033,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                         viewModel.moveBottom(relativePositions)
                     }
             }
+
             R.id.action_download_scratch -> {
                 askRedownloadSelectedScratch()
                 keepToolbar = true
             }
+
             R.id.action_change_mode -> {
                 val menu = build(requireContext(), requireActivity())
                 show(menu,
@@ -1035,6 +1050,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     { leaveSelectionMode() }
                 )
             }
+
             R.id.action_freeze -> {
                 val selectedIds = selectedItems.mapNotNull { i -> i.queueRecord?.id }
                 selectExtension.apply {
@@ -1042,6 +1058,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 }
                 if (selectedIds.isNotEmpty()) viewModel.toogleFreeze(selectedIds)
             }
+
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
@@ -1051,6 +1068,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 }
                 keepToolbar = true
             }
+
             else -> {}
         }
         if (!keepToolbar) updateSelectionToolbarVis(false)

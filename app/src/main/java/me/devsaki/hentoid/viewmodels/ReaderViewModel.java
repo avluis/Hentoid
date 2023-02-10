@@ -69,6 +69,7 @@ import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.download.ContentQueueManagerK;
 import me.devsaki.hentoid.util.download.DownloadHelper;
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
@@ -1429,12 +1430,12 @@ public class ReaderViewModel extends AndroidViewModel {
                             if (c.right.isEmpty()) throw new EmptyResultException();
                             dao.addContentToQueue(
                                     c.right.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP, -1,
-                                    ContentQueueManager.getInstance().isQueueActive(getApplication()));
+                                    ContentQueueManagerK.INSTANCE.isQueueActive(getApplication()));
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
-                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                                ContentQueueManagerK.INSTANCE.resumeQueue(getApplication());
                         })
                         .subscribe(
                                 v -> { // Nothing; feedback is done through LiveData
