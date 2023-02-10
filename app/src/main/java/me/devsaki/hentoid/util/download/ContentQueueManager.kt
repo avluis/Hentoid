@@ -10,10 +10,12 @@ import me.devsaki.hentoid.workers.ContentDownloadWorker
 
 object ContentQueueManager {
     // True if queue paused; false if not
-    private var isQueuePaused = false
+    var isQueuePaused = false
+        private set
 
     // Used to store the number of downloads completed during current session
-    private var downloadCount = 0
+    var downloadCount = 0
+        private set
 
 
     fun pauseQueue() {
@@ -22,10 +24,6 @@ object ContentQueueManager {
 
     fun unpauseQueue() {
         isQueuePaused = false
-    }
-
-    fun isQueuePaused(): Boolean {
-        return isQueuePaused
     }
 
     fun isQueueActive(context: Context): Boolean {
@@ -45,10 +43,6 @@ object ContentQueueManager {
     }
 
     // DOWNLOAD COUNTER MANAGEMENT
-    fun getDownloadCount(): Int {
-        return downloadCount
-    }
-
     fun resetDownloadCount() {
         downloadCount = 0
     }

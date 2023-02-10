@@ -635,7 +635,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         downloadedSizeB: Long,
         forceDisplay: Boolean
     ) {
-        if ((!ContentQueueManager.isQueuePaused() || forceDisplay) && itemAdapter.adapterItemCount > 0) {
+        if ((!ContentQueueManager.isQueuePaused || forceDisplay) && itemAdapter.adapterItemCount > 0) {
             contentId = content.id
             // Pages download has started
             if (pagesKO + pagesOK > 1 || forceDisplay) {
@@ -694,7 +694,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         isEmpty = 0 == itemAdapter.adapterItemCount - bookDiff
         isPaused = !isEmpty && (
                 eventType == DownloadEvent.Type.EV_PAUSE
-                        || ContentQueueManager.isQueuePaused()
+                        || ContentQueueManager.isQueuePaused
                         || !ContentQueueManager.isQueueActive(requireActivity())
                 )
         updateControlBar()
@@ -704,7 +704,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         Timber.d(">>Queue changed ! Size=%s", result.size)
         isEmpty = result.isEmpty()
         isPaused = !isEmpty && (
-                ContentQueueManager.isQueuePaused()
+                ContentQueueManager.isQueuePaused
                         || !ContentQueueManager.isQueueActive(requireActivity())
                 )
 
