@@ -97,34 +97,34 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
         if (showOptions) { // Show option screen first
-            binding1.let {
-                it.refreshOptions.setOnCheckedChangeListener { _, isChecked ->
+            binding1.apply {
+                refreshOptions.setOnCheckedChangeListener { _, isChecked ->
                     if (isChecked) {
-                        it.refreshOptionsSubgroup.visibility = View.VISIBLE
+                        refreshOptionsSubgroup.visibility = View.VISIBLE
                         val warningVisibility =
-                            if (it.refreshOptionsRenumberPages.isChecked) View.VISIBLE else View.GONE
-                        it.refreshRenumberWarningTxt.visibility = warningVisibility
-                        it.warningImg.visibility = warningVisibility
+                            if (refreshOptionsRenumberPages.isChecked) View.VISIBLE else View.GONE
+                        refreshRenumberWarningTxt.visibility = warningVisibility
+                        warningImg.visibility = warningVisibility
                     } else {
-                        it.refreshOptionsSubgroup.visibility = View.GONE
-                        it.refreshRenumberWarningTxt.visibility = View.GONE
-                        it.warningImg.visibility = View.GONE
+                        refreshOptionsSubgroup.visibility = View.GONE
+                        refreshRenumberWarningTxt.visibility = View.GONE
+                        warningImg.visibility = View.GONE
                     }
                 }
-                it.refreshOptionsRenumberPages.setOnCheckedChangeListener { _, isChecked ->
+                refreshOptionsRenumberPages.setOnCheckedChangeListener { _, isChecked ->
                     val visibility = if (isChecked) View.VISIBLE else View.GONE
-                    it.refreshRenumberWarningTxt.visibility = visibility
-                    it.warningImg.visibility = visibility
+                    refreshRenumberWarningTxt.visibility = visibility
+                    warningImg.visibility = visibility
                 }
 
-                it.actionButton.setOnClickListener { _ ->
+                actionButton.setOnClickListener { _ ->
                     onImportClick(
                         location,
-                        it.refreshOptionsRename.isChecked,
-                        it.refreshOptionsRemovePlaceholders.isChecked,
-                        it.refreshOptionsRenumberPages.isChecked,
-                        it.refreshOptionsRemove1.isChecked,
-                        it.refreshOptionsRemove2.isChecked
+                        refreshOptionsRename.isChecked,
+                        refreshOptionsRemovePlaceholders.isChecked,
+                        refreshOptionsRenumberPages.isChecked,
+                        refreshOptionsRemove1.isChecked,
+                        refreshOptionsRemove2.isChecked
                     )
                 }
             }
@@ -211,6 +211,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     || ProcessFolderResult.KO_APP_FOLDER == res
                     || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res
                     || ProcessFolderResult.KO_ALREADY_RUNNING == res
+                    || ProcessFolderResult.KO_OTHER_PRIMARY == res
                     || ProcessFolderResult.OK_EMPTY_FOLDER == res
                     || ProcessFolderResult.KO_OTHER == res
                 ) {
@@ -324,7 +325,13 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 ) { onCancelExistingLibraryDialog() }
             }
 
-            ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER -> {
+            ProcessFolderResult.KO_INVALID_FOLDER,
+            ProcessFolderResult.KO_APP_FOLDER,
+            ProcessFolderResult.KO_DOWNLOAD_FOLDER,
+            ProcessFolderResult.KO_CREATE_FAIL,
+            ProcessFolderResult.KO_ALREADY_RUNNING,
+            ProcessFolderResult.KO_OTHER_PRIMARY,
+            ProcessFolderResult.KO_OTHER -> {
                 Snackbar.make(
                     binding2.root, getMessage(resultCode), BaseTransientBottomBar.LENGTH_LONG
                 ).show()
@@ -343,9 +350,11 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             ProcessFolderResult.KO_DOWNLOAD_FOLDER -> R.string.import_download_folder
             ProcessFolderResult.KO_CREATE_FAIL -> R.string.import_create_fail
             ProcessFolderResult.KO_ALREADY_RUNNING -> R.string.service_running
+            ProcessFolderResult.KO_OTHER_PRIMARY -> R.string.import_other_primary
             ProcessFolderResult.OK_EMPTY_FOLDER -> R.string.import_empty
             ProcessFolderResult.KO_OTHER -> R.string.import_other
-            ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK ->                 // Nothing should happen here
+            ProcessFolderResult.OK_LIBRARY_DETECTED,
+            ProcessFolderResult.OK_LIBRARY_DETECTED_ASK ->                 // Nothing should happen here
                 R.string.none
 
             else -> R.string.none

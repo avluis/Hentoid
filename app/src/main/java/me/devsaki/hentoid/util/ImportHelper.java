@@ -83,17 +83,18 @@ public class ImportHelper {
         int KO_OTHER = 3; // Any other issue
     }
 
-    @IntDef({ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER})
+    @IntDef({ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER_PRIMARY, ProcessFolderResult.KO_OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ProcessFolderResult {
         int OK_EMPTY_FOLDER = 1; // OK - Existing, empty Hentoid folder
         int OK_LIBRARY_DETECTED = 2; // OK - En existing Hentoid folder with books
         int OK_LIBRARY_DETECTED_ASK = 3; // OK - Existing Hentoid folder with books + we need to ask the user if he wants to import them
         int KO_INVALID_FOLDER = 5; // File or folder is invalid, cannot be found
-        int KO_APP_FOLDER = 6; // Selected folder is the app folder and can't be used as an external folder
+        int KO_APP_FOLDER = 6; // Selected folder is the primary location and can't be used as an external location
         int KO_DOWNLOAD_FOLDER = 7; // Selected folder is the device's download folder and can't be used as a primary folder (downloads visibility + storage calculation issues)
         int KO_CREATE_FAIL = 8; // Hentoid folder could not be created
         int KO_ALREADY_RUNNING = 9; // Import is already running
+        int KO_OTHER_PRIMARY = 10; // Selected folder is the other primary location
         int KO_OTHER = 99; // Any other issue
     }
 
@@ -258,6 +259,16 @@ public class ImportHelper {
         if (null == hentoidFolder) {
             Timber.e("Could not create Hentoid folder in folder %s", docFile.getUri().toString());
             return new ImmutablePair<>(ProcessFolderResult.KO_CREATE_FAIL, treeUri.toString());
+        }
+
+        // Check if the folder is not Hentoid's other primary location
+        String otherLocationUriStr;
+        if (location == StorageLocation.PRIMARY_1)
+            otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
+        else otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
+        if (hentoidFolder.getUri().toString().equalsIgnoreCase(otherLocationUriStr)) {
+            Timber.e("Selected folder is the other primary location : %s", treeUri.toString());
+            return new ImmutablePair<>(ProcessFolderResult.KO_OTHER_PRIMARY, treeUri.toString());
         }
 
         // Set the folder as the app's downloads folder
