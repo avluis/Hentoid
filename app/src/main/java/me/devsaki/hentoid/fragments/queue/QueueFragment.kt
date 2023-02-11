@@ -715,8 +715,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         binding.queueEmptyTxt.visibility = if (isEmpty) View.VISIBLE else View.GONE
 
         // Update displayed books
-        val contentItems = result.map { c ->
-            ContentItem(c, query.isNotEmpty(), touchHelper) { item: ContentItem ->
+        val contentItems = result.mapIndexed { i, c ->
+            ContentItem(c, query.isNotEmpty(), touchHelper, 0 ==i) { item: ContentItem ->
                 onCancelSwipedBook(item)
             }
         }.distinct()
