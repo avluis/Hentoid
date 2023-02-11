@@ -14,7 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.annimon.stream.Stream
-import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.DiffCallback
@@ -154,7 +154,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
                 fastAdapter: FastAdapter<DuplicateItem>,
                 item: DuplicateItem
             ) {
-                onBookChoice(item.content, (v as SwitchMaterial).isChecked)
+                onBookChoice(item.content, (v as MaterialSwitch).isChecked)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {

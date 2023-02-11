@@ -32,7 +32,7 @@ import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
@@ -177,7 +177,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         private TextView totalScore;
         private TextView keepButton;
         private TextView deleteButton;
-        private SwitchMaterial keepDeleteSwitch;
+        private MaterialSwitch keepDeleteSwitch;
 
 
         ContentViewHolder(View view, @ViewType int viewType) {
@@ -414,7 +414,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             return viewDetails;
         }
 
-        public SwitchMaterial getKeepDeleteSwitch() {
+        public MaterialSwitch getKeepDeleteSwitch() {
             return keepDeleteSwitch;
         }
 
