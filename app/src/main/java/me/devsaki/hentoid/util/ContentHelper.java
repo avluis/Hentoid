@@ -1360,9 +1360,10 @@ public final class ContentHelper {
         DocumentFile bookFolder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
             List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, displayName -> !keepCover || !displayName.startsWith(Consts.THUMB_FILE_NAME));
-            if (!files.isEmpty()) for (DocumentFile file : files)
-                if (removeJson || !HttpHelper.getExtensionFromUri(file.getUri().toString()).toLowerCase().endsWith("json"))
-                    file.delete();
+            if (!files.isEmpty())
+                for (DocumentFile file : files)
+                    if (removeJson || !HttpHelper.getExtensionFromUri(file.getUri().toString()).toLowerCase().endsWith("json"))
+                        file.delete();
         }
     }
 
