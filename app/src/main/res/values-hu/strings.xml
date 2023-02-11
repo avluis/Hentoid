@@ -44,7 +44,6 @@
     <string name="create_generic">Létrehozás</string>
     <string name="edit_generic">Módosítás</string>
     <string name="remove_generic">Törlés</string>
-<string name="title_activity_api29_migration">API 29 migráció</string>
     <string name="title_activity_downloads">Könyvtár</string>
     <string name="title_activity_queue">Várólista</string>
     <string name="title_activity_preferences">Beállítások</string>
@@ -53,9 +52,6 @@
     <string name="title_activity_search">Haladó keresés</string>
     <string name="title_activity_meta_edit">Metaadat módosítása</string>
     <string name="title_activity_rules">Átnevezési szabályok</string>
-<string name="api29_migration_title">Hentoid v12\nFájlkezelő frissítés</string>
-    <string name="api29_migration_subtitle">Hentoid elkezdte frissíteni az Ön gyűjteményét!\Ez pár percet igénybe vehet.</string>
-    <string name="api29_migration_location">A jelenlegi Hentoid mappa helye\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
     <string name="refresh_step1">Hentoid mappa</string>
     <string name="refresh_step1_external">Külső mappa</string>
     <string name="refresh_step1_select">Hentoid mappa kiválasztása</string>

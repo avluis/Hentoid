@@ -52,7 +52,6 @@
     <string name="disabled_generic">Отключено</string>
 
     <!-- Activities -->
-    <string name="title_activity_api29_migration">Переход на API 29</string>
     <string name="title_activity_downloads">Библиотека</string>
     <string name="title_activity_queue">Очередь</string>
     <string name="title_activity_preferences">Настройки</string>
@@ -61,9 +60,6 @@
     <string name="title_activity_search">Расширенный поиск</string>
 
     <!-- API29 migration / library refresh screen -->
-    <string name="api29_migration_title">Hentoid v12\nОбновление управления файлами</string>
-    <string name="api29_migration_subtitle">Hentoid обновляет вашу коллекцию.\nЭто может занять несколько минут.</string>
-    <string name="api29_migration_location">Расположение папки Hentoid\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
     <string name="refresh_step1">Папка Hentoid</string>
     <string name="refresh_step1_external">Внешняя папка</string>
     <string name="refresh_step1_select">Выбрать папку Hentoid</string>

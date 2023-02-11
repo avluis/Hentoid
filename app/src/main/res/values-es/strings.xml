@@ -44,7 +44,6 @@
     <string name="create_generic">Crear</string>
     <string name="edit_generic">Editar</string>
     <string name="remove_generic">Eliminar</string>
-<string name="title_activity_api29_migration">Migración de API 29</string>
     <string name="title_activity_downloads">Biblioteca</string>
     <string name="title_activity_queue">Cola de descargas</string>
     <string name="title_activity_preferences">Ajustes</string>
@@ -53,9 +52,6 @@
     <string name="title_activity_search">Búsqueda Avanzada</string>
     <string name="title_activity_meta_edit">Editar metadatos</string>
     <string name="title_activity_rules">Reglas al renombrar</string>
-<string name="api29_migration_title">Hentoid v12 Actualización del manejo de archivos</string>
-    <string name="api29_migration_subtitle">Hentoid esta actualizando tu colección. Esto puede tomar algunos minutos.</string>
-    <string name="api29_migration_location">Ubicación actual de la carpeta de Hentoid<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
     <string name="refresh_step1">Carpeta de Hentoid</string>
     <string name="refresh_step1_external">Carpeta externa</string>
     <string name="refresh_step1_select">Selecciona la carpeta de Hentoid</string>

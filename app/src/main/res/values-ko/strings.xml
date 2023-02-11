@@ -44,7 +44,6 @@
     <string name="create_generic">생성</string>
     <string name="edit_generic">수정</string>
     <string name="remove_generic">제거</string>
-<string name="title_activity_api29_migration">API 29 이동</string>
     <string name="title_activity_downloads">라이브러리</string>
     <string name="title_activity_queue">대기열</string>
     <string name="title_activity_preferences">설정</string>
@@ -53,9 +52,6 @@
     <string name="title_activity_search">고급 검색</string>
     <string name="title_activity_meta_edit">메타데이터 수정</string>
     <string name="title_activity_rules">자동 변경 규칙</string>
-<string name="api29_migration_title">Hentoid v12\n파일 관리 업데이트</string>
-    <string name="api29_migration_subtitle">Hentoid가 컬렉션을 업데이트하는 중입니다.\n몇 분이 소요될 수 있습니다.</string>
-    <string name="api29_migration_location">현재 Hentoid 폴더 위치\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
     <string name="refresh_step1">Hentoid 폴더</string>
     <string name="refresh_step1_external">외부 폴더</string>
     <string name="refresh_step1_select">Hentoid 폴더 선택</string>

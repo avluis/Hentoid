@@ -44,7 +44,6 @@
     <string name="create_generic">作成</string>
     <string name="edit_generic">編集</string>
     <string name="remove_generic">削除する</string>
-<string name="title_activity_api29_migration">API29の移行</string>
     <string name="title_activity_downloads">ライブラリー</string>
     <string name="title_activity_queue">キュー</string>
     <string name="title_activity_preferences">環境設定</string>
@@ -53,9 +52,6 @@
     <string name="title_activity_search">高度な検索</string>
     <string name="title_activity_meta_edit">メタデータの編集</string>
     <string name="title_activity_rules">名前の変更規則</string>
-<string name="api29_migration_title">Hentoid v12\nファイル管理の更新</string>
-    <string name="api29_migration_subtitle">Hentoidがコレクションを更新しています。\n数分かかる場合があります。</string>
-    <string name="api29_migration_location">現在のHentoidフォルダの場所\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
     <string name="refresh_step1">Hentoidのフォルダー</string>
     <string name="refresh_step1_external">外部フォルダー</string>
     <string name="refresh_step1_select">Hentoidのフォルダを選択</string>
