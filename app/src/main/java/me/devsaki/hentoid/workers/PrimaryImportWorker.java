@@ -137,7 +137,7 @@ public class PrimaryImportWorker extends BaseWorker {
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary, step, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, Object... t) {
@@ -561,7 +561,7 @@ public class PrimaryImportWorker extends BaseWorker {
                 EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary_pages, STEP_3_PAGES, "Page " + naturalOrder, naturalOrder, 0, orderedImages.size()));
         }
         if (nbRenumbered > 0) {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary_pages, STEP_3_PAGES, orderedImages.size(), 0, orderedImages.size()));
+            EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary_pages, STEP_3_PAGES, orderedImages.size(), 0, orderedImages.size()));
             trace(Log.INFO, STEP_3_PAGES, log, "Renumbered %d pages", nbRenumbered);
             content.setImageFiles(contentImages);
             ContentHelper.persistJson(context, content);

@@ -1822,7 +1822,7 @@ public final class ContentHelper {
                 GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
         }
 
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
     }
 
     public static StorageLocation getLocation(Content content) {

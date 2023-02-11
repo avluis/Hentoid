@@ -1815,7 +1815,7 @@ public class ReaderViewModel extends AndroidViewModel {
         Content finalContent = dao.selectContent(contentId);
         if (finalContent != null) ContentHelper.persistJson(getApplication(), finalContent);
 
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
 
         // Reset locations cache as image order has changed
         imageLocationCache.clear();

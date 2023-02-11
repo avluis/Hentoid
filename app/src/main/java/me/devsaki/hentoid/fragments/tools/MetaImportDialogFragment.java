@@ -275,9 +275,18 @@ public class MetaImportDialogFragment extends DialogFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEvent(ProcessEvent event) {
-        if (event.processId != R.id.import_metadata)
-            return;
+        if (event.processId != R.id.import_metadata) return;
+        importEvent(event);
+    }
 
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onImportStickyEvent(ProcessEvent event) {
+        if (event.processId != R.id.import_metadata) return;
+        EventBus.getDefault().removeStickyEvent(event);
+        importEvent(event);
+    }
+
+    private void importEvent(ProcessEvent event) {
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             int progress = event.elementsOK + event.elementsKO;
             String itemTxt = getResources().getQuantityString(R.plurals.item, progress);

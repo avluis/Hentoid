@@ -338,6 +338,20 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             return;
         if (event.processId == R.id.viewer_page_download && event.step != imageIndex) return;
 
+        processEvent(event);
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onProcessStickyEvent(ProcessEvent event) {
+        if (null == binding) return;
+        if (event.processId != R.id.viewer_load && event.processId != R.id.viewer_page_download)
+            return;
+        if (event.processId == R.id.viewer_page_download && event.step != imageIndex) return;
+        EventBus.getDefault().removeStickyEvent(event);
+        processEvent(event);
+    }
+
+    private void processEvent(ProcessEvent event) {
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             @StringRes int msgResource = R.string.loading_image;
             if (event.processId == R.id.viewer_load) { // Archive unpacking

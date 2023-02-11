@@ -464,7 +464,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
         refreshDisplay()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onImportEventComplete(event: ProcessEvent) {
         if (ProcessEvent.EventType.COMPLETE == event.eventType
             && event.logFile != null

@@ -12,8 +12,8 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -230,51 +230,63 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMigrationEvent(event: ProcessEvent) {
-        val progressBar: ProgressBar = when (event.step) {
-            PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> mergedBinding.importStep2Bar
-            PrimaryImportWorker.STEP_3_BOOKS -> mergedBinding.importStep3Bar
-            else -> mergedBinding.importStep4Bar
-        }
+    fun onProcessEvent(event: ProcessEvent) {
+        processEvent(event)
+    }
 
-        if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            if (event.elementsTotal > -1) {
-                progressBar.isIndeterminate = false
-                progressBar.max = event.elementsTotal
-                progressBar.progress = event.elementsOK + event.elementsKO
-            } else progressBar.isIndeterminate = true
-            if (PrimaryImportWorker.STEP_3_BOOKS == event.step) {
-                mergedBinding.importStep2Check.visibility = View.VISIBLE
-                mergedBinding.importStep3.visibility = View.VISIBLE
-                mergedBinding.importStep3Text.text = resources.getString(
-                    R.string.refresh_step3,
-                    event.elementsKO + event.elementsOK,
-                    event.elementsTotal
-                )
-            } else if (PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step) {
-                mergedBinding.importStep3Check.visibility = View.VISIBLE
-                mergedBinding.importStep4.visibility = View.VISIBLE
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onStickyProcessEvent(event: ProcessEvent) {
+        processEvent(event)
+        EventBus.getDefault().removeStickyEvent(event)
+    }
+
+    private fun processEvent(event: ProcessEvent) {
+        mergedBinding.apply {
+            val progressBar: ProgressBar = when (event.step) {
+                PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> importStep2Bar
+                PrimaryImportWorker.STEP_3_BOOKS -> importStep3Bar
+                else -> importStep4Bar
             }
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            when {
-                PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step -> {
-                    mergedBinding.importStep2Check.visibility = View.VISIBLE
-                    mergedBinding.importStep3.visibility = View.VISIBLE
-                }
 
-                PrimaryImportWorker.STEP_3_BOOKS == event.step -> {
-                    mergedBinding.importStep3Text.text = resources.getString(
+            if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+                if (event.elementsTotal > -1) {
+                    progressBar.isIndeterminate = false
+                    progressBar.max = event.elementsTotal
+                    progressBar.progress = event.elementsOK + event.elementsKO
+                } else progressBar.isIndeterminate = true
+                if (PrimaryImportWorker.STEP_3_BOOKS == event.step) {
+                    importStep2Check.visibility = View.VISIBLE
+                    importStep3.visibility = View.VISIBLE
+                    importStep3Text.text = resources.getString(
                         R.string.refresh_step3,
-                        event.elementsTotal,
+                        event.elementsKO + event.elementsOK,
                         event.elementsTotal
                     )
-                    mergedBinding.importStep3Check.visibility = View.VISIBLE
-                    mergedBinding.importStep4.visibility = View.VISIBLE
+                } else if (PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step) {
+                    importStep3Check.visibility = View.VISIBLE
+                    importStep4.visibility = View.VISIBLE
                 }
+            } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+                when {
+                    PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step -> {
+                        importStep2Check.visibility = View.VISIBLE
+                        importStep3.visibility = View.VISIBLE
+                    }
 
-                PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step -> {
-                    mergedBinding.importStep4Check.visibility = View.VISIBLE
-                    nextStep()
+                    PrimaryImportWorker.STEP_3_BOOKS == event.step -> {
+                        importStep3Text.text = resources.getString(
+                            R.string.refresh_step3,
+                            event.elementsTotal,
+                            event.elementsTotal
+                        )
+                        importStep3Check.visibility = View.VISIBLE
+                        importStep4.visibility = View.VISIBLE
+                    }
+
+                    PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step -> {
+                        importStep4Check.visibility = View.VISIBLE
+                        nextStep()
+                    }
                 }
             }
         }

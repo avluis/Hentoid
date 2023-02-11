@@ -249,6 +249,25 @@ class DownloadsImportDialogFragment : DialogFragment() {
         }
     }
 
+    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+    fun onImportStickyEvent(event: ProcessEvent) {
+        if (event.processId != R.id.import_downloads || isServiceGracefulClose) return
+        if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            EventBus.getDefault().removeStickyEvent(event)
+            isServiceGracefulClose = true
+            binding.importProgressBar.progress = event.elementsTotal
+            binding.importProgressText.text =
+                resources.getQuantityString(
+                    R.plurals.import_result,
+                    event.elementsOK,
+                    event.elementsOK,
+                    event.elementsTotal
+                )
+            // Dismiss after 3s, for the user to be able to see the ending message
+            Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 2500)
+        }
+    }
+
     /**
      * Service destroyed event handler
      *

@@ -716,7 +716,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
         // Update displayed books
         val contentItems = result.mapIndexed { i, c ->
-            ContentItem(c, query.isNotEmpty(), touchHelper, 0 ==i) { item: ContentItem ->
+            ContentItem(c, query.isNotEmpty(), touchHelper, 0 == i) { item: ContentItem ->
                 onCancelSwipedBook(item)
             }
         }.distinct()
@@ -904,11 +904,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         viewModel.cancelAll()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onProcessEvent(event: ProcessEvent) {
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onProcessStickyEvent(event: ProcessEvent) {
         // Filter on cancel complete event
         if (R.id.generic_progress != event.processId) return
         if (event.eventType == ProcessEvent.EventType.COMPLETE) onCancelComplete()
+        EventBus.getDefault().removeStickyEvent(event)
     }
 
     private fun onCancelComplete() {

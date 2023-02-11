@@ -346,7 +346,7 @@ class QueueViewModel(
                 } // For each content
                 if (Preferences.isQueueAutostart())
                     ContentQueueManager.resumeQueue(getApplication())
-                EventBus.getDefault().post(
+                EventBus.getDefault().postSticky(
                     ProcessEvent(
                         ProcessEvent.EventType.COMPLETE,
                         R.id.generic_progress,

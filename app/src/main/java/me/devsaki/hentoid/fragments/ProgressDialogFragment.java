@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.PluralsRes;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -30,13 +29,9 @@ public class ProgressDialogFragment extends DialogFragment {
     private DialogProgressBinding binding = null;
 
     private String dialogTitle;
-    private @PluralsRes
-    int progressUnit;
+    private @PluralsRes int progressUnit;
 
-    public static DialogFragment invoke(
-            @NonNull final FragmentManager fragmentManager,
-            @NonNull final String title,
-            @PluralsRes final int progressUnit) {
+    public static DialogFragment invoke(@NonNull final FragmentManager fragmentManager, @NonNull final String title, @PluralsRes final int progressUnit) {
         ProgressDialogFragment fragment = new ProgressDialogFragment();
 
         Bundle args = new Bundle();
@@ -88,14 +83,20 @@ public class ProgressDialogFragment extends DialogFragment {
         binding.bar.setMax(event.elementsTotal);
         binding.bar.setIndeterminate(false);
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            binding.progress.setText(getString(
-                    R.string.generic_progress,
-                    event.elementsOK + event.elementsKO, event.elementsTotal,
-                    getResources().getQuantityString(progressUnit, event.elementsOK + event.elementsKO)
-            ));
+            binding.progress.setText(getString(R.string.generic_progress, event.elementsOK + event.elementsKO, event.elementsTotal, getResources().getQuantityString(progressUnit, event.elementsOK + event.elementsKO)));
             binding.bar.setProgress(event.elementsOK + event.elementsKO);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             dismiss();
         }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onProcessStickyEvent(ProcessEvent event) {
+        if (event.processId != R.id.generic_progress) return;
+
+        binding.bar.setMax(event.elementsTotal);
+        binding.bar.setIndeterminate(false);
+        EventBus.getDefault().removeStickyEvent(event);
+        if (ProcessEvent.EventType.COMPLETE == event.eventType) dismiss();
     }
 }

@@ -1301,7 +1301,7 @@ public class LibraryViewModel extends AndroidViewModel {
                 GroupHelper.moveContentToCustomGroup(splitContent, customGroups.get(0).getGroup(), dao);
         }
 
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
     }
 
     private Content createContentFromChapter(@NonNull Content content, @NonNull Chapter chapter) {

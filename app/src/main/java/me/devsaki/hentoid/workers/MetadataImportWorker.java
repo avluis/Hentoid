@@ -383,6 +383,6 @@ public class MetadataImportWorker extends BaseWorker {
 
     private void finish() {
         notificationManager.notify(new ImportCompleteNotification(nbOK, nbKO));
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_metadata, 0, nbOK, nbKO, totalItems));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_metadata, 0, nbOK, nbKO, totalItems));
     }
 }

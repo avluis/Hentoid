@@ -1006,6 +1006,19 @@ public class LibraryActivity extends BaseActivity {
         // Filter on delete complete event
         if (R.id.delete_service_delete != event.processId) return;
         if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
+        processEvent(event);
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onProcessStickyEvent(ProcessEvent event) {
+        // Filter on delete complete event
+        if (R.id.delete_service_delete != event.processId) return;
+        if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
+        EventBus.getDefault().removeStickyEvent(event);
+        processEvent(event);
+    }
+
+    private void processEvent(ProcessEvent event) {
         String msg = "";
         int nbGroups = event.elementsOKOther;
         int nbContent = event.elementsOK;

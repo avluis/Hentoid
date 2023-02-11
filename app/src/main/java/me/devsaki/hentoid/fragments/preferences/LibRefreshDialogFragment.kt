@@ -409,12 +409,26 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             && event.processId != R.id.import_primary_pages
         ) return
 
-        binding2.let {
+        importEvent(event)
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onImportStickyEvent(event: ProcessEvent) {
+        if (event.processId != R.id.import_external
+            && event.processId != R.id.import_primary
+            && event.processId != R.id.import_primary_pages
+        ) return
+        EventBus.getDefault().removeStickyEvent(event)
+        importEvent(event)
+    }
+
+    private fun importEvent(event: ProcessEvent) {
+        binding2.apply {
             val progressBar: ProgressBar = when (event.step) {
-                PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> it.importStep2Bar
-                PrimaryImportWorker.STEP_3_BOOKS -> it.importStep3Bar
-                PrimaryImportWorker.STEP_3_PAGES -> it.importStep3SubBar
-                else -> it.importStep4Bar
+                PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> importStep2Bar
+                PrimaryImportWorker.STEP_3_BOOKS -> importStep3Bar
+                PrimaryImportWorker.STEP_3_PAGES -> importStep3SubBar
+                else -> importStep4Bar
             }
             if (ProcessEvent.EventType.PROGRESS == event.eventType) {
                 if (event.elementsTotal > -1) {
@@ -426,17 +440,17 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 }
                 when (event.step) {
                     PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> {
-                        it.importStep2Text.text = event.elementName
+                        importStep2Text.text = event.elementName
                     }
 
                     PrimaryImportWorker.STEP_3_BOOKS -> {
-                        it.importStep2Bar.isIndeterminate = false
-                        it.importStep2Bar.max = 1
-                        it.importStep2Bar.progress = 1
-                        it.importStep2Text.visibility = View.GONE
-                        it.importStep2Check.visibility = View.VISIBLE
-                        it.importStep3.visibility = View.VISIBLE
-                        it.importStep3Text.text = resources.getString(
+                        importStep2Bar.isIndeterminate = false
+                        importStep2Bar.max = 1
+                        importStep2Bar.progress = 1
+                        importStep2Text.visibility = View.GONE
+                        importStep2Check.visibility = View.VISIBLE
+                        importStep3.visibility = View.VISIBLE
+                        importStep3Text.text = resources.getString(
                             R.string.refresh_step3,
                             event.elementsKO + event.elementsOK,
                             event.elementsTotal
@@ -448,29 +462,29 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     }
 
                     PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
-                        it.importStep3Check.visibility = View.VISIBLE
-                        it.importStep4.visibility = View.VISIBLE
+                        importStep3Check.visibility = View.VISIBLE
+                        importStep4.visibility = View.VISIBLE
                     }
                 }
             } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
                 when (event.step) {
                     PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> {
-                        it.importStep2Bar.isIndeterminate = false
-                        it.importStep2Bar.max = 1
-                        it.importStep2Bar.progress = 1
-                        it.importStep2Text.visibility = View.GONE
-                        it.importStep2Check.visibility = View.VISIBLE
-                        it.importStep3.visibility = View.VISIBLE
+                        importStep2Bar.isIndeterminate = false
+                        importStep2Bar.max = 1
+                        importStep2Bar.progress = 1
+                        importStep2Text.visibility = View.GONE
+                        importStep2Check.visibility = View.VISIBLE
+                        importStep3.visibility = View.VISIBLE
                     }
 
                     PrimaryImportWorker.STEP_3_BOOKS -> {
-                        it.importStep3Text.text = resources.getString(
+                        importStep3Text.text = resources.getString(
                             R.string.refresh_step3,
                             event.elementsTotal,
                             event.elementsTotal
                         )
-                        it.importStep3Check.visibility = View.VISIBLE
-                        it.importStep4.visibility = View.VISIBLE
+                        importStep3Check.visibility = View.VISIBLE
+                        importStep4.visibility = View.VISIBLE
                     }
 
                     PrimaryImportWorker.STEP_3_PAGES -> {
@@ -478,7 +492,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     }
 
                     PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
-                        it.importStep4Check.visibility = View.VISIBLE
+                        importStep4Check.visibility = View.VISIBLE
                         isServiceGracefulClose = true
                         dismissAllowingStateLoss()
                     }

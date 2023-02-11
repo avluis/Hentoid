@@ -331,11 +331,13 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                     askDeleteSelected(selectedContent)
                 }
             }
+
             R.id.action_download -> redownloadSelected()
             R.id.action_download_scratch -> {
                 askRedownloadSelectedScratch()
                 keepToolbar = true
             }
+
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
@@ -345,6 +347,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                 }
                 keepToolbar = true
             }
+
             else -> {
                 activity.get()?.getSelectionToolbar()?.visibility = View.GONE
                 return false
@@ -525,11 +528,12 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         viewModel.removeAll()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onProcessEvent(event: ProcessEvent) {
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onProcessStickyEvent(event: ProcessEvent) {
         // Filter on cancel complete event
         if (R.id.generic_progress != event.processId) return
         if (event.eventType == ProcessEvent.EventType.COMPLETE) onDeleteComplete()
+        EventBus.getDefault().removeStickyEvent(event)
     }
 
     private fun onDeleteComplete() {

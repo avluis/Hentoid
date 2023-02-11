@@ -444,8 +444,8 @@ public class LibraryGroupsFragment extends Fragment implements
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onProcessEvent(ProcessEvent event) {
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onProcessStickyEvent(ProcessEvent event) {
         // Filter on delete complete event
         if (R.id.delete_service_delete != event.processId) return;
         if (ProcessEvent.EventType.COMPLETE != event.eventType) return;

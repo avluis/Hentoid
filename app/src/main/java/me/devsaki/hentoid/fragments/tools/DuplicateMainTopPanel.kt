@@ -23,6 +23,9 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 
 class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecycleObserver {
@@ -221,6 +224,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
             .cancelUniqueWork(R.id.duplicate_detector_service.toString())
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
         if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
 
@@ -244,6 +248,22 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
         progressBar.progress = event.elementsOK + event.elementsKO
         progressBarTxt.text = String.format("%d / %d", progressBar.progress, progressBar.max)
         progressBarTxt.visibility = View.VISIBLE
+
+        if (ProcessEvent.EventType.COMPLETE == event.eventType && DuplicateDetectorWorker.STEP_DUPLICATES == event.step) {
+            disableScanUi()
+        } else if (binding.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
+                binding.scanFab.context
+            )
+        ) {
+            activateScanUi()
+        }
+    }
+
+    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+    fun onProcessStickyEvent(event: ProcessEvent) {
+        if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
+
+        EventBus.getDefault().removeStickyEvent(event)
 
         if (ProcessEvent.EventType.COMPLETE == event.eventType && DuplicateDetectorWorker.STEP_DUPLICATES == event.step) {
             disableScanUi()
