@@ -6,6 +6,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_EDIT_MODE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
@@ -434,8 +435,6 @@ public class LibraryContentFragment extends Fragment implements
     }
 
     private void enterEditMode() {
-        activity.get().setEditMode(true);
-
         if (group.hasCustomBookOrder) { // Warn if a custom order already exists
             new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_warning)
@@ -451,18 +450,14 @@ public class LibraryContentFragment extends Fragment implements
                     .create()
                     .show();
         }
-
-        setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
+        activity.get().setEditMode(true);
     }
 
     private void cancelEdit() {
         activity.get().setEditMode(false);
-        setPagingMethod(Preferences.getEndlessScroll(), false);
     }
 
     private void confirmEdit() {
-        activity.get().setEditMode(false);
-
         // == Save new item position
         // Set ordering field to custom
         Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
@@ -471,7 +466,7 @@ public class LibraryContentFragment extends Fragment implements
         viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList(), this::refreshIfNeeded);
         group.hasCustomBookOrder = true;
 
-        setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
+        activity.get().setEditMode(false);
     }
 
     private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
@@ -906,6 +901,9 @@ public class LibraryContentFragment extends Fragment implements
                 break;
             case EV_DISABLE:
                 onDisable();
+                break;
+            case EV_UPDATE_EDIT_MODE:
+                setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
                 break;
             default:
                 // No default behaviour

@@ -7,6 +7,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_EDIT_MODE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
@@ -236,6 +237,7 @@ public class LibraryActivity extends BaseActivity {
 
     public void setEditMode(boolean editMode) {
         this.editMode = editMode;
+        signalFragment(1, EV_UPDATE_EDIT_MODE, "");
         updateToolbar();
     }
 
@@ -865,17 +867,16 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) return;
 
         enableFragment(0);
+        setEditMode(false);
         viewModel.searchGroup();
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
-        //toolbar.setNavigationIcon(R.drawable.ic_drawer);
     }
 
     public void showBooksInGroup(Group group) {
         enableFragment(1);
         viewModel.setGroup(group, true);
         viewPager.setCurrentItem(1);
-        //toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
     }
 
     public boolean isFilterActive() {
