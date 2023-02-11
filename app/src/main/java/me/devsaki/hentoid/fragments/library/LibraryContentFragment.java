@@ -1038,7 +1038,7 @@ public class LibraryContentFragment extends Fragment implements
     @OptIn(markerClass = com.mikepenz.fastadapter.paged.ExperimentalPagedSupport.class)
     private void setPagingMethod(boolean isEndless, boolean isEditMode) {
         // Editing will always be done in Endless mode
-        viewModel.setContentPagingMethod(isEndless || isEditMode);
+        viewModel.setContentPagingMethod(isEndless && !isEditMode);
 
         // RecyclerView horizontal centering
         ViewGroup.LayoutParams layoutParams = recyclerView.getLayoutParams();
@@ -1072,6 +1072,9 @@ public class LibraryContentFragment extends Fragment implements
         }
 
         if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
+
+
+        // == CLICK LISTENERS
 
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));

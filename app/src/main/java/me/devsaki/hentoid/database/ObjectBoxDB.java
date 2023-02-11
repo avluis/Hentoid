@@ -674,7 +674,7 @@ public class ObjectBoxDB {
                 }
             }
         }
-        return query.build().property(GroupItem_.contentId).findLongs();
+        return Helper.getPrimitiveArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
     }
 
     private Query<Content> selectContentUniversalAttributesQ(ContentSearchManager.ContentSearchBundle searchBundle, int[] statuses) {
@@ -763,7 +763,7 @@ public class ObjectBoxDB {
         if (searchBundle.getGroupId() > 0)
             contentQuery.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
 
-        return query.build().property(GroupItem_.contentId).findLongs();
+        return Helper.getPrimitiveArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
     }
 
     Query<Content> selectContentUniversalQ(ContentSearchManager.ContentSearchBundle searchBundle) {
