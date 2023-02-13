@@ -53,6 +53,7 @@
     <string name="pref_external_library_delete_off">외부 컨텐츠 삭제를 방지합니다</string>
     <string name="pref_external_library_detach_title">외부 라이브러리 분리</string>
     <string name="pref_external_library_detach_summary">더 이상 외부 라이브러리를 포함하지 않습니다</string>
+    <string name="pref_cat_eh">E-hentai / ExHentai</string>
     <string name="pref_cat_advanced">고급</string>
     <string name="pref_refresh_library_title">라이브러리 새로고침</string>
     <string name="pref_refresh_library_summary">수동으로 라이브러리 컨텐츠를 새로고침합니다</string>
@@ -92,9 +93,11 @@
     <string name="pref_browser_mark_merged_title">병합된 작품 표시</string>
     <string name="pref_browser_mark_merged_off">병합된 작품에 아무런 표시가 나타나지 않습니다</string>
     <string name="pref_browser_mark_merged_on">병합된 작품에 구분 가능한 표시가 생깁니다\n주의: 모든 사이트에서 작동하지는 않습니다</string>
-
-
+    <string name="pref_browser_mark_blocked_title">차단된 태그가 있는 작품 표시</string>
+    <string name="pref_browser_mark_blocked_off">차단된 태그가 있는 작품에 아무런 표시가 나타나지 않습니다</string>
+    <string name="pref_browser_mark_blocked_on">차단된 태그가 있는 작품에 구분 가능한 표시가 생깁니다\n주의: 모든 사이트에서 작동하지는 않습니다</string>
     <string name="pref_browser_blocked_tags_title">태그 차단</string>
+    <string name="pref_browser_blocked_tags_summary">참고: 각 태그는 쉼표로 구분됩니다</string>
     <string name="pref_browser_visuals">화면</string>
     <string name="pref_browser_augmented_title">브라우저 향상</string>
     <string name="pref_browser_augmented_off">기본 브라우저를 사용합니다</string>
@@ -131,8 +134,12 @@
     <string name="pref_dl_retries_mem_limit_title">메모리 사용 제한</string>
     <string name="tag_blocking_screen_title">태그 차단</string>
     <string name="pref_dl_blocked_tags_title">태그 차단</string>
-    <string name="pref_dl_blocked_tags_summary">특정 태그가 달려있는 작품을 다운로드 하는 것을 방지합니다\n팁: 각각의 태그는 따옴표로 구분합니다</string>
+    <string name="pref_dl_blocked_tags_summary">특정 태그가 달려있는 작품을 다운로드 하는 것을 방지합니다\n참고: 각 태그는 쉼표로 구분됩니다</string>
     <string name="pref_dl_blocked_tags_behaviour_title">차단 방법</string>
+    <string name="download_eh_hires_title">고해상도 다운로드</string>
+    <string name="pref_dl_eh_hires_on">가능하면 고해상도로 다운로드 합니다
+주의: 이 설정을 활성화 하면 E-hentai/Exhentai 이미지 보기 제한이 빠르게 소모됩니다</string>
+    <string name="pref_dl_eh_hires_off">웹사이트에 표시되는 사진을 다운로드 합니다</string>
     <string name="pref_dl_threads_quantity_title">병렬 다운로드 갯수</string>
     <string name="pref_dl_threads_quantity_summary">동시에 다운로드 할 이미지의 갯수를 지정합니다\n현재: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">다운로드 속도 제한</string>

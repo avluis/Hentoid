@@ -95,7 +95,7 @@
     <string name="pref_browser_mark_merged_on">I libri uniti sono segnati\nNB: non funziona su tutti i siti</string>
     <string name="pref_browser_mark_blocked_title">Segna libri con tag bloccati</string>
     <string name="pref_browser_mark_blocked_off">I libri con tag bloccati non hanno nessun display speciale</string>
-    <string name="pref_browser_mark_blocked_on">I libri con tag bloccati sono segnati\nNB: Non funziona su tutti i siti</string>
+    <string name="pref_browser_mark_blocked_on">I libri con tag bloccati sono segnati\nNB: non funziona su tutti i siti</string>
     <string name="pref_browser_blocked_tags_title">Tag bloccati</string>
     <string name="pref_browser_blocked_tags_summary">Consiglio: separa i tag con le virgole</string>
     <string name="pref_browser_visuals">Visualizzazione</string>
@@ -137,7 +137,7 @@
     <string name="pref_dl_blocked_tags_summary">Bloccare il download di libri con tag specifici \nSuggerimento: separare i tag con le virgole</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Comportamento blocco</string>
     <string name="download_eh_hires_title">Scarica immagini ad alta risoluzione</string>
-    <string name="pref_dl_eh_hires_on">Scarica immagini ad alta risoluzione quando disponibile\nATTENZIONE: I tuoi Gallery Points saranno utilizzati molto più velocemente</string>
+    <string name="pref_dl_eh_hires_on">Scarica immagini ad alta risoluzione quando disponibili\nATTENZIONE:Abilitare questa funzione consumerà il tuo limite di immagini di E-hentai/Exhentai molto più velocemente</string>
     <string name="pref_dl_eh_hires_off">Scarica immagini che sono mostrare sul sito</string>
     <string name="pref_dl_threads_quantity_title">Numero di download paralleli</string>
     <string name="pref_dl_threads_quantity_summary">Numero di immagini scaricate contemporaneamente\nAdesso: <x:g example="5" id="number">%s</x:g></string>

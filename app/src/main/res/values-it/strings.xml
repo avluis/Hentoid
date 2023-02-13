@@ -339,6 +339,8 @@
     <string name="import_download_folder">Non dovresti selezionare la cartella di download del tuo dispositivo: crea o selezionane un\'altra</string>
     <string name="import_create_fail">Creazione della cartella Hentoid fallita - seleziona un\'altra posizione</string>
     <string name="import_invalid_uri">Cartella non riconosciuta - per favore selezionala di nuovo</string>
+    <string name="import_empty">La cartella non ha nessun libro</string>
+    <string name="import_other_primary">Non puoi selezionare la stessa cartella per entrambi posizioni primarie</string>
     <string name="import_other">L\'importazione è stata interrotta</string>
     <string name="import_unexpected">L\'importazione si è fermata inaspettatamente</string>
     <string name="task_done">Attività completata: vedi i dettagli nel registro</string>
