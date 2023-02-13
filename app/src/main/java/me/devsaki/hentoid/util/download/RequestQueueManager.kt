@@ -54,9 +54,7 @@ class RequestQueueManager private constructor(
      * @param resetOkHttp     If true, also reset the underlying OkHttp connections
      */
     private fun init(
-        resetActiveRequests: Boolean,
-        cancelQueue: Boolean,
-        resetOkHttp: Boolean = false
+        resetActiveRequests: Boolean, cancelQueue: Boolean, resetOkHttp: Boolean = false
     ) {
         if (cancelQueue) cancelQueue()
         else if (resetOkHttp || resetActiveRequests) mRequestQueue?.stop()
@@ -64,7 +62,7 @@ class RequestQueueManager private constructor(
         if (resetOkHttp) OkHttpClientSingleton.reset()
 
         mRequestQueue = RequestQueue(this::onRequestSuccess, this::onRequestError)
-        mRequestQueue?.start()
+        start()
     }
 
     /**
@@ -106,6 +104,11 @@ class RequestQueueManager private constructor(
         synchronized(waitingRequestQueue) { waitingRequestQueue.clear() }
         synchronized(activeRequests) { activeRequests.clear() }
         Timber.d("RequestQueue ::: canceled")
+    }
+
+    fun start() {
+        mRequestQueue?.start()
+        Timber.d("RequestQueue ::: started")
     }
 
     /**
@@ -165,10 +168,8 @@ class RequestQueueManager private constructor(
         if (newRequestAllowed) {
             val o: RequestOrder?
             synchronized(waitingRequestQueue) {
-                o = if (!waitingRequestQueue.isEmpty())
-                    waitingRequestQueue.removeFirst()
-                else
-                    null
+                o = if (!waitingRequestQueue.isEmpty()) waitingRequestQueue.removeFirst()
+                else null
             }
             o?.let { executeRequest(it) }
         }
@@ -181,15 +182,18 @@ class RequestQueueManager private constructor(
      * @param order Request order to execute
      */
     private suspend fun executeRequest(order: RequestOrder) {
-        synchronized(activeRequests) { activeRequests.add(order) }
-        mRequestQueue?.executeRequest(order)
-        synchronized(waitingRequestQueue) {
-            Timber.d(
-                "Requests queue ::: request executed for host %s - current total (%d active + %d waiting)",
-                Uri.parse(order.url).host,
-                nbActiveRequests,
-                waitingRequestQueue.size
-            )
+        mRequestQueue?.let {
+            if (!it.active) return
+            synchronized(activeRequests) { activeRequests.add(order) }
+            it.executeRequest(order)
+            synchronized(waitingRequestQueue) {
+                Timber.d(
+                    "Requests queue ::: request executed for host %s - current total (%d active + %d waiting)",
+                    Uri.parse(order.url).host,
+                    nbActiveRequests,
+                    waitingRequestQueue.size
+                )
+            }
         }
     }
 
@@ -219,10 +223,8 @@ class RequestQueueManager private constructor(
     private fun onRequestError(request: RequestOrder, err: RequestOrder.NetworkError) {
         onRequestCompleted(request)
         // Don't propagate interruptions
-        if (err.type != RequestOrder.NetworkErrorType.INTERRUPTED)
-            onError.accept(request, err)
-        else
-            Timber.d("Downloader : Interruption detected for %s : %s", request.url, err.message)
+        if (err.type != RequestOrder.NetworkErrorType.INTERRUPTED) onError.accept(request, err)
+        else Timber.d("Downloader : Interruption detected for %s : %s", request.url, err.message)
     }
 
     fun setNbRequestsPerSecond(value: Int) {
@@ -272,8 +274,7 @@ class RequestQueueManager private constructor(
      * @return Device's per-app memory capacity
      */
     private fun getMemoryClass(context: Context): Int {
-        val activityManager =
-            context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         return activityManager.memoryClass
     }
 
@@ -291,10 +292,9 @@ class RequestQueueManager private constructor(
             context: Context,
             onSuccess: BiConsumer<RequestOrder, Uri>,
             onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>
-        ): RequestQueueManager =
-            instance ?: synchronized(this) {
-                instance ?: RequestQueueManager(context, onSuccess, onError).also { instance = it }
-            }
+        ): RequestQueueManager = instance ?: synchronized(this) {
+            instance ?: RequestQueueManager(context, onSuccess, onError).also { instance = it }
+        }
 
         fun getInstance(): RequestQueueManager? {
             synchronized(this) {

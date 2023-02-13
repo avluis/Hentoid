@@ -26,6 +26,7 @@ class RequestQueue(
     private val errorHandler: BiConsumer<RequestOrder, RequestOrder.NetworkError>
 ) {
     var active: Boolean = false
+        private set
     private val downloadsQueue: Queue<RequestOrder> = ConcurrentLinkedQueue()
 
     fun start() {
@@ -33,16 +34,22 @@ class RequestQueue(
     }
 
     fun stop() {
+        Timber.d("Aborting %d download requests", downloadsQueue.size)
         while (downloadsQueue.size > 0) {
             downloadsQueue.poll()?.let {
                 it.killSwitch.set(true)
-                Timber.d("Aborting download request %s", it.url)
+                Timber.v("Aborting download request %s", it.url)
             }
         }
         active = false
     }
 
     suspend fun executeRequest(requestOrder: RequestOrder) {
+        if (!active) {
+            Timber.d("Can't execute a request while request queue is inactive!")
+            return
+        }
+
         downloadsQueue.add(requestOrder)
         try {
             val res = withContext(Dispatchers.IO) {

@@ -437,6 +437,7 @@ public class ContentDownloadWorker extends BaseWorker {
             requestQueueManager.initUsingDownloadThreadCount(getApplicationContext(), -1, true);
         }
         requestQueueManager.setNbRequestsPerSecond(content.getSite().getRequestsCapPerSecond());
+        requestQueueManager.start();
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
