@@ -908,8 +908,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     fun onProcessStickyEvent(event: ProcessEvent) {
         // Filter on cancel complete event
         if (R.id.generic_progress != event.processId) return
-        if (event.eventType == ProcessEvent.EventType.COMPLETE) onCancelComplete()
         EventBus.getDefault().removeStickyEvent(event)
+        if (event.eventType == ProcessEvent.EventType.COMPLETE) onCancelComplete()
     }
 
     private fun onCancelComplete() {

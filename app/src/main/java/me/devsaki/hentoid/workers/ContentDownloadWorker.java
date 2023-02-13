@@ -332,6 +332,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 hasError = true;
             } catch (PreparationInterruptedException ie) {
                 Timber.i(ie, "Preparation of %s interrupted", content.getTitle());
+                downloadInterrupted.set(true);
                 // not an error
             } catch (EmptyResultException ere) {
                 Timber.i(ere, "No images have been found while parsing %s. Download aborted.", content.getTitle());
@@ -638,12 +639,12 @@ public class ContentDownloadWorker extends BaseWorker {
         }
         while (!isDone && !downloadInterrupted.get() && !contentQueueManager.isQueuePaused());
 
-        if (contentQueueManager.isQueuePaused()) {
-            Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
-            if (downloadCanceled.get()) notificationManager.cancel();
-        } else {
+        if (isDone && !downloadInterrupted.get()) {
             // NB : no need to supply the Content itself as it has not been updated during the loop
             completeDownload(content.getId(), content.getTitle(), pagesOK, pagesKO, downloadedBytes);
+        } else {
+            Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
+            if (downloadCanceled.get()) notificationManager.cancel();
         }
     }
 
