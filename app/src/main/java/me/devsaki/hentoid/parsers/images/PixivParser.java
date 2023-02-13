@@ -33,6 +33,7 @@ import me.devsaki.hentoid.util.download.DownloadRateLimiter;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import retrofit2.Response;
 import timber.log.Timber;
 
 public class PixivParser extends BaseImageListParser {
@@ -217,13 +218,18 @@ public class PixivParser extends BaseImageListParser {
         for (String illustId : illustIds) {
             DownloadRateLimiter.INSTANCE.take();
             if (processHalted.get()) break;
-            PixivIllustMetadata illustMetadata = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute().body();
+            Response<PixivIllustMetadata> resp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
+            if (resp.code() >= 400)
+                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s)", resp.code(), resp.message()));
 
+            PixivIllustMetadata illustMetadata = resp.body();
             if (null == illustMetadata || illustMetadata.isError()) {
-                String message = "Unreachable illust";
+                String message;
                 if (illustMetadata != null)
                     message = illustMetadata.getMessage();
-                throw new IllegalArgumentException(message);
+                else
+                    message = "no metadata";
+                throw new IllegalArgumentException(String.format("Unreachable illust : %s", message));
             }
 
             List<Attribute> chapterAttrs = illustMetadata.getAttributes();
