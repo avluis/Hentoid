@@ -1325,7 +1325,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 extraImages = additionalNonDownloadedImages;
                 setActionMode(ActionMode.DOWNLOAD_PLUS);
                 if (binding != null)
-                    binding.actionBtnBadge.setText(additionalNonDownloadedImages.size());
+                    binding.actionBtnBadge.setText(String.format("%d", additionalNonDownloadedImages.size()));
             }
         }
     }
