@@ -88,6 +88,7 @@
         android:text="@string/library_filters_title"
         android:textSize="@dimen/text_subtitle_1"
         android:textStyle="bold"
+        android:layout_marginStart="20dp"
         app:layout_constraintBottom_toBottomOf="@id/filter_favs_btn"
         app:layout_constraintStart_toStartOf="@id/list"
         app:layout_constraintTop_toTopOf="@id/filter_favs_btn" />
