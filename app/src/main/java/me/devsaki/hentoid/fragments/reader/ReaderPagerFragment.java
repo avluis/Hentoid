@@ -11,6 +11,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELA
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -1338,8 +1339,11 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      * @param visible True if bars have to be shown; false instead
      */
     private void setSystemBarsVisible(boolean visible) {
+        Activity activity = getActivity();
+        if (null == activity) return;
+
         int uiOptions;
-        Window window = requireActivity().getWindow();
+        Window window = activity.getWindow();
         WindowManager.LayoutParams params = window.getAttributes();
         // TODO use androidx.core 1.6.0-beta01+ & WindowCompat (see https://stackoverflow.com/questions/62643517/immersive-fullscreen-on-android-11)
         // TODO prepare to fiddle with paddings and margins : https://stackoverflow.com/questions/57293449/go-edge-to-edge-on-android-correctly-with-windowinsets
