@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -862,7 +863,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (binding != null) {
             binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, resId));
             binding.actionButton.setVisibility(View.VISIBLE);
-            binding.actionBtnBadge.setVisibility((ActionMode.DOWNLOAD_PLUS == mode) ? View.VISIBLE : View.INVISIBLE);
+            // It will become visible whenever the count of extra pages is known
+            if (ActionMode.DOWNLOAD_PLUS != mode)
+                binding.actionBtnBadge.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -1324,8 +1327,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             if (!additionalNonDownloadedImages.isEmpty()) {
                 extraImages = additionalNonDownloadedImages;
                 setActionMode(ActionMode.DOWNLOAD_PLUS);
-                if (binding != null)
-                    binding.actionBtnBadge.setText(String.format("%d", additionalNonDownloadedImages.size()));
+                if (binding != null) {
+                    binding.actionBtnBadge.setText(String.format(Locale.ENGLISH, "%d", additionalNonDownloadedImages.size()));
+                    binding.actionBtnBadge.setVisibility(View.VISIBLE);
+                }
             }
         }
     }
