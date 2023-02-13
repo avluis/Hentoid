@@ -52,8 +52,6 @@ public class PixivParser extends BaseImageListParser {
             EventBus.getDefault().unregister(this);
         }
 
-        progressComplete();
-
         return result;
     }
 
@@ -149,7 +147,6 @@ public class PixivParser extends BaseImageListParser {
         Set<Attribute> attrs = new HashSet<>();
         for (Chapter ch : extraChapters) {
             DownloadRateLimiter.INSTANCE.take();
-            if (processHalted.get()) break;
             PixivIllustMetadata illustMetadata = PixivServer.api.getIllustMetadata(ch.getUniqueId(), cookieStr).execute().body();
             if (null == illustMetadata || illustMetadata.isError()) {
                 String message = "Unreachable illust";
@@ -167,14 +164,16 @@ public class PixivParser extends BaseImageListParser {
 
             result.addAll(chapterImages);
 
+            if (processHalted.get()) break;
             progressPlus();
         }
-
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();
 
         onlineContent.putAttributes(attrs);
         onlineContent.setUpdatedProperties(true);
+
+        progressComplete();
         return result;
     }
 
@@ -217,7 +216,6 @@ public class PixivParser extends BaseImageListParser {
         Set<Attribute> attrs = new HashSet<>();
         for (String illustId : illustIds) {
             DownloadRateLimiter.INSTANCE.take();
-            if (processHalted.get()) break;
             Response<PixivIllustMetadata> resp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
             if (resp.code() >= 400)
                 throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s)", resp.code(), resp.message()));
@@ -242,14 +240,16 @@ public class PixivParser extends BaseImageListParser {
 
             result.addAll(chapterImages);
 
+            if (processHalted.get()) break;
             progressPlus();
         }
-
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();
 
         onlineContent.putAttributes(attrs);
         onlineContent.setUpdatedProperties(true);
+
+        progressComplete();
         return result;
     }
 

@@ -2,9 +2,8 @@ package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-import androidx.core.util.Pair;
-
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.Stream;
 
@@ -50,19 +49,18 @@ public class AllPornComicParser extends BaseImageListParser {
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {
-            if (processHalted.get()) break;
             doc = getOnlineDocument(url, headers, Site.ALLPORNCOMIC.useHentoidAgent(), Site.ALLPORNCOMIC.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select("[class^=page-break] img");
                 result.addAll(Stream.of(images).map(ParseHelper::getImgSrc).filterNot(String::isEmpty).toList());
             }
+            if (processHalted.get()) break;
             progressPlus();
         }
-        progressComplete();
-
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();
 
+        progressComplete();
         return result;
     }
 }

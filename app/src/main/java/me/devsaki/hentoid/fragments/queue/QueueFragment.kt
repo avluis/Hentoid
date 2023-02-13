@@ -458,7 +458,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDownloadEvent(event: DownloadEvent) {
-        Timber.v("Event received : %s", event.eventType)
+        Timber.v("Event received : %s.%s", event.eventType, event.step)
         val errorStatsMenu = activity.get()?.getToolbar()?.menu?.findItem(R.id.action_error_stats)
         errorStatsMenu?.isVisible = event.pagesKO > 0
         displayMotive(event)

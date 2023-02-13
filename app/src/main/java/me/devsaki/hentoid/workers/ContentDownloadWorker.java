@@ -189,8 +189,6 @@ public class ContentDownloadWorker extends BaseWorker {
 
         Context context = getApplicationContext();
 
-        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null));
-
         // Clear previously created requests
         compositeDisposable.clear();
 
@@ -249,6 +247,8 @@ public class ContentDownloadWorker extends BaseWorker {
             notificationManager.notify(new DownloadErrorNotification(content));
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
+
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null));
 
         // Check for download folder existence, available free space and credentials
         DocumentFile dir = null;

@@ -47,16 +47,15 @@ public class PorncomixParser extends BaseImageListParser {
         progressStart(content, null, pageUrls.size());
 
         for (String pageUrl : pageUrls) {
-            if (processHalted.get()) break;
             doc = getOnlineDocument(pageUrl, null, Site.PORNCOMIX.useHentoidAgent(), Site.PORNCOMIX.useWebviewAgent());
             if (doc != null) {
                 Element imageElement = doc.selectFirst(".entry-content img");
                 if (imageElement != null) result.add(ParseHelper.getImgSrc(imageElement));
             }
 
+            if (processHalted.get()) break;
             progressPlus();
         }
-
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();
 

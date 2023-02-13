@@ -100,7 +100,6 @@ public class Hentai2ReadParser extends BaseImageListParser {
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (Chapter chp : extraChapters) {
-            if (processHalted.get()) break;
             doc = getOnlineDocument(chp.getUrl(), headers, Site.HENTAI2READ.useHentoidAgent(), Site.HENTAI2READ.useWebviewAgent());
             if (doc != null) {
                 List<Element> scripts = doc.select("script");
@@ -114,13 +113,13 @@ public class Hentai2ReadParser extends BaseImageListParser {
             } else {
                 Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
             }
+            if (processHalted.get()) break;
             progressPlus();
         }
-        progressComplete();
-
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();
 
+        progressComplete();
         return result;
     }
 

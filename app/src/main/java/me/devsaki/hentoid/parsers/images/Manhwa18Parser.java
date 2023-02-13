@@ -93,7 +93,6 @@ public class Manhwa18Parser extends BaseImageListParser {
         for (Chapter chp : extraChapters) {
             chp.setOrder(++storedOrderOffset);
             if (chp.getUploadDate() > 0) minEpoch = Math.min(minEpoch, chp.getUploadDate());
-            if (processHalted.get()) break;
             doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA18.useHentoidAgent(), Site.MANHWA18.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select("#chapter-content img");
@@ -105,8 +104,12 @@ public class Manhwa18Parser extends BaseImageListParser {
             } else {
                 Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
             }
+            if (processHalted.get()) break;
             progressPlus();
         }
+        // If the process has been halted manually, the result is incomplete and should not be returned as is
+        if (processHalted.get()) throw new PreparationInterruptedException();
+
         if (minEpoch > 0) {
             onlineContent.setUploadDate(minEpoch);
             onlineContent.setUpdatedProperties(true);
@@ -116,9 +119,6 @@ public class Manhwa18Parser extends BaseImageListParser {
         // Add cover if it's a first download
         if (storedChapters.isEmpty())
             result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
-
-        // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted.get()) throw new PreparationInterruptedException();
 
         return result;
     }
