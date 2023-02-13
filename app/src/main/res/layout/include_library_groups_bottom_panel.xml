@@ -8,13 +8,15 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="16dp"
         android:text="@string/display_groups_title"
         android:textAlignment="center"
+        android:gravity="center"
         android:textSize="@dimen/text_header_6"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
