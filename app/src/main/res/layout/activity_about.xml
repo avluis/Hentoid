@@ -28,6 +28,7 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:padding="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -48,7 +49,7 @@
                 android:src="@drawable/ic_social_github"
                 app:layout_constraintBottom_toTopOf="@id/discordIcon"
                 app:layout_constraintStart_toEndOf="@id/appLogo"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toTopOf="@id/appLogo"
                 tools:ignore="ContentDescription" />
 
             <TextView
@@ -93,6 +94,7 @@
                 android:src="@drawable/ic_social_reddit"
                 app:layout_constraintStart_toEndOf="@id/appLogo"
                 app:layout_constraintTop_toBottomOf="@id/discordIcon"
+                app:layout_constraintBottom_toTopOf="@id/changelogButton"
                 tools:ignore="ContentDescription" />
 
             <TextView
@@ -119,6 +121,7 @@
                 app:flow_horizontalAlign="start"
                 app:layout_constraintStart_toEndOf="@id/appLogo"
                 app:layout_constraintTop_toBottomOf="@id/redditIcon"
+                app:layout_constraintBottom_toBottomOf="@id/appLogo"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
             <TextView
