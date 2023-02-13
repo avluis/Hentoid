@@ -66,8 +66,8 @@ public class PixivParser extends BaseImageListParser {
                     onlineContent.getGalleryUrl(), null,
                     useMobileAgent, useHentoidAgent, useWebviewAgent);
 
-            // API calls seem to be protected against request spam; 2 is arbitrary
-            DownloadRateLimiter.INSTANCE.setRateLimit(2);
+            // API calls seem to be protected against request spam; 1 is arbitrary
+            DownloadRateLimiter.INSTANCE.setRateLimit(1);
 
             if (onlineContent.getUrl().contains("/series/"))
                 return parseSeries(onlineContent, storedContent, cookieStr);
@@ -246,6 +246,7 @@ public class PixivParser extends BaseImageListParser {
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();
 
+        onlineContent.putAttributes(attrs);
         onlineContent.putAttributes(attrs);
         onlineContent.setUpdatedProperties(true);
 
