@@ -83,6 +83,7 @@ public class PixivParser extends BaseImageListParser {
     }
 
     private List<ImageFile> parseIllust(@NonNull Content content, @NonNull String cookieStr) throws Exception {
+        DownloadRateLimiter.INSTANCE.take();
         PixivIllustPagesMetadata galleryMetadata = PixivServer.api.getIllustPages(content.getUniqueSiteId(), cookieStr).execute().body();
         if (null == galleryMetadata || galleryMetadata.isError()) {
             String message = "";
@@ -111,6 +112,7 @@ public class PixivParser extends BaseImageListParser {
             DownloadRateLimiter.INSTANCE.take();
             if (processHalted.get()) break;
             int chaptersToRead = Math.min(nbChapters - chapters.size(), MAX_QUERY_WINDOW);
+            DownloadRateLimiter.INSTANCE.take();
             PixivSeriesIllustMetadata seriesContentMetadata = PixivServer.api.getSeriesIllusts(seriesId, chaptersToRead, chapters.size(), cookieStr).execute().body();
             if (null == seriesContentMetadata || seriesContentMetadata.isError()) {
                 String message = "Unreachable series illust";
@@ -185,6 +187,7 @@ public class PixivParser extends BaseImageListParser {
         }
 
         // Retrieve the list of Illusts IDs (=chapters)
+        DownloadRateLimiter.INSTANCE.take();
         PixivUserIllustMetadata userIllustsMetadata = PixivServer.api.getUserIllusts(userId, cookieStr).execute().body();
         if (null == userIllustsMetadata || userIllustsMetadata.isError()) {
             String message = "Unreachable user illusts";
