@@ -2,6 +2,8 @@ package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
+import android.webkit.URLUtil;
+
 import androidx.core.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -9,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.annimon.stream.Stream;
 
+import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -41,8 +44,29 @@ public class Hentai2ReadParser extends BaseImageListParser {
 
     @Override
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
-        List<ImageFile> result = new ArrayList<>();
+        String readerUrl = onlineContent.getReaderUrl();
         processedUrl = onlineContent.getGalleryUrl();
+
+        if (!URLUtil.isValidUrl(readerUrl))
+            throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
+
+        Timber.d("Gallery URL: %s", readerUrl);
+
+        EventBus.getDefault().register(this);
+
+        List<ImageFile> result;
+        try {
+            result = parseImageFiles(onlineContent, storedContent);
+            ParseHelper.setDownloadParams(result, onlineContent.getSite().getUrl());
+        } finally {
+            EventBus.getDefault().unregister(this);
+        }
+
+        return result;
+    }
+
+    private List<ImageFile> parseImageFiles(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
+        List<ImageFile> result = new ArrayList<>();
 
         List<Pair<String, String>> headers = new ArrayList<>();
         ParseHelper.addSavedCookiesToHeader(onlineContent.getDownloadParams(), headers);
