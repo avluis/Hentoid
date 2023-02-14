@@ -109,7 +109,6 @@ public class PixivParser extends BaseImageListParser {
         // List all Illust IDs (API is paged, hence the loop)
         List<Chapter> chapters = new ArrayList<>();
         while (chapters.size() < nbChapters) {
-            DownloadRateLimiter.INSTANCE.take();
             if (processHalted.get()) break;
             int chaptersToRead = Math.min(nbChapters - chapters.size(), MAX_QUERY_WINDOW);
             DownloadRateLimiter.INSTANCE.take();
