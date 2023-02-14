@@ -21,6 +21,7 @@ import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.enums.ErrorType
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.ContentHelper
@@ -142,7 +143,7 @@ class QueueViewModel(
 
         // If the 1st item is involved, signal it being skipped
         if (0 == newPosition || 0 == oldPosition) EventBus.getDefault()
-            .post(DownloadEvent(DownloadEvent.Type.EV_SKIP))
+            .post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_SKIP))
     }
 
     /**
@@ -189,6 +190,7 @@ class QueueViewModel(
         dao.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING)
         ContentQueueManager.unpauseQueue()
         ContentQueueManager.resumeQueue(getApplication())
+        EventBus.getDefault().post(DownloadEvent(DownloadEvent.Type.EV_UNPAUSED))
     }
 
     fun invertQueue() {
@@ -204,7 +206,7 @@ class QueueViewModel(
 
         // Update queue and signal skipping the 1st item
         dao.updateQueue(localQueue)
-        EventBus.getDefault().post(DownloadEvent(DownloadEvent.Type.EV_SKIP))
+        EventBus.getDefault().post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_SKIP))
     }
 
     /**
@@ -251,7 +253,7 @@ class QueueViewModel(
         val localQueue = dao.selectQueue()
         if (localQueue.isEmpty()) return
         val contentIdList = localQueue.map { qr -> qr.content.targetId }.filter { id -> id > 0 }
-        EventBus.getDefault().post(DownloadEvent(DownloadEvent.Type.EV_PAUSE))
+        EventBus.getDefault().post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE))
         val builder = DeleteData.Builder()
         if (contentIdList.isNotEmpty()) builder.setQueueIds(contentIdList)
         builder.setDeleteAllQueueRecords(true)

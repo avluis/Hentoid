@@ -27,6 +27,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.databinding.ActivityQueueBinding
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadReviveEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
@@ -337,7 +338,7 @@ class QueueActivity : BaseActivity() {
             // Try passing CF
             if (null == cloudflareHelper) cloudflareHelper = CloudflareHelper()
             if (cloudflareHelper!!.tryPassCloudflare(revivedSite, oldCookie)) {
-                EventBus.getDefault().post(DownloadEvent(DownloadEvent.Type.EV_UNPAUSE))
+                EventBus.getDefault().post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_UNPAUSE))
             }
         }
         clearReviveDownload()

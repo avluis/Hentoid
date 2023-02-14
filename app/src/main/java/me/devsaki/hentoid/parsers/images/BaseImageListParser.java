@@ -22,7 +22,7 @@ import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
@@ -100,23 +100,20 @@ public abstract class BaseImageListParser implements ImageListParser {
      * @param event Download event
      */
     @Subscribe
-    public void onDownloadEvent(DownloadEvent event) {
+    public void onDownloadCommand(DownloadCommandEvent event) {
         switch (event.eventType) {
-            case DownloadEvent.Type.EV_PAUSE:
-            case DownloadEvent.Type.EV_CANCEL:
-            case DownloadEvent.Type.EV_SKIP:
+            case DownloadCommandEvent.Type.EV_PAUSE:
+            case DownloadCommandEvent.Type.EV_CANCEL:
+            case DownloadCommandEvent.Type.EV_SKIP:
                 processHalted.set(true);
                 break;
-            case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
+            case DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT:
                 if (event.content != null && event.content.getGalleryUrl().equals(processedUrl)) {
                     processHalted.set(true);
                     processedUrl = "";
                 }
                 break;
-            case DownloadEvent.Type.EV_COMPLETE:
-            case DownloadEvent.Type.EV_PREPARATION:
-            case DownloadEvent.Type.EV_PROGRESS:
-            case DownloadEvent.Type.EV_UNPAUSE:
+            case DownloadCommandEvent.Type.EV_UNPAUSE:
             default:
                 // Other events aren't handled here
         }

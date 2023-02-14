@@ -68,7 +68,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.enums.StorageLocation;
-import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
@@ -442,7 +442,7 @@ public final class ContentHelper {
         if (isInQueueTab(content.getStatus())) {
             List<QueueRecord> queue = dao.selectQueue();
             if (!queue.isEmpty() && queue.get(0).getContent().getTargetId() == content.getId())
-                EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_CANCEL));
+                EventBus.getDefault().post(new DownloadCommandEvent(content, DownloadCommandEvent.Type.EV_CANCEL));
 
             // Remove from queue
             dao.deleteQueue(content);

@@ -13,18 +13,19 @@ import me.devsaki.hentoid.database.domains.Content;
  */
 public class DownloadEvent {
 
-    @IntDef({Type.EV_PROGRESS, Type.EV_PAUSE, Type.EV_UNPAUSE, Type.EV_CANCEL, Type.EV_COMPLETE, Type.EV_SKIP, Type.EV_PREPARATION, Type.EV_INTERRUPT_CONTENT})
+    @IntDef({Type.EV_NONE, Type.EV_PROGRESS, Type.EV_PAUSED, Type.EV_UNPAUSED, Type.EV_CANCELED, Type.EV_COMPLETE, Type.EV_SKIPPED, Type.EV_PREPARATION, Type.EV_CONTENT_INTERRUPTED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
+        int EV_NONE = -1;
         int EV_PROGRESS = 0; // Download progress of current book (always one book at a time)
-        int EV_PAUSE = 1; // Queue is paused
-        int EV_UNPAUSE = 2; // Queue is unpaused
-        int EV_CANCEL = 3; // One book has been "canceled" (ordered to be removed from the queue)
+        int EV_PAUSED = 1; // Queue is paused
+        int EV_UNPAUSED = 2; // Queue is unpaused
+        int EV_CANCELED = 3; // One book has been "canceled" (ordered to be removed from the queue)
         int EV_COMPLETE = 4; // Current book download has been completed
-        int EV_SKIP = 5; // Cancel without removing the Content; used when the 2nd book is prioritized to end up in the first place of the queue or when 1st book is deprioritized
+        int EV_SKIPPED = 5; // Cancel without removing the Content; used when the 2nd book is prioritized to end up in the first place of the queue or when 1st book is deprioritized
         // /!\ Using EV_SKIP without moving the position of the book won't have any effect
         int EV_PREPARATION = 6; // Informative event for the UI during preparation phase
-        int EV_INTERRUPT_CONTENT = 7; // Interrupt extra page parsing only for a specific Content
+        int EV_CONTENT_INTERRUPTED = 7; // Interrupt extra page parsing only for a specific Content
     }
 
     @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI, Motive.NO_STORAGE, Motive.NO_DOWNLOAD_FOLDER
@@ -124,11 +125,11 @@ public class DownloadEvent {
      * @param motive motive code for the event
      */
     public static DownloadEvent fromPauseMotive(@Motive int motive) {
-        return new DownloadEvent(Type.EV_PAUSE, motive, Step.NONE, 0);
+        return new DownloadEvent(Type.EV_PAUSED, motive, Step.NONE, 0);
     }
 
     public static DownloadEvent fromPauseMotive(@Motive int motive, long spaceLeftBytes) {
-        return new DownloadEvent(Type.EV_PAUSE, motive, Step.NONE, spaceLeftBytes);
+        return new DownloadEvent(Type.EV_PAUSED, motive, Step.NONE, spaceLeftBytes);
     }
 
     /**
@@ -183,6 +184,34 @@ public class DownloadEvent {
         this.downloadedSizeB = 0;
         this.motive = Motive.NONE;
         this.step = Step.NONE;
+    }
+
+    public DownloadEvent(DownloadCommandEvent commandEvent) {
+        this.content = commandEvent.content;
+        this.eventType = fromCommandEventType(commandEvent.eventType);
+        this.pagesOK = 0;
+        this.pagesKO = 0;
+        this.pagesTotal = 0;
+        this.downloadedSizeB = 0;
+        this.motive = Motive.NONE;
+        this.step = Step.NONE;
+    }
+
+    private @Type int fromCommandEventType(@DownloadCommandEvent.Type int code) {
+        switch (code) {
+            case DownloadCommandEvent.Type.EV_PAUSE:
+                return Type.EV_PAUSED;
+            case DownloadCommandEvent.Type.EV_UNPAUSE:
+                return Type.EV_UNPAUSED;
+            case DownloadCommandEvent.Type.EV_CANCEL:
+                return Type.EV_CANCELED;
+            case DownloadCommandEvent.Type.EV_SKIP:
+                return Type.EV_SKIPPED;
+            case DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT:
+                return Type.EV_CONTENT_INTERRUPTED;
+            default:
+                return Type.EV_NONE;
+        }
     }
 
     public int getNumberRetries() {
