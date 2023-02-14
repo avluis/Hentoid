@@ -220,6 +220,7 @@ public class PixivParser extends BaseImageListParser {
         for (String illustId : illustIds) {
             DownloadRateLimiter.INSTANCE.take();
             Response<PixivIllustMetadata> resp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
+            // TODO if HTTP 429, sleep according to 'Retry-After' header
             if (resp.code() >= 400)
                 throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d]", resp.code(), resp.message(), index));
 
