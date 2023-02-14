@@ -67,7 +67,7 @@ public class PixivParser extends BaseImageListParser {
                     useMobileAgent, useHentoidAgent, useWebviewAgent);
 
             // API calls seem to be protected against request spam; 1 is arbitrary
-            DownloadRateLimiter.INSTANCE.setRateLimit(1);
+            DownloadRateLimiter.INSTANCE.setRateLimit2(1);
 
             if (onlineContent.getUrl().contains("/series/"))
                 return parseSeries(onlineContent, storedContent, cookieStr);
@@ -216,11 +216,12 @@ public class PixivParser extends BaseImageListParser {
         List<ImageFile> result = new ArrayList<>();
         result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
         Set<Attribute> attrs = new HashSet<>();
+        int index = 0;
         for (String illustId : illustIds) {
             DownloadRateLimiter.INSTANCE.take();
             Response<PixivIllustMetadata> resp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
             if (resp.code() >= 400)
-                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s)", resp.code(), resp.message()));
+                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d]", resp.code(), resp.message(), index));
 
             PixivIllustMetadata illustMetadata = resp.body();
             if (null == illustMetadata || illustMetadata.isError()) {
@@ -244,6 +245,7 @@ public class PixivParser extends BaseImageListParser {
 
             if (processHalted.get()) break;
             progressPlus();
+            index++;
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();

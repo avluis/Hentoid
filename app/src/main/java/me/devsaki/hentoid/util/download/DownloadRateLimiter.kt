@@ -16,6 +16,15 @@ object DownloadRateLimiter {
                 .build()
     }
 
+    fun setRateLimit2(perSecond: Long) {
+        bucket = if (perSecond <= 0) null
+        else
+            TokenBuckets.builder()
+                .withCapacity(perSecond)
+                .withFixedIntervalRefillStrategy(perSecond, 1300, TimeUnit.MILLISECONDS)
+                .build()
+    }
+
     fun take(): Boolean {
         if (null == bucket) return true
 
