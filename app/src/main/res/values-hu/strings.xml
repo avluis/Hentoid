@@ -40,11 +40,12 @@
     <string name="_default">alapértelmezett</string>
     <string name="empty">üres</string>
     <string name="none">Egyik sem</string>
+
     <string name="disabled_generic">Letiltva</string>
     <string name="create_generic">Létrehozás</string>
     <string name="edit_generic">Módosítás</string>
     <string name="remove_generic">Törlés</string>
-    <string name="title_activity_downloads">Könyvtár</string>
+<string name="title_activity_downloads">Könyvtár</string>
     <string name="title_activity_queue">Várólista</string>
     <string name="title_activity_preferences">Beállítások</string>
     <string name="title_activity_about">Névjegy</string>
@@ -52,7 +53,7 @@
     <string name="title_activity_search">Haladó keresés</string>
     <string name="title_activity_meta_edit">Metaadat módosítása</string>
     <string name="title_activity_rules">Átnevezési szabályok</string>
-    <string name="refresh_step1">Hentoid mappa</string>
+<string name="refresh_step1">Hentoid mappa</string>
     <string name="refresh_step1_external">Külső mappa</string>
     <string name="refresh_step1_select">Hentoid mappa kiválasztása</string>
     <string name="refresh_step1_select_external">Külső mappa kiválasztása</string>
@@ -205,10 +206,38 @@
     <string name="errortype_wifi">Könyv kihagyva a Wi-Fi letöltési méretkorlátozások miatt</string>
     <string name="errortype_blocked">A könyv tartalmaz egy blokkolt taget</string>
     <string name="errortype_undefined">Definiálatlan</string>
-<string name="refresh_title">Könyvtár újratöltése</string>
+
+
+
+
+    <string name="external_library">Külső könyvtár</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <string name="refresh_caption">A könyvtári adatok automatikus frissítése a fájlok és mappák újbóli beolvasásával.</string>
     <string name="refresh_options">Tisztítási lehetőségek</string>
-    <string name="refresh_location_internal">Hentoid könyvtár</string>
+
+
     <string name="refresh_location_external">Külső könyvtár</string>
     <string name="refresh_options_rename">Az összes mappa átnevezése az aktuális elnevezési és maximális hosszúsági beállításoknak megfelelően</string>
     <string name="refresh_options_remove_placeholders">Metaadatokon keresztül importált helyőrző könyvek eltávolítása*</string>
@@ -264,12 +293,6 @@
     <string name="dialog_prompt">Mappa kiválasztása</string>
     <string name="importing_metadata">Metaadatok importálása...</string>
 <string name="export_title">Metaadat exportálása</string>
-
-
-    <plurals name="export_file_library">
-        <item quantity="one">Könyvtár exportálása (<x:g example="1" id="number">%d</x:g> könyv)</item>
-        <item quantity="other">Könyvtár exportálása (<x:g example="2" id="number">%d</x:g> könyvek)</item>
-    </plurals>
     <string name="export_favs_only">Csak a kedvencek exportálása</string>
     <string name="export_groups">Saját csoportok exportálása</string>
     <plurals name="export_file_queue">
@@ -294,6 +317,7 @@
     <string name="import_download_folder">Ne válassza ki az eszköz letöltési mappáját - kérjük, hogy készítsen egy másik mappát, vagy válasszon egy másikat</string>
     <string name="import_create_fail">Hentoid mappa létrehozása sikertelen - kérjük, válasszon másik helyet</string>
     <string name="import_invalid_uri">A mappa nem felismerhető - kérjük, válassza ki újra</string>
+
     <string name="import_other">Az importálás megállt</string>
     <string name="import_unexpected">Az importálás váratlanul megállt</string>
     <string name="task_done">Feladat elvégezve - a naplófájlban megtekintheti a részleteket</string>
@@ -756,7 +780,6 @@
     <string name="meta_choose_type">Válasszon egy típust a \'%s\'</string>
     <string name="meta_replace_with">Helyettesítse...</string>
     <string name="meta_tag_all_selected">Az összes kiválasztott könyv címkézése</string>
-    <string name="meta_tag_all_selected_confirm">Az összes %1$d kiválasztott könyv megjelölése \'%2$s\'?</string>
     <string name="meta_rename_new_name">Új név</string>
     <string name="meta_rename_new_rule">A későbbi letöltésekhez jegyezze meg</string>
 <string name="meta_rule_source">Forrás</string>

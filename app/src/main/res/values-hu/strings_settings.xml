@@ -133,6 +133,8 @@
     <string name="pref_dl_blocked_tags_title">Blokkolt címkék</string>
     <string name="pref_dl_blocked_tags_summary">Bizonyos címkékkel ellátott könyvek letöltésének blokkolása\nTipp: a címkéket vesszővel válassza el egymástól</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Blokkoló viselkedés</string>
+
+
     <string name="pref_dl_threads_quantity_title">Párhuzamos letöltések száma</string>
     <string name="pref_dl_threads_quantity_summary">A letöltött képek száma egyidejűleg\nJelenleg: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">Letöltési sebesség limit</string>

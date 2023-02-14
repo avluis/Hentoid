@@ -133,6 +133,8 @@
     <string name="pref_dl_blocked_tags_title">Etiquetas bloqueadas</string>
     <string name="pref_dl_blocked_tags_summary">Bloquea la descarga de libros con etiquetas específicas\nTip: separa las etiquetas usando comas</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Comportamiento del bloqueo</string>
+
+
     <string name="pref_dl_threads_quantity_title">Número de descargas paralelas</string>
     <string name="pref_dl_threads_quantity_summary">Número de páginas descargadas de forma simultánea\nActual: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">Límite de velocidad de descarga</string>
