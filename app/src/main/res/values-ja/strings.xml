@@ -103,7 +103,7 @@
     <string name="fix_permissions">修正</string>
     <string name="view_queue">キューを表示</string>
     <string name="clear_search_history">検索履歴をクリア</string>
-<string name="downloader_title">ダウンローダー</string>
+<string name="downloader_title">ダウンロード</string>
     <string name="queue_queue_tab">進行中</string>
     <string name="queue_errors_tab">エラー</string>
     <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
@@ -235,24 +235,28 @@
     <string name="storage_merge_complete">マージ完了</string>
     <string name="storage_strategy_title">ダウンロード戦略：%s</string>
     <string name="storage_strategy_balance">空き容量のバランスを取る</string>
-
-
-
-
-
-
-
+    <string name="storage_strategy_balance_desc">Hentoidは、空き容量が多い場所にダウンロードし、バランスを維持しようとします。 ライブラリに既にある本は移動しません。</string>
+    <string name="storage_strategy_fallover">フォールオーバー</string>
+    <string name="storage_strategy_fallover_desc">Hentoidが場所１にダウンロードユニット %d%%の容量がいっぱいになった後、場所２にダウンロードします。</string>
+    <string name="storage_fallover_threshold">低い空き容量の値 (%%)</string>
+    <string name="storage_set_strategy">ダウンロード戦略を設定</string>
+    <string name="storage_stats">統計</string>
+    <string name="storage_stats_view">使用統計を表示する</string>
+<string name="refresh_title">ロケーションを更新</string>
     <string name="refresh_caption">ファイルとフォルダを再スキャンすることにより、ライブラリデータを自動的に更新します。</string>
     <string name="refresh_options">クリーンアップオプション</string>
-
-
+    <string name="refresh_location_internal">プライマリライブラリ (全て)</string>
+    <string name="refresh_location_internal_1">プライマリライブラリ１</string>
+    <string name="refresh_location_internal_2">プライマリライブラリ２</string>
     <string name="refresh_location_external">外部ライブラリ</string>
     <string name="refresh_options_rename">現在の名前と最大長の設定に従って、すべてのフォルダの名前を変更します</string>
     <string name="refresh_options_remove_placeholders">メタデータを介してインポートされたプレースホルダーブックを削除する</string>
-
+    <string name="refresh_options_renumber_pages">ページ番号を付け直す</string>
+    <string name="refresh_renumber_warning">これを有効にすることにより、全ての書籍がチェックされ、間違ったページ数があれば修正されます。\nこのオプションを選択すると、プロセスが大幅に遅くなることに注意してください。</string>
     <string name="refresh_options_remove">次の場所にあるフォルダを削除します…</string>
-
-    <string name="refresh_options_remove_or">又は</string>
+    <string name="refresh_options_remove_1">JSONファイルが存在しないフォルダーを削除する (推奨)</string>
+    <string name="refresh_options_remove_2">画像がダウンロードされていないフォルダを削除する</string>
+    <string name="refresh_options_remove_or">または</string>
 <string name="delete_title">お気に入りを除くすべてを削除する</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g><x:g example="books" id="type">%3$s</x:g></string>
     <plurals name="book_progress">
@@ -301,6 +305,16 @@
     <string name="dialog_prompt">フォルダを選択</string>
     <string name="importing_metadata">メタデータのインポート…</string>
 <string name="export_title">メタデータをエクスポート</string>
+    <string name="export_question">ライブラリを別の端末に転送しますか?</string>
+
+    <string name="export_answer_yes">この機能は、コレクションを別の端末に転送するために作成されたものではありません。 場合によっては機能しますが、再ダウンロードできない書籍もあるかもしれません。</string>
+    <string name="export_transfer_tutorial"><u>ライブラリ転送に関するウィキをチェック</u></string>
+
+    <plurals name="export_file_library">
+        <item quantity="one">プライマリ ライブラリのエクスポート (<x:g example="1" id="number">%d</x:g>書籍)</item>
+        <item quantity="other">プライマリ ライブラリのエクスポート (<x:g example="2" id="number">%d</x:g>本)</item>
+    </plurals>
+    <string name="export_location">ロケーション：%s</string>
     <string name="export_favs_only">お気に入りのみをエクスポート</string>
     <string name="export_groups">カスタムグループをエクスポートする</string>
     <plurals name="export_file_queue">
@@ -325,7 +339,8 @@
     <string name="import_download_folder">デバイスのダウンロードフォルダを選択しないでください。別のフォルダを作成または選択してください</string>
     <string name="import_create_fail">Hentoidフォルダの作成に失敗しました-別の場所を選択してください</string>
     <string name="import_invalid_uri">フォルダが認識されません-もう一度選択してください</string>
-
+    <string name="import_empty">フォルダーに書籍がありません</string>
+    <string name="import_other_primary">両方の主要な場所に同じフォルダーを設定することは出来ません</string>
     <string name="import_other">インポートが停止しました</string>
     <string name="import_unexpected">インポートが予期せず停止しました</string>
     <string name="task_done">タスクが完了しました-ログの詳細を参照してください</string>
@@ -608,6 +623,7 @@
 <string name="help_web_exh_account">ExHentaiアカウントを使用または作成してください</string>
     <string name="help_web_invalid_exh_credentials">クレデンシャルが無効です。もう一度ログインしてください</string>
     <string name="help_web_incomplete_exh_credentials">クレデンシャルが不完全です。もう一度ログインしてください。 問題が解決しない場合は、別の国からサイトにアクセスするか、新しいアカウントを作成することを検討してください。</string>
+    <string name="help_web_hires_eh_account">高解像度の画像をダウンロードするには、e-Hentaiアカウントを使用または作成する必要があります</string>
 <string name="category_any">どれか</string>
     <string name="exclude">除外する</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g>探す</string>
@@ -788,6 +804,7 @@
     <string name="meta_choose_type">\'%s\' のタイプを選択してください</string>
     <string name="meta_replace_with">と置換する…</string>
     <string name="meta_tag_all_selected">選択したすべての本にタグを付ける</string>
+    <string name="meta_tag_all_selected_confirm">選択したすべての書籍%2$sに「?」のタグ%1$dを付けますか？</string>
     <string name="meta_rename_new_name">新しい名前</string>
     <string name="meta_rename_new_rule">今後のダウンロードのために覚えておく</string>
 <string name="meta_rule_source">ソース</string>
@@ -802,8 +819,9 @@
     </plurals>
     <string name="notif_delete_fail">削除に失敗しました</string>
     <string name="notif_delete_fail_details">少なくとも1冊の本を削除できませんでした</string>
-
-
+<string name="notif_json_title">JSONの更新</string>
+    <string name="notif_json_progress">JSONを更新中</string>
+    <string name="notif_json_complete">更新が完了しました</string>
 <string name="title_startup">スタートアップ</string>
     <string name="title_startup_progress">起動…</string>
     <string name="title_startup_complete">起動が完了しました</string>
