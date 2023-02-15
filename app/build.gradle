@@ -244,7 +244,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
 
     // Download speed limit
-    implementation "org.isomorphism:token-bucket:1.6"
+    implementation "org.isomorphism:token-bucket:1.7"
 
     /**
      * UTILS
