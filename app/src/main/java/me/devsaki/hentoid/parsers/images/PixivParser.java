@@ -187,7 +187,14 @@ public class PixivParser extends BaseImageListParser {
 
         // Retrieve the list of Illusts IDs (=chapters)
         DownloadRateLimiter.INSTANCE.take();
-        PixivUserIllustMetadata userIllustsMetadata = PixivServer.api.getUserIllusts(userId, cookieStr).execute().body();
+        Response<PixivUserIllustMetadata> userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
+        if (HttpHelper.waitBlocking429(userIllustResp))
+            userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
+
+        if (userIllustResp.code() >= 400)
+            throw new IllegalArgumentException(String.format("Unreachable user illusts : code=%s (%s)", userIllustResp.code(), userIllustResp.message()));
+
+        PixivUserIllustMetadata userIllustsMetadata = userIllustResp.body();
         if (null == userIllustsMetadata || userIllustsMetadata.isError()) {
             String message = "Unreachable user illusts";
             if (userIllustsMetadata != null)
@@ -219,14 +226,14 @@ public class PixivParser extends BaseImageListParser {
         int index = 0;
         for (String illustId : illustIds) {
             DownloadRateLimiter.INSTANCE.take();
-            Response<PixivIllustMetadata> resp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
-            if (HttpHelper.waitBlocking429(resp))
-                resp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
+            Response<PixivIllustMetadata> illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
+            if (HttpHelper.waitBlocking429(illustResp))
+                illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
 
-            if (resp.code() >= 400)
-                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d]", resp.code(), resp.message(), index));
+            if (illustResp.code() >= 400)
+                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d]", illustResp.code(), illustResp.message(), index));
 
-            PixivIllustMetadata illustMetadata = resp.body();
+            PixivIllustMetadata illustMetadata = illustResp.body();
             if (null == illustMetadata || illustMetadata.isError()) {
                 String message;
                 if (illustMetadata != null)
