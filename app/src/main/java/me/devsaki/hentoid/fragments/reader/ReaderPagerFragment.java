@@ -1054,24 +1054,26 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
                 .setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
                 .setAutoDismiss(true);
 
-        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.viewer_reload_page), R.drawable.ic_action_refresh, 0));
-        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.viewer_reparse_book), R.drawable.ic_attribute_source, 1));
+        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.viewer_reload_page), false, R.drawable.ic_action_refresh, null, null, 0));
+        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.viewer_reparse_book), false, R.drawable.ic_attribute_source, null, null, 1));
 
         PowerMenu powerMenu = powerMenuBuilder.build();
 
         powerMenu.setOnMenuItemClickListener((position, item) -> {
-            int tag = (Integer) item.getTag();
-            if (0 == tag) {
-                viewModel.onPageChange(imageIndex, 0);
-            } else if (1 == tag) {
-                viewModel.reparseBook(
-                        t -> {
-                            Timber.w(t);
-                            binding.viewerLoadingTxt.setText(getResources().getString(R.string.redownloaded_error));
-                        }
-                );
-                binding.viewerLoadingTxt.setText(getResources().getString(R.string.please_wait));
-                binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
+            if (item.tag != null) {
+                int tag = (Integer) item.tag;
+                if (0 == tag) {
+                    viewModel.onPageChange(imageIndex, 0);
+                } else if (1 == tag) {
+                    viewModel.reparseBook(
+                            t -> {
+                                Timber.w(t);
+                                binding.viewerLoadingTxt.setText(getResources().getString(R.string.redownloaded_error));
+                            }
+                    );
+                    binding.viewerLoadingTxt.setText(getResources().getString(R.string.please_wait));
+                    binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
+                }
             }
         });
 

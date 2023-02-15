@@ -251,32 +251,40 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.open_folder),
-                    R.drawable.ic_folder,
                     false,
+                    R.drawable.ic_folder,
+                    null,
+                    null,
                     4
                 )
             )
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.storage_action_change),
-                    R.drawable.ic_edit,
                     false,
+                    R.drawable.ic_edit,
+                    null,
+                    null,
                     2
                 )
             )
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.refresh_title),
-                    R.drawable.ic_action_refresh,
                     false,
+                    R.drawable.ic_action_refresh,
+                    null,
+                    null,
                     0
                 )
             )
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.storage_action_remove),
-                    R.drawable.ic_action_remove,
                     false,
+                    R.drawable.ic_action_remove,
+                    null,
+                    null,
                     1
                 )
             )
@@ -295,8 +303,10 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                 3,
                 PowerMenuItem(
                     resources.getString(R.string.storage_action_merge_to_1),
-                    R.drawable.ic_action_merge,
                     false,
+                    R.drawable.ic_action_merge,
+                    null,
+                    null,
                     3
                 )
             )

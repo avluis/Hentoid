@@ -5,7 +5,11 @@ import android.graphics.Typeface
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.skydoves.powermenu.*
+import com.skydoves.powermenu.MenuAnimation
+import com.skydoves.powermenu.OnDismissedListener
+import com.skydoves.powermenu.OnMenuItemClickListener
+import com.skydoves.powermenu.PowerMenu
+import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Helper
 
@@ -48,15 +52,15 @@ class DownloadModeMenu {
                 .addItem(
                     PowerMenuItem(
                         res.getString(R.string.pref_viewer_dl_action_entries_1),
+                        false,
                         R.drawable.ic_action_download,
-                        false
                     )
                 )
                 .addItem(
                     PowerMenuItem(
                         res.getString(R.string.pref_viewer_dl_action_entries_2),
-                        R.drawable.ic_action_download_stream,
-                        false
+                        false,
+                        R.drawable.ic_action_download_stream
                     )
                 )
                 .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)

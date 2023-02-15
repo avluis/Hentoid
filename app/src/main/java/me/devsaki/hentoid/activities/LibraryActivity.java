@@ -635,13 +635,13 @@ public class LibraryActivity extends BaseActivity {
                     .setAutoDismiss(true);
 
             for (int i = searchRecords.size() - 1; i >= 0; i--)
-                powerMenuBuilder.addItem(new PowerMenuItem(searchRecords.get(i).getLabel(), R.drawable.ic_clock, false, searchRecords.get(i)));
+                powerMenuBuilder.addItem(new PowerMenuItem(searchRecords.get(i).getLabel(), false, R.drawable.ic_clock, null, null, searchRecords.get(i)));
             powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.clear_search_history), false));
 
             searchHistory = powerMenuBuilder.build();
             searchHistory.setOnMenuItemClickListener((position, item) -> {
-                if (item.getTag() != null) { // Tap on search record
-                    SearchRecord record = (SearchRecord) item.getTag();
+                if (item.tag != null) { // Tap on search record
+                    SearchRecord record = (SearchRecord) item.tag;
                     Uri searchUri = Uri.parse(record.getSearchString());
                     String targetQuery = searchUri.getPath();
                     if (!targetQuery.isEmpty())

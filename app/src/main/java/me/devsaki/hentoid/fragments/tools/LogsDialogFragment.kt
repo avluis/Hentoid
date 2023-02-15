@@ -26,8 +26,6 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.viewholders.TextItem
-import org.threeten.bp.Instant
-import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import timber.log.Timber
 import java.util.Locale
@@ -110,15 +108,15 @@ class LogsDialogFragment : DialogFragment(R.layout.dialog_tools_app_logs) {
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.logs_open),
-                    R.drawable.ic_action_open_in_new,
-                    false
+                    false,
+                    R.drawable.ic_action_open_in_new
                 )
             )
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.logs_share),
-                    R.drawable.ic_action_share,
-                    false
+                    false,
+                    R.drawable.ic_action_share
                 )
             )
             .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)

@@ -197,7 +197,7 @@ dependencies {
     implementation 'com.github.skydoves:powerspinner:1.2.4'
 
     // Popup menus with icons
-    implementation 'com.github.skydoves:powermenu:2.2.1'
+    implementation 'com.github.skydoves:powermenu:2.2.2'
 
     // Micro menu
     implementation "com.github.skydoves:submarine:1.0.7"

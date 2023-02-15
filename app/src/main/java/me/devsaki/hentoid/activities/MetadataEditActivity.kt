@@ -414,24 +414,30 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.menu_edit_name),
-                    R.drawable.ic_edit_square,
                     false,
+                    R.drawable.ic_edit_square,
+                    null,
+                    null,
                     0
                 )
             )
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.meta_replace_with),
-                    R.drawable.ic_replace,
                     false,
+                    R.drawable.ic_replace,
+                    null,
+                    null,
                     1
                 )
             )
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.remove_generic),
-                    R.drawable.ic_action_delete,
                     false,
+                    R.drawable.ic_action_delete,
+                    null,
+                    null,
                     3
                 )
             )
@@ -450,8 +456,10 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                 1,
                 PowerMenuItem(
                     resources.getString(R.string.meta_tag_all_selected),
-                    R.drawable.ic_action_select_all,
                     false,
+                    R.drawable.ic_action_select_all,
+                    null,
+                    null,
                     2
                 )
             )

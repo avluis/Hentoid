@@ -26,15 +26,15 @@ class AddQueueMenu {
                 .addItem(
                     PowerMenuItem(
                         res.getString(R.string.queue_add_top),
-                        R.drawable.ic_action_top,
-                        false
+                        false,
+                        R.drawable.ic_action_top
                     )
                 )
                 .addItem(
                     PowerMenuItem(
                         res.getString(R.string.queue_add_bottom),
-                        R.drawable.ic_action_bottom,
-                        false
+                        false,
+                        R.drawable.ic_action_bottom
                     )
                 )
                 .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
