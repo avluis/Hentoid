@@ -191,7 +191,7 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
     // Tooltips
-    implementation 'com.github.skydoves:balloon:1.4.7'
+    implementation 'com.github.skydoves:balloon:1.5.2'
 
     // Dropdown lists
     implementation 'com.github.skydoves:powerspinner:1.2.4'
