@@ -105,7 +105,7 @@ class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
         if (event.eventType == DownloadEvent.Type.EV_COMPLETE) {
             binding.statsDetails.setText(R.string.download_complete)
             previousNbErrors = 0
-        } else if (event.eventType == DownloadEvent.Type.EV_CANCEL) {
+        } else if (event.eventType == DownloadEvent.Type.EV_CANCELED) {
             binding.statsDetails.setText(R.string.download_cancelled)
             previousNbErrors = 0
         } else if (event.eventType == DownloadEvent.Type.EV_PROGRESS

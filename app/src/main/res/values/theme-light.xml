@@ -12,6 +12,7 @@
         <item name="colorOnTertiary">@color/on_secondary_light</item>
 
         <item name="colorSurface">@color/window_background_light</item>
+        <item name="colorSurfaceVariant">@color/primary_light</item>
         <item name="colorOnSurface">@color/on_surface_light</item>
         <item name="colorOnSurfaceVariant">@color/on_surface_light</item>
         <item name="colorContainer">@color/window_background_light</item>

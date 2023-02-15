@@ -42,7 +42,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.enums.StorageLocation;
-import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.json.ContentV1;
 import me.devsaki.hentoid.json.DoujinBuilder;
@@ -174,7 +174,7 @@ public class PrimaryImportWorker extends BaseWorker {
         Context context = getApplicationContext();
 
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
-        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
+        EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE));
 
         String previousUriStr = Preferences.getStorageUri(location);
         if (previousUriStr.isEmpty()) previousUriStr = "FAIL"; // Auto-fails if location is not set

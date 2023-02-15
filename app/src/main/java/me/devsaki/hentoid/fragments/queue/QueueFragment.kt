@@ -14,6 +14,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -45,6 +46,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.databinding.FragmentQueueBinding
 import me.devsaki.hentoid.databinding.IncludeQueueBottomBarBinding
+import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.events.ProcessEvent
@@ -109,8 +111,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     // State
     private var isPreparingDownload = false
-    private var isPaused = false
-    private var isEmpty = false
+//    private var isPaused = false
+//    private var isEmpty = false
 
     // Indicate if the fragment is currently canceling all items
     private var isCancelingAll = false
@@ -167,7 +169,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             deselect(selections.toMutableSet())
         }
         initSelectionToolbar()
-        update(-1)
+        updateControlBar()
     }
 
     override fun onDestroy() {
@@ -184,11 +186,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         _bottomBarBinding = IncludeQueueBottomBarBinding.bind(binding.root)
 
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
-        bottomBarBinding.btnStart.setOnClickListener {
-            EventBus.getDefault().post(DownloadEvent(DownloadEvent.Type.EV_UNPAUSE))
-        }
-        bottomBarBinding.btnPause.setOnClickListener {
-            EventBus.getDefault().post(DownloadEvent(DownloadEvent.Type.EV_PAUSE))
+        bottomBarBinding.actionButton.setOnClickListener {
+            if (isPaused()) {
+
+                viewModel.unpauseQueue()
+            } else
+                EventBus.getDefault().post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE))
         }
 
         // Book list
@@ -479,39 +482,38 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 false
             )
 
-            DownloadEvent.Type.EV_UNPAUSE -> {
-                viewModel.unpauseQueue()
+            DownloadEvent.Type.EV_UNPAUSED -> {
                 updateProgress(false)
-                update(event.eventType)
+                updateControlBar()
             }
 
-            DownloadEvent.Type.EV_SKIP -> {
+            DownloadEvent.Type.EV_SKIPPED -> {
                 // Books switch / display handled directly by the adapter
                 bottomBarBinding.queueInfo.text = ""
-                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.GONE
+                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.INVISIBLE
             }
 
             DownloadEvent.Type.EV_COMPLETE -> {
-                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.GONE
+                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.INVISIBLE
                 if (0 == itemAdapter.adapterItemCount) errorStatsMenu?.isVisible = false
-                update(event.eventType)
+                updateControlBar()
             }
 
-            DownloadEvent.Type.EV_PAUSE, DownloadEvent.Type.EV_CANCEL, DownloadEvent.Type.EV_INTERRUPT_CONTENT -> {
+            DownloadEvent.Type.EV_PAUSED, DownloadEvent.Type.EV_CANCELED, DownloadEvent.Type.EV_CONTENT_INTERRUPTED -> {
                 // Don't update the UI if it is in the process of canceling all items
                 if (isCancelingAll) return
-                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.GONE
+                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.INVISIBLE
                 if (null == event.content) updateProgress(true)
                 else updateProgress(event.content, true)
-                update(event.eventType)
+                updateControlBar()
             }
 
             else -> {
                 if (isCancelingAll) return
-                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.GONE
+                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.INVISIBLE
                 if (null == event.content) updateProgress(true)
                 else updateProgress(event.content, true)
-                update(event.eventType)
+                updateControlBar()
             }
         }
     }
@@ -589,17 +591,16 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPrepDownloadEvent(event: DownloadPreparationEvent) {
-        bottomBarBinding.queueDownloadPreparationProgressBar.let {
-            if (!it.isShown && !event.isCompleted && !isPaused && !isEmpty) {
-                it.setTotal(event.total.toLong())
-                it.visibility = View.VISIBLE
+        bottomBarBinding.queueDownloadPreparationProgressBar.apply {
+            if (!isShown && !event.isCompleted && !isPaused() && !isEmpty()) {
+                visibility = View.VISIBLE
                 bottomBarBinding.queueInfo.setText(R.string.queue_preparing)
                 isPreparingDownload = true
                 updateProgress(false)
-            } else if (it.isShown && event.isCompleted) {
-                it.visibility = View.GONE
+            } else if (isShown && event.isCompleted) {
+                visibility = View.INVISIBLE
             }
-            it.setProgress1(event.done.toFloat())
+            progress = event.done * 100 / event.total
         }
     }
 
@@ -611,7 +612,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onServiceDestroyed(event: ServiceDestroyedEvent) {
         if (event.service != R.id.download_service) return
-        isPaused = true
         updateProgress(true)
         updateControlBar()
     }
@@ -683,36 +683,25 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         }
     }
 
-    /**
-     * Update the entire Download queue screen
-     *
-     * @param eventType Event type that triggered the update, if any (See types described in DownloadEvent); -1 if none
-     */
-    private fun update(eventType: Int) {
-        // Cancel event means a book will be removed very soon from the queue
-        val bookDiff = if (eventType == DownloadEvent.Type.EV_CANCEL) 1 else 0
-        isEmpty = 0 == itemAdapter.adapterItemCount - bookDiff
-        isPaused = !isEmpty && (
-                eventType == DownloadEvent.Type.EV_PAUSE
-                        || ContentQueueManager.isQueuePaused
-                        || !ContentQueueManager.isQueueActive(requireActivity())
-                )
-        updateControlBar()
+    private fun isPaused(): Boolean {
+        return ContentQueueManager.isQueuePaused || !ContentQueueManager.isQueueActive(
+            requireActivity()
+        )
+    }
+
+    private fun isEmpty(): Boolean {
+        return 0 == itemAdapter.adapterItemCount
     }
 
     private fun onQueueChanged(result: List<QueueRecord>) {
         Timber.d(">>Queue changed ! Size=%s", result.size)
-        isEmpty = result.isEmpty()
-        isPaused = !isEmpty && (
-                ContentQueueManager.isQueuePaused
-                        || !ContentQueueManager.isQueueActive(requireActivity())
-                )
+        val empty = result.isEmpty()
 
         // Don't process changes while everything is being canceled, it usually kills the UI as too many changes are processed at the same time
-        if (isCancelingAll && !isEmpty) return
+        if (isCancelingAll && !empty) return
 
         // Update list visibility
-        binding.queueEmptyTxt.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        binding.queueEmptyTxt.visibility = if (empty) View.VISIBLE else View.GONE
 
         // Update displayed books
         val contentItems = result.mapIndexed { i, c ->
@@ -728,7 +717,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         updateControlBar()
 
         // Signal swipe-to-cancel though a tooltip
-        if (!isEmpty) TooltipHelper.showTooltip(
+        if (!empty) TooltipHelper.showTooltip(
             requireContext(),
             R.string.help_swipe_cancel,
             ArrowOrientation.BOTTOM,
@@ -777,49 +766,57 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         log: String? = null,
         content: Content? = null
     ) {
-        val isActive = !isEmpty && !isPaused
+        val isActive = !isEmpty() && !isPaused()
         Timber.d(
             "Queue state : E/P/A > %s/%s/%s -- %s elements",
-            isEmpty,
-            isPaused,
+            isEmpty(),
+            isPaused(),
             isActive,
             itemAdapter.adapterItemCount
         )
 
         // Update list visibility
-        binding.queueEmptyTxt.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        binding.queueEmptyTxt.visibility = if (isEmpty()) View.VISIBLE else View.GONE
 
         // Update control bar status
-        bottomBarBinding.let {
-            if (isPreparingDownload && !isEmpty) {
-                it.queueInfo.setText(R.string.queue_preparing)
+        bottomBarBinding.apply {
+            if (isPreparingDownload && !isEmpty()) {
+                queueInfo.setText(R.string.queue_preparing)
             } else {
-                it.queueInfo.text = formatStep(preparationStep, log)
+                queueInfo.text = formatStep(preparationStep, log)
             }
             if (isActive) {
-                it.btnPause.visibility = View.VISIBLE
-                it.btnStart.visibility = View.GONE
+                actionButton.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        requireActivity(),
+                        R.drawable.ic_action_pause
+                    )
+                )
                 if (content != null)
-                    it.queueStatus.text = resources.getString(R.string.queue_dl, content.title)
+                    queueStatus.text = resources.getString(R.string.queue_dl, content.title)
 
                 // Stop blinking animation, if any
-                it.queueInfo.clearAnimation()
-                it.queueStatus.clearAnimation()
+                queueInfo.clearAnimation()
+                queueStatus.clearAnimation()
             } else {
-                it.btnPause.visibility = View.GONE
-                if (isEmpty) {
-                    it.btnStart.visibility = View.GONE
+                if (isEmpty()) {
                     activity.get()
                         ?.getToolbar()?.menu?.findItem(R.id.action_error_stats)?.isVisible = false
-                    it.queueStatus.text = ""
-                } else if (isPaused) {
-                    it.btnStart.visibility = View.VISIBLE
-                    it.queueStatus.setText(R.string.queue_paused)
+                    queueStatus.text = ""
+                } else if (isPaused()) {
+                    actionButton.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            requireActivity(),
+                            R.drawable.ic_action_play
+                        )
+                    )
+                    queueStatus.setText(R.string.queue_paused)
+                    queueInfo.text = ""
 
                     // Set blinking animation when queue is paused
                     val animation = BlinkAnimation(750, 20)
-                    it.queueStatus.startAnimation(animation)
-                    it.queueInfo.startAnimation(animation)
+                    queueStatus.startAnimation(animation)
+                    queueInfo.startAnimation(animation)
                 }
             }
         }
@@ -842,11 +839,13 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         isPausedevent: Boolean,
         isIndividual: Boolean = true
     ) {
-        fastAdapter.getItemById(content.uniqueHash())?.first?.updateProgress(
-            binding.queueList.findViewHolderForItemId(content.uniqueHash()),
-            isPausedevent,
-            isIndividual
-        )
+        binding.queueList.findViewHolderForItemId(content.uniqueHash())?.let {
+            fastAdapter.getItemById(content.uniqueHash())?.first?.updateProgress(
+                it,
+                isPausedevent,
+                isIndividual
+            )
+        }
     }
 
     private fun onItemClick(item: ContentItem): Boolean {

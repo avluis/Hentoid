@@ -32,7 +32,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.json.sources.EHentaiImageMetadata;
 import me.devsaki.hentoid.json.sources.EHentaiImageQuery;
 import me.devsaki.hentoid.json.sources.EHentaiImageResponse;
@@ -450,18 +450,15 @@ public class EHentaiParser implements ImageListParser {
      * @param event Download event
      */
     @Subscribe
-    public void onDownloadEvent(DownloadEvent event) {
+    public void onDownloadCommand(DownloadCommandEvent event) {
         switch (event.eventType) {
-            case DownloadEvent.Type.EV_PAUSE:
-            case DownloadEvent.Type.EV_CANCEL:
-            case DownloadEvent.Type.EV_SKIP:
+            case DownloadCommandEvent.Type.EV_PAUSE:
+            case DownloadCommandEvent.Type.EV_CANCEL:
+            case DownloadCommandEvent.Type.EV_SKIP:
                 progress.haltProcess();
                 break;
-            case DownloadEvent.Type.EV_COMPLETE:
-            case DownloadEvent.Type.EV_PREPARATION:
-            case DownloadEvent.Type.EV_PROGRESS:
-            case DownloadEvent.Type.EV_UNPAUSE:
-            case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
+            case DownloadCommandEvent.Type.EV_UNPAUSE:
+            case DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT:
             default:
                 // Other events aren't handled here
                 break;

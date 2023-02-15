@@ -51,6 +51,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.enums.StorageLocation;
+import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadReviveEvent;
 import me.devsaki.hentoid.json.JsonContent;
@@ -631,7 +632,7 @@ public class ContentDownloadWorker extends BaseWorker {
                     // Move the book to the errors queue and signal it as skipped
                     logErrorRecord(content.getId(), ErrorType.WIFI, content.getUrl(), "Book", "");
                     moveToErrors(content.getId());
-                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_SKIP));
+                    EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_SKIP));
                 }
             }
 
@@ -1108,22 +1109,22 @@ public class ContentDownloadWorker extends BaseWorker {
      * @param event Download event
      */
     @Subscribe
-    public void onDownloadEvent(DownloadEvent event) {
+    public void onDownloadCommand(DownloadCommandEvent event) {
         switch (event.eventType) {
-            case DownloadEvent.Type.EV_PAUSE:
+            case DownloadCommandEvent.Type.EV_PAUSE:
                 dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 requestQueueManager.cancelQueue();
                 ContentQueueManager.INSTANCE.pauseQueue();
                 notificationManager.cancel();
                 break;
-            case DownloadEvent.Type.EV_CANCEL:
+            case DownloadCommandEvent.Type.EV_CANCEL:
                 requestQueueManager.cancelQueue();
                 downloadCanceled.set(true);
                 downloadInterrupted.set(true);
                 // Tracking Event (Download Canceled)
                 HentoidApp.trackDownloadEvent("Cancelled");
                 break;
-            case DownloadEvent.Type.EV_SKIP:
+            case DownloadCommandEvent.Type.EV_SKIP:
                 dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 requestQueueManager.cancelQueue();
                 downloadSkipped.set(true);
@@ -1131,14 +1132,12 @@ public class ContentDownloadWorker extends BaseWorker {
                 // Tracking Event (Download Skipped)
                 HentoidApp.trackDownloadEvent("Skipped");
                 break;
-            case DownloadEvent.Type.EV_COMPLETE:
-            case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
-            case DownloadEvent.Type.EV_PREPARATION:
-            case DownloadEvent.Type.EV_PROGRESS:
-            case DownloadEvent.Type.EV_UNPAUSE:
+            case DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT:
+            case DownloadCommandEvent.Type.EV_UNPAUSE:
             default:
                 // Other events aren't handled here
         }
+        EventBus.getDefault().post(new DownloadEvent(event));
     }
 
     /**

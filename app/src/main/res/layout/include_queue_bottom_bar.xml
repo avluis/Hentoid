@@ -5,89 +5,65 @@
     tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
     tools:showIn="@layout/fragment_queue">
 
-    <View
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/background_bottom_bar"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="64dp"
         android:background="?colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/horizontal_barrier" />
+        app:layout_constraintStart_toStartOf="parent">
 
-    <ImageButton
-        android:id="@+id/btnStart"
-        android:layout_width="?android:attr/actionBarSize"
-        android:layout_height="?android:attr/actionBarSize"
-        android:background="@drawable/selector_button_solid"
-        android:scaleType="fitXY"
-        android:src="@drawable/ic_action_play"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="ContentDescription" />
+        <ImageButton
+            android:id="@+id/action_button"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/selector_button_solid"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_action_play"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:ignore="ContentDescription" />
 
-    <ImageButton
-        android:id="@+id/btnPause"
-        android:layout_width="?android:attr/actionBarSize"
-        android:layout_height="?android:attr/actionBarSize"
-        android:background="@drawable/selector_button_solid"
-        android:scaleType="fitXY"
-        android:src="@drawable/ic_action_pause"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="ContentDescription" />
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/queueDownloadPreparationProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:focusable="false"
+            android:progress="33"
+            android:visibility="invisible"
+            app:indicatorColor="@color/secondary_light"
+            app:indicatorSize="?android:attr/actionBarSize"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:visibility="visible" />
 
-    <me.devsaki.hentoid.views.CircularProgressView
-        android:id="@+id/queueDownloadPreparationProgressBar"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="?android:attr/actionBarSize"
-        android:layout_height="?android:attr/actionBarSize"
-        android:clickable="false"
-        android:focusable="false"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:visibility="visible" />
+        <TextView
+            android:id="@+id/queueStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="middle"
+            android:singleLine="true"
+            android:textSize="@dimen/text_body_1"
+            app:layout_constraintBottom_toTopOf="@+id/queueInfo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/action_button"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Downloading BOOK TITLE" />
 
-    <TextView
-        android:id="@+id/queueStatus"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:ellipsize="middle"
-        android:singleLine="true"
-        android:textSize="@dimen/text_body_1"
-        app:layout_constraintBottom_toTopOf="@+id/queueInfo"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/vertical_barrier"
-        app:layout_constraintTop_toTopOf="@id/horizontal_barrier"
-        tools:text="Downloading BOOK TITLE" />
-
-    <TextView
-        android:id="@+id/queueInfo"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/text_body_1"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/queueStatus"
-        app:layout_constraintStart_toStartOf="@id/queueStatus"
-        app:layout_constraintTop_toBottomOf="@id/queueStatus"
-        tools:text="In progress (25/5644 pages) [1 error]" />
-
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/horizontal_barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="top"
-        app:constraint_referenced_ids="btnStart,btnPause,queueDownloadPreparationProgressBar" />
-
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/vertical_barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="end"
-        app:constraint_referenced_ids="queueDownloadPreparationProgressBar,btnPause,btnStart" />
-
+        <TextView
+            android:id="@+id/queueInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_body_1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/queueStatus"
+            app:layout_constraintStart_toStartOf="@id/queueStatus"
+            app:layout_constraintTop_toBottomOf="@id/queueStatus"
+            tools:text="In progress (25/5644 pages) [1 error]" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </merge>
 

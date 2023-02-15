@@ -90,7 +90,7 @@ class RequestQueueManager private constructor(
         synchronized(activeRequests) {
             Timber.d("resetRequestQueue :: Requeuing %d requests", activeRequests.size)
             CoroutineScope(Dispatchers.Default).launch {
-                for (order in activeRequests) executeRequest(order)
+                for (order in activeRequests) executeRequest(order, false)
             }
         }
         refill()
@@ -181,10 +181,10 @@ class RequestQueueManager private constructor(
      *
      * @param order Request order to execute
      */
-    private suspend fun executeRequest(order: RequestOrder) {
+    private suspend fun executeRequest(order: RequestOrder, insert: Boolean = true) {
         mRequestQueue?.let {
             if (!it.active) return
-            synchronized(activeRequests) { activeRequests.add(order) }
+            if (insert) synchronized(activeRequests) { activeRequests.add(order) }
             it.executeRequest(order)
             synchronized(waitingRequestQueue) {
                 Timber.d(

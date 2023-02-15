@@ -22,7 +22,7 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 public class HdPornComicsContent extends BaseContentParser {
     @Selector(value = "h1", defValue = NO_TITLE)
     private String title;
-    @Selector(value = "head meta[property=\"article:published_time\"]", attr = "content")
+    @Selector(value = "head meta[property=\"article:published_time\"]", attr = "content", defValue = "")
     private String uploadDate;
     @Selector(value = "head link[rel='shortlink']", attr = "href")
     private String shortlink;
@@ -47,7 +47,9 @@ public class HdPornComicsContent extends BaseContentParser {
             int equalIndex = shortlink.lastIndexOf('=');
             if (equalIndex > -1) content.setUniqueSiteId(shortlink.substring(equalIndex + 1));
         }
-        content.setUploadDate(Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")); // e.g. 2021-08-08T20:53:49+00:00
+
+        if (uploadDate != null && !uploadDate.isEmpty())
+            content.setUploadDate(Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")); // e.g. 2021-08-08T20:53:49+00:00
 
         String coverUrl = ParseHelper.getImgSrc(cover);
         content.setCoverImageUrl(coverUrl);

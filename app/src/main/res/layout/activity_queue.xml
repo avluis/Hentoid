@@ -39,6 +39,8 @@
         app:tabIconTint="@color/selector_tab_icon"
         app:tabInlineLabel="true"
         app:tabSelectedTextColor="@color/white_opacity_87"
+        app:tabIndicatorFullWidth="true"
+        app:tabIndicatorColor="@color/white_opacity_87"
         app:tabTextColor="@color/white_opacity_25"
         tools:ignore="HardcodedText" />
 

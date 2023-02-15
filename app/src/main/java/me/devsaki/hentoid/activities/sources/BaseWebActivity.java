@@ -91,6 +91,7 @@ import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
@@ -440,7 +441,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         Preferences.unregisterPrefsChangedListener(listener);
 
         // Cancel any previous extra page load
-        EventBus.getDefault().post(new DownloadEvent(currentContent, DownloadEvent.Type.EV_INTERRUPT_CONTENT));
+        EventBus.getDefault().post(new DownloadCommandEvent(currentContent, DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT));
 
         if (dao != null) dao.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
@@ -638,7 +639,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         duplicateId = -1;
         duplicateSimilarity = 0f;
         // Cancel any previous extra page load
-        EventBus.getDefault().post(new DownloadEvent(currentContent, DownloadEvent.Type.EV_INTERRUPT_CONTENT));
+        EventBus.getDefault().post(new DownloadCommandEvent(currentContent, DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT));
         // Greys out the action button
         // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious, Pixiv)
         runOnUiThread(() -> {
