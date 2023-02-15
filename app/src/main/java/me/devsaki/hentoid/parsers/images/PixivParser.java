@@ -66,8 +66,8 @@ public class PixivParser extends BaseImageListParser {
                     onlineContent.getGalleryUrl(), null,
                     useMobileAgent, useHentoidAgent, useWebviewAgent);
 
-            // API calls seem to be protected against request spam; 1 is arbitrary
-            DownloadRateLimiter.INSTANCE.setRateLimit2(1);
+            // API calls seem to be protected against request spam; 2 is arbitrary
+            DownloadRateLimiter.INSTANCE.setRateLimit(2);
 
             if (onlineContent.getUrl().contains("/series/"))
                 return parseSeries(onlineContent, storedContent, cookieStr);
@@ -220,7 +220,9 @@ public class PixivParser extends BaseImageListParser {
         for (String illustId : illustIds) {
             DownloadRateLimiter.INSTANCE.take();
             Response<PixivIllustMetadata> resp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
-            // TODO if HTTP 429, sleep according to 'Retry-After' header
+            if (HttpHelper.waitBlocking429(resp))
+                resp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
+
             if (resp.code() >= 400)
                 throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d]", resp.code(), resp.message(), index));
 

@@ -26,6 +26,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -659,6 +661,18 @@ public class HttpHelper {
         result = result.trim().replace("-", "/");
         if (!result.endsWith("/")) result = result + "/";
         return result;
+    }
+
+    public static boolean waitBlocking429(retrofit2.Response<?> response) {
+        if (429 == response.code()) {
+            String retryDelay = response.headers().get("Retry-After");
+            if (null == retryDelay) retryDelay = response.headers().get("retry-after");
+            if (retryDelay != null && StringHelper.isNumeric(retryDelay)) {
+                Helper.pause(Integer.parseInt(retryDelay));
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
