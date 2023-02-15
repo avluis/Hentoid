@@ -5,7 +5,10 @@ import me.devsaki.hentoid.enums.Site;
 public class MultpornActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "multporn.net";
-    private static final String[] GALLERY_FILTER = {"multporn.net/node/[0-9]+$", "multporn.net/(hentai_manga|hentai|comics|pictures|rule_6|gay_porn_comics|GIF)/[\\w%_\\-]+$"};
+    private static final String[] GALLERY_FILTER = {
+            "multporn.net/node/[0-9]+$", "multporn.net/(hentai_manga|authors|hentai|comics|pictures|rule_6|gay_porn_comics|GIF)/[\\w%_\\-]+$",
+            "multporn.net/node/[0-9]+$", "multporn.net/(hentai_manga|authors|hentai|comics|pictures|rule_6|gay_porn_comics|GIF)/[\\w%_\\-]+/[\\w%_\\-]+$",
+    };
     private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
     private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder"};
     private static final String[] AD_ELEMENTS = {"iframe", ".c-ads"};
