@@ -122,7 +122,9 @@ public class HttpHelper {
      *
      * @param url             URL to read the resource from
      * @param headers         Headers to use when building the request
-     * @param useHentoidAgent True if the Hentoid User-Agent has to be used; false if a neutral User-Agent has to be used
+     * @param useMobileAgent  True to use the mobile User-Agent; false to use the desktop User-Agent
+     * @param useHentoidAgent True to use the Hentoid User-Agent; false to use a neutral User-Agent
+     * @param useWebviewAgent True to reveal the use of a webview through the User-Agent; false to use a neutral User-Agent
      * @return HTTP response
      * @throws IOException in case something bad happens when trying to access the online resource
      */
@@ -157,8 +159,11 @@ public class HttpHelper {
      *
      * @param url             URL to read the resource from
      * @param headers         Headers to use when building the request
-     * @param useHentoidAgent True if the Hentoid User-Agent has to be used; false if a neutral User-Agent has to be used
+     * @param useMobileAgent  True to use the mobile User-Agent; false to use the desktop User-Agent
+     * @param useHentoidAgent True to use the Hentoid User-Agent; false to use a neutral User-Agent
+     * @param useWebviewAgent True to reveal the use of a webview through the User-Agent; false to use a neutral User-Agent
      * @param body            Body of the resource to post
+     * @param mimeType        MIME-type of the posted body
      * @return HTTP response
      * @throws IOException in case something bad happens when trying to access the online resource
      */
@@ -180,8 +185,9 @@ public class HttpHelper {
      *
      * @param url             URL to read the resource from
      * @param headers         Headers to use when building the request
-     * @param useMobileAgent  True if a mobile User-Agent has to be used; false if a desktop User-Agent has to be used
-     * @param useHentoidAgent True if the Hentoid User-Agent has to be used; false if a neutral User-Agent has to be used
+     * @param useMobileAgent  True to use the mobile User-Agent; false to use the desktop User-Agent
+     * @param useHentoidAgent True to use the Hentoid User-Agent; false to use a neutral User-Agent
+     * @param useWebviewAgent True to reveal the use of a webview through the User-Agent; false to use a neutral User-Agent
      * @return HTTP request built with the given arguments
      */
     private static Request.Builder buildRequest(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
@@ -197,12 +203,13 @@ public class HttpHelper {
     }
 
     /**
-     * Convert the given OkHttp {@link Response} into a {@link WebResourceResponse}
+     * Convert the given OkHttp {@link Response} into a {@link WebResourceResponse}, using the data from the given InputStream
      *
-     * @param resp OkHttp {@link Response}
+     * @param resp         OkHttp {@link Response}
+     * @param responseData Data to include in the resulting response
      * @return The {@link WebResourceResponse} converted from the given OkHttp {@link Response}
      */
-    public static WebResourceResponse okHttpResponseToWebkitResponse(@NonNull final Response resp, @NonNull final InputStream is) {
+    public static WebResourceResponse okHttpResponseToWebkitResponse(@NonNull final Response resp, @NonNull final InputStream responseData) {
         final String contentTypeValue = resp.header(HEADER_CONTENT_TYPE);
 
         WebResourceResponse result;
@@ -211,9 +218,9 @@ public class HttpHelper {
         if (message.trim().isEmpty()) message = "None";
         if (contentTypeValue != null) {
             Pair<String, String> details = cleanContentType(contentTypeValue);
-            result = new WebResourceResponse(details.first, details.second, resp.code(), message, responseHeaders, is);
+            result = new WebResourceResponse(details.first, details.second, resp.code(), message, responseHeaders, responseData);
         } else {
-            result = new WebResourceResponse(FileHelper.DEFAULT_MIME_TYPE, null, resp.code(), message, responseHeaders, is);
+            result = new WebResourceResponse(FileHelper.DEFAULT_MIME_TYPE, null, resp.code(), message, responseHeaders, responseData);
         }
 
         return result;
@@ -341,7 +348,13 @@ public class HttpHelper {
         return parts[parts.length - 2] + "." + parts[parts.length - 1];
     }
 
-    public static String getProtocol(@NonNull final String url) {
+    /**
+     * Extract and return the protocol from the given HTTP URL
+     *
+     * @param url URL to parse, in String form
+     * @return Protocol of the given URL : https ou http
+     */
+    public static String getHttpProtocol(@NonNull final String url) {
         return url.startsWith("https") ? "https" : "http";
     }
 
@@ -572,6 +585,7 @@ public class HttpHelper {
      * Get the app's mobile user agent
      *
      * @param withHentoid True if the Hentoid user-agent has to appear
+     * @param withWebview True if the user-agent has to mention the use of a webview
      * @return The app's mobile user agent
      */
     public static String getMobileUserAgent(boolean withHentoid, boolean withWebview) {
@@ -582,6 +596,7 @@ public class HttpHelper {
      * Get the app's desktop user agent
      *
      * @param withHentoid True if the Hentoid user-agent has to appear
+     * @param withWebview True if the user-agent has to mention the use of a webview
      * @return The app's desktop user agent
      */
     public static String getDesktopUserAgent(boolean withHentoid, boolean withWebview) {
@@ -597,6 +612,7 @@ public class HttpHelper {
      * Get the app's default user agent
      *
      * @param withHentoid True if the Hentoid user-agent has to appear
+     * @param withWebview True if the user-agent has to mention the use of a webview
      * @return The app's default user agent
      */
     public static String getDefaultUserAgent(boolean withHentoid, boolean withWebview) {
@@ -663,6 +679,12 @@ public class HttpHelper {
         return result;
     }
 
+    /**
+     * If the given response is an HTTP 429, block and wait according to the delay supplied in the response
+     *
+     * @param response Response to examine
+     * @return True if the response is an HTTP 429 _and_ a delay has been supplied and waited out
+     */
     public static boolean waitBlocking429(retrofit2.Response<?> response) {
         if (429 == response.code()) {
             String retryDelay = response.headers().get("Retry-After");

@@ -38,7 +38,7 @@ public class PururinParser extends BaseImageListParser {
         ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
 
         String url = content.getReaderUrl();
-        String protocol = HttpHelper.getProtocol(url) + ":";
+        String protocol = HttpHelper.getHttpProtocol(url) + ":";
 
         // The whole algorithm is in app.js
         // 1- Get image extension from gallery data (JSON on HTML body)
