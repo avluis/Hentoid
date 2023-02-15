@@ -76,7 +76,7 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
         }
     }
 
-    fun lookForAttr(type: AttributeType, name: String): Attribute? {
+    private fun lookForAttr(type: AttributeType, name: String): Attribute {
         val result = mockObjectBoxDAO.selectAttributeMasterDataPaged(
             listOf(type),
             name,
@@ -84,6 +84,7 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
             null,
             ContentHelper.Location.ANY,
             ContentHelper.Type.ANY,
+            true,
             1,
             40,
             0

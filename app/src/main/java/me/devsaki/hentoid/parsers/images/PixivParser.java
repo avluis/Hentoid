@@ -29,9 +29,11 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.retrofit.sources.PixivServer;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.download.DownloadRateLimiter;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import retrofit2.Response;
 import timber.log.Timber;
 
 public class PixivParser extends BaseImageListParser {
@@ -50,8 +52,6 @@ public class PixivParser extends BaseImageListParser {
             EventBus.getDefault().unregister(this);
         }
 
-        progressComplete();
-
         return result;
     }
 
@@ -65,6 +65,9 @@ public class PixivParser extends BaseImageListParser {
             String cookieStr = HttpHelper.getCookies(
                     onlineContent.getGalleryUrl(), null,
                     useMobileAgent, useHentoidAgent, useWebviewAgent);
+
+            // API calls seem to be protected against request spam; 2 is arbitrary
+            DownloadRateLimiter.INSTANCE.setRateLimit(2);
 
             if (onlineContent.getUrl().contains("/series/"))
                 return parseSeries(onlineContent, storedContent, cookieStr);
@@ -80,6 +83,7 @@ public class PixivParser extends BaseImageListParser {
     }
 
     private List<ImageFile> parseIllust(@NonNull Content content, @NonNull String cookieStr) throws Exception {
+        DownloadRateLimiter.INSTANCE.take();
         PixivIllustPagesMetadata galleryMetadata = PixivServer.api.getIllustPages(content.getUniqueSiteId(), cookieStr).execute().body();
         if (null == galleryMetadata || galleryMetadata.isError()) {
             String message = "";
@@ -107,6 +111,7 @@ public class PixivParser extends BaseImageListParser {
         while (chapters.size() < nbChapters) {
             if (processHalted.get()) break;
             int chaptersToRead = Math.min(nbChapters - chapters.size(), MAX_QUERY_WINDOW);
+            DownloadRateLimiter.INSTANCE.take();
             PixivSeriesIllustMetadata seriesContentMetadata = PixivServer.api.getSeriesIllusts(seriesId, chaptersToRead, chapters.size(), cookieStr).execute().body();
             if (null == seriesContentMetadata || seriesContentMetadata.isError()) {
                 String message = "Unreachable series illust";
@@ -142,7 +147,7 @@ public class PixivParser extends BaseImageListParser {
         result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
         Set<Attribute> attrs = new HashSet<>();
         for (Chapter ch : extraChapters) {
-            if (processHalted.get()) break;
+            DownloadRateLimiter.INSTANCE.take();
             PixivIllustMetadata illustMetadata = PixivServer.api.getIllustMetadata(ch.getUniqueId(), cookieStr).execute().body();
             if (null == illustMetadata || illustMetadata.isError()) {
                 String message = "Unreachable illust";
@@ -160,14 +165,16 @@ public class PixivParser extends BaseImageListParser {
 
             result.addAll(chapterImages);
 
+            if (processHalted.get()) break;
             progressPlus();
         }
-
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();
 
         onlineContent.putAttributes(attrs);
         onlineContent.setUpdatedProperties(true);
+
+        progressComplete();
         return result;
     }
 
@@ -179,7 +186,15 @@ public class PixivParser extends BaseImageListParser {
         }
 
         // Retrieve the list of Illusts IDs (=chapters)
-        PixivUserIllustMetadata userIllustsMetadata = PixivServer.api.getUserIllusts(userId, cookieStr).execute().body();
+        DownloadRateLimiter.INSTANCE.take();
+        Response<PixivUserIllustMetadata> userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
+        if (HttpHelper.waitBlocking429(userIllustResp))
+            userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
+
+        if (userIllustResp.code() >= 400)
+            throw new IllegalArgumentException(String.format("Unreachable user illusts : code=%s (%s)", userIllustResp.code(), userIllustResp.message()));
+
+        PixivUserIllustMetadata userIllustsMetadata = userIllustResp.body();
         if (null == userIllustsMetadata || userIllustsMetadata.isError()) {
             String message = "Unreachable user illusts";
             if (userIllustsMetadata != null)
@@ -208,14 +223,24 @@ public class PixivParser extends BaseImageListParser {
         List<ImageFile> result = new ArrayList<>();
         result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
         Set<Attribute> attrs = new HashSet<>();
+        int index = 0;
         for (String illustId : illustIds) {
-            if (processHalted.get()) break;
-            PixivIllustMetadata illustMetadata = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute().body();
+            DownloadRateLimiter.INSTANCE.take();
+            Response<PixivIllustMetadata> illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
+            if (HttpHelper.waitBlocking429(illustResp))
+                illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
+
+            if (illustResp.code() >= 400)
+                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d]", illustResp.code(), illustResp.message(), index));
+
+            PixivIllustMetadata illustMetadata = illustResp.body();
             if (null == illustMetadata || illustMetadata.isError()) {
-                String message = "Unreachable illust";
+                String message;
                 if (illustMetadata != null)
                     message = illustMetadata.getMessage();
-                throw new IllegalArgumentException(message);
+                else
+                    message = "no metadata";
+                throw new IllegalArgumentException(String.format("Unreachable illust : %s", message));
             }
 
             List<Attribute> chapterAttrs = illustMetadata.getAttributes();
@@ -228,14 +253,18 @@ public class PixivParser extends BaseImageListParser {
 
             result.addAll(chapterImages);
 
+            if (processHalted.get()) break;
             progressPlus();
+            index++;
         }
-
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();
 
         onlineContent.putAttributes(attrs);
+        onlineContent.putAttributes(attrs);
         onlineContent.setUpdatedProperties(true);
+
+        progressComplete();
         return result;
     }
 

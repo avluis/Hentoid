@@ -115,7 +115,7 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
 
     private fun bindUI() {
         binding?.let {
-            it.toolbar.setNavigationOnClickListener { onBackPressed() }
+            it.toolbar.setNavigationOnClickListener { finish() }
             it.toolbar.setOnMenuItemClickListener(this::onToolbarItemClicked)
             it.selectionToolbar.setOnMenuItemClickListener(this::onSelectionToolbarItemClicked)
 

@@ -48,10 +48,10 @@ public class PururinContent extends BaseContentParser {
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
 
         content.setUrl(url);
-        content.setCoverImageUrl(HttpHelper.getProtocol(url) + ":" + coverUrl);
+        content.setCoverImageUrl(HttpHelper.getHttpProtocol(url) + ":" + coverUrl);
         content.setTitle(!title.isEmpty() ? StringHelper.removeNonPrintableChars(title.get(0)) : "");
 
-        if (updateImages) {
+        if (updateImages && pages != null) {
             int qtyPages = 0;
             boolean pagesFound = false;
             for (String s : pages) {

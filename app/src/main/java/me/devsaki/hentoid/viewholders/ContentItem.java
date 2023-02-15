@@ -82,10 +82,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     private final Content content;
-    private final @ViewType
-    int viewType;
+
+    private final QueueRecord queueRecord;
+    private final @ViewType int viewType;
     private final boolean isSearchActive;
     private final boolean isEmpty;
+
+    private final boolean isFirst;
 
     private Consumer<ContentItem> deleteAction = null;
 
@@ -108,16 +111,15 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
 
         final Transformation<Bitmap> centerInside = new CenterInside();
-        glideRequestOptions = new RequestOptions()
-                .optionalTransform(centerInside)
-                .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
-                .error(d);
+        glideRequestOptions = new RequestOptions().optionalTransform(centerInside).optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside)).error(d);
     }
 
     // Constructor for empty placeholder
     public ContentItem(@ViewType int viewType) {
         content = null;
+        queueRecord = null;
         isSearchActive = false;
+        isFirst = false;
         this.viewType = viewType;
         touchHelper = null;
         isEmpty = true;
@@ -126,13 +128,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     // Constructor for library and error item
-    public ContentItem(
-            Content content,
-            @Nullable ItemTouchHelper touchHelper,
-            @ViewType int viewType,
-            @Nullable final Consumer<ContentItem> deleteAction) {
+    public ContentItem(Content content, @Nullable ItemTouchHelper touchHelper, @ViewType int viewType, @Nullable final Consumer<ContentItem> deleteAction) {
         this.content = content;
+        queueRecord = null;
         isSearchActive = false;
+        isFirst = false;
         this.viewType = viewType;
         this.touchHelper = touchHelper;
         this.deleteAction = deleteAction;
@@ -143,19 +143,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     // Constructor for queued item
-    public ContentItem(
-            @NonNull QueueRecord record,
-            boolean isSearchActive,
-            ItemTouchHelper touchHelper,
-            @Nullable final Consumer<ContentItem> deleteAction) {
+    public ContentItem(@NonNull QueueRecord record, boolean isSearchActive, ItemTouchHelper touchHelper, boolean isFirst, @Nullable final Consumer<ContentItem> deleteAction) {
         content = record.getContent().getTarget();
+        queueRecord = record;
         viewType = ViewType.QUEUE;
         this.isSearchActive = isSearchActive;
         this.touchHelper = touchHelper;
         this.deleteAction = deleteAction;
+        this.isFirst = isFirst;
         isEmpty = (null == content);
         isSwipeable = true;
-//        setIdentifier(record.id);
         if (content != null) setIdentifier(content.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
     }
@@ -163,6 +160,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     @Nullable
     public Content getContent() {
         return content;
+    }
+
+    @Nullable
+    public QueueRecord getQueueRecord() {
+        return queueRecord;
     }
 
     @NotNull
@@ -210,6 +212,49 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         if (viewHolder instanceof ContentViewHolder)
             return ((ContentViewHolder) viewHolder).ivReorder;
         else return null;
+    }
+
+    public void updateProgress(RecyclerView.ViewHolder vh, boolean isPausedEvent, boolean isIndividual) {
+        boolean isQueueReady = ContentQueueManager.INSTANCE.isQueueActive(vh.itemView.getContext()) && !ContentQueueManager.INSTANCE.isQueuePaused() && !isPausedEvent;
+
+        content.computeProgress();
+        content.computeDownloadedBytes();
+
+        ProgressBar pb = vh.itemView.findViewById(R.id.pbDownload);
+        if (isQueueReady || content.getPercent() > 0) {
+            TextView tvPages = vh.itemView.findViewById(R.id.tvPages);
+            if (content.getPercent() > 0) {
+                pb.setIndeterminate(false);
+                pb.setMax(100);
+                pb.setProgress((int) (content.getPercent() * 100));
+                pb.setVisibility(View.VISIBLE);
+
+                int color;
+                if (isQueueReady && isIndividual)
+                    color = ThemeHelper.getColor(pb.getContext(), R.color.secondary_light);
+                else color = ContextCompat.getColor(pb.getContext(), R.color.medium_gray);
+                // fixes <= Lollipop progressBar tinting
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                    pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+                else pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
+
+                if (content.getBookSizeEstimate() > 0 && tvPages != null && View.VISIBLE == tvPages.getVisibility()) {
+                    String pagesText = tvPages.getText().toString();
+                    int separator = pagesText.indexOf(";");
+                    if (separator > -1) pagesText = pagesText.substring(0, separator);
+                    pagesText = pagesText + "; " + pb.getContext().getResources().getString(R.string.queue_content_size_estimate, content.getBookSizeEstimate() / (1024 * 1024));
+                    tvPages.setText(pagesText);
+                }
+            } else if (isQueueReady && isFirst) {
+                pb.setVisibility(isIndividual ? View.VISIBLE : View.GONE);
+                pb.setIndeterminate(true);
+                // fixes <= Lollipop progressBar tinting
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                    pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
+            } else pb.setVisibility(View.GONE);
+        } else {
+            pb.setVisibility(View.GONE);
+        }
     }
 
 
@@ -333,6 +378,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (stringValue != null) item.content.setTitle(stringValue);
                 intValue = bundleParser.getDownloadMode();
                 if (intValue != null) item.content.setDownloadMode(intValue);
+                boolValue = bundleParser.getFrozen();
+                if (boolValue != null) item.queueRecord.setFrozen(boolValue);
             }
             debugStr = "objectBox ID=" + item.content.getId() + "; site ID=" + item.content.getUniqueSiteId() + "; hashCode=" + item.content.hashCode();
 
@@ -341,34 +388,28 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
             // Important to trigger the ViewHolder's global onClick/onLongClick events
             bookCard.setOnClickListener(v -> {
-                if (v.getParent() instanceof View)
-                    ((View) v.getParent()).performClick();
+                if (v.getParent() instanceof View) ((View) v.getParent()).performClick();
             });
             bookCard.setOnLongClickListener(v -> {
-                if (v.getParent() instanceof View)
-                    return ((View) v.getParent()).performLongClick();
+                if (v.getParent() instanceof View) return ((View) v.getParent()).performLongClick();
                 return false;
             });
 
             updateLayoutVisibility(item);
             attachCover(item.content);
             attachFlag(item.content);
-            attachTitle(item.content);
+            attachTitle(item.content, item.queueRecord);
 
-            if (ivCompleted != null)
-                attachCompleted(item.content);
-            if (readingProgress != null)
-                attachReadingProgress(item.content);
+            if (ivCompleted != null) attachCompleted(item.content);
+            if (readingProgress != null) attachReadingProgress(item.content);
             if (tvArtist != null) attachArtist(item.content);
             if (tvSeries != null) attachSeries(item.content);
             if (tvPages != null) attachMetrics(item.content, item.viewType);
             if (tvTags != null) attachTags(item.content);
             attachButtons(item);
 
-            if (progressBar != null)
-                updateProgress(item.content, baseLayout, getAbsoluteAdapterPosition(), false, ContentQueueManager.getInstance().isQueueActive(baseLayout.getContext()));
-            if (ivReorder != null)
-                DragDropUtil.bindDragHandle(this, item);
+            if (progressBar != null) item.updateProgress(this, false, true);
+            if (ivReorder != null) DragDropUtil.bindDragHandle(this, item);
         }
 
 
@@ -386,8 +427,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
             if (item.getContent() != null && item.getContent().isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
-            else
-                baseLayout.clearAnimation();
+            else baseLayout.clearAnimation();
 
             // Unread indicator
             if (ivNew != null)
@@ -406,16 +446,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (thumbLocation.startsWith("http")) {
                 GlideUrl glideUrl = ContentHelper.bindOnlineCover(content, thumbLocation);
                 if (glideUrl != null) {
-                    Glide.with(ivCover)
-                            .load(glideUrl)
-                            .apply(glideRequestOptions)
-                            .into(ivCover);
+                    Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions).into(ivCover);
                 }
             } else // From stored picture
-                Glide.with(ivCover)
-                        .load(Uri.parse(thumbLocation))
-                        .apply(glideRequestOptions)
-                        .into(ivCover);
+                Glide.with(ivCover).load(Uri.parse(thumbLocation)).apply(glideRequestOptions).into(ivCover);
         }
 
         private void attachFlag(@NonNull final Content content) {
@@ -428,7 +462,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
         }
 
-        private void attachTitle(@NonNull final Content content) {
+        private void attachTitle(@NonNull final Content content, final QueueRecord queueRecord) {
             CharSequence title;
             if (content.getTitle() == null) {
                 title = tvTitle.getContext().getText(R.string.work_untitled);
@@ -436,7 +470,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 title = content.getTitle();
             }
             tvTitle.setText(title);
-            tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
+
+            int colorId = R.color.card_title_light;
+            if (queueRecord != null && queueRecord.isFrozen()) colorId = R.color.frozen_blue;
+            tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), colorId));
         }
 
         private void attachCompleted(@NonNull final Content content) {
@@ -590,53 +627,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
                 if (ivRating != null)
                     ivRating.setImageResource(ContentHelper.getRatingResourceId(content.getRating()));
-            }
-        }
-
-        public static void updateProgress(@NonNull final Content content, @NonNull View rootCardView, int position, boolean isPausedEvent, boolean isContentQueueActive) {
-            boolean isQueueReady = isContentQueueActive && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
-            boolean isFirstItem = (0 == position);
-            ProgressBar pb = rootCardView.findViewById(R.id.pbDownload);
-
-            content.computeProgress();
-            content.computeDownloadedBytes();
-
-            if ((isFirstItem && isQueueReady) || content.getPercent() > 0) {
-                TextView tvPages = rootCardView.findViewById(R.id.tvPages);
-                pb.setVisibility(View.VISIBLE);
-                if (content.getPercent() > 0) {
-                    pb.setIndeterminate(false);
-                    pb.setMax(100);
-                    pb.setProgress((int) (content.getPercent() * 100));
-
-                    int color;
-                    if (isFirstItem && isQueueReady)
-                        color = ThemeHelper.getColor(pb.getContext(), R.color.secondary_light);
-                    else
-                        color = ContextCompat.getColor(pb.getContext(), R.color.medium_gray);
-                    // fixes <= Lollipop progressBar tinting
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-                    else
-                        pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
-
-                    if (content.getBookSizeEstimate() > 0 && tvPages != null && View.VISIBLE == tvPages.getVisibility()) {
-                        String pagesText = tvPages.getText().toString();
-                        int separator = pagesText.indexOf(";");
-                        if (separator > -1) pagesText = pagesText.substring(0, separator);
-                        pagesText = pagesText + "; " + pb.getContext().getResources().getString(R.string.queue_content_size_estimate, content.getBookSizeEstimate() / (1024 * 1024));
-                        tvPages.setText(pagesText);
-                    }
-                } else {
-                    if (isFirstItem && isQueueReady) {
-                        pb.setIndeterminate(true);
-                        // fixes <= Lollipop progressBar tinting
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                            pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
-                    } else pb.setVisibility(View.GONE);
-                }
-            } else {
-                pb.setVisibility(View.GONE);
             }
         }
 

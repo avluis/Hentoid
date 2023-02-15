@@ -33,6 +33,7 @@
     <string name="resume">Riprendi</string>
     <string name="cancel">Annulla</string>
     <string name="cancel_all">Annulla tutto</string>
+    <string name="freeze">Attiva/Disattiva blocco</string>
     <string name="menu_completed_single">Segna come completato</string>
     <string name="menu_reset_read">Segna come da leggere</string>
     <string name="service_running">Il servizio è già in esecuzione</string>
@@ -40,12 +41,13 @@
     <string name="_default">predefinito</string>
     <string name="empty">vuoto</string>
     <string name="none">Nessuno</string>
+    <string name="help_generic">Aiuto</string>
+    <string name="actions_generic">Azioni</string>
     <string name="disabled_generic">Disabilitato</string>
     <string name="create_generic">Crea</string>
     <string name="edit_generic">Modifica</string>
     <string name="remove_generic">Rimuovi</string>
-<string name="title_activity_api29_migration">Migrazione API 29</string>
-    <string name="title_activity_downloads">Libreria</string>
+<string name="title_activity_downloads">Libreria</string>
     <string name="title_activity_queue">Coda</string>
     <string name="title_activity_preferences">Preferenze</string>
     <string name="title_activity_about">Informazioni</string>
@@ -53,19 +55,19 @@
     <string name="title_activity_search">Ricerca avanzata</string>
     <string name="title_activity_meta_edit">Modifica metadata</string>
     <string name="title_activity_rules">Rinomina regole</string>
-<string name="api29_migration_title">Hentoid v12 \nAggiornamento gestione file</string>
-    <string name="api29_migration_subtitle">Hentoid sta aggiornando la tua raccolta. \nPotrebbero essere necessari alcuni minuti.</string>
-    <string name="api29_migration_location">L\'attuale posizione della cartelle di Hentoid è \n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Cartella Hentoid</string>
-    <string name="api29_migration_step1_external">Cartella esterna</string>
-    <string name="api29_migration_step1_select">Seleziona la cartella Hentoid</string>
-    <string name="api29_migration_step1_select_external">Seleziona cartella esterna</string>
-    <string name="api29_migration_step2">Analizza le cartelle del sito</string>
-    <string name="api29_migration_step3_init">Scansionando la libreria…</string>
-    <string name="api29_migration_step3">Scansiona libreria (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">Importazione coda…</string>
-    <string name="api29_migration_select_folder">Seleziona una cartella Hentoid esistente. La sua posizione è visualizzata sullo schermo.</string>
-    <string name="api29_migration_allow_write">Si prega di consentire il permesso di scrittura</string>
+    <string name="title_activity_storage">Gestione spazio</string>
+<string name="refresh_step1">Cartella Hentoid</string>
+    <string name="refresh_step1_2">Cartella Hentoid (posizione secondaria)</string>
+    <string name="refresh_step1_external">Cartella esterna</string>
+    <string name="refresh_step1_select">Seleziona la cartella Hentoid</string>
+    <string name="refresh_step1_select_2">Seleziona cartella Hentoid (posizione secondaria)</string>
+    <string name="refresh_step1_select_external">Seleziona cartella esterna</string>
+    <string name="refresh_step2">Analizza le cartelle del sito</string>
+    <string name="refresh_step3_init">Scansionando la libreria…</string>
+    <string name="refresh_step3">Scansiona libreria (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">Importazione coda…</string>
+    <string name="refresh_select_folder">Seleziona una cartella Hentoid esistente. La sua posizione è visualizzata sullo schermo.</string>
+    <string name="refresh_allow_write">Si prega di consentire il permesso di scrittura</string>
 <string name="menu_search">Cerca</string>
     <string name="menu_fav">Attiva/disattiva filtro preferito</string>
     <string name="menu_mark_fav">Attiva/disattiva preferito</string>
@@ -97,6 +99,7 @@
     <string name="alert_browser_mode">Modalità browser attiva: nessun accesso alla memoria</string>
     <string name="alert_low_memory">Il tuo dispositivo ha poca memoria!</string>
     <string name="alert_permissions_lost">I permessi per i file sono stati persi</string>
+    <string name="alert_notifications">Le notifiche sono disabilitate!</string>
     <string name="fix_permissions">Aggiusta</string>
     <string name="view_queue">Visualizza coda</string>
     <string name="clear_search_history">Pulisci cronologia ricerca</string>
@@ -133,6 +136,7 @@
     <string name="paused_dl_folder_not_found">Impossibile scaricare - Cartella di download non trovata. Usa le impostazioni dell\'app per selezionarne una</string>
     <string name="paused_dl_folder_credentials">Impossibile scaricare - Credenziali insufficienti nella cartella di download. Usa le impostazioni dell\'app per riselezionarla</string>
     <string name="paused_dl_stale_online_credentials">Impossibile scaricare - Cookie o credenziali non aggiornati. Usa la notifica per rigenerarli</string>
+    <string name="paused_dl_no_available_downloads">Nessun download disponibile rimanente</string>
     <string name="step_init">Avvio</string>
     <string name="step_prepare_img">Preparazione delle immagini</string>
     <string name="step_fetch_img">Recupero delle immagini</string>
@@ -209,16 +213,49 @@
     <string name="errortype_wifi">Libro saltato per limite della grandezza di download in Wi-Fi</string>
     <string name="errortype_blocked">Libro contiene un tag bloccato</string>
     <string name="errortype_undefined">Indefinito</string>
-<string name="refresh_title">Aggiorna libreria</string>
+<string name="browse_mode_warning">La modalità solo-browser è attiva\nStai usando l\'app senza i permessi per la memoria</string>
+    <string name="primary_library">Liberia primaria</string>
+    <string name="primary_library_subtitle">Downloads</string>
+    <string name="add_primary_1">Aggiungi posizione primaria 1</string>
+    <string name="add_primary_2">Aggiungi posizione primaria 2</string>
+    <string name="external_library">Libreria esterna</string>
+    <string name="external_library_subtitle">Archivi, libri di terze parti</string>
+    <string name="add_external">Aggiungi posizione esterna</string>
+    <string name="location_storage">%1$s (%2$d%%) libero</string>
+    <string name="storage_action_change">Cambia posizione...</string>
+    <string name="storage_action_remove">Stacca</string>
+    <string name="storage_remove_ask">Staccare posizione selezionata?\nNB : I libri non saranno cancellati</string>
+    <string name="storage_remove_ko1">Impossibile staccare posizione 1 quando posizione 2 è impostata</string>
+    <string name="storage_remove_complete">Posizione staccata</string>
+    <string name="storage_action_merge_to_1">Unita a posizione 1</string>
+    <string name="storage_merge_ask">Unire %d libri da posizione 2 a posizione 1?\nNB: I libri saranno cancellati dopo che la unione sarà completata</string>
+    <string name="storage_merge_ko1">Impossibile unire nella posizione 1 : non abbastanza spazio disponibile</string>
+    <string name="storage_merge_ko2">Impossibile unire : nessun libro nella posizione 2</string>
+    <string name="storage_merge_progress">Unendo libri alla posizione 1</string>
+    <string name="storage_merge_complete">Unione completata</string>
+    <string name="storage_strategy_title">Strategia download: %s</string>
+    <string name="storage_strategy_balance">Bilancia spazio libero</string>
+    <string name="storage_strategy_balance_desc">Hentoid scarica in qualsiasi posizione ha più spazio libero, cercando di rimanere bilanciato. Non sposta i libri già presenti nella libreria.</string>
+    <string name="storage_strategy_fallover">Caduta</string>
+    <string name="storage_strategy_fallover_desc">Hentoid scarica nella posizione 1 finché %d%% di capacità è raggiunta, poi scarica nella posizione 2.</string>
+    <string name="storage_fallover_threshold">Soglia poco spazio (%%)</string>
+    <string name="storage_set_strategy">Imposta strategia download</string>
+    <string name="storage_stats">Statistiche</string>
+    <string name="storage_stats_view">Guarda statistiche utilizzo</string>
+<string name="refresh_title">Aggiorna posizione</string>
     <string name="refresh_caption">Aggiorna automaticamente i dati della libreria con una nuova scansione di file e cartelle.</string>
     <string name="refresh_options">Opzioni di pulizia</string>
-    <string name="refresh_location_internal">Libreria Hentoid</string>
+    <string name="refresh_location_internal">Libreria primaria (tutte)</string>
+    <string name="refresh_location_internal_1">Libreria primaria 1</string>
+    <string name="refresh_location_internal_2">Libreria primaria 2</string>
     <string name="refresh_location_external">Libreria esterna</string>
     <string name="refresh_options_rename">Rinomina tutte le cartelle in base alla denominazione corrente e alla preferenza di lunghezza massima</string>
     <string name="refresh_options_remove_placeholders">Rimuovi segnalibri dei libri importati dal metadata</string>
-
+    <string name="refresh_options_renumber_pages">Rinumera pagine</string>
+    <string name="refresh_renumber_warning">Questo controllerà tutti i libri e corregerrà se alcune pagine risultano incorrette.\nSi cosciente che questa opzione RALLENTERÀ SIGNIFICATAMENTE il processo.</string>
     <string name="refresh_options_remove">Rimuovi le cartelle in cui…</string>
-
+    <string name="refresh_options_remove_1">Rimuovi cartelle dove il file JSON è inesistente (raccomandato)</string>
+    <string name="refresh_options_remove_2">Rimuovi cartelle dove nessuna immagine è stata scaricata</string>
     <string name="refresh_options_remove_or">o</string>
 <string name="delete_title">Elimina tutti tranne i preferiti</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>
@@ -268,12 +305,16 @@
     <string name="dialog_prompt">Scegli una cartella</string>
     <string name="importing_metadata">Importando metadata...</string>
 <string name="export_title">Esporta metadata</string>
+    <string name="export_question">Vuoi trasferire la tua libreria su un altro telefono?</string>
 
+    <string name="export_answer_yes">Questa opzione NON è fatta per trasferire la tua collezione su un altro telefono. A volte funziona, ma alcuni dei tuoi libri potrebbero risultare impossibili da riscaricare!</string>
+    <string name="export_transfer_tutorial"><u>Guarda la nostra wiki sul trasferire la libreria</u></string>
 
     <plurals name="export_file_library">
-        <item quantity="one">Esporta libreria (<x:g example="1" id="number">%d</x:g> libro)</item>
-        <item quantity="other">Esporta libreria (<x:g example="2" id="number">%d</x:g> libri)</item>
+        <item quantity="one">Esporta libreria primaria (<x:g example="1" id="number">%d</x:g> libro)</item>
+        <item quantity="other">Esporta libreria primaria (<x:g example="2" id="number">%d</x:g> libri)</item>
     </plurals>
+    <string name="export_location">Posizione: %s</string>
     <string name="export_favs_only">Esporta solo i preferiti</string>
     <string name="export_groups">Esporta gruppi personalizzati</string>
     <plurals name="export_file_queue">
@@ -298,6 +339,8 @@
     <string name="import_download_folder">Non dovresti selezionare la cartella di download del tuo dispositivo: crea o selezionane un\'altra</string>
     <string name="import_create_fail">Creazione della cartella Hentoid fallita - seleziona un\'altra posizione</string>
     <string name="import_invalid_uri">Cartella non riconosciuta - per favore selezionala di nuovo</string>
+    <string name="import_empty">La cartella non ha nessun libro</string>
+    <string name="import_other_primary">Non puoi selezionare la stessa cartella per entrambi posizioni primarie</string>
     <string name="import_other">L\'importazione è stata interrotta</string>
     <string name="import_unexpected">L\'importazione si è fermata inaspettatamente</string>
     <string name="task_done">Attività completata: vedi i dettagli nel registro</string>
@@ -580,6 +623,7 @@
 <string name="help_web_exh_account">Si prega di utilizzare o creare un account exHentai</string>
     <string name="help_web_invalid_exh_credentials">Credenziali non valide, perfavore accedi di nuovo</string>
     <string name="help_web_incomplete_exh_credentials">Credenziali incomplete, accedi di nuovo. Se il problema persiste, considera di accedere al sito da un altro paese o di creare un nuovo account.</string>
+    <string name="help_web_hires_eh_account">Per scaricare immagini ad alta risoluzione, hai bisogno di usare o creare un account e-Hentai</string>
 <string name="category_any">Qualsiasi</string>
     <string name="exclude">Escludi</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> cerca</string>
@@ -760,7 +804,7 @@
     <string name="meta_choose_type">Scegli un tipo per \"%s\"</string>
     <string name="meta_replace_with">Rimpiazza con...</string>
     <string name="meta_tag_all_selected">Segna tutti i libri selezionati</string>
-    <string name="meta_tag_all_selected_confirm">Segnare tutti i %1$d libri selezionati con \'%2$s\'?</string>
+    <string name="meta_tag_all_selected_confirm">Segnare tutti i %1$d libri selezionati con \"%2$s\"?</string>
     <string name="meta_rename_new_name">Nuovo nome</string>
     <string name="meta_rename_new_rule">Ricorda per futuri downloads</string>
 <string name="meta_rule_source">Fonte</string>
@@ -775,8 +819,9 @@
     </plurals>
     <string name="notif_delete_fail">Cancellazione fallita</string>
     <string name="notif_delete_fail_details">Almeno un libro non è stato cancellato</string>
-
-
+<string name="notif_json_title">Aggiorna JSON</string>
+    <string name="notif_json_progress">Aggiornamento JSON in corso</string>
+    <string name="notif_json_complete">Aggiornamento completato</string>
 <string name="title_startup">Avvio</string>
     <string name="title_startup_progress">Avviando…</string>
     <string name="title_startup_complete">Avvio completato</string>

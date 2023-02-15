@@ -54,7 +54,6 @@ import java.util.UUID;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import timber.log.Timber;
@@ -76,6 +75,8 @@ public class FileHelper {
     public static final String DEFAULT_MIME_TYPE = "application/octet-steam";
 
     private static final String ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"; // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
+
+    public static final String URI_ELEMENTS_SEPARATOR = "%3A";
 
     public static final int FILE_IO_BUFFER_SIZE = 32 * 1024;
 
@@ -140,10 +141,8 @@ public class FileHelper {
             documentPath = documentPath.substring(0, documentPath.length() - 1);
 
         if (documentPath.length() > 0) {
-            if (documentPath.startsWith(File.separator))
-                return volumePath + documentPath;
-            else
-                return volumePath + File.separator + documentPath;
+            if (documentPath.startsWith(File.separator)) return volumePath + documentPath;
+            else return volumePath + File.separator + documentPath;
         } else return volumePath;
     }
 
@@ -159,8 +158,7 @@ public class FileHelper {
     private static String getVolumePath(@NonNull Context context, final String volumeId) {
         try {
             // StorageVolume exists since API19, has an uiid since API21 but is only visible since API24
-            StorageManager mStorageManager =
-                    (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+            StorageManager mStorageManager = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
             Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
             Method getVolumeList = mStorageManager.getClass().getMethod("getVolumeList");
             Method getUuid = storageVolumeClazz.getMethod("getUuid");
@@ -318,8 +316,7 @@ public class FileHelper {
     public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
             String path = fileUri.getPath();
-            if (null != path)
-                return getOutputStream(new File(fileUri.getPath()));
+            if (null != path) return getOutputStream(new File(fileUri.getPath()));
         } else {
             DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
             if (doc != null) return getOutputStream(context, doc);
@@ -369,8 +366,7 @@ public class FileHelper {
     public static void removeFile(@NonNull final Context context, @NonNull final Uri fileUri) {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
             String path = fileUri.getPath();
-            if (null != path)
-                removeFile(new File(fileUri.getPath()));
+            if (null != path) removeFile(new File(fileUri.getPath()));
         } else {
             DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
             if (doc != null) doc.delete();
@@ -395,19 +391,6 @@ public class FileHelper {
             if (null == mimeType || mimeType.isEmpty()) mimeType = DEFAULT_MIME_TYPE;
             return folder.createFile(mimeType, displayName);
         } else return file;
-    }
-
-    /**
-     * Check if the given folder is valid; if it is, set it as the app's root folder
-     *
-     * @param context Context to use
-     * @param folder  Folder to check and set
-     * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials could not be set
-     */
-    public static int checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
-        int result = createNoMedia(context, folder);
-        if (0 == result) Preferences.setStorageUri(folder.getUri().toString());
-        return result;
     }
 
     /**
@@ -522,11 +505,7 @@ public class FileHelper {
      * @return First element of the given parent folder matching the given criteria
      */
     @Nullable
-    private static DocumentFile findDocumentFile(@NonNull final Context context,
-                                                 @NonNull final DocumentFile parent,
-                                                 final String nameFilter,
-                                                 boolean listFolders,
-                                                 boolean listFiles) {
+    private static DocumentFile findDocumentFile(@NonNull final Context context, @NonNull final DocumentFile parent, final String nameFilter, boolean listFolders, boolean listFiles) {
         List<DocumentFile> result = Collections.emptyList();
         try (FileExplorer fe = new FileExplorer(context, parent)) {
             result = fe.listDocumentFiles(context, parent, createNameFilterEquals(nameFilter), listFolders, listFiles, true);
@@ -717,10 +696,7 @@ public class FileHelper {
         sharingIntent.setType("text/*");
         if (!title.isEmpty()) sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
         if (fileUri.toString().startsWith("file")) {
-            Uri legitUri = FileProvider.getUriForFile(
-                    context,
-                    AUTHORITY,
-                    new File(fileUri.toString()));
+            Uri legitUri = FileProvider.getUriForFile(context, AUTHORITY, new File(fileUri.toString()));
             sharingIntent.putExtra(Intent.EXTRA_STREAM, legitUri);
         } else {
             sharingIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
@@ -768,20 +744,15 @@ public class FileHelper {
      * @throws IOException If something terrible happens
      */
     @Nullable
-    public static Uri copyFile(
-            @NonNull final Context context,
-            @NonNull final Uri sourceFileUri,
-            @NonNull final Uri targetFolderUri,
-            @NonNull String mimeType,
-            @NonNull String newName) throws IOException {
+    public static Uri copyFile(@NonNull final Context context, @NonNull final Uri sourceFileUri, @NonNull final Uri targetFolderUri, @NonNull String mimeType, @NonNull String newName) throws IOException {
         if (!fileExists(context, sourceFileUri)) return null;
         DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
         if (null == targetFolder || !targetFolder.exists()) return null;
         DocumentFile newFile = targetFolder.createFile(mimeType, newName);
         if (null == newFile || !newFile.exists()) return null;
-        try (OutputStream newDownload = FileHelper.getOutputStream(context, newFile)) {
+        try (OutputStream output = FileHelper.getOutputStream(context, newFile)) {
             try (InputStream input = FileHelper.getInputStream(context, sourceFileUri)) {
-                Helper.copy(input, newDownload);
+                Helper.copy(input, output);
             }
         }
         return newFile.getUri();
@@ -806,11 +777,7 @@ public class FileHelper {
      * @throws IOException If something horrible happens during I/O
      */
     // TODO document what happens when a file with the same name already exists there before the call
-    public static OutputStream openNewDownloadOutputStream(
-            @NonNull final Context context,
-            @NonNull final String fileName,
-            @NonNull final String mimeType
-    ) throws IOException {
+    public static OutputStream openNewDownloadOutputStream(@NonNull final Context context, @NonNull final String fileName, @NonNull final String mimeType) throws IOException {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             return openNewDownloadOutputStreamQ(context, fileName, mimeType);
         } else {
@@ -849,10 +816,7 @@ public class FileHelper {
      * @throws IOException If something horrible happens during I/O
      */
     @TargetApi(29)
-    private static OutputStream openNewDownloadOutputStreamQ(
-            @NonNull final Context context,
-            @NonNull final String fileName,
-            @NonNull final String mimeType) throws IOException {
+    private static OutputStream openNewDownloadOutputStreamQ(@NonNull final Context context, @NonNull final String fileName, @NonNull final String mimeType) throws IOException {
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
@@ -961,8 +925,7 @@ public class FileHelper {
         private void processPrimary(@NonNull Context context, @NonNull StorageVolume volume) {
             UUID uuid = StorageManager.UUID_DEFAULT;
             try {
-                StorageStatsManager storageStatsManager =
-                        (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
+                StorageStatsManager storageStatsManager = (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
                 totalMemBytes = storageStatsManager.getTotalBytes(uuid);
                 freeMemBytes = storageStatsManager.getFreeBytes(uuid);
             } catch (IOException e) {
@@ -983,7 +946,8 @@ public class FileHelper {
                     totalMemBytes = stats.f_blocks * blockSize;
                     freeMemBytes = stats.f_bavail * blockSize;
                 }
-            } catch (Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
+            } catch (
+                    Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
                 Timber.w(e);
             }
         }
@@ -1038,23 +1002,24 @@ public class FileHelper {
     /**
      * Reset the app's persisted I/O permissions :
      * - persist I/O permissions for the given new Uri
-     * - keep existing persisted I/O permissions for the given optional Uri
+     * - keep existing persisted I/O permissions for the given optional Uris
      * <p>
-     * NB : if the optional Uri has no persisted permissions, this call won't create them
+     * NB : if the optional Uris have no persisted permissions, this call won't create them
      *
-     * @param context Context to use
-     * @param newUri  New Uri to add to the persisted I/O permission
-     * @param keepUri Uri to keep in the persisted I/O permissions, if already set
+     * @param context  Context to use
+     * @param newUri   New Uri to add to the persisted I/O permission
+     * @param keepUris List of Uri to keep in the persisted I/O permissions, if already set (can be empty)
      */
-    public static void persistNewUriPermission(@NonNull final Context context, @NonNull final Uri newUri, @Nullable final Uri keepUri) {
+    public static void persistNewUriPermission(@NonNull final Context context, @NonNull final Uri newUri, final List<Uri> keepUris) {
         ContentResolver contentResolver = context.getContentResolver();
         if (!isUriPermissionPersisted(contentResolver, newUri)) {
             Timber.d("Persisting Uri permission for %s", newUri);
             // Release previous access permissions, if different than the new one
-            revokePreviousPermissions(contentResolver, newUri, keepUri);
+            List<Uri> keepList = new ArrayList<>(keepUris);
+            keepList.add(newUri);
+            revokePreviousPermissions(contentResolver, keepList);
             // Persist new access permission
-            contentResolver.takePersistableUriPermission(newUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            contentResolver.takePersistableUriPermission(newUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         }
     }
 
@@ -1082,14 +1047,13 @@ public class FileHelper {
      * @param resolver   ContentResolver to use
      * @param exceptions Uri's whose permissions won't be revoked
      */
-    private static void revokePreviousPermissions(@NonNull final ContentResolver resolver, @NonNull final Uri... exceptions) {
+    private static void revokePreviousPermissions(@NonNull final ContentResolver resolver, @NonNull final List<Uri> exceptions) {
         // Unfortunately, the content Uri of the selected resource is not exactly the same as the one stored by ContentResolver
         // -> solution is to compare their TreeDocumentId instead
         List<String> exceptionIds = Stream.of(exceptions).withoutNulls().map(DocumentsContract::getTreeDocumentId).toList();
         for (UriPermission p : resolver.getPersistedUriPermissions())
             if (!exceptionIds.contains(DocumentsContract.getTreeDocumentId(p.getUri())))
-                resolver.releasePersistableUriPermission(p.getUri(),
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                resolver.releasePersistableUriPermission(p.getUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
         if (resolver.getPersistedUriPermissions().size() <= exceptionIds.size()) {
             Timber.d("Permissions revoked successfully");
@@ -1153,8 +1117,7 @@ public class FileHelper {
     public static boolean fileExists(@NonNull final Context context, @NonNull final Uri fileUri) {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
             String path = fileUri.getPath();
-            if (path != null)
-                return new File(path).exists();
+            if (path != null) return new File(path).exists();
             else return false;
         } else {
             DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
@@ -1215,9 +1178,8 @@ public class FileHelper {
         File cacheFolder = getOrCreateCacheFolder(context, folderName);
         if (cacheFolder != null) {
             File[] files = cacheFolder.listFiles();
-            if (files != null)
-                for (File f : files)
-                    if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
+            if (files != null) for (File f : files)
+                if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
         }
     }
 

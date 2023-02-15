@@ -61,7 +61,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:ellipsize="middle"
+        android:ellipsize="marquee"
         android:singleLine="true"
         android:textColor="@color/card_tags_light"
         android:textSize="@dimen/text_subtitle_2"

@@ -56,6 +56,7 @@
     <string name="pref_external_library_delete_off">Hentoid can\'t delete books nor pages in the external library</string>
     <string name="pref_external_library_detach_title">Detach external library</string>
     <string name="pref_external_library_detach_summary">Don\'t include the external library into Hentoid anymore</string>
+    <string name="pref_cat_eh">E-hentai / ExHentai</string>
     <string name="pref_cat_advanced">Advanced</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
@@ -99,7 +100,7 @@
     <string name="pref_browser_mark_merged_on">Merged books are marked\nNB: does not work on all sites</string>
     <string name="pref_browser_mark_blocked_title">Mark books with blocked tags</string>
     <string name="pref_browser_mark_blocked_off">Books with blocked tags have no special display</string>
-    <string name="pref_browser_mark_blocked_on">Books with blocked tags are marked\nNB: dose not work on all sites</string>
+    <string name="pref_browser_mark_blocked_on">Books with blocked tags are marked\nNB: does not work on all sites</string>
     <string name="pref_browser_blocked_tags_title">Blocked tags</string>
     <string name="pref_browser_blocked_tags_summary">Tip: separate tags with commas</string>
     <string name="pref_browser_visuals">Visuals</string>
@@ -142,6 +143,9 @@
     <string name="pref_dl_blocked_tags_title">Blocked tags</string>
     <string name="pref_dl_blocked_tags_summary">Block the download of books with specific tags\nTip: separate tags with commas</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Blocking behaviour</string>
+    <string name="download_eh_hires_title">Download hi-res pictures</string>
+    <string name="pref_dl_eh_hires_on">Download hi-res pictures when available\nCAUTION:Enabling this option will consume your E-hentai/Exhentai image view limit much faster</string>
+    <string name="pref_dl_eh_hires_off">Download pictures that are displayed on the website</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">Download speed limit</string>

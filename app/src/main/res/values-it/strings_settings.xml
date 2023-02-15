@@ -53,6 +53,7 @@
     <string name="pref_external_library_delete_off">Hentoid non può eliminare libri o pagine nella libreria esterna</string>
     <string name="pref_external_library_detach_title">Stacca la libreria esterna</string>
     <string name="pref_external_library_detach_summary">Non includere più la libreria esterna in Hentoid</string>
+    <string name="pref_cat_eh">E-hentai / ExHentai</string>
     <string name="pref_cat_advanced">Avanzato</string>
     <string name="pref_refresh_library_title">Aggiorna libreria</string>
     <string name="pref_refresh_library_summary">Aggiornare manualmente i contenuti della libreria</string>
@@ -92,9 +93,11 @@
     <string name="pref_browser_mark_merged_title">Segna libri uniti</string>
     <string name="pref_browser_mark_merged_off">I libri uniti non saranno diversi</string>
     <string name="pref_browser_mark_merged_on">I libri uniti sono segnati\nNB: non funziona su tutti i siti</string>
-
-
+    <string name="pref_browser_mark_blocked_title">Segna libri con tag bloccati</string>
+    <string name="pref_browser_mark_blocked_off">I libri con tag bloccati non hanno nessun display speciale</string>
+    <string name="pref_browser_mark_blocked_on">I libri con tag bloccati sono segnati\nNB: non funziona su tutti i siti</string>
     <string name="pref_browser_blocked_tags_title">Tag bloccati</string>
+    <string name="pref_browser_blocked_tags_summary">Consiglio: separa i tag con le virgole</string>
     <string name="pref_browser_visuals">Visualizzazione</string>
     <string name="pref_browser_augmented_title">Browser avanzato</string>
     <string name="pref_browser_augmented_off">Usando il comportamento predefinito</string>
@@ -133,6 +136,9 @@
     <string name="pref_dl_blocked_tags_title">Tag bloccati</string>
     <string name="pref_dl_blocked_tags_summary">Bloccare il download di libri con tag specifici \nSuggerimento: separare i tag con le virgole</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Comportamento blocco</string>
+    <string name="download_eh_hires_title">Scarica immagini ad alta risoluzione</string>
+    <string name="pref_dl_eh_hires_on">Scarica immagini ad alta risoluzione quando disponibili\nATTENZIONE:Abilitare questa funzione consumerà il tuo limite di immagini di E-hentai/Exhentai molto più velocemente</string>
+    <string name="pref_dl_eh_hires_off">Scarica immagini che sono mostrare sul sito</string>
     <string name="pref_dl_threads_quantity_title">Numero di download paralleli</string>
     <string name="pref_dl_threads_quantity_summary">Numero di immagini scaricate contemporaneamente\nAdesso: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">Limite velocità download</string>

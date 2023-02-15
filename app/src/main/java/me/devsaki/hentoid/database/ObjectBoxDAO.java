@@ -89,11 +89,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public long countStoredContent(boolean nonFavouritesOnly, boolean includeQueued) {
-        return db.selectStoredContentQ(nonFavouritesOnly, includeQueued, -1, false).build().count();
-    }
-
-    @Override
     public long countContentWithUnhashedCovers() {
         return db.selectNonHashedContent().count();
     }
@@ -399,13 +394,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.shuffleContentIds();
     }
 
-    @Override
-    public long countAllExternalBooks() {
-        return db.selectAllExternalBooksQ().count();
-    }
-
-    public long countAllInternalBooks(boolean favsOnly) {
-        return db.selectAllInternalBooksQ(favsOnly, true).count();
+    public long countAllInternalBooks(@NonNull String rootPath, boolean favsOnly) {
+        return db.selectAllInternalBooksQ(rootPath, favsOnly, true).count();
     }
 
     public long countAllQueueBooks() {
@@ -423,8 +413,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
-    public void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer) {
-        Query<Content> query = db.selectAllInternalBooksQ(favsOnly, true);
+    public void streamAllInternalBooks(@NonNull String rootPath, boolean favsOnly, Consumer<Content> consumer) {
+        Query<Content> query = db.selectAllInternalBooksQ(rootPath, favsOnly, true);
         query.forEach(consumer::accept);
     }
 
@@ -447,6 +437,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public List<Group> selectGroups(int grouping, int subType) {
         return db.selectGroupsQ(grouping, null, 0, false, subType, false, -1).find();
+    }
+
+    @Override
+    public List<Group> selectEditedGroups(int grouping) {
+        return db.selectEditedGroups(grouping);
     }
 
     @Override
@@ -620,35 +615,25 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteGroupItems(Helper.getPrimitiveArrayFromList(groupItemIds));
     }
 
-
-    public List<Content> selectAllQueueBooks() {
-        return db.selectAllQueueBooksQ().find();
+    public void flagAllInternalBooks(@NonNull String rootPath, boolean includePlaceholders) {
+        db.flagContentsForDeletion(db.selectAllInternalBooksQ(rootPath, false, includePlaceholders).find(), true);
     }
 
-    public void flagAllInternalBooks(boolean includePlaceholders) {
-        db.flagContentsForDeletion(db.selectAllInternalBooksQ(false, includePlaceholders).find(), true);
+    public void deleteAllInternalBooks(@NonNull String rootPath, boolean resetRemainingImagesStatus) {
+        db.deleteContentById(db.selectAllInternalBooksQ(rootPath, false).findIds());
+        if (resetRemainingImagesStatus) resetRemainingImagesStatus(rootPath);
     }
 
-    public void deleteAllInternalBooks(boolean resetRemainingImagesStatus) {
-        db.deleteContentById(db.selectAllInternalBooksQ(false, true).findIds());
-
-        // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        if (resetRemainingImagesStatus) {
-            long[] remainingContentIds = db.selectAllQueueBooksQ().findIds();
-            for (long contentId : remainingContentIds)
-                db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
-        }
-    }
-
-    public void deleteAllFlaggedBooks(boolean resetRemainingImagesStatus) {
+    public void deleteAllFlaggedBooks(@NonNull String rootPath, boolean resetRemainingImagesStatus) {
         db.deleteContentById(db.selectAllFlaggedBooksQ().findIds());
+        if (resetRemainingImagesStatus) resetRemainingImagesStatus(rootPath);
+    }
 
-        // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        if (resetRemainingImagesStatus) {
-            long[] remainingContentIds = db.selectAllQueueBooksQ().findIds();
-            for (long contentId : remainingContentIds)
-                db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
-        }
+    // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
+    private void resetRemainingImagesStatus(@NonNull String rootPath) {
+        long[] remainingContentIds = db.selectAllQueueBooksQ(rootPath).findIds();
+        for (long contentId : remainingContentIds)
+            db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
     }
 
     public void flagAllErrorBooksWithJson() {
@@ -722,7 +707,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource() {
-        return db.selectPrimaryMemoryUsagePerSource();
+        return db.selectPrimaryMemoryUsagePerSource("");
+    }
+
+    public Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource(@NonNull String rootPath) {
+        return db.selectPrimaryMemoryUsagePerSource(rootPath);
     }
 
     public Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource() {
@@ -955,26 +944,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteRenamingRules(Helper.getPrimitiveArrayFromList(ids));
     }
 
-    public void deleteAllRenamingRules() {
-        db.deleteAllRenamingRules();
-    }
-
 
     // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
-
-    // API29 migration query
-    @Override
-    public Single<List<Long>> selectOldStoredBookIds() {
-        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectOldStoredContentQ().findIds()))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-    }
-
-    // API29 migration query
-    @Override
-    public long countOldStoredContent() {
-        return db.selectOldStoredContentQ().count();
-    }
 
     @Override
     public long[] selectContentIdsWithUpdatableJson() {

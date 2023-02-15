@@ -41,7 +41,8 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.enums.StorageLocation;
+import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.json.ContentV1;
 import me.devsaki.hentoid.json.DoujinBuilder;
@@ -116,12 +117,15 @@ public class PrimaryImportWorker extends BaseWorker {
         PrimaryImportData.Parser data = new PrimaryImportData.Parser(getInputData());
 
         startImport(
+                data.getLocation(),
+                data.getTargetRoot(),
                 data.getRefreshRename(),
                 data.getRefreshRemovePlaceholders(),
                 data.getRefreshRenumberPages(),
                 data.getRefreshCleanNoJson(),
                 data.getRefreshCleanNoImages(),
-                data.getImportGroups());
+                data.getImportGroups()
+        );
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -133,7 +137,7 @@ public class PrimaryImportWorker extends BaseWorker {
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary, step, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, Object... t) {
@@ -155,6 +159,8 @@ public class PrimaryImportWorker extends BaseWorker {
      * @param importGroups       True if the worker has to import groups from the groups JSON; false if existing groups should be kept
      */
     private void startImport(
+            StorageLocation location,
+            String targetRootUri,
             boolean rename,
             boolean removePlaceholders,
             boolean renumberPages,
@@ -168,11 +174,15 @@ public class PrimaryImportWorker extends BaseWorker {
         Context context = getApplicationContext();
 
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
-        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
+        EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE));
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
+        String previousUriStr = Preferences.getStorageUri(location);
+        if (previousUriStr.isEmpty()) previousUriStr = "FAIL"; // Auto-fails if location is not set
+
+        Preferences.setStorageUri(location, targetRootUri);
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, targetRootUri);
         if (null == rootFolder) {
-            Timber.e("Root folder is not defined (%s)", Preferences.getStorageUri());
+            Timber.e("Root folder is invalid for location %s (%s)", location.name(), targetRootUri);
             return;
         }
 
@@ -195,7 +205,7 @@ public class PrimaryImportWorker extends BaseWorker {
             }
 
             // 2nd pass : count subfolders of every site folder
-            eventProgress(STEP_2_BOOK_FOLDERS, 1, 0, 0, context.getString(R.string.api29_migration_step1));
+            eventProgress(STEP_2_BOOK_FOLDERS, 1, 0, 0, context.getString(R.string.refresh_step1));
             List<DocumentFile> siteFolders = explorer.listFolders(context, rootFolder);
             int foldersProcessed = 0;
             for (DocumentFile f : siteFolders) {
@@ -223,7 +233,7 @@ public class PrimaryImportWorker extends BaseWorker {
             // Flag DB content for cleanup
             CollectionDAO dao = new ObjectBoxDAO(context);
             try {
-                dao.flagAllInternalBooks(removePlaceholders);
+                dao.flagAllInternalBooks(ContentHelper.getPathRoot(previousUriStr), removePlaceholders);
                 dao.flagAllErrorBooksWithJson();
             } finally {
                 dao.cleanup();
@@ -269,12 +279,12 @@ public class PrimaryImportWorker extends BaseWorker {
             Thread.currentThread().interrupt();
         } finally {
             // Write log in root folder
-            DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
+            DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, location, log));
 
             if (!isStopped()) { // Should only be done when things have run properly
                 CollectionDAO dao = new ObjectBoxDAO(context);
                 try {
-                    dao.deleteAllFlaggedBooks(true);
+                    dao.deleteAllFlaggedBooks(ContentHelper.getPathRoot(previousUriStr), true);
                     dao.deleteAllFlaggedGroups();
                 } finally {
                     dao.cleanup();
@@ -502,10 +512,10 @@ public class PrimaryImportWorker extends BaseWorker {
         eventProgress(STEP_3_BOOKS, bookFolders.size() - nbFolders, booksOK, booksKO);
     }
 
-    private LogHelper.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogHelper.LogEntry> log) {
+    private LogHelper.LogInfo buildLogInfo(boolean cleanup, StorageLocation location, @NonNull List<LogHelper.LogEntry> log) {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
         logInfo.setHeaderName(cleanup ? "Cleanup" : "Import");
-        logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
+        logInfo.setFileName((cleanup ? "cleanup_log_" : "import_log_") + location.name());
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);
         return logInfo;
@@ -551,7 +561,7 @@ public class PrimaryImportWorker extends BaseWorker {
                 EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary_pages, STEP_3_PAGES, "Page " + naturalOrder, naturalOrder, 0, orderedImages.size()));
         }
         if (nbRenumbered > 0) {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary_pages, STEP_3_PAGES, orderedImages.size(), 0, orderedImages.size()));
+            EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary_pages, STEP_3_PAGES, orderedImages.size(), 0, orderedImages.size()));
             trace(Log.INFO, STEP_3_PAGES, log, "Renumbered %d pages", nbRenumbered);
             content.setImageFiles(contentImages);
             ContentHelper.persistJson(context, content);
@@ -592,29 +602,51 @@ public class PrimaryImportWorker extends BaseWorker {
     }
 
     private void importGroups(@NonNull final Context context, @NonNull DocumentFile groupsFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
-        trace(Log.INFO, STEP_GROUPS, log, "Custom groups JSON found");
+        trace(Log.INFO, STEP_GROUPS, log, "Groups JSON found");
         eventProgress(STEP_GROUPS, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseCollectionJson(context, groupsFile);
         if (null != contentCollection) {
-            List<Group> groups = contentCollection.getCustomGroups();
-            eventProgress(STEP_GROUPS, groups.size(), 0, 0);
-            trace(Log.INFO, STEP_GROUPS, log, "Custom groups JSON deserialized : %s custom groups detected", groups.size() + "");
-            int count = 1;
-            for (Group g : groups) {
-                // Only add if it isn't a duplicate
-                Group duplicate = dao.selectGroupByName(Grouping.CUSTOM.getId(), g.name);
-                if (null == duplicate)
-                    dao.insertGroup(g);
-                else { // If it is, unflag existing group
-                    duplicate.setFlaggedForDeletion(false);
-                    dao.insertGroup(duplicate);
-                }
-                eventProgress(STEP_GROUPS, groups.size(), count++, 0);
-            }
-            trace(Log.INFO, STEP_GROUPS, log, "Import custom groups succeeded");
+            trace(Log.INFO, STEP_GROUPS, log, "Groups JSON deserialized");
+            importCustomGroups(contentCollection, dao, log);
+            importEditedGroups(contentCollection, Grouping.ARTIST, dao, log);
+            importEditedGroups(contentCollection, Grouping.DL_DATE, dao, log);
         } else {
-            trace(Log.INFO, STEP_GROUPS, log, "Import custom groups failed : Custom groups JSON unreadable");
+            trace(Log.INFO, STEP_GROUPS, log, "Import groups failed : Groups JSON unreadable");
         }
+    }
+
+    private void importCustomGroups(JsonContentCollection contentCollection, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+        List<Group> groups = contentCollection.getGroups(Grouping.CUSTOM);
+        eventProgress(STEP_GROUPS, groups.size(), 0, 0);
+        trace(Log.INFO, STEP_GROUPS, log, "%s custom groups detected", groups.size() + "");
+        int count = 1;
+        for (Group g : groups) {
+            // Only add if it isn't a duplicate
+            Group duplicate = dao.selectGroupByName(Grouping.CUSTOM.getId(), g.name);
+            if (null == duplicate) dao.insertGroup(g);
+            else { // If it is, unflag existing group
+                duplicate.setFlaggedForDeletion(false);
+                dao.insertGroup(duplicate);
+            }
+            eventProgress(STEP_GROUPS, groups.size(), count++, 0);
+        }
+        trace(Log.INFO, STEP_GROUPS, log, "Import custom groups succeeded");
+    }
+
+    private void importEditedGroups(JsonContentCollection contentCollection, Grouping grouping, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+        List<Group> editedArtistGroups = contentCollection.getGroups(grouping);
+        trace(Log.INFO, STEP_GROUPS, log, "%d edited %s groups detected", editedArtistGroups.size(), grouping.getName());
+        for (Group g : editedArtistGroups) {
+            // Only add if it isn't a duplicate
+            Group duplicate = dao.selectGroupByName(grouping.getId(), g.name);
+            if (null == duplicate) dao.insertGroup(g);
+            else { // If it is, copy attributes
+                duplicate.setFavourite(g.isFavourite());
+                duplicate.setRating(g.getRating());
+                dao.insertGroup(duplicate);
+            }
+        }
+        trace(Log.INFO, STEP_GROUPS, log, "Import edited %s groups succeeded", grouping.getName());
     }
 
     private void importBookmarks(@NonNull final Context context, @NonNull DocumentFile bookmarksFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {

@@ -31,7 +31,7 @@ class AboutActivity : BaseActivity() {
         binding?.let {
             setContentView(it.root)
 
-            it.toolbar.setNavigationOnClickListener { onBackPressed() }
+            it.toolbar.setNavigationOnClickListener { finish() }
 
             it.appLogo.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB_WIKI) }
             it.githubText.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB) }
@@ -44,10 +44,10 @@ class AboutActivity : BaseActivity() {
                 BuildConfig.VERSION_CODE
             )
             it.tvChromeVersionName.text =
-                    if (WebkitPackageHelper.getWebViewAvailable())
-                        getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
-                    else
-                        getString(R.string.about_chrome_unavailable)
+                if (WebkitPackageHelper.getWebViewAvailable())
+                    getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
+                else
+                    getString(R.string.about_chrome_unavailable)
 
             it.changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
 

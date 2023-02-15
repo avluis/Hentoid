@@ -140,30 +140,46 @@
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/export_wiki_link"
-        tools:text="Export library (235 books)"
+        tools:text="Export primary library (2350 books)"
         tools:visibility="visible" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
+    <TextView
+        android:id="@+id/export_location"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/drawer_item_height"
+        android:layout_marginStart="32dp"
+        android:gravity="center_vertical"
+        android:text="@string/export_location"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_file_library_chk"
+        tools:visibility="visible" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/export_favs_only"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:switchPadding="10dp"
         android:text="@string/export_favs_only"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_file_library_chk"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_location"
         tools:visibility="visible" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/export_groups"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:switchPadding="10dp"
         android:text="@string/export_groups"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/export_favs_only"
         tools:visibility="visible" />
 

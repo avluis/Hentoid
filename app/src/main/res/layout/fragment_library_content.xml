@@ -19,10 +19,13 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/top_fab"
+        style="?attr/floatingActionButtonSmallStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
         android:visibility="gone"
-        app:fabSize="mini"
         app:layout_constraintBottom_toTopOf="@id/pager_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_keyboard_arrow_up"

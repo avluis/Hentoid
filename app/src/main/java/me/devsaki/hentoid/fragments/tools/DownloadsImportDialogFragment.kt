@@ -11,16 +11,16 @@ import android.view.ViewGroup
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import com.skydoves.powermenu.PowerMenuItem
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposables
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.databinding.DialogQueueDownloadsImportBinding
@@ -52,9 +52,6 @@ class DownloadsImportDialogFragment : DialogFragment() {
     private val binding get() = _binding!!
 
     private var isServiceGracefulClose = false
-
-    // Disposable for RxJava
-    private var importDisposable = Disposables.empty()
 
 
     private val pickFile = registerForActivityResult(
@@ -96,22 +93,24 @@ class DownloadsImportDialogFragment : DialogFragment() {
                 binding.importSelectFileBtn.visibility = View.GONE
                 checkFile(doc)
             }
+
             ImportHelper.PickerResult.KO_CANCELED -> Snackbar.make(
                 binding.root,
                 R.string.import_canceled,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
+
             ImportHelper.PickerResult.KO_NO_URI -> Snackbar.make(
                 binding.root,
                 R.string.import_invalid,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
+
             ImportHelper.PickerResult.KO_OTHER -> Snackbar.make(
                 binding.root,
                 R.string.import_other,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
-            else -> {}
         }
     }
 
@@ -121,55 +120,56 @@ class DownloadsImportDialogFragment : DialogFragment() {
         binding.importProgressBar.isIndeterminate = true
         binding.importProgressText.visibility = View.VISIBLE
         binding.importProgressBar.visibility = View.VISIBLE
-        importDisposable = Single.fromCallable {
-            readFile(requireContext(), file)
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { c: List<String> ->
-                    onFileRead(
-                        c,
-                        file
-                    )
+
+        lifecycleScope.launch {
+            var errorFileName = ""
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    return@withContext readFile(requireContext(), file)
+                } catch (e: Exception) {
+                    Timber.w(e)
+                    errorFileName = StringHelper.protect(file.name)
                 }
-            ) { t: Throwable? ->
-                Timber.w(t)
-                val fileName = StringHelper.protect(file.name)
-                binding.importProgressText.text = resources.getString(
-                    R.string.import_file_invalid,
-                    fileName
-                )
-                binding.importProgressBar.visibility = View.INVISIBLE
+                return@withContext emptyList<String>()
             }
+            coroutineScope {
+                if (errorFileName.isEmpty()) onFileRead(result, file)
+                else {
+                    binding.importProgressText.text = resources.getString(
+                        R.string.import_file_invalid,
+                        errorFileName
+                    )
+                    binding.importProgressBar.visibility = View.INVISIBLE
+                }
+            }
+        }
     }
 
     private fun onFileRead(
         downloadsList: List<String>,
         jsonFile: DocumentFile
     ) {
-        importDisposable.dispose()
-        binding.importProgressText.visibility = View.GONE
-        binding.importProgressBar.visibility = View.GONE
-        if (downloadsList.isEmpty()) {
-            binding.importFileInvalidText.text =
-                resources.getString(R.string.import_file_invalid, jsonFile.name)
-            binding.importFileInvalidText.visibility = View.VISIBLE
-        } else {
-            binding.importSelectFileBtn.visibility = View.GONE
-            binding.importFileInvalidText.visibility = View.GONE
-            binding.importFileValidText.text = resources.getQuantityString(
-                R.plurals.import_downloads_found,
-                downloadsList.size,
-                downloadsList.size
-            )
-            binding.importFileValidText.visibility = View.VISIBLE
-            binding.importRunBtn.visibility = View.VISIBLE
-            binding.importRunBtn.isEnabled = true
-            binding.importRunBtn.setOnClickListener {
-                askRun(
-                    jsonFile.uri
+        binding.apply {
+            importProgressText.visibility = View.GONE
+            importProgressBar.visibility = View.GONE
+            if (downloadsList.isEmpty()) {
+                importFileInvalidText.text =
+                    resources.getString(R.string.import_file_invalid, jsonFile.name)
+                importFileInvalidText.visibility = View.VISIBLE
+            } else {
+                importSelectFileBtn.visibility = View.GONE
+                importFileInvalidText.visibility = View.GONE
+                importFileValidText.text = resources.getQuantityString(
+                    R.plurals.import_downloads_found,
+                    downloadsList.size,
+                    downloadsList.size
                 )
+                importFileValidText.visibility = View.VISIBLE
+                importRunBtn.visibility = View.VISIBLE
+                importRunBtn.isEnabled = true
+                importRunBtn.setOnClickListener {
+                    askRun(jsonFile.uri)
+                }
             }
         }
     }
@@ -181,7 +181,7 @@ class DownloadsImportDialogFragment : DialogFragment() {
                 requireContext(),
                 binding.root,
                 this
-            ) { position: Int, _: PowerMenuItem? ->
+            ) { position, _ ->
                 runImport(
                     fileUri,
                     if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
@@ -235,7 +235,25 @@ class DownloadsImportDialogFragment : DialogFragment() {
             binding.importProgressBar.progress = progress
             binding.importProgressBar.isIndeterminate = false
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            importDisposable.dispose()
+            isServiceGracefulClose = true
+            binding.importProgressBar.progress = event.elementsTotal
+            binding.importProgressText.text =
+                resources.getQuantityString(
+                    R.plurals.import_result,
+                    event.elementsOK,
+                    event.elementsOK,
+                    event.elementsTotal
+                )
+            // Dismiss after 3s, for the user to be able to see the ending message
+            Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 2500)
+        }
+    }
+
+    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+    fun onImportStickyEvent(event: ProcessEvent) {
+        if (event.processId != R.id.import_downloads || isServiceGracefulClose) return
+        if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            EventBus.getDefault().removeStickyEvent(event)
             isServiceGracefulClose = true
             binding.importProgressBar.progress = event.elementsTotal
             binding.importProgressText.text =
@@ -283,7 +301,7 @@ class DownloadsImportDialogFragment : DialogFragment() {
             }
             return lines
                 .map { s -> s.trim().lowercase() }
-                .filterNot { s -> s.trim().isEmpty() }
+                .filterNot { s -> s.isEmpty() }
                 .filter { s ->
                     StringHelper.isNumeric(s) ||
                             (s.startsWith("http")

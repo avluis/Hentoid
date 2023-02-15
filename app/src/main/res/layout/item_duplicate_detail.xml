@@ -173,7 +173,7 @@
             app:layout_constraintEnd_toStartOf="@id/keep_delete"
             app:layout_constraintStart_toEndOf="@id/ivCover" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/keep_delete"
             android:layout_width="wrap_content"
             android:layout_height="48dp"

@@ -76,7 +76,7 @@ public class ReaderActivity extends BaseActivity {
         }
 
         // Allows an full recolor of the status bar with the custom color defined in the activity's theme
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.black));
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 
         if (null == savedInstanceState) {

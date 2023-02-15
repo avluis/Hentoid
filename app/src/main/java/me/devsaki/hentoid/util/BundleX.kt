@@ -1,10 +1,8 @@
 package me.devsaki.hentoid.util
 
 import android.os.Bundle
-import android.os.Parcelable
 import android.util.Size
 import android.util.SizeF
-import java.io.Serializable
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -94,22 +92,6 @@ fun Bundle.sizeF() = object : ReadWriteProperty<Any, SizeF?> {
 
     override fun setValue(thisRef: Any, property: KProperty<*>, value: SizeF?) =
         putSizeF(property.name, value)
-}
-
-fun <T : Parcelable> Bundle.parcelable() = object : ReadWriteProperty<Any, T?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getParcelable<T>(property.name)
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: T?) =
-        putParcelable(property.name, value)
-}
-
-fun Bundle.serializable() = object : ReadWriteProperty<Any, Serializable?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getSerializable(property.name)
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Serializable?) =
-        putSerializable(property.name, value)
 }
 
 fun Bundle.intArray() = object : ReadWriteProperty<Any, IntArray?> {

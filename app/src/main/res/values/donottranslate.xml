@@ -55,6 +55,14 @@
         <item>95</item>
         <item>98</item>
     </string-array>
+    <string-array name="pref_storage_strategy_name" translatable="false">
+        <item>@string/storage_strategy_balance</item>
+        <item>@string/storage_strategy_fallover</item>
+    </string-array>
+    <string-array name="pref_storage_strategy_desc" translatable="false">
+        <item>@string/storage_strategy_balance_desc</item>
+        <item>@string/storage_strategy_fallover_desc</item>
+    </string-array>
     <string-array name="pref_browser_quick_dl_threshold_entries" translatable="false">
         <item>@string/pref_browser_quick_dl_threshold_entries_1</item>
         <item>@string/pref_browser_quick_dl_threshold_entries_2</item>
@@ -372,6 +380,8 @@
     <string-array name="search_location_entries" translatable="false">
         <item>@string/search_location_entries_1</item>
         <item>@string/refresh_location_internal</item>
+        <item>@string/refresh_location_internal_1</item>
+        <item>@string/refresh_location_internal_2</item>
         <item>@string/refresh_location_external</item>
     </string-array>
     <string-array name="search_type_entries" translatable="false">
@@ -380,6 +390,11 @@
         <item>@string/search_type_entries_3</item>
         <item>@string/search_type_entries_4</item>
         <item>@string/search_type_entries_5</item>
+    </string-array>
+    <string-array name="export_location_entries" translatable="false">
+        <item>@string/refresh_location_internal</item>
+        <item>@string/refresh_location_internal_1</item>
+        <item>@string/refresh_location_internal_2</item>
     </string-array>
 
     <!-- Strings: Main: Generic Usage -->
@@ -459,6 +474,7 @@
     <string name="pref_dl_retries_mem_limit_summary" translatable="false">%s</string>
     <string name="pref_dl_retries_mem_limit_default" translatable="false">100</string>
     <string name="pref_dl_blocked_tags_behaviour_default" translatable="false">0</string>
+    <string name="pref_dl_eh_hires_default" translatable="false">false</string>
     <string name="pref_dl_threads_quantity_default" translatable="false">0</string>
     <string name="pref_dl_speed_cap_default" translatable="false">-1</string>
     <!-- Strings: Settings: Privacy -->

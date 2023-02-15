@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +53,7 @@ import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
@@ -81,17 +83,18 @@ public class ImportHelper {
         int KO_OTHER = 3; // Any other issue
     }
 
-    @IntDef({ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER})
+    @IntDef({ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER_PRIMARY, ProcessFolderResult.KO_OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ProcessFolderResult {
         int OK_EMPTY_FOLDER = 1; // OK - Existing, empty Hentoid folder
         int OK_LIBRARY_DETECTED = 2; // OK - En existing Hentoid folder with books
         int OK_LIBRARY_DETECTED_ASK = 3; // OK - Existing Hentoid folder with books + we need to ask the user if he wants to import them
         int KO_INVALID_FOLDER = 5; // File or folder is invalid, cannot be found
-        int KO_APP_FOLDER = 6; // Selected folder is the app folder and can't be used as an external folder
+        int KO_APP_FOLDER = 6; // Selected folder is the primary location and can't be used as an external location
         int KO_DOWNLOAD_FOLDER = 7; // Selected folder is the device's download folder and can't be used as a primary folder (downloads visibility + storage calculation issues)
         int KO_CREATE_FAIL = 8; // Hentoid folder could not be created
         int KO_ALREADY_RUNNING = 9; // Import is already running
+        int KO_OTHER_PRIMARY = 10; // Selected folder is the other primary location
         int KO_OTHER = 99; // Any other issue
     }
 
@@ -122,13 +125,13 @@ public class ImportHelper {
         return hentoidFolderNames.accept(folderName);
     }
 
-    public static class PickFolderContract extends ActivityResultContract<Integer, ImmutablePair<Integer, Uri>> {
+    public static class PickFolderContract extends ActivityResultContract<StorageLocation, ImmutablePair<Integer, Uri>> {
 
         @NonNull
         @Override
-        public Intent createIntent(@NonNull Context context, Integer input) {
+        public Intent createIntent(@NonNull Context context, StorageLocation input) {
             HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
-            return getFolderPickerIntent(context);
+            return getFolderPickerIntent(context, input);
         }
 
         @Override
@@ -174,7 +177,7 @@ public class ImportHelper {
      * @param context Context to be used
      * @return Intent for the SAF folder picker
      */
-    private static Intent getFolderPickerIntent(@NonNull final Context context) {
+    private static Intent getFolderPickerIntent(@NonNull final Context context, @NonNull StorageLocation location) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             intent.putExtra(DocumentsContract.EXTRA_PROMPT, context.getString(R.string.dialog_prompt));
@@ -183,8 +186,8 @@ public class ImportHelper {
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
 
         // Start the SAF at the specified location
-        if (Build.VERSION.SDK_INT >= O && !Preferences.getStorageUri().isEmpty()) {
-            DocumentFile file = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
+        if (Build.VERSION.SDK_INT >= O && !Preferences.getStorageUri(location).isEmpty()) {
+            DocumentFile file = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(location));
             if (file != null)
                 intent.putExtra(EXTRA_INITIAL_URI, file.getUri());
         }
@@ -208,32 +211,36 @@ public class ImportHelper {
     }
 
     /**
-     * Scan the given tree URI for a Hentoid folder
+     * Scan the given tree URI for a primary folder
      * If none is found there, try to create one
      *
      * @param context         Context to be used
      * @param treeUri         Tree URI of the folder where to find or create the Hentoid folder
+     * @param location        Location to associate the folder with
      * @param askScanExisting If true and an existing non-empty Hentoid folder is found, the user will be asked if he wants to import its contents
      * @param options         Import options - See ImportHelper.ImportOptions
-     * @return Standardized result - see ImportHelper.Result
+     * @return Pair containing :
+     * - Left : Standardized result - see ImportHelper.Result
+     * - Right : URI of the detected or created primary folder
      */
-    public static @ProcessFolderResult
-    int setAndScanHentoidFolder(
+    public static ImmutablePair<Integer, String> setAndScanPrimaryFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri,
+            StorageLocation location,
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
         // Persist I/O permissions; keep existing ones if present
-        Uri externalUri = null;
-        if (!Preferences.getExternalLibraryUri().isEmpty())
-            externalUri = Uri.parse(Preferences.getExternalLibraryUri());
-        FileHelper.persistNewUriPermission(context, treeUri, externalUri);
+        List<StorageLocation> locs = new ArrayList<>();
+        locs.add(StorageLocation.EXTERNAL);
+        if (location == StorageLocation.PRIMARY_1) locs.add(StorageLocation.PRIMARY_2);
+        else locs.add(StorageLocation.PRIMARY_1);
+        persistLocationCredentials(context, treeUri, locs);
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
         if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
-            return ProcessFolderResult.KO_INVALID_FOLDER;
+            return new ImmutablePair<>(ProcessFolderResult.KO_INVALID_FOLDER, treeUri.toString());
         }
 
         // Check if the folder is not the device's Download folder
@@ -243,7 +250,7 @@ public class ImportHelper {
             firstSegment = firstSegment.split(File.separator)[0];
             if (firstSegment.startsWith("download") || firstSegment.startsWith("primary:download")) {
                 Timber.e("Device's download folder detected : %s", treeUri.toString());
-                return ProcessFolderResult.KO_DOWNLOAD_FOLDER;
+                return new ImmutablePair<>(ProcessFolderResult.KO_DOWNLOAD_FOLDER, treeUri.toString());
             }
         }
 
@@ -251,79 +258,117 @@ public class ImportHelper {
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
             Timber.e("Could not create Hentoid folder in folder %s", docFile.getUri().toString());
-            return ProcessFolderResult.KO_CREATE_FAIL;
+            return new ImmutablePair<>(ProcessFolderResult.KO_CREATE_FAIL, treeUri.toString());
+        }
+
+        // Check if the folder is not Hentoid's other primary location
+        String otherLocationUriStr;
+        if (location == StorageLocation.PRIMARY_1)
+            otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
+        else otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
+        if (hentoidFolder.getUri().toString().equalsIgnoreCase(otherLocationUriStr)) {
+            Timber.e("Selected folder is the other primary location : %s", treeUri.toString());
+            return new ImmutablePair<>(ProcessFolderResult.KO_OTHER_PRIMARY, treeUri.toString());
         }
 
         // Set the folder as the app's downloads folder
-        int result = FileHelper.checkAndSetRootFolder(context, hentoidFolder);
+        int result = FileHelper.createNoMedia(context, hentoidFolder);
         if (result < 0) {
             Timber.e("Could not set the selected root folder (error = %d) %s", result, hentoidFolder.getUri().toString());
-            return ProcessFolderResult.KO_INVALID_FOLDER;
+            return new ImmutablePair<>(ProcessFolderResult.KO_INVALID_FOLDER, hentoidFolder.getUri().toString());
         }
 
         // Scan the folder for an existing library; start the import
         if (hasBooks(context, hentoidFolder)) {
             if (!askScanExisting) {
-                runPrimaryImport(context, options);
-                return ProcessFolderResult.OK_LIBRARY_DETECTED;
-            } else return ProcessFolderResult.OK_LIBRARY_DETECTED_ASK;
+                runPrimaryImport(context, location, hentoidFolder.getUri().toString(), options);
+                return new ImmutablePair<>(ProcessFolderResult.OK_LIBRARY_DETECTED, hentoidFolder.getUri().toString());
+            } else
+                return new ImmutablePair<>(ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, hentoidFolder.getUri().toString());
         } else {
-            // New library created - drop and recreate db (in case user is re-importing)
-            CollectionDAO dao = new ObjectBoxDAO(context);
-            try {
-                dao.deleteAllInternalBooks(true);
-            } finally {
-                dao.cleanup();
+            // Create a new library or import an Hentoid folder without books
+            // => Don't run the import worker and settle things here
+
+            // In case that Location was previously populated, drop all books
+            if (!Preferences.getStorageUri(location).isEmpty()) {
+                CollectionDAO dao = new ObjectBoxDAO(context);
+                try {
+                    ContentHelper.detachAllPrimaryContent(dao, location);
+                } finally {
+                    dao.cleanup();
+                }
             }
-            return ProcessFolderResult.OK_EMPTY_FOLDER;
+            Preferences.setStorageUri(location, hentoidFolder.getUri().toString());
+            return new ImmutablePair<>(ProcessFolderResult.OK_EMPTY_FOLDER, hentoidFolder.getUri().toString());
         }
     }
 
     /**
-     * Scan the given tree URI for external books or Hentoid books
+     * Scan the given tree URI for 3rd party books, archives or Hentoid books
      *
      * @param context Context to be used
-     * @param treeUri Tree URI of the folder where to find external books or Hentoid books
-     * @return Standardized result - see ImportHelper.Result
+     * @param treeUri Tree URI of the folder where to find 3rd party books, archives or Hentoid books
+     * @return Pair containing :
+     * - Left : Standardized result - see ImportHelper.Result
+     * - Right : URI of the detected or created primary folder
      */
-    public static @ProcessFolderResult
-    int setAndScanExternalFolder(
+    public static ImmutablePair<Integer, String> setAndScanExternalFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri) {
-
         // Persist I/O permissions; keep existing ones if present
-        Uri hentoidUri = null;
-        if (!Preferences.getStorageUri().isEmpty())
-            hentoidUri = Uri.parse(Preferences.getStorageUri());
-        FileHelper.persistNewUriPermission(context, treeUri, hentoidUri);
+        persistLocationCredentials(context, treeUri, Arrays.asList(StorageLocation.PRIMARY_1, StorageLocation.PRIMARY_2));
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
         if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
-            return ProcessFolderResult.KO_INVALID_FOLDER;
+            return new ImmutablePair<>(ProcessFolderResult.KO_INVALID_FOLDER, treeUri.toString());
         }
         String folderUri = docFile.getUri().toString();
-        if (folderUri.equalsIgnoreCase(Preferences.getStorageUri())) {
-            Timber.w("Trying to set the app folder as the external library %s", treeUri.toString());
-            return ProcessFolderResult.KO_APP_FOLDER;
+        if (folderUri.equalsIgnoreCase(Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+                || folderUri.equalsIgnoreCase(Preferences.getStorageUri(StorageLocation.PRIMARY_2))) {
+            Timber.w("Trying to set the external library inside a primary library location %s", treeUri.toString());
+            return new ImmutablePair<>(ProcessFolderResult.KO_APP_FOLDER, treeUri.toString());
         }
         // Set the folder as the app's external library folder
         Preferences.setExternalLibraryUri(folderUri);
 
         // Start the import
-        if (runExternalImport(context)) return ProcessFolderResult.OK_LIBRARY_DETECTED;
-        else return ProcessFolderResult.KO_ALREADY_RUNNING;
+        if (runExternalImport(context))
+            return new ImmutablePair<>(ProcessFolderResult.OK_LIBRARY_DETECTED, folderUri);
+        else return new ImmutablePair<>(ProcessFolderResult.KO_ALREADY_RUNNING, folderUri);
+    }
+
+    /**
+     * Persist I/O credentials for the given location, keeping the given existing credentials
+     *
+     * @param context  Context to use
+     * @param treeUri  Uri to add credentials for
+     * @param location Locations to keep credentials for
+     */
+    private static void persistLocationCredentials(@NonNull final Context context,
+                                                   @NonNull final Uri treeUri,
+                                                   List<StorageLocation> location) {
+        List<Uri> uri = Stream.of(location)
+                .map(Preferences::getStorageUri)
+                .filterNot(String::isEmpty)
+                .map(Uri::parse)
+                .toList();
+        FileHelper.persistNewUriPermission(context, treeUri, uri);
     }
 
     /**
      * Show the dialog to ask the user if he wants to import existing books
      *
      * @param context        Context to be used
+     * @param location       Location we're working on
+     * @param rootUri        Uri of the selected folder
      * @param cancelCallback Callback to run when the dialog is canceled
      */
     public static void showExistingLibraryDialog(
             @NonNull final Context context,
+            StorageLocation location,
+            @NonNull final String rootUri,
             @Nullable Runnable cancelCallback
     ) {
         new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
@@ -334,7 +379,7 @@ public class ImportHelper {
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            runPrimaryImport(context, null);
+                            runPrimaryImport(context, location, rootUri, null);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog2, which) -> {
@@ -423,11 +468,15 @@ public class ImportHelper {
      */
     private static void runPrimaryImport(
             @NonNull final Context context,
+            StorageLocation location,
+            @NonNull final String targetRoot,
             @Nullable final ImportOptions options
     ) {
         ImportNotificationChannel.init(context);
 
         PrimaryImportData.Builder builder = new PrimaryImportData.Builder();
+        builder.setLocation(location);
+        builder.setTargetRoot(targetRoot);
         if (options != null) {
             builder.setRefreshRename(options.rename);
             builder.setRefreshRemovePlaceholders(options.removePlaceholders);
@@ -834,13 +883,11 @@ public class ImportHelper {
      *
      * @param dao   CollectionDAO to use
      * @param rules List of rules to add to the existing rules
-     * @return Quantity of new integrated rules
      */
-    public static int importRenamingRules(@NonNull final CollectionDAO dao, List<RenamingRule> rules) {
+    public static void importRenamingRules(@NonNull final CollectionDAO dao, List<RenamingRule> rules) {
         Set<RenamingRule> existingRules = new HashSet<>(dao.selectRenamingRules(AttributeType.UNDEFINED, null));
         List<RenamingRule> rulesToImport = Stream.of(new HashSet<>(rules)).filterNot(existingRules::contains).toList();
         dao.insertRenamingRules(rulesToImport);
-        return rulesToImport.size();
     }
 
     /**

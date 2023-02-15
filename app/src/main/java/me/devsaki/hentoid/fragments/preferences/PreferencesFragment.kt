@@ -27,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
+import me.devsaki.hentoid.activities.StoragePreferenceActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -45,8 +46,6 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.workers.ExternalImportWorker
-import me.devsaki.hentoid.workers.PrimaryImportWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import kotlin.properties.Delegates
 
@@ -99,9 +98,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
-        onHentoidFolderChanged()
         onExternalFolderChanged()
-        populateMemoryUsage()
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
@@ -111,8 +108,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.APP_PREVIEW,
             Preferences.Key.FORCE_ENGLISH,
             Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
-            Preferences.Key.PRIMARY_FOLDER,
-            Preferences.Key.SD_STORAGE_URI -> onHentoidFolderChanged()
+
             Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
         }
@@ -124,104 +120,43 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 requireContext().startLocalActivity<DrawerEditActivity>()
                 true
             }
-            Preferences.Key.EXTERNAL_LIBRARY -> {
-                if (Preferences.isBrowserMode()) {
-                    ToastHelper.toast(R.string.pref_import_browser_mode)
-                } else if (ExternalImportWorker.isRunning(requireContext())) {
-                    ToastHelper.toast(R.string.pref_import_running)
-                } else {
-                    LibRefreshDialogFragment.invoke(
-                        parentFragmentManager,
-                        showOptions = false,
-                        chooseFolder = true,
-                        externalLibrary = true
-                    )
-                }
+
+            Preferences.Key.STORAGE_MANAGEMENT -> {
+                requireContext().startLocalActivity<StoragePreferenceActivity>()
                 true
             }
-            Preferences.Key.EXTERNAL_LIBRARY_DETACH -> {
-                MaterialAlertDialogBuilder(
-                    requireContext(),
-                    ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
-                )
-                    .setIcon(R.drawable.ic_warning)
-                    .setCancelable(true)
-                    .setTitle(R.string.app_name)
-                    .setMessage(R.string.prefs_ask_detach_external_library)
-                    .setPositiveButton(
-                        R.string.yes
-                    ) { dialog1: DialogInterface, _: Int ->
-                        dialog1.dismiss()
-                        Preferences.setExternalLibraryUri("")
-                        viewModel.removeAllExternalContent()
-                        ToastHelper.toast(R.string.prefs_external_library_detached)
-                    }
-                    .setNegativeButton(
-                        R.string.no
-                    ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
-                    .create()
-                    .show()
-                true
-            }
-            Preferences.Key.REFRESH_LIBRARY -> {
-                if (Preferences.isBrowserMode()) {
-                    ToastHelper.toast(R.string.pref_import_browser_mode)
-                } else if (PrimaryImportWorker.isRunning(requireContext())) {
-                    ToastHelper.toast(R.string.pref_import_running)
-                } else {
-                    LibRefreshDialogFragment.invoke(
-                        parentFragmentManager,
-                        showOptions = true,
-                        chooseFolder = false,
-                        externalLibrary = false
-                    )
-                }
-                true
-            }
+
             Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
                 onDeleteAllExceptFavourites()
                 true
             }
+
             Preferences.Key.VIEWER_RENDERING -> {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
                     ToastHelper.toast(R.string.pref_viewer_rendering_no_android5)
                 true
             }
-            Preferences.Key.PRIMARY_FOLDER -> {
-                if (PrimaryImportWorker.isRunning(requireContext())) {
-                    ToastHelper.toast(R.string.pref_import_running)
-                } else {
-                    LibRefreshDialogFragment.invoke(
-                        parentFragmentManager,
-                        showOptions = false,
-                        chooseFolder = true,
-                        externalLibrary = false
-                    )
-                }
-                true
-            }
-            Preferences.Key.MEMORY_USAGE -> {
-                if (!Preferences.isBrowserMode()) MemoryUsageDialogFragment.invoke(
-                    parentFragmentManager
-                )
-                true
-            }
+
             Preferences.Key.APP_LOCK -> {
                 requireContext().startLocalActivity<PinPreferenceActivity>()
                 true
             }
+
             Preferences.Key.CHECK_UPDATE_MANUAL -> {
                 onCheckUpdatePrefClick()
                 true
             }
+
             Preferences.Key.DL_SPEED_CAP -> {
                 DownloadSpeedLimiter.setSpeedLimitKbps(Preferences.getDlSpeedCap())
                 true
             }
+
             Preferences.Key.BROWSER_CLEAR_COOKIES -> {
                 onClearCookies()
                 true
             }
+
             else -> super.onPreferenceTreeClick(preference)
         }
 
@@ -245,13 +180,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     private fun onPrefRequiringRestartChanged() {
         ToastHelper.toast(R.string.restart_needed)
-    }
-
-    private fun onHentoidFolderChanged() {
-        val storageFolderPref: Preference? =
-            findPreference(Preferences.Key.PRIMARY_FOLDER) as Preference?
-        val uri = Uri.parse(Preferences.getStorageUri())
-        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri)
     }
 
     private fun onExternalFolderChanged() {
@@ -324,18 +252,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 showSnackBar(caption)
             }
         }
-    }
-
-    private fun populateMemoryUsage() {
-        val folder =
-            FileHelper.getDocumentFromTreeUriString(requireContext(), Preferences.getStorageUri())
-                ?: return
-
-        val memUsagePref: Preference? = findPreference(Preferences.Key.MEMORY_USAGE) as Preference?
-        memUsagePref?.summary = resources.getString(
-            R.string.pref_memory_usage_summary,
-            FileHelper.MemoryUsageFigures(requireContext(), folder).freeUsageRatio100
-        )
     }
 
     private fun onDeleteAllExceptFavourites() {

@@ -33,6 +33,7 @@
     <string name="resume">재개</string>
     <string name="cancel">취소</string>
     <string name="cancel_all">전체 취소</string>
+    <string name="freeze">토글 고정</string>
     <string name="menu_completed_single">읽음으로 표시</string>
     <string name="menu_reset_read">읽지 않음으로 표시</string>
     <string name="service_running">이미 실행중입니다</string>
@@ -40,12 +41,13 @@
     <string name="_default">기본</string>
     <string name="empty">비어있음</string>
     <string name="none">없음</string>
+    <string name="help_generic">도움말</string>
+    <string name="actions_generic">행동</string>
     <string name="disabled_generic">비활성화됨</string>
     <string name="create_generic">생성</string>
     <string name="edit_generic">수정</string>
     <string name="remove_generic">제거</string>
-<string name="title_activity_api29_migration">API 29 이동</string>
-    <string name="title_activity_downloads">라이브러리</string>
+<string name="title_activity_downloads">라이브러리</string>
     <string name="title_activity_queue">대기열</string>
     <string name="title_activity_preferences">설정</string>
     <string name="title_activity_about">정보</string>
@@ -53,19 +55,19 @@
     <string name="title_activity_search">고급 검색</string>
     <string name="title_activity_meta_edit">메타데이터 수정</string>
     <string name="title_activity_rules">자동 변경 규칙</string>
-<string name="api29_migration_title">Hentoid v12\n파일 관리 업데이트</string>
-    <string name="api29_migration_subtitle">Hentoid가 컬렉션을 업데이트하는 중입니다.\n몇 분이 소요될 수 있습니다.</string>
-    <string name="api29_migration_location">현재 Hentoid 폴더 위치\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Hentoid 폴더</string>
-    <string name="api29_migration_step1_external">외부 폴더</string>
-    <string name="api29_migration_step1_select">Hentoid 폴더 선택</string>
-    <string name="api29_migration_step1_select_external">외부 폴더 선택</string>
-    <string name="api29_migration_step2">사이트 폴더 탐색</string>
-    <string name="api29_migration_step3_init">라이브러리 탐색 중...</string>
-    <string name="api29_migration_step3">라이브러리 탐색 (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">대기열 불러오는 중...</string>
-    <string name="api29_migration_select_folder">기존 Hentoid 폴더를 선택하세요. 화면에 위치가 표시됩니다.</string>
-    <string name="api29_migration_allow_write">쓰기 권한을 허용해주세요</string>
+    <string name="title_activity_storage">저장공간 관리</string>
+<string name="refresh_step1">Hentoid 폴더</string>
+    <string name="refresh_step1_2">Hentoid 폴더 (보조)</string>
+    <string name="refresh_step1_external">외부 폴더</string>
+    <string name="refresh_step1_select">Hentoid 폴더 선택</string>
+    <string name="refresh_step1_select_2">Hentoid 폴더 선택 (보조)</string>
+    <string name="refresh_step1_select_external">외부 폴더 선택</string>
+    <string name="refresh_step2">사이트 폴더 탐색</string>
+    <string name="refresh_step3_init">라이브러리 탐색 중...</string>
+    <string name="refresh_step3">라이브러리 탐색 (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">대기열 불러오는 중...</string>
+    <string name="refresh_select_folder">기존 Hentoid 폴더를 선택하세요. 화면에 위치가 표시됩니다.</string>
+    <string name="refresh_allow_write">쓰기 권한을 허용해주세요</string>
 <string name="menu_search">검색</string>
     <string name="menu_fav">즐겨찾기 필터 켜기/끄기</string>
     <string name="menu_mark_fav">즐겨찾기 켜기/끄기</string>
@@ -96,7 +98,8 @@
     <string name="book_settings">작품 설정</string>
     <string name="alert_browser_mode">탐색 모드 활성화: 저장공간 권한 없음</string>
     <string name="alert_low_memory">기기에 저장 공간이 얼마 남지 않았습니다!</string>
-    <string name="alert_permissions_lost">파일 권한이 </string>
+    <string name="alert_permissions_lost">파일 권한을 잃었습니다</string>
+    <string name="alert_notifications">알림이 비활성화되었습니다!</string>
     <string name="fix_permissions">수정</string>
     <string name="view_queue">대기열 보기</string>
     <string name="clear_search_history">검색 기록 삭제</string>
@@ -133,6 +136,7 @@
     <string name="paused_dl_folder_not_found">다운로드 실패 - 다운로드 폴더 찾을 수 없음. 설정에서 폴더를 선택해주세요</string>
     <string name="paused_dl_folder_credentials">다운로드 실패 - 폴더 자격 증명 실패. 설정에서 다른 폴더를 선택해주세요</string>
     <string name="paused_dl_stale_online_credentials">다운로드 실패 - 오래된 쿠키나 자격 증명. 어플리케이션 설정에서 제거 후 다시 생성해주세요</string>
+    <string name="paused_dl_no_available_downloads">가능한 다운로드가 남아있지 않습니다</string>
     <string name="step_init">초기화</string>
     <string name="step_prepare_img">이미지 준비 중</string>
     <string name="step_fetch_img">이미지 불러오는 중</string>
@@ -209,16 +213,49 @@
     <string name="errortype_wifi">Wi-Fi 다운로드 크기 제한에 의해 건너뜀</string>
     <string name="errortype_blocked">차단된 태그 포함</string>
     <string name="errortype_undefined">알 수 없음</string>
-<string name="refresh_title">라이브러리 새로고침</string>
+<string name="browse_mode_warning">탐색 전용 모드 활성화\n저장공간 권한 없이 사용 중입니다.</string>
+    <string name="primary_library">기본 라이브러리</string>
+    <string name="primary_library_subtitle">다운로드</string>
+    <string name="add_primary_1">기본 경로 1 추가</string>
+    <string name="add_primary_2">기본 경로 2 추가</string>
+    <string name="external_library">외부 라이브러리</string>
+    <string name="external_library_subtitle">아카이브, 서드파티 다운로드</string>
+    <string name="add_external">외부 경로 추가</string>
+    <string name="location_storage">%1$s (%2$d%%) 남음</string>
+    <string name="storage_action_change">경로 변경</string>
+    <string name="storage_action_remove">경로 해제</string>
+    <string name="storage_remove_ask">선택된 경로를 해제하겠습니가?\n주의: 작품은 삭제되지 않습니다.</string>
+    <string name="storage_remove_ko1">경로 2가 설정되어 있으면 경로 1을 해제할 수 없습니다</string>
+    <string name="storage_remove_complete">경로 해제됨</string>
+    <string name="storage_action_merge_to_1">경로 1로 병합</string>
+    <string name="storage_merge_ask">%d개 작품을 경로 1에 합치겠습니까?\주의: 병합 완료 후 작품은 삭제됩니다</string>
+    <string name="storage_merge_ko1">병합 불가 : 저장공간이 충분하지 않습니다</string>
+    <string name="storage_merge_ko2">병합 불가 : 경로 2에 작품이 존재하지 않음</string>
+    <string name="storage_merge_progress">작품을 경로 1로 이동 중</string>
+    <string name="storage_merge_complete">병합 완료</string>
+    <string name="storage_strategy_title">다운로드 방법 : %s</string>
+    <string name="storage_strategy_balance">잔여 공간 균형</string>
+    <string name="storage_strategy_balance_desc">잔여 공간이 더 많은 경로에 다운로드하여 균형을 유지합니다. 이미 라이브러리에 있는 작품은 이동하지 않습니다.</string>
+    <string name="storage_strategy_fallover">한도 설정</string>
+    <string name="storage_strategy_fallover_desc">경로 1의 공간이 %d%% 이상 채워지면 경로 2에 다운로드 합니다.</string>
+    <string name="storage_fallover_threshold">저장 공간 한계치 (%%)</string>
+    <string name="storage_set_strategy">다운로드 방법 설정</string>
+    <string name="storage_stats">통계</string>
+    <string name="storage_stats_view">저장공간 사용 통계 보기</string>
+<string name="refresh_title">경로 새로고침</string>
     <string name="refresh_caption">파일 및 폴더를 다시 검색하여 라이브러리 데이터를 자동으로 새로 고칩니다.</string>
     <string name="refresh_options">정리 옵션</string>
-    <string name="refresh_location_internal">Hentoid 라이브러리</string>
+    <string name="refresh_location_internal">기본 경로 (전체)</string>
+    <string name="refresh_location_internal_1">기본 경로 1</string>
+    <string name="refresh_location_internal_2">기본 경로 2</string>
     <string name="refresh_location_external">외부 라이브러리</string>
     <string name="refresh_options_rename">모든 폴더의 이름을 최대 길이 설정에 맞게 바꿉니다.</string>
     <string name="refresh_options_remove_placeholders">메타데이터로 생성된 임시 작품 삭제</string>
-
+    <string name="refresh_options_renumber_pages">페이지 번호 재정렬</string>
+    <string name="refresh_renumber_warning">모든 작품을 확인하고 잘못된 페이지 수를 수정합니다.\n이 옵션을 사용하면 처리 속도가 상당히 느려집니다.</string>
     <string name="refresh_options_remove">폴더 삭제 옵션</string>
-
+    <string name="refresh_options_remove_1">JSON 파일이 없는 폴더 제거 (권장)</string>
+    <string name="refresh_options_remove_2">이미지가 다운로드되지 않은 폴더 제거</string>
     <string name="refresh_options_remove_or">또는</string>
 <string name="delete_title">전체 삭제 (즐겨찾기 제외)</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>
@@ -268,12 +305,16 @@
     <string name="dialog_prompt">폴더 선택</string>
     <string name="importing_metadata">메타데이터 불러오는 중...</string>
 <string name="export_title">메타데이터 내보내기</string>
+    <string name="export_question">정말로 라이브러리를 다른 폰으로 이전하시겠습니까?</string>
 
+    <string name="export_answer_yes">이 기능은 모든 데이터를 다른 휴대폰으로 전송하기 위한 것이 아닙니다. 어떤 경우에는 작동하지만 일부 작품은 다시 다운로드할 수 없는 것으로 인식될 수 있습니다!</string>
+    <string name="export_transfer_tutorial"><u>라이브러리 이전에 대해서는 위키를 확인하세요</u></string>
 
     <plurals name="export_file_library">
         <item quantity="one">라이브러리 내보내기 (<x:g example="1" id="number">%d</x:g> 작품)</item>
         <item quantity="other">라이브러리 내보내기 (<x:g example="2" id="number">%d</x:g> 작품)</item>
     </plurals>
+    <string name="export_location">경로: %s</string>
     <string name="export_favs_only">즐겨찾기만 내보내기</string>
     <string name="export_groups">지정 그룹만 내보내기</string>
     <plurals name="export_file_queue">
@@ -298,6 +339,8 @@
     <string name="import_download_folder">기기의 기본 다운로드 폴더를 선택하면 안 됩니다 - 다른 폴더를 만들거나 선택해주세요</string>
     <string name="import_create_fail">Hentoid 폴더 생성 실패 - 다른 위치를 선택해주세요</string>
     <string name="import_invalid_uri">폴더 인식 불가 - 다시 선택해주세요</string>
+    <string name="import_empty">폴더에 작품이 없습니다</string>
+    <string name="import_other_primary">다른 기본 경로와 같은 폴더를 지정할 수 없습니다</string>
     <string name="import_other">불러오기가 중지됨</string>
     <string name="import_unexpected">불러오기가 예상치 못하게 중지됨</string>
     <string name="task_done">작업 완료 - 로그에서 세부 정보 확인</string>
@@ -580,6 +623,7 @@
 <string name="help_web_exh_account">ExHentai 계정을 사용하거나 만들어주세요</string>
     <string name="help_web_invalid_exh_credentials">유효하지 않은 자격 증명입니다, 다시 로그인 해주세요</string>
     <string name="help_web_incomplete_exh_credentials">자격 증명에 실패했습니다, 다시 로그인 해주세요. 문제가 지속되면 다른 국가에서 사이트에 접속하거나 새 계정을 만드는 것이 좋습니다.</string>
+    <string name="help_web_hires_eh_account">고해상도 사진을 다운로드하려면 e-Hentai 계정을 사용하거나 만들어야 합니다.</string>
 <string name="category_any">전체</string>
     <string name="exclude">제외</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> 검색</string>
@@ -760,7 +804,7 @@
     <string name="meta_choose_type">유형 선택 - \'%s\'</string>
     <string name="meta_replace_with">다음으로 변경</string>
     <string name="meta_tag_all_selected">선택된 모든 작품에 태그 추가</string>
-    <string name="meta_tag_all_selected_confirm">선택된 %1$d개 작품에 \'%2$s\' 태그를 추가하시겠습니까?</string>
+    <string name="meta_tag_all_selected_confirm">선택된 모든 %1$d개 작품에 \'%2$s\' 태그를 붙이겠습니까?</string>
     <string name="meta_rename_new_name">새로운 이름</string>
     <string name="meta_rename_new_rule">다운로드 시 자동 변경을 위해 저장</string>
 <string name="meta_rule_source">대상</string>
@@ -775,8 +819,9 @@
     </plurals>
     <string name="notif_delete_fail">삭제 실패</string>
     <string name="notif_delete_fail_details">하나 이상의 책을 삭제하지 못했습니다</string>
-
-
+<string name="notif_json_title">JSON 업데이트</string>
+    <string name="notif_json_progress">JSON 업데이트 중</string>
+    <string name="notif_json_complete">업데이트 완료</string>
 <string name="title_startup">시작</string>
     <string name="title_startup_progress">시작 중...</string>
     <string name="title_startup_complete">시작 완료</string>

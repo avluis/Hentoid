@@ -35,12 +35,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiConsumer;
-import com.google.android.material.badge.BadgeDrawable;
 import com.skydoves.balloon.ArrowOrientation;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,6 +91,7 @@ import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
@@ -98,13 +100,13 @@ import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment;
 import me.devsaki.hentoid.json.core.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
@@ -186,11 +188,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // Top toolbar buttons
     private MenuItem refreshStopMenu;
     private MenuItem bookmarkMenu;
-    // Bottom toolbar buttons
-    private MenuItem backMenu;
-    private MenuItem forwardMenu;
-    private MenuItem seekMenu;
-    private MenuItem actionMenu;
     private @DrawableRes
     int downloadIcon;
 
@@ -266,12 +263,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
         bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
 
-        binding.bottomNavigation.setOnItemSelectedListener(this::onMenuItemSelected);
-        binding.bottomNavigation.setItemIconTintList(null); // Hack to make selector resource work
-        backMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_back);
-        forwardMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_forward);
-        seekMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_seek);
-        actionMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_action);
+        binding.bottomNavigation.setOnMenuItemClickListener(this::onMenuItemSelected);
+        binding.menuHome.setOnClickListener(v -> goHome());
+        binding.menuSeek.setOnClickListener(v -> onSeekClick());
+        binding.menuBack.setOnClickListener(v -> onBackClick());
+        binding.menuForward.setOnClickListener(v -> onForwardClick());
+        binding.actionButton.setOnClickListener(v -> onActionClick());
 
         // Webview
         initWebview();
@@ -290,7 +287,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.STREAM) ? R.drawable.selector_download_stream_action : R.drawable.selector_download_action;
         if (Preferences.isBrowserMode()) downloadIcon = R.drawable.ic_forbidden_disabled;
-        actionMenu.setIcon(downloadIcon);
+        binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon));
 
         displayTopAlertBanner();
     }
@@ -328,18 +325,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     @SuppressLint("NonConstantResourceId")
     private boolean onMenuItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.web_menu_home:
-                this.goHome();
-                break;
-            case R.id.web_menu_back:
-                this.onBackClick();
-                break;
-            case R.id.web_menu_forward:
-                this.onForwardClick();
-                break;
-            case R.id.web_menu_seek:
-                this.onSeekClick();
-                break;
             case R.id.web_menu_bookmark:
                 this.onBookmarkClick();
                 break;
@@ -348,9 +333,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 break;
             case R.id.web_menu_copy:
                 this.onCopyClick();
-                break;
-            case R.id.web_menu_action:
-                this.onActionClick();
                 break;
             case R.id.web_menu_settings:
                 this.onSettingsClick();
@@ -459,7 +441,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         Preferences.unregisterPrefsChangedListener(listener);
 
         // Cancel any previous extra page load
-        EventBus.getDefault().post(new DownloadEvent(currentContent, DownloadEvent.Type.EV_INTERRUPT_CONTENT));
+        EventBus.getDefault().post(new DownloadCommandEvent(currentContent, DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT));
 
         if (dao != null) dao.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
@@ -590,10 +572,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (url != null && !url.isEmpty() && webClient.isGalleryPage(url)) {
             Helper.setMargins(binding.quickDlFeedback,
                     x - binding.quickDlFeedback.getWidth() / 2,
-                    y - (binding.quickDlFeedback.getHeight() / 2) + binding.appBarLayout.getBottom(), 0, 0);
-            binding.quickDlFeedback.setProgress1Color(R.color.medium_gray);
+                    y - (binding.quickDlFeedback.getHeight() / 2) + binding.topBar.getBottom(), 0, 0);
+            binding.quickDlFeedback.setIndicatorColor(getResources().getColor(R.color.medium_gray));
             binding.quickDlFeedback.setVisibility(View.VISIBLE);
-            binding.quickDlFeedback.startAnimation(new BlinkAnimation(750, 20));
 
             // Run on a new thread to avoid crashes
             parseResponseDisposable.add(Single.fromCallable(() -> webClient.parseResponseOptional(url, null, true, true))
@@ -601,10 +582,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(res -> {
                         if (res.isEmpty()) {
-                            binding.quickDlFeedback.clearAnimation();
                             binding.quickDlFeedback.setVisibility(View.INVISIBLE);
                         } else {
-                            binding.quickDlFeedback.setProgress1Color(R.color.secondary_light);
+                            binding.quickDlFeedback.setIndicatorColor(ThemeHelper.getColor(this, R.color.secondary_light));
                         }
                     }, Timber::e));
         }
@@ -619,8 +599,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         refreshStopMenu.setIcon(R.drawable.ic_close);
         binding.progressBar.setVisibility(View.GONE);
         if (!isHtmlLoaded) {
-            actionMenu.setIcon(downloadIcon);
-            actionMenu.setEnabled(false);
+            binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon));
+            binding.actionButton.setVisibility(View.INVISIBLE);
+            binding.actionBtnBadge.setVisibility(View.INVISIBLE);
         }
 
         // Activate fetch handler
@@ -658,12 +639,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         duplicateId = -1;
         duplicateSimilarity = 0f;
         // Cancel any previous extra page load
-        EventBus.getDefault().post(new DownloadEvent(currentContent, DownloadEvent.Type.EV_INTERRUPT_CONTENT));
+        EventBus.getDefault().post(new DownloadCommandEvent(currentContent, DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT));
         // Greys out the action button
         // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious, Pixiv)
         runOnUiThread(() -> {
-            actionMenu.setIcon(downloadIcon);
-            actionMenu.setEnabled(false);
+            binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon));
+            binding.actionButton.setVisibility(View.INVISIBLE);
+            binding.actionBtnBadge.setVisibility(View.INVISIBLE);
         });
     }
 
@@ -681,8 +663,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * Refresh the visuals of the buttons of the navigation menu
      */
     private void refreshNavigationMenu(boolean isResultsPage) {
-        backMenu.setEnabled(webView.canGoBack());
-        forwardMenu.setEnabled(webView.canGoForward());
+        binding.menuBack.setEnabled(webView.canGoBack());
+        binding.menuForward.setEnabled(webView.canGoForward());
         changeSeekMode(isResultsPage ? BaseWebActivity.SeekMode.PAGE : BaseWebActivity.SeekMode.GALLERY, isResultsPage || backListContainsGallery(webView.copyBackForwardList()) > -1);
     }
 
@@ -847,7 +829,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                         || StatusContent.ERROR == currentContent.getStatus()
                         || StatusContent.MIGRATED == currentContent.getStatus()))
                     ContentHelper.openReader(this, currentContent, -1, null, false);
-                else actionMenu.setEnabled(false);
+                else {
+                    binding.actionButton.setVisibility(View.INVISIBLE);
+                    binding.actionBtnBadge.setVisibility(View.INVISIBLE);
+                }
                 break;
             default:
                 // Nothing
@@ -861,8 +846,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      */
     private void setActionMode(@ActionMode int mode) {
         if (Preferences.isBrowserMode() && binding != null) {
-            actionMenu.setIcon(R.drawable.ic_forbidden_disabled);
-            actionMenu.setEnabled(false);
+            binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_forbidden_disabled));
+            binding.actionButton.setVisibility(View.INVISIBLE);
+            binding.actionBtnBadge.setVisibility(View.INVISIBLE);
             return;
         }
 
@@ -876,10 +862,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
         actionButtonMode = mode;
         if (binding != null) {
-            BadgeDrawable badge = binding.bottomNavigation.getOrCreateBadge(R.id.web_menu_action);
-            badge.setVisible(ActionMode.DOWNLOAD_PLUS == mode);
-            actionMenu.setIcon(resId);
-            actionMenu.setEnabled(true);
+            binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, resId));
+            binding.actionButton.setVisibility(View.VISIBLE);
+            // It will become visible whenever the count of extra pages is known
+            if (ActionMode.DOWNLOAD_PLUS != mode)
+                binding.actionBtnBadge.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -892,8 +879,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         @DrawableRes int resId = R.drawable.selector_back_gallery;
         if (SeekMode.PAGE == mode) resId = R.drawable.selector_page_seek;
         seekButtonMode = mode;
-        seekMenu.setIcon(resId);
-        seekMenu.setEnabled(enabled);
+        binding.menuSeek.setImageDrawable(ContextCompat.getDrawable(this, resId));
+        binding.menuSeek.setEnabled(enabled);
     }
 
     /**
@@ -1063,9 +1050,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 null,
                 position,
                 (isReplaceDuplicate) ? duplicateId : -1,
-                ContentQueueManager.getInstance().isQueueActive(this)
+                ContentQueueManager.INSTANCE.isQueueActive(this)
         );
-        if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
+        if (Preferences.isQueueAutostart()) ContentQueueManager.INSTANCE.resumeQueue(this);
         setActionMode(ActionMode.VIEW_QUEUE);
     }
 
@@ -1221,10 +1208,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     private void onContentProcessed(@ContentStatus int status, boolean quickDownload) {
         processContentDisposable.dispose();
-        if (binding != null) {
-            binding.quickDlFeedback.clearAnimation();
-            binding.quickDlFeedback.setVisibility(View.INVISIBLE);
-        }
+        if (binding != null) binding.quickDlFeedback.setVisibility(View.INVISIBLE);
         if (null == currentContent) return;
         switch (status) {
             case ContentStatus.UNDOWNLOADABLE:
@@ -1345,8 +1329,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 extraImages = additionalNonDownloadedImages;
                 setActionMode(ActionMode.DOWNLOAD_PLUS);
                 if (binding != null) {
-                    BadgeDrawable badge = binding.bottomNavigation.getOrCreateBadge(R.id.web_menu_action);
-                    badge.setNumber(additionalNonDownloadedImages.size());
+                    binding.actionBtnBadge.setText(String.format(Locale.ENGLISH, "%d", additionalNonDownloadedImages.size()));
+                    binding.actionBtnBadge.setVisibility(View.VISIBLE);
                 }
             }
         }
@@ -1382,7 +1366,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         prefBlockedTags = Preferences.getBlockedTags();
     }
 
-    private void clearPrefBlockedTags(){
+    private void clearPrefBlockedTags() {
         prefBlockedTags.clear();
     }
 

@@ -40,6 +40,9 @@
     <!-- Green (for validation feedback) -->
     <color name="green">#70AD47</color>
 
+    <!-- Frozen title -->
+    <color name="frozen_blue">#8034cceb</color>
+
     <!-- Attribute type colors -->
     <color name="purple_light">@android:color/holo_purple</color>
     <color name="purple_dark">#8600C4</color>

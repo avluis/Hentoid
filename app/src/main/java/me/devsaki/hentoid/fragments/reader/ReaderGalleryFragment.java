@@ -65,6 +65,7 @@ import me.devsaki.hentoid.viewholders.SubExpandableItem;
 import me.devsaki.hentoid.viewmodels.ReaderViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.DragSelectTouchListener;
+import me.devsaki.hentoid.widget.DragSelectionProcessor;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.ReaderKeyListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
@@ -107,7 +108,6 @@ public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback
     private ItemTouchHelper touchHelper;
 
     private DragSelectTouchListener mDragSelectTouchListener = null;
-    private DragSelectTouchListener mDragSelectTouchListener2 = null;
 
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
@@ -173,8 +173,6 @@ public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_reader_gallery, container, false);
-
-        setHasOptionsMenu(true);
 
         recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
         updateListAdapter(editMode == EditMode.EDIT_CHAPTERS);
@@ -328,7 +326,7 @@ public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback
                 recyclerView.removeOnItemTouchListener(mDragSelectTouchListener);
                 mDragSelectTouchListener = null;
             }
-        } else {
+        } else { // Gallery mode
             if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
             itemAdapter.clear();
 
@@ -375,14 +373,28 @@ public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback
 
             recyclerView.setAdapter(fastAdapter);
 
-            // Select on swipe
-            DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
-            mDragSelectTouchListener = new DragSelectTouchListener()
-                    .withSelectListener(onDragSelectionListener);
-            if (mDragSelectTouchListener2 != null) {
-                recyclerView.removeOnItemTouchListener(mDragSelectTouchListener2);
-                mDragSelectTouchListener2 = null;
-            }
+            // Select / deselect on swipe
+            DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = new DragSelectionProcessor(new DragSelectionProcessor.ISelectionHandler() {
+                @Override
+                public Set<Integer> getSelection() {
+                    return selectExtension.getSelections();
+                }
+
+                @Override
+                public boolean isSelected(int index) {
+                    return selectExtension.getSelections().contains(index);
+                }
+
+                @Override
+                public void updateSelection(int start, int end, boolean isSelected, boolean calledFromOnStart) {
+                    if (isSelected)
+                        selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
+                    else
+                        selectExtension.deselect(IntStream.rangeClosed(start, end).boxed().toList());
+                }
+            }).withMode(DragSelectionProcessor.Mode.Simple);
+
+            mDragSelectTouchListener = new DragSelectTouchListener().withSelectListener(onDragSelectionListener);
             recyclerView.addOnItemTouchListener(mDragSelectTouchListener);
         }
     }

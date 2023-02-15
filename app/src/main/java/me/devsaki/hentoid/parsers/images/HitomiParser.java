@@ -2,11 +2,14 @@ package me.devsaki.hentoid.parsers.images;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.webkit.URLUtil;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,8 +43,27 @@ import timber.log.Timber;
  */
 public class HitomiParser extends BaseImageListParser {
 
+    @Override
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
-        return parseImageListWithWebview(onlineContent, null);
+        String readerUrl = onlineContent.getReaderUrl();
+        processedUrl = onlineContent.getGalleryUrl();
+
+        if (!URLUtil.isValidUrl(readerUrl))
+            throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
+
+        Timber.d("Gallery URL: %s", readerUrl);
+
+        EventBus.getDefault().register(this);
+
+        List<ImageFile> result;
+        try {
+            result = parseImageListWithWebview(onlineContent, null);
+            ParseHelper.setDownloadParams(result, onlineContent.getSite().getUrl());
+        } finally {
+            EventBus.getDefault().unregister(this);
+        }
+
+        return result;
     }
 
     public List<ImageFile> parseImageListWithWebview(@NonNull Content onlineContent, WebView webview) throws Exception {
@@ -86,7 +108,8 @@ public class HitomiParser extends BaseImageListParser {
         do {
             Helper.pause(1000);
         } while (!done.get() && !processHalted.get() && remainingIterations-- > 0);
-        if (processHalted.get()) throw new EmptyResultException("Unable to detect pages (empty result)");
+        if (processHalted.get())
+            throw new EmptyResultException("Unable to detect pages (empty result)");
 
         String jsResult = imagesStr.get();
         if (null == jsResult || jsResult.isEmpty())

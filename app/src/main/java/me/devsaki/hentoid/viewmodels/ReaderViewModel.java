@@ -1429,12 +1429,12 @@ public class ReaderViewModel extends AndroidViewModel {
                             if (c.right.isEmpty()) throw new EmptyResultException();
                             dao.addContentToQueue(
                                     c.right.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP, -1,
-                                    ContentQueueManager.getInstance().isQueueActive(getApplication()));
+                                    ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
-                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                                ContentQueueManager.INSTANCE.resumeQueue(getApplication());
                         })
                         .subscribe(
                                 v -> { // Nothing; feedback is done through LiveData
@@ -1815,7 +1815,7 @@ public class ReaderViewModel extends AndroidViewModel {
         Content finalContent = dao.selectContent(contentId);
         if (finalContent != null) ContentHelper.persistJson(getApplication(), finalContent);
 
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
 
         // Reset locations cache as image order has changed
         imageLocationCache.clear();

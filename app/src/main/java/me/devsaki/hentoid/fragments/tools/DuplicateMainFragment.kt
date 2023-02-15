@@ -118,7 +118,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     private fun onCustomBackPress() {
         callback?.remove()
-        requireActivity().onBackPressed()
+        requireActivity().finish()
     }
 
     private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
@@ -139,9 +139,11 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 firstUse -> {
                     binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
                 }
+
                 DuplicateDetectorWorker.isRunning(requireContext()) -> {
                     binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
                 }
+
                 else -> {
                     binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
                 }
@@ -156,13 +158,13 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         val entries: MutableList<DuplicateEntry> = ArrayList()
         // TODO use groupingBy + eachCount
         val map =
-            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumOf { 1 as Int } }
+            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumOf { 1L } }
                 .toMap()
         for (mapEntry in map) {
             if (mapEntry.key != null) {
                 val entry = DuplicateEntry(mapEntry.key!!.id, mapEntry.key!!.size)
                 entry.referenceContent = mapEntry.key!!
-                entry.nbDuplicates = mapEntry.value
+                entry.nbDuplicates = mapEntry.value.toInt()
                 entries.add(entry)
             }
         }
@@ -174,8 +176,19 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
         if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
+        processEvent(event)
+    }
 
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onProcessStickyEvent(event: ProcessEvent) {
+        if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
+        EventBus.getDefault().removeStickyEvent(event)
+        processEvent(event)
+    }
+
+    private fun processEvent(event: ProcessEvent) {
         topPanel.onProcessEvent(event)
+        EventBus.getDefault().removeStickyEvent(event)
 
         if (ProcessEvent.EventType.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
             topPanel.dismiss()

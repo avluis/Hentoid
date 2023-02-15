@@ -142,9 +142,8 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
         viewModel = ViewModelProvider(this, vmFactory)[MetadataEditViewModel::class.java]
 
         val currentContent = viewModel.getContent().value
-        if (null == currentContent || currentContent.isEmpty()) { // ViewModel hasn't loaded anything yet (fresh start)
-            viewModel.loadContent(contentIds)
-        }
+        // ViewModel hasn't loaded anything yet (fresh start)
+        if (currentContent.isNullOrEmpty()) viewModel.loadContent(contentIds)
 
         bindInteractions()
 
@@ -297,6 +296,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                         count: Int,
                         after: Int
                     ) {
+                        // Nothing to override here
                     }
 
                     override fun onTextChanged(
@@ -305,6 +305,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                         before: Int,
                         count: Int
                     ) {
+                        // Nothing to override here
                     }
                 }
             )
@@ -466,12 +467,14 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                             item.attribute.id
                         )
                     }
+
                     1 -> { // Replace with...
                         MetaEditBottomSheetFragment.invoke(
                             this,
                             supportFragmentManager, false, item.attribute.id
                         )
                     }
+
                     2 -> { // Tag all selected books
                         val builder = MaterialAlertDialogBuilder(this)
                         val title = resources.getString(
@@ -489,6 +492,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                             .create().show()
 
                     }
+
                     else -> { // Remove
                         viewModel.removeContentAttribute(item.attribute)
                     }
@@ -516,7 +520,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     }
 
     private fun cancelEdit() {
-        onBackPressed()
+        finish()
     }
 
     /**

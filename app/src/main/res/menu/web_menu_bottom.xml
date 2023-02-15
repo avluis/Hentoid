@@ -32,11 +32,4 @@
         android:title="@string/web_forward"
         android:tooltipText="@string/web_forward"
         app:showAsAction="always" />
-    <item
-        android:id="@+id/web_menu_action"
-        android:enabled="false"
-        android:icon="@drawable/selector_download_action"
-        android:title="@string/web_download"
-        android:tooltipText="@string/web_download"
-        app:showAsAction="always" />
 </menu>

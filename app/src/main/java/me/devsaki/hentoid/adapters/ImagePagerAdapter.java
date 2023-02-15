@@ -34,6 +34,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.github.penfeizhou.animation.apng.APNGDrawable;
+import com.github.penfeizhou.animation.gif.GifDrawable;
 import com.github.penfeizhou.animation.io.FilterReader;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.io.StreamReader;
@@ -422,6 +423,11 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                     APNGDrawable apngDrawable = new APNGDrawable(new ImgLoader(uri));
                     apngDrawable.registerAnimationCallback(animationCallback);
                     view.setImageDrawable(apngDrawable);
+                } else if (IMG_TYPE_GIF == imgType) {
+                    Timber.d("Using GifDrawable");
+                    GifDrawable gifDrawable = new GifDrawable(new ImgLoader(uri));
+                    gifDrawable.registerAnimationCallback(animationCallback);
+                    view.setImageDrawable(gifDrawable);
                 } else {
                     Timber.d("Using Glide");
                     Transformation<Bitmap> centerInside = new CenterInside();
@@ -437,6 +443,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 }
             }
         }
+
 
         private int getScaleType() {
             if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) {

@@ -63,6 +63,7 @@ import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.GroupHelper;
@@ -283,6 +284,10 @@ public class LibraryViewModel extends AndroidViewModel {
         switch (value) {
             case ContentHelper.Location.PRIMARY:
                 return R.string.refresh_location_internal;
+            case ContentHelper.Location.PRIMARY_1:
+                return R.string.refresh_location_internal_1;
+            case ContentHelper.Location.PRIMARY_2:
+                return R.string.refresh_location_internal_2;
             case ContentHelper.Location.EXTERNAL:
                 return R.string.refresh_location_external;
             case ContentHelper.Location.ANY:
@@ -663,11 +668,10 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (c.isPresent()) {
                                 Content content = c.get();
                                 // Non-blocking performance bottleneck; run in a dedicated worker
-                                // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
                                 if (reparseImages) purgeItem(content, false);
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position, -1,
-                                        ContentQueueManager.getInstance().isQueueActive(getApplication()));
+                                        ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                             } else {
                                 errorCount.incrementAndGet();
                                 onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
@@ -676,7 +680,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
-                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                                ContentQueueManager.INSTANCE.resumeQueue(getApplication());
                             onSuccess.accept(contentList.size() - errorCount.get());
                         })
                         .subscribe(
@@ -724,7 +728,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 c.get().setDownloadMode(Content.DownloadMode.DOWNLOAD);
                                 dao.addContentToQueue(
                                         c.get(), StatusContent.SAVED, position, -1,
-                                        ContentQueueManager.getInstance().isQueueActive(getApplication()));
+                                        ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                             } else {
                                 nbErrors.incrementAndGet();
                                 onError.accept(new EmptyResultException(getApplication().getString(R.string.download_canceled)));
@@ -733,7 +737,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
-                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                                ContentQueueManager.INSTANCE.resumeQueue(getApplication());
                             onSuccess.accept(contentList.size() - nbErrors.get());
                         })
                         .observeOn(AndroidSchedulers.mainThread())
@@ -901,7 +905,8 @@ public class LibraryViewModel extends AndroidViewModel {
             try {
                 try {
                     destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
-                } catch (IOException e) { // ...if it fails, try creating the file with the old sanitized naming
+                } catch (
+                        IOException e) { // ...if it fails, try creating the file with the old sanitized naming
                     destName = bookFolderName.right + ".zip";
                     destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
                 }
@@ -1254,7 +1259,8 @@ public class LibraryViewModel extends AndroidViewModel {
             Content splitContent = createContentFromChapter(content, chap);
 
             // Create a new folder for the split content
-            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, true, null);
+            StorageLocation location = ContentHelper.getLocation(content);
+            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, location, true);
             if (null == targetFolder || !targetFolder.exists())
                 throw new ContentNotProcessedException(splitContent, "Could not create target directory");
 
@@ -1295,7 +1301,7 @@ public class LibraryViewModel extends AndroidViewModel {
                 GroupHelper.moveContentToCustomGroup(splitContent, customGroups.get(0).getGroup(), dao);
         }
 
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
     }
 
     private Content createContentFromChapter(@NonNull Content content, @NonNull Chapter chapter) {

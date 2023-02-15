@@ -13,10 +13,9 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_close"
-        app:title="@string/title_activity_app_lock"
-        tools:targetApi="lollipop" />
+        app:title="@string/title_activity_app_lock" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/switch_on"
         android:layout_width="0dp"
         android:layout_height="56dp"

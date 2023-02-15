@@ -111,7 +111,6 @@ public class ToonilyParser extends BaseImageListParser {
         int storedOrderOffset = ParseHelper.getMaxChapterOrder(storedChapters);
         for (Chapter chp : extraChapters) {
             chp.setOrder(++storedOrderOffset);
-            if (processHalted.get()) break;
             doc = getOnlineDocument(chp.getUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
@@ -127,17 +126,17 @@ public class ToonilyParser extends BaseImageListParser {
             } else {
                 Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
             }
+            if (processHalted.get()) break;
             progressPlus();
         }
-        progressComplete();
+        // If the process has been halted manually, the result is incomplete and should not be returned as is
+        if (processHalted.get()) throw new PreparationInterruptedException();
 
         // Add cover if it's a first download
         if (storedChapters.isEmpty())
             result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
 
-        // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted.get()) throw new PreparationInterruptedException();
-
+        progressComplete();
         return result;
     }
 

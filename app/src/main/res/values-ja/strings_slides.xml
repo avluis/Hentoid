@@ -13,10 +13,10 @@
 <string name="slide_04_skip_title">本当にスキップしますか？</string>
     <string name="slide_04_skip_msg">この手順をスキップすると、ダウンロードできなくなります。\ダウンロードするには、アプリの設定でダウンロードフォルダを設定する必要があります。</string>
     <string name="slide_05_header">テーマを選択</string>
-    <string name="slide_05_text">表示するテーマを選択します。</string>
+    <string name="slide_05_text">表示するテーマを選択してください。</string>
     <string name="slide_06_header">ソースを選択</string>
 <string name="slide_06_text">ダウンロード元のソースを選択します。</string>
     <string name="slide_06_subtext">左側のメニューの編集ボタンを使用して、後でいつでもこの選択を変更できます。</string>
     <string name="slide_end_header">全てのセットアップが完了しました！</string>
-    <string name="slide_end_text">全ての設定が完了しました！\nHentoidをお楽しみください。</string>
+    <string name="slide_end_text">全ての設定が完了しました！\nHentoidを心ゆくまでお楽しみください。</string>
 </resources>

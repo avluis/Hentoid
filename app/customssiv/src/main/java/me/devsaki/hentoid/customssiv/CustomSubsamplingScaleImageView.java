@@ -453,8 +453,8 @@ public class CustomSubsamplingScaleImageView extends View {
         }
 
         quickScaleThreshold = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, context.getResources().getDisplayMetrics());
-        scaleDebouncer = new Debouncer<>(context, 200, scale -> {
-            if (scaleListener != null) scaleListener.accept(scale);
+        scaleDebouncer = new Debouncer<>(context, 200, scaleOut -> {
+            if (scaleListener != null) scaleListener.accept(scaleOut);
         });
     }
 
@@ -720,6 +720,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                // NB : Even though e1 and e2 are marked @NonNull on the overriden method, one of them may be actually null, hence the present implementation
                 if (panEnabled && readySent && vTranslate != null && e1 != null && e2 != null && (Math.abs(e1.getX() - e2.getX()) > 50 || Math.abs(e1.getY() - e2.getY()) > 50) && (Math.abs(velocityX) > 500 || Math.abs(velocityY) > 500) && !isZooming) {
                     PointF vTranslateEnd = new PointF(vTranslate.x + (velocityX * 0.25f), vTranslate.y + (velocityY * 0.25f));
                     float sCenterXEnd = ((getWidthInternal() / 2f) - vTranslateEnd.x) / scale;
@@ -2162,8 +2163,6 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     private static class SingleImage {
-        //        private int sampleSize;
-//        private Bitmap bitmap;
         private float scale = 1;
         private int rawWidth = -1;
         private int rawHeight = -1;

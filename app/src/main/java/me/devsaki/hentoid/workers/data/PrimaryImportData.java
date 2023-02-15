@@ -4,6 +4,8 @@ import androidx.work.Data;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.enums.StorageLocation;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.workers.PrimaryImportWorker;
 
 /**
@@ -19,6 +21,10 @@ public class PrimaryImportData {
     private static final String KEY_REFRESH_CLEAN_NO_JSON = "cleanNoJson";
     private static final String KEY_REFRESH_CLEAN_NO_IMAGES = "cleanNoImages";
     private static final String KEY_IMPORT_GROUPS = "importGroups";
+
+    private static final String KEY_LOCATION = "location";
+
+    private static final String KEY_TARGET_ROOT = "targetRoot";
 
     private PrimaryImportData() {
         throw new UnsupportedOperationException();
@@ -50,6 +56,14 @@ public class PrimaryImportData {
 
         public void setImportGroups(boolean value) {
             builder.putBoolean(KEY_IMPORT_GROUPS, value);
+        }
+
+        public void setLocation(StorageLocation value) {
+            builder.putInt(KEY_LOCATION, value.ordinal());
+        }
+
+        public void setTargetRoot(String value) {
+            builder.putString(KEY_TARGET_ROOT, value);
         }
 
         public Data getData() {
@@ -87,6 +101,14 @@ public class PrimaryImportData {
 
         public boolean getImportGroups() {
             return data.getBoolean(KEY_IMPORT_GROUPS, true);
+        }
+
+        public StorageLocation getLocation() {
+            return StorageLocation.values()[data.getInt(KEY_LOCATION, StorageLocation.NONE.ordinal())];
+        }
+
+        public String getTargetRoot() {
+            return StringHelper.protect(data.getString(KEY_TARGET_ROOT));
         }
     }
 }

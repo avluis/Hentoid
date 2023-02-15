@@ -4,9 +4,8 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.annimon.stream.Optional
 import com.annimon.stream.function.BiConsumer
-import io.reactivex.Single
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
@@ -18,8 +17,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.commons.lang3.tuple.ImmutableTriple
 import timber.log.Timber
 import java.io.FileNotFoundException
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
+import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -28,50 +26,51 @@ class RequestQueue(
     private val errorHandler: BiConsumer<RequestOrder, RequestOrder.NetworkError>
 ) {
     var active: Boolean = false
+        private set
     private val downloadsQueue: Queue<RequestOrder> = ConcurrentLinkedQueue()
-    private val downloadDisposables = ConcurrentHashMap<RequestOrder, Disposable>()
 
     fun start() {
         active = true
     }
 
     fun stop() {
+        Timber.d("Aborting %d download requests", downloadsQueue.size)
         while (downloadsQueue.size > 0) {
             downloadsQueue.poll()?.let {
                 it.killSwitch.set(true)
-                downloadDisposables.remove(it)?.dispose()
-                Timber.d("Aborting download request %s", it.url)
+                Timber.v("Aborting download request %s", it.url)
             }
         }
         active = false
     }
 
-    fun executeRequest(requestOrder: RequestOrder) {
-        downloadsQueue.add(requestOrder)
-
-        val single = Single.fromCallable {
-            downloadPic(
-                requestOrder.site,
-                requestOrder.url,
-                requestOrder.headers,
-                requestOrder.targetDir,
-                requestOrder.fileName,
-                requestOrder.pageIndex,
-                requestOrder.killSwitch
-            )
+    suspend fun executeRequest(requestOrder: RequestOrder) {
+        if (!active) {
+            Timber.d("Can't execute a request while request queue is inactive!")
+            return
         }
 
-        downloadDisposables[requestOrder] =
-            single.subscribeOn(Schedulers.io()) // Download on a thread from the I/O pool
-                .observeOn(Schedulers.io()) // Process and store to DB on a thread from the I/O pool too
-                .subscribe(
-                    { res -> handleSuccess(requestOrder, res) })
-                { t -> handleError(requestOrder, t) }
+        downloadsQueue.add(requestOrder)
+        try {
+            val res = withContext(Dispatchers.IO) {
+                downloadPic(
+                    requestOrder.site,
+                    requestOrder.url,
+                    requestOrder.headers,
+                    requestOrder.targetDir,
+                    requestOrder.fileName,
+                    requestOrder.pageIndex,
+                    requestOrder.killSwitch
+                )
+            }
+            handleSuccess(requestOrder, res)
+        } catch (e: Exception) {
+            handleError(requestOrder, e)
+        }
     }
 
     private fun handleComplete(requestOrder: RequestOrder) {
         downloadsQueue.remove(requestOrder)
-        downloadDisposables.remove(requestOrder)?.dispose()
     }
 
     private fun handleSuccess(

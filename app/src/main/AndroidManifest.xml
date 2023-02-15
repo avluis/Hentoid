@@ -18,7 +18,7 @@
     <!-- Required to install update packages when targeting API 29 or higher -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <!-- Required to fire notifications when targeting API 33 or higher -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".core.HentoidApp"
@@ -55,9 +55,6 @@
         <activity
             android:name=".activities.IntroActivity"
             android:label="@string/app_intro" />
-        <activity
-            android:name=".activities.Api29MigrationActivity"
-            android:label="@string/title_activity_api29_migration" />
         <activity
             android:name=".activities.sources.HitomiActivity"
             android:configChanges="orientation|screenSize" />
@@ -208,6 +205,10 @@
         <activity
             android:name=".activities.RenamingRulesActivity"
             android:label="@string/title_activity_rules"
+            tools:ignore="UnusedAttribute" />
+        <activity
+            android:name=".activities.StoragePreferenceActivity"
+            android:label="@string/title_activity_storage"
             tools:ignore="UnusedAttribute" />
         <activity
             android:name=".activities.IntentActivity"
@@ -582,8 +583,6 @@
         <!-- Services -->
 
         <service android:name=".services.UpdateCheckService" />
-
-        <service android:name=".services.API29MigrationService" />
 
         <!-- Receivers -->
 

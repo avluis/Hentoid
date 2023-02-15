@@ -146,6 +146,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
         binding.chNeverExtraOnDupes.setVisibility(isDownloadPlus ? View.VISIBLE : View.GONE);
 
         binding.tvTitle.setText(libraryContent.getTitle());
+        binding.tvTitle.setSelected(true);
         ImageFile cover = libraryContent.getCover();
         String thumbLocation = cover.getUsableUri();
         if (thumbLocation.isEmpty()) {

@@ -29,13 +29,9 @@ public class ProgressDialogFragment extends DialogFragment {
     private DialogProgressBinding binding = null;
 
     private String dialogTitle;
-    private @PluralsRes
-    int progressUnit;
+    private @PluralsRes int progressUnit;
 
-    public static void invoke(
-            @NonNull final FragmentManager fragmentManager,
-            @NonNull final String title,
-            @PluralsRes final int progressUnit) {
+    public static DialogFragment invoke(@NonNull final FragmentManager fragmentManager, @NonNull final String title, @PluralsRes final int progressUnit) {
         ProgressDialogFragment fragment = new ProgressDialogFragment();
 
         Bundle args = new Bundle();
@@ -44,6 +40,7 @@ public class ProgressDialogFragment extends DialogFragment {
         fragment.setArguments(args);
 
         fragment.show(fragmentManager, null);
+        return fragment;
     }
 
     @Override
@@ -69,6 +66,7 @@ public class ProgressDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
         binding.title.setText(dialogTitle);
+        binding.bar.setIndeterminate(true);
     }
 
     @Override
@@ -83,15 +81,22 @@ public class ProgressDialogFragment extends DialogFragment {
         if (event.processId != R.id.generic_progress) return;
 
         binding.bar.setMax(event.elementsTotal);
+        binding.bar.setIndeterminate(false);
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            binding.progress.setText(getString(
-                    R.string.generic_progress,
-                    event.elementsOK + event.elementsKO, event.elementsTotal,
-                    getResources().getQuantityString(progressUnit, event.elementsOK + event.elementsKO)
-            ));
+            binding.progress.setText(getString(R.string.generic_progress, event.elementsOK + event.elementsKO, event.elementsTotal, getResources().getQuantityString(progressUnit, event.elementsOK + event.elementsKO)));
             binding.bar.setProgress(event.elementsOK + event.elementsKO);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             dismiss();
         }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onProcessStickyEvent(ProcessEvent event) {
+        if (event.processId != R.id.generic_progress) return;
+
+        binding.bar.setMax(event.elementsTotal);
+        binding.bar.setIndeterminate(false);
+        EventBus.getDefault().removeStickyEvent(event);
+        if (ProcessEvent.EventType.COMPLETE == event.eventType) dismiss();
     }
 }

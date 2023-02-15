@@ -36,6 +36,7 @@
     <string name="resume">Resume</string>
     <string name="cancel">Cancel</string>
     <string name="cancel_all">Cancel all</string>
+    <string name="freeze">Toggle freeze</string>
     <string name="menu_completed_single">Mark as completed</string>
     <string name="menu_reset_read">Mark as unread</string>
     <string name="service_running">Service is already running</string>
@@ -43,6 +44,8 @@
     <string name="_default">default</string>
     <string name="empty">empty</string>
     <string name="none">None</string>
+    <string name="help_generic">Help</string>
+    <string name="actions_generic">Actions</string>
     <string name="disabled_generic">Disabled</string>
     <string name="create_generic">Create</string>
     <string name="edit_generic">Edit</string>
@@ -50,7 +53,6 @@
 
 
     <!-- Activities -->
-    <string name="title_activity_api29_migration">API 29 migration</string>
     <string name="title_activity_downloads">Library</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
@@ -59,21 +61,21 @@
     <string name="title_activity_search">Advanced Search</string>
     <string name="title_activity_meta_edit">Edit metadata</string>
     <string name="title_activity_rules">Renaming rules</string>
+    <string name="title_activity_storage">Storage management</string>
 
-    <!-- API29 migration / library refresh screen -->
-    <string name="api29_migration_title">Hentoid v12\nFile management update</string>
-    <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
-    <string name="api29_migration_location">Current Hentoid folder location\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Hentoid folder</string>
-    <string name="api29_migration_step1_external">External folder</string>
-    <string name="api29_migration_step1_select">Select Hentoid folder</string>
-    <string name="api29_migration_step1_select_external">Select external folder</string>
-    <string name="api29_migration_step2">Scan site folders</string>
-    <string name="api29_migration_step3_init">Scanning library…</string>
-    <string name="api29_migration_step3">Scan library (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">Importing queue…</string>
-    <string name="api29_migration_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
-    <string name="api29_migration_allow_write">Please allow write permission</string>
+    <!-- Library refresh screen -->
+    <string name="refresh_step1">Hentoid folder</string>
+    <string name="refresh_step1_2">Hentoid folder (secondary location)</string>
+    <string name="refresh_step1_external">External folder</string>
+    <string name="refresh_step1_select">Select Hentoid folder</string>
+    <string name="refresh_step1_select_2">Select Hentoid folder (secondary location)</string>
+    <string name="refresh_step1_select_external">Select external folder</string>
+    <string name="refresh_step2">Scan site folders</string>
+    <string name="refresh_step3_init">Scanning library…</string>
+    <string name="refresh_step3">Scan library (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">Importing queue…</string>
+    <string name="refresh_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
+    <string name="refresh_allow_write">Please allow write permission</string>
 
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
@@ -146,6 +148,7 @@
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
     <string name="paused_dl_stale_online_credentials">Cannot download - Stale Cookies or credentials. Use the notification to regenerate them</string>
+    <string name="paused_dl_no_available_downloads">No available downloads remaining</string>
     <string name="step_init">Initializing</string>
     <string name="step_prepare_img">Preparing images</string>
     <string name="step_fetch_img">Fetching images</string>
@@ -227,11 +230,44 @@
     <string name="errortype_blocked">Book contains a blocked tag</string>
     <string name="errortype_undefined">Undefined</string>
 
+    <!-- Storage management -->
+    <string name="browse_mode_warning">Browse-only mode is active\nYou are using the app without storage permissions.</string>
+    <string name="primary_library">Primary library</string>
+    <string name="primary_library_subtitle">Downloads</string>
+    <string name="add_primary_1">Add primary location 1</string>
+    <string name="add_primary_2">Add primary location 2</string>
+    <string name="external_library">External library</string>
+    <string name="external_library_subtitle">Archives, 3rd party books</string>
+    <string name="add_external">Add external location</string>
+    <string name="location_storage">%1$s (%2$d%%) free</string>
+    <string name="storage_action_change">Change location…</string>
+    <string name="storage_action_remove">Detach</string>
+    <string name="storage_remove_ask">Detach selected location?\nNB : Books will not be deleted</string>
+    <string name="storage_remove_ko1">Cannot detach Location 1 when Location 2 is set</string>
+    <string name="storage_remove_complete">Location detached</string>
+    <string name="storage_action_merge_to_1">Merge to Location 1</string>
+    <string name="storage_merge_ask">Merge %d books from Location 2 to Location 1?\nNB : Books will be deleted after merge is complete</string>
+    <string name="storage_merge_ko1">Cannot merge to Location 1 : not enough free storage left</string>
+    <string name="storage_merge_ko2">Cannot merge : no books on Location 2</string>
+    <string name="storage_merge_progress">Merging books to Location 1</string>
+    <string name="storage_merge_complete">Merge complete</string>
+    <string name="storage_strategy_title">Download strategy : %s</string>
+    <string name="storage_strategy_balance">Balance free space</string>
+    <string name="storage_strategy_balance_desc">Hentoid downloads to whichever location has more free space, trying to maintain balance. Does not move books already in the library.</string>
+    <string name="storage_strategy_fallover">Fallover</string>
+    <string name="storage_strategy_fallover_desc">Hentoid downloads to Location 1 until %d%% of capacity is filled, then downloads to Location 2.</string>
+    <string name="storage_fallover_threshold">Low space threshold (%%)</string>
+    <string name="storage_set_strategy">Set download strategy</string>
+    <string name="storage_stats">Statistics</string>
+    <string name="storage_stats_view">View usage statistics</string>
+
     <!-- Refresh library -->
-    <string name="refresh_title">Refresh library</string>
+    <string name="refresh_title">Refresh location</string>
     <string name="refresh_caption">Automatically refresh library data by rescanning files and folders.</string>
     <string name="refresh_options">Cleanup options</string>
-    <string name="refresh_location_internal">Hentoid library</string>
+    <string name="refresh_location_internal">Primary library (all)</string>
+    <string name="refresh_location_internal_1">Primary library 1</string>
+    <string name="refresh_location_internal_2">Primary library 2</string>
     <string name="refresh_location_external">External library</string>
     <string name="refresh_options_rename">Rename all folders according to the current naming and max length preference</string>
     <string name="refresh_options_remove_placeholders">Remove placeholder books imported through metadata</string>
@@ -295,15 +331,16 @@
 
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>
-    <string name="export_question">Do you want to transfer your library to another phone ?</string>
+    <string name="export_question">Do you want to transfer your library to another phone?</string>
 
     <string name="export_answer_yes">This feature is NOT made to transfer your collection to another phone. It does work in certain cases, but some of your books might prove impossible to redownload!</string>
     <string name="export_transfer_tutorial"><u>Check out our wiki about library transfers</u></string>
 
     <plurals name="export_file_library">
-        <item quantity="one">Export library (<x:g example="1" id="number">%d</x:g> book)</item>
-        <item quantity="other">Export library (<x:g example="2" id="number">%d</x:g> books)</item>
+        <item quantity="one">Export primary library (<x:g example="1" id="number">%d</x:g> book)</item>
+        <item quantity="other">Export primary library (<x:g example="2" id="number">%d</x:g> books)</item>
     </plurals>
+    <string name="export_location">Location : %s</string>
     <string name="export_favs_only">Only export favourites</string>
     <string name="export_groups">Export custom groups</string>
     <plurals name="export_file_queue">
@@ -331,6 +368,8 @@
     <string name="import_download_folder">You shouldn\'t select your device\'s download folder - please create or select another one</string>
     <string name="import_create_fail">Hentoid folder creation failed - please select another location</string>
     <string name="import_invalid_uri">Folder not recognized - please select it again</string>
+    <string name="import_empty">Folder has no books</string>
+    <string name="import_other_primary">You cannot set the same folder for both primary locations</string>
     <string name="import_other">Import has stopped</string>
     <string name="import_unexpected">Import has stopped unexpectedly</string>
     <string name="task_done">Task complete - see details in the log</string>
@@ -647,6 +686,7 @@
     <string name="help_web_exh_account">Please use or create an exHentai account</string>
     <string name="help_web_invalid_exh_credentials">Invalid credentials, please log in again</string>
     <string name="help_web_incomplete_exh_credentials">Incomplete credentials, please log in again. If the issue persists, consider accessing the site from another country or creating a new account.</string>
+    <string name="help_web_hires_eh_account">To download hi-res pictures, you need to use or create an e-Hentai account</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
@@ -844,7 +884,7 @@
     <string name="meta_choose_type">Choose a type for \'%s\'</string>
     <string name="meta_replace_with">Replace with…</string>
     <string name="meta_tag_all_selected">Tag all selected books</string>
-    <string name="meta_tag_all_selected_confirm">Tag all %1$d selected books with \'%2$s\' ?</string>
+    <string name="meta_tag_all_selected_confirm">Tag all %1$d selected books with \'%2$s\'?</string>
     <string name="meta_rename_new_name">New name</string>
     <string name="meta_rename_new_rule">Remember for future downloads</string>
 

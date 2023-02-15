@@ -34,7 +34,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 33
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.17.3'
+        versionName '1.17.4'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -122,15 +122,18 @@ dependencies {
      */
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.0'
+    implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.paging:paging-runtime:2.1.2'
-    implementation 'androidx.fragment:fragment-ktx:1.5.4'
+    implementation 'androidx.fragment:fragment-ktx:1.5.5'
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    implementation 'androidx.core:core-ktx:1.9.0'
+
     def android_work_version = '2.7.1'
     implementation "androidx.work:work-runtime:$android_work_version"
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
@@ -162,6 +165,7 @@ dependencies {
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
     implementation 'com.github.penfeizhou.android.animation:apng:2.24.0'
+    implementation 'com.github.penfeizhou.android.animation:gif:2.24.0'
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     implementation 'io.github.waynejo:androidndkgif:1.0.1'
@@ -199,7 +203,7 @@ dependencies {
     implementation "com.github.skydoves:submarine:1.0.7"
 
     // Fast scroller
-    implementation 'me.zhanghai.android.fastscroll:library:1.1.8'
+    implementation 'me.zhanghai.android.fastscroll:library:1.2.0'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
@@ -326,4 +330,5 @@ sonarqube {
     }
 }
 
-apply plugin: 'io.objectbox' // apply last
+apply plugin: 'io.objectbox'
+apply plugin: 'org.jetbrains.kotlin.android'// apply last

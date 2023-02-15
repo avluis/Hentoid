@@ -14,7 +14,7 @@ public class DownloadNotificationDeleteReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        ContentQueueManager.getInstance().resetDownloadCount();
+        ContentQueueManager.INSTANCE.resetDownloadCount();
         Timber.d("Download count reset to 0");
     }
 }

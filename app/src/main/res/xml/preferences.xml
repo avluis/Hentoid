@@ -100,9 +100,8 @@
             android:title="@string/pref_cat_downloads_folder"
             app:iconSpaceReserved="false">
             <Preference
-                android:key="folder"
-                android:summary="@string/pref_select_folder_summary"
-                android:title="@string/pref_select_folder_title"
+                android:key="storage_mgt"
+                android:title="@string/title_activity_storage"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_import_queue_empty_default"
@@ -129,28 +128,10 @@
                 android:summary="@string/pref_folder_trunc_summary"
                 android:title="@string/pref_folder_trunc_title"
                 app:iconSpaceReserved="false" />
-            <Preference
-                android:key="pref_memory_usage"
-                android:summary="@string/pref_memory_usage_summary"
-                android:title="@string/pref_memory_usage_title"
-                app:iconSpaceReserved="false" />
-            <ListPreference
-                android:defaultValue="@string/pref_memory_alert_default"
-                android:entries="@array/pref_memory_alert_entries"
-                android:entryValues="@array/pref_memory_alert_values"
-                android:key="pref_memory_alert"
-                android:summary="@string/pref_attributes_list_order_summary"
-                android:title="@string/pref_memory_alert_title"
-                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_external"
             app:iconSpaceReserved="false">
-            <Preference
-                android:key="pref_external_library"
-                android:summary="@string/pref_external_library_summary_empty"
-                android:title="@string/pref_external_library_title"
-                app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_external_library_delete_default"
                 android:enabled="false"
@@ -159,21 +140,10 @@
                 android:summaryOn="@string/pref_external_library_delete_on"
                 android:title="@string/pref_external_library_delete_title"
                 app:iconSpaceReserved="false" />
-            <Preference
-                android:enabled="false"
-                android:key="pref_detach_external_library"
-                android:summary="@string/pref_external_library_detach_summary"
-                android:title="@string/pref_external_library_detach_title"
-                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_advanced"
             app:iconSpaceReserved="false">
-            <Preference
-                android:key="pref_refresh_bookshelf"
-                android:summary="@string/pref_refresh_library_summary"
-                android:title="@string/pref_refresh_library_title"
-                app:iconSpaceReserved="false" />
             <Preference
                 android:key="pref_delete_all_except_favs"
                 android:summary="@string/pref_delete_all_except_favs_summary"
@@ -435,6 +405,17 @@
                 android:key="pref_dl_retries_mem_limit"
                 android:summary="@string/pref_dl_retries_mem_limit_summary"
                 android:title="@string/pref_dl_retries_mem_limit_title"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_eh"
+            app:iconSpaceReserved="false">
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_dl_eh_hires_default"
+                android:key="pref_dl_eh_hires"
+                android:summaryOff="@string/pref_dl_eh_hires_off"
+                android:summaryOn="@string/pref_dl_eh_hires_on"
+                android:title="@string/download_eh_hires_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory

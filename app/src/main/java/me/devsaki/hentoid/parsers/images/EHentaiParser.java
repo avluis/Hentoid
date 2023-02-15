@@ -2,6 +2,7 @@ package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
+import android.webkit.CookieManager;
 import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
@@ -31,12 +32,13 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.json.sources.EHentaiImageMetadata;
 import me.devsaki.hentoid.json.sources.EHentaiImageQuery;
 import me.devsaki.hentoid.json.sources.EHentaiImageResponse;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
@@ -45,6 +47,10 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public class EHentaiParser implements ImageListParser {
+
+    public enum EhAuthState {
+        UNLOGGED, UNLOGGED_ABNORMAL, LOGGED
+    }
 
     public static final String MPV_LINK_CSS = "#gmid a[href*='/mpv/']";
 
@@ -149,8 +155,10 @@ public class EHentaiParser implements ImageListParser {
             boolean useWebviewAgent) throws EmptyResultException, IOException {
         EHentaiImageQuery query = new EHentaiImageQuery(imageInfo.gid, imageInfo.image.getKey(), imageInfo.mpvkey, imageInfo.pageNum);
         String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
-        Response response = HttpHelper.postOnlineResource(imageInfo.api_url, headers, true, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
-        ResponseBody body = response.body();
+        ResponseBody body;
+        try (Response response = HttpHelper.postOnlineResource(imageInfo.api_url, headers, true, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE)) {
+            body = response.body();
+        }
         if (null == body)
             throw new EmptyResultException("API " + imageInfo.api_url + " returned an empty body");
         String bodyStr = body.string();
@@ -245,16 +253,18 @@ public class EHentaiParser implements ImageListParser {
     }
 
     static String getDisplayedImageUrl(@Nonnull Document doc) {
-        Elements elements = doc.select("img#img");
-        if (!elements.isEmpty()) {
-            Element e = elements.first();
-            if (e != null) return ParseHelper.getImgSrc(e);
-        }
-        elements = doc.select("#i3.img");
-        if (!elements.isEmpty()) {
-            Element e = elements.first();
-            if (e != null) return ParseHelper.getImgSrc(e);
-        }
+        Element element = doc.selectFirst("img#img");
+        if (element != null) return ParseHelper.getImgSrc(element);
+
+        element = doc.selectFirst("#i3.img");
+        if (element != null) return ParseHelper.getImgSrc(element);
+
+        return "";
+    }
+
+    static String getFullImageUrl(@Nonnull Document doc) {
+        Element element = doc.selectFirst("a[href*=fullimg]");
+        if (element != null) return element.attr("href");
         return "";
     }
 
@@ -353,6 +363,15 @@ public class EHentaiParser implements ImageListParser {
         if (imageUrl.contains(LIMIT_509_URL))
             throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
 
+        if (Preferences.isDownloadEhHires()) {
+            // Check if the user is logged in
+            if (getAuthState(site.getUrl()) != EhAuthState.LOGGED)
+                throw new EmptyResultException("You need to be logged in to download full-size images.");
+            // Use full image URL, if available
+            String fullUrl = imageMetadata.getFullUrlRelative();
+            if (!fullUrl.isEmpty()) imageUrl = site.getUrl() + fullUrl;
+        }
+
         return new ImmutablePair<>(imageUrl, Optional.empty());
     }
 
@@ -364,10 +383,20 @@ public class EHentaiParser implements ImageListParser {
             if (imageUrl.contains(LIMIT_509_URL))
                 throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
 
-            Optional<String> backupUrl = getBackupPageUrl(doc, url);
+            Optional<String> backupUrl;
+            if (Preferences.isDownloadEhHires()) {
+                // Check if the user is logged in
+                if (getAuthState(site.getUrl()) != EhAuthState.LOGGED)
+                    throw new EmptyResultException("You need to be logged in to download full-size images.");
+                // Use full image URL, if available
+                String fullUrl = getFullImageUrl(doc).toLowerCase();
+                if (!fullUrl.isEmpty()) imageUrl = fullUrl;
+                backupUrl = Optional.empty();
+            } else {
+                backupUrl = getBackupPageUrl(doc, url);
+            }
 
-            if (!imageUrl.isEmpty())
-                return new ImmutablePair<>(imageUrl, backupUrl);
+            if (!imageUrl.isEmpty()) return new ImmutablePair<>(imageUrl, backupUrl);
         }
         throw new EmptyResultException("Page contains no picture data : " + url);
     }
@@ -395,24 +424,41 @@ public class EHentaiParser implements ImageListParser {
         else return cookieStr;
     }
 
+    public static EhAuthState getAuthState(@NonNull final String url) {
+        String domain = "";
+        if (url.startsWith("https://exhentai.org")) domain = ".exhentai.org";
+        else if (url.contains("e-hentai.org")) domain = ".e-hentai.org";
+        if (domain.isEmpty()) return EhAuthState.UNLOGGED;
+
+        String cookiesStr = CookieManager.getInstance().getCookie(domain);
+        if (cookiesStr != null) {
+            if (cookiesStr.contains("igneous=mystery")) return EhAuthState.UNLOGGED_ABNORMAL;
+            else if (cookiesStr.contains("ipb_member_id=")) {
+                // may contain ipb_member_id=0, e.g. after unlogging manually
+                Map<String, String> cookies = HttpHelper.parseCookies(cookiesStr);
+                String memberId = cookies.get("ipb_member_id");
+                if (memberId != null && !memberId.equals("0")) return EhAuthState.LOGGED;
+                else return EhAuthState.UNLOGGED;
+            }
+        }
+        return EhAuthState.UNLOGGED;
+    }
+
     /**
      * Download event handler called by the event bus
      *
      * @param event Download event
      */
     @Subscribe
-    public void onDownloadEvent(DownloadEvent event) {
+    public void onDownloadCommand(DownloadCommandEvent event) {
         switch (event.eventType) {
-            case DownloadEvent.Type.EV_PAUSE:
-            case DownloadEvent.Type.EV_CANCEL:
-            case DownloadEvent.Type.EV_SKIP:
+            case DownloadCommandEvent.Type.EV_PAUSE:
+            case DownloadCommandEvent.Type.EV_CANCEL:
+            case DownloadCommandEvent.Type.EV_SKIP:
                 progress.haltProcess();
                 break;
-            case DownloadEvent.Type.EV_COMPLETE:
-            case DownloadEvent.Type.EV_PREPARATION:
-            case DownloadEvent.Type.EV_PROGRESS:
-            case DownloadEvent.Type.EV_UNPAUSE:
-            case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
+            case DownloadCommandEvent.Type.EV_UNPAUSE:
+            case DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT:
             default:
                 // Other events aren't handled here
                 break;

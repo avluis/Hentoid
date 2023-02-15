@@ -34,16 +34,6 @@ class PrefsActivity : BaseActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-    }
-
-    override fun onStop() {
-        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
-        super.onStop()
-    }
-
     private fun isViewerPrefs(): Boolean {
         return if (intent.extras != null) {
             val parser = PrefsBundle(intent.extras!!)
@@ -74,24 +64,10 @@ class PrefsActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            finish()
             true
         } else {
             super.onOptionsItemSelected(item)
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onImportEventComplete(event: ProcessEvent) {
-        if (ProcessEvent.EventType.COMPLETE == event.eventType
-            && event.logFile != null
-            && (event.processId == R.id.import_external || event.processId == R.id.import_primary)
-        ) {
-            val contentView = findViewById<View>(android.R.id.content)
-            val snackbar =
-                Snackbar.make(contentView, R.string.task_done, BaseTransientBottomBar.LENGTH_LONG)
-            snackbar.setAction(R.string.read_log) { FileHelper.openFile(this, event.logFile) }
-            snackbar.show()
         }
     }
 }

@@ -133,7 +133,7 @@ public class DownloadsImportWorker extends BaseWorker {
         }
 
         if (Preferences.isQueueAutostart())
-            ContentQueueManager.getInstance().resumeQueue(getApplicationContext());
+            ContentQueueManager.INSTANCE.resumeQueue(getApplicationContext());
 
         notifyProcessEnd();
     }
@@ -168,7 +168,7 @@ public class DownloadsImportWorker extends BaseWorker {
                         null,
                         queuePosition,
                         -1,
-                        ContentQueueManager.getInstance().isQueueActive(getApplicationContext())
+                        ContentQueueManager.INSTANCE.isQueueActive(getApplicationContext())
                 );
                 nextOK(getApplicationContext());
             }
@@ -219,6 +219,6 @@ public class DownloadsImportWorker extends BaseWorker {
 
     private void notifyProcessEnd() {
         notificationManager.notify(new ImportCompleteNotification(nbOK, nbKO));
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_downloads, 0, nbOK, nbKO, totalItems));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_downloads, 0, nbOK, nbKO, totalItems));
     }
 }

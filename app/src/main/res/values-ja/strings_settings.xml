@@ -53,7 +53,8 @@
     <string name="pref_external_library_delete_off">Hentoidは外部ライブラリの本やページを削除できません</string>
     <string name="pref_external_library_detach_title">Hentoidは外部ライブラリの本やページを削除できません</string>
     <string name="pref_external_library_detach_summary">外部ライブラリをHentoidに含めないでください</string>
-    <string name="pref_cat_advanced">高度</string>
+    <string name="pref_cat_eh">E-hentai ／ ExHentai</string>
+    <string name="pref_cat_advanced">高度な設定</string>
     <string name="pref_refresh_library_title">ライブラリを更新</string>
     <string name="pref_refresh_library_summary">ライブラリの内容を手動で更新する</string>
     <string name="pref_delete_all_except_favs_title">お気に入りを除くすべての本を削除する</string>
@@ -92,9 +93,11 @@
     <string name="pref_browser_mark_merged_title">マージされた本にマークを付ける</string>
     <string name="pref_browser_mark_merged_off">マージされた本には特別な表示はありません</string>
     <string name="pref_browser_mark_merged_on">結合されたブックにはマークが付けられます\n注意: すべてのサイトで機能するとは限りません</string>
-
-
+    <string name="pref_browser_mark_blocked_title">ブロックされたタグで本をマークする</string>
+    <string name="pref_browser_mark_blocked_off">タグがブロックされた本には特別な表示はありません</string>
+    <string name="pref_browser_mark_blocked_on">ブロックされたタグの付いた本はマークされています\n注意：一部のサイトでは機能しません</string>
     <string name="pref_browser_blocked_tags_title">ブロックされたタグ</string>
+    <string name="pref_browser_blocked_tags_summary">ヒント： タグはコンマで区切ります</string>
     <string name="pref_browser_visuals">ビジュアル</string>
     <string name="pref_browser_augmented_title">拡張ブラウザ</string>
     <string name="pref_browser_augmented_off">バニラの動作を使用します</string>
@@ -110,7 +113,7 @@
     <string name="pref_browser_clear_cookies_ko">クリアするクッキーはありません</string>
     <string name="pref_browser_clear_cookies_missing_webview">WebViewは利用できません。現在はCookieをクリアできません</string>
     <string name="pref_browser_clear_cookies_updating_webview">WebViewは現在更新されています、まだCookieをクリアできません</string>
-<string name="pref_screen_downloader">ダウンローダー</string>
+<string name="pref_screen_downloader">ダウンロード</string>
     <string name="pref_queue_autostart_title">オートスタートのダウンロードキュー</string>
     <string name="pref_queue_autostart_on">ダウンロードダウンロードが完了するとすぐにキューが開始されます</string>
     <string name="pref_queue_autostart_off">ダウンロードキューは手動で開始する必要があります</string>
@@ -133,6 +136,9 @@
     <string name="pref_dl_blocked_tags_title">ブロックされたタグ</string>
     <string name="pref_dl_blocked_tags_summary">特定のタグが付いた書籍のダウンロードをブロックする\nヒント：タグをカンマで区切ってください</string>
     <string name="pref_dl_blocked_tags_behaviour_title">ブロッキング動作</string>
+    <string name="download_eh_hires_title">高解像度の写真をダウンロード</string>
+    <string name="pref_dl_eh_hires_on">可能な場合は高解像度の画像をダウンロード\n注意:このオプションを有効にすると、E-hentai/Exhentai 画像の表示制限をはるかに速く消費します</string>
+    <string name="pref_dl_eh_hires_off">ウェブサイトに表示されている画像をダウンロードする</string>
     <string name="pref_dl_threads_quantity_title">並列ダウンロードの数</string>
     <string name="pref_dl_threads_quantity_summary">同時にダウンロードされた画像の数\n現在：<x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">ダウンロードの速度制限</string>

@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.round
 
 object DownloadSpeedLimiter {
-    var bucket: TokenBucket? = null
+    private var bucket: TokenBucket? = null
 
     fun setSpeedLimitKbps(value: Int) {
         bucket = if (value <= 0) null
@@ -25,7 +25,7 @@ object DownloadSpeedLimiter {
         return true
     }
 
-    fun prefsSpeedCapToKbps(value : Int): Int {
+    fun prefsSpeedCapToKbps(value: Int): Int {
         return when (value) {
             Preferences.Constant.DL_SPEED_CAP_100 -> 100
             Preferences.Constant.DL_SPEED_CAP_200 -> 200

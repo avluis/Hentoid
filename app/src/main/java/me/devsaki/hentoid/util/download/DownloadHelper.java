@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util.download;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -23,7 +24,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.NetworkingException;
@@ -216,5 +219,37 @@ public class DownloadHelper {
             else finalUrl = ogUrl;
         }
         return finalUrl;
+    }
+
+    public static StorageLocation selectDownloadLocation(@NonNull Context context) {
+        String uriStr1 = Preferences.getStorageUri(StorageLocation.PRIMARY_1).trim();
+        String uriStr2 = Preferences.getStorageUri(StorageLocation.PRIMARY_2).trim();
+
+        // Obvious cases
+        if (uriStr1.isEmpty() && uriStr2.isEmpty()) return StorageLocation.NONE;
+        if (!uriStr1.isEmpty() && uriStr2.isEmpty()) return StorageLocation.PRIMARY_1;
+        if (uriStr1.isEmpty()) return StorageLocation.PRIMARY_2;
+
+        // Broken cases
+        DocumentFile root1 = FileHelper.getDocumentFromTreeUriString(context, uriStr1);
+        DocumentFile root2 = FileHelper.getDocumentFromTreeUriString(context, uriStr2);
+        if (null == root1 && null == root2) return StorageLocation.NONE;
+        if (root1 != null && null == root2) return StorageLocation.PRIMARY_1;
+        if (null == root1) return StorageLocation.PRIMARY_2;
+
+        // Apply download strategy
+        FileHelper.MemoryUsageFigures memUsage1 = new FileHelper.MemoryUsageFigures(context, root1);
+        FileHelper.MemoryUsageFigures memUsage2 = new FileHelper.MemoryUsageFigures(context, root2);
+
+        int strategy = Preferences.getStorageDownloadStrategy();
+        if (Preferences.Constant.STORAGE_FILL_FALLOVER == strategy) {
+            if (100 - memUsage1.getFreeUsageRatio100() > Preferences.getStorageSwitchThresholdPc())
+                return StorageLocation.PRIMARY_2;
+            else return StorageLocation.PRIMARY_1;
+        } else {
+            if (memUsage1.getfreeUsageBytes() > memUsage2.getfreeUsageBytes())
+                return StorageLocation.PRIMARY_1;
+            else return StorageLocation.PRIMARY_2;
+        }
     }
 }

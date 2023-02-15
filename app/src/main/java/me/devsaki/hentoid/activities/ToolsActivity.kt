@@ -38,14 +38,14 @@ class ToolsActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            finish()
             true
         } else {
             super.onOptionsItemSelected(item)
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onImportEventComplete(event: ProcessEvent) {
         if (ProcessEvent.EventType.COMPLETE == event.eventType
             && event.logFile != null

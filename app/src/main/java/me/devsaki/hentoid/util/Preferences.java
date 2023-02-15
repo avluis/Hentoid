@@ -18,6 +18,7 @@ import java.util.Map;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.enums.Theme;
 import timber.log.Timber;
 
@@ -43,97 +44,16 @@ public final class Preferences {
         int savedVersion = sharedPreferences.getInt(Key.VERSION_KEY, VERSION);
         if (savedVersion != VERSION) {
             Timber.d("Shared Prefs Key Mismatch! Clearing Prefs!");
-            sharedPreferences.edit()
-                    .clear()
-                    .apply();
+            sharedPreferences.edit().clear().apply();
         }
     }
 
-    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     public static void performHousekeeping() {
         // Fling factor -> Swipe to fling (v1.9.0)
         if (sharedPreferences.contains(Key.VIEWER_FLING_FACTOR)) {
-            int flingFactor = Integer.parseInt(sharedPreferences.getString(Key.VIEWER_FLING_FACTOR, "0") + "");
+            int flingFactor = getIntPref(Key.VIEWER_FLING_FACTOR, 0);
             sharedPreferences.edit().putBoolean(Key.VIEWER_SWIPE_TO_FLING, flingFactor > 0).apply();
             sharedPreferences.edit().remove(Key.VIEWER_FLING_FACTOR).apply();
-        }
-
-        if (sharedPreferences.contains(Key.ANALYTICS_TRACKING)) {
-            boolean analyticsTracking = sharedPreferences.getBoolean(Key.ANALYTICS_TRACKING, false);
-            sharedPreferences.edit().putBoolean(Key.ANALYTICS_PREFERENCE, !analyticsTracking).apply();
-            sharedPreferences.edit().remove(Key.ANALYTICS_TRACKING).apply();
-        }
-
-        if (sharedPreferences.contains(Key.HIDE_RECENT)) {
-            boolean hideRecent = sharedPreferences.getBoolean(Key.HIDE_RECENT, !BuildConfig.DEBUG);
-            sharedPreferences.edit().putBoolean(Key.APP_PREVIEW, !hideRecent).apply();
-            sharedPreferences.edit().remove(Key.HIDE_RECENT).apply();
-        }
-
-        if (sharedPreferences.contains(Key.CHECK_UPDATES_LISTS)) {
-            boolean checkUpdates = sharedPreferences.getBoolean(Key.CHECK_UPDATES_LISTS, Default.CHECK_UPDATES);
-            sharedPreferences.edit().putBoolean(Key.CHECK_UPDATES, checkUpdates).apply();
-            sharedPreferences.edit().remove(Key.CHECK_UPDATES_LISTS).apply();
-        }
-
-        if (sharedPreferences.contains(Key.DARK_MODE)) {
-            int darkMode = Integer.parseInt(sharedPreferences.getString(Key.DARK_MODE, "0") + "");
-            int colorTheme = (0 == darkMode) ? Constant.COLOR_THEME_LIGHT : Constant.COLOR_THEME_DARK;
-            sharedPreferences.edit().putString(Key.COLOR_THEME, colorTheme + "").apply();
-            sharedPreferences.edit().remove(Key.DARK_MODE).apply();
-        }
-
-        if (sharedPreferences.contains(Key.ORDER_CONTENT_LISTS)) {
-            int field;
-            boolean isDesc = false;
-
-            switch (sharedPreferences.getInt(Key.ORDER_CONTENT_LISTS, Constant.ORDER_CONTENT_TITLE_ALPHA)) {
-                case (Constant.ORDER_CONTENT_TITLE_ALPHA):
-                    field = Constant.ORDER_FIELD_TITLE;
-                    break;
-                case (Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED):
-                    field = Constant.ORDER_FIELD_TITLE;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST):
-                    field = Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_LAST_DL_DATE_LAST):
-                    field = Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE;
-                    break;
-                case (Constant.ORDER_CONTENT_RANDOM):
-                    field = Constant.ORDER_FIELD_RANDOM;
-                    break;
-                case (Constant.ORDER_CONTENT_LAST_UL_DATE_FIRST):
-                    field = Constant.ORDER_FIELD_UPLOAD_DATE;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_LEAST_READ):
-                    field = Constant.ORDER_FIELD_READS;
-                    break;
-                case (Constant.ORDER_CONTENT_MOST_READ):
-                    field = Constant.ORDER_FIELD_READS;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_LAST_READ):
-                    field = Constant.ORDER_FIELD_READ_DATE;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_PAGES_DESC):
-                    field = Constant.ORDER_FIELD_NB_PAGES;
-                    isDesc = true;
-                    break;
-                case (Constant.ORDER_CONTENT_PAGES_ASC):
-                    field = Constant.ORDER_FIELD_NB_PAGES;
-                    break;
-                default:
-                    // Nothing there
-                    field = 0;
-            }
-            sharedPreferences.edit().putInt(Key.ORDER_CONTENT_FIELD, field).apply();
-            sharedPreferences.edit().putBoolean(Key.ORDER_CONTENT_DESC, isDesc).apply();
-            sharedPreferences.edit().remove(Key.ORDER_CONTENT_LISTS).apply();
         }
     }
 
@@ -151,7 +71,7 @@ public final class Preferences {
         // Remove non-exportable settings that make no sense on another instance
         result.remove(Key.FIRST_RUN);
         result.remove(Key.WELCOME_DONE);
-        result.remove(Key.SD_STORAGE_URI);
+        result.remove(Key.PRIMARY_STORAGE_URI);
         result.remove(Key.EXTERNAL_LIBRARY_URI);
         result.remove(Key.LAST_KNOWN_APP_VERSION_CODE);
         result.remove(Key.REFRESH_JSON_1_DONE);
@@ -162,62 +82,56 @@ public final class Preferences {
     public static void importInformation(Map<String, ?> settings) {
         for (Map.Entry<String, ?> entry : settings.entrySet()) {
             if (entry.getValue() instanceof Integer) {
-                sharedPreferences.edit()
-                        .putInt(entry.getKey(), (Integer) entry.getValue())
-                        .apply();
+                sharedPreferences.edit().putInt(entry.getKey(), (Integer) entry.getValue()).apply();
             } else if (entry.getValue() instanceof String) {
-                sharedPreferences.edit()
-                        .putString(entry.getKey(), (String) entry.getValue())
-                        .apply();
+                sharedPreferences.edit().putString(entry.getKey(), (String) entry.getValue()).apply();
             } else if (entry.getValue() instanceof Boolean) {
-                sharedPreferences.edit()
-                        .putBoolean(entry.getKey(), (Boolean) entry.getValue())
-                        .apply();
+                sharedPreferences.edit().putBoolean(entry.getKey(), (Boolean) entry.getValue()).apply();
             } else if (entry.getValue() instanceof Float) {
-                sharedPreferences.edit()
-                        .putFloat(entry.getKey(), (Float) entry.getValue())
-                        .apply();
+                sharedPreferences.edit().putFloat(entry.getKey(), (Float) entry.getValue()).apply();
             } else if (entry.getValue() instanceof Long) {
-                sharedPreferences.edit()
-                        .putLong(entry.getKey(), (Long) entry.getValue())
-                        .apply();
+                sharedPreferences.edit().putLong(entry.getKey(), (Long) entry.getValue()).apply();
             }
         }
     }
 
     private static int getIntPref(@NonNull String key, int defaultValue) {
         if (null == sharedPreferences) return defaultValue;
-        else
-            return Integer.parseInt(sharedPreferences.getString(key, Integer.toString(defaultValue)) + "");
+        return Integer.parseInt(sharedPreferences.getString(key, Integer.toString(defaultValue)) + "");
+    }
+
+    private static void setIntPref(@NonNull String key, int value) {
+        if (null == sharedPreferences) return;
+        sharedPreferences.edit().putString(key, Integer.toString(value)).apply();
+    }
+
+    private static long getLongPref(@NonNull String key, long defaultValue) {
+        if (null == sharedPreferences) return defaultValue;
+        return Long.parseLong(sharedPreferences.getString(key, Long.toString(defaultValue)) + "");
     }
 
     private static boolean getBoolPref(@NonNull String key, boolean defaultValue) {
         if (null == sharedPreferences) return defaultValue;
-        else
-            return sharedPreferences.getBoolean(key, defaultValue);
+        return sharedPreferences.getBoolean(key, defaultValue);
     }
 
 
     // ======= PROPERTIES GETTERS / SETTERS
 
     public static boolean isFirstRunProcessComplete() {
-        return sharedPreferences.getBoolean(Key.WELCOME_DONE, false);
+        return getBoolPref(Key.WELCOME_DONE, false);
     }
 
     public static void setIsFirstRunProcessComplete(boolean isFirstRunProcessComplete) {
-        sharedPreferences.edit()
-                .putBoolean(Key.WELCOME_DONE, isFirstRunProcessComplete)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.WELCOME_DONE, isFirstRunProcessComplete).apply();
     }
 
     public static boolean isRefreshJson1Complete() {
-        return sharedPreferences.getBoolean(Key.REFRESH_JSON_1_DONE, false);
+        return getBoolPref(Key.REFRESH_JSON_1_DONE, false);
     }
 
     public static void setIsRefreshJson1Complete(boolean value) {
-        sharedPreferences.edit()
-                .putBoolean(Key.REFRESH_JSON_1_DONE, value)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.REFRESH_JSON_1_DONE, value).apply();
     }
 
     public static boolean isAnalyticsEnabled() {
@@ -233,9 +147,7 @@ public final class Preferences {
     }
 
     public static void setIsFirstRun(boolean isFirstRun) {
-        sharedPreferences.edit()
-                .putBoolean(Key.FIRST_RUN, isFirstRun)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.FIRST_RUN, isFirstRun).apply();
     }
 
     public static boolean isBrowserMode() {
@@ -243,18 +155,11 @@ public final class Preferences {
     }
 
     public static void setBrowserMode(boolean value) {
-        sharedPreferences.edit()
-                .putBoolean(Key.BROWSER_MODE, value)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.BROWSER_MODE, value).apply();
     }
 
     public static boolean isImportQueueEmptyBooks() {
         return getBoolPref(Key.IMPORT_QUEUE_EMPTY, Default.IMPORT_QUEUE_EMPTY);
-    }
-
-    @Deprecated
-    public static String getSettingsFolder() {
-        return sharedPreferences.getString(Key.PRIMARY_FOLDER, "");
     }
 
     public static int getLibraryDisplay() {
@@ -262,9 +167,7 @@ public final class Preferences {
     }
 
     public static void setLibraryDisplay(int displayMode) {
-        sharedPreferences.edit()
-                .putString(Key.LIBRARY_DISPLAY, Integer.toString(displayMode))
-                .apply();
+        sharedPreferences.edit().putString(Key.LIBRARY_DISPLAY, Integer.toString(displayMode)).apply();
     }
 
     public static boolean isForceEnglishLocale() {
@@ -276,19 +179,15 @@ public final class Preferences {
     }
 
     public static void setContentSortField(int sortField) {
-        sharedPreferences.edit()
-                .putInt(Key.ORDER_CONTENT_FIELD, sortField)
-                .apply();
+        sharedPreferences.edit().putInt(Key.ORDER_CONTENT_FIELD, sortField).apply();
     }
 
     public static boolean isContentSortDesc() {
-        return sharedPreferences.getBoolean(Key.ORDER_CONTENT_DESC, Default.ORDER_CONTENT_DESC);
+        return getBoolPref(Key.ORDER_CONTENT_DESC, Default.ORDER_CONTENT_DESC);
     }
 
     public static void setContentSortDesc(boolean isDesc) {
-        sharedPreferences.edit()
-                .putBoolean(Key.ORDER_CONTENT_DESC, isDesc)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.ORDER_CONTENT_DESC, isDesc).apply();
     }
 
     public static int getGroupSortField() {
@@ -296,19 +195,15 @@ public final class Preferences {
     }
 
     public static void setGroupSortField(int sortField) {
-        sharedPreferences.edit()
-                .putInt(Key.ORDER_GROUP_FIELD, sortField)
-                .apply();
+        sharedPreferences.edit().putInt(Key.ORDER_GROUP_FIELD, sortField).apply();
     }
 
     public static boolean isGroupSortDesc() {
-        return sharedPreferences.getBoolean(Key.ORDER_GROUP_DESC, Default.ORDER_GROUP_DESC);
+        return getBoolPref(Key.ORDER_GROUP_DESC, Default.ORDER_GROUP_DESC);
     }
 
     public static void setGroupSortDesc(boolean isDesc) {
-        sharedPreferences.edit()
-                .putBoolean(Key.ORDER_GROUP_DESC, isDesc)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.ORDER_GROUP_DESC, isDesc).apply();
     }
 
     public static int getRuleSortField() {
@@ -316,32 +211,27 @@ public final class Preferences {
     }
 
     public static void setRuleSortField(int sortField) {
-        sharedPreferences.edit()
-                .putInt(Key.ORDER_RULE_FIELD, sortField)
-                .apply();
+        sharedPreferences.edit().putInt(Key.ORDER_RULE_FIELD, sortField).apply();
     }
 
     public static boolean isRuleSortDesc() {
-        return sharedPreferences.getBoolean(Key.ORDER_RULE_DESC, Default.ORDER_RULE_DESC);
+        return getBoolPref(Key.ORDER_RULE_DESC, Default.ORDER_RULE_DESC);
     }
 
     public static void setRuleSortDesc(boolean isDesc) {
-        sharedPreferences.edit()
-                .putBoolean(Key.ORDER_RULE_DESC, isDesc)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.ORDER_RULE_DESC, isDesc).apply();
     }
 
     public static int getSearchAttributesSortOrder() {
-        return Integer.parseInt(sharedPreferences.getString(Key.SEARCH_ORDER_ATTRIBUTE_LISTS, Default.SEARCH_ORDER_ATTRIBUTES + "") + "");
+        return getIntPref(Key.SEARCH_ORDER_ATTRIBUTE_LISTS, Default.SEARCH_ORDER_ATTRIBUTES);
     }
 
     public static boolean getSearchAttributesCount() {
-        return sharedPreferences.getBoolean(Key.SEARCH_COUNT_ATTRIBUTE_RESULTS, Default.SEARCH_COUNT_ATTRIBUTE_RESULTS);
+        return getBoolPref(Key.SEARCH_COUNT_ATTRIBUTE_RESULTS, Default.SEARCH_COUNT_ATTRIBUTE_RESULTS);
     }
 
     public static int getContentPageQuantity() {
-        return Integer.parseInt(sharedPreferences.getString(Key.QUANTITY_PER_PAGE_LISTS,
-                Default.QUANTITY_PER_PAGE + "") + "");
+        return getIntPref(Key.QUANTITY_PER_PAGE_LISTS, Default.QUANTITY_PER_PAGE);
     }
 
     public static String getAppLockPin() {
@@ -349,41 +239,97 @@ public final class Preferences {
     }
 
     public static void setAppLockPin(String pin) {
-        sharedPreferences.edit()
-                .putString(Key.APP_LOCK, pin)
-                .apply();
+        sharedPreferences.edit().putString(Key.APP_LOCK, pin).apply();
     }
 
     public static boolean getEndlessScroll() {
-        return sharedPreferences.getBoolean(Key.ENDLESS_SCROLL, Default.ENDLESS_SCROLL);
+        return getBoolPref(Key.ENDLESS_SCROLL, Default.ENDLESS_SCROLL);
     }
 
     public static boolean isTopFabEnabled() {
-        return sharedPreferences.getBoolean(Key.TOP_FAB, Default.TOP_FAB);
+        return getBoolPref(Key.TOP_FAB, Default.TOP_FAB);
     }
 
     public static void setTopFabEnabled(boolean value) {
-        sharedPreferences.edit()
-                .putBoolean(Key.TOP_FAB, value)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.TOP_FAB, value).apply();
     }
 
     public static boolean getRecentVisibility() {
-        return sharedPreferences.getBoolean(Key.APP_PREVIEW, BuildConfig.DEBUG);
+        return getBoolPref(Key.APP_PREVIEW, BuildConfig.DEBUG);
     }
 
-    public static String getStorageUri() {
-        return sharedPreferences.getString(Key.SD_STORAGE_URI, "");
+    private static String getStorageUri() {
+        return sharedPreferences.getString(Key.PRIMARY_STORAGE_URI, "");
     }
 
-    public static void setStorageUri(String uri) {
-        sharedPreferences.edit()
-                .putString(Key.SD_STORAGE_URI, uri)
-                .apply();
+    private static void setStorageUri(String uri) {
+        sharedPreferences.edit().putString(Key.PRIMARY_STORAGE_URI, uri).apply();
+    }
+
+    private static String getStorageUri2() {
+        return sharedPreferences.getString(Key.PRIMARY_STORAGE_URI_2, "");
+    }
+
+    private static void setStorageUri2(String uri) {
+        sharedPreferences.edit().putString(Key.PRIMARY_STORAGE_URI_2, uri).apply();
+    }
+
+    public static String getStorageUri(StorageLocation location) {
+        switch (location) {
+            case PRIMARY_1:
+                return getStorageUri();
+
+            case PRIMARY_2:
+                return getStorageUri2();
+
+            case EXTERNAL:
+                return getExternalLibraryUri();
+
+            default:
+                return "";
+        }
+    }
+
+    public static void setStorageUri(StorageLocation location, String uri) {
+        switch (location) {
+            case PRIMARY_1:
+                setStorageUri(uri);
+                break;
+
+            case PRIMARY_2:
+                setStorageUri2(uri);
+                break;
+
+            case EXTERNAL:
+                setExternalLibraryUri(uri);
+                break;
+            default:
+                // Nothing
+        }
+    }
+
+    public static int getStorageDownloadStrategy() {
+        return getIntPref(Key.PRIMARY_STORAGE_FILL_METHOD, Default.PRIMARY_STORAGE_FILL_METHOD);
+    }
+
+    public static void setStorageDownloadStrategy(int value) {
+        setIntPref(Key.PRIMARY_STORAGE_FILL_METHOD, value);
+    }
+
+    public static int getStorageSwitchThresholdPc() {
+        return getIntPref(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, Default.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC);
+    }
+
+    public static void setStorageSwitchThresholdPc(int value) {
+        setIntPref(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, value);
     }
 
     public static int getMemoryAlertThreshold() {
-        return Integer.parseInt(sharedPreferences.getString(Key.MEMORY_ALERT, Integer.toString(Default.MEMORY_ALERT)) + "");
+        return getIntPref(Key.MEMORY_ALERT, Default.MEMORY_ALERT);
+    }
+
+    public static void setMemoryAlertThreshold(int value) {
+        setIntPref(Key.MEMORY_ALERT, value);
     }
 
     public static String getExternalLibraryUri() {
@@ -391,97 +337,83 @@ public final class Preferences {
     }
 
     public static void setExternalLibraryUri(String uri) {
-        sharedPreferences.edit()
-                .putString(Key.EXTERNAL_LIBRARY_URI, uri)
-                .apply();
+        sharedPreferences.edit().putString(Key.EXTERNAL_LIBRARY_URI, uri).apply();
     }
 
     public static boolean isDeleteExternalLibrary() {
-        return sharedPreferences.getBoolean(Key.EXTERNAL_LIBRARY_DELETE, Default.EXTERNAL_LIBRARY_DELETE);
+        return getBoolPref(Key.EXTERNAL_LIBRARY_DELETE, Default.EXTERNAL_LIBRARY_DELETE);
     }
 
     static int getFolderNameFormat() {
-        return Integer.parseInt(
-                sharedPreferences.getString(Key.FOLDER_NAMING_CONTENT_LISTS,
-                        Default.FOLDER_NAMING_CONTENT + "") + "");
+        return getIntPref(Key.FOLDER_NAMING_CONTENT_LISTS, Default.FOLDER_NAMING_CONTENT);
     }
 
     public static int getWebViewInitialZoom() {
-        return Integer.parseInt(
-                sharedPreferences.getString(
-                        Key.WEBVIEW_INITIAL_ZOOM_LISTS,
-                        Default.WEBVIEW_INITIAL_ZOOM + "") + "");
+        return getIntPref(Key.WEBVIEW_INITIAL_ZOOM_LISTS, Default.WEBVIEW_INITIAL_ZOOM);
     }
 
     public static boolean getWebViewOverview() {
-        return sharedPreferences.getBoolean(
-                Key.WEBVIEW_OVERRIDE_OVERVIEW_LISTS,
-                Default.WEBVIEW_OVERRIDE_OVERVIEW);
+        return getBoolPref(Key.WEBVIEW_OVERRIDE_OVERVIEW_LISTS, Default.WEBVIEW_OVERRIDE_OVERVIEW);
     }
 
     public static boolean isBrowserResumeLast() {
-        return sharedPreferences.getBoolean(Key.BROWSER_RESUME_LAST, Default.BROWSER_RESUME_LAST);
+        return getBoolPref(Key.BROWSER_RESUME_LAST, Default.BROWSER_RESUME_LAST);
     }
 
     public static boolean isBrowserAugmented() {
-        return sharedPreferences.getBoolean(Key.BROWSER_AUGMENTED, Default.BROWSER_AUGMENTED);
+        return getBoolPref(Key.BROWSER_AUGMENTED, Default.BROWSER_AUGMENTED);
     }
 
     public static boolean isBrowserMarkDownloaded() {
-        return sharedPreferences.getBoolean(Key.BROWSER_MARK_DOWNLOADED, Default.BROWSER_MARK_DOWNLOADED);
+        return getBoolPref(Key.BROWSER_MARK_DOWNLOADED, Default.BROWSER_MARK_DOWNLOADED);
     }
 
     public static boolean isBrowserMarkMerged() {
-        return sharedPreferences.getBoolean(Key.BROWSER_MARK_MERGED, Default.BROWSER_MARK_MERGED);
+        return getBoolPref(Key.BROWSER_MARK_MERGED, Default.BROWSER_MARK_MERGED);
     }
 
     public static boolean isBrowserMarkBlockedTags() {
-        return sharedPreferences.getBoolean(Key.BROWSER_MARK_BLOCKED, Default.BROWSER_MARK_BLOCKED);
+        return getBoolPref(Key.BROWSER_MARK_BLOCKED, Default.BROWSER_MARK_BLOCKED);
     }
 
     public static int getBrowserDlAction() {
-        return Integer.parseInt(
-                sharedPreferences.getString(
-                        Key.BROWSER_DL_ACTION,
-                        Default.BROWSER_DL_ACTION + "") + "");
+        return getIntPref(Key.BROWSER_DL_ACTION, Default.BROWSER_DL_ACTION);
     }
 
     public static boolean isBrowserQuickDl() {
-        return sharedPreferences.getBoolean(Key.BROWSER_QUICK_DL, Default.BROWSER_QUICK_DL);
+        return getBoolPref(Key.BROWSER_QUICK_DL, Default.BROWSER_QUICK_DL);
     }
 
     public static int getBrowserQuickDlThreshold() {
-        return Integer.parseInt(sharedPreferences.getString(Key.BROWSER_QUICK_DL_THRESHOLD, Integer.toString(Default.BROWSER_QUICK_DL_THRESHOLD)) + "");
+        return getIntPref(Key.BROWSER_QUICK_DL_THRESHOLD, Default.BROWSER_QUICK_DL_THRESHOLD);
     }
 
     public static int getDnsOverHttps() {
-        return Integer.parseInt(sharedPreferences.getString(Key.BROWSER_DNS_OVER_HTTPS, Integer.toString(Default.BROWSER_DNS_OVER_HTTPS)) + "");
+        return getIntPref(Key.BROWSER_DNS_OVER_HTTPS, Default.BROWSER_DNS_OVER_HTTPS);
     }
 
     public static boolean isBrowserNhentaiInvisibleBlacklist() {
-        return sharedPreferences.getBoolean(Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST, Default.BROWSER_NHENTAI_INVISIBLE_BLACKLIST);
+        return getBoolPref(Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST, Default.BROWSER_NHENTAI_INVISIBLE_BLACKLIST);
     }
 
     public static int getDownloadThreadCount() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DL_THREADS_QUANTITY_LISTS,
-                Default.DL_THREADS_QUANTITY + "") + "");
+        return getIntPref(Key.DL_THREADS_QUANTITY_LISTS, Default.DL_THREADS_QUANTITY);
     }
 
     static int getFolderTruncationNbChars() {
-        return Integer.parseInt(sharedPreferences.getString(Key.FOLDER_TRUNCATION_LISTS,
-                Default.FOLDER_TRUNCATION + "") + "");
+        return getIntPref(Key.FOLDER_TRUNCATION_LISTS, Default.FOLDER_TRUNCATION);
     }
 
     public static boolean isViewerResumeLastLeft() {
-        return sharedPreferences.getBoolean(Key.VIEWER_RESUME_LAST_LEFT, Default.VIEWER_RESUME_LAST_LEFT);
+        return getBoolPref(Key.VIEWER_RESUME_LAST_LEFT, Default.VIEWER_RESUME_LAST_LEFT);
     }
 
     public static boolean isViewerKeepScreenOn() {
-        return sharedPreferences.getBoolean(Key.VIEWER_KEEP_SCREEN_ON, Default.VIEWER_KEEP_SCREEN_ON);
+        return getBoolPref(Key.VIEWER_KEEP_SCREEN_ON, Default.VIEWER_KEEP_SCREEN_ON);
     }
 
     public static boolean isViewerDisplayAroundNotch() {
-        return sharedPreferences.getBoolean(Key.VIEWER_DISPLAY_AROUND_NOTCH, Default.VIEWER_DISPLAY_AROUND_NOTCH);
+        return getBoolPref(Key.VIEWER_DISPLAY_AROUND_NOTCH, Default.VIEWER_DISPLAY_AROUND_NOTCH);
     }
 
     public static int getContentDisplayMode(final Map<String, String> bookPrefs) {
@@ -496,7 +428,7 @@ public final class Preferences {
     }
 
     public static int getViewerDisplayMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_IMAGE_DISPLAY, Integer.toString(Default.VIEWER_IMAGE_DISPLAY)) + "");
+        return getIntPref(Key.VIEWER_IMAGE_DISPLAY, Default.VIEWER_IMAGE_DISPLAY);
     }
 
     public static int getContentBrowseMode(final Map<String, String> bookPrefs) {
@@ -516,13 +448,11 @@ public final class Preferences {
     }
 
     public static int getViewerBrowseMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_BROWSE_MODE, Integer.toString(Default.VIEWER_BROWSE_MODE)) + "");
+        return getIntPref(Key.VIEWER_BROWSE_MODE, Default.VIEWER_BROWSE_MODE);
     }
 
     public static void setViewerBrowseMode(int browseMode) {
-        sharedPreferences.edit()
-                .putString(Key.VIEWER_BROWSE_MODE, Integer.toString(browseMode))
-                .apply();
+        sharedPreferences.edit().putString(Key.VIEWER_BROWSE_MODE, Integer.toString(browseMode)).apply();
     }
 
     public static boolean isContentSmoothRendering(final Map<String, String> bookPrefs) {
@@ -542,145 +472,140 @@ public final class Preferences {
     }
 
     private static int getViewerRenderingMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_RENDERING, Integer.toString(Default.VIEWER_RENDERING)) + "");
+        return getIntPref(Key.VIEWER_RENDERING, Default.VIEWER_RENDERING);
     }
 
     public static boolean isViewerDisplayPageNum() {
-        return sharedPreferences.getBoolean(Key.VIEWER_DISPLAY_PAGENUM, Default.VIEWER_DISPLAY_PAGENUM);
+        return getBoolPref(Key.VIEWER_DISPLAY_PAGENUM, Default.VIEWER_DISPLAY_PAGENUM);
     }
 
     public static boolean isViewerTapTransitions() {
-        return sharedPreferences.getBoolean(Key.VIEWER_TAP_TRANSITIONS, Default.VIEWER_TAP_TRANSITIONS);
+        return getBoolPref(Key.VIEWER_TAP_TRANSITIONS, Default.VIEWER_TAP_TRANSITIONS);
     }
 
     public static boolean isViewerZoomTransitions() {
-        return sharedPreferences.getBoolean(Key.VIEWER_ZOOM_TRANSITIONS, Default.VIEWER_ZOOM_TRANSITIONS);
+        return getBoolPref(Key.VIEWER_ZOOM_TRANSITIONS, Default.VIEWER_ZOOM_TRANSITIONS);
     }
 
     public static boolean isViewerSwipeToFling() {
-        return sharedPreferences.getBoolean(Key.VIEWER_SWIPE_TO_FLING, Default.VIEWER_SWIPE_TO_FLING);
+        return getBoolPref(Key.VIEWER_SWIPE_TO_FLING, Default.VIEWER_SWIPE_TO_FLING);
     }
 
     public static boolean isViewerInvertVolumeRocker() {
-        return sharedPreferences.getBoolean(Key.VIEWER_INVERT_VOLUME_ROCKER, Default.VIEWER_INVERT_VOLUME_ROCKER);
+        return getBoolPref(Key.VIEWER_INVERT_VOLUME_ROCKER, Default.VIEWER_INVERT_VOLUME_ROCKER);
     }
 
     public static boolean isViewerTapToTurn() {
-        return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_TAP, Default.VIEWER_PAGE_TURN_TAP);
+        return getBoolPref(Key.VIEWER_PAGE_TURN_TAP, Default.VIEWER_PAGE_TURN_TAP);
     }
 
     public static boolean isViewerTapToTurn2x() {
-        return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_TAP_2X, Default.VIEWER_PAGE_TURN_TAP_2X);
+        return getBoolPref(Key.VIEWER_PAGE_TURN_TAP_2X, Default.VIEWER_PAGE_TURN_TAP_2X);
     }
 
     public static boolean isViewerSwipeToTurn() {
-        return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_SWIPE, Default.VIEWER_PAGE_TURN_SWIPE);
+        return getBoolPref(Key.VIEWER_PAGE_TURN_SWIPE, Default.VIEWER_PAGE_TURN_SWIPE);
     }
 
     public static boolean isViewerVolumeToTurn() {
-        return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_VOLUME, Default.VIEWER_PAGE_TURN_VOLUME);
+        return getBoolPref(Key.VIEWER_PAGE_TURN_VOLUME, Default.VIEWER_PAGE_TURN_VOLUME);
     }
 
     public static boolean isViewerKeyboardToTurn() {
-        return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_KEYBOARD, Default.VIEWER_PAGE_TURN_KEYBOARD);
+        return getBoolPref(Key.VIEWER_PAGE_TURN_KEYBOARD, Default.VIEWER_PAGE_TURN_KEYBOARD);
     }
 
     public static boolean isViewerVolumeToSwitchBooks() {
-        return sharedPreferences.getBoolean(Key.VIEWER_BOOK_SWITCH_VOLUME, Default.VIEWER_BOOK_SWITCH_VOLUME);
+        return getBoolPref(Key.VIEWER_BOOK_SWITCH_VOLUME, Default.VIEWER_BOOK_SWITCH_VOLUME);
     }
 
     public static boolean isViewerOpenBookInGalleryMode() {
-        return sharedPreferences.getBoolean(Key.VIEWER_OPEN_GALLERY, Default.VIEWER_OPEN_GALLERY);
+        return getBoolPref(Key.VIEWER_OPEN_GALLERY, Default.VIEWER_OPEN_GALLERY);
     }
 
     public static boolean isViewerContinuous() {
-        return sharedPreferences.getBoolean(Key.VIEWER_CONTINUOUS, Default.VIEWER_CONTINUOUS);
+        return getBoolPref(Key.VIEWER_CONTINUOUS, Default.VIEWER_CONTINUOUS);
     }
 
     public static int getViewerPageReadThreshold() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_PAGE_READ_THRESHOLD, Integer.toString(Default.VIEWER_PAGE_READ_THRESHOLD)) + "");
+        return getIntPref(Key.VIEWER_PAGE_READ_THRESHOLD, Default.VIEWER_PAGE_READ_THRESHOLD)
+                ;
     }
 
     public static int getViewerRatioCompletedThreshold() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_RATIO_COMPLETED_THRESHOLD, Integer.toString(Default.VIEWER_RATIO_COMPLETED_THRESHOLD)) + "");
+        return getIntPref(Key.VIEWER_RATIO_COMPLETED_THRESHOLD, Default.VIEWER_RATIO_COMPLETED_THRESHOLD);
     }
 
     public static int getViewerSlideshowDelay() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_SLIDESHOW_DELAY, Integer.toString(Default.VIEWER_SLIDESHOW_DELAY)) + "");
+        return getIntPref(Key.VIEWER_SLIDESHOW_DELAY, Default.VIEWER_SLIDESHOW_DELAY);
     }
 
     public static void setViewerSlideshowDelay(int value) {
-        sharedPreferences.edit()
-                .putString(Key.VIEWER_SLIDESHOW_DELAY, Integer.toString(value))
-                .apply();
+        sharedPreferences.edit().putString(Key.VIEWER_SLIDESHOW_DELAY, Integer.toString(value)).apply();
     }
 
     public static int getViewerSlideshowDelayVertical() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Integer.toString(Default.VIEWER_SLIDESHOW_DELAY_VERTICAL)) + "");
+        return getIntPref(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Default.VIEWER_SLIDESHOW_DELAY_VERTICAL);
     }
 
     public static void setViewerSlideshowDelayVertical(int value) {
-        sharedPreferences.edit()
-                .putString(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Integer.toString(value))
-                .apply();
+        sharedPreferences.edit().putString(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Integer.toString(value)).apply();
     }
 
     public static int getViewerSeparatingBars() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_SEPARATING_BARS, Integer.toString(Default.VIEWER_SEPARATING_BARS)) + "");
+        return getIntPref(Key.VIEWER_SEPARATING_BARS, Default.VIEWER_SEPARATING_BARS);
     }
 
     public static boolean isViewerHoldToZoom() {
-        return sharedPreferences.getBoolean(Key.VIEWER_HOLD_TO_ZOOM, Default.VIEWER_HOLD_TO_ZOOM);
+        return getBoolPref(Key.VIEWER_HOLD_TO_ZOOM, Default.VIEWER_HOLD_TO_ZOOM);
     }
 
     public static int getViewerCapTapZoom() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_CAP_TAP_ZOOM, Integer.toString(Default.VIEWER_CAP_TAP_ZOOM)) + "");
+        return getIntPref(Key.VIEWER_CAP_TAP_ZOOM, Default.VIEWER_CAP_TAP_ZOOM);
     }
 
     public static boolean isViewerMaintainHorizontalZoom() {
-        return sharedPreferences.getBoolean(Key.VIEWER_MAINTAIN_HORIZONTAL_ZOOM, Default.VIEWER_MAINTAIN_HORIZONTAL_ZOOM);
+        return getBoolPref(Key.VIEWER_MAINTAIN_HORIZONTAL_ZOOM, Default.VIEWER_MAINTAIN_HORIZONTAL_ZOOM);
     }
 
     public static boolean isViewerAutoRotate() {
-        return sharedPreferences.getBoolean(Key.VIEWER_AUTO_ROTATE, Default.VIEWER_AUTO_ROTATE);
+        return getBoolPref(Key.VIEWER_AUTO_ROTATE, Default.VIEWER_AUTO_ROTATE);
     }
 
     public static int getLastKnownAppVersionCode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.LAST_KNOWN_APP_VERSION_CODE, "0") + "");
+        return getIntPref(Key.LAST_KNOWN_APP_VERSION_CODE, 0);
     }
 
     public static void setLastKnownAppVersionCode(int versionCode) {
-        sharedPreferences.edit()
-                .putString(Key.LAST_KNOWN_APP_VERSION_CODE, Integer.toString(versionCode))
-                .apply();
+        sharedPreferences.edit().putString(Key.LAST_KNOWN_APP_VERSION_CODE, Integer.toString(versionCode)).apply();
     }
 
     public static boolean isQueueAutostart() {
-        return sharedPreferences.getBoolean(Key.QUEUE_AUTOSTART, Default.QUEUE_AUTOSTART);
+        return getBoolPref(Key.QUEUE_AUTOSTART, Default.QUEUE_AUTOSTART);
     }
 
     public static int getQueueNewDownloadPosition() {
-        return Integer.parseInt(sharedPreferences.getString(Key.QUEUE_NEW_DOWNLOADS_POSITION, Integer.toString(Default.QUEUE_NEW_DOWNLOADS_POSITION)) + "");
+        return getIntPref(Key.QUEUE_NEW_DOWNLOADS_POSITION, Default.QUEUE_NEW_DOWNLOADS_POSITION);
     }
 
     public static boolean isQueueWifiOnly() {
-        return sharedPreferences.getBoolean(Key.QUEUE_WIFI_ONLY, Default.QUEUE_WIFI_ONLY);
+        return getBoolPref(Key.QUEUE_WIFI_ONLY, Default.QUEUE_WIFI_ONLY);
     }
 
     public static boolean isDownloadLargeOnlyWifi() {
-        return sharedPreferences.getBoolean(Key.DL_SIZE_WIFI, Default.DL_SIZE_WIFI);
+        return getBoolPref(Key.DL_SIZE_WIFI, Default.DL_SIZE_WIFI);
     }
 
     public static int getDownloadLargeOnlyWifiThresholdMB() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DL_SIZE_WIFI_THRESHOLD, Integer.toString(Default.DL_SIZE_WIFI_THRESHOLD)) + "");
+        return getIntPref(Key.DL_SIZE_WIFI_THRESHOLD, Default.DL_SIZE_WIFI_THRESHOLD);
     }
 
     public static int getDownloadLargeOnlyWifiThresholdPages() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DL_PAGES_WIFI_THRESHOLD, Integer.toString(Default.DL_PAGES_WIFI_THRESHOLD)) + "");
+        return getIntPref(Key.DL_PAGES_WIFI_THRESHOLD, Default.DL_PAGES_WIFI_THRESHOLD);
     }
 
     public static boolean isDlRetriesActive() {
-        return sharedPreferences.getBoolean(Key.DL_RETRIES_ACTIVE, Default.DL_RETRIES_ACTIVE);
+        return getBoolPref(Key.DL_RETRIES_ACTIVE, Default.DL_RETRIES_ACTIVE);
     }
 
     public static int getDlRetriesNumber() {
@@ -700,7 +625,7 @@ public final class Preferences {
     }
 
     public static int getTagBlockingBehaviour() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DL_BLOCKED_TAG_BEHAVIOUR, Integer.toString(Default.DL_BLOCKED_TAGS_BEHAVIOUR)) + "");
+        return getIntPref(Key.DL_BLOCKED_TAG_BEHAVIOUR, Default.DL_BLOCKED_TAGS_BEHAVIOUR);
     }
 
     public static List<Site> getActiveSites() {
@@ -712,9 +637,7 @@ public final class Preferences {
 
     public static void setActiveSites(List<Site> activeSites) {
         List<Integer> siteCodes = Stream.of(activeSites).map(Site::getCode).distinct().toList();
-        sharedPreferences.edit()
-                .putString(Key.ACTIVE_SITES, android.text.TextUtils.join(",", siteCodes))
-                .apply();
+        sharedPreferences.edit().putString(Key.ACTIVE_SITES, android.text.TextUtils.join(",", siteCodes)).apply();
     }
 
     public static int getColorTheme() {
@@ -722,203 +645,171 @@ public final class Preferences {
     }
 
     public static void setColorTheme(int colorTheme) {
-        sharedPreferences.edit()
-                .putString(Key.COLOR_THEME, Integer.toString(colorTheme))
-                .apply();
+        sharedPreferences.edit().putString(Key.COLOR_THEME, Integer.toString(colorTheme)).apply();
     }
 
     public static boolean isLockOnAppRestore() {
-        return sharedPreferences.getBoolean(Key.LOCK_ON_APP_RESTORE, Default.LOCK_ON_APP_RESTORE);
+        return getBoolPref(Key.LOCK_ON_APP_RESTORE, Default.LOCK_ON_APP_RESTORE);
     }
 
     public static void setLockOnAppRestore(boolean lockOnAppRestore) {
-        sharedPreferences.edit()
-                .putBoolean(Key.LOCK_ON_APP_RESTORE, lockOnAppRestore)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.LOCK_ON_APP_RESTORE, lockOnAppRestore).apply();
     }
 
     public static int getLockTimer() {
-        return Integer.parseInt(sharedPreferences.getString(Key.LOCK_TIMER, Integer.toString(Default.LOCK_TIMER)) + "");
+        return getIntPref(Key.LOCK_TIMER, Default.LOCK_TIMER);
     }
 
     public static void setLockTimer(int lockTimer) {
-        sharedPreferences.edit()
-                .putString(Key.LOCK_TIMER, Integer.toString(lockTimer))
-                .apply();
+        sharedPreferences.edit().putString(Key.LOCK_TIMER, Integer.toString(lockTimer)).apply();
     }
 
     public static long getMaxDbSizeKb() {
-        return Long.parseLong(sharedPreferences.getString(Key.DB_MAX_SIZE, Long.toString(Default.DB_MAX_SIZE_KB)) + "");
+        return getLongPref(Key.DB_MAX_SIZE, Default.DB_MAX_SIZE_KB);
     }
 
     public static Grouping getGroupingDisplay() {
-        return Grouping.searchById(Integer.parseInt(sharedPreferences.getString(Key.GROUPING_DISPLAY, Integer.toString(Default.GROUPING_DISPLAY)) + ""));
+        return Grouping.searchById(getIntPref(Key.GROUPING_DISPLAY, Default.GROUPING_DISPLAY));
     }
 
     public static void setGroupingDisplay(int groupingDisplay) {
-        sharedPreferences.edit()
-                .putString(Key.GROUPING_DISPLAY, Integer.toString(groupingDisplay))
-                .apply();
+        sharedPreferences.edit().putString(Key.GROUPING_DISPLAY, Integer.toString(groupingDisplay)).apply();
     }
 
     public static int getArtistGroupVisibility() {
-        return Integer.parseInt(sharedPreferences.getString(Key.ARTIST_GROUP_VISIBILITY, Integer.toString(Default.ARTIST_GROUP_VISIBILITY)) + "");
+        return getIntPref(Key.ARTIST_GROUP_VISIBILITY, Default.ARTIST_GROUP_VISIBILITY);
     }
 
     public static void setArtistGroupVisibility(int artistGroupVisibility) {
-        sharedPreferences.edit()
-                .putString(Key.ARTIST_GROUP_VISIBILITY, Integer.toString(artistGroupVisibility))
-                .apply();
+        sharedPreferences.edit().putString(Key.ARTIST_GROUP_VISIBILITY, Integer.toString(artistGroupVisibility)).apply();
     }
 
     public static int getViewerDeleteAskMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_DELETE_ASK_MODE, Integer.toString(Default.VIEWER_DELETE_ASK_MODE)) + "");
+        return getIntPref(Key.VIEWER_DELETE_ASK_MODE, Default.VIEWER_DELETE_ASK_MODE);
     }
 
     public static void setViewerDeleteAskMode(int viewerDeleteAskMode) {
-        sharedPreferences.edit()
-                .putString(Key.VIEWER_DELETE_ASK_MODE, Integer.toString(viewerDeleteAskMode))
-                .apply();
+        sharedPreferences.edit().putString(Key.VIEWER_DELETE_ASK_MODE, Integer.toString(viewerDeleteAskMode)).apply();
     }
 
     public static int getViewerDeleteTarget() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_DELETE_TARGET, Integer.toString(Default.VIEWER_DELETE_TARGET)) + "");
+        return getIntPref(Key.VIEWER_DELETE_TARGET, Default.VIEWER_DELETE_TARGET);
     }
 
     public static void setViewerDeleteTarget(int viewerDeleteTarget) {
-        sharedPreferences.edit()
-                .putString(Key.VIEWER_DELETE_TARGET, Integer.toString(viewerDeleteTarget))
-                .apply();
+        sharedPreferences.edit().putString(Key.VIEWER_DELETE_TARGET, Integer.toString(viewerDeleteTarget)).apply();
     }
 
     public static int getDuplicateSensitivity() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DUPLICATE_SENSITIVITY, Integer.toString(Default.DUPLICATE_SENSITIVITY)) + "");
+        return getIntPref(Key.DUPLICATE_SENSITIVITY, Default.DUPLICATE_SENSITIVITY);
     }
 
     public static void setDuplicateSensitivity(int duplicateSensitivity) {
-        sharedPreferences.edit()
-                .putString(Key.DUPLICATE_SENSITIVITY, Integer.toString(duplicateSensitivity))
-                .apply();
+        sharedPreferences.edit().putString(Key.DUPLICATE_SENSITIVITY, Integer.toString(duplicateSensitivity)).apply();
     }
 
     public static boolean isDuplicateUseTitle() {
-        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_TITLE, Default.DUPLICATE_USE_TITLE);
+        return getBoolPref(Key.DUPLICATE_USE_TITLE, Default.DUPLICATE_USE_TITLE);
     }
 
     public static void setDuplicateUseTitle(boolean useTitle) {
-        sharedPreferences.edit()
-                .putBoolean(Key.DUPLICATE_USE_TITLE, useTitle)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.DUPLICATE_USE_TITLE, useTitle).apply();
     }
 
     public static boolean isDuplicateUseCover() {
-        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_COVER, Default.DUPLICATE_USE_COVER);
+        return getBoolPref(Key.DUPLICATE_USE_COVER, Default.DUPLICATE_USE_COVER);
     }
 
     public static void setDuplicateUseCover(boolean useCover) {
-        sharedPreferences.edit()
-                .putBoolean(Key.DUPLICATE_USE_COVER, useCover)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.DUPLICATE_USE_COVER, useCover).apply();
     }
 
     public static boolean isDuplicateUseArtist() {
-        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_ARTIST, Default.DUPLICATE_USE_ARTIST);
+        return getBoolPref(Key.DUPLICATE_USE_ARTIST, Default.DUPLICATE_USE_ARTIST);
     }
 
     public static void setDuplicateUseArtist(boolean useArtist) {
-        sharedPreferences.edit()
-                .putBoolean(Key.DUPLICATE_USE_ARTIST, useArtist)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.DUPLICATE_USE_ARTIST, useArtist).apply();
     }
 
     public static boolean isDuplicateUseSameLanguage() {
-        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_SAME_LANGUAGE, Default.DUPLICATE_USE_SAME_LANGUAGE);
+        return getBoolPref(Key.DUPLICATE_USE_SAME_LANGUAGE, Default.DUPLICATE_USE_SAME_LANGUAGE);
     }
 
     public static void setDuplicateUseSameLanguage(boolean useSameLanguage) {
-        sharedPreferences.edit()
-                .putBoolean(Key.DUPLICATE_USE_SAME_LANGUAGE, useSameLanguage)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.DUPLICATE_USE_SAME_LANGUAGE, useSameLanguage).apply();
     }
 
     public static boolean isDuplicateBrowserUseTitle() {
-        return sharedPreferences.getBoolean(Key.DUPLICATE_BROWSER_USE_TITLE, Default.DUPLICATE_BROWSER_USE_TITLE);
+        return getBoolPref(Key.DUPLICATE_BROWSER_USE_TITLE, Default.DUPLICATE_BROWSER_USE_TITLE);
     }
 
     public static boolean isDuplicateBrowserUseCover() {
-        return sharedPreferences.getBoolean(Key.DUPLICATE_BROWSER_USE_COVER, Default.DUPLICATE_BROWSER_USE_COVER);
+        return getBoolPref(Key.DUPLICATE_BROWSER_USE_COVER, Default.DUPLICATE_BROWSER_USE_COVER);
     }
 
     public static boolean isDuplicateBrowserUseArtist() {
-        return sharedPreferences.getBoolean(Key.DUPLICATE_BROWSER_USE_ARTIST, Default.DUPLICATE_BROWSER_USE_ARTIST);
+        return getBoolPref(Key.DUPLICATE_BROWSER_USE_ARTIST, Default.DUPLICATE_BROWSER_USE_ARTIST);
     }
 
     public static boolean isDuplicateBrowserUseSameLanguage() {
-        return sharedPreferences.getBoolean(Key.DUPLICATE_BROWSER_USE_SAME_LANGUAGE, Default.DUPLICATE_BROWSER_USE_SAME_LANGUAGE);
+        return getBoolPref(Key.DUPLICATE_BROWSER_USE_SAME_LANGUAGE, Default.DUPLICATE_BROWSER_USE_SAME_LANGUAGE);
     }
 
     public static boolean isDuplicateIgnoreChapters() {
-        return sharedPreferences.getBoolean(Key.DUPLICATE_IGNORE_CHAPTERS, Default.DUPLICATE_IGNORE_CHAPTERS);
+        return getBoolPref(Key.DUPLICATE_IGNORE_CHAPTERS, Default.DUPLICATE_IGNORE_CHAPTERS);
     }
 
     public static void setDuplicateIgnoreChapters(boolean value) {
-        sharedPreferences.edit()
-                .putBoolean(Key.DUPLICATE_IGNORE_CHAPTERS, value)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.DUPLICATE_IGNORE_CHAPTERS, value).apply();
     }
 
     public static int getDuplicateLastIndex() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DUPLICATE_LAST_INDEX, "-1") + "");
+        return getIntPref(Key.DUPLICATE_LAST_INDEX, -1);
     }
 
     public static void setDuplicateLastIndex(int lastIndex) {
-        sharedPreferences.edit()
-                .putString(Key.DUPLICATE_LAST_INDEX, Integer.toString(lastIndex))
-                .apply();
+        sharedPreferences.edit().putString(Key.DUPLICATE_LAST_INDEX, Integer.toString(lastIndex)).apply();
     }
 
     public static boolean isDownloadDuplicateAsk() {
-        return sharedPreferences.getBoolean(Key.DOWNLOAD_DUPLICATE_ASK, Default.DOWNLOAD_DUPLICATE_ASK);
+        return getBoolPref(Key.DOWNLOAD_DUPLICATE_ASK, Default.DOWNLOAD_DUPLICATE_ASK);
     }
 
     public static void setDownloadDuplicateAsk(boolean value) {
-        sharedPreferences.edit()
-                .putBoolean(Key.DOWNLOAD_DUPLICATE_ASK, value)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.DOWNLOAD_DUPLICATE_ASK, value).apply();
     }
 
     public static boolean isDownloadPlusDuplicateTry() {
-        return sharedPreferences.getBoolean(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, Default.DOWNLOAD_PLUS_DUPLICATE_TRY);
+        return getBoolPref(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, Default.DOWNLOAD_PLUS_DUPLICATE_TRY);
     }
 
     public static void setDownloadDuplicateTry(boolean value) {
-        sharedPreferences.edit()
-                .putBoolean(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, value)
-                .apply();
+        sharedPreferences.edit().putBoolean(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, value).apply();
+    }
+
+    public static boolean isDownloadEhHires() {
+        return getBoolPref(Key.DL_EH_HIRES, Default.DL_EH_HIRES);
     }
 
     public static long getViewerCurrentContent() {
-        return Long.parseLong(sharedPreferences.getString(Key.VIEWER_CURRENT_CONTENT, "-1") + "");
+        return getLongPref(Key.VIEWER_CURRENT_CONTENT, -1);
     }
 
     public static void setViewerCurrentContent(long value) {
-        sharedPreferences.edit()
-                .putString(Key.VIEWER_CURRENT_CONTENT, Long.toString(value))
-                .apply();
+        sharedPreferences.edit().putString(Key.VIEWER_CURRENT_CONTENT, Long.toString(value)).apply();
     }
 
     public static int getViewerCurrentPageNum() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_CURRENT_PAGENUM, "-1") + "");
+        return getIntPref(Key.VIEWER_CURRENT_PAGENUM, -1);
     }
 
     public static void setViewerCurrentPageNum(int value) {
-        sharedPreferences.edit()
-                .putString(Key.VIEWER_CURRENT_PAGENUM, Integer.toString(value))
-                .apply();
+        sharedPreferences.edit().putString(Key.VIEWER_CURRENT_PAGENUM, Integer.toString(value)).apply();
     }
 
     public static int getViewerGalleryColumns() {
-        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_GALLERY_COLUMNS, Integer.toString(Default.VIEWER_GALLERY_COLUMNS)) + "");
+        return getIntPref(Key.VIEWER_GALLERY_COLUMNS, Default.VIEWER_GALLERY_COLUMNS);
     }
 
     public static final class Key {
@@ -954,13 +845,17 @@ public final class Preferences {
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
         public static final String ENDLESS_SCROLL = "pref_endless_scroll";
         public static final String TOP_FAB = "pref_top_fab";
-        public static final String SD_STORAGE_URI = "pref_sd_storage_uri";
+        public static final String PRIMARY_STORAGE_URI = "pref_sd_storage_uri";
+        public static final String PRIMARY_STORAGE_URI_2 = "pref_sd_storage_uri_2";
+        public static final String PRIMARY_STORAGE_FILL_METHOD = "pref_storage_fill_method";
+        public static final String PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = "pref_storage_switch_threshold_pc";
         public static final String EXTERNAL_LIBRARY = "pref_external_library";
         public static final String EXTERNAL_LIBRARY_URI = "pref_external_library_uri";
         public static final String EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete";
         public static final String EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library";
         static final String FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         public static final String PRIMARY_FOLDER = "folder";
+        public static final String STORAGE_MANAGEMENT = "storage_mgt";
         public static final String MEMORY_USAGE = "pref_memory_usage";
         public static final String MEMORY_ALERT = "pref_memory_alert";
         static final String WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
@@ -1019,6 +914,7 @@ public final class Preferences {
         public static final String DL_SPEED_CAP = "dl_speed_cap";
         public static final String DL_BLOCKED_TAGS = "pref_dl_blocked_tags";
         static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
+        static final String DL_EH_HIRES = "pref_dl_eh_hires";
         public static final String DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
         static final String LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
@@ -1046,12 +942,7 @@ public final class Preferences {
         public static final String DOWNLOAD_PLUS_DUPLICATE_TRY = "download_plus_duplicate_try";
 
         // Deprecated values kept for housekeeping/migration
-        static final String ANALYTICS_TRACKING = "pref_analytics_tracking";
-        static final String HIDE_RECENT = "pref_hide_recent";
         static final String VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
-        static final String CHECK_UPDATES_LISTS = "pref_check_updates_lists";
-        static final String DARK_MODE = "pref_dark_mode";
-        static final String ORDER_CONTENT_LISTS = "pref_order_content_lists";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -1062,6 +953,10 @@ public final class Preferences {
         }
 
         public static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
+
+        static final int PRIMARY_STORAGE_FILL_METHOD = Constant.STORAGE_FILL_BALANCE_FREE;
+        static final int PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = 90;
+
         static final boolean FORCE_ENGLISH = false;
         static final int QUANTITY_PER_PAGE = 20;
         public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
@@ -1131,6 +1026,7 @@ public final class Preferences {
         static final boolean DL_RETRIES_ACTIVE = false;
         static final int DL_RETRIES_NUMBER = 3;
         static final int DL_RETRIES_MEM_LIMIT = 100;
+        static final boolean DL_EH_HIRES = false;
         static final int DL_SPEED_CAP = Constant.DL_SPEED_CAP_NONE;
         static final int DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
         static final boolean CHECK_UPDATES = true;
@@ -1167,6 +1063,10 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
+        public static final int STORAGE_FILL_BALANCE_FREE = 0;
+        public static final int STORAGE_FILL_FALLOVER = 1;
+
+
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
 
         public static final int ORDER_CONTENT_FAVOURITE = -2; // Artificial order created for clarity purposes
@@ -1184,8 +1084,8 @@ public final class Preferences {
         public static final int ORDER_FIELD_CHILDREN = 8; // Groups only
         public static final int ORDER_FIELD_READ_PROGRESS = 9;
         public static final int ORDER_FIELD_DOWNLOAD_COMPLETION_DATE = 10;
-        public static final int ORDER_FIELD_SOURCE_NAME = 11;
-        public static final int ORDER_FIELD_TARGET_NAME = 12;
+        public static final int ORDER_FIELD_SOURCE_NAME = 11; // Rules only
+        public static final int ORDER_FIELD_TARGET_NAME = 12; // Rules only
         public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 
@@ -1288,29 +1188,5 @@ public final class Preferences {
         public static final int VIEWER_CAP_TAP_ZOOM_2X = 2;
         public static final int VIEWER_CAP_TAP_ZOOM_4X = 4;
         public static final int VIEWER_CAP_TAP_ZOOM_6X = 6;
-
-        // Deprecated values kept for housekeeping/migration
-        @Deprecated
-        public static final int ORDER_CONTENT_TITLE_ALPHA = 0;
-        @Deprecated
-        public static final int ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
-        @Deprecated
-        public static final int ORDER_CONTENT_TITLE_ALPHA_INVERTED = 2;
-        @Deprecated
-        public static final int ORDER_CONTENT_LAST_DL_DATE_LAST = 3;
-        @Deprecated
-        public static final int ORDER_CONTENT_RANDOM = 4;
-        @Deprecated
-        public static final int ORDER_CONTENT_LAST_UL_DATE_FIRST = 5;
-        @Deprecated
-        public static final int ORDER_CONTENT_LEAST_READ = 6;
-        @Deprecated
-        public static final int ORDER_CONTENT_MOST_READ = 7;
-        @Deprecated
-        public static final int ORDER_CONTENT_LAST_READ = 8;
-        @Deprecated
-        public static final int ORDER_CONTENT_PAGES_DESC = 9;
-        @Deprecated
-        public static final int ORDER_CONTENT_PAGES_ASC = 10;
     }
 }

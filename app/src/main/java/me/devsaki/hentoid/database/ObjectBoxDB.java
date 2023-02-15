@@ -68,6 +68,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -224,14 +225,29 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, statusCodes).build().find();
     }
 
-    Query<Content> selectAllInternalBooksQ(boolean favsOnly, boolean includePlaceholders) {
+    Query<Content> selectAllInternalBooksQ(@NonNull String rootPath, boolean favsOnly, boolean includePlaceholders) {
         // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
         // and EXTERNAL because we only want to manage internal books here
         int[] storedContentStatus = {StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.IGNORED.getCode(), StatusContent.UNHANDLED_ERROR.getCode(), StatusContent.CANCELED.getCode()};
         if (includePlaceholders)
             storedContentStatus = ArrayUtils.addAll(storedContentStatus, StatusContent.PLACEHOLDER.getCode());
-        QueryBuilder<Content> query = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus);
+        QueryBuilder<Content> query = store.boxFor(Content.class)
+                .query()
+                .in(Content_.status, storedContentStatus)
+                .startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (favsOnly) query.equal(Content_.favourite, true);
+        return query.build();
+    }
+
+    Query<Content> selectAllInternalBooksQ(@NonNull String rootPath, boolean includePlaceholders) {
+        // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
+        // and EXTERNAL because we only want to manage internal books here
+        int[] storedContentStatus = {StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.IGNORED.getCode(), StatusContent.UNHANDLED_ERROR.getCode(), StatusContent.CANCELED.getCode()};
+        if (includePlaceholders)
+            storedContentStatus = ArrayUtils.addAll(storedContentStatus, StatusContent.PLACEHOLDER.getCode());
+        QueryBuilder<Content> query = store.boxFor(Content.class).query()
+                .in(Content_.status, storedContentStatus)
+                .startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         return query.build();
     }
 
@@ -245,7 +261,21 @@ public class ObjectBoxDB {
 
     Query<Content> selectAllQueueBooksQ() {
         // Strong check to make sure selected books are _actually_ part of the queue (i.e. attached to a QueueRecord)
-        return store.boxFor(Content.class).query().in(Content_.status, ContentHelper.getQueueStatuses()).filter(c -> (StatusContent.ERROR == c.getStatus() || (c.getQueueRecords() != null && !c.getQueueRecords().isEmpty()))).build();
+        // NB : Can't use QueryCondition here because there's no way to query the existence of a relation (see https://github.com/objectbox/objectbox-java/issues/1110)
+        return store.boxFor(Content.class).query()
+                .in(Content_.status, ContentHelper.getQueueStatuses())
+                .filter(c -> (StatusContent.ERROR == c.getStatus() || (c.getQueueRecords() != null && !c.getQueueRecords().isEmpty())))
+                .build();
+    }
+
+    Query<Content> selectAllQueueBooksQ(@NonNull String rootPath) {
+        // Strong check to make sure selected books are _actually_ part of the queue (i.e. attached to a QueueRecord)
+        // NB : Can't use QueryCondition here because there's no way to query the existence of a relation (see https://github.com/objectbox/objectbox-java/issues/1110)
+        return store.boxFor(Content.class).query()
+                .in(Content_.status, ContentHelper.getQueueStatuses())
+                .startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .filter(c -> (StatusContent.ERROR == c.getStatus() || (c.getQueueRecords() != null && !c.getQueueRecords().isEmpty())))
+                .build();
     }
 
     Query<Content> selectAllFlaggedBooksQ() {
@@ -644,7 +674,7 @@ public class ObjectBoxDB {
                 }
             }
         }
-        return query.build().property(GroupItem_.contentId).findLongs();
+        return Helper.getPrimitiveArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
     }
 
     private Query<Content> selectContentUniversalAttributesQ(ContentSearchManager.ContentSearchBundle searchBundle, int[] statuses) {
@@ -733,7 +763,7 @@ public class ObjectBoxDB {
         if (searchBundle.getGroupId() > 0)
             contentQuery.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
 
-        return query.build().property(GroupItem_.contentId).findLongs();
+        return Helper.getPrimitiveArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
     }
 
     Query<Content> selectContentUniversalQ(ContentSearchManager.ContentSearchBundle searchBundle) {
@@ -1109,12 +1139,22 @@ public class ObjectBoxDB {
     }
 
     private QueryCondition<Content> applyContentLocationFilter(@NonNull QueryCondition<Content> qc, @ContentHelper.Location int location) {
-        if (ContentHelper.Location.PRIMARY == location) {
-            return qc.and(Content_.status.notEqual(StatusContent.EXTERNAL.getCode()));
-        } else if (ContentHelper.Location.EXTERNAL == location) {
-            return qc.and(Content_.status.equal(StatusContent.EXTERNAL.getCode()));
+        switch (location) {
+            case ContentHelper.Location.PRIMARY:
+                return qc.and(Content_.status.notEqual(StatusContent.EXTERNAL.getCode()));
+            case ContentHelper.Location.PRIMARY_1:
+                String root = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
+                if (root.isEmpty()) root = "FAIL"; // Auto-fails condition
+                return qc.and(Content_.storageUri.startsWith(root, QueryBuilder.StringOrder.CASE_INSENSITIVE));
+            case ContentHelper.Location.PRIMARY_2:
+                root = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
+                if (root.isEmpty()) root = "FAIL"; // Auto-fails condition
+                return qc.and(Content_.storageUri.startsWith(root, QueryBuilder.StringOrder.CASE_INSENSITIVE));
+            case ContentHelper.Location.EXTERNAL:
+                return qc.and(Content_.status.equal(StatusContent.EXTERNAL.getCode()));
+            default:
+                return qc;
         }
-        return qc;
     }
 
     private QueryCondition<Content> applyContentTypeFilter(@NonNull QueryCondition<Content> qc, @ContentHelper.Type int contentType) {
@@ -1203,18 +1243,20 @@ public class ObjectBoxDB {
         return result;
     }
 
-    Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource() {
-        return selectMemoryUsagePerSource(new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()});
+    Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource(String rootPath) {
+        return selectMemoryUsagePerSource(new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()}, rootPath);
     }
 
     Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource() {
-        return selectMemoryUsagePerSource(new int[]{StatusContent.EXTERNAL.getCode()});
+        return selectMemoryUsagePerSource(new int[]{StatusContent.EXTERNAL.getCode()}, "");
     }
 
-    Map<Site, ImmutablePair<Integer, Long>> selectMemoryUsagePerSource(int[] statusCodes) {
+    Map<Site, ImmutablePair<Integer, Long>> selectMemoryUsagePerSource(int[] statusCodes, String rootPath) {
         // Get all downloaded images regardless of the book's status
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, statusCodes);
+        if (rootPath != null && !rootPath.isEmpty())
+            query.startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         List<Content> books = query.build().find();
 
         Map<Site, ImmutablePair<Integer, Long>> result = new EnumMap<>(Site.class);
@@ -1488,6 +1530,13 @@ public class ObjectBoxDB {
         return qb.build();
     }
 
+    List<Group> selectEditedGroups(int grouping) {
+        QueryCondition<Group> qcFavs = Group_.favourite.equal(true);
+        QueryCondition<Group> qcRating = Group_.rating.greater(0);
+        QueryCondition<Group> qc = Group_.grouping.equal(grouping).and(qcFavs.or(qcRating));
+        return store.boxFor(Group.class).query(qc).build().find();
+    }
+
     @Nullable
     Group selectGroup(long groupId) {
         return store.boxFor(Group.class).get(groupId);
@@ -1609,14 +1658,6 @@ public class ObjectBoxDB {
 
     List<Chapter> selectChapterWithNullUploadDate() {
         return store.boxFor(Chapter.class).query().isNull(Chapter_.uploadDate).build().find();
-    }
-
-    Query<Content> selectOldStoredContentQ() {
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode(), StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()});
-        query.notNull(Content_.storageFolder);
-        query.notEqual(Content_.storageFolder, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        return query.build();
     }
 
     QueryBuilder<Content> selectStoredContentQ(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {

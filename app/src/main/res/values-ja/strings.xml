@@ -33,6 +33,7 @@
     <string name="resume">再開する</string>
     <string name="cancel">キャンセル</string>
     <string name="cancel_all">全てキャンセル</string>
+    <string name="freeze">フリーズトグル</string>
     <string name="menu_completed_single">完了としてマーク</string>
     <string name="menu_reset_read">未読としてマーク</string>
     <string name="service_running">サービスはすでに実行されています</string>
@@ -40,12 +41,13 @@
     <string name="_default">デフォルト</string>
     <string name="empty">空</string>
     <string name="none">無し</string>
+    <string name="help_generic">ヘルプ</string>
+    <string name="actions_generic">行動</string>
     <string name="disabled_generic">無効</string>
     <string name="create_generic">作成</string>
     <string name="edit_generic">編集</string>
     <string name="remove_generic">削除する</string>
-<string name="title_activity_api29_migration">API29の移行</string>
-    <string name="title_activity_downloads">ライブラリー</string>
+<string name="title_activity_downloads">ライブラリー</string>
     <string name="title_activity_queue">キュー</string>
     <string name="title_activity_preferences">環境設定</string>
     <string name="title_activity_about">Hentoidについて</string>
@@ -53,19 +55,19 @@
     <string name="title_activity_search">高度な検索</string>
     <string name="title_activity_meta_edit">メタデータの編集</string>
     <string name="title_activity_rules">名前の変更規則</string>
-<string name="api29_migration_title">Hentoid v12\nファイル管理の更新</string>
-    <string name="api29_migration_subtitle">Hentoidがコレクションを更新しています。\n数分かかる場合があります。</string>
-    <string name="api29_migration_location">現在のHentoidフォルダの場所\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Hentoidのフォルダー</string>
-    <string name="api29_migration_step1_external">外部フォルダー</string>
-    <string name="api29_migration_step1_select">Hentoidのフォルダを選択</string>
-    <string name="api29_migration_step1_select_external">外部フォルダを選択</string>
-    <string name="api29_migration_step2">サイトフォルダをスキャンする</string>
-    <string name="api29_migration_step3_init">スキャンライブラリ…</string>
-    <string name="api29_migration_step3">ライブラリをスキャン(<x:g example="1" id="number">%1$d</x:g>/ <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">キューをインポートしています…</string>
-    <string name="api29_migration_select_folder">既存のHentoidフォルダを選択してください。 その場所が画面に表示されます。</string>
-    <string name="api29_migration_allow_write">書き込み許可を許可してください</string>
+    <string name="title_activity_storage">ストレージ管理</string>
+<string name="refresh_step1">Hentoidのフォルダー</string>
+    <string name="refresh_step1_2">Hentoidフォルダー (２番目の場所)</string>
+    <string name="refresh_step1_external">外部フォルダー</string>
+    <string name="refresh_step1_select">Hentoidのフォルダを選択</string>
+    <string name="refresh_step1_select_2">Hentoid フォルダーを選択 (2 番目の場所)</string>
+    <string name="refresh_step1_select_external">外部フォルダを選択</string>
+    <string name="refresh_step2">サイトフォルダをスキャンする</string>
+    <string name="refresh_step3_init">スキャンライブラリ…</string>
+    <string name="refresh_step3">ライブラリをスキャン(<x:g example="1" id="number">%1$d</x:g>/ <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">キューをインポートしています…</string>
+    <string name="refresh_select_folder">既存のHentoidフォルダを選択してください。 その場所が画面に表示されます。</string>
+    <string name="refresh_allow_write">書き込み許可を許可してください</string>
 <string name="menu_search">検索</string>
     <string name="menu_fav">お気に入りのフィルターを切り替えます</string>
     <string name="menu_mark_fav">お気に入りを切り替える</string>
@@ -97,10 +99,11 @@
     <string name="alert_browser_mode">ブラウザモードが有効: ストレージへのアクセスなし</string>
     <string name="alert_low_memory">お使いのデバイスのストレージが不足しています！</string>
     <string name="alert_permissions_lost">ファイルのアクセス許可が失われました</string>
+    <string name="alert_notifications">通知が無効になっています！</string>
     <string name="fix_permissions">修正</string>
     <string name="view_queue">キューを表示</string>
     <string name="clear_search_history">検索履歴をクリア</string>
-<string name="downloader_title">ダウンローダー</string>
+<string name="downloader_title">ダウンロード</string>
     <string name="queue_queue_tab">進行中</string>
     <string name="queue_errors_tab">エラー</string>
     <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
@@ -133,6 +136,7 @@
     <string name="paused_dl_folder_not_found">ダウンロードできません-ダウンロードフォルダが見つかりません。 アプリの設定を使用して1つを選択します</string>
     <string name="paused_dl_folder_credentials">ダウンロードできません-ダウンロードフォルダのクレデンシャルが不十分です。 アプリの設定を使用して再選択します</string>
     <string name="paused_dl_stale_online_credentials">ダウンロードできません-古いCookieまたはクレデンシャル。 通知を使用してそれらを再生成します</string>
+    <string name="paused_dl_no_available_downloads">利用可能なダウンロードが残っていません</string>
     <string name="step_init">初期化中</string>
     <string name="step_prepare_img">画像の準備</string>
     <string name="step_fetch_img">画像の取得</string>
@@ -209,17 +213,50 @@
     <string name="errortype_wifi">Wi-Fiのダウンロードサイズの制限により、書籍がスキップされました</string>
     <string name="errortype_blocked">書籍にブロックされたタグが含まれています</string>
     <string name="errortype_undefined">未定義</string>
-<string name="refresh_title">ライブラリを更新</string>
+<string name="browse_mode_warning">ブラウズ専用モードが有効です\ストレージへのアクセス許可なしでアプリを使用しています.</string>
+    <string name="primary_library">一次図書館</string>
+    <string name="primary_library_subtitle">ダウンロード</string>
+    <string name="add_primary_1">プライマリ ロケーション １ を追加</string>
+    <string name="add_primary_2">プライマリ ロケーション ２ を追加</string>
+    <string name="external_library">外部ライブラリ</string>
+    <string name="external_library_subtitle">アーカイブ、サードパーティの書籍</string>
+    <string name="add_external">外部の場所を追加</string>
+    <string name="location_storage">%1$s（%2$d%%）空き</string>
+    <string name="storage_action_change">ロケーションを変更…</string>
+    <string name="storage_action_remove">切り離す</string>
+    <string name="storage_remove_ask">選択した場所を切り離しますか?\n注: ブックは削除されません</string>
+    <string name="storage_remove_ko1">ロケーション 2 が設定されている場合、ロケーション 1 を切り離すことはできません</string>
+    <string name="storage_remove_complete">切り離された場所</string>
+    <string name="storage_action_merge_to_1">ロケーション 1 にマージ</string>
+    <string name="storage_merge_ask">書籍を%dロケーション 2 からロケーション 1 にマージしますか？\nNB : 結合が完了するとブックは削除されます</string>
+    <string name="storage_merge_ko1">ロケーション 1 に結合できません： 十分な空き容量が残っていません</string>
+    <string name="storage_merge_ko2">結合できません： ロケーション 2 に書籍がありません</string>
+    <string name="storage_merge_progress">ロケーション１へのブックの結合</string>
+    <string name="storage_merge_complete">マージ完了</string>
+    <string name="storage_strategy_title">ダウンロード戦略：%s</string>
+    <string name="storage_strategy_balance">空き容量のバランスを取る</string>
+    <string name="storage_strategy_balance_desc">Hentoidは、空き容量が多い場所にダウンロードし、バランスを維持しようとします。 ライブラリに既にある本は移動しません。</string>
+    <string name="storage_strategy_fallover">フォールオーバー</string>
+    <string name="storage_strategy_fallover_desc">Hentoidが場所１にダウンロードユニット %d%%の容量がいっぱいになった後、場所２にダウンロードします。</string>
+    <string name="storage_fallover_threshold">低い空き容量の値 (%%)</string>
+    <string name="storage_set_strategy">ダウンロード戦略を設定</string>
+    <string name="storage_stats">統計</string>
+    <string name="storage_stats_view">使用統計を表示する</string>
+<string name="refresh_title">ロケーションを更新</string>
     <string name="refresh_caption">ファイルとフォルダを再スキャンすることにより、ライブラリデータを自動的に更新します。</string>
     <string name="refresh_options">クリーンアップオプション</string>
-    <string name="refresh_location_internal">Hentoidライブラリ</string>
+    <string name="refresh_location_internal">プライマリライブラリ (全て)</string>
+    <string name="refresh_location_internal_1">プライマリライブラリ１</string>
+    <string name="refresh_location_internal_2">プライマリライブラリ２</string>
     <string name="refresh_location_external">外部ライブラリ</string>
     <string name="refresh_options_rename">現在の名前と最大長の設定に従って、すべてのフォルダの名前を変更します</string>
     <string name="refresh_options_remove_placeholders">メタデータを介してインポートされたプレースホルダーブックを削除する</string>
-
+    <string name="refresh_options_renumber_pages">ページ番号を付け直す</string>
+    <string name="refresh_renumber_warning">これを有効にすることにより、全ての書籍がチェックされ、間違ったページ数があれば修正されます。\nこのオプションを選択すると、プロセスが大幅に遅くなることに注意してください。</string>
     <string name="refresh_options_remove">次の場所にあるフォルダを削除します…</string>
-
-    <string name="refresh_options_remove_or">又は</string>
+    <string name="refresh_options_remove_1">JSONファイルが存在しないフォルダーを削除する (推奨)</string>
+    <string name="refresh_options_remove_2">画像がダウンロードされていないフォルダを削除する</string>
+    <string name="refresh_options_remove_or">または</string>
 <string name="delete_title">お気に入りを除くすべてを削除する</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g><x:g example="books" id="type">%3$s</x:g></string>
     <plurals name="book_progress">
@@ -268,12 +305,16 @@
     <string name="dialog_prompt">フォルダを選択</string>
     <string name="importing_metadata">メタデータのインポート…</string>
 <string name="export_title">メタデータをエクスポート</string>
+    <string name="export_question">ライブラリを別の端末に転送しますか?</string>
 
+    <string name="export_answer_yes">この機能は、コレクションを別の端末に転送するために作成されたものではありません。 場合によっては機能しますが、再ダウンロードできない書籍もあるかもしれません。</string>
+    <string name="export_transfer_tutorial"><u>ライブラリ転送に関するウィキをチェック</u></string>
 
     <plurals name="export_file_library">
-        <item quantity="one">ライブラリのエクスポート(<x:g example="1" id="number">%d</x:g> 本)</item>
-        <item quantity="other">ライブラリのエクスポート (<x:g example="2" id="number">%d</x:g> 本)</item>
+        <item quantity="one">プライマリ ライブラリのエクスポート (<x:g example="1" id="number">%d</x:g>書籍)</item>
+        <item quantity="other">プライマリ ライブラリのエクスポート (<x:g example="2" id="number">%d</x:g>本)</item>
     </plurals>
+    <string name="export_location">ロケーション：%s</string>
     <string name="export_favs_only">お気に入りのみをエクスポート</string>
     <string name="export_groups">カスタムグループをエクスポートする</string>
     <plurals name="export_file_queue">
@@ -298,6 +339,8 @@
     <string name="import_download_folder">デバイスのダウンロードフォルダを選択しないでください。別のフォルダを作成または選択してください</string>
     <string name="import_create_fail">Hentoidフォルダの作成に失敗しました-別の場所を選択してください</string>
     <string name="import_invalid_uri">フォルダが認識されません-もう一度選択してください</string>
+    <string name="import_empty">フォルダーに書籍がありません</string>
+    <string name="import_other_primary">両方の主要な場所に同じフォルダーを設定することは出来ません</string>
     <string name="import_other">インポートが停止しました</string>
     <string name="import_unexpected">インポートが予期せず停止しました</string>
     <string name="task_done">タスクが完了しました-ログの詳細を参照してください</string>
@@ -580,6 +623,7 @@
 <string name="help_web_exh_account">ExHentaiアカウントを使用または作成してください</string>
     <string name="help_web_invalid_exh_credentials">クレデンシャルが無効です。もう一度ログインしてください</string>
     <string name="help_web_incomplete_exh_credentials">クレデンシャルが不完全です。もう一度ログインしてください。 問題が解決しない場合は、別の国からサイトにアクセスするか、新しいアカウントを作成することを検討してください。</string>
+    <string name="help_web_hires_eh_account">高解像度の画像をダウンロードするには、e-Hentaiアカウントを使用または作成する必要があります</string>
 <string name="category_any">どれか</string>
     <string name="exclude">除外する</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g>探す</string>
@@ -760,7 +804,7 @@
     <string name="meta_choose_type">\'%s\' のタイプを選択してください</string>
     <string name="meta_replace_with">と置換する…</string>
     <string name="meta_tag_all_selected">選択したすべての本にタグを付ける</string>
-    <string name="meta_tag_all_selected_confirm">すべてにタグを付ける%1$dで選んだ本 \'%2$s\'?</string>
+    <string name="meta_tag_all_selected_confirm">選択したすべての書籍%2$sに「?」のタグ%1$dを付けますか？</string>
     <string name="meta_rename_new_name">新しい名前</string>
     <string name="meta_rename_new_rule">今後のダウンロードのために覚えておく</string>
 <string name="meta_rule_source">ソース</string>
@@ -775,8 +819,9 @@
     </plurals>
     <string name="notif_delete_fail">削除に失敗しました</string>
     <string name="notif_delete_fail_details">少なくとも1冊の本を削除できませんでした</string>
-
-
+<string name="notif_json_title">JSONの更新</string>
+    <string name="notif_json_progress">JSONを更新中</string>
+    <string name="notif_json_complete">更新が完了しました</string>
 <string name="title_startup">スタートアップ</string>
     <string name="title_startup_progress">起動…</string>
     <string name="title_startup_complete">起動が完了しました</string>

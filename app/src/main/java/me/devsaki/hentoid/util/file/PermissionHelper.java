@@ -4,6 +4,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
@@ -49,7 +50,7 @@ public class PermissionHelper {
         }
     }
 
-    public static boolean checkNotificationPermission(Activity activity) {
+    public static boolean checkNotificationPermission(Context activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             return ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) == PERMISSION_GRANTED;
         } else return true;

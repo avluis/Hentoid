@@ -105,6 +105,6 @@ public class UpdateJsonWorker extends BaseWorker {
 
     private void progressDone() {
         notificationManager.notify(new UpdateJsonCompleteNotification());
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.update_json, 0, nbOK, 0, totalItems));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.update_json, 0, nbOK, 0, totalItems));
     }
 }

@@ -7,6 +7,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_EDIT_MODE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
@@ -72,6 +73,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.enums.Grouping;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
@@ -235,6 +237,7 @@ public class LibraryActivity extends BaseActivity {
 
     public void setEditMode(boolean editMode) {
         this.editMode = editMode;
+        signalFragment(1, EV_UPDATE_EDIT_MODE, "");
         updateToolbar();
     }
 
@@ -734,7 +737,7 @@ public class LibraryActivity extends BaseActivity {
                 finish();
                 startActivity(intent);
                 break;
-            case Preferences.Key.SD_STORAGE_URI:
+            case Preferences.Key.PRIMARY_STORAGE_URI:
             case Preferences.Key.EXTERNAL_LIBRARY_URI:
                 updateDisplay(Grouping.FLAT.getId());
                 viewModel.setGrouping(Grouping.FLAT.getId());
@@ -816,7 +819,11 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private boolean isLowOnSpace() {
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(this, Preferences.getStorageUri());
+        return isLowOnSpace(StorageLocation.PRIMARY_1) || isLowOnSpace(StorageLocation.PRIMARY_2);
+    }
+
+    private boolean isLowOnSpace(StorageLocation location) {
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(this, Preferences.getStorageUri(location));
         if (null == rootFolder) return false;
 
         double freeSpaceRatio = new FileHelper.MemoryUsageFigures(this, rootFolder).getFreeUsageRatio100();
@@ -824,7 +831,8 @@ public class LibraryActivity extends BaseActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         if (grantResults.length == 0) return;
         if (PermissionHelper.RQST_STORAGE_PERMISSION == requestCode) {
             if (permissions.length < 2) return;
@@ -859,17 +867,16 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) return;
 
         enableFragment(0);
+        setEditMode(false);
         viewModel.searchGroup();
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
-        //toolbar.setNavigationIcon(R.drawable.ic_drawer);
     }
 
     public void showBooksInGroup(Group group) {
         enableFragment(1);
         viewModel.setGroup(group, true);
         viewPager.setCurrentItem(1);
-        //toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
     }
 
     public boolean isFilterActive() {
@@ -999,6 +1006,19 @@ public class LibraryActivity extends BaseActivity {
         // Filter on delete complete event
         if (R.id.delete_service_delete != event.processId) return;
         if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
+        processEvent(event);
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onProcessStickyEvent(ProcessEvent event) {
+        // Filter on delete complete event
+        if (R.id.delete_service_delete != event.processId) return;
+        if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
+        EventBus.getDefault().removeStickyEvent(event);
+        processEvent(event);
+    }
+
+    private void processEvent(ProcessEvent event) {
         String msg = "";
         int nbGroups = event.elementsOKOther;
         int nbContent = event.elementsOK;

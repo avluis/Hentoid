@@ -14,6 +14,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogPrefsMemoryBinding
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
@@ -39,16 +40,18 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
 
         rowPadding = resources.getDimension(R.dimen.mem_row_padding).toInt()
 
-        var deviceFreeBytes: Long = -1
-        var deviceTotalBytes: Long = -1
+        // Get free space and capacity for every location
+        val stats1 = getStats(StorageLocation.PRIMARY_1)
+        val stats2 = getStats(StorageLocation.PRIMARY_2)
+        val statsExt = getStats(StorageLocation.EXTERNAL)
 
-        val rootFolder =
-            FileHelper.getDocumentFromTreeUriString(requireActivity(), Preferences.getStorageUri())
-        if (rootFolder != null) {
-            val memUsage = MemoryUsageFigures(requireContext(), rootFolder)
-            deviceFreeBytes = memUsage.getfreeUsageBytes()
-            deviceTotalBytes = memUsage.totalSpaceBytes
-        }
+        // Remove duplicates by keeping capacities that are different (-> different volumes)
+        val distinctVolumes = listOf(stats1, stats2, statsExt)
+            .filterNot { p -> -1L == p.second }
+            .distinctBy { p -> p.first.toString() + "." + p.second.toString() }
+
+        val deviceFreeBytes = distinctVolumes.sumOf { p -> p.first }
+        val deviceTotalBytes = distinctVolumes.sumOf { p -> p.second }
 
         val primaryMemUsage: Map<Site, ImmutablePair<Int, Long>>
         val externalMemUsage: Map<Site, ImmutablePair<Int, Long>>
@@ -62,15 +65,15 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
         val primaryUsageBytes = primaryMemUsage.map { e -> e.value.right }.sum()
         val externalUsageBytes = externalMemUsage.map { e -> e.value.right }.sum()
 
-        binding.memoryGlobalGraph.let { donut ->
-            donut.setTotalColor(R.color.primary_light)
-            donut.setProgress1Color(R.color.secondary_light)
-            donut.setProgress2Color(R.color.secondary_variant_light)
-            donut.setProgress3Color(R.color.white_opacity_25)
-            donut.setTotal(1)
-            donut.setProgress1(primaryUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid primary library
-            donut.setProgress2(externalUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid external library
-            donut.setProgress3(1 - deviceFreeBytes * 1f / deviceTotalBytes) // Total size taken on the device
+        binding.memoryGlobalGraph.apply {
+            setTotalColor(R.color.primary_light)
+            setProgress1Color(R.color.secondary_light)
+            setProgress2Color(R.color.secondary_variant_light)
+            setProgress3Color(R.color.white_opacity_25)
+            setTotal(1)
+            setProgress1(primaryUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid primary library
+            setProgress2(externalUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid external library
+            setProgress3(1 - deviceFreeBytes * 1f / deviceTotalBytes) // Total size taken on the device
         }
 
         binding.memoryTotal.text = resources.getString(
@@ -121,6 +124,18 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
                     resources
                 ), dao.dbSizeBytes * 100 / 1024f / dbMaxSizeKb
             )
+    }
+
+    private fun getStats(location: StorageLocation): Pair<Long, Long> {
+        val root = Preferences.getStorageUri(location)
+        if (root.isNotEmpty()) {
+            val rootFolder = FileHelper.getDocumentFromTreeUriString(requireActivity(), root)
+            if (rootFolder != null) {
+                val memUsage = MemoryUsageFigures(requireContext(), rootFolder)
+                return Pair(memUsage.getfreeUsageBytes(), memUsage.totalSpaceBytes)
+            }
+        }
+        return Pair(-1, -1)
     }
 
     private fun onDetailsClick() {

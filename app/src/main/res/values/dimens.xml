@@ -56,7 +56,7 @@
     <dimen name="about_ic_icons_width">30dp</dimen>
     <dimen name="about_ic_icons_height">30dp</dimen>
     <dimen name="about_ic_icons_textSize">12sp</dimen>
-    <dimen name="about_textSize">12sp</dimen>
+    <dimen name="about_textSize">10sp</dimen>
 
     <!-- card view -->
     <dimen name="default_cardview_margin">8dp</dimen>

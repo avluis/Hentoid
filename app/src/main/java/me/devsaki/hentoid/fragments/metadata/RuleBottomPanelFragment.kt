@@ -8,14 +8,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
-import com.annimon.stream.Optional
-import com.annimon.stream.Stream
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
-import com.mikepenz.fastadapter.select.SelectExtension
+import com.mikepenz.fastadapter.select.getSelectExtension
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.IncludeRulesControlsBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -35,7 +33,7 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
     // Field filter
     private val fieldItemAdapter = ItemAdapter<TextItem<Int>>()
     private val fieldFastAdapter: FastAdapter<TextItem<Int>> = FastAdapter.with(fieldItemAdapter)
-    private var fieldSelectExtension: SelectExtension<TextItem<Int>>? = null
+    private val fieldSelectExtension = fieldFastAdapter.getSelectExtension()
 
     // Attribute type filter
     private val typeItemAdapter = ItemAdapter<AttributeTypeFilterItem>()
@@ -83,15 +81,13 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
     }
 
     private fun initUI(context: Context) {
-        // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
-        fieldSelectExtension = fieldFastAdapter.getOrCreateExtension(SelectExtension::class.java)
-        fieldSelectExtension?.let {
-            it.isSelectable = true
-            it.multiSelect = false
-            it.selectOnLongClick = false
-            it.selectWithItemUpdate = true
-            it.allowDeselection = false
-            it.selectionListener = object : ISelectionListener<TextItem<Int>> {
+        fieldSelectExtension.apply {
+            isSelectable = true
+            multiSelect = false
+            selectOnLongClick = false
+            selectWithItemUpdate = true
+            allowDeselection = false
+            selectionListener = object : ISelectionListener<TextItem<Int>> {
                 override fun onSelectionChanged(item: TextItem<Int>, selected: Boolean) {
                     if (selected) onSortFieldChanged()
                 }
@@ -149,19 +145,17 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
      * Callback for any selection change (item added to or removed from selection)
      */
     private fun onSortFieldChanged() {
-        if (null == fieldSelectExtension) return
-        val item: Optional<TextItem<Int>> =
-            Stream.of(fieldSelectExtension!!.selectedItems).findFirst()
-        if (item.isPresent) {
-            val code = item.get().getTag()
-            if (code != null) {
-                Preferences.setRuleSortField(code)
-                viewModel.loadRules()
-            }
+        val selectedItems = fieldSelectExtension.selectedItems
+        if (selectedItems.isEmpty()) return
+
+        val item = selectedItems.first()
+        val code = item.getTag()
+        if (code != null) {
+            Preferences.setRuleSortField(code)
+            viewModel.loadRules()
         }
         updateSortDirection()
     }
-
 
     private fun getSortFields(context: Context, currentSortField: Int): List<TextItem<Int>> {
         return listOf(

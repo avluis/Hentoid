@@ -51,7 +51,6 @@
     <string name="disabled_generic">Відключено</string>
 
     <!-- Activities -->
-    <string name="title_activity_api29_migration">Перехід на API 29</string>
     <string name="title_activity_downloads">Бібліотека</string>
     <string name="title_activity_queue">Черга</string>
     <string name="title_activity_preferences">Налаштування</string>
@@ -60,19 +59,16 @@
     <string name="title_activity_search">Розширений пошук</string>
 
     <!-- API29 migration / library refresh screen -->
-    <string name="api29_migration_title">Hentoid v12\nОновлення керування файлами</string>
-    <string name="api29_migration_subtitle">Hentoid оновлює вашу колекцію.\nЦе може зайняти кілька хвилин.</string>
-    <string name="api29_migration_location">Розташування папки Hentoid\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
-    <string name="api29_migration_step1">Папка Hentoid</string>
-    <string name="api29_migration_step1_external">Зовнішня папка</string>
-    <string name="api29_migration_step1_select">Вибрати папку Hentoid</string>
-    <string name="api29_migration_step1_select_external">Вибрати зовнішню папку</string>
-    <string name="api29_migration_step2">Сканую папки сайтів</string>
-    <string name="api29_migration_step3_init">Сканую бібліотеку…</string>
-    <string name="api29_migration_step3">Сканування бібліотеки (<x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">Імпорт черги…</string>
-    <string name="api29_migration_select_folder">Будь ласка, виберіть існуючу папку Hentoid. Її розташування показано на екрані.</string>
-    <string name="api29_migration_allow_write">Будь ласка, підтвердіть дозвіл на запис</string>
+    <string name="refresh_step1">Папка Hentoid</string>
+    <string name="refresh_step1_external">Зовнішня папка</string>
+    <string name="refresh_step1_select">Вибрати папку Hentoid</string>
+    <string name="refresh_step1_select_external">Вибрати зовнішню папку</string>
+    <string name="refresh_step2">Сканую папки сайтів</string>
+    <string name="refresh_step3_init">Сканую бібліотеку…</string>
+    <string name="refresh_step3">Сканування бібліотеки (<x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">Імпорт черги…</string>
+    <string name="refresh_select_folder">Будь ласка, виберіть існуючу папку Hentoid. Її розташування показано на екрані.</string>
+    <string name="refresh_allow_write">Будь ласка, підтвердіть дозвіл на запис</string>
 
     <!-- Library screen toolbar -->
     <string name="menu_search">Пошук</string>

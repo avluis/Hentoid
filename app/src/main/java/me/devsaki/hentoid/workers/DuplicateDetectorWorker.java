@@ -266,7 +266,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
         if (progress < max) {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.duplicate_index, STEP_COVER_INDEX, progress, 0, max));
         } else {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_index, STEP_COVER_INDEX, progress, 0, max));
+            EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_index, STEP_COVER_INDEX, progress, 0, max));
         }
     }
 
@@ -285,7 +285,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.duplicate_detect, STEP_DUPLICATES, progress, 0, max));
         } else {
             setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateCompleteNotification(0)));
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_detect, STEP_DUPLICATES, progress, 0, max));
+            EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_detect, STEP_DUPLICATES, progress, 0, max));
         }
     }
 }

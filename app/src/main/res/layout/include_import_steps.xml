@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
-    tools:showIn="@layout/activity_api29_migration">
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/import_step1"
@@ -31,7 +30,9 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
-            android:text="@string/api29_migration_step1"
+            android:text="@string/refresh_step1"
+            android:visibility="gone"
+            tools:visibility="visible"
             app:layout_constraintLeft_toRightOf="@id/import_step1_number"
             app:layout_constraintTop_toTopOf="@id/import_step1_number" />
 
@@ -40,6 +41,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
+            android:visibility="gone"
+            tools:visibility="visible"
             android:textSize="@dimen/caption"
             app:layout_constraintBottom_toBottomOf="@id/import_step1_number"
             app:layout_constraintStart_toEndOf="@id/import_step1_number"
@@ -59,21 +62,24 @@
             tools:ignore="ContentDescription"
             tools:visibility="visible" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/import_step1_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:backgroundTint="?colorSecondary"
+            android:layout_width="0dp"
+            android:layout_height="?android:attr/actionBarSize"
             android:layout_marginStart="16dp"
-            android:background="?colorSecondary"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:padding="8dp"
-            android:text="@string/api29_migration_step1_select"
+            android:text="@string/refresh_step1_select"
+            android:textSize="@dimen/text_body_1"
             android:visibility="gone"
+            android:layout_marginEnd="8dp"
+            app:iconTint="@color/white_opacity_87"
+            android:textColor="@color/white_opacity_87"
+            app:icon="@drawable/ic_folder_full"
             app:layout_constraintBottom_toBottomOf="@id/import_step1_number"
-            app:layout_constraintLeft_toRightOf="@id/import_step1_number"
             app:layout_constraintTop_toTopOf="@id/import_step1_number"
+            app:layout_constraintStart_toEndOf="@id/import_step1_number"
+            app:layout_constraintEnd_toStartOf="@id/import_step1_check"
             tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -108,7 +114,7 @@
             android:layout_marginStart="16dp"
             android:ellipsize="end"
             android:lines="1"
-            android:text="@string/api29_migration_step2"
+            android:text="@string/refresh_step2"
             app:layout_constraintEnd_toEndOf="@id/import_step2_bar"
             app:layout_constraintStart_toEndOf="@id/import_step2_number"
             app:layout_constraintTop_toTopOf="@id/import_step2_number" />
@@ -167,7 +173,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
-            android:text="@string/api29_migration_step3_init"
+            android:text="@string/refresh_step3_init"
             app:layout_constraintLeft_toRightOf="@id/import_step3_number"
             app:layout_constraintTop_toTopOf="@id/import_step3_number" />
 
@@ -239,7 +245,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
-            android:text="@string/api29_migration_step4_init"
+            android:text="@string/refresh_step4_init"
             app:layout_constraintLeft_toRightOf="@id/import_step4_number"
             app:layout_constraintTop_toTopOf="@id/import_step4_number" />
 

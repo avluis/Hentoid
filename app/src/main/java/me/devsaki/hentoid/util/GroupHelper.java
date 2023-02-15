@@ -22,6 +22,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Grouping;
+import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.file.FileHelper;
 import timber.log.Timber;
@@ -86,6 +87,8 @@ public final class GroupHelper {
 
     /**
      * Update the JSON file that stores the groups with all the groups of the app
+     * NB : JSON is created to keep the information in case the app gets uninstalled
+     * or the library gets refreshed
      *
      * @param context Context to be used
      * @param dao     DAO to be used
@@ -93,12 +96,20 @@ public final class GroupHelper {
      */
     public static boolean updateGroupsJson(@NonNull Context context, @NonNull CollectionDAO dao) {
         Helper.assertNonUiThread();
-        List<Group> customGroups = dao.selectGroups(Grouping.CUSTOM.getId());
-        // Save custom groups (to be able to restore them in case the app gets uninstalled)
-        JsonContentCollection contentCollection = new JsonContentCollection();
-        contentCollection.setCustomGroups(customGroups);
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri());
+        JsonContentCollection contentCollection = new JsonContentCollection();
+
+        // Save custom groups
+        List<Group> customGroups = dao.selectGroups(Grouping.CUSTOM.getId());
+        contentCollection.setGroups(Grouping.CUSTOM, customGroups);
+
+        // Save other groups whose favourite or rating has been set
+        List<Group> editedArtistGroups = dao.selectEditedGroups(Grouping.ARTIST.getId());
+        contentCollection.setGroups(Grouping.ARTIST, editedArtistGroups);
+        List<Group> editedDateGroups = dao.selectEditedGroups(Grouping.DL_DATE.getId());
+        contentCollection.setGroups(Grouping.DL_DATE, editedDateGroups);
+
+        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
         if (null == rootFolder) return false;
 
         try {
