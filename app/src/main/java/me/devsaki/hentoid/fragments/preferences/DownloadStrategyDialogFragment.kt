@@ -70,10 +70,12 @@ class DownloadStrategyDialogFragment : DialogFragment() {
         }
         binding.threshold.editText?.apply {
             addTextChangedListener { text ->
-                binding.description.text = String.format(
-                    resources.getString(R.string.storage_strategy_fallover_desc),
-                    text.toString().toInt()
-                )
+                if (!text.isNullOrEmpty()) {
+                    binding.description.text = String.format(
+                        resources.getString(R.string.storage_strategy_fallover_desc),
+                        text.toString().toInt()
+                    )
+                }
             }
             setText(Preferences.getStorageSwitchThresholdPc().toString())
         }
@@ -81,18 +83,19 @@ class DownloadStrategyDialogFragment : DialogFragment() {
     }
 
     private fun onOkClick() {
+        binding.threshold.editText?.apply {
+            if (text.isEmpty()) return
+            Preferences.setStorageSwitchThresholdPc(
+                Helper.coerceIn(text.toString().toFloat(), 0f, 100f).toInt()
+            )
+        }
+
         Preferences.setStorageDownloadStrategy(
             when (binding.selector.checkedButtonId) {
                 binding.choiceBalance.id -> Preferences.Constant.STORAGE_FILL_BALANCE_FREE
                 else -> Preferences.Constant.STORAGE_FILL_FALLOVER
             }
         )
-        binding.threshold.editText?.apply {
-            Preferences.setStorageSwitchThresholdPc(
-                Helper.coerceIn(text.toString().toFloat(), 0f, 100f)
-                    .toInt()
-            )
-        }
 
         parent?.onStrategySelected()
         dismissAllowingStateLoss()
