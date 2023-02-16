@@ -52,6 +52,7 @@ public class EHentaiParser implements ImageListParser {
         UNLOGGED, UNLOGGED_ABNORMAL, LOGGED
     }
 
+    // TODO : Try thumbnails (#gdt div) to detect if MPV is actually enabled
     public static final String MPV_LINK_CSS = "#gmid a[href*='/mpv/']";
 
     private static final String LIMIT_509_URL = "/509.gif";
@@ -124,8 +125,10 @@ public class EHentaiParser implements ImageListParser {
             boolean useWebviewAgent = Site.EHENTAI.useWebviewAgent();
             Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent, useWebviewAgent);
             if (galleryDoc != null) {
-                // Detect if multipage viewer is on
                 //result = loadMpv("https://e-hentai.org/mpv/530350/8b3c7e4a21/", headers, useHentoidAgent, useWebviewAgent);
+
+                // Detect if multipage viewer is on
+                // NB : right now, the code detects if the MPV is present, even if e-h settings have it disabled
                 Elements elements = galleryDoc.select(MPV_LINK_CSS);
                 if (!elements.isEmpty()) {
                     String mpvUrl = elements.get(0).attr("href");
