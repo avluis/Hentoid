@@ -155,13 +155,13 @@ public class EHentaiParser implements ImageListParser {
             boolean useWebviewAgent) throws EmptyResultException, IOException {
         EHentaiImageQuery query = new EHentaiImageQuery(imageInfo.gid, imageInfo.image.getKey(), imageInfo.mpvkey, imageInfo.pageNum);
         String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
-        ResponseBody body;
+        String bodyStr;
         try (Response response = HttpHelper.postOnlineResource(imageInfo.api_url, headers, true, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE)) {
-            body = response.body();
+            ResponseBody body = response.body();
+            if (null == body)
+                throw new EmptyResultException("API " + imageInfo.api_url + " returned an empty body");
+            bodyStr = body.string();
         }
-        if (null == body)
-            throw new EmptyResultException("API " + imageInfo.api_url + " returned an empty body");
-        String bodyStr = body.string();
         if (!bodyStr.contains("{") || !bodyStr.contains("}"))
             throw new EmptyResultException("API " + imageInfo.api_url + " returned non-JSON data");
 
