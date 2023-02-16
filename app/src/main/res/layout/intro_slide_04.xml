@@ -67,11 +67,12 @@
             android:id="@+id/skip_btn"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:text="@string/slide_04_skip"
             android:textColor="@color/white_opacity_87"
-            app:icon="@drawable/ic_appintro_fab_skip"
+            app:icon="@drawable/ic_appintro_skip"
             app:iconTint="@color/white_opacity_87"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
