@@ -1003,7 +1003,7 @@ public final class ContentHelper {
                             Timber.i("Numbering gap filled with a file : %d", j);
                             ImageFile newImage = ImageFile.fromImageUrl(j, orderedImages.get(i - 1).getUrl(), StatusContent.DOWNLOADED, orderedImages.size());
                             newImage.setFileUri(localProperty.left).setSize(localProperty.right);
-                            result.add(result.size() - 1, newImage);
+                            result.add(Math.max(0, result.size() - 1), newImage);
                         }
                     }
                 }
