@@ -12,6 +12,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton
 import timber.log.Timber
+import java.util.Collections
 import java.util.LinkedList
 import kotlin.math.ceil
 import kotlin.math.min
@@ -37,7 +38,7 @@ class RequestQueueManager private constructor(
     private val waitingRequestQueue = LinkedList<RequestOrder>()
 
     // Requests being currently executed
-    private val activeRequests: MutableSet<RequestOrder> = HashSet()
+    private val activeRequests: MutableSet<RequestOrder> = Collections.synchronizedSet(HashSet())
 
 
     init {
@@ -89,9 +90,8 @@ class RequestQueueManager private constructor(
         // Requeue interrupted requests
         synchronized(activeRequests) {
             Timber.d("resetRequestQueue :: Requeuing %d requests", activeRequests.size)
-            CoroutineScope(Dispatchers.Default).launch {
-                for (order in activeRequests) executeRequest(order, false)
-            }
+            for (order in activeRequests)
+                CoroutineScope(Dispatchers.Default).launch { executeRequest(order, false) }
         }
         refill()
     }
