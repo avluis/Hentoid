@@ -17,7 +17,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -224,9 +223,6 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
                             exportQueue,
                             exportBookmarks
                         )
-                        it.exportProgressBar.max = 3
-                        it.exportProgressBar.progress = 1
-                        it.exportProgressBar.isIndeterminate = false
                         return@withContext JsonHelper.serializeToJson(
                             collection,
                             JsonContentCollection::class.java
@@ -245,19 +241,19 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
                     }
                     return@withContext ""
                 }
-                coroutineScope {
-                    it.exportProgressBar.progress = 2
-                    if (result.isNotEmpty())
-                        onJsonSerialized(
-                            result,
-                            exportLibrary,
-                            exportFavsOnly,
-                            exportQueue,
-                            exportBookmarks
-                        )
-                    it.exportProgressBar.progress = 3
-
+                if (result.isNotEmpty()) {
+                    it.exportProgressBar.max = 2
+                    it.exportProgressBar.progress = 1
+                    it.exportProgressBar.isIndeterminate = false
+                    onJsonSerialized(
+                        result,
+                        exportLibrary,
+                        exportFavsOnly,
+                        exportQueue,
+                        exportBookmarks
+                    )
                 }
+                it.exportProgressBar.progress = 2
             }
         }
     }
