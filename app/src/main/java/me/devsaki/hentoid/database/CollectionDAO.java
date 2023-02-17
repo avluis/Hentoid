@@ -339,6 +339,8 @@ public interface CollectionDAO {
 
     void cleanup();
 
+    void cleanupOrphanAttributes();
+
     long getDbSizeBytes();
 
 

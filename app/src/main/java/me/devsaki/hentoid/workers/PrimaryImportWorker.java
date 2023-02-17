@@ -286,6 +286,7 @@ public class PrimaryImportWorker extends BaseWorker {
                 try {
                     dao.deleteAllFlaggedBooks(ContentHelper.getPathRoot(previousUriStr), true);
                     dao.deleteAllFlaggedGroups();
+                    dao.cleanupOrphanAttributes();
                 } finally {
                     dao.cleanup();
                 }

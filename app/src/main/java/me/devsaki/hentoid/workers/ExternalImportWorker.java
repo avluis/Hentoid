@@ -127,16 +127,16 @@ public class ExternalImportWorker extends BaseWorker {
         CollectionDAO dao = new ObjectBoxDAO(context);
 
         try (FileExplorer explorer = new FileExplorer(context, Uri.parse(Preferences.getExternalLibraryUri()))) {
-            List<Content> library = new ArrayList<>();
+            List<Content> detectedContent = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
-            scanFolderRecursive(context, rootFolder, explorer, new ArrayList<>(), library, dao);
+            scanFolderRecursive(context, rootFolder, explorer, new ArrayList<>(), detectedContent, dao);
             eventComplete(PrimaryImportWorker.STEP_2_BOOK_FOLDERS, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
-            trace(Log.DEBUG, 0, log, "Import books starting - initial detected count : %s", library.size() + "");
+            trace(Log.DEBUG, 0, log, "Import books starting - initial detected count : %s", detectedContent.size() + "");
             ContentHelper.detachAllExternalContent(context, dao);
 
-            for (Content content : library) {
+            for (Content content : detectedContent) {
                 if (isStopped()) break;
                 // If the same book folder is already in the DB, that means the user is trying to import
                 // a subfolder of the Hentoid main folder (yes, it has happened) => ignore these books
@@ -173,14 +173,16 @@ public class ExternalImportWorker extends BaseWorker {
                 ContentHelper.addContent(context, dao, content);
                 trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;
-                notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, library.size()));
-                eventProgress(PrimaryImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO);
+                notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, detectedContent.size()));
+                eventProgress(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO);
             }
-            trace(Log.INFO, 2, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", library.size() + "");
-            eventComplete(PrimaryImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO, null);
+            trace(Log.INFO, 2, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", detectedContent.size() + "");
+            eventComplete(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO, null);
 
             // Write log in root folder
             logFile = LogHelper.writeLog(context, buildLogInfo(log));
+
+            dao.cleanupOrphanAttributes();
         } catch (IOException e) {
             Timber.w(e);
         } finally {

@@ -78,6 +78,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.closeThreadResources();
     }
 
+    public void cleanupOrphanAttributes() {
+        db.cleanupOrphanAttributes();
+    }
+
     @Override
     public long getDbSizeBytes() {
         return db.getDbSizeBytes();
@@ -421,7 +425,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public void deleteAllExternalBooks() {
         db.deleteContentById(db.selectAllExternalBooksQ().findIds());
-        db.cleanupOrphanAttributes();
     }
 
     @Override
