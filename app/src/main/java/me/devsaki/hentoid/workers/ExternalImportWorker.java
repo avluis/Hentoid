@@ -124,71 +124,85 @@ public class ExternalImportWorker extends BaseWorker {
         }
 
         DocumentFile logFile = null;
-        CollectionDAO dao = new ObjectBoxDAO(context);
-
         try (FileExplorer explorer = new FileExplorer(context, Uri.parse(Preferences.getExternalLibraryUri()))) {
             List<Content> detectedContent = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
-            scanFolderRecursive(context, rootFolder, explorer, new ArrayList<>(), detectedContent, dao);
+            CollectionDAO dao = new ObjectBoxDAO(context);
+            try {
+                scanFolderRecursive(context, rootFolder, explorer, new ArrayList<>(), detectedContent, dao);
+            } finally {
+                dao.cleanup();
+            }
             eventComplete(PrimaryImportWorker.STEP_2_BOOK_FOLDERS, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
             trace(Log.DEBUG, 0, log, "Import books starting - initial detected count : %s", detectedContent.size() + "");
-            ContentHelper.detachAllExternalContent(context, dao);
 
-            for (Content content : detectedContent) {
-                if (isStopped()) break;
-                // If the same book folder is already in the DB, that means the user is trying to import
-                // a subfolder of the Hentoid main folder (yes, it has happened) => ignore these books
-                String duplicateOrigin = "folder";
-                Content existingDuplicate = dao.selectContentByStorageUri(content.getStorageUri(), false);
+            // Flag DB content for cleanup
+            dao = new ObjectBoxDAO(context);
+            try {
+                dao.flagAllExternalBooks();
+            } finally {
+                dao.cleanup();
+            }
 
-                // The very same book may also exist in the DB under a different folder,
-                if (null == existingDuplicate && !content.getUrl().trim().isEmpty() && content.getSite() != Site.NONE) {
-                    existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), "");
-                    // Ignore the duplicate if it is queued; we do prefer to import a full book
-                    if (existingDuplicate != null) {
-                        if (ContentHelper.isInQueue(existingDuplicate.getStatus()))
-                            existingDuplicate = null;
-                        else duplicateOrigin = "book";
+            dao = new ObjectBoxDAO(context);
+            try {
+                for (Content content : detectedContent) {
+                    if (isStopped()) break;
+                    // If the same book folder is already in the DB, that means the user is trying to import
+                    // a subfolder of the Hentoid main folder (yes, it has happened) => ignore these books
+                    String duplicateOrigin = "folder";
+                    Content existingDuplicate = dao.selectContentByStorageUri(content.getStorageUri(), false);
+
+                    // The very same book may also exist in the DB under a different folder,
+                    if (null == existingDuplicate && !content.getUrl().trim().isEmpty() && content.getSite() != Site.NONE) {
+                        existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), "");
+                        // Ignore the duplicate if it is queued; we do prefer to import a full book
+                        if (existingDuplicate != null) {
+                            if (ContentHelper.isInQueue(existingDuplicate.getStatus()))
+                                existingDuplicate = null;
+                            else duplicateOrigin = "book";
+                        }
                     }
-                }
 
-                if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
-                    booksKO++;
-                    trace(Log.INFO, 1, log, "Import book KO! (" + duplicateOrigin + " already in collection) : %s", content.getStorageUri());
-                    continue;
-                }
-
-                if (content.getJsonUri().isEmpty()) {
-                    Uri jsonUri = null;
-                    try {
-                        jsonUri = createJsonFileFor(context, content, explorer);
-                    } catch (IOException ioe) {
-                        Timber.w(ioe); // Not blocking
-                        trace(Log.WARN, 1, log, "Could not create JSON in %s", content.getStorageUri());
+                    if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
+                        booksKO++;
+                        trace(Log.INFO, 1, log, "Import book KO! (" + duplicateOrigin + " already in collection) : %s", content.getStorageUri());
+                        continue;
                     }
-                    if (jsonUri != null) content.setJsonUri(jsonUri.toString());
-                }
-                ContentHelper.addContent(context, dao, content);
-                trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
-                booksOK++;
-                notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, detectedContent.size()));
-                eventProgress(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO);
+
+                    if (content.getJsonUri().isEmpty()) {
+                        Uri jsonUri = null;
+                        try {
+                            jsonUri = createJsonFileFor(context, content, explorer);
+                        } catch (IOException ioe) {
+                            Timber.w(ioe); // Not blocking
+                            trace(Log.WARN, 1, log, "Could not create JSON in %s", content.getStorageUri());
+                        }
+                        if (jsonUri != null) content.setJsonUri(jsonUri.toString());
+                    }
+                    ContentHelper.addContent(context, dao, content);
+                    trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
+                    booksOK++;
+                    notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, detectedContent.size()));
+                    eventProgress(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO);
+                } // detected content
+                dao.deleteAllFlaggedBooks(false, null);
+                dao.cleanupOrphanAttributes();
+            } finally {
+                dao.cleanup();
             }
             trace(Log.INFO, 2, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", detectedContent.size() + "");
             eventComplete(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO, null);
 
             // Write log in root folder
             logFile = LogHelper.writeLog(context, buildLogInfo(log));
-
-            dao.cleanupOrphanAttributes();
         } catch (IOException e) {
             Timber.w(e);
         } finally {
             eventComplete(PrimaryImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
-            dao.cleanup();
         }
     }
 
@@ -225,7 +239,8 @@ public class ExternalImportWorker extends BaseWorker {
         for (DocumentFile file : files)
             if (file.getName() != null) {
                 if (file.isDirectory()) subFolders.add(file);
-                else if (ImageHelper.getImageNamesFilter().accept(file.getName())) images.add(file);
+                else if (ImageHelper.getImageNamesFilter().accept(file.getName()))
+                    images.add(file);
                 else if (ArchiveHelper.getArchiveNamesFilter().accept(file.getName()))
                     archives.add(file);
                 else if (JsonHelper.getJsonNamesFilter().accept(file.getName())) {

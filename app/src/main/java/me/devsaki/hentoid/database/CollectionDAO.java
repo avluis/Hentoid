@@ -95,7 +95,6 @@ public interface CollectionDAO {
 
     void deleteAllInternalBooks(@NonNull String rootPath, boolean resetRemainingImagesStatus);
 
-
     // Queued books
 
     void flagAllErrorBooksWithJson();
@@ -109,12 +108,14 @@ public interface CollectionDAO {
 
     // Flagging
 
-    void deleteAllFlaggedBooks(@NonNull String pathRoot, boolean resetRemainingImagesStatus);
+    void deleteAllFlaggedBooks(boolean resetRemainingImagesStatus, @Nullable String pathRoot);
 
 
     // External library
 
     void deleteAllExternalBooks();
+
+    void flagAllExternalBooks();
 
 
     // GROUPS

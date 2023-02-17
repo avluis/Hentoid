@@ -284,7 +284,7 @@ public class PrimaryImportWorker extends BaseWorker {
             if (!isStopped()) { // Should only be done when things have run properly
                 CollectionDAO dao = new ObjectBoxDAO(context);
                 try {
-                    dao.deleteAllFlaggedBooks(ContentHelper.getPathRoot(previousUriStr), true);
+                    dao.deleteAllFlaggedBooks(true, ContentHelper.getPathRoot(previousUriStr));
                     dao.deleteAllFlaggedGroups();
                     dao.cleanupOrphanAttributes();
                 } finally {

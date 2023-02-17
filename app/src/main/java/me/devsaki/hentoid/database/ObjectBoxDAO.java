@@ -622,14 +622,18 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.flagContentsForDeletion(db.selectAllInternalBooksQ(rootPath, false, includePlaceholders).find(), true);
     }
 
+    public void flagAllExternalBooks() {
+        db.flagContentsForDeletion(db.selectAllExternalBooksQ().find(), true);
+    }
+
     public void deleteAllInternalBooks(@NonNull String rootPath, boolean resetRemainingImagesStatus) {
         db.deleteContentById(db.selectAllInternalBooksQ(rootPath, false).findIds());
         if (resetRemainingImagesStatus) resetRemainingImagesStatus(rootPath);
     }
 
-    public void deleteAllFlaggedBooks(@NonNull String rootPath, boolean resetRemainingImagesStatus) {
+    public void deleteAllFlaggedBooks(boolean resetRemainingImagesStatus, @Nullable String pathRoot) {
         db.deleteContentById(db.selectAllFlaggedBooksQ().findIds());
-        if (resetRemainingImagesStatus) resetRemainingImagesStatus(rootPath);
+        if (resetRemainingImagesStatus && pathRoot != null) resetRemainingImagesStatus(pathRoot);
     }
 
     // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
