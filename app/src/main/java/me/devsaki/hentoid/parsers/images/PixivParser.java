@@ -189,10 +189,12 @@ public class PixivParser extends BaseImageListParser {
         int waited = 0;
         DownloadRateLimiter.INSTANCE.take();
         Response<PixivUserIllustMetadata> userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
+        /*
         if (HttpHelper.waitBlocking429(userIllustResp)) {
             waited++;
             userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
         }
+         */
 
         if (userIllustResp.code() >= 400)
             throw new IllegalArgumentException(String.format("Unreachable user illusts : code=%s (%s) [%d]", userIllustResp.code(), userIllustResp.message(), waited));
@@ -231,13 +233,16 @@ public class PixivParser extends BaseImageListParser {
             waited = 0;
             DownloadRateLimiter.INSTANCE.take();
             Response<PixivIllustMetadata> illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
+            String waitResult = HttpHelper.waitBlocking429(illustResp);
+            /*
             while (HttpHelper.waitBlocking429(illustResp) && waited < 2) {
                 waited++;
                 illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
             }
+             */
 
             if (illustResp.code() >= 400)
-                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d - %d]", illustResp.code(), illustResp.message(), index, waited));
+                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d - %s]", illustResp.code(), illustResp.message(), index, waitResult));
 
             PixivIllustMetadata illustMetadata = illustResp.body();
             if (null == illustMetadata || illustMetadata.isError()) {

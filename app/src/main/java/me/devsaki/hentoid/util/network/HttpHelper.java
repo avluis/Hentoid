@@ -685,16 +685,17 @@ public class HttpHelper {
      * @param response Response to examine
      * @return True if the response is an HTTP 429 _and_ a delay has been supplied and waited out
      */
-    public static boolean waitBlocking429(retrofit2.Response<?> response) {
+    public static String waitBlocking429(retrofit2.Response<?> response) {
         if (429 == response.code()) {
             String retryDelay = response.headers().get("Retry-After");
             if (null == retryDelay) retryDelay = response.headers().get("retry-after");
             if (retryDelay != null && StringHelper.isNumeric(retryDelay)) {
                 Helper.pause(Integer.parseInt(retryDelay) + 1000); // 1s extra margin
-                return true;
+                return "OK";
             }
+            return response.headers().toString();
         }
-        return false;
+        return "";
     }
 
     /**

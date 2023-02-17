@@ -373,7 +373,7 @@ public class EHentaiParser implements ImageListParser {
                 throw new EmptyResultException("You need to be logged in to download full-size images.");
             // Use full image URL, if available
             String fullImgUrl = imageMetadata.getFullUrlRelative();
-            if (!fullImgUrl.isEmpty()) imageUrl = fixUrl(site.getUrl(), fullImgUrl);
+            if (!fullImgUrl.isEmpty()) imageUrl = fixUrl(fullImgUrl, site.getUrl());
         }
 
         return new ImmutablePair<>(imageUrl, Optional.empty());
