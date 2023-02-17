@@ -43,6 +43,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                     getApplication<Application>().applicationContext,
                     dao
                 )
+                dao.cleanupOrphanAttributes()
             }
 
             else -> {
