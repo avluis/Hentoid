@@ -32,6 +32,7 @@ import android.webkit.WebView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -197,6 +198,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private long duplicateId = -1;
     // Similarity score of the duplicate candidate of the currently viewed Content
     private float duplicateSimilarity = 0f;
+    // Title of the browsed content; valued if extra images have been detected
+    private String onlineContentTitle = "";
     // Blocked tags found on the currently viewed Content
     private List<String> blockedTags = Collections.emptyList();
     // Extra images found on the currently viewed Content
@@ -905,6 +908,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             return;
         }
 
+        String replacementTitle = null;
         if (isDownloadPlus) {
             // Copy the _current_ content's download params to the extra images
             String downloadParamsStr = currentContent.getDownloadParams();
@@ -937,6 +941,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             if (!additionalNonExistingImages.isEmpty()) {
                 updatedImgs.addAll(additionalNonExistingImages);
                 currentContent.setImageFiles(updatedImgs);
+                // Update content title if extra pages are found and title has changed
+                if (!StringHelper.protect(onlineContentTitle).isEmpty() && !onlineContentTitle.equalsIgnoreCase(currentContent.getTitle()))
+                    replacementTitle = onlineContentTitle;
             }
             // Save additional chapters to stored book
             List<Chapter> additionalNonExistingChapters = Stream.of(additionalNonExistingImages)
@@ -976,6 +983,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             return;
         }
 
+        final String replacementTitleFinal = replacementTitle;
         // No reason to block or ignore -> actually add to the queue
         if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK && Preferences.getBrowserDlAction() == DL_ACTION_ASK) {
             AddQueueMenu.Companion.show(
@@ -989,7 +997,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                             (position2, item2) -> addToQueue(
                                     (0 == position1) ? ContentHelper.QueuePosition.TOP : ContentHelper.QueuePosition.BOTTOM,
                                     (0 == position2) ? Content.DownloadMode.DOWNLOAD : Content.DownloadMode.STREAM,
-                                    isReplaceDuplicate
+                                    isReplaceDuplicate,
+                                    replacementTitleFinal
                             ), null
                     )
             );
@@ -1001,7 +1010,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     (position, item) -> addToQueue(
                             (0 == position) ? ContentHelper.QueuePosition.TOP : ContentHelper.QueuePosition.BOTTOM,
                             Preferences.getBrowserDlAction(),
-                            isReplaceDuplicate
+                            isReplaceDuplicate,
+                            replacementTitleFinal
                     )
             );
         } else if (Preferences.getBrowserDlAction() == DL_ACTION_ASK) {
@@ -1012,11 +1022,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     (position, item) -> addToQueue(
                             Preferences.getQueueNewDownloadPosition(),
                             (0 == position) ? Content.DownloadMode.DOWNLOAD : Content.DownloadMode.STREAM,
-                            isReplaceDuplicate
+                            isReplaceDuplicate,
+                            replacementTitleFinal
                     ), null
             );
         } else {
-            addToQueue(Preferences.getQueueNewDownloadPosition(), Preferences.getBrowserDlAction(), isReplaceDuplicate);
+            addToQueue(Preferences.getQueueNewDownloadPosition(), Preferences.getBrowserDlAction(), isReplaceDuplicate, replacementTitleFinal);
         }
     }
 
@@ -1027,7 +1038,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * @param downloadMode       Download mode for this content
      * @param isReplaceDuplicate True if existing duplicate book has to be replaced upon download completion
      */
-    private void addToQueue(@ContentHelper.QueuePosition int position, @Content.DownloadMode int downloadMode, boolean isReplaceDuplicate) {
+    private void addToQueue(
+            @ContentHelper.QueuePosition int position,
+            @Content.DownloadMode int downloadMode,
+            boolean isReplaceDuplicate,
+            @Nullable String replacementTitle) {
         if (null == currentContent) return;
         Point coords = Helper.getCenter(binding.quickDlFeedback);
         if (coords != null && View.VISIBLE == binding.quickDlFeedback.getVisibility()) {
@@ -1050,6 +1065,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 null,
                 position,
                 (isReplaceDuplicate) ? duplicateId : -1,
+                replacementTitle,
                 ContentQueueManager.INSTANCE.isQueueActive(this)
         );
         if (Preferences.isQueueAutostart()) ContentQueueManager.INSTANCE.resumeQueue(this);
@@ -1322,6 +1338,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             if (storedContent.getImageFiles() != null) {
                 storedUrls.addAll(Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getUrl).toList());
             }
+            // Memorize the title of the online content (to update title of stored book later)
+            onlineContentTitle = onlineContent.getTitle();
 
             // Display the "download more" button only if extra images URLs aren't duplicates
             List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();

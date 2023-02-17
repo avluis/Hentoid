@@ -300,7 +300,7 @@ class QueueViewModel(
                         if (reparseImages) purgeItem(content)
                         okCount.incrementAndGet()
                         dao.addContentToQueue(
-                            content, targetImageStatus, position, -1,
+                            content, targetImageStatus, position, -1, content.replacementTitle,
                             ContentQueueManager.isQueueActive(getApplication())
                         )
                     } else {

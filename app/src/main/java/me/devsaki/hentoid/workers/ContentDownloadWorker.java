@@ -747,6 +747,12 @@ public class ContentDownloadWorker extends BaseWorker {
                 }
                 content.computeSize();
 
+                // Replace the book with its new title, if any
+                if (!content.getReplacementTitle().isEmpty()) {
+                    content.setTitle(content.getReplacementTitle());
+                    content.setReplacementTitle("");
+                }
+
                 // Save JSON file
                 try {
                     DocumentFile jsonFile = JsonHelper.jsonToFile(getApplicationContext(), JsonContent.fromEntity(content), JsonContent.class, dir, Consts.JSON_FILE_NAME_V2);

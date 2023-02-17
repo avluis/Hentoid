@@ -131,6 +131,7 @@ public class Content implements Serializable {
     private @DownloadMode
     int downloadMode;
     private ToOne<Content> contentToReplace;
+    private String replacementTitle;
 
     // Aggregated data redundant with the sum of individual data contained in ImageFile
     // ObjectBox can't do the sum in a single Query, so here it is !
@@ -980,6 +981,14 @@ public class Content implements Serializable {
 
     public void setContentIdToReplace(long contentIdToReplace) {
         this.contentToReplace.setTargetId(contentIdToReplace);
+    }
+
+    public String getReplacementTitle() {
+        return (null == replacementTitle) ? "" : replacementTitle;
+    }
+
+    public void setReplacementTitle(String replacementTitle) {
+        this.replacementTitle = replacementTitle;
     }
 
     public boolean isFrozen() {

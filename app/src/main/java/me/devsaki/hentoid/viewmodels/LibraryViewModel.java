@@ -670,7 +670,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 // Non-blocking performance bottleneck; run in a dedicated worker
                                 if (reparseImages) purgeItem(content, false);
                                 dao.addContentToQueue(
-                                        content, targetImageStatus, position, -1,
+                                        content, targetImageStatus, position, -1,null,
                                         ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                             } else {
                                 errorCount.incrementAndGet();
@@ -727,7 +727,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (c.isPresent()) {
                                 c.get().setDownloadMode(Content.DownloadMode.DOWNLOAD);
                                 dao.addContentToQueue(
-                                        c.get(), StatusContent.SAVED, position, -1,
+                                        c.get(), StatusContent.SAVED, position, -1, null,
                                         ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                             } else {
                                 nbErrors.incrementAndGet();

@@ -168,6 +168,7 @@ public class DownloadsImportWorker extends BaseWorker {
                         null,
                         queuePosition,
                         -1,
+                        null,
                         ContentQueueManager.INSTANCE.isQueueActive(getApplicationContext())
                 );
                 nextOK(getApplicationContext());

@@ -467,7 +467,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (content.getTitle() == null) {
                 title = tvTitle.getContext().getText(R.string.work_untitled);
             } else {
-                title = content.getTitle();
+                if (!content.getReplacementTitle().isEmpty()) title = content.getReplacementTitle();
+                else title = content.getTitle();
             }
             tvTitle.setText(title);
 

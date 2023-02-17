@@ -1428,7 +1428,7 @@ public class ReaderViewModel extends AndroidViewModel {
                         .doOnNext(c -> {
                             if (c.right.isEmpty()) throw new EmptyResultException();
                             dao.addContentToQueue(
-                                    c.right.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP, -1,
+                                    c.right.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP, -1, null,
                                     ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                         })
                         .observeOn(AndroidSchedulers.mainThread())
