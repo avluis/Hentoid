@@ -5,6 +5,7 @@
       "comment": "Hitomi needs a desktop agent to properly display gallery images on some devices",
       "useWebviewAgent": false,
       "requestsCapPerSecond": 2,
+      "parallelDownloadCap": 2,
       "galleryHeight": 7
     },
     "NHENTAI": {
@@ -46,7 +47,9 @@
     },
     "PURURIN": {
       "bookCardDepth": 1,
-      "bookCardExcludedParentClasses": ["breadcrumb"]
+      "bookCardExcludedParentClasses": [
+        "breadcrumb"
+      ]
     },
     "HDPORNCOMICS": {
       "galleryHeight": 3
