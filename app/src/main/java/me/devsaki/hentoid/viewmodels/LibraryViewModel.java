@@ -1092,11 +1092,11 @@ public class LibraryViewModel extends AndroidViewModel {
         if (theGroup != null) {
             theGroup.setFavourite(!theGroup.isFavourite());
 
-            // Persist in it JSON
-            GroupHelper.updateGroupsJson(getApplication(), dao);
-
             // Persist in it DB
             dao.insertGroup(theGroup);
+
+            // Persist in it JSON
+            GroupHelper.updateGroupsJson(getApplication(), dao);
 
             return theGroup;
         }
