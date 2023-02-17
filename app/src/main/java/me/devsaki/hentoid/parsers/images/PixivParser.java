@@ -186,13 +186,16 @@ public class PixivParser extends BaseImageListParser {
         }
 
         // Retrieve the list of Illusts IDs (=chapters)
+        int waited = 0;
         DownloadRateLimiter.INSTANCE.take();
         Response<PixivUserIllustMetadata> userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
-        if (HttpHelper.waitBlocking429(userIllustResp))
+        if (HttpHelper.waitBlocking429(userIllustResp)) {
+            waited++;
             userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
+        }
 
         if (userIllustResp.code() >= 400)
-            throw new IllegalArgumentException(String.format("Unreachable user illusts : code=%s (%s)", userIllustResp.code(), userIllustResp.message()));
+            throw new IllegalArgumentException(String.format("Unreachable user illusts : code=%s (%s) [%d]", userIllustResp.code(), userIllustResp.message(), waited));
 
         PixivUserIllustMetadata userIllustsMetadata = userIllustResp.body();
         if (null == userIllustsMetadata || userIllustsMetadata.isError()) {
@@ -225,13 +228,16 @@ public class PixivParser extends BaseImageListParser {
         Set<Attribute> attrs = new HashSet<>();
         int index = 0;
         for (String illustId : illustIds) {
+            waited = 0;
             DownloadRateLimiter.INSTANCE.take();
             Response<PixivIllustMetadata> illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
-            if (HttpHelper.waitBlocking429(illustResp))
+            if (HttpHelper.waitBlocking429(illustResp)) {
+                waited++;
                 illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
+            }
 
             if (illustResp.code() >= 400)
-                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d]", illustResp.code(), illustResp.message(), index));
+                throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d - %d]", illustResp.code(), illustResp.message(), index, waited));
 
             PixivIllustMetadata illustMetadata = illustResp.body();
             if (null == illustMetadata || illustMetadata.isError()) {

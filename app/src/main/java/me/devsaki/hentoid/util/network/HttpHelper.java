@@ -690,7 +690,7 @@ public class HttpHelper {
             String retryDelay = response.headers().get("Retry-After");
             if (null == retryDelay) retryDelay = response.headers().get("retry-after");
             if (retryDelay != null && StringHelper.isNumeric(retryDelay)) {
-                Helper.pause(Integer.parseInt(retryDelay));
+                Helper.pause(Integer.parseInt(retryDelay) + 1000); // 1s extra margin
                 return true;
             }
         }
