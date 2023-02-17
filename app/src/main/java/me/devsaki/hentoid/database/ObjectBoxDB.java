@@ -162,12 +162,14 @@ public class ObjectBoxDB {
         return store.sizeOnDisk();
     }
 
-    long insertContent(Content content) {
+    ImmutablePair<Long, Set<Attribute>> insertContentAndAttributes(Content content) {
         ToMany<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
         Query<Attribute> attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build();
 
-        return store.callInTxNoException(() -> {
+        Set<Attribute> newAttrs = new HashSet<>();
+
+        long result = store.callInTxNoException(() -> {
             // Master data management managed manually
             // Ensure all known attributes are replaced by their ID before being inserted
             // Watch https://github.com/objectbox/objectbox-java/issues/1023 for a lighter solution based on @Unique annotation
@@ -178,18 +180,22 @@ public class ObjectBoxDB {
                 for (int i = 0; i < attributes.size(); i++) {
                     inputAttr = attributes.get(i);
                     dbAttr = attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName()).setParameter(Attribute_.type, inputAttr.getType().getCode()).findFirst();
-                    if (dbAttr != null) {
-                        attributes.set(i, dbAttr); // If existing -> set the existing attribute
+                    if (dbAttr != null) { // Existing attribute -> set the existing attribute
+                        attributes.set(i, dbAttr);
                         dbAttr.addLocationsFrom(inputAttr);
                         attrBox.put(dbAttr);
-                    } else {
-                        inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute name
+                    } else { // New attribute -> normalize name
+                        inputAttr.setName(inputAttr.getName().toLowerCase().trim());
+                        if (inputAttr.getType().equals(AttributeType.ARTIST) || inputAttr.getType().equals(AttributeType.CIRCLE))
+                            newAttrs.add(inputAttr);
                     }
                 }
             }
 
             return store.boxFor(Content.class).put(content);
         });
+
+        return new ImmutablePair<>(result, newAttrs);
     }
 
     long insertContentCore(@NonNull Content content) {

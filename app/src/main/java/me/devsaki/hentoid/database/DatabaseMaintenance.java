@@ -156,7 +156,7 @@ public class DatabaseMaintenance {
                     for (ImageFile i : c.getImageFiles()) {
                         db.updateImageFileUrl(i.setUrl(i.getUrl().replace("api.pururin.to/images/", "cdn.pururin.to/assets/images/data/")));
                     }
-                db.insertContent(c);
+                db.insertContentCore(c);
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Upgrading Pururin image hosts : done");
@@ -179,7 +179,7 @@ public class DatabaseMaintenance {
                 String url = c.getCoverImageUrl().replace("www.tsumino.com/Image/Thumb", "content.tsumino.com/thumbs");
                 if (!url.endsWith("/1")) url += "/1";
                 c.setCoverImageUrl(url);
-                db.insertContent(c);
+                db.insertContentCore(c);
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Upgrading Tsumino covers : done");
@@ -201,7 +201,7 @@ public class DatabaseMaintenance {
             for (Content c : contents) {
                 String url = c.getCoverImageUrl().replace("/smallbigtn/", "/webpbigtn/").replace(".jpg", ".webp");
                 c.setCoverImageUrl(url);
-                db.insertContent(c);
+                db.insertContentCore(c);
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Upgrading Hitomi covers : done");
@@ -361,7 +361,7 @@ public class DatabaseMaintenance {
             float pos = 1;
             for (Content c : contents) {
                 c.computeSize();
-                db.insertContent(c);
+                db.insertContentCore(c);
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Computing downloaded content size : done");
@@ -468,7 +468,7 @@ public class DatabaseMaintenance {
             float pos = 1;
             for (Content c : contents) {
                 c.computeReadProgress();
-                db.insertContent(c);
+                db.insertContentCore(c);
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Computing downloaded content read progress : done");

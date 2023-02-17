@@ -15,6 +15,7 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -335,7 +336,13 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public long insertContent(@NonNull final Content content) {
-        return db.insertContent(content);
+        Pair<Long, Set<Attribute>> result = db.insertContentAndAttributes(content);
+        // Attach new attributes to existing groups, if any
+        for (Attribute a : result.getRight()) {
+            Group g = selectGroupByName(Grouping.ARTIST.getId(), a.getName());
+            if (g != null) insertGroupItem(new GroupItem(result.getLeft(), g, -1));
+        }
+        return result.getLeft();
     }
 
     public long insertContentCore(@NonNull final Content content) {
@@ -385,7 +392,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         if (null == c) return;
 
         c.setDownloadParams("");
-        db.insertContent(c);
+        db.insertContentCore(c);
 
         List<ImageFile> imgs = c.getImageFiles();
         if (null == imgs) return;
@@ -590,8 +597,15 @@ public class ObjectBoxDAO implements CollectionDAO {
 
         // If target group doesn't have a cover, get the corresponding Content's
         ToOne<Content> groupCoverContent = item.group.getTarget().coverContent;
-        if (!groupCoverContent.isResolvedAndNotNull())
-            groupCoverContent.setAndPutTarget(item.content.getTarget());
+        if (!groupCoverContent.isResolvedAndNotNull()) {
+            Content c;
+            if (!item.content.isResolvedAndNotNull()) {
+                c = selectContent(item.getContentId());
+            } else {
+                c = item.content.getTarget();
+            }
+            groupCoverContent.setAndPutTarget(c);
+        }
 
         return db.insertGroupItem(item);
     }
@@ -686,7 +700,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             Content content = db.selectContentById(contentId);
             if (content != null) {
                 content.computeSize();
-                db.insertContent(content);
+                db.insertContentCore(content);
             }
         }
     }
@@ -732,7 +746,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         content.setStatus(StatusContent.PAUSED);
         content.setIsBeingDeleted(false); // Remove any UI animation
         if (replacedContentId > -1) content.setContentIdToReplace(replacedContentId);
-        db.insertContent(content);
+        insertContent(content);
 
         if (!db.isContentInQueue(content)) {
             int targetPosition;
