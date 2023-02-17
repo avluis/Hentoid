@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.fixUrl;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 import android.webkit.CookieManager;
@@ -371,8 +372,8 @@ public class EHentaiParser implements ImageListParser {
             if (getAuthState(site.getUrl()) != EhAuthState.LOGGED)
                 throw new EmptyResultException("You need to be logged in to download full-size images.");
             // Use full image URL, if available
-            String fullUrl = imageMetadata.getFullUrlRelative();
-            if (!fullUrl.isEmpty()) imageUrl = site.getUrl() + fullUrl;
+            String fullImgUrl = imageMetadata.getFullUrlRelative();
+            if (!fullImgUrl.isEmpty()) imageUrl = fixUrl(site.getUrl(), fullImgUrl);
         }
 
         return new ImmutablePair<>(imageUrl, Optional.empty());
