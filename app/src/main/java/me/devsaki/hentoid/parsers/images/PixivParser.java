@@ -231,7 +231,7 @@ public class PixivParser extends BaseImageListParser {
             waited = 0;
             DownloadRateLimiter.INSTANCE.take();
             Response<PixivIllustMetadata> illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
-            if (HttpHelper.waitBlocking429(illustResp)) {
+            while (HttpHelper.waitBlocking429(illustResp) && waited < 2) {
                 waited++;
                 illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
             }
