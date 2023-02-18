@@ -22,7 +22,7 @@
     <!-- Specific to groups -->
     <item
         android:id="@+id/action_group_new"
-        android:icon="@drawable/ic_new"
+        android:icon="@drawable/ic_folder_new"
         android:title="@string/menu_group_new"
         android:tooltipText="@string/menu_group_new"
         android:visible="false"
