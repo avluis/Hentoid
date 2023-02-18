@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_weight=".5"
             android:text="@string/storage_strategy_balance"
-            app:icon="@drawable/ic_balance"
+            app:icon="@drawable/ic_dl_balance"
             app:iconSize="64dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_weight=".5"
             android:text="@string/storage_strategy_fallover"
-            app:icon="@drawable/ic_fallover"
+            app:icon="@drawable/ic_dl_fallover"
             app:iconSize="64dp" />
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
