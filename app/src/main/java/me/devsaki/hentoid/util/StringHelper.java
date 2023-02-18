@@ -5,8 +5,10 @@ import androidx.annotation.Nullable;
 
 import com.annimon.stream.Stream;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.text.StringEscapeUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -191,6 +193,29 @@ public final class StringHelper {
             if (Character.isDigit(c)) result.append(c);
         }
         return result.toString().trim();
+    }
+
+    // TODO doc
+    public static List<ImmutableTriple<Integer, Integer, Integer>> locateDigits(@NonNull final String s) {
+        List<ImmutableTriple<Integer, Integer, Integer>> result = new ArrayList<>();
+        boolean inDigit = false;
+        int startIndex = -1;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (Character.isDigit(c) && !inDigit) {
+                startIndex = i;
+                inDigit = true;
+            } else if (!Character.isDigit(c) && inDigit) {
+                int value = Integer.parseInt(s.substring(startIndex, i));
+                result.add(new ImmutableTriple<>(startIndex, i - 1, value));
+                inDigit = false;
+            }
+        }
+        if (inDigit) {
+            int value = Integer.parseInt(s.substring(startIndex));
+            result.add(new ImmutableTriple<>(startIndex, s.length() - 1, value));
+        }
+        return result;
     }
 
     /**

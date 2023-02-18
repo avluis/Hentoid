@@ -13,10 +13,11 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImagePHash
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
+import org.apache.commons.lang3.tuple.ImmutableTriple
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
-import java.util.*
+import java.util.Collections
 import java.util.concurrent.atomic.AtomicBoolean
 
 class DuplicateHelper {
@@ -155,7 +156,8 @@ class DuplicateHelper {
             try {
                 // Update the book JSON if the book folder still exists
                 if (content.storageUri.isNotEmpty()) {
-                    val folder = FileHelper.getDocumentFromTreeUriString(context, content.storageUri)
+                    val folder =
+                        FileHelper.getDocumentFromTreeUriString(context, content.storageUri)
                     if (folder != null) {
                         if (content.jsonUri.isNotEmpty()) ContentHelper.updateJson(
                             context,
@@ -200,8 +202,8 @@ class DuplicateHelper {
             }
             if (useTitle) titleScore = computeTitleScore(
                 textComparator,
-                reference.titleCleanup, reference.titleNoDigits,
-                candidate.titleCleanup, candidate.titleNoDigits,
+                reference,
+                candidate,
                 ignoreChapters,
                 sensitivity
             )
@@ -250,31 +252,30 @@ class DuplicateHelper {
 
         fun computeTitleScore(
             textComparator: StringSimilarity,
-            referenceTitleCleanup: String,
-            referenceTitleNoDigits: String,
-            candidateTitleCleanup: String,
-            candidateTitleNoDigits: String,
+            reference: DuplicateCandidate,
+            candidate: DuplicateCandidate,
             ignoreChapters: Boolean,
             sensitivity: Int
         ): Float {
             val similarity1 =
-                textComparator.similarity(referenceTitleCleanup, candidateTitleCleanup)
+                textComparator.similarity(reference.titleCleanup, candidate.titleCleanup)
             if (ignoreChapters) {
                 // Perfect match
                 if (similarity1 > 0.995) return similarity1.toFloat()
                 // Other cases : check if both titles are chapters or sequels
                 return if (similarity1 > TEXT_THRESHOLDS[sensitivity]) {
                     val similarity2 =
-                        textComparator.similarity(referenceTitleNoDigits, candidateTitleNoDigits)
+                        textComparator.similarity(reference.titleNoDigits, candidate.titleNoDigits)
                     // Cleaned up versions are identical
-                    // => most probably a chapter variant -> set to 0%
-                    if (similarity2 > similarity1 && similarity2 > 0.995) return 0f
+                    // => most probably a chapter variant
+                    if (similarity2 > similarity1 && similarity2 > 0.995)
+                        return processChapterVariants(reference, candidate, similarity1.toFloat())
                     // Very little difference between cleaned up and original version
                     // => not a chapter variant
                     if (similarity2 - similarity1 < 0.01) {
                         similarity1.toFloat()
-                    } else {
-                        0f // Most probably a chapter variant -> set to 0%
+                    } else { // Most probably a chapter variant
+                        return processChapterVariants(reference, candidate, similarity1.toFloat())
                     }
                 } else {
                     0f // Below threshold
@@ -282,10 +283,43 @@ class DuplicateHelper {
             } else return if (similarity1 >= TEXT_THRESHOLDS[sensitivity]) similarity1.toFloat() else 0f
         }
 
-        fun sanitizeTitle(title: String): String {
+        private fun processChapterVariants(
+            reference: DuplicateCandidate,
+            candidate: DuplicateCandidate,
+            similarity: Float
+        ): Float {
+            // No numbers to compare (e.g. "gaiden" / "ex")
+            if (-1 == reference.maxChapterBound || -1 == candidate.maxChapterBound) return 0f
+
+            // Chapter numbers overlap (two variants) => don't ignore it, that's an actual duplicate
+            if (reference.minChapterBound >= candidate.minChapterBound && reference.minChapterBound <= candidate.maxChapterBound) return similarity
+            if (candidate.minChapterBound >= reference.minChapterBound && candidate.minChapterBound <= reference.maxChapterBound) return similarity
+
+            return 0f
+        }
+
+        fun sanitizeTitle(title: String): Triple<String, Int, Int> {
+            // Compute min and max chapter value
+            // These are to be :
+            //  - Located in the last 20% of the title
+            //  - Separated by at most 4 characters
+            var minChapter: ImmutableTriple<Int, Int, Int>? = null
+            var maxChapter: ImmutableTriple<Int, Int, Int>? = null
+            val digitsMap = StringHelper.locateDigits(title).reversed()
+            digitsMap.forEach {
+                if (it.middle >= title.length * 0.8 && null == maxChapter) maxChapter = it
+                else maxChapter?.let { max ->
+                    if (it.middle >= max.left - 5) minChapter = it
+                }
+            }
+            if (maxChapter != null && null == minChapter) minChapter = maxChapter
+            val minChapterValue = if (minChapter != null) minChapter!!.right else -1
+            val maxChapterValue = if (maxChapter != null) maxChapter!!.right else -1
+
+            // Sanitize the title
             var result = StringHelper.removeDigits(title)
             for (s in TITLE_CHAPTER_WORDS) result = result.replace(s, "")
-            return result
+            return Triple(result, minChapterValue, maxChapterValue)
         }
 
         private fun computeArtistScore(
@@ -311,21 +345,36 @@ class DuplicateHelper {
         useArtist: Boolean,
         useLanguage: Boolean,
         useCover: Boolean,
+        ignoreChapters: Boolean,
         forceCoverHash: Long = Long.MIN_VALUE
     ) {
         val id = content.id
         val coverHash =
             if (!useCover) Long.MIN_VALUE else if (Long.MIN_VALUE == forceCoverHash) content.cover.imageHash else forceCoverHash
         val size = content.size
-        val titleCleanup = (if (useTitle) StringHelper.cleanup(content.title) else "")!!
-        val titleNoDigits = if (useTitle) sanitizeTitle(titleCleanup) else ""
+        val titleCleanup: String = if (useTitle) StringHelper.cleanup(content.title) else ""
         val artistsCleanup: List<String>? =
-            if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map { it ->
+            if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map {
                 StringHelper.cleanup(it.name)
             } else Collections.emptyList()
         val countryCodes = if (useLanguage) content.attributeMap[AttributeType.LANGUAGE]?.map {
             LanguageHelper.getCountryCodeFromLanguage(it.name)
         } else Collections.emptyList()
-    }
+        val titleNoDigits: String
+        val minChapterBound: Int
+        val maxChapterBound: Int
 
+        init {
+            if (useTitle && ignoreChapters) {
+                val sanitizeResult = sanitizeTitle(titleCleanup)
+                titleNoDigits = sanitizeResult.first
+                minChapterBound = sanitizeResult.second
+                maxChapterBound = sanitizeResult.third
+            } else {
+                titleNoDigits = ""
+                minChapterBound = -1
+                maxChapterBound = -1
+            }
+        }
+    }
 }

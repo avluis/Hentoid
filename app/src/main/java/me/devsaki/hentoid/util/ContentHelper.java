@@ -1537,8 +1537,8 @@ public final class ContentHelper {
         // Refine by running the actual duplicate detection algorithm against the rough candidates
         List<DuplicateEntry> entries = new ArrayList<>();
         StringSimilarity cosine = new Cosine();
-        DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useLanguage, useCover, pHash);
-        List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, useTitle, useArtist, useLanguage, useCover, Long.MIN_VALUE)).toList();
+        DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useLanguage, useCover, true, pHash);
+        List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, useTitle, useArtist, useLanguage, useCover, true, Long.MIN_VALUE)).toList();
         for (DuplicateHelper.DuplicateCandidate candidate : candidates) {
             DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, useTitle, useCover, useArtist, useLanguage, true, 2, cosine);
             if (entry != null) entries.add(entry);
