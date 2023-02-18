@@ -477,6 +477,7 @@
     <string name="pref_dl_eh_hires_default" translatable="false">false</string>
     <string name="pref_dl_threads_quantity_default" translatable="false">0</string>
     <string name="pref_dl_speed_cap_default" translatable="false">-1</string>
+    <string name="pref_dl_http_429_default_delay_default" translatable="false">10</string>
     <!-- Strings: Settings: Privacy -->
     <string name="pref_app_preview_default" translatable="false">false</string>
     <string name="pref_analytics_preference_default" translatable="false">true</string>

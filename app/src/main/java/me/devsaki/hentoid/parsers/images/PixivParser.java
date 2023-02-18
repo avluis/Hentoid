@@ -28,6 +28,7 @@ import me.devsaki.hentoid.json.sources.PixivUserIllustMetadata;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.retrofit.sources.PixivServer;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.DownloadRateLimiter;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
@@ -189,7 +190,7 @@ public class PixivParser extends BaseImageListParser {
         int waited = 0;
         DownloadRateLimiter.INSTANCE.take();
         Response<PixivUserIllustMetadata> userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
-        if (HttpHelper.waitBlocking429(userIllustResp)) {
+        if (HttpHelper.waitBlocking429(userIllustResp, Preferences.getHttp429DefaultDelaySecs() * 1000)) {
             waited++;
             userIllustResp = PixivServer.api.getUserIllusts(userId, cookieStr).execute();
         }
@@ -231,7 +232,7 @@ public class PixivParser extends BaseImageListParser {
             waited = 0;
             DownloadRateLimiter.INSTANCE.take();
             Response<PixivIllustMetadata> illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
-            while (HttpHelper.waitBlocking429(illustResp) && waited < 2) {
+            while (HttpHelper.waitBlocking429(illustResp, Preferences.getHttp429DefaultDelaySecs() * 1000) && waited < 2) {
                 waited++;
                 illustResp = PixivServer.api.getIllustMetadata(illustId, cookieStr).execute();
             }

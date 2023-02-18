@@ -149,6 +149,7 @@
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">Download speed limit</string>
+    <string name="pref_dl_http_429_default_delay_title">HTTP 429 default delay (seconds)</string>
 
     <!-- Privacy -->
     <string name="pref_screen_privacy">Privacy</string>

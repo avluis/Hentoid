@@ -437,6 +437,11 @@
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_dl_speed_cap_title"
                 app:iconSpaceReserved="false" />
+            <EditTextPreference
+                android:defaultValue="@string/pref_dl_http_429_default_delay_default"
+                android:key="pref_dl_http_429_default_delay"
+                android:title="@string/pref_dl_http_429_default_delay_title"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
 

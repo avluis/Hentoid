@@ -685,9 +685,9 @@ public class HttpHelper {
      * @param response Response to examine
      * @return True if the response is an HTTP 429 _and_ a delay has been supplied and waited out
      */
-    public static boolean waitBlocking429(retrofit2.Response<?> response) {
+    public static boolean waitBlocking429(retrofit2.Response<?> response, int defaultDelayMs) {
         if (429 == response.code()) {
-            int delay = 3000; // Pause 3 secs by default
+            int delay = defaultDelayMs;
             String retryDelay = response.headers().get("Retry-After");
             if (null == retryDelay) retryDelay = response.headers().get("retry-after");
             if (retryDelay != null && StringHelper.isNumeric(retryDelay)) {

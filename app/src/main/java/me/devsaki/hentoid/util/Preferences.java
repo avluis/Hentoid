@@ -400,6 +400,10 @@ public final class Preferences {
         return getIntPref(Key.DL_THREADS_QUANTITY_LISTS, Default.DL_THREADS_QUANTITY);
     }
 
+    public static int getHttp429DefaultDelaySecs() {
+        return getIntPref(Key.DL_HTTP_429_DEFAULT_DELAY, Default.DL_HTTP_429_DEFAULT_DELAY);
+    }
+
     static int getFolderTruncationNbChars() {
         return getIntPref(Key.FOLDER_TRUNCATION_LISTS, Default.FOLDER_TRUNCATION);
     }
@@ -916,6 +920,7 @@ public final class Preferences {
         static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
         static final String DL_EH_HIRES = "pref_dl_eh_hires";
         public static final String DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
+        public static final String DL_HTTP_429_DEFAULT_DELAY = "pref_dl_http_429_default_delay";
         public static final String ACTIVE_SITES = "active_sites";
         static final String LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
         static final String LOCK_TIMER = "pref_lock_timer";
@@ -987,6 +992,7 @@ public final class Preferences {
         static final int BROWSER_DNS_OVER_HTTPS = -1; // No DNS
         static final boolean BROWSER_NHENTAI_INVISIBLE_BLACKLIST = false;
         static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
+        static final int DL_HTTP_429_DEFAULT_DELAY = 10;
         static final int FOLDER_TRUNCATION = Constant.TRUNCATE_FOLDER_100;
         static final boolean VIEWER_RESUME_LAST_LEFT = true;
         static final boolean VIEWER_KEEP_SCREEN_ON = true;
