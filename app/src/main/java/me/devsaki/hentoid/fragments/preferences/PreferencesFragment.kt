@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.preferences
 
-import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
@@ -16,13 +15,8 @@ import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposables
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -32,8 +26,6 @@ import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.activities.StoragePreferenceActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
-import me.devsaki.hentoid.database.ObjectBoxDAO
-import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
@@ -132,11 +124,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
             Preferences.Key.STORAGE_MANAGEMENT -> {
                 requireContext().startLocalActivity<StoragePreferenceActivity>()
-                true
-            }
-
-            Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
-                onDeleteAllExceptFavourites()
                 true
             }
 
@@ -261,55 +248,5 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 showSnackBar(caption)
             }
         }
-    }
-
-    private fun onDeleteAllExceptFavourites() {
-        val dao = ObjectBoxDAO(activity)
-        var searchDisposable = Disposables.empty()
-
-        searchDisposable =
-            Single.fromCallable { dao.selectStoredContentIds(true, false, -1, false) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { list ->
-                    MaterialAlertDialogBuilder(
-                        requireContext(),
-                        ThemeHelper.getIdForCurrentTheme(
-                            requireContext(),
-                            R.style.Theme_Light_Dialog
-                        )
-                    )
-                        .setIcon(R.drawable.ic_warning)
-                        .setCancelable(false)
-                        .setTitle(R.string.app_name)
-                        .setMessage(
-                            requireContext().resources.getQuantityString(
-                                R.plurals.pref_ask_delete_all_except_favs,
-                                list.size,
-                                list.size
-                            )
-                        )
-                        .setPositiveButton(
-                            R.string.yes
-                        ) { dialog1: DialogInterface, _: Int ->
-                            dao.cleanup()
-                            dialog1.dismiss()
-                            searchDisposable.dispose()
-                            ProgressDialogFragment.invoke(
-                                parentFragmentManager,
-                                resources.getString(R.string.delete_title),
-                                R.plurals.book
-                            )
-                            viewModel.deleteAllItemsExceptFavourites()
-                        }
-                        .setNegativeButton(
-                            R.string.no
-                        ) { dialog12: DialogInterface, _: Int ->
-                            dao.cleanup()
-                            dialog12.dismiss()
-                        }
-                        .create()
-                        .show()
-                }
     }
 }

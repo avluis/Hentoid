@@ -25,6 +25,8 @@
     <string name="tools_import_settings_summary">Restore exported settings from a JSON file</string>
 
     <!-- Menu item -->
+    <string name="tools_screen_library">Library management</string>
+    <!-- Menu item -->
     <string name="tools_duplicate_detector_title">Duplicate detector</string>
     <!-- Menu item description -->
     <string name="tools_duplicate_detector_summary">Identify and remove duplicate books</string>

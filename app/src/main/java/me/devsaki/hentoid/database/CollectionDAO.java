@@ -159,6 +159,8 @@ public interface CollectionDAO {
 
     List<Long> selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc);
 
+    Set<Long> selectStoredContentFavIds(boolean bookFavs, boolean groupFavs);
+
     List<Content> selectContentWithUnhashedCovers();
 
     long countContentWithUnhashedCovers();

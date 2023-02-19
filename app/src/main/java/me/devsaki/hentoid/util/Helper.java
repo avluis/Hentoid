@@ -170,6 +170,15 @@ public final class Helper {
         return ret;
     }
 
+    public static long[] getPrimitiveLongArrayFromSet(Set<Long> input) {
+        long[] ret = new long[input.size()];
+        Iterator<Long> iterator = input.iterator();
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = iterator.next();
+        }
+        return ret;
+    }
+
     /**
      * Inclusively coerce the given value between the given min and max values
      *

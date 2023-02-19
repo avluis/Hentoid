@@ -141,15 +141,6 @@
                 android:title="@string/pref_external_library_delete_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
-        <PreferenceCategory
-            android:title="@string/pref_cat_advanced"
-            app:iconSpaceReserved="false">
-            <Preference
-                android:key="pref_delete_all_except_favs"
-                android:summary="@string/pref_delete_all_except_favs_summary"
-                android:title="@string/pref_delete_all_except_favs_title"
-                app:iconSpaceReserved="false" />
-        </PreferenceCategory>
     </PreferenceScreen>
 
     <PreferenceScreen

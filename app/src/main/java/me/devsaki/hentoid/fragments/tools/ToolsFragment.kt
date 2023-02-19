@@ -7,6 +7,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +30,8 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.workers.DeleteWorker
+import me.devsaki.hentoid.workers.data.DeleteData
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -72,6 +77,11 @@ class ToolsFragment : PreferenceFragmentCompat() {
         when (preference.key) {
             DUPLICATE_DETECTOR_KEY -> {
                 requireContext().startLocalActivity<DuplicateDetectorActivity>()
+                true
+            }
+
+            Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
+                MassDeleteFragment.invoke(parentFragmentManager)
                 true
             }
 
@@ -210,5 +220,19 @@ class ToolsFragment : PreferenceFragmentCompat() {
                 ).show()
             }
         }
+    }
+
+    private fun deleteAllItemsExceptFavourites() {
+        val builder = DeleteData.Builder()
+        builder.setDeleteAllContentExceptFavs(true)
+
+        val workManager = WorkManager.getInstance(requireContext())
+        workManager.enqueueUniqueWork(
+            R.id.delete_service_delete.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequestBuilder<DeleteWorker>()
+                .setInputData(builder.data)
+                .build()
+        )
     }
 }

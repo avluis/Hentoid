@@ -280,6 +280,13 @@
 
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
+    <string name="keep_fav_books">Keep favourite books</string>
+    <string name="keep_fav_groups">Keep favourite groups</string>
+    <plurals name="book_keep">
+        <item quantity="one">Keep <x:g example="1" id="number">%1$d</x:g> book</item>
+        <item quantity="other">Keep <x:g example="2" id="number">%1$d</x:g> books</item>
+    </plurals>
+    <string name="mass_delete_action">Mass delete</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>
     <plurals name="book_progress">
         <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> book</item>
