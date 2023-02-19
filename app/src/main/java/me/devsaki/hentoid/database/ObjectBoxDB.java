@@ -804,7 +804,7 @@ public class ObjectBoxDB {
         Box<ShuffleRecord> shuffleStore = store.boxFor(ShuffleRecord.class);
         shuffleStore.removeAll();
         // Populate with a new list
-        List<Long> allBooksIds = Helper.getListFromPrimitiveArray(DBHelper.safeFindIds(selectStoredContentQ(false, false, -1, false)));
+        List<Long> allBooksIds = Helper.getListFromPrimitiveArray(DBHelper.safeFindIds(selectStoredContentQ(false, -1, false)));
         Collections.shuffle(allBooksIds, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
         shuffleStore.put(Stream.of(allBooksIds).map(ShuffleRecord::new).toList());
     }
@@ -1686,11 +1686,10 @@ public class ObjectBoxDB {
         return DBHelper.safeFind(store.boxFor(Chapter.class).query().isNull(Chapter_.uploadDate));
     }
 
-    QueryBuilder<Content> selectStoredContentQ(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
+    QueryBuilder<Content> selectStoredContentQ(boolean includeQueued, int orderField, boolean orderDesc) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         if (includeQueued) query.in(Content_.status, libraryQueueStatus);
         else query.in(Content_.status, libraryStatus);
-        if (nonFavouritesOnly) query.equal(Content_.favourite, false);
         if (orderField > -1) {
             Property<Content> field = getPropertyFromField(orderField);
             if (null != field) {

@@ -90,12 +90,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.getDbSizeBytes();
     }
 
-    @Override
-    public List<Long> selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
-        return Helper.getListFromPrimitiveArray(DBHelper.safeFindIds(db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc)));
-    }
-
-    public Set<Long> selectStoredContentFavIds(boolean bookFavs, boolean groupFavs) {
+    public Set<Long> selectStoredFavContentIds(boolean bookFavs, boolean groupFavs) {
         return db.selectStoredContentFavIds(bookFavs, groupFavs);
     }
 
@@ -110,8 +105,8 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer) {
-        try (Query<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc).build()) {
+    public void streamStoredContent(boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer) {
+        try (Query<Content> query = db.selectStoredContentQ(includeQueued, orderField, orderDesc).build()) {
             query.forEach(consumer::accept);
         }
     }

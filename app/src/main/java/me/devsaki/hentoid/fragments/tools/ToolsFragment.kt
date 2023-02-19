@@ -23,6 +23,7 @@ import me.devsaki.hentoid.core.clearAppCache
 import me.devsaki.hentoid.core.clearWebviewCache
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
+import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
@@ -39,7 +40,7 @@ import java.nio.charset.StandardCharsets
 
 
 @Suppress("PrivatePropertyName")
-class ToolsFragment : PreferenceFragmentCompat() {
+class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.Parent {
 
     private val DUPLICATE_DETECTOR_KEY = "tools_duplicate_detector"
     private val EXPORT_LIBRARY = "export_library"
@@ -81,7 +82,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
             }
 
             Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
-                MassDeleteFragment.invoke(parentFragmentManager)
+                MassDeleteFragment.invoke(this.childFragmentManager)
                 true
             }
 
@@ -222,9 +223,16 @@ class ToolsFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun deleteAllItemsExceptFavourites() {
+    override fun onMassDelete(keepBookPrefs: Boolean, keepGroupPrefs: Boolean) {
+        ProgressDialogFragment.invoke(
+            parentFragmentManager,
+            resources.getString(R.string.delete_title),
+            R.plurals.book
+        )
+
         val builder = DeleteData.Builder()
-        builder.setDeleteAllContentExceptFavs(true)
+        builder.setDeleteAllContentExceptFavsBooks(keepBookPrefs)
+        builder.setDeleteAllContentExceptFavsGroups(keepGroupPrefs)
 
         val workManager = WorkManager.getInstance(requireContext())
         workManager.enqueueUniqueWork(

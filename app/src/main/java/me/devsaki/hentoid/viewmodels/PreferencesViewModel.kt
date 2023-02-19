@@ -2,9 +2,6 @@ package me.devsaki.hentoid.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -15,8 +12,6 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.workers.DeleteWorker
-import me.devsaki.hentoid.workers.data.DeleteData
 import org.greenrobot.eventbus.EventBus
 import java.util.concurrent.atomic.AtomicInteger
 

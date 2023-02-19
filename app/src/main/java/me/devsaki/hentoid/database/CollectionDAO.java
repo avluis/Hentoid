@@ -157,16 +157,14 @@ public interface CollectionDAO {
 
     // High-level queries (internal and external locations)
 
-    List<Long> selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc);
-
-    Set<Long> selectStoredContentFavIds(boolean bookFavs, boolean groupFavs);
+    Set<Long> selectStoredFavContentIds(boolean bookFavs, boolean groupFavs);
 
     List<Content> selectContentWithUnhashedCovers();
 
     long countContentWithUnhashedCovers();
 
 
-    void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer);
+    void streamStoredContent(boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer);
 
 
     Single<List<Long>> selectRecentBookIds(ContentSearchManager.ContentSearchBundle searchBundle);

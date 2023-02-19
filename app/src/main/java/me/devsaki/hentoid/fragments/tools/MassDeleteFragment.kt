@@ -20,6 +20,14 @@ class MassDeleteFragment : DialogFragment(R.layout.dialog_tools_mass_delete) {
     // == UI
     private var binding: DialogToolsMassDeleteBinding? = null
 
+    // === VARIABLES
+    private var parent: Parent? = null
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        parent = parentFragment as Parent
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,8 +39,9 @@ class MassDeleteFragment : DialogFragment(R.layout.dialog_tools_mass_delete) {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        parent = null
         binding = null
+        super.onDestroyView()
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
@@ -51,7 +60,7 @@ class MassDeleteFragment : DialogFragment(R.layout.dialog_tools_mass_delete) {
         return withContext(Dispatchers.IO) {
             val dao = ObjectBoxDAO(requireContext())
             try {
-                return@withContext dao.selectStoredContentFavIds(bookPrefs, groupPrefs).size
+                return@withContext dao.selectStoredFavContentIds(bookPrefs, groupPrefs).size
             } finally {
                 dao.cleanup()
             }
@@ -75,7 +84,10 @@ class MassDeleteFragment : DialogFragment(R.layout.dialog_tools_mass_delete) {
     }
 
     private fun onActionClick() {
-        // TODO align actual query used by the worker with new query used here
+        binding?.apply {
+            parent?.onMassDelete(keepFavBooks.isChecked, keepFavGroups.isChecked)
+        }
+        dismissAllowingStateLoss()
     }
 
 
@@ -83,6 +95,10 @@ class MassDeleteFragment : DialogFragment(R.layout.dialog_tools_mass_delete) {
         fun invoke(fragmentManager: FragmentManager) {
             val fragment = MassDeleteFragment()
             fragment.show(fragmentManager, null)
+        }
+
+        interface Parent {
+            fun onMassDelete(keepBookPrefs: Boolean, keepGroupPrefs: Boolean)
         }
     }
 }
