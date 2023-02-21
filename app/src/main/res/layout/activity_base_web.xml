@@ -246,10 +246,22 @@
         android:layout_height="wrap_content"
         android:backgroundTint="?colorPrimaryDark"
         android:contentDescription="@string/menu_download_streamed"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:layout_gravity="center_vertical|center"
         app:layout_anchor="@id/bottom_navigation"
         app:srcCompat="@drawable/selector_download_action"
+        tools:visibility="visible" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/language_filter_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="?colorPrimaryDark"
+        android:visibility="gone"
+        android:layout_gravity="right"
+        android:layout_marginBottom="80dp"
+        app:layout_anchor="@id/action_button"
+        app:srcCompat="@drawable/ic_attribute_language"
         tools:visibility="visible" />
 
     <TextView

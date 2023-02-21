@@ -189,6 +189,19 @@
                 android:summaryOn="@string/pref_browser_resume_last_on"
                 android:title="@string/pref_browser_resume_last_title"
                 app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_language_button_default"
+                android:key="pref_browser_language_filter"
+                android:summaryOff="@string/pref_browser_language_filter_off"
+                android:summaryOn="@string/pref_browser_language_filter_on"
+                android:title="@string/pref_browser_language_filter_title"
+                app:iconSpaceReserved="false" />
+            <EditTextPreference
+                android:dependency="pref_browser_language_filter"
+                android:key="pref_language_filter_value"
+                android:summary="@string/pref_browser_language_filter_setting_summary"
+                android:title="@string/pref_browser_language_filter_setting_title"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_browser_duplicate_detector"
