@@ -82,7 +82,7 @@
             android:adjustViewBounds="true"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/ic_action_copy"
+            android:src="@drawable/ic_action_download"
             android:tooltipText="@string/page_copy_help"
             app:layout_constraintEnd_toStartOf="@id/img_action_share"
             app:layout_constraintStart_toEndOf="@id/img_action_favourite"
