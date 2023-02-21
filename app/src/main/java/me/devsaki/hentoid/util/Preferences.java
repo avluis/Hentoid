@@ -992,7 +992,7 @@ public final class Preferences {
         static final int BROWSER_DNS_OVER_HTTPS = -1; // No DNS
         static final boolean BROWSER_NHENTAI_INVISIBLE_BLACKLIST = false;
         static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
-        static final int DL_HTTP_429_DEFAULT_DELAY = 10;
+        static final int DL_HTTP_429_DEFAULT_DELAY = 120;
         static final int FOLDER_TRUNCATION = Constant.TRUNCATE_FOLDER_100;
         static final boolean VIEWER_RESUME_LAST_LEFT = true;
         static final boolean VIEWER_KEEP_SCREEN_ON = true;
