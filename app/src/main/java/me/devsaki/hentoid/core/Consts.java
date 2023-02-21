@@ -37,7 +37,7 @@ public abstract class Consts {
     public static final String URL_GITHUB = "https://github.com/AVnetWS/Hentoid";
     public static final String URL_GITHUB_WIKI = "https://github.com/AVnetWS/Hentoid/wiki";
     public static final String URL_GITHUB_WIKI_TRANSFER = "https://github.com/avluis/Hentoid/wiki/Transferring-your-collection-between-devices";
-    public static final String URL_GITHUB_WIKI_STORAGE = "https://github.com/avluis/Hentoid/wiki/Using-the-external-library"; // TODO temp; should create a page dedicated to the storage screen
+    public static final String URL_GITHUB_WIKI_STORAGE = "https://github.com/avluis/Hentoid/wiki/Storage-management";
     public static final String URL_DISCORD = "https://discord.gg/QEZ3qk9";
     public static final String URL_REDDIT = "https://www.reddit.com/r/Hentoid/";
 }
