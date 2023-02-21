@@ -257,7 +257,7 @@ public class ImportHelper {
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
-            Timber.e("Could not create Hentoid folder in folder %s", docFile.getUri().toString());
+            Timber.e("Could not create Primary folder in folder %s", docFile.getUri().toString());
             return new ImmutablePair<>(ProcessFolderResult.KO_CREATE_FAIL, treeUri.toString());
         }
 

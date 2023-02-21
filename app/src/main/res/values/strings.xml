@@ -64,17 +64,17 @@
     <string name="title_activity_storage">Storage management</string>
 
     <!-- Library refresh screen -->
-    <string name="refresh_step1">Hentoid folder</string>
-    <string name="refresh_step1_2">Hentoid folder (secondary location)</string>
+    <string name="refresh_step1">Primary folder</string>
+    <string name="refresh_step1_2">Primary folder (location 2)</string>
     <string name="refresh_step1_external">External folder</string>
-    <string name="refresh_step1_select">Select Hentoid folder</string>
-    <string name="refresh_step1_select_2">Select Hentoid folder (secondary location)</string>
+    <string name="refresh_step1_select">Select Primary folder</string>
+    <string name="refresh_step1_select_2">Select Primary folder (location 2)</string>
     <string name="refresh_step1_select_external">Select external folder</string>
     <string name="refresh_step2">Scan site folders</string>
     <string name="refresh_step3_init">Scanning library…</string>
     <string name="refresh_step3">Scan library (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
     <string name="refresh_step4_init">Importing queue…</string>
-    <string name="refresh_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
+    <string name="refresh_select_folder">Please select an existing primary folder. Its location is displayed on screen.</string>
     <string name="refresh_allow_write">Please allow write permission</string>
 
     <!-- Library screen toolbar -->
@@ -187,7 +187,7 @@
     <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Download failed</string>
-    <string name="download_notif_failed_details">Cannot download <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: unable to create folder <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Please check your Hentoid folder and retry downloading using the \'!\' button.</string>
+    <string name="download_notif_failed_details">Cannot download <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: unable to create folder <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Please check your Primary folder and retry downloading using the \'!\' button.</string>
     <string name="menu_change_dl_mode">Change download mode</string>
     <string name="mode_dl">Picture download</string>
     <string name="mode_stream">Streaming</string>
@@ -373,7 +373,7 @@
     <string name="import_invalid">Invalid folder selected - please select another one</string>
     <string name="import_app_folder">You cannot select the app folder as an external folder - please select another one</string>
     <string name="import_download_folder">You shouldn\'t select your device\'s download folder - please create or select another one</string>
-    <string name="import_create_fail">Hentoid folder creation failed - please select another location</string>
+    <string name="import_create_fail">Primary folder creation failed - please select another location</string>
     <string name="import_invalid_uri">Folder not recognized - please select it again</string>
     <string name="import_empty">Folder has no books</string>
     <string name="import_other_primary">You cannot set the same folder for both primary locations</string>
