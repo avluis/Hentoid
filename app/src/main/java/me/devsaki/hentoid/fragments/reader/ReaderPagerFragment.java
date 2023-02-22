@@ -77,6 +77,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ReaderActivity;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding;
@@ -109,18 +110,16 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private static final String KEY_IMG_INDEX = "image_index";
 
     private final Transformation<Bitmap> centerInside = new CenterInside();
-    private final RequestOptions glideRequestOptions = new RequestOptions()
-            .optionalTransform(centerInside)
-            .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside));
+    private final RequestOptions glideRequestOptions = new RequestOptions().optionalTransform(centerInside).optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside));
 
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private ReaderViewModel viewModel;
-    private int imageIndex = -1; // 0-based image index
-    private int maxPosition; // For navigation
-    private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
+    private int absImageIndex = -1; // Absolute (book scale) 0-based image index
+    private int absMaxPosition; // Absolute (book-scale) max position, for navigation
+    private int relMaxPageNumber; // Relative (chapter-scale) max page number
     private boolean hasGalleryBeenShown = false;
     private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
     private Disposable slideshowTimer = null;
@@ -131,6 +130,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private boolean isContentArchive; // True if current content is an archive
     private boolean isPageFavourite; // True if current page is favourited
     private boolean isContentFavourite; // True if current content is favourited
+    private List<Chapter> chapters;
 
     private Debouncer<Integer> indexRefreshDebouncer;
     private Debouncer<Pair<Integer, Integer>> processPositionDebouncer;
@@ -149,6 +149,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     // Top menu items
     private MenuItem showFavoritePagesButton;
     private MenuItem shuffleButton;
+
+    private ReaderNavigation navigator;
 
     // Bottom bar controls (proxies for left or right position, depending on current reading direction)
     private TextView pageCurrentNumber;
@@ -195,8 +197,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
                     int startIndex;
                     if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
                         startIndex = Preferences.getViewerSlideshowDelayVertical();
-                    else
-                        startIndex = Preferences.getViewerSlideshowDelay();
+                    else startIndex = Preferences.getViewerSlideshowDelay();
                     startIndex = convertPrefsDelayToSliderPosition(startIndex);
 
                     binding.controlsOverlay.slideshowDelaySlider.setValue(startIndex);
@@ -241,17 +242,13 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
 //        viewModel.onRestoreState(savedInstanceState);
 
-        viewModel.getContent()
-                .observe(getViewLifecycleOwner(), this::onContentChanged);
+        viewModel.getContent().observe(getViewLifecycleOwner(), this::onContentChanged);
 
-        viewModel.getViewerImages()
-                .observe(getViewLifecycleOwner(), this::onImagesChanged);
+        viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
 
-        viewModel.getStartingIndex()
-                .observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
+        viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
 
-        viewModel.getShuffled()
-                .observe(getViewLifecycleOwner(), this::onShuffleChanged);
+        viewModel.getShuffled().observe(getViewLifecycleOwner(), this::onShuffleChanged);
 
         viewModel.getShowFavouritesOnly().observe(getViewLifecycleOwner(), this::updateShowFavouriteDisplay);
     }
@@ -264,8 +261,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         outState.putBoolean(KEY_SLIDESHOW_ON, isSlideshowActive);
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         // Memorize the current page
-        outState.putInt(KEY_IMG_INDEX, imageIndex);
-        if (viewModel != null) viewModel.setViewerStartingIndex(imageIndex);
+        outState.putInt(KEY_IMG_INDEX, absImageIndex);
+        if (viewModel != null) viewModel.setViewerStartingIndex(absImageIndex);
     }
 
     @Override
@@ -275,7 +272,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (savedInstanceState != null) {
             hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE);
             hasGalleryBeenShown = savedInstanceState.getBoolean(KEY_GALLERY_SHOWN, false);
-            imageIndex = savedInstanceState.getInt(KEY_IMG_INDEX, -1);
+            absImageIndex = savedInstanceState.getInt(KEY_IMG_INDEX, -1);
             if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) startSlideshow(false);
         }
         binding.controlsOverlay.getRoot().setVisibility(hudVisibility);
@@ -287,19 +284,13 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
-        ((ReaderActivity) requireActivity()).registerKeyListener(
-                new ReaderKeyListener(requireContext()).setOnVolumeDownListener(b -> {
-                            if (b && Preferences.isViewerVolumeToSwitchBooks()) previousBook();
-                            else previousPage();
-                        })
-                        .setOnVolumeUpListener(b -> {
-                            if (b && Preferences.isViewerVolumeToSwitchBooks()) nextBook();
-                            else nextPage();
-                        })
-                        .setOnKeyLeftListener(b -> onLeftTap())
-                        .setOnKeyRightListener(b -> onRightTap())
-                        .setOnBackListener(b -> onBackClick())
-        );
+        ((ReaderActivity) requireActivity()).registerKeyListener(new ReaderKeyListener(requireContext()).setOnVolumeDownListener(b -> {
+            if (b && Preferences.isViewerVolumeToSwitchBooks()) previousBook();
+            else previousPage();
+        }).setOnVolumeUpListener(b -> {
+            if (b && Preferences.isViewerVolumeToSwitchBooks()) nextBook();
+            else nextPage();
+        }).setOnKeyLeftListener(b -> onLeftTap()).setOnKeyRightListener(b -> onRightTap()).setOnBackListener(b -> onBackClick()));
     }
 
     @Override
@@ -316,7 +307,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     @Override
     public void onStop() {
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
-        viewModel.onLeaveBook(imageIndex);
+        viewModel.onLeaveBook(absImageIndex);
         if (slideshowTimer != null) slideshowTimer.dispose();
         ((ReaderActivity) requireActivity()).unregisterKeyListener();
         super.onStop();
@@ -337,7 +328,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (null == binding) return;
         if (event.processId != R.id.viewer_load && event.processId != R.id.viewer_page_download)
             return;
-        if (event.processId == R.id.viewer_page_download && event.step != imageIndex) return;
+        if (event.processId == R.id.viewer_page_download && event.step != absImageIndex) return;
 
         processEvent(event);
     }
@@ -347,7 +338,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (null == binding) return;
         if (event.processId != R.id.viewer_load && event.processId != R.id.viewer_page_download)
             return;
-        if (event.processId == R.id.viewer_page_download && event.step != imageIndex) return;
+        if (event.processId == R.id.viewer_page_download && event.step != absImageIndex) return;
         EventBus.getDefault().removeStickyEvent(event);
         processEvent(event);
     }
@@ -407,15 +398,9 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         int tapZoneScale = Preferences.isViewerTapToTurn2x() ? 2 : 1;
 
-        OnZoneTapListener onHorizontalZoneTapListener = new OnZoneTapListener(binding.recyclerView, tapZoneScale)
-                .setOnLeftZoneTapListener(this::onLeftTap)
-                .setOnRightZoneTapListener(this::onRightTap)
-                .setOnMiddleZoneTapListener(this::onMiddleTap)
-                .setOnLongTapListener(this::onLongTap);
+        OnZoneTapListener onHorizontalZoneTapListener = new OnZoneTapListener(binding.recyclerView, tapZoneScale).setOnLeftZoneTapListener(this::onLeftTap).setOnRightZoneTapListener(this::onRightTap).setOnMiddleZoneTapListener(this::onMiddleTap).setOnLongTapListener(this::onLongTap);
 
-        OnZoneTapListener onVerticalZoneTapListener = new OnZoneTapListener(binding.recyclerView, 1)
-                .setOnMiddleZoneTapListener(this::onMiddleTap)
-                .setOnLongTapListener(this::onLongTap);
+        OnZoneTapListener onVerticalZoneTapListener = new OnZoneTapListener(binding.recyclerView, 1).setOnMiddleZoneTapListener(this::onMiddleTap).setOnLongTapListener(this::onLongTap);
 
         binding.recyclerView.setTapListener(onVerticalZoneTapListener);       // For paper roll mode (vertical)
         adapter.setItemTouchListener(onHorizontalZoneTapListener);    // For independent images mode (horizontal)
@@ -445,8 +430,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         int sliderValue;
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
             sliderValue = convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelayVertical());
-        else
-            sliderValue = convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay());
+        else sliderValue = convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay());
 
         int nbEntries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries).length;
         nbEntries = Math.max(1, nbEntries - 1);
@@ -463,48 +447,47 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             return entries[(int) value];
         });
         slider.setOnFocusChangeListener((v, hasFocus) -> {
-                    if (!hasFocus) slider.setVisibility(View.GONE);
-                }
-        );
+            if (!hasFocus) slider.setVisibility(View.GONE);
+        });
         slider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
-                                            @Override
-                                            public void onStartTrackingTouch(@NonNull Slider slider) {
-                                                slideshowSliderDebouncer.clear();
-                                            }
+            @Override
+            public void onStartTrackingTouch(@NonNull Slider slider) {
+                slideshowSliderDebouncer.clear();
+            }
 
-                                            @Override
-                                            public void onStopTrackingTouch(@NonNull Slider slider) {
-                                                onSlideShowSliderChosen((int) slider.getValue());
-                                            }
-                                        }
-        );
+            @Override
+            public void onStopTrackingTouch(@NonNull Slider slider) {
+                onSlideShowSliderChosen((int) slider.getValue());
+            }
+        });
 
         // Fix page button
         binding.viewerFixBtn.setOnClickListener(v -> fixPage());
 
         // Next/previous book
+        navigator = new ReaderNavigation(binding.controlsOverlay);
+
         binding.controlsOverlay.viewerPrevBookBtn.setOnClickListener(v -> previousBook());
         binding.controlsOverlay.viewerNextBookBtn.setOnClickListener(v -> nextBook());
 
         // Page slider and preview
         binding.controlsOverlay.pageSlider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
-                                                                        @Override
-                                                                        public void onStartTrackingTouch(@NonNull Slider slider) {
-                                                                            binding.controlsOverlay.imagePreviewLeft.setVisibility(View.VISIBLE);
-                                                                            binding.controlsOverlay.imagePreviewCenter.setVisibility(View.VISIBLE);
-                                                                            binding.controlsOverlay.imagePreviewRight.setVisibility(View.VISIBLE);
-                                                                            binding.recyclerView.setVisibility(View.INVISIBLE);
-                                                                        }
+            @Override
+            public void onStartTrackingTouch(@NonNull Slider slider) {
+                binding.controlsOverlay.imagePreviewLeft.setVisibility(View.VISIBLE);
+                binding.controlsOverlay.imagePreviewCenter.setVisibility(View.VISIBLE);
+                binding.controlsOverlay.imagePreviewRight.setVisibility(View.VISIBLE);
+                binding.recyclerView.setVisibility(View.INVISIBLE);
+            }
 
-                                                                        @Override
-                                                                        public void onStopTrackingTouch(@NonNull Slider slider) {
-                                                                            binding.controlsOverlay.imagePreviewLeft.setVisibility(View.INVISIBLE);
-                                                                            binding.controlsOverlay.imagePreviewCenter.setVisibility(View.INVISIBLE);
-                                                                            binding.controlsOverlay.imagePreviewRight.setVisibility(View.INVISIBLE);
-                                                                            binding.recyclerView.setVisibility(View.VISIBLE);
-                                                                        }
-                                                                    }
-        );
+            @Override
+            public void onStopTrackingTouch(@NonNull Slider slider) {
+                binding.controlsOverlay.imagePreviewLeft.setVisibility(View.INVISIBLE);
+                binding.controlsOverlay.imagePreviewCenter.setVisibility(View.INVISIBLE);
+                binding.controlsOverlay.imagePreviewRight.setVisibility(View.INVISIBLE);
+                binding.recyclerView.setVisibility(View.VISIBLE);
+            }
+        });
 
         binding.controlsOverlay.pageSlider.addOnChangeListener((slider1, value, fromUser) -> {
             if (fromUser) seekToPosition((int) value);
@@ -512,12 +495,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         // Information micro menu
         binding.controlsOverlay.informationMicroMenu.setSubmarineItemClickListener((p, i) -> onInfoMicroMenuClick(p));
-        binding.controlsOverlay.informationMicroMenu.addSubmarineItem(
-                new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book)/*, null, getResources().getString(R.string.book_details)*/)
-        );
-        binding.controlsOverlay.informationMicroMenu.addSubmarineItem(
-                new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page)/*, null, getResources().getString(R.string.page_details)*/)
-        );
+        binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book)/*, null, getResources().getString(R.string.book_details)*/));
+        binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page)/*, null, getResources().getString(R.string.page_details)*/));
         binding.controlsOverlay.viewerInfoBtn.setOnClickListener(v -> {
             binding.controlsOverlay.favouriteMicroMenu.dips();
             binding.controlsOverlay.informationMicroMenu.floats();
@@ -600,8 +579,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (0 == position) { // Content
             ReaderBottomContentFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager());
         } else { // Image
-            float currentScale = adapter.getAbsoluteScaleAtPosition(imageIndex);
-            ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+            float currentScale = adapter.getAbsoluteScaleAtPosition(absImageIndex);
+            ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), absImageIndex, currentScale);
         }
         binding.controlsOverlay.informationMicroMenu.dips();
     }
@@ -611,19 +590,12 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         SubmarineView favMenu = binding.controlsOverlay.favouriteMicroMenu;
         favMenu.clearAllSubmarineItems();
-        favMenu.addSubmarineItem(
-                new SubmarineItem(
-                        ContextCompat.getDrawable(requireContext(), isContentFavourite ? R.drawable.ic_book_fav : R.drawable.ic_book)/*,
+        favMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), isContentFavourite ? R.drawable.ic_book_fav : R.drawable.ic_book)/*,
                         null,
-                        getResources().getString(R.string.book_favourite_toggle)*/
-                )
-        );
-        favMenu.addSubmarineItem(
-                new SubmarineItem(ContextCompat.getDrawable(requireContext(), isPageFavourite ? R.drawable.ic_page_fav : R.drawable.ic_page)/*,
+                        getResources().getString(R.string.book_favourite_toggle)*/));
+        favMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), isPageFavourite ? R.drawable.ic_page_fav : R.drawable.ic_page)/*,
                         null,
-                        getResources().getString(R.string.page_favourite_toggle)*/
-                )
-        );
+                        getResources().getString(R.string.page_favourite_toggle)*/));
         favMenu.floats();
     }
 
@@ -633,7 +605,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private void onFavouriteMicroMenuClick(int position) {
         if (0 == position) viewModel.toggleContentFavourite(this::onBookFavouriteSuccess);
         else if (1 == position)
-            viewModel.toggleImageFavourite(this.imageIndex, this::onPageFavouriteSuccess);
+            viewModel.toggleImageFavourite(this.absImageIndex, this::onPageFavouriteSuccess);
 
         binding.controlsOverlay.favouriteMicroMenu.dips();
     }
@@ -683,8 +655,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (images.isEmpty()) {
             setSystemBarsVisible(true);
             binding.viewerNoImgTxt.setVisibility(View.VISIBLE);
-        } else if (imageIndex > -1 && imageIndex < images.size()) {
-            isPageFavourite = images.get(imageIndex).isFavourite();
+        } else if (absImageIndex > -1 && absImageIndex < images.size()) {
+            isPageFavourite = images.get(absImageIndex).isFavourite();
             updateFavouriteButtonIcon();
             binding.viewerNoImgTxt.setVisibility(View.GONE);
             binding.viewerLoadingTxt.setVisibility(View.GONE);
@@ -699,12 +671,22 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (null == binding) return;
 
         // TODO at some point we'd need to better synch images and book loading to avoid that
-        maxPosition = Math.max(1, adapter.getItemCount() - 1);
-        binding.controlsOverlay.pageSlider.setValue(Helper.coerceIn(binding.controlsOverlay.pageSlider.getValue(), 0, maxPosition));
-        binding.controlsOverlay.pageSlider.setValueTo(maxPosition);
+        absMaxPosition = Math.max(1, adapter.getItemCount() - 1);
+        int sliderMaxPos = absMaxPosition;
+        if (Preferences.isViewerChapteredNavigation()) {
+            Chapter currentChapter = getCurrentChapter();
+            if (currentChapter != null) {
+                List<ImageFile> chImgs = currentChapter.getImageFiles();
+                if (chImgs != null) sliderMaxPos = chImgs.size();
+            }
+        }
+        // Next line to avoid setting a max position inferior to current position
+        binding.controlsOverlay.pageSlider.setValue(Helper.coerceIn(binding.controlsOverlay.pageSlider.getValue(), 0, sliderMaxPos));
+        binding.controlsOverlay.pageSlider.setValueTo(sliderMaxPos);
 
         // Can't access the gallery when there's no page to display
-        if (maxPosition > -1) binding.controlsOverlay.viewerGalleryBtn.setVisibility(View.VISIBLE);
+        if (adapter.getItemCount() > 0)
+            binding.controlsOverlay.viewerGalleryBtn.setVisibility(View.VISIBLE);
         else binding.controlsOverlay.viewerGalleryBtn.setVisibility(View.GONE);
 
         if (targetStartingIndex > -1) applyStartingIndex(targetStartingIndex);
@@ -724,8 +706,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         else targetStartingIndex = startingIndex; // Loading a new book
     }
 
-    private void applyStartingIndex(int startingIndex) {
-        indexRefreshDebouncer.submit(startingIndex);
+    private void applyStartingIndex(int absStartingIndex) {
+        indexRefreshDebouncer.submit(absStartingIndex);
         targetStartingIndex = -1;
     }
 
@@ -739,8 +721,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         else {
             if (LinearLayoutManager.HORIZONTAL == llm.getOrientation() && binding != null)
                 binding.recyclerView.scrollToPosition(startingIndex);
-            else
-                llm.scrollToPositionWithOffset(startingIndex, 0);
+            else llm.scrollToPositionWithOffset(startingIndex, 0);
         }
     }
 
@@ -757,6 +738,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         bookPreferences = content.getBookPreferences();
         isContentArchive = content.isArchive();
         isContentFavourite = content.isFavourite();
+        chapters = content.getChapters();
         // Wait for starting index only if content actually changes
         if (content.getId() != contentId) startingIndexLoaded = false;
         contentId = content.getId();
@@ -783,10 +765,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
     @Override
     public void onDeleteElement(boolean deletePage) {
-        if (deletePage)
-            viewModel.deletePage(imageIndex, this::onDeleteError);
-        else
-            viewModel.deleteContent(this::onDeleteError);
+        if (deletePage) viewModel.deletePage(absImageIndex, this::onDeleteError);
+        else viewModel.deleteContent(this::onDeleteError);
     }
 
 
@@ -812,20 +792,20 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (null == binding) return;
         if (!startingIndexLoaded) return;
 
-        if (scrollPosition != imageIndex) {
+        if (scrollPosition != absImageIndex) {
             boolean isScrollLTR = true;
             int direction = Preferences.getContentDirection(bookPreferences);
-            if (Constant.VIEWER_DIRECTION_LTR == direction && imageIndex > scrollPosition)
+            if (Constant.VIEWER_DIRECTION_LTR == direction && absImageIndex > scrollPosition)
                 isScrollLTR = false;
-            else if (Constant.VIEWER_DIRECTION_RTL == direction && imageIndex < scrollPosition)
+            else if (Constant.VIEWER_DIRECTION_RTL == direction && absImageIndex < scrollPosition)
                 isScrollLTR = false;
             adapter.setScrollLTR(isScrollLTR);
             hidePendingMicroMenus();
 
             // Manage scaling reset / stability if we're using horizontal (independent pages) mode
             if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences)) {
-                if (Preferences.isViewerMaintainHorizontalZoom() && imageIndex > -1) {
-                    float previousScale = adapter.getRelativeScaleAtPosition(imageIndex);
+                if (Preferences.isViewerMaintainHorizontalZoom() && absImageIndex > -1) {
+                    float previousScale = adapter.getRelativeScaleAtPosition(absImageIndex);
                     Timber.d(">> relative scale : %s", previousScale);
                     if (previousScale > 0)
                         adapter.setRelativeScaleAtPosition(scrollPosition, previousScale);
@@ -839,14 +819,14 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             binding.viewerFixBtn.setVisibility(View.GONE);
         }
 
-        int scrollDirection = scrollPosition - imageIndex;
-        imageIndex = scrollPosition;
-        ImageFile currentImage = adapter.getImageAt(imageIndex);
+        int scrollDirection = scrollPosition - absImageIndex;
+        absImageIndex = scrollPosition;
+        ImageFile currentImage = adapter.getImageAt(absImageIndex);
         if (currentImage != null) {
             Preferences.setViewerCurrentPageNum(currentImage.getOrder());
             viewModel.markPageAsRead(currentImage.getOrder());
             // Remember the last relevant movement and schedule it for execution
-            processPositionDebouncer.submit(new ImmutablePair<>(imageIndex, scrollDirection));
+            processPositionDebouncer.submit(new ImmutablePair<>(absImageIndex, scrollDirection));
             isPageFavourite = currentImage.isFavourite();
         }
 
@@ -858,20 +838,27 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      * Update the display of page position controls (text and bar)
      */
     private void updatePageControls() {
-        ImageFile img = adapter.getImageAt(imageIndex);
+        ImageFile img = adapter.getImageAt(absImageIndex);
         if (null == img) {
-            Timber.w("No image at position %s", imageIndex);
+            Timber.w("No image at absolute position %s", absImageIndex);
             return;
         }
 
-        String pageNum = img.getOrder() + "";
-        String maxPage = maxPageNumber + "";
+        int pageNum = img.getOrder();
+        if (Preferences.isViewerChapteredNavigation()) {
+            Chapter currentChap = getCurrentChapter();
+            if (currentChap != null && currentChap.getImageFiles() != null)
+                pageNum = pageNum - currentChap.getImageFiles().get(0).getOrder() + 1;
+        }
 
-        pageCurrentNumber.setText(pageNum);
+        String pageNumStr = pageNum + "";
+        String maxPage = relMaxPageNumber + "";
+
+        pageCurrentNumber.setText(pageNumStr);
         pageMaxNumber.setText(maxPage);
-        binding.viewerPagenumberText.setText(format("%s / %s", pageNum, maxPage));
+        binding.viewerPagenumberText.setText(format("%s / %s", pageNumStr, maxPage));
 
-        binding.controlsOverlay.pageSlider.setValue(imageIndex);
+        binding.controlsOverlay.pageSlider.setValue(absImageIndex);
     }
 
     /**
@@ -887,7 +874,13 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         prevButton.setVisibility(content.isFirst() ? View.INVISIBLE : View.VISIBLE);
         nextButton.setVisibility(content.isLast() ? View.INVISIBLE : View.VISIBLE);
 
-        maxPageNumber = content.getQtyPages();
+        relMaxPageNumber = content.getQtyPages();
+        if (Preferences.isViewerChapteredNavigation()) {
+            Chapter currentChap = getCurrentChapter();
+            if (currentChap != null && currentChap.getImageFiles() != null)
+                relMaxPageNumber = currentChap.getImageFiles().size();
+        }
+
         updatePageControls();
     }
 
@@ -961,8 +954,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         // Needs ARGB_8888 to be able to resize images using RenderScript
         if (Preferences.isContentSmoothRendering(bookPreferences))
             CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.ARGB_8888);
-        else
-            CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.RGB_565);
+        else CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.RGB_565);
 
         binding.recyclerView.setAdapter(null);
         binding.recyclerView.setLayoutManager(null);
@@ -971,7 +963,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         binding.recyclerView.setLayoutManager(llm);
         adapter.notifyDataSetChanged(); // NB : will re-run onBindViewHolder for all displayed pictures
 
-        seekToPosition(imageIndex);
+        seekToPosition(absImageIndex);
     }
 
     private void onUpdatePageNumDisplay() {
@@ -1042,17 +1034,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      * Handler for the "fix" button
      */
     private void fixPage() {
-        PowerMenu.Builder powerMenuBuilder = new PowerMenu.Builder(requireContext())
-                .setWidth(getResources().getDimensionPixelSize(R.dimen.dialog_width))
-                .setAnimation(MenuAnimation.SHOW_UP_CENTER)
-                .setMenuRadius(10f)
-                .setIsMaterial(true)
-                .setLifecycleOwner(requireActivity())
-                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87))
-                .setTextTypeface(Typeface.DEFAULT)
-                .setMenuColor(ThemeHelper.getColor(requireContext(), R.color.window_background_light))
-                .setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
-                .setAutoDismiss(true);
+        PowerMenu.Builder powerMenuBuilder = new PowerMenu.Builder(requireContext()).setWidth(getResources().getDimensionPixelSize(R.dimen.dialog_width)).setAnimation(MenuAnimation.SHOW_UP_CENTER).setMenuRadius(10f).setIsMaterial(true).setLifecycleOwner(requireActivity()).setTextColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87)).setTextTypeface(Typeface.DEFAULT).setMenuColor(ThemeHelper.getColor(requireContext(), R.color.window_background_light)).setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1)).setAutoDismiss(true);
 
         powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.viewer_reload_page), false, R.drawable.ic_action_refresh, null, null, 0));
         powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.viewer_reparse_book), false, R.drawable.ic_attribute_source, null, null, 1));
@@ -1063,14 +1045,12 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             if (item.tag != null) {
                 int tag = (Integer) item.tag;
                 if (0 == tag) {
-                    viewModel.onPageChange(imageIndex, 0);
+                    viewModel.onPageChange(absImageIndex, 0);
                 } else if (1 == tag) {
-                    viewModel.reparseBook(
-                            t -> {
-                                Timber.w(t);
-                                binding.viewerLoadingTxt.setText(getResources().getString(R.string.redownloaded_error));
-                            }
-                    );
+                    viewModel.reparseBook(t -> {
+                        Timber.w(t);
+                        binding.viewerLoadingTxt.setText(getResources().getString(R.string.redownloaded_error));
+                    });
                     binding.viewerLoadingTxt.setText(getResources().getString(R.string.please_wait));
                     binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
                 }
@@ -1085,23 +1065,22 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      * Load next page
      */
     private void nextPage() {
-        if (imageIndex == maxPosition) {
+        if (absImageIndex == absMaxPosition) {
             if (Preferences.isViewerContinuous()) nextBook();
             return;
         }
 
         if (Preferences.isViewerTapTransitions()) {
             if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
-                binding.recyclerView.smoothScrollToPosition(imageIndex + 1);
+                binding.recyclerView.smoothScrollToPosition(absImageIndex + 1);
             else {
-                smoothScroller.setTargetPosition(imageIndex + 1);
+                smoothScroller.setTargetPosition(absImageIndex + 1);
                 llm.startSmoothScroll(smoothScroller);
             }
         } else {
             if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
-                binding.recyclerView.scrollToPosition(imageIndex + 1);
-            else
-                llm.scrollToPositionWithOffset(imageIndex + 1, 0);
+                binding.recyclerView.scrollToPosition(absImageIndex + 1);
+            else llm.scrollToPositionWithOffset(absImageIndex + 1, 0);
         }
     }
 
@@ -1109,37 +1088,83 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      * Load previous page
      */
     private void previousPage() {
-        if (0 == imageIndex) {
+        if (0 == absImageIndex) {
             if (Preferences.isViewerContinuous()) previousBook();
             return;
         }
 
         if (Preferences.isViewerTapTransitions())
-            binding.recyclerView.smoothScrollToPosition(imageIndex - 1);
-        else
-            binding.recyclerView.scrollToPosition(imageIndex - 1);
+            binding.recyclerView.smoothScrollToPosition(absImageIndex - 1);
+        else binding.recyclerView.scrollToPosition(absImageIndex - 1);
     }
 
     /**
      * Load next book
      */
     private void nextBook() {
-        viewModel.loadNextContent(imageIndex);
+        if (Preferences.isViewerChapteredNavigation()) {
+            if (nextChapter()) return;
+        } else viewModel.loadNextContent(absImageIndex);
     }
 
     /**
      * Load previous book
      */
     private void previousBook() {
-        viewModel.loadPreviousContent(imageIndex);
+        if (Preferences.isViewerChapteredNavigation()) {
+            if (previousChapter()) return;
+        } else viewModel.loadPreviousContent(absImageIndex);
+    }
+
+    private boolean previousChapter() {
+        int currentChIndex = getCurrentChapterIndex();
+        if (currentChIndex > 0) {
+            Chapter selectedChapter = chapters.get(currentChIndex - 1);
+            List<ImageFile> chImgs = selectedChapter.getImageFiles();
+            if (null == chImgs || chImgs.isEmpty()) return false;
+            goToPage(chImgs.get(0).getOrder());
+            ToastHelper.toast(selectedChapter.getName());
+            return true;
+        }
+        return false;
+    }
+
+    private boolean nextChapter() {
+        int currentChIndex = getCurrentChapterIndex();
+        if (currentChIndex < chapters.size() - 1) {
+            Chapter selectedChapter = chapters.get(currentChIndex + 1);
+            List<ImageFile> chImgs = selectedChapter.getImageFiles();
+            if (null == chImgs || chImgs.isEmpty()) return false;
+            goToPage(chImgs.get(0).getOrder());
+            ToastHelper.toast(selectedChapter.getName());
+            return true;
+        }
+        return false;
+    }
+
+    private int getCurrentChapterIndex() {
+        Chapter ch = getCurrentChapter();
+        if (null == ch || null == chapters || chapters.isEmpty()) return -1;
+
+        for (int i = 0; i < chapters.size(); i++)
+            if (chapters.get(i).getId() == ch.getId()) return i;
+
+        return -1;
+    }
+
+    @Nullable
+    private Chapter getCurrentChapter() {
+        ImageFile currentImg = adapter.getImageAt(absImageIndex);
+        if (currentImg != null) return currentImg.getLinkedChapter();
+        return null;
     }
 
     /**
      * Seek to the given position; update preview images if they are visible
      *
-     * @param position Position to go to (0-indexed)
+     * @param absIndex Index to go to (0-indexed; books-scale)
      */
-    private void seekToPosition(int position) {
+    private void seekToPosition(int absIndex) {
         // Hide pending micro-menus
         hidePendingMicroMenus();
 
@@ -1154,49 +1179,39 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
                 nextImageView = binding.controlsOverlay.imagePreviewLeft;
             }
 
-            ImageFile previousImg = adapter.getImageAt(position - 1);
-            ImageFile currentImg = adapter.getImageAt(position);
-            ImageFile nextImg = adapter.getImageAt(position + 1);
+            ImageFile previousImg = adapter.getImageAt(absIndex - 1);
+            ImageFile currentImg = adapter.getImageAt(absIndex);
+            ImageFile nextImg = adapter.getImageAt(absIndex + 1);
 
             if (previousImg != null) {
-                Glide.with(previousImageView)
-                        .load(Uri.parse(previousImg.getFileUri()))
-                        .apply(glideRequestOptions)
-                        .into(previousImageView);
+                Glide.with(previousImageView).load(Uri.parse(previousImg.getFileUri())).apply(glideRequestOptions).into(previousImageView);
                 previousImageView.setVisibility(View.VISIBLE);
             } else previousImageView.setVisibility(View.INVISIBLE);
 
             if (currentImg != null)
-                Glide.with(binding.controlsOverlay.imagePreviewCenter)
-                        .load(Uri.parse(currentImg.getFileUri()))
-                        .apply(glideRequestOptions)
-                        .into(binding.controlsOverlay.imagePreviewCenter);
+                Glide.with(binding.controlsOverlay.imagePreviewCenter).load(Uri.parse(currentImg.getFileUri())).apply(glideRequestOptions).into(binding.controlsOverlay.imagePreviewCenter);
 
             if (nextImg != null) {
-                Glide.with(nextImageView)
-                        .load(Uri.parse(nextImg.getFileUri()))
-                        .apply(glideRequestOptions)
-                        .into(nextImageView);
+                Glide.with(nextImageView).load(Uri.parse(nextImg.getFileUri())).apply(glideRequestOptions).into(nextImageView);
                 nextImageView.setVisibility(View.VISIBLE);
             } else nextImageView.setVisibility(View.INVISIBLE);
         }
 
-        if (position == imageIndex + 1 || position == imageIndex - 1) {
-            binding.recyclerView.smoothScrollToPosition(position);
+        if (absIndex == absImageIndex + 1 || absIndex == absImageIndex - 1) {
+            binding.recyclerView.smoothScrollToPosition(absIndex);
         } else {
-            binding.recyclerView.scrollToPosition(position);
+            binding.recyclerView.scrollToPosition(absIndex);
         }
     }
 
     /**
      * Go to the given page number
      *
-     * @param pageNum Page number to go to (1-indexed)
+     * @param absPageNum Asbolute page number to go to (1-indexed; book-scale)
      */
-    private void goToPage(int pageNum) {
-        int position = pageNum - 1;
-        if (position == imageIndex || position < 0 || position > maxPosition)
-            return;
+    private void goToPage(int absPageNum) {
+        int position = absPageNum - 1;
+        if (position == absImageIndex || position < 0 || position > absMaxPosition) return;
         seekToPosition(position);
     }
 
@@ -1222,8 +1237,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         if (Preferences.Constant.VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
             previousPage();
-        else
-            nextPage();
+        else nextPage();
     }
 
     /**
@@ -1248,8 +1262,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         if (Preferences.Constant.VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
             nextPage();
-        else
-            previousPage();
+        else previousPage();
     }
 
     /**
@@ -1269,8 +1282,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         if (View.VISIBLE == binding.controlsOverlay.getRoot().getVisibility())
             hideControlsOverlay();
-        else
-            showControlsOverlay();
+        else showControlsOverlay();
     }
 
     /**
@@ -1278,42 +1290,36 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      */
     private void onLongTap() {
         if (!Preferences.isViewerHoldToZoom()) {
-            float currentScale = adapter.getAbsoluteScaleAtPosition(imageIndex);
-            ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+            float currentScale = adapter.getAbsoluteScaleAtPosition(absImageIndex);
+            ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), absImageIndex, currentScale);
         }
     }
 
     private void showControlsOverlay() {
-        binding.controlsOverlay.getRoot().animate()
-                .alpha(1.0f)
-                .setDuration(100)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                        if (binding != null) {
-                            binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
-                            binding.viewerPagenumberText.setVisibility(View.GONE);
-                        }
-                        setSystemBarsVisible(true);
-                    }
-                });
+        binding.controlsOverlay.getRoot().animate().alpha(1.0f).setDuration(100).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if (binding != null) {
+                    binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
+                    binding.viewerPagenumberText.setVisibility(View.GONE);
+                }
+                setSystemBarsVisible(true);
+            }
+        });
     }
 
     private void hideControlsOverlay() {
-        binding.controlsOverlay.getRoot().animate()
-                .alpha(0.0f)
-                .setDuration(100)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                        if (binding != null) {
-                            binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
-                            onUpdatePageNumDisplay();
-                        }
-                    }
-                });
+        binding.controlsOverlay.getRoot().animate().alpha(0.0f).setDuration(100).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if (binding != null) {
+                    binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
+                    onUpdatePageNumDisplay();
+                }
+            }
+        });
         setSystemBarsVisible(false);
     }
 
@@ -1322,16 +1328,12 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      */
     private void displayGallery() {
         hasGalleryBeenShown = true;
-        viewModel.setViewerStartingIndex(imageIndex); // Memorize the current page
+        viewModel.setViewerStartingIndex(absImageIndex); // Memorize the current page
 
         if (getParentFragmentManager().getBackStackEntryCount() > 0) { // Gallery mode (Library -> gallery -> pager)
             getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
         } else { // Pager mode (Library -> pager -> gallery -> pager)
-            getParentFragmentManager()
-                    .beginTransaction()
-                    .replace(android.R.id.content, ReaderGalleryFragment.newInstance())
-                    .addToBackStack(null)
-                    .commit();
+            getParentFragmentManager().beginTransaction().replace(android.R.id.content, ReaderGalleryFragment.newInstance()).addToBackStack(null).commit();
         }
     }
 
@@ -1350,9 +1352,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         // TODO use androidx.core 1.6.0-beta01+ & WindowCompat (see https://stackoverflow.com/questions/62643517/immersive-fullscreen-on-android-11)
         // TODO prepare to fiddle with paddings and margins : https://stackoverflow.com/questions/57293449/go-edge-to-edge-on-android-correctly-with-windowinsets
         if (visible) {
-            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
             // Revert to default regarding notch area display
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
@@ -1361,12 +1361,9 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE
                     // Set the content to appear under the system bars so that the
                     // content doesn't resize when the system bars hide and show.
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                     // Hide the nav bar and status bar
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN;
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
             // Display around the notch area
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && Preferences.isViewerDisplayAroundNotch()) {
                 params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
@@ -1389,8 +1386,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
             Preferences.setViewerSlideshowDelayVertical(prefsDelay);
-        else
-            Preferences.setViewerSlideshowDelay(prefsDelay);
+        else Preferences.setViewerSlideshowDelay(prefsDelay);
 
         Helper.removeLabels(binding.controlsOverlay.slideshowDelaySlider);
         binding.controlsOverlay.slideshowDelaySlider.setVisibility(View.GONE);
@@ -1405,8 +1401,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         int delayPref;
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
             delayPref = Preferences.getViewerSlideshowDelayVertical();
-        else
-            delayPref = Preferences.getViewerSlideshowDelay();
+        else delayPref = Preferences.getViewerSlideshowDelay();
 
         float factor;
 
@@ -1433,8 +1428,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (showToast) {
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
                 ToastHelper.toast(R.string.slideshow_start_vertical, getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)[convertPrefsDelayToSliderPosition(delayPref)]);
-            else
-                ToastHelper.toast(R.string.slideshow_start, factor);
+            else ToastHelper.toast(R.string.slideshow_start, factor);
         }
 
         scrollListener.disableScroll();
@@ -1442,16 +1436,12 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) {
             smoothScroller = new ReaderSmoothScroller(requireContext()); // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
             smoothScroller.setCurrentPositionY(scrollListener.getTotalScrolledY());
-            smoothScroller.setItemHeight(adapter.getDimensionsAtPosition(imageIndex).y);
+            smoothScroller.setItemHeight(adapter.getDimensionsAtPosition(absImageIndex).y);
             smoothScroller.setTargetPosition(adapter.getItemCount() - 1);
             smoothScroller.setSpeed(900f / (factor / 4f));
             llm.startSmoothScroll(smoothScroller);
         } else {
-            slideshowTimer = Observable.timer((long) (factor * 1000), TimeUnit.MILLISECONDS)
-                    .subscribeOn(Schedulers.computation())
-                    .repeat()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(v -> nextPage());
+            slideshowTimer = Observable.timer((long) (factor * 1000), TimeUnit.MILLISECONDS).subscribeOn(Schedulers.computation()).repeat().observeOn(AndroidSchedulers.mainThread()).subscribe(v -> nextPage());
         }
         isSlideshowActive = true;
     }

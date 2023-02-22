@@ -14,7 +14,7 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/viewer_gallery_menu"
+        app:menu="@menu/reader_gallery_menu"
         app:navigationIcon="@drawable/ic_arrow_back"
         app:title="@string/gallery_title" />
 
@@ -27,7 +27,7 @@
         android:minHeight="?android:attr/actionBarSize"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/viewer_gallery_selection_menu"
+        app:menu="@menu/reader_gallery_selection_menu"
         app:navigationIcon="@drawable/ic_arrow_back" />
 
     <androidx.constraintlayout.widget.Barrier

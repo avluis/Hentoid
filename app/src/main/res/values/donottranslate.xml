@@ -508,6 +508,7 @@
     <string name="pref_viewer_gallery_columns_default" translatable="false">4</string>
     <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
     <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
+    <bool name="pref_viewer_chaptered_navigation_default" translatable="false">false</bool>
     <bool name="pref_viewer_continuous_default" translatable="false">false</bool>
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_ratio_completed_threshold_default" translatable="false">-1</string>

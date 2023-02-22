@@ -658,6 +658,13 @@
                 android:title="@string/pref_viewer_open_gallery"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
+                android:defaultValue="@bool/pref_viewer_chaptered_navigation_default"
+                android:key="viewer_chaptered_navigation"
+                android:summaryOff="@string/pref_viewer_chaptered_navigation_summary_off"
+                android:summaryOn="@string/pref_viewer_chaptered_navigation_summary_on"
+                android:title="@string/pref_viewer_chaptered_navigation_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_continuous_default"
                 android:key="pref_viewer_continuous"
                 android:summaryOff="@string/pref_viewer_continuous_summary_off"

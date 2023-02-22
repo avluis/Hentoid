@@ -213,6 +213,9 @@
     <string name="pref_viewer_resume_last_left_summary_off">Reopening a book always starts at page 1</string>
     <string name="pref_viewer_resume_last_left_summary_on">Reopening a book resumes on last read page, except if the end of the book has been reached</string>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
+    <string name="pref_viewer_chaptered_navigation_title">Chaptered navigation</string>
+    <string name="pref_viewer_chaptered_navigation_summary_off">Next / previous buttons go to next/previous book</string>
+    <string name="pref_viewer_chaptered_navigation_summary_on">Next / previous buttons go to next/previous chapter within the current book</string>
     <string name="pref_viewer_continuous_title">Continuous reading</string>
     <string name="pref_viewer_continuous_summary_off">Using next page on last page has no effect</string>
     <string name="pref_viewer_continuous_summary_on">Using next page on last page loads the next book</string>

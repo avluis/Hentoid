@@ -527,6 +527,10 @@ public final class Preferences {
         return getBoolPref(Key.VIEWER_OPEN_GALLERY, Default.VIEWER_OPEN_GALLERY);
     }
 
+    public static boolean isViewerChapteredNavigation() {
+        return getBoolPref(Key.VIEWER_CHAPTERED_NAVIGATION, Default.VIEWER_CHAPTERED_NAVIGATION);
+    }
+
     public static boolean isViewerContinuous() {
         return getBoolPref(Key.VIEWER_CONTINUOUS, Default.VIEWER_CONTINUOUS);
     }
@@ -887,6 +891,8 @@ public final class Preferences {
         static final String VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
         public static final String VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions";
         static final String VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
+
+        static final String VIEWER_CHAPTERED_NAVIGATION = "viewer_chaptered_navigation";
         public static final String VIEWER_CONTINUOUS = "pref_viewer_continuous";
         static final String VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
         public static final String VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
@@ -1004,6 +1010,7 @@ public final class Preferences {
         static final boolean VIEWER_TAP_TRANSITIONS = true;
         static final boolean VIEWER_ZOOM_TRANSITIONS = true;
         static final boolean VIEWER_OPEN_GALLERY = false;
+        static final boolean VIEWER_CHAPTERED_NAVIGATION = false;
         static final boolean VIEWER_CONTINUOUS = false;
         static final boolean VIEWER_PAGE_TURN_SWIPE = true;
         static final boolean VIEWER_PAGE_TURN_TAP = true;

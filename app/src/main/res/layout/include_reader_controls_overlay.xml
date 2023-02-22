@@ -142,8 +142,7 @@
         app:thumbColor="?colorSecondary"
         app:tickVisible="false"
         app:trackColorActive="@color/accent_red"
-        app:trackColorInactive="@color/white_opacity_25"
-        tools:targetApi="lollipop" />
+        app:trackColorInactive="@color/white_opacity_25" />
 
     <TextView
         android:id="@+id/viewer_pager_right_txt"
@@ -234,7 +233,7 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:longClickable="true"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/viewer_pager_menu"
+        app:menu="@menu/reader_pager_menu"
         app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
 
