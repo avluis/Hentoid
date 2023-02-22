@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.reader;
 
-import static java.lang.String.format;
 import static me.devsaki.hentoid.util.Preferences.Constant;
 import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_05;
 import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_1;
@@ -25,9 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -66,8 +63,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nonnull;
-
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -77,12 +72,10 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ReaderActivity;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
-import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -118,8 +111,6 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private ReaderViewModel viewModel;
     private int absImageIndex = -1; // Absolute (book scale) 0-based image index
-    private int absMaxPosition; // Absolute (book-scale) max position, for navigation
-    private int relMaxPageNumber; // Relative (chapter-scale) max page number
     private boolean hasGalleryBeenShown = false;
     private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
     private Disposable slideshowTimer = null;
@@ -130,7 +121,6 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private boolean isContentArchive; // True if current content is an archive
     private boolean isPageFavourite; // True if current page is favourited
     private boolean isContentFavourite; // True if current content is favourited
-    private List<Chapter> chapters;
 
     private Debouncer<Integer> indexRefreshDebouncer;
     private Debouncer<Pair<Integer, Integer>> processPositionDebouncer;
@@ -151,10 +141,6 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private MenuItem shuffleButton;
 
     private ReaderNavigation navigator;
-
-    // Bottom bar controls (proxies for left or right position, depending on current reading direction)
-    private TextView pageCurrentNumber;
-    private TextView pageMaxNumber;
 
     // Debouncer for the slideshow slider
     private Debouncer<Integer> slideshowSliderDebouncer;
@@ -228,6 +214,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         slideshowSliderDebouncer.clear();
         processPositionDebouncer.clear();
         rescaleDebouncer.clear();
+        navigator.clear();
         binding.recyclerView.setAdapter(null);
         binding = null;
         super.onDestroyView();
@@ -285,10 +272,10 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         ((ReaderActivity) requireActivity()).registerKeyListener(new ReaderKeyListener(requireContext()).setOnVolumeDownListener(b -> {
-            if (b && Preferences.isViewerVolumeToSwitchBooks()) previousBook();
+            if (b && Preferences.isViewerVolumeToSwitchBooks()) navigator.previousFunctional();
             else previousPage();
         }).setOnVolumeUpListener(b -> {
-            if (b && Preferences.isViewerVolumeToSwitchBooks()) nextBook();
+            if (b && Preferences.isViewerVolumeToSwitchBooks()) navigator.nextFunctional();
             else nextPage();
         }).setOnKeyLeftListener(b -> onLeftTap()).setOnKeyRightListener(b -> onRightTap()).setOnBackListener(b -> onBackClick()));
     }
@@ -300,7 +287,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         setSystemBarsVisible(binding.controlsOverlay.getRoot().getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
         if (Preferences.Constant.VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             ReaderBrowseModeDialogFragment.invoke(this);
-        updatePageControls();
+        navigator.updatePageControls();
     }
 
     // Make sure position is saved when app is closed by the user
@@ -416,10 +403,10 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         smoothScroller = new ReaderSmoothScroller(requireContext());
 
         scrollListener.setOnStartOutOfBoundScrollListener(() -> {
-            if (Preferences.isViewerContinuous()) previousBook();
+            if (Preferences.isViewerContinuous()) navigator.previousFunctional();
         });
         scrollListener.setOnEndOutOfBoundScrollListener(() -> {
-            if (Preferences.isViewerContinuous()) nextBook();
+            if (Preferences.isViewerContinuous()) navigator.nextFunctional();
         });
     }
 
@@ -465,10 +452,15 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         binding.viewerFixBtn.setOnClickListener(v -> fixPage());
 
         // Next/previous book
-        navigator = new ReaderNavigation(binding.controlsOverlay);
-
-        binding.controlsOverlay.viewerPrevBookBtn.setOnClickListener(v -> previousBook());
-        binding.controlsOverlay.viewerNextBookBtn.setOnClickListener(v -> nextBook());
+        navigator = new ReaderNavigation(binding);
+        navigator.setGoToPage(this::goToPage);
+        navigator.setNextBook(() -> viewModel.loadNextContent(absImageIndex));
+        navigator.setPreviousBook(() -> viewModel.loadPreviousContent(absImageIndex));
+        navigator.setGetCurrentImg(() -> {
+            ImageFile img = adapter.getImageAt(absImageIndex);
+            if (null == img) Timber.w("No image at absolute position %s", absImageIndex);
+            return img;
+        });
 
         // Page slider and preview
         binding.controlsOverlay.pageSlider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
@@ -661,6 +653,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             binding.viewerNoImgTxt.setVisibility(View.GONE);
             binding.viewerLoadingTxt.setVisibility(View.GONE);
         }
+        navigator.onImagesChanged(images);
     }
 
     /**
@@ -670,27 +663,10 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private void differEndCallback() {
         if (null == binding) return;
 
-        // TODO at some point we'd need to better synch images and book loading to avoid that
-        absMaxPosition = Math.max(1, adapter.getItemCount() - 1);
-        int sliderMaxPos = absMaxPosition;
-        if (Preferences.isViewerChapteredNavigation()) {
-            Chapter currentChapter = getCurrentChapter();
-            if (currentChapter != null) {
-                List<ImageFile> chImgs = currentChapter.getImageFiles();
-                if (chImgs != null) sliderMaxPos = chImgs.size();
-            }
-        }
-        // Next line to avoid setting a max position inferior to current position
-        binding.controlsOverlay.pageSlider.setValue(Helper.coerceIn(binding.controlsOverlay.pageSlider.getValue(), 0, sliderMaxPos));
-        binding.controlsOverlay.pageSlider.setValueTo(sliderMaxPos);
-
-        // Can't access the gallery when there's no page to display
-        if (adapter.getItemCount() > 0)
-            binding.controlsOverlay.viewerGalleryBtn.setVisibility(View.VISIBLE);
-        else binding.controlsOverlay.viewerGalleryBtn.setVisibility(View.GONE);
+        // TODO double check nav controls update shouldn't go there
 
         if (targetStartingIndex > -1) applyStartingIndex(targetStartingIndex);
-        else updatePageControls();
+        else navigator.updatePageControls();
 
         isComputingImageList = false;
     }
@@ -738,13 +714,12 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         bookPreferences = content.getBookPreferences();
         isContentArchive = content.isArchive();
         isContentFavourite = content.isFavourite();
-        chapters = content.getChapters();
         // Wait for starting index only if content actually changes
         if (content.getId() != contentId) startingIndexLoaded = false;
         contentId = content.getId();
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
-        updateNavigationUi(content);
+        navigator.updateNavigationUi(content);
         updateFavouriteButtonIcon();
     }
 
@@ -830,58 +805,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             isPageFavourite = currentImage.isFavourite();
         }
 
-        updatePageControls();
+        navigator.updatePageControls();
         updateFavouriteButtonIcon();
-    }
-
-    /**
-     * Update the display of page position controls (text and bar)
-     */
-    private void updatePageControls() {
-        ImageFile img = adapter.getImageAt(absImageIndex);
-        if (null == img) {
-            Timber.w("No image at absolute position %s", absImageIndex);
-            return;
-        }
-
-        int pageNum = img.getOrder();
-        if (Preferences.isViewerChapteredNavigation()) {
-            Chapter currentChap = getCurrentChapter();
-            if (currentChap != null && currentChap.getImageFiles() != null)
-                pageNum = pageNum - currentChap.getImageFiles().get(0).getOrder() + 1;
-        }
-
-        String pageNumStr = pageNum + "";
-        String maxPage = relMaxPageNumber + "";
-
-        pageCurrentNumber.setText(pageNumStr);
-        pageMaxNumber.setText(maxPage);
-        binding.viewerPagenumberText.setText(format("%s / %s", pageNumStr, maxPage));
-
-        binding.controlsOverlay.pageSlider.setValue(absImageIndex);
-    }
-
-    /**
-     * Update the visibility of "next/previous book" buttons
-     *
-     * @param content Current book
-     */
-    private void updateNavigationUi(@Nonnull Content content) {
-        int direction = Preferences.getContentDirection(bookPreferences);
-        ImageButton nextButton = (Constant.VIEWER_DIRECTION_LTR == direction) ? binding.controlsOverlay.viewerNextBookBtn : binding.controlsOverlay.viewerPrevBookBtn;
-        ImageButton prevButton = (Constant.VIEWER_DIRECTION_LTR == direction) ? binding.controlsOverlay.viewerPrevBookBtn : binding.controlsOverlay.viewerNextBookBtn;
-
-        prevButton.setVisibility(content.isFirst() ? View.INVISIBLE : View.VISIBLE);
-        nextButton.setVisibility(content.isLast() ? View.INVISIBLE : View.VISIBLE);
-
-        relMaxPageNumber = content.getQtyPages();
-        if (Preferences.isViewerChapteredNavigation()) {
-            Chapter currentChap = getCurrentChapter();
-            if (currentChap != null && currentChap.getImageFiles() != null)
-                relMaxPageNumber = currentChap.getImageFiles().size();
-        }
-
-        updatePageControls();
     }
 
     /**
@@ -999,22 +924,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         int direction = Preferences.getContentDirection(bookPreferences);
         adapter.setScrollLTR(Constant.VIEWER_DIRECTION_LTR == direction);
-        if (Constant.VIEWER_DIRECTION_LTR == direction) {
-            pageCurrentNumber = binding.controlsOverlay.viewerPagerLeftTxt;
-            pageMaxNumber = binding.controlsOverlay.viewerPagerRightTxt;
-            binding.controlsOverlay.pageSlider.setRotationY(0);
-            binding.controlsOverlay.viewerPrevBookBtn.setOnClickListener(v -> previousBook());
-            binding.controlsOverlay.viewerNextBookBtn.setOnClickListener(v -> nextBook());
-        } else if (Constant.VIEWER_DIRECTION_RTL == direction) {
-            pageCurrentNumber = binding.controlsOverlay.viewerPagerRightTxt;
-            pageMaxNumber = binding.controlsOverlay.viewerPagerLeftTxt;
-            binding.controlsOverlay.pageSlider.setRotationY(180);
-            binding.controlsOverlay.viewerPrevBookBtn.setOnClickListener(v -> nextBook());
-            binding.controlsOverlay.viewerNextBookBtn.setOnClickListener(v -> previousBook());
-        }
-
-        pageMaxNumber.setOnClickListener(null);
-        pageCurrentNumber.setOnClickListener(v -> InputDialog.invokeNumberInputDialog(requireActivity(), R.string.goto_page, this::goToPage));
+        navigator.setDirection(direction);
     }
 
     /**
@@ -1065,8 +975,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      * Load next page
      */
     private void nextPage() {
-        if (absImageIndex == absMaxPosition) {
-            if (Preferences.isViewerContinuous()) nextBook();
+        if (absImageIndex == adapter.getItemCount() - 1) {
+            if (Preferences.isViewerContinuous()) navigator.nextFunctional();
             return;
         }
 
@@ -1089,74 +999,13 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      */
     private void previousPage() {
         if (0 == absImageIndex) {
-            if (Preferences.isViewerContinuous()) previousBook();
+            if (Preferences.isViewerContinuous()) navigator.previousFunctional();
             return;
         }
 
         if (Preferences.isViewerTapTransitions())
             binding.recyclerView.smoothScrollToPosition(absImageIndex - 1);
         else binding.recyclerView.scrollToPosition(absImageIndex - 1);
-    }
-
-    /**
-     * Load next book
-     */
-    private void nextBook() {
-        if (Preferences.isViewerChapteredNavigation()) {
-            if (nextChapter()) return;
-        } else viewModel.loadNextContent(absImageIndex);
-    }
-
-    /**
-     * Load previous book
-     */
-    private void previousBook() {
-        if (Preferences.isViewerChapteredNavigation()) {
-            if (previousChapter()) return;
-        } else viewModel.loadPreviousContent(absImageIndex);
-    }
-
-    private boolean previousChapter() {
-        int currentChIndex = getCurrentChapterIndex();
-        if (currentChIndex > 0) {
-            Chapter selectedChapter = chapters.get(currentChIndex - 1);
-            List<ImageFile> chImgs = selectedChapter.getImageFiles();
-            if (null == chImgs || chImgs.isEmpty()) return false;
-            goToPage(chImgs.get(0).getOrder());
-            ToastHelper.toast(selectedChapter.getName());
-            return true;
-        }
-        return false;
-    }
-
-    private boolean nextChapter() {
-        int currentChIndex = getCurrentChapterIndex();
-        if (currentChIndex < chapters.size() - 1) {
-            Chapter selectedChapter = chapters.get(currentChIndex + 1);
-            List<ImageFile> chImgs = selectedChapter.getImageFiles();
-            if (null == chImgs || chImgs.isEmpty()) return false;
-            goToPage(chImgs.get(0).getOrder());
-            ToastHelper.toast(selectedChapter.getName());
-            return true;
-        }
-        return false;
-    }
-
-    private int getCurrentChapterIndex() {
-        Chapter ch = getCurrentChapter();
-        if (null == ch || null == chapters || chapters.isEmpty()) return -1;
-
-        for (int i = 0; i < chapters.size(); i++)
-            if (chapters.get(i).getId() == ch.getId()) return i;
-
-        return -1;
-    }
-
-    @Nullable
-    private Chapter getCurrentChapter() {
-        ImageFile currentImg = adapter.getImageAt(absImageIndex);
-        if (currentImg != null) return currentImg.getLinkedChapter();
-        return null;
     }
 
     /**
@@ -1211,7 +1060,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      */
     private void goToPage(int absPageNum) {
         int position = absPageNum - 1;
-        if (position == absImageIndex || position < 0 || position > absMaxPosition) return;
+        if (position == absImageIndex || position < 0 || position > adapter.getItemCount() - 1)
+            return;
         seekToPosition(position);
     }
 
