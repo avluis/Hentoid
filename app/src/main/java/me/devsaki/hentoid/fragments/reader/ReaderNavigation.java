@@ -1,16 +1,18 @@
 package me.devsaki.hentoid.fragments.reader;
 
-import static java.lang.String.format;
-
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 import com.annimon.stream.function.Supplier;
+import com.google.android.material.slider.Slider;
 
 import java.util.List;
+import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
@@ -36,6 +38,7 @@ class ReaderNavigation {
 
     // Handlers
     private Consumer<Integer> goToPage;
+    private Consumer<Integer> seekToPos;
     private Runnable nextBook;
     private Runnable previousBook;
     private Supplier<ImageFile> getCurrentImg;
@@ -43,18 +46,51 @@ class ReaderNavigation {
     // == VARS
     private List<ImageFile> images;
     private List<Chapter> chapters;
-    private int relMaxPageNumber; // Relative (chapter-scale) max page number
+    private Chapter currentChapter;
+    private int maxPageNumber; // Relative (chapter-scale) max page number
 
 
-    public ReaderNavigation(FragmentReaderPagerBinding binding) {
-        this.superBinding = binding;
-        this.binding = binding.controlsOverlay;
+    public ReaderNavigation(FragmentReaderPagerBinding inBinding) {
+        superBinding = inBinding;
+        binding = inBinding.controlsOverlay;
+
+        binding.pageSlider.addOnChangeListener((slider1, value, fromUser) -> {
+            if (fromUser) {
+                int offset = 0;
+                Chapter currentChapter = getCurrentChapter();
+                if (currentChapter != null) {
+                    List<ImageFile> chapImgs = currentChapter.getReadableImageFiles();
+                    if (!chapImgs.isEmpty()) offset = chapImgs.get(0).getOrder() - 1;
+                }
+
+                seekToPos.accept(Math.max(0, offset + (int) value));
+            }
+        });
+
+        binding.pageSlider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull Slider slider) {
+                binding.imagePreviewLeft.setVisibility(View.VISIBLE);
+                binding.imagePreviewCenter.setVisibility(View.VISIBLE);
+                binding.imagePreviewRight.setVisibility(View.VISIBLE);
+                superBinding.recyclerView.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull Slider slider) {
+                binding.imagePreviewLeft.setVisibility(View.INVISIBLE);
+                binding.imagePreviewCenter.setVisibility(View.INVISIBLE);
+                binding.imagePreviewRight.setVisibility(View.INVISIBLE);
+                superBinding.recyclerView.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     void clear() {
         binding = null;
         superBinding = null;
         goToPage = null;
+        seekToPos = null;
         nextBook = null;
         previousBook = null;
         getCurrentImg = null;
@@ -62,6 +98,10 @@ class ReaderNavigation {
 
     void setGoToPage(Consumer<Integer> handler) {
         goToPage = handler;
+    }
+
+    void setSeekToPos(Consumer<Integer> handler) {
+        seekToPos = handler;
     }
 
     void setNextBook(Runnable handler) {
@@ -76,26 +116,30 @@ class ReaderNavigation {
         getCurrentImg = handler;
     }
 
+
+    /**
+     * Update the visibility of "next/previous book" buttons
+     *
+     * @param content Current book
+     */
+    void onContentChanged(@Nonnull Content content) {
+        int direction = Preferences.getContentDirection(content.getBookPreferences());
+        ImageButton nextButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.viewerNextBookBtn : binding.viewerPrevBookBtn;
+        ImageButton prevButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.viewerPrevBookBtn : binding.viewerNextBookBtn;
+
+        prevButton.setVisibility(content.isFirst() ? View.INVISIBLE : View.VISIBLE);
+        nextButton.setVisibility(content.isLast() ? View.INVISIBLE : View.VISIBLE);
+    }
+
     void onImagesChanged(List<ImageFile> images) {
         this.images = images;
-        chapters = Stream.of(images).map(ImageFile::getLinkedChapter).withoutNulls().sortBy(Chapter::getOrder).toList();
-
-        int sliderMaxPos = Math.max(1, images.size() - 1);
-        if (Preferences.isViewerChapteredNavigation()) {
-            Chapter currentChapter = getCurrentChapter();
-            if (currentChapter != null) {
-                List<ImageFile> chImgs = currentChapter.getImageFiles();
-                if (chImgs != null) sliderMaxPos = chImgs.size();
-            }
-        }
-        // Next line to avoid setting a max position inferior to current position
-        binding.pageSlider.setValue(Helper.coerceIn(binding.pageSlider.getValue(), 0, sliderMaxPos));
-        binding.pageSlider.setValueTo(sliderMaxPos);
+        chapters = Stream.of(images).map(ImageFile::getLinkedChapter).withoutNulls().sortBy(Chapter::getOrder).distinct().toList();
 
         // Can't access the gallery when there's no page to display
-        if (images.size() > 0)
-            binding.viewerGalleryBtn.setVisibility(View.VISIBLE);
+        if (images.size() > 0) binding.viewerGalleryBtn.setVisibility(View.VISIBLE);
         else binding.viewerGalleryBtn.setVisibility(View.GONE);
+
+        maxPageNumber = (int) Stream.of(images).filter(ImageFile::isReadable).count();
     }
 
     void setDirection(int direction) {
@@ -118,29 +162,6 @@ class ReaderNavigation {
     }
 
     /**
-     * Update the visibility of "next/previous book" buttons
-     *
-     * @param content Current book
-     */
-    void updateNavigationUi(@Nonnull Content content) {
-        int direction = Preferences.getContentDirection(content.getBookPreferences());
-        ImageButton nextButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.viewerNextBookBtn : binding.viewerPrevBookBtn;
-        ImageButton prevButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.viewerPrevBookBtn : binding.viewerNextBookBtn;
-
-        prevButton.setVisibility(content.isFirst() ? View.INVISIBLE : View.VISIBLE);
-        nextButton.setVisibility(content.isLast() ? View.INVISIBLE : View.VISIBLE);
-
-        relMaxPageNumber = content.getQtyPages();
-        if (Preferences.isViewerChapteredNavigation()) {
-            Chapter currentChap = getCurrentChapter();
-            if (currentChap != null && currentChap.getImageFiles() != null)
-                relMaxPageNumber = currentChap.getImageFiles().size();
-        }
-
-        updatePageControls();
-    }
-
-    /**
      * Update the display of page position controls (text and bar)
      */
     void updatePageControls() {
@@ -148,20 +169,37 @@ class ReaderNavigation {
         if (null == img) return;
 
         int pageNum = img.getOrder();
+        int pageOffset = 0;
         if (Preferences.isViewerChapteredNavigation()) {
             Chapter currentChap = getCurrentChapter();
-            if (currentChap != null && currentChap.getImageFiles() != null)
-                pageNum = pageNum - currentChap.getImageFiles().get(0).getOrder() + 1;
+            if (currentChap != null) {
+                if (null != currentChapter && currentChap.uniqueHash() != currentChapter.uniqueHash())
+                    ToastHelper.toast(currentChap.getName());
+                currentChapter = currentChap;
+                List<ImageFile> chapImgs = currentChap.getReadableImageFiles();
+                // Caution : ImageFiles inside chapters don't have any displayed order
+                // to get it, a mapping between image list and
+                if (!chapImgs.isEmpty()) pageOffset = chapImgs.get(0).getOrder();
+                pageNum = pageNum - pageOffset + 1;
+            }
         }
 
-        String pageNumStr = pageNum + "";
-        String maxPage = relMaxPageNumber + "";
+        int maxPageNum = maxPageNumber;
+        if (Preferences.isViewerChapteredNavigation()) {
+            if (currentChapter != null) maxPageNum = currentChapter.getReadableImageFiles().size();
+        }
 
-        pageCurrentNumber.setText(pageNumStr);
-        pageMaxNumber.setText(maxPage);
-        superBinding.viewerPagenumberText.setText(format("%s / %s", pageNumStr, maxPage));
+        pageCurrentNumber.setText(String.format(Locale.ENGLISH, "%d", pageNum));
+        pageMaxNumber.setText(String.format(Locale.ENGLISH, "%d", maxPageNum));
+        superBinding.viewerPagenumberText.setText(String.format(Locale.ENGLISH, "%d / %d", pageNum, maxPageNum));
 
-        binding.pageSlider.setValue(getCurrentImageIndex());
+        int sliderMaxPos = Math.max(1, maxPageNum - 1);
+        // Next line to avoid setting a max position inferior to current position
+        binding.pageSlider.setValue(Helper.coerceIn(binding.pageSlider.getValue(), 0, sliderMaxPos));
+        binding.pageSlider.setValueTo(sliderMaxPos);
+
+        int imageIndex = getCurrentImageIndex();
+        if (imageIndex > -1) binding.pageSlider.setValue(imageIndex);
     }
 
     void previousFunctional() {
@@ -178,10 +216,9 @@ class ReaderNavigation {
         int currentChIndex = getCurrentChapterIndex();
         if (currentChIndex > 0) {
             Chapter selectedChapter = chapters.get(currentChIndex - 1);
-            List<ImageFile> chImgs = selectedChapter.getImageFiles();
-            if (null == chImgs || chImgs.isEmpty()) return;
+            List<ImageFile> chImgs = selectedChapter.getReadableImageFiles();
+            if (chImgs.isEmpty()) return;
             goToPage.accept(chImgs.get(0).getOrder());
-            ToastHelper.toast(selectedChapter.getName());
         }
     }
 
@@ -189,10 +226,9 @@ class ReaderNavigation {
         int currentChIndex = getCurrentChapterIndex();
         if (currentChIndex < chapters.size() - 1) {
             Chapter selectedChapter = chapters.get(currentChIndex + 1);
-            List<ImageFile> chImgs = selectedChapter.getImageFiles();
-            if (null == chImgs || chImgs.isEmpty()) return;
+            List<ImageFile> chImgs = selectedChapter.getReadableImageFiles();
+            if (chImgs.isEmpty()) return;
             goToPage.accept(chImgs.get(0).getOrder());
-            ToastHelper.toast(selectedChapter.getName());
         }
     }
 
@@ -215,15 +251,13 @@ class ReaderNavigation {
 
     private int getCurrentImageIndex() {
         ImageFile currentImg = getCurrentImg.get();
+        Chapter currentChapter = getCurrentChapter();
         // Absolute index
-        if (!Preferences.isViewerChapteredNavigation()) {
+        if (!Preferences.isViewerChapteredNavigation() || null == currentChapter) {
             return indexAmong(currentImg, images);
         } else { // Relative to current chapter
-            Chapter currentChapter = getCurrentChapter();
-            if (currentChapter != null)
-                return indexAmong(currentImg, currentChapter.getImageFiles());
+            return indexAmong(currentImg, currentChapter.getReadableImageFiles());
         }
-        return -1;
     }
 
     private int indexAmong(ImageFile img, List<ImageFile> imgs) {

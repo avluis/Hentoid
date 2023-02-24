@@ -47,11 +47,12 @@ public class ImageFile {
     // WARNING : Update copy constructor when adding attributes
 
 
-    // Runtime attributes; no need to expose them nor to persist them
+    // == Runtime attributes; no need to expose them nor to persist them
 
-    // Display order of the image in the image viewer (view-time only)
+    // cached value of uniqueHash
     @Transient
-    private long uniqueHash = 0;    // cached value of uniqueHash
+    private long uniqueHash = 0;
+    // Display order of the image in the image viewer (view-time only; 0-indexed)
     @Transient
     private int displayOrder;
     // Backup URL for that picture (download-time only)

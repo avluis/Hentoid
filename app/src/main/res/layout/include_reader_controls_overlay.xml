@@ -132,6 +132,7 @@
         android:padding="8dp"
         android:progressBackgroundTint="?colorOnPrimary"
         android:progressTint="?colorSecondary"
+        android:stepSize="1"
         android:value="2"
         android:valueFrom="0"
         android:valueTo="10"

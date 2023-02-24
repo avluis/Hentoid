@@ -451,38 +451,16 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         // Fix page button
         binding.viewerFixBtn.setOnClickListener(v -> fixPage());
 
-        // Next/previous book
+        // Bottom navigation controls
         navigator = new ReaderNavigation(binding);
         navigator.setGoToPage(this::goToPage);
+        navigator.setSeekToPos(this::seekToPosition);
         navigator.setNextBook(() -> viewModel.loadNextContent(absImageIndex));
         navigator.setPreviousBook(() -> viewModel.loadPreviousContent(absImageIndex));
         navigator.setGetCurrentImg(() -> {
             ImageFile img = adapter.getImageAt(absImageIndex);
             if (null == img) Timber.w("No image at absolute position %s", absImageIndex);
             return img;
-        });
-
-        // Page slider and preview
-        binding.controlsOverlay.pageSlider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
-            @Override
-            public void onStartTrackingTouch(@NonNull Slider slider) {
-                binding.controlsOverlay.imagePreviewLeft.setVisibility(View.VISIBLE);
-                binding.controlsOverlay.imagePreviewCenter.setVisibility(View.VISIBLE);
-                binding.controlsOverlay.imagePreviewRight.setVisibility(View.VISIBLE);
-                binding.recyclerView.setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onStopTrackingTouch(@NonNull Slider slider) {
-                binding.controlsOverlay.imagePreviewLeft.setVisibility(View.INVISIBLE);
-                binding.controlsOverlay.imagePreviewCenter.setVisibility(View.INVISIBLE);
-                binding.controlsOverlay.imagePreviewRight.setVisibility(View.INVISIBLE);
-                binding.recyclerView.setVisibility(View.VISIBLE);
-            }
-        });
-
-        binding.controlsOverlay.pageSlider.addOnChangeListener((slider1, value, fromUser) -> {
-            if (fromUser) seekToPosition((int) value);
         });
 
         // Information micro menu
@@ -653,7 +631,6 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             binding.viewerNoImgTxt.setVisibility(View.GONE);
             binding.viewerLoadingTxt.setVisibility(View.GONE);
         }
-        navigator.onImagesChanged(images);
     }
 
     /**
@@ -663,7 +640,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private void differEndCallback() {
         if (null == binding) return;
 
-        // TODO double check nav controls update shouldn't go there
+        navigator.onImagesChanged(adapter.getCurrentList());
 
         if (targetStartingIndex > -1) applyStartingIndex(targetStartingIndex);
         else navigator.updatePageControls();
@@ -719,7 +696,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         contentId = content.getId();
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
-        navigator.updateNavigationUi(content);
+        navigator.onContentChanged(content);
         updateFavouriteButtonIcon();
     }
 
