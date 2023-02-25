@@ -47,7 +47,7 @@ public class ReaderBrowseModeDialogFragment extends DialogFragment {
     }
 
     private void chooseBrowseMode(int browseMode) {
-        Preferences.setViewerBrowseMode(browseMode);
+        Preferences.setReaderBrowseMode(browseMode);
         getParent().onBrowseModeChange();
         dismiss();
     }

@@ -370,8 +370,8 @@ public class LibraryActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        final long previouslyViewedContent = Preferences.getViewerCurrentContent();
-        final int previouslyViewedPage = Preferences.getViewerCurrentPageNum();
+        final long previouslyViewedContent = Preferences.getReaderCurrentContent();
+        final int previouslyViewedPage = Preferences.getReaderCurrentPageNum();
         if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ReaderActivity.isRunning()) {
             Snackbar snackbar = Snackbar.make(viewPager, R.string.resume_closed, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.setAction(R.string.resume, v -> {
@@ -387,8 +387,8 @@ public class LibraryActivity extends BaseActivity {
             });
             snackbar.show();
             // Only show that once
-            Preferences.setViewerCurrentContent(-1);
-            Preferences.setViewerCurrentPageNum(-1);
+            Preferences.setReaderCurrentContent(-1);
+            Preferences.setReaderCurrentPageNum(-1);
         }
     }
 

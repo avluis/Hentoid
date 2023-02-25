@@ -189,7 +189,7 @@ public class ZoomableRecyclerView extends RecyclerView {
         scaleAnimator.addUpdateListener(animation -> setScaleRate((float) animation.getAnimatedValue()));
 
         animatorSet.playTogether(translationXAnimator, translationYAnimator, scaleAnimator);
-        animatorSet.setDuration(Preferences.isViewerZoomTransitions() ? ANIMATOR_DURATION_TIME : 0);
+        animatorSet.setDuration(Preferences.isReaderZoomTransitions() ? ANIMATOR_DURATION_TIME : 0);
         animatorSet.setInterpolator(new DecelerateInterpolator());
         animatorSet.start();
         animatorSet.addListener(new Animator.AnimatorListener() {

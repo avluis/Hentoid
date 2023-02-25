@@ -73,8 +73,8 @@ public final class ReaderDeleteDialogFragment extends DialogFragment {
         View okBtn = rootView.findViewById(R.id.action_button);
         okBtn.setOnClickListener(v -> {
             if (!pageBtn.isChecked() && !bookBtn.isChecked()) return;
-            Preferences.setViewerDeleteAskMode(spin.getSelectedIndex());
-            Preferences.setViewerDeleteTarget(pageBtn.isChecked() ? Preferences.Constant.VIEWER_DELETE_TARGET_PAGE : Preferences.Constant.VIEWER_DELETE_TARGET_BOOK);
+            Preferences.setReaderDeleteAskMode(spin.getSelectedIndex());
+            Preferences.setReaderDeleteTarget(pageBtn.isChecked() ? Preferences.Constant.VIEWER_DELETE_TARGET_PAGE : Preferences.Constant.VIEWER_DELETE_TARGET_BOOK);
             parent.onDeleteElement(pageBtn.isChecked());
             dismiss();
         });

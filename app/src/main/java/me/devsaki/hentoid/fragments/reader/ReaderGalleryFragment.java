@@ -284,7 +284,7 @@ public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback
 
             GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
             if (glm != null) {
-                int spanCount = Preferences.getViewerGalleryColumns();
+                int spanCount = Preferences.getReaderGalleryColumns();
                 glm.setSpanCount(spanCount);
 
                 // Use the correct size to display chapter separators, if any
@@ -353,7 +353,7 @@ public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback
 
             GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
             if (glm != null) {
-                int spanCount = Preferences.getViewerGalleryColumns();
+                int spanCount = Preferences.getReaderGalleryColumns();
                 glm.setSpanCount(spanCount);
 
                 // Use the correct size to display chapter separators, if any

@@ -389,7 +389,7 @@ public class ReaderViewModel extends AndroidViewModel {
         int startingIndex = 0;
 
         // Auto-restart at last read position if asked to
-        if (Preferences.isViewerResumeLastLeft() && theContent.getLastReadPageIndex() > -1)
+        if (Preferences.isReaderResumeLastLeft() && theContent.getLastReadPageIndex() > -1)
             startingIndex = theContent.getLastReadPageIndex();
 
         // Start at the given page number, if any
@@ -512,8 +512,8 @@ public class ReaderViewModel extends AndroidViewModel {
      * @param viewerIndex Viewer index of the active page when the user left the book
      */
     public void onLeaveBook(int viewerIndex) {
-        if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
-            Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
+        if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getReaderDeleteAskMode())
+            Preferences.setReaderDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
 
         indexProcessInProgress.clear();
         interruptArchiveExtract.set(true);
@@ -534,7 +534,7 @@ public class ReaderViewModel extends AndroidViewModel {
         int nbReadablePages = (int) Stream.of(theImages).filter(ImageFile::isReadable).count();
 
         int readThresholdPosition;
-        switch (Preferences.getViewerPageReadThreshold()) {
+        switch (Preferences.getReaderPageReadThreshold()) {
             case Preferences.Constant.VIEWER_READ_THRESHOLD_1:
                 readThresholdPosition = 1;
                 break;
@@ -550,7 +550,7 @@ public class ReaderViewModel extends AndroidViewModel {
         }
 
         float completedThresholdRatio;
-        switch (Preferences.getViewerRatioCompletedThreshold()) {
+        switch (Preferences.getReaderRatioCompletedThreshold()) {
             case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_10:
                 completedThresholdRatio = 0.1f;
                 break;
@@ -906,7 +906,7 @@ public class ReaderViewModel extends AndroidViewModel {
      * @param pageNumber Page number to start with
      */
     private void loadContent(@NonNull Content theContent, int pageNumber) {
-        Preferences.setViewerCurrentContent(theContent.getId());
+        Preferences.setReaderCurrentContent(theContent.getId());
         currentContentIndex = contentIds.indexOf(theContent.getId());
         if (-1 == currentContentIndex) currentContentIndex = 0;
 

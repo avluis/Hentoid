@@ -408,15 +408,15 @@ public final class Preferences {
         return getIntPref(Key.FOLDER_TRUNCATION_LISTS, Default.FOLDER_TRUNCATION);
     }
 
-    public static boolean isViewerResumeLastLeft() {
+    public static boolean isReaderResumeLastLeft() {
         return getBoolPref(Key.VIEWER_RESUME_LAST_LEFT, Default.VIEWER_RESUME_LAST_LEFT);
     }
 
-    public static boolean isViewerKeepScreenOn() {
+    public static boolean isReaderKeepScreenOn() {
         return getBoolPref(Key.VIEWER_KEEP_SCREEN_ON, Default.VIEWER_KEEP_SCREEN_ON);
     }
 
-    public static boolean isViewerDisplayAroundNotch() {
+    public static boolean isReaderDisplayAroundNotch() {
         return getBoolPref(Key.VIEWER_DISPLAY_AROUND_NOTCH, Default.VIEWER_DISPLAY_AROUND_NOTCH);
     }
 
@@ -426,12 +426,12 @@ public final class Preferences {
                 String value = bookPrefs.get(Key.VIEWER_IMAGE_DISPLAY);
                 if (value != null) return Integer.parseInt(value);
             }
-            return getViewerDisplayMode();
+            return getReaderDisplayMode();
         } else
             return Constant.VIEWER_DISPLAY_FIT; // The only relevant mode for vertical (aka. webtoon) display
     }
 
-    public static int getViewerDisplayMode() {
+    public static int getReaderDisplayMode() {
         return getIntPref(Key.VIEWER_IMAGE_DISPLAY, Default.VIEWER_IMAGE_DISPLAY);
     }
 
@@ -440,7 +440,7 @@ public final class Preferences {
             String value = bookPrefs.get(Key.VIEWER_BROWSE_MODE);
             if (value != null) return Integer.parseInt(value);
         }
-        return getViewerBrowseMode();
+        return getReaderBrowseMode();
     }
 
     public static int getContentDirection(final Map<String, String> bookPrefs) {
@@ -451,11 +451,11 @@ public final class Preferences {
         return (getContentBrowseMode(bookPrefs) == Constant.VIEWER_BROWSE_TTB) ? Constant.VIEWER_ORIENTATION_VERTICAL : Constant.VIEWER_ORIENTATION_HORIZONTAL;
     }
 
-    public static int getViewerBrowseMode() {
+    public static int getReaderBrowseMode() {
         return getIntPref(Key.VIEWER_BROWSE_MODE, Default.VIEWER_BROWSE_MODE);
     }
 
-    public static void setViewerBrowseMode(int browseMode) {
+    public static void setReaderBrowseMode(int browseMode) {
         sharedPreferences.edit().putString(Key.VIEWER_BROWSE_MODE, Integer.toString(browseMode)).apply();
     }
 
@@ -464,119 +464,119 @@ public final class Preferences {
             String value = bookPrefs.get(Key.VIEWER_RENDERING);
             if (value != null) return isSmoothRendering(Integer.parseInt(value));
         }
-        return isViewerSmoothRendering();
+        return isReaderSmoothRendering();
     }
 
-    public static boolean isViewerSmoothRendering() {
-        return isSmoothRendering(getViewerRenderingMode());
+    public static boolean isReaderSmoothRendering() {
+        return isSmoothRendering(getReaderRenderingMode());
     }
 
     private static boolean isSmoothRendering(int mode) {
         return (mode == Constant.VIEWER_RENDERING_SMOOTH && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
     }
 
-    private static int getViewerRenderingMode() {
+    private static int getReaderRenderingMode() {
         return getIntPref(Key.VIEWER_RENDERING, Default.VIEWER_RENDERING);
     }
 
-    public static boolean isViewerDisplayPageNum() {
+    public static boolean isReaderDisplayPageNum() {
         return getBoolPref(Key.VIEWER_DISPLAY_PAGENUM, Default.VIEWER_DISPLAY_PAGENUM);
     }
 
-    public static boolean isViewerTapTransitions() {
+    public static boolean isReaderTapTransitions() {
         return getBoolPref(Key.VIEWER_TAP_TRANSITIONS, Default.VIEWER_TAP_TRANSITIONS);
     }
 
-    public static boolean isViewerZoomTransitions() {
+    public static boolean isReaderZoomTransitions() {
         return getBoolPref(Key.VIEWER_ZOOM_TRANSITIONS, Default.VIEWER_ZOOM_TRANSITIONS);
     }
 
-    public static boolean isViewerSwipeToFling() {
+    public static boolean isReaderSwipeToFling() {
         return getBoolPref(Key.VIEWER_SWIPE_TO_FLING, Default.VIEWER_SWIPE_TO_FLING);
     }
 
-    public static boolean isViewerInvertVolumeRocker() {
+    public static boolean isReaderInvertVolumeRocker() {
         return getBoolPref(Key.VIEWER_INVERT_VOLUME_ROCKER, Default.VIEWER_INVERT_VOLUME_ROCKER);
     }
 
-    public static boolean isViewerTapToTurn() {
+    public static boolean isReaderTapToTurn() {
         return getBoolPref(Key.VIEWER_PAGE_TURN_TAP, Default.VIEWER_PAGE_TURN_TAP);
     }
 
-    public static boolean isViewerTapToTurn2x() {
+    public static boolean isReaderTapToTurn2x() {
         return getBoolPref(Key.VIEWER_PAGE_TURN_TAP_2X, Default.VIEWER_PAGE_TURN_TAP_2X);
     }
 
-    public static boolean isViewerSwipeToTurn() {
+    public static boolean isReaderSwipeToTurn() {
         return getBoolPref(Key.VIEWER_PAGE_TURN_SWIPE, Default.VIEWER_PAGE_TURN_SWIPE);
     }
 
-    public static boolean isViewerVolumeToTurn() {
+    public static boolean isReaderVolumeToTurn() {
         return getBoolPref(Key.VIEWER_PAGE_TURN_VOLUME, Default.VIEWER_PAGE_TURN_VOLUME);
     }
 
-    public static boolean isViewerKeyboardToTurn() {
+    public static boolean isReaderKeyboardToTurn() {
         return getBoolPref(Key.VIEWER_PAGE_TURN_KEYBOARD, Default.VIEWER_PAGE_TURN_KEYBOARD);
     }
 
-    public static boolean isViewerVolumeToSwitchBooks() {
+    public static boolean isReaderVolumeToSwitchBooks() {
         return getBoolPref(Key.VIEWER_BOOK_SWITCH_VOLUME, Default.VIEWER_BOOK_SWITCH_VOLUME);
     }
 
-    public static boolean isViewerOpenBookInGalleryMode() {
+    public static boolean isReaderOpenBookInGalleryMode() {
         return getBoolPref(Key.VIEWER_OPEN_GALLERY, Default.VIEWER_OPEN_GALLERY);
     }
 
-    public static boolean isViewerChapteredNavigation() {
+    public static boolean isReaderChapteredNavigation() {
         return getBoolPref(Key.VIEWER_CHAPTERED_NAVIGATION, Default.VIEWER_CHAPTERED_NAVIGATION);
     }
 
-    public static boolean isViewerContinuous() {
+    public static boolean isReaderContinuous() {
         return getBoolPref(Key.VIEWER_CONTINUOUS, Default.VIEWER_CONTINUOUS);
     }
 
-    public static int getViewerPageReadThreshold() {
+    public static int getReaderPageReadThreshold() {
         return getIntPref(Key.VIEWER_PAGE_READ_THRESHOLD, Default.VIEWER_PAGE_READ_THRESHOLD)
                 ;
     }
 
-    public static int getViewerRatioCompletedThreshold() {
+    public static int getReaderRatioCompletedThreshold() {
         return getIntPref(Key.VIEWER_RATIO_COMPLETED_THRESHOLD, Default.VIEWER_RATIO_COMPLETED_THRESHOLD);
     }
 
-    public static int getViewerSlideshowDelay() {
+    public static int getReaderSlideshowDelay() {
         return getIntPref(Key.VIEWER_SLIDESHOW_DELAY, Default.VIEWER_SLIDESHOW_DELAY);
     }
 
-    public static void setViewerSlideshowDelay(int value) {
+    public static void setReaderSlideshowDelay(int value) {
         sharedPreferences.edit().putString(Key.VIEWER_SLIDESHOW_DELAY, Integer.toString(value)).apply();
     }
 
-    public static int getViewerSlideshowDelayVertical() {
+    public static int getReaderSlideshowDelayVertical() {
         return getIntPref(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Default.VIEWER_SLIDESHOW_DELAY_VERTICAL);
     }
 
-    public static void setViewerSlideshowDelayVertical(int value) {
+    public static void setReaderSlideshowDelayVertical(int value) {
         sharedPreferences.edit().putString(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Integer.toString(value)).apply();
     }
 
-    public static int getViewerSeparatingBars() {
+    public static int getReaderSeparatingBars() {
         return getIntPref(Key.VIEWER_SEPARATING_BARS, Default.VIEWER_SEPARATING_BARS);
     }
 
-    public static boolean isViewerHoldToZoom() {
+    public static boolean isReaderHoldToZoom() {
         return getBoolPref(Key.VIEWER_HOLD_TO_ZOOM, Default.VIEWER_HOLD_TO_ZOOM);
     }
 
-    public static int getViewerCapTapZoom() {
+    public static int getReaderCapTapZoom() {
         return getIntPref(Key.VIEWER_CAP_TAP_ZOOM, Default.VIEWER_CAP_TAP_ZOOM);
     }
 
-    public static boolean isViewerMaintainHorizontalZoom() {
+    public static boolean isReaderMaintainHorizontalZoom() {
         return getBoolPref(Key.VIEWER_MAINTAIN_HORIZONTAL_ZOOM, Default.VIEWER_MAINTAIN_HORIZONTAL_ZOOM);
     }
 
-    public static boolean isViewerAutoRotate() {
+    public static boolean isReaderAutoRotate() {
         return getBoolPref(Key.VIEWER_AUTO_ROTATE, Default.VIEWER_AUTO_ROTATE);
     }
 
@@ -692,19 +692,19 @@ public final class Preferences {
         sharedPreferences.edit().putString(Key.ARTIST_GROUP_VISIBILITY, Integer.toString(artistGroupVisibility)).apply();
     }
 
-    public static int getViewerDeleteAskMode() {
+    public static int getReaderDeleteAskMode() {
         return getIntPref(Key.VIEWER_DELETE_ASK_MODE, Default.VIEWER_DELETE_ASK_MODE);
     }
 
-    public static void setViewerDeleteAskMode(int viewerDeleteAskMode) {
+    public static void setReaderDeleteAskMode(int viewerDeleteAskMode) {
         sharedPreferences.edit().putString(Key.VIEWER_DELETE_ASK_MODE, Integer.toString(viewerDeleteAskMode)).apply();
     }
 
-    public static int getViewerDeleteTarget() {
+    public static int getReaderDeleteTarget() {
         return getIntPref(Key.VIEWER_DELETE_TARGET, Default.VIEWER_DELETE_TARGET);
     }
 
-    public static void setViewerDeleteTarget(int viewerDeleteTarget) {
+    public static void setReaderDeleteTarget(int viewerDeleteTarget) {
         sharedPreferences.edit().putString(Key.VIEWER_DELETE_TARGET, Integer.toString(viewerDeleteTarget)).apply();
     }
 
@@ -800,23 +800,23 @@ public final class Preferences {
         return getBoolPref(Key.DL_EH_HIRES, Default.DL_EH_HIRES);
     }
 
-    public static long getViewerCurrentContent() {
+    public static long getReaderCurrentContent() {
         return getLongPref(Key.VIEWER_CURRENT_CONTENT, -1);
     }
 
-    public static void setViewerCurrentContent(long value) {
+    public static void setReaderCurrentContent(long value) {
         sharedPreferences.edit().putString(Key.VIEWER_CURRENT_CONTENT, Long.toString(value)).apply();
     }
 
-    public static int getViewerCurrentPageNum() {
+    public static int getReaderCurrentPageNum() {
         return getIntPref(Key.VIEWER_CURRENT_PAGENUM, -1);
     }
 
-    public static void setViewerCurrentPageNum(int value) {
+    public static void setReaderCurrentPageNum(int value) {
         sharedPreferences.edit().putString(Key.VIEWER_CURRENT_PAGENUM, Integer.toString(value)).apply();
     }
 
-    public static int getViewerGalleryColumns() {
+    public static int getReaderGalleryColumns() {
         return getIntPref(Key.VIEWER_GALLERY_COLUMNS, Default.VIEWER_GALLERY_COLUMNS);
     }
 

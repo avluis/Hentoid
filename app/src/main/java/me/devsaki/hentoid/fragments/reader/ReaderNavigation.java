@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments.reader;
 
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -33,6 +32,8 @@ class ReaderNavigation {
     // Bottom bar controls (proxies for left or right position, depending on current reading direction)
     private TextView pageCurrentNumber;
     private TextView pageMaxNumber;
+    private View prevFunctionalButton;
+    private View nextFunctionalButton;
 
     // == VARS
     private final Pager pager;
@@ -91,14 +92,16 @@ class ReaderNavigation {
      */
     void onContentChanged(@Nonnull Content content) {
         int direction = Preferences.getContentDirection(content.getBookPreferences());
-        ImageButton nextButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.nextBookBtn : binding.prevBookBtn;
-        ImageButton prevButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.prevBookBtn : binding.nextBookBtn;
+        nextFunctionalButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.nextBookBtn : binding.prevBookBtn;
+        prevFunctionalButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.prevBookBtn : binding.nextBookBtn;
 
-        prevButton.setVisibility(content.isFirst() ? View.INVISIBLE : View.VISIBLE);
-        nextButton.setVisibility(content.isLast() ? View.INVISIBLE : View.VISIBLE);
+        if (Preferences.isReaderChapteredNavigation()) {
+            prevFunctionalButton.setVisibility(content.isFirst() ? View.INVISIBLE : View.VISIBLE);
+            nextFunctionalButton.setVisibility(content.isLast() ? View.INVISIBLE : View.VISIBLE);
+        }
     }
 
-    void onImagesChanged(List<ImageFile> images) {
+    void onImagesChanged(@NonNull List<ImageFile> images) {
         this.images = images;
         chapters = Stream.of(images).map(ImageFile::getLinkedChapter).withoutNulls().sortBy(Chapter::getOrder).distinct().toList();
 
@@ -107,6 +110,10 @@ class ReaderNavigation {
         else binding.galleryBtn.setVisibility(View.GONE);
 
         maxPageNumber = (int) Stream.of(images).filter(ImageFile::isReadable).count();
+    }
+
+    void onChapterChanged(@NonNull Chapter chapter) {
+        ToastHelper.toast(chapter.getName());
     }
 
     void setDirection(int direction) {
@@ -137,14 +144,13 @@ class ReaderNavigation {
 
         int pageNum = img.getOrder();
         int pageOffset = 0;
-        if (Preferences.isViewerChapteredNavigation()) {
+        if (Preferences.isReaderChapteredNavigation()) {
             Chapter currentChap = getCurrentChapter();
             if (currentChap != null) {
-                if (null != currentChapter && currentChap.uniqueHash() != currentChapter.uniqueHash())
-                    ToastHelper.toast(currentChap.getName());
+                if (null != currentChapter && currentChap.uniqueHash() != currentChapter.uniqueHash()) onChapterChanged(currentChapter);
                 List<ImageFile> chapImgs = currentChap.getReadableImageFiles();
                 // Caution : ImageFiles inside chapters don't have any displayed order
-                // to get it, a mapping between image list and
+                // To get it, a mapping between image list and chapters has to be done
                 if (!chapImgs.isEmpty()) pageOffset = chapImgs.get(0).getOrder();
                 pageNum = pageNum - pageOffset + 1;
             }
@@ -154,7 +160,7 @@ class ReaderNavigation {
         }
 
         int maxPageNum = maxPageNumber;
-        if (Preferences.isViewerChapteredNavigation()) {
+        if (Preferences.isReaderChapteredNavigation()) {
             if (currentChapter != null) maxPageNum = currentChapter.getReadableImageFiles().size();
         }
 
@@ -173,12 +179,12 @@ class ReaderNavigation {
     }
 
     void previousFunctional() {
-        if (!Preferences.isViewerChapteredNavigation()) pager.previousBook();
+        if (!Preferences.isReaderChapteredNavigation()) pager.previousBook();
         else if (!previousChapter()) pager.previousBook();
     }
 
     void nextFunctional() {
-        if (!Preferences.isViewerChapteredNavigation()) pager.nextBook();
+        if (!Preferences.isReaderChapteredNavigation()) pager.nextBook();
         else if (!nextChapter()) pager.nextBook();
     }
 
@@ -227,7 +233,7 @@ class ReaderNavigation {
         ImageFile currentImg = pager.getCurrentImg();
         Chapter currentChapter = getCurrentChapter();
         // Absolute index
-        if (!Preferences.isViewerChapteredNavigation() || null == currentChapter) {
+        if (!Preferences.isReaderChapteredNavigation() || null == currentChapter) {
             return indexAmong(currentImg, images);
         } else { // Relative to current chapter
             return indexAmong(currentImg, currentChapter.getReadableImageFiles());

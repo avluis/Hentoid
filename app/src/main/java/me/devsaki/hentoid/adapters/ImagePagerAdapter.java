@@ -120,7 +120,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     // Book prefs have to be set explicitely because the cached Content linked from each ImageFile
     // might not have the latest properties
     public void refreshPrefs(@NonNull final Map<String, String> bookPreferences) {
-        int separatingBarsPrefs = Preferences.getViewerSeparatingBars();
+        int separatingBarsPrefs = Preferences.getReaderSeparatingBars();
         switch (separatingBarsPrefs) {
             case Preferences.Constant.VIEWER_SEPARATING_BARS_SMALL:
                 separatingBarsHeight = 4;
@@ -134,12 +134,12 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             default:
                 separatingBarsHeight = 0;
         }
-        longTapZoomEnabled = Preferences.isViewerHoldToZoom();
-        autoRotate = Preferences.isViewerAutoRotate();
+        longTapZoomEnabled = Preferences.isReaderHoldToZoom();
+        autoRotate = Preferences.isReaderAutoRotate();
         displayMode = Preferences.getContentDisplayMode(bookPreferences);
         viewerOrientation = Preferences.getContentOrientation(bookPreferences);
         isSmoothRendering = Preferences.isContentSmoothRendering(bookPreferences);
-        int doubleTapZoomCapCode = Preferences.getViewerCapTapZoom();
+        int doubleTapZoomCapCode = Preferences.getReaderCapTapZoom();
         if (Preferences.Constant.VIEWER_CAP_TAP_ZOOM_NONE == doubleTapZoomCapCode)
             doubleTapZoomCap = -1;
         else doubleTapZoomCap = doubleTapZoomCapCode;
@@ -223,7 +223,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         // Initialize SSIV when required
         if (holder.getItemViewType() == ViewType.DEFAULT && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !holder.isImageView) {
             holder.ssiv.setPreloadDimensions(holder.itemView.getWidth(), holder.imgView.getHeight());
-            if (!Preferences.isViewerZoomTransitions())
+            if (!Preferences.isReaderZoomTransitions())
                 holder.ssiv.setDoubleTapZoomDuration(10);
             holder.ssiv.setOffsetLeftSide(isScrollLTR);
             holder.ssiv.setScaleListener(s -> onAbsoluteScaleChanged(position, s));

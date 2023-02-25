@@ -92,7 +92,7 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
         String[] browseModes = getResources().getStringArray(R.array.pref_viewer_browse_mode_entries);
         List<String> browseItems = new ArrayList<>();
         // App pref
-        browseItems.add(res.getString(R.string.use_app_prefs, browseModes[Preferences.getViewerBrowseMode()]));
+        browseItems.add(res.getString(R.string.use_app_prefs, browseModes[Preferences.getReaderBrowseMode()]));
         // Available prefs
         browseItems.addAll(Arrays.asList(browseModes));
 
@@ -106,7 +106,7 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
         String[] renderingModes = getResources().getStringArray(R.array.pref_viewer_rendering_entries);
         List<String> renderingItems = new ArrayList<>();
         // App pref
-        renderingItems.add(res.getString(R.string.use_app_prefs, renderingModes[Preferences.isViewerSmoothRendering() ? 1 : 0].replace(" (" + getString(R.string._default) + ")", "")));
+        renderingItems.add(res.getString(R.string.use_app_prefs, renderingModes[Preferences.isReaderSmoothRendering() ? 1 : 0].replace(" (" + getString(R.string._default) + ")", "")));
         // Available prefs
         for (int i = 0; i < renderingModes.length; i++) {
             // No smooth mode for Android 5
@@ -127,7 +127,7 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
         String[] displayModes = getResources().getStringArray(R.array.pref_viewer_display_mode_entries);
         List<String> displayItems = new ArrayList<>();
         // App pref
-        displayItems.add(res.getString(R.string.use_app_prefs, displayModes[Preferences.getViewerDisplayMode()]));
+        displayItems.add(res.getString(R.string.use_app_prefs, displayModes[Preferences.getReaderDisplayMode()]));
         // Available prefs
         for (String mode : displayModes) {
             displayItems.add(mode.replace(" (" + getString(R.string._default) + ")", ""));

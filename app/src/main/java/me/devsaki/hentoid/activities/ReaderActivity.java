@@ -44,7 +44,7 @@ public class ReaderActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Preferences.isViewerKeepScreenOn())
+        if (Preferences.isReaderKeepScreenOn())
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         Intent intent = getIntent();
@@ -81,7 +81,7 @@ public class ReaderActivity extends BaseActivity {
 
         if (null == savedInstanceState) {
             Fragment fragment;
-            if (Preferences.isViewerOpenBookInGalleryMode() || parser.isForceShowGallery())
+            if (Preferences.isReaderOpenBookInGalleryMode() || parser.isForceShowGallery())
                 fragment = new ReaderGalleryFragment();
             else fragment = new ReaderPagerFragment();
 
@@ -107,9 +107,9 @@ public class ReaderActivity extends BaseActivity {
     protected void onStop() {
         if (isFinishing()) { // i.e. the activity is closing for good; not being paused / backgrounded
             if (viewModel != null) viewModel.onActivityLeave();
-            Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
-            Preferences.setViewerCurrentPageNum(-1);
-            Preferences.setViewerCurrentContent(-1);
+            Preferences.setReaderDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
+            Preferences.setReaderCurrentPageNum(-1);
+            Preferences.setReaderCurrentContent(-1);
             setRunning(false);
         }
         super.onStop();
