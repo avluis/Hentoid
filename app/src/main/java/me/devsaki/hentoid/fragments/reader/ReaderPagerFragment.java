@@ -93,7 +93,7 @@ import timber.log.Timber;
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
 //   - independent page mode (currently used for horizontal display)
-public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDialogFragment.Parent, ReaderPrefsDialogFragment.Parent, ReaderDeleteDialogFragment.Parent {
+public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDialogFragment.Parent, ReaderPrefsDialogFragment.Parent, ReaderDeleteDialogFragment.Parent, ReaderNavigation.Pager {
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
@@ -450,16 +450,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         binding.viewerFixBtn.setOnClickListener(v -> fixPage());
 
         // Bottom navigation controls
-        navigator = new ReaderNavigation(binding);
-        navigator.setGoToPage(this::goToPage);
-        navigator.setSeekToPos(this::seekToPosition);
-        navigator.setNextBook(() -> viewModel.loadNextContent(absImageIndex));
-        navigator.setPreviousBook(() -> viewModel.loadPreviousContent(absImageIndex));
-        navigator.setGetCurrentImg(() -> {
-            ImageFile img = adapter.getImageAt(absImageIndex);
-            if (null == img) Timber.w("No image at absolute position %s", absImageIndex);
-            return img;
-        });
+        navigator = new ReaderNavigation(this, binding);
 
         // Information micro menu
         binding.controlsOverlay.informationMicroMenu.setSubmarineItemClickListener((p, i) -> onInfoMicroMenuClick(p));
@@ -988,7 +979,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      *
      * @param absIndex Index to go to (0-indexed; books-scale)
      */
-    private void seekToPosition(int absIndex) {
+    @Override
+    public void seekToPosition(int absIndex) {
         // Hide pending micro-menus
         hidePendingMicroMenus();
 
@@ -1028,12 +1020,30 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         }
     }
 
+    @Override
+    public void nextBook() {
+        viewModel.loadNextContent(absImageIndex);
+    }
+
+    @Override
+    public void previousBook() {
+        viewModel.loadPreviousContent(absImageIndex);
+    }
+
+    @Override
+    public ImageFile getCurrentImg() {
+        ImageFile img = adapter.getImageAt(absImageIndex);
+        if (null == img) Timber.w("No image at absolute position %s", absImageIndex);
+        return img;
+    }
+
     /**
      * Go to the given page number
      *
      * @param absPageNum Asbolute page number to go to (1-indexed; book-scale)
      */
-    private void goToPage(int absPageNum) {
+    @Override
+    public void goToPage(int absPageNum) {
         int position = absPageNum - 1;
         if (position == absImageIndex || position < 0 || position > adapter.getItemCount() - 1)
             return;
