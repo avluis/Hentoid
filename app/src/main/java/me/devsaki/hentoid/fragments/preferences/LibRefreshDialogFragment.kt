@@ -126,7 +126,11 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 }
 
                 actionButton.setOnClickListener {
-                    onImportClick(
+                    showImportProgressLayout(
+                        false,
+                        location
+                    )
+                    runImport(
                         location,
                         refreshOptionsRename.isChecked,
                         refreshOptionsRemovePlaceholders.isChecked,
@@ -138,24 +142,20 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             }
         } else { // Show import progress layout immediately
             showImportProgressLayout(chooseFolder, location)
+            if (!chooseFolder) runImport(location)
         }
     }
 
-    private fun onImportClick(
+    private fun runImport(
         location: StorageLocation,
-        rename: Boolean,
-        removePlaceholders: Boolean,
-        renumberPages: Boolean,
-        cleanAbsent: Boolean,
-        cleanNoImages: Boolean
+        rename: Boolean = false,
+        removePlaceholders: Boolean = false,
+        renumberPages: Boolean = false,
+        cleanAbsent: Boolean = false,
+        cleanNoImages: Boolean = false
     ) {
-        showImportProgressLayout(
-            false,
-            location
-        )
         isCancelable = false
 
-        // Run import
         if (location == StorageLocation.EXTERNAL) {
             val externalUri = Uri.parse(Preferences.getExternalLibraryUri())
 
@@ -267,9 +267,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             pickFolder() // Ask right away, there's no reason why the user should click again
         } else {
             binding2.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
-                requireContext(), Uri.parse(
-                    Preferences.getStorageUri(location)
-                )
+                requireContext(), Uri.parse(Preferences.getStorageUri(location))
             )
             binding2.importStep1Folder.isVisible = true
             binding2.importStep1Text.isVisible = true
