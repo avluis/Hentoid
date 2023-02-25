@@ -375,9 +375,10 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     private fun onCancelExistingLibraryDialog() {
         // Revert back to initial state where only the "Select folder" button is visible
         binding2.apply {
+            importStep1Text.visibility = View.INVISIBLE
+            importStep1Folder.text = ""
             importStep1Check.visibility = View.INVISIBLE
             importStep2.visibility = View.INVISIBLE
-            importStep1Folder.text = ""
             importStep1Button.isVisible = true
         }
         isCancelable = true
