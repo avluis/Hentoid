@@ -42,6 +42,7 @@ import androidx.core.util.Pair;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiConsumer;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.skydoves.balloon.ArrowOrientation;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -191,6 +192,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private MenuItem bookmarkMenu;
     private @DrawableRes
     int downloadIcon;
+    protected FloatingActionButton languageFilterButton;
 
     // === CURRENTLY VIEWED CONTENT-RELATED VARIABLES
     private Content currentContent = null;
@@ -265,7 +267,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         toolbar.setTitle(getStartSite().getDescription());
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
         bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
-
+        languageFilterButton = findViewById(R.id.language_filter_button);
         binding.bottomNavigation.setOnMenuItemClickListener(this::onMenuItemSelected);
         binding.menuHome.setOnClickListener(v -> goHome());
         binding.menuSeek.setOnClickListener(v -> onSeekClick());
