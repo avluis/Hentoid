@@ -42,6 +42,9 @@ class ReaderNavigation {
     private Chapter currentChapter;
     private int maxPageNumber; // Relative (chapter-scale) max page number
 
+    boolean isContentFirst = false;
+    boolean isContentLast = false;
+
 
     public ReaderNavigation(Pager pager, FragmentReaderPagerBinding inBinding) {
         superBinding = inBinding;
@@ -95,10 +98,8 @@ class ReaderNavigation {
         nextFunctionalButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.nextBookBtn : binding.prevBookBtn;
         prevFunctionalButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.prevBookBtn : binding.nextBookBtn;
 
-        if (Preferences.isReaderChapteredNavigation()) {
-            prevFunctionalButton.setVisibility(content.isFirst() ? View.INVISIBLE : View.VISIBLE);
-            nextFunctionalButton.setVisibility(content.isLast() ? View.INVISIBLE : View.VISIBLE);
-        }
+        isContentFirst = content.isFirst();
+        isContentLast = content.isLast();
     }
 
     void onImagesChanged(@NonNull List<ImageFile> images) {
@@ -114,6 +115,15 @@ class ReaderNavigation {
 
     void onChapterChanged(@NonNull Chapter chapter) {
         ToastHelper.toast(chapter.getName());
+        updateNextPrevButtonsChapter(chapter);
+    }
+
+    void updateNextPrevButtonsChapter(Chapter chapter) {
+        int chapterIndex = getChapterIndex(chapter);
+        boolean isChapterFirst = 0 == chapterIndex;
+        boolean isChapterLast = chapters.size() - 1 == chapterIndex;
+        prevFunctionalButton.setVisibility(isChapterFirst ? View.INVISIBLE : View.VISIBLE);
+        nextFunctionalButton.setVisibility(isChapterLast ? View.INVISIBLE : View.VISIBLE);
     }
 
     void setDirection(int direction) {
@@ -145,16 +155,17 @@ class ReaderNavigation {
         int pageNum = img.getOrder();
         int pageOffset = 0;
         if (Preferences.isReaderChapteredNavigation()) {
-            Chapter currentChap = getCurrentChapter();
-            if (currentChap != null) {
-                if (null != currentChapter && currentChap.uniqueHash() != currentChapter.uniqueHash()) onChapterChanged(currentChapter);
-                List<ImageFile> chapImgs = currentChap.getReadableImageFiles();
+            Chapter newChap = getCurrentChapter();
+            if (newChap != null) {
+                if (null != currentChapter && newChap.uniqueHash() != currentChapter.uniqueHash())
+                    onChapterChanged(newChap);
+                List<ImageFile> chapImgs = newChap.getReadableImageFiles();
                 // Caution : ImageFiles inside chapters don't have any displayed order
                 // To get it, a mapping between image list and chapters has to be done
                 if (!chapImgs.isEmpty()) pageOffset = chapImgs.get(0).getOrder();
                 pageNum = pageNum - pageOffset + 1;
             }
-            currentChapter = currentChap;
+            currentChapter = newChap;
         } else {
             currentChapter = null;
         }
@@ -176,6 +187,11 @@ class ReaderNavigation {
         int imageIndex = getCurrentImageIndex();
         if (imageIndex > -1)
             binding.pageSlider.setValue(Helper.coerceIn(imageIndex, 0, sliderMaxPos));
+
+        if (!Preferences.isReaderChapteredNavigation() || null == chapters || chapters.isEmpty()) {
+            prevFunctionalButton.setVisibility(isContentFirst ? View.INVISIBLE : View.VISIBLE);
+            nextFunctionalButton.setVisibility(isContentLast ? View.INVISIBLE : View.VISIBLE);
+        } else updateNextPrevButtonsChapter(currentChapter);
     }
 
     void previousFunctional() {
@@ -212,14 +228,17 @@ class ReaderNavigation {
         return false;
     }
 
-    private int getCurrentChapterIndex() {
-        Chapter ch = getCurrentChapter();
+    private int getChapterIndex(Chapter ch) {
         if (null == ch || null == chapters || chapters.isEmpty()) return -1;
 
         for (int i = 0; i < chapters.size(); i++)
             if (chapters.get(i).getId() == ch.getId()) return i;
 
         return -1;
+    }
+
+    private int getCurrentChapterIndex() {
+        return getChapterIndex(getCurrentChapter());
     }
 
     private Chapter getCurrentChapter() {
