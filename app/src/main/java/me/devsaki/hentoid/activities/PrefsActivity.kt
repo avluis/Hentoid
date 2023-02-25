@@ -2,18 +2,9 @@ package me.devsaki.hentoid.activities
 
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
 import androidx.fragment.app.commit
-import com.google.android.material.snackbar.BaseTransientBottomBar
-import com.google.android.material.snackbar.Snackbar
-import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
-import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
-import me.devsaki.hentoid.util.file.FileHelper
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 class PrefsActivity : BaseActivity() {
 
@@ -64,7 +55,7 @@ class PrefsActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if (item.itemId == android.R.id.home) {
-            finish()
+            onBackPressedDispatcher.onBackPressed()
             true
         } else {
             super.onOptionsItemSelected(item)
