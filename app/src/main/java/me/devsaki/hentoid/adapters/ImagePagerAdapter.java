@@ -408,20 +408,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssiv.setImage(ImageSource.uri(uri));
             } else { // ImageView
                 ImageView view = (ImageView) imgView;
-                /*
-                if (IMG_TYPE_APNG == imgType) {
-                    Timber.d("Using APNGDrawable");
-                    APNGDrawable apngDrawable = new APNGDrawable(new ImgLoader(uri));
-                    apngDrawable.registerAnimationCallback(animationCallback);
-                    view.setImageDrawable(apngDrawable);
-                } else if (IMG_TYPE_GIF == imgType) {
-                    Timber.d("Using GifDrawable");
-                    GifDrawable gifDrawable = new GifDrawable(new ImgLoader(uri));
-                    gifDrawable.registerAnimationCallback(animationCallback);
-                    view.setImageDrawable(gifDrawable);
-                } else {
-
-                 */
                 Timber.d("Using Glide");
                 Transformation<Bitmap> centerInside = new CenterInside();
                 Transformation<Bitmap> smartRotate90 = (autoRotate) ? new SmartRotateTransformation(90, screenWidth, screenHeight) : UnitTransformation.get();
@@ -429,11 +415,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 GlideApp.with(view)
                         .load(uri)
                         .optionalTransform(new MultiTransformation<>(centerInside, smartRotate90))
-//                            .optionalTransform(WebpDrawable.class, new MultiTransformation<>(new WebpDrawableTransformation(centerInside), new WebpDrawableTransformation(smartRotate90)))
-//                            .set(WebpFrameLoader.FRAME_CACHE_STRATEGY, WebpFrameCacheStrategy.ALL)
                         .listener(this)
                         .into(view);
-//                }
             }
         }
 
