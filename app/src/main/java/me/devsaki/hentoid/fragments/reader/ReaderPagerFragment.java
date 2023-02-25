@@ -456,7 +456,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         binding.controlsOverlay.informationMicroMenu.setSubmarineItemClickListener((p, i) -> onInfoMicroMenuClick(p));
         binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book)/*, null, getResources().getString(R.string.book_details)*/));
         binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page)/*, null, getResources().getString(R.string.page_details)*/));
-        binding.controlsOverlay.viewerInfoBtn.setOnClickListener(v -> {
+        binding.controlsOverlay.infoBtn.setOnClickListener(v -> {
             binding.controlsOverlay.favouriteMicroMenu.dips();
             binding.controlsOverlay.informationMicroMenu.floats();
         });
@@ -466,11 +466,11 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         updateFavouriteButtonIcon();
 
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineItemClickListener((p, i) -> onFavouriteMicroMenuClick(p));
-        binding.controlsOverlay.viewerFavouriteActionBtn.setOnClickListener(v -> onFavouriteMicroMenuOpen());
+        binding.controlsOverlay.favouriteActionBtn.setOnClickListener(v -> onFavouriteMicroMenuOpen());
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineCircleClickListener(binding.controlsOverlay.favouriteMicroMenu::dips);
 
         // Gallery
-        binding.controlsOverlay.viewerGalleryBtn.setOnClickListener(v -> displayGallery());
+        binding.controlsOverlay.galleryBtn.setOnClickListener(v -> displayGallery());
     }
 
     private int convertPrefsDelayToSliderPosition(int prefsDelay) {
@@ -575,7 +575,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             if (isContentFavourite) iconRes = R.drawable.ic_fav_full;
             else iconRes = R.drawable.ic_fav_bottom_half;
         } else if (isContentFavourite) iconRes = R.drawable.ic_fav_top_half;
-        binding.controlsOverlay.viewerFavouriteActionBtn.setImageResource(iconRes);
+        binding.controlsOverlay.favouriteActionBtn.setImageResource(iconRes);
     }
 
     private void hidePendingMicroMenus() {

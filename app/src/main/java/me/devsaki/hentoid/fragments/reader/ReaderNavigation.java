@@ -91,8 +91,8 @@ class ReaderNavigation {
      */
     void onContentChanged(@Nonnull Content content) {
         int direction = Preferences.getContentDirection(content.getBookPreferences());
-        ImageButton nextButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.viewerNextBookBtn : binding.viewerPrevBookBtn;
-        ImageButton prevButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.viewerPrevBookBtn : binding.viewerNextBookBtn;
+        ImageButton nextButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.nextBookBtn : binding.prevBookBtn;
+        ImageButton prevButton = (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) ? binding.prevBookBtn : binding.nextBookBtn;
 
         prevButton.setVisibility(content.isFirst() ? View.INVISIBLE : View.VISIBLE);
         nextButton.setVisibility(content.isLast() ? View.INVISIBLE : View.VISIBLE);
@@ -103,25 +103,25 @@ class ReaderNavigation {
         chapters = Stream.of(images).map(ImageFile::getLinkedChapter).withoutNulls().sortBy(Chapter::getOrder).distinct().toList();
 
         // Can't access the gallery when there's no page to display
-        if (images.size() > 0) binding.viewerGalleryBtn.setVisibility(View.VISIBLE);
-        else binding.viewerGalleryBtn.setVisibility(View.GONE);
+        if (images.size() > 0) binding.galleryBtn.setVisibility(View.VISIBLE);
+        else binding.galleryBtn.setVisibility(View.GONE);
 
         maxPageNumber = (int) Stream.of(images).filter(ImageFile::isReadable).count();
     }
 
     void setDirection(int direction) {
         if (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) {
-            pageCurrentNumber = binding.viewerPagerLeftTxt;
-            pageMaxNumber = binding.viewerPagerRightTxt;
+            pageCurrentNumber = binding.pagerLeftTxt;
+            pageMaxNumber = binding.pagerRightTxt;
             binding.pageSlider.setRotationY(0);
-            binding.viewerPrevBookBtn.setOnClickListener(v -> previousFunctional());
-            binding.viewerNextBookBtn.setOnClickListener(v -> nextFunctional());
+            binding.prevBookBtn.setOnClickListener(v -> previousFunctional());
+            binding.nextBookBtn.setOnClickListener(v -> nextFunctional());
         } else if (Preferences.Constant.VIEWER_DIRECTION_RTL == direction) {
-            pageCurrentNumber = binding.viewerPagerRightTxt;
-            pageMaxNumber = binding.viewerPagerLeftTxt;
+            pageCurrentNumber = binding.pagerRightTxt;
+            pageMaxNumber = binding.pagerLeftTxt;
             binding.pageSlider.setRotationY(180);
-            binding.viewerPrevBookBtn.setOnClickListener(v -> nextFunctional());
-            binding.viewerNextBookBtn.setOnClickListener(v -> previousFunctional());
+            binding.prevBookBtn.setOnClickListener(v -> nextFunctional());
+            binding.nextBookBtn.setOnClickListener(v -> previousFunctional());
         }
 
         pageMaxNumber.setOnClickListener(null);
