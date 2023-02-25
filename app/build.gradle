@@ -150,7 +150,7 @@ dependencies {
      * MEDIA
      */
     // Image loader: github.com/bumptech/glide
-    def glide_version = '4.14.2'
+    def glide_version = '4.15.0'
     implementation "com.github.bumptech.glide:glide:$glide_version"
     annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
@@ -158,7 +158,7 @@ dependencies {
         exclude group: 'glide-parent'
     }
 
-    // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
+    // Animated pics support (APNG, AWEBP and GIF) -> https://github.com/penfeizhou/APNG4Android
     def APNG4Android_version = '2.24.0'
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
     implementation "com.github.penfeizhou.android.animation:gif:$APNG4Android_version"
