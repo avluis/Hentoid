@@ -21,8 +21,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
-import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
@@ -82,7 +80,6 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
         final Transformation<Bitmap> centerInside = new CenterInside();
         glideRequestOptions = new RequestOptions()
                 .optionalTransform(centerInside)
-                .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
                 .error(d);
     }
 

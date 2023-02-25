@@ -15,8 +15,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.bumptech.glide.integration.webp.decoder.WebpDrawable
-import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
@@ -569,9 +567,5 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
         val centerInside: Transformation<Bitmap> = CenterInside()
         val glideRequestOptions = RequestOptions()
             .optionalTransform(centerInside)
-            .optionalTransform(
-                WebpDrawable::class.java,
-                WebpDrawableTransformation(centerInside)
-            )
     }
 }

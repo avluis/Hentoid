@@ -158,14 +158,12 @@ dependencies {
         exclude group: 'glide-parent'
     }
 
-    // Animated WEBP support -> https://github.com/zjupure/GlideWebpDecoder
-    def webp_glide_version = '4.14.2'
-    // webpdecoder
-    implementation "com.github.zjupure:webpdecoder:2.3.$webp_glide_version"
-
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.24.0'
-    implementation 'com.github.penfeizhou.android.animation:gif:2.24.0'
+    def APNG4Android_version = '2.24.0'
+    implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
+    implementation "com.github.penfeizhou.android.animation:gif:$APNG4Android_version"
+    implementation "com.github.penfeizhou.android.animation:awebp:$APNG4Android_version"
+    implementation "com.github.penfeizhou.android.animation:glide-plugin:$APNG4Android_version"
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     implementation 'io.github.waynejo:androidndkgif:1.0.1'
