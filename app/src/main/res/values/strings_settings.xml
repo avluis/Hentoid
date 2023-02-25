@@ -118,6 +118,11 @@
     <string name="pref_browser_clear_cookies_ko">No cookie to clear</string>
     <string name="pref_browser_clear_cookies_missing_webview">WebView is unavailable, can\'t clear cookies now</string>
     <string name="pref_browser_clear_cookies_updating_webview">WebView is updating right now, can\'t clear cookies yet</string>
+    <string name="pref_browser_language_filter_title">Language filter button</string>
+    <string name="pref_browser_language_filter_off">Language filter button is disabled\nNB: Only works on Hitomi</string>
+    <string name="pref_browser_language_filter_on">Language filter button is enabled\nNB: Only works on Hitomi</string>
+    <string name="pref_browser_language_filter_setting_title">Language filter setting</string>
+    <string name="pref_browser_language_filter_setting_summary">Tip: Enter the language in English</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>

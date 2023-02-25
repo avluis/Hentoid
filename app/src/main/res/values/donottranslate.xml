@@ -461,6 +461,7 @@
     <string name="pref_browser_override_overview_default" translatable="false">false</string>
     <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
     <string name="pref_browser_dns_default" translatable="false">-1</string>
+    <string name="pref_browser_language_button_default" translatable="false">false</string>
     <!-- Strings: Settings: Downloader -->
     <string name="pref_queue_autostart_default" translatable="false">true</string>
     <string name="pref_queue_wifi_only_default" translatable="false">false</string>

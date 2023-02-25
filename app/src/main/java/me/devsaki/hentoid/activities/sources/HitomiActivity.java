@@ -1,12 +1,15 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.net.Uri;
+import android.os.Bundle;
+import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
+import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -14,6 +17,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
@@ -33,6 +37,33 @@ public class HitomiActivity extends BaseWebActivity {
 
     Site getStartSite() {
         return Site.HITOMI;
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        languageFilterButton.setOnClickListener(v -> onLangFilterButtonClick());
+    }
+
+    @Override
+    public void onPageStarted(
+            String url,
+            boolean isGalleryPage,
+            boolean isHtmlLoaded,
+            boolean isBookmarkable,
+            List<String> jsStartupScripts) {
+        languageFilterButton.setVisibility(View.INVISIBLE);
+        super.onPageStarted(url, isGalleryPage, isHtmlLoaded, isBookmarkable, jsStartupScripts);
+    }
+
+    @Override
+    public void onPageFinished(boolean isResultsPage, boolean isGalleryPage) {
+        if (Preferences.isLanguageFilterButton() && isUrlFilterable(webView.getUrl()))
+            languageFilterButton.setVisibility(View.VISIBLE);
+        else
+            languageFilterButton.setVisibility(View.INVISIBLE);
+
+        super.onPageFinished(isResultsPage, isGalleryPage);
     }
 
     @Override
@@ -66,6 +97,22 @@ public class HitomiActivity extends BaseWebActivity {
         }
 
         return builder.toString();
+    }
+
+    private void onLangFilterButtonClick() {
+        String temp = Preferences.getLanguageFilterButtonValue().concat(".html").toLowerCase();
+        if (webView.getUrl().contains("-all.html"))
+            webView.loadUrl(webView.getUrl().replace("all.html", temp));
+        else
+            webView.loadUrl(webView.getUrl().concat("index-").concat(temp));
+    }
+
+    private boolean isUrlFilterable(String url) {
+        //only works on 1st page
+        if (url.equals("https://hitomi.la/") || url.equals("https://hitomi.la/?page=1") || (url.endsWith("-all.html") || url.endsWith("-all.html?page=1")))
+            return true;
+        else
+            return false;
     }
 
     private class HitomiWebClient extends CustomWebViewClient {
