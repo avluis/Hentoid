@@ -38,8 +38,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
-import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
@@ -103,7 +101,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private static final String KEY_IMG_INDEX = "image_index";
 
     private final Transformation<Bitmap> centerInside = new CenterInside();
-    private final RequestOptions glideRequestOptions = new RequestOptions().optionalTransform(centerInside).optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside));
+    private final RequestOptions glideRequestOptions = new RequestOptions().optionalTransform(centerInside);
 
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;

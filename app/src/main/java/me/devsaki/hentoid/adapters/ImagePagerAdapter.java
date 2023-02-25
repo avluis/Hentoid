@@ -17,14 +17,10 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 
-import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
-import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.MultiTransformation;
 import com.bumptech.glide.load.Transformation;
@@ -33,15 +29,7 @@ import com.bumptech.glide.load.resource.UnitTransformation;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.github.penfeizhou.animation.apng.APNGDrawable;
-import com.github.penfeizhou.animation.gif.GifDrawable;
-import com.github.penfeizhou.animation.io.FilterReader;
-import com.github.penfeizhou.animation.io.Reader;
-import com.github.penfeizhou.animation.io.StreamReader;
-import com.github.penfeizhou.animation.loader.Loader;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
@@ -64,8 +52,10 @@ import timber.log.Timber;
 public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder> {
 
     private static final int IMG_TYPE_OTHER = 0;    // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Glide if animation detected
-    private static final int IMG_TYPE_GIF = 1;      // Static and animated GIFs -> use native Glide
+    private static final int IMG_TYPE_GIF = 1;      // Static and animated GIFs -> use APNG4Android library
     private static final int IMG_TYPE_APNG = 2;     // Animated PNGs -> use APNG4Android library
+
+    private static final int IMG_TYPE_AWEBP = 3;     // Animated WEBPs -> use APNG4Android library
 
     @IntDef({ViewType.DEFAULT, ViewType.IMAGEVIEW_STRETCH, ViewType.SSIV_VERTICAL})
     @Retention(RetentionPolicy.SOURCE)
@@ -173,16 +163,16 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if ("apng".equalsIgnoreCase(extension) || img.getMimeType().contains("apng")) {
             return IMG_TYPE_APNG;
         }
+        if ("webp".equalsIgnoreCase(extension) || img.getMimeType().contains("webp")) {
+            return IMG_TYPE_AWEBP;
+        }
+
         return IMG_TYPE_OTHER;
     }
 
     @Override
     public @ViewType
     int getItemViewType(int position) {
-        int imageType = getImageType(getImageAt(position));
-
-        if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType)
-            return ViewType.DEFAULT;
         if (Preferences.Constant.VIEWER_DISPLAY_STRETCH == displayMode)
             return ViewType.IMAGEVIEW_STRETCH;
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
@@ -418,29 +408,15 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssiv.setImage(ImageSource.uri(uri));
             } else { // ImageView
                 ImageView view = (ImageView) imgView;
-                if (IMG_TYPE_APNG == imgType) {
-                    Timber.d("Using APNGDrawable");
-                    APNGDrawable apngDrawable = new APNGDrawable(new ImgLoader(uri));
-                    apngDrawable.registerAnimationCallback(animationCallback);
-                    view.setImageDrawable(apngDrawable);
-                } else if (IMG_TYPE_GIF == imgType) {
-                    Timber.d("Using GifDrawable");
-                    GifDrawable gifDrawable = new GifDrawable(new ImgLoader(uri));
-                    gifDrawable.registerAnimationCallback(animationCallback);
-                    view.setImageDrawable(gifDrawable);
-                } else {
-                    Timber.d("Using Glide");
-                    Transformation<Bitmap> centerInside = new CenterInside();
-                    Transformation<Bitmap> smartRotate90 = (autoRotate) ? new SmartRotateTransformation(90, screenWidth, screenHeight) : UnitTransformation.get();
+                Timber.d("Using Glide");
+                Transformation<Bitmap> centerInside = new CenterInside();
+                Transformation<Bitmap> smartRotate90 = (autoRotate) ? new SmartRotateTransformation(90, screenWidth, screenHeight) : UnitTransformation.get();
 
-                    GlideApp.with(view)
-                            .load(uri)
-                            .optionalTransform(new MultiTransformation<>(centerInside, smartRotate90))
-                            .optionalTransform(WebpDrawable.class, new MultiTransformation<>(new WebpDrawableTransformation(centerInside), new WebpDrawableTransformation(smartRotate90)))
-//                            .set(WebpFrameLoader.FRAME_CACHE_STRATEGY, WebpFrameCacheStrategy.ALL)
-                            .listener(this)
-                            .into(view);
-                }
+                GlideApp.with(view)
+                        .load(uri)
+                        .optionalTransform(new MultiTransformation<>(centerInside, smartRotate90))
+                        .listener(this)
+                        .into(view);
             }
         }
 
@@ -599,54 +575,5 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 adjustHeight(resource.getIntrinsicWidth(), resource.getIntrinsicHeight(), true);
             return false;
         }
-
-
-        // == APNG4Android ANIMATION CALLBACK
-        private final Animatable2Compat.AnimationCallback animationCallback = new Animatable2Compat.AnimationCallback() {
-            @Override
-            public void onAnimationStart(Drawable drawable) {
-                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
-                    adjustHeight(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), true);
-            }
-        };
     }
-
-    /**
-     * Custom image loaders for APNG4Android to work with files located in SAF area
-     */
-    static class ImgLoader implements Loader {
-
-        private final Uri uri;
-
-        ImgLoader(Uri uri) {
-            this.uri = uri;
-        }
-
-        @Override
-        public synchronized Reader obtain() throws IOException {
-            DocumentFile file = DocumentFile.fromSingleUri(HentoidApp.getInstance().getApplicationContext(), uri);
-            if (null == file || !file.exists()) return null; // Not triggered
-            return new ImgReader(file.getUri());
-        }
-    }
-
-    static class ImgReader extends FilterReader {
-        private final Uri uri;
-
-        private static InputStream getInputStream(Uri uri) throws IOException {
-            return HentoidApp.getInstance().getContentResolver().openInputStream(uri);
-        }
-
-        ImgReader(Uri uri) throws IOException {
-            super(new StreamReader(getInputStream(uri)));
-            this.uri = uri;
-        }
-
-        @Override
-        public void reset() throws IOException {
-            reader.close();
-            reader = new StreamReader(getInputStream(uri));
-        }
-    }
-
 }

@@ -1208,6 +1208,9 @@ public final class ContentHelper {
 
         ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(url));
         Content newContent = contentParser.toContent(url);
+        newContent.setJsonUri("");
+        newContent.setStorageUri("");
+        newContent.setArchiveLocationUri("");
 
         if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
             String canonicalUrl = contentParser.getCanonicalUrl();
@@ -1266,6 +1269,9 @@ public final class ContentHelper {
 
         ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(url));
         Content newContent = contentParser.update(content, url, true);
+        newContent.setJsonUri("");
+        newContent.setStorageUri("");
+        newContent.setArchiveLocationUri("");
 
         if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
             String canonicalUrl = contentParser.getCanonicalUrl();

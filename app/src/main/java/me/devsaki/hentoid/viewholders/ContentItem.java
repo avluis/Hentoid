@@ -29,8 +29,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
-import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
@@ -111,7 +109,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
 
         final Transformation<Bitmap> centerInside = new CenterInside();
-        glideRequestOptions = new RequestOptions().optionalTransform(centerInside).optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside)).error(d);
+        glideRequestOptions = new RequestOptions().optionalTransform(centerInside).error(d);
     }
 
     // Constructor for empty placeholder

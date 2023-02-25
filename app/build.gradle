@@ -150,7 +150,7 @@ dependencies {
      * MEDIA
      */
     // Image loader: github.com/bumptech/glide
-    def glide_version = '4.14.2'
+    def glide_version = '4.15.0'
     implementation "com.github.bumptech.glide:glide:$glide_version"
     annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
@@ -158,14 +158,12 @@ dependencies {
         exclude group: 'glide-parent'
     }
 
-    // Animated WEBP support -> https://github.com/zjupure/GlideWebpDecoder
-    def webp_glide_version = '4.14.2'
-    // webpdecoder
-    implementation "com.github.zjupure:webpdecoder:2.3.$webp_glide_version"
-
-    // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.24.0'
-    implementation 'com.github.penfeizhou.android.animation:gif:2.24.0'
+    // Animated pics support (APNG, AWEBP and GIF) -> https://github.com/penfeizhou/APNG4Android
+    def APNG4Android_version = '2.24.0'
+    implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
+    implementation "com.github.penfeizhou.android.animation:gif:$APNG4Android_version"
+    implementation "com.github.penfeizhou.android.animation:awebp:$APNG4Android_version"
+    implementation "com.github.penfeizhou.android.animation:glide-plugin:$APNG4Android_version"
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     implementation 'io.github.waynejo:androidndkgif:1.0.1'
@@ -194,7 +192,7 @@ dependencies {
     implementation 'com.github.skydoves:balloon:1.5.2'
 
     // Dropdown lists
-    implementation 'com.github.skydoves:powerspinner:1.2.4'
+    implementation 'com.github.skydoves:powerspinner:1.2.5'
 
     // Popup menus with icons
     implementation 'com.github.skydoves:powermenu:2.2.2'
@@ -235,7 +233,7 @@ dependencies {
     implementation "pl.droidsonroids.retrofit2:converter-jspoon:$jspoon_version"
 
     // JSOUP HTML parser: github.com/jhy/jsoup
-    implementation 'org.jsoup:jsoup:1.15.3'
+    implementation 'org.jsoup:jsoup:1.15.4'
 
     //    https://github.com/square/retrofit
     def retrofit_version = '2.9.0'

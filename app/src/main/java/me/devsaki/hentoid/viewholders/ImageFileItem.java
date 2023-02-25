@@ -13,8 +13,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
-import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
@@ -49,9 +47,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
 
     static {
         final Transformation<Bitmap> centerInside = new CenterInside();
-        glideRequestOptions = new RequestOptions()
-                .optionalTransform(centerInside)
-                .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside));
+        glideRequestOptions = new RequestOptions().optionalTransform(centerInside);
     }
 
     public ImageFileItem(@NonNull ImageFile image, boolean showChapter) {

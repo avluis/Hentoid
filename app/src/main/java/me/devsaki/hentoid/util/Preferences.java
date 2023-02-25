@@ -820,6 +820,14 @@ public final class Preferences {
         return getIntPref(Key.VIEWER_GALLERY_COLUMNS, Default.VIEWER_GALLERY_COLUMNS);
     }
 
+    public static boolean isLanguageFilterButton() {
+        return getBoolPref(Key.BROWSER_LANGUAGE_FILTER, Default.BROWSER_LANGUAGE_FILTER);
+    }
+
+    public static String getLanguageFilterButtonValue() {
+        return sharedPreferences.getString(Key.BROWSER_LANGUAGE_FILTER_VALUE, "english");
+    }
+
     public static final class Key {
 
         private Key() {
@@ -878,6 +886,8 @@ public final class Preferences {
         public static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";
         public static final String BROWSER_DNS_OVER_HTTPS = "pref_browser_dns_over_https";
         public static final String BROWSER_CLEAR_COOKIES = "pref_browser_clear_cookies";
+        public static final String BROWSER_LANGUAGE_FILTER = "pref_browser_language_filter";
+        public static final String BROWSER_LANGUAGE_FILTER_VALUE = "pref_language_filter_value";
         public static final String BROWSER_NHENTAI_INVISIBLE_BLACKLIST = "pref_nhentai_invisible_blacklist";
         static final String FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
@@ -997,6 +1007,7 @@ public final class Preferences {
         static final int BROWSER_QUICK_DL_THRESHOLD = 1500; // 1.5s
         static final int BROWSER_DNS_OVER_HTTPS = -1; // No DNS
         static final boolean BROWSER_NHENTAI_INVISIBLE_BLACKLIST = false;
+        static final boolean BROWSER_LANGUAGE_FILTER = false;
         static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int DL_HTTP_429_DEFAULT_DELAY = 120;
         static final int FOLDER_TRUNCATION = Constant.TRUNCATE_FOLDER_100;
