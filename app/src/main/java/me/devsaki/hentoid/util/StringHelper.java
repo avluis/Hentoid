@@ -138,7 +138,7 @@ public final class StringHelper {
 
     /**
      * Clean up the given string by
-     * - Removing everything between ()'s and []'s
+     * - Removing everything between ()'s, {}'s and []'s
      * - Replacing [-+_~/\,:;|.#"'=&!?]'s by a space
      * - Putting all characters lowercase
      * - Replacing HTML-escaped characters by their ASCII equivalent
@@ -153,8 +153,8 @@ public final class StringHelper {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < formattedS.length(); i++) {
             char c = formattedS.charAt(i);
-            if (c == '(' || c == '[') openBracket = true;
-            else if (c == ')' || c == ']') openBracket = false;
+            if (c == '(' || c == '[' || c == '{') openBracket = true;
+            else if (c == ')' || c == ']' || c == '}') openBracket = false;
             else if (c == '-' || c == '_' || c == '?' || c == '!' || c == ':' || c == ';' || c == ',' || c == '~' || c == '/' || c == '\\' || c == '|' || c == '.' || c == '+' || c == '#' || c == '\'' || c == '’' || c == '"' || c == '=' || c == '&')
                 result.append(' ');
             else if (!openBracket) result.append(c);
