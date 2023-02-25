@@ -32,8 +32,14 @@ public class HitomiActivity extends BaseWebActivity {
     private static final String[] BLOCKED_CONTENT = {"hitomi-horizontal.js", "hitomi-vertical.js", "invoke.js", "ion.sound"};
     private static final String[] JS_URL_PATTERN_WHITELIST = {"//hitomi.la[/]{0,1}$", "galleries/[\\w%\\-]+.js$", "//hitomi.la/[?]page=[0-9]+"};
     private static final String[] JS_URL_WHITELIST = {"nozomiurlindex", "languagesindex", "tagindex", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap", "gg.js", "paging", "language_support"};
-    private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "da_etirw"};
-    private static final String[] REMOVABLE_ELEMENTS = {".content div[class^=hitomi-]", ".container div[class^=hitomi-]", ".top-content > div:not(.list-title)", ".wnvtqvsW",".content > div:not(.gallery,.cover-column,.gallery-preview)"};
+    private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "da_etirw", "ad_trigger_class", "ad_popup_force", "exosrv.com"};
+    private static final String[] REMOVABLE_ELEMENTS = {
+            ".content div[class^=hitomi-]",
+            ".container div[class^=hitomi-]",
+            ".top-content > div:not(.list-title)",
+            ".content > div:not(.gallery,.cover-column,.gallery-preview)",
+            ".wnvtqvsW"
+    };
 
     Site getStartSite() {
         return Site.HITOMI;
@@ -131,7 +137,7 @@ public class HitomiActivity extends BaseWebActivity {
                 else return sendRequest(request);
             }
 
-           return super.shouldInterceptRequest(view, request);
+            return super.shouldInterceptRequest(view, request);
         }
 
         @Override
