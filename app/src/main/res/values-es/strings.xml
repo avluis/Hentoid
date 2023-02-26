@@ -53,15 +53,15 @@
     <string name="title_activity_search">Búsqueda Avanzada</string>
     <string name="title_activity_meta_edit">Editar metadatos</string>
     <string name="title_activity_rules">Reglas al renombrar</string>
-<string name="refresh_step1">Carpeta de Hentoid</string>
+
+
     <string name="refresh_step1_external">Carpeta externa</string>
-    <string name="refresh_step1_select">Selecciona la carpeta de Hentoid</string>
+
     <string name="refresh_step1_select_external">Selecciona la carpeta externa</string>
     <string name="refresh_step2">Escanear las carpetas de los sitios web</string>
     <string name="refresh_step3_init">Escaneando la librería…</string>
     <string name="refresh_step3">Escanear la librería ( <x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g> )</string>
     <string name="refresh_step4_init">Importando la cola de descarga…</string>
-    <string name="refresh_select_folder">Por favor seleccionar una carpeta de Hentoid existente. La ubicación de esta se muestra en la pantalla.</string>
     <string name="refresh_allow_write">Por favor autoriza el permiso de escritura</string>
 <string name="menu_search">Búsqueda</string>
     <string name="menu_fav">Cambiar el filtro de favoritos</string>
@@ -168,7 +168,6 @@
     <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> kB/s </string>
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB a <x:g example="102.4" id="speed_kbps">%3$d</x:g>  kB/s</string>
     <string name="download_notif_failed">Descarga fallida</string>
-    <string name="download_notif_failed_details">No se puede descargar <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: no se puede crear la carpeta <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Revisa la carpeta Hentoid y vuelve a intentar descargar usando el botón \'!\'.</string>
     <string name="menu_change_dl_mode">Cambiar modo de descarga</string>
     <string name="mode_dl">Descargar imágenes</string>
     <string name="mode_stream">Transmitiendo</string>
@@ -315,7 +314,6 @@
     <string name="import_invalid">Carpeta no válida - selecciona otra</string>
     <string name="import_app_folder">No se puede seleccionar la carpeta de aplicación como una carpeta externa - selecciona una diferente</string>
     <string name="import_download_folder">No deberías seleccionar la carpeta Descargas de tu dispositivo - crea o selecciona otra</string>
-    <string name="import_create_fail">Creación de la carpeta Hentoid fallida - selecciona otra ubicación</string>
     <string name="import_invalid_uri">Carpeta no reconocida - seleccione de nuevo</string>
 
     <string name="import_other">La importación se ha detenido</string>

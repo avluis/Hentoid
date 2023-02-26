@@ -110,6 +110,10 @@
     <string name="pref_browser_clear_cookies_ko">No hay cookies para borrar</string>
     <string name="pref_browser_clear_cookies_missing_webview">WebView no disponible, no se pueden borrar las cookies ahora</string>
     <string name="pref_browser_clear_cookies_updating_webview">WebView actualizándose en este momento, aún no se pueden borrar las cookies</string>
+
+
+
+
 <string name="pref_screen_downloader">Descargas</string>
     <string name="pref_queue_autostart_title">Inicio automático de la cola de descargas</string>
     <string name="pref_queue_autostart_on">La cola de descargas se iniciará en cuanto se agregue una descarga</string>
@@ -195,6 +199,8 @@
     <string name="pref_viewer_resume_last_left_summary_off">Siempre comenzar en la página 1 al reabrir un libro</string>
     <string name="pref_viewer_resume_last_left_summary_on">Resumir en la última página leída, excepto si se ha llegado al final del libro</string>
     <string name="pref_viewer_open_gallery">Siempre abrir en modo galería</string>
+
+
     <string name="pref_viewer_continuous_title">Lectura continua</string>
     <string name="pref_viewer_continuous_summary_off">Avanzar de página en la última página no hace nada</string>
     <string name="pref_viewer_continuous_summary_on">Avanzar de página en la última página carga el siguiente libro</string>

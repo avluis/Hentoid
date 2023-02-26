@@ -56,17 +56,14 @@
     <string name="title_activity_meta_edit">メタデータの編集</string>
     <string name="title_activity_rules">名前の変更規則</string>
     <string name="title_activity_storage">ストレージ管理</string>
-<string name="refresh_step1">Hentoidのフォルダー</string>
-    <string name="refresh_step1_2">Hentoidフォルダー (２番目の場所)</string>
+
     <string name="refresh_step1_external">外部フォルダー</string>
-    <string name="refresh_step1_select">Hentoidのフォルダを選択</string>
-    <string name="refresh_step1_select_2">Hentoid フォルダーを選択 (2 番目の場所)</string>
+
     <string name="refresh_step1_select_external">外部フォルダを選択</string>
     <string name="refresh_step2">サイトフォルダをスキャンする</string>
     <string name="refresh_step3_init">スキャンライブラリ…</string>
     <string name="refresh_step3">ライブラリをスキャン(<x:g example="1" id="number">%1$d</x:g>/ <x:g example="7" id="total">%2$d</x:g>)</string>
     <string name="refresh_step4_init">キューをインポートしています…</string>
-    <string name="refresh_select_folder">既存のHentoidフォルダを選択してください。 その場所が画面に表示されます。</string>
     <string name="refresh_allow_write">書き込み許可を許可してください</string>
 <string name="menu_search">検索</string>
     <string name="menu_fav">お気に入りのフィルターを切り替えます</string>
@@ -175,7 +172,6 @@
     <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g>メガバイト＠<x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">ダウンロードに失敗しました</string>
-    <string name="download_notif_failed_details">ダウンロードできません<x:g example="Cool H-Manga" id="book_name">%1$s</x:g>：フォルダを作成できません<x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>。 Hentoidフォルダを確認し、「！」を使用してダウンロードを再試行してください</string>
     <string name="menu_change_dl_mode">ダウンロードモードの変更</string>
     <string name="mode_dl">画像のダウンロード</string>
     <string name="mode_stream">ストリーミング</string>
@@ -337,7 +333,6 @@
     <string name="import_invalid">無効なフォルダが選択されました-別のフォルダを選択してください</string>
     <string name="import_app_folder">アプリフォルダを外部フォルダとして選択することはできません。別のフォルダを選択してください</string>
     <string name="import_download_folder">デバイスのダウンロードフォルダを選択しないでください。別のフォルダを作成または選択してください</string>
-    <string name="import_create_fail">Hentoidフォルダの作成に失敗しました-別の場所を選択してください</string>
     <string name="import_invalid_uri">フォルダが認識されません-もう一度選択してください</string>
     <string name="import_empty">フォルダーに書籍がありません</string>
     <string name="import_other_primary">両方の主要な場所に同じフォルダーを設定することは出来ません</string>

@@ -113,6 +113,10 @@
     <string name="pref_browser_clear_cookies_ko">삭제할 쿠키가 없습니다</string>
     <string name="pref_browser_clear_cookies_missing_webview">WebView를 사용할 수 없습니다, 현재 쿠키 삭제가 불가능합니다</string>
     <string name="pref_browser_clear_cookies_updating_webview">WebView를 업데이트 중입니다, 아직 쿠키 삭제가 불가능합니다</string>
+
+
+
+
 <string name="pref_screen_downloader">다운로더</string>
     <string name="pref_queue_autostart_title">다운로드 대기열 자동 시작</string>
     <string name="pref_queue_autostart_on">다운로드가 완료되는 즉시 다음 다운로드가 시작됩니다</string>
@@ -200,6 +204,8 @@
     <string name="pref_viewer_resume_last_left_summary_off">항상 1페이지에서 시작합니다</string>
     <string name="pref_viewer_resume_last_left_summary_on">마지막으로 보던 페이지에서 시작합니다. 끝까지 본 경우에는 적용되지 않습니다</string>
     <string name="pref_viewer_open_gallery">항상 갤러리 모드로 시작</string>
+
+
     <string name="pref_viewer_continuous_title">연속으로 보기</string>
     <string name="pref_viewer_continuous_summary_off">마지막 장에서 다음 장으로 넘어가는 조작 시 아무 일도 일어나지 않습니다</string>
     <string name="pref_viewer_continuous_summary_on">마지막 장에서 다음 장으로 넘어가는 조작 시 다음 작품으로 넘어갑니다</string>
