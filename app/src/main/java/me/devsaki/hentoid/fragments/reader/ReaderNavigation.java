@@ -181,14 +181,17 @@ class ReaderNavigation {
         pageMaxNumber.setText(String.format(Locale.ENGLISH, "%d", maxPageNum));
         superBinding.viewerPagenumberText.setText(String.format(Locale.ENGLISH, "%d / %d", pageNum, maxPageNum));
 
-        int sliderMaxPos = Math.max(1, maxPageNum - 1);
-        // Next line to avoid setting a max position inferior to current position
-        binding.pageSlider.setValue(Helper.coerceIn(binding.pageSlider.getValue(), 0, sliderMaxPos));
-        binding.pageSlider.setValueTo(sliderMaxPos);
+        // Only update slider when user isn't skimming _with_ the slider
+        if (binding.imagePreviewCenter.getVisibility() != View.VISIBLE) {
+            int sliderMaxPos = Math.max(1, maxPageNum - 1);
+            // Next line to avoid setting a max position inferior to current position
+            binding.pageSlider.setValue(Helper.coerceIn(binding.pageSlider.getValue(), 0, sliderMaxPos));
+            binding.pageSlider.setValueTo(sliderMaxPos);
 
-        int imageIndex = getCurrentImageIndex();
-        if (imageIndex > -1)
-            binding.pageSlider.setValue(Helper.coerceIn(imageIndex, 0, sliderMaxPos));
+            int imageIndex = getCurrentImageIndex();
+            if (imageIndex > -1)
+                binding.pageSlider.setValue(Helper.coerceIn(imageIndex, 0, sliderMaxPos));
+        }
 
         if (!Preferences.isReaderChapteredNavigation() || null == chapters || chapters.isEmpty()) {
             prevFunctionalButton.setVisibility(isContentFirst ? View.INVISIBLE : View.VISIBLE);
