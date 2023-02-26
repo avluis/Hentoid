@@ -53,15 +53,15 @@
     <string name="title_activity_search">Haladó keresés</string>
     <string name="title_activity_meta_edit">Metaadat módosítása</string>
     <string name="title_activity_rules">Átnevezési szabályok</string>
-<string name="refresh_step1">Hentoid mappa</string>
+
+
     <string name="refresh_step1_external">Külső mappa</string>
-    <string name="refresh_step1_select">Hentoid mappa kiválasztása</string>
+
     <string name="refresh_step1_select_external">Külső mappa kiválasztása</string>
     <string name="refresh_step2">Weboldal mappáinak beolvasása</string>
     <string name="refresh_step3_init">Könyvtár beolvasása...</string>
     <string name="refresh_step3">Könyvtár olvasása (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
     <string name="refresh_step4_init">Várólista importálása...</string>
-    <string name="refresh_select_folder">Kérjük, válasszon ki, egy már létező Hentoid mappát. A mappa helye, majd megjelenik a képernyőn.</string>
     <string name="refresh_allow_write">Kérjük, adjon írási jogosultságot az alkalmazásnak</string>
 <string name="menu_search">Keresés</string>
     <string name="menu_fav">Kedvencek szűrése</string>
@@ -168,7 +168,6 @@
     <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">A letöltés sikertelen</string>
-    <string name="download_notif_failed_details">Nem lehet letölteni <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: nem lehet létrehozni a mappát <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Kérjük ellenőrizze a Hentoid mappát és próbálja meg újból letölteni azt a \'!\' gomb segítségével.</string>
     <string name="menu_change_dl_mode">Letöltési mód megváltoztatása</string>
     <string name="mode_dl">Kép letöltése</string>
     <string name="mode_stream">Streaming</string>
@@ -315,7 +314,6 @@
     <string name="import_invalid">Érvénytelen mappa kiválasztva - kérjük, válasszon egy másikat</string>
     <string name="import_app_folder">Az alkalmazás mappáját nem lehet külső mappaként kiválasztani - kérjük, válasszon egy másikat</string>
     <string name="import_download_folder">Ne válassza ki az eszköz letöltési mappáját - kérjük, hogy készítsen egy másik mappát, vagy válasszon egy másikat</string>
-    <string name="import_create_fail">Hentoid mappa létrehozása sikertelen - kérjük, válasszon másik helyet</string>
     <string name="import_invalid_uri">A mappa nem felismerhető - kérjük, válassza ki újra</string>
 
     <string name="import_other">Az importálás megállt</string>

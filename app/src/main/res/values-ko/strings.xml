@@ -56,17 +56,14 @@
     <string name="title_activity_meta_edit">메타데이터 수정</string>
     <string name="title_activity_rules">자동 변경 규칙</string>
     <string name="title_activity_storage">저장공간 관리</string>
-<string name="refresh_step1">Hentoid 폴더</string>
-    <string name="refresh_step1_2">Hentoid 폴더 (보조)</string>
+
     <string name="refresh_step1_external">외부 폴더</string>
-    <string name="refresh_step1_select">Hentoid 폴더 선택</string>
-    <string name="refresh_step1_select_2">Hentoid 폴더 선택 (보조)</string>
+
     <string name="refresh_step1_select_external">외부 폴더 선택</string>
     <string name="refresh_step2">사이트 폴더 탐색</string>
     <string name="refresh_step3_init">라이브러리 탐색 중...</string>
     <string name="refresh_step3">라이브러리 탐색 (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
     <string name="refresh_step4_init">대기열 불러오는 중...</string>
-    <string name="refresh_select_folder">기존 Hentoid 폴더를 선택하세요. 화면에 위치가 표시됩니다.</string>
     <string name="refresh_allow_write">쓰기 권한을 허용해주세요</string>
 <string name="menu_search">검색</string>
     <string name="menu_fav">즐겨찾기 필터 켜기/끄기</string>
@@ -175,7 +172,6 @@
     <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">다운로드 실패</string>
-    <string name="download_notif_failed_details"><x:g example="Cool H-Manga" id="book_name">%1$s</x:g> 다운로드 불가능: <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g> 폴더를 생성할 수 없습니다. Hentoid 폴더를 확인하고 다시 시도하려면 \'!\' 버튼을 누르세요.</string>
     <string name="menu_change_dl_mode">다운로드 모드 변경</string>
     <string name="mode_dl">이미지 다운로드</string>
     <string name="mode_stream">스트리밍</string>
@@ -337,7 +333,6 @@
     <string name="import_invalid">올바르지 않은 폴더 선택됨 - 다른 폴더를 선택해주세요</string>
     <string name="import_app_folder">기존 저장 폴더와 동일한 폴더를 외부 폴더로 선택할 수 없습니다 - 다른 폴더를 선택해주세요</string>
     <string name="import_download_folder">기기의 기본 다운로드 폴더를 선택하면 안 됩니다 - 다른 폴더를 만들거나 선택해주세요</string>
-    <string name="import_create_fail">Hentoid 폴더 생성 실패 - 다른 위치를 선택해주세요</string>
     <string name="import_invalid_uri">폴더 인식 불가 - 다시 선택해주세요</string>
     <string name="import_empty">폴더에 작품이 없습니다</string>
     <string name="import_other_primary">다른 기본 경로와 같은 폴더를 지정할 수 없습니다</string>

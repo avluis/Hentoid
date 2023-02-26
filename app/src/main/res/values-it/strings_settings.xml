@@ -113,6 +113,10 @@
     <string name="pref_browser_clear_cookies_ko">Nessun cookie da rimuovere</string>
     <string name="pref_browser_clear_cookies_missing_webview">WebView non è disponibile, impossibile rimuovere i cookies al momento</string>
     <string name="pref_browser_clear_cookies_updating_webview">WebView si sta aggiornando, ancora impossibile rimuovere i cookies </string>
+
+
+
+
 <string name="pref_screen_downloader">Downloader</string>
     <string name="pref_queue_autostart_title">Coda di download ad avvio automatico</string>
     <string name="pref_queue_autostart_on">La coda di download inizierà non appena un download è stato fatto</string>
@@ -199,6 +203,8 @@
     <string name="pref_viewer_resume_last_left_summary_off">La riapertura di un libro inizia sempre da pagina 1</string>
     <string name="pref_viewer_resume_last_left_summary_on">La riapertura di un libro riprende dall\'ultima pagina letta, tranne se è stata raggiunta la fine del libro</string>
     <string name="pref_viewer_open_gallery">Apri sempre in modalità galleria</string>
+
+
     <string name="pref_viewer_continuous_title">Lettura continua</string>
     <string name="pref_viewer_continuous_summary_off">L\'uso della pagina successiva nell\'ultima pagina non ha effetto</string>
     <string name="pref_viewer_continuous_summary_on">L\'utilizzo della pagina successiva nell\'ultima pagina carica il libro successivo</string>

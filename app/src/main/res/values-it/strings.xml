@@ -56,17 +56,14 @@
     <string name="title_activity_meta_edit">Modifica metadata</string>
     <string name="title_activity_rules">Rinomina regole</string>
     <string name="title_activity_storage">Gestione spazio</string>
-<string name="refresh_step1">Cartella Hentoid</string>
-    <string name="refresh_step1_2">Cartella Hentoid (posizione secondaria)</string>
+
     <string name="refresh_step1_external">Cartella esterna</string>
-    <string name="refresh_step1_select">Seleziona la cartella Hentoid</string>
-    <string name="refresh_step1_select_2">Seleziona cartella Hentoid (posizione secondaria)</string>
+
     <string name="refresh_step1_select_external">Seleziona cartella esterna</string>
     <string name="refresh_step2">Analizza le cartelle del sito</string>
     <string name="refresh_step3_init">Scansionando la libreria…</string>
     <string name="refresh_step3">Scansiona libreria (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
     <string name="refresh_step4_init">Importazione coda…</string>
-    <string name="refresh_select_folder">Seleziona una cartella Hentoid esistente. La sua posizione è visualizzata sullo schermo.</string>
     <string name="refresh_allow_write">Si prega di consentire il permesso di scrittura</string>
 <string name="menu_search">Cerca</string>
     <string name="menu_fav">Attiva/disattiva filtro preferito</string>
@@ -175,7 +172,6 @@
     <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB a <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Attenzione: download fallito</string>
-    <string name="download_notif_failed_details">Impossibile scaricare <x:g example="Cool H-Manga" id="book_name">%1$s</x:g> : impossibile creare cartella <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g> . Perfavore controlla la tua cartella Hentoid e riprova a scaricare usando il pulsante \'!\'.</string>
     <string name="menu_change_dl_mode">Cambia modalità download</string>
     <string name="mode_dl">Download immagine</string>
     <string name="mode_stream">Strammando</string>
@@ -337,7 +333,6 @@
     <string name="import_invalid">Cartella selezionata non valida: selezionane un\'altra</string>
     <string name="import_app_folder">Non è possibile selezionare la cartella dell\'app come cartella esterna: selezionarne un\'altra</string>
     <string name="import_download_folder">Non dovresti selezionare la cartella di download del tuo dispositivo: crea o selezionane un\'altra</string>
-    <string name="import_create_fail">Creazione della cartella Hentoid fallita - seleziona un\'altra posizione</string>
     <string name="import_invalid_uri">Cartella non riconosciuta - per favore selezionala di nuovo</string>
     <string name="import_empty">La cartella non ha nessun libro</string>
     <string name="import_other_primary">Non puoi selezionare la stessa cartella per entrambi posizioni primarie</string>
