@@ -54,10 +54,12 @@ class ReaderNavigation {
         binding.pageSlider.addOnChangeListener((slider1, value, fromUser) -> {
             if (fromUser) {
                 int offset = 0;
-                Chapter currentChapter = getCurrentChapter();
-                if (currentChapter != null) {
-                    List<ImageFile> chapImgs = currentChapter.getReadableImageFiles();
-                    if (!chapImgs.isEmpty()) offset = chapImgs.get(0).getOrder() - 1;
+                if (Preferences.isReaderChapteredNavigation()) {
+                    Chapter currentChapter = getCurrentChapter();
+                    if (currentChapter != null) {
+                        List<ImageFile> chapImgs = currentChapter.getReadableImageFiles();
+                        if (!chapImgs.isEmpty()) offset = chapImgs.get(0).getOrder() - 1;
+                    }
                 }
 
                 pager.seekToPosition(Math.max(0, offset + (int) value));
@@ -113,12 +115,12 @@ class ReaderNavigation {
         maxPageNumber = (int) Stream.of(images).filter(ImageFile::isReadable).count();
     }
 
-    void onChapterChanged(@NonNull Chapter chapter) {
+    private void onChapterChanged(@NonNull Chapter chapter) {
         ToastHelper.toast(chapter.getName());
         updateNextPrevButtonsChapter(chapter);
     }
 
-    void updateNextPrevButtonsChapter(Chapter chapter) {
+    private void updateNextPrevButtonsChapter(Chapter chapter) {
         int chapterIndex = getChapterIndex(chapter);
         boolean isChapterFirst = 0 == chapterIndex;
         boolean isChapterLast = chapters.size() - 1 == chapterIndex;
