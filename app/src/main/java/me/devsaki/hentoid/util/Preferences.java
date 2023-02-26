@@ -1048,7 +1048,7 @@ public final class Preferences {
         static final int DL_SIZE_WIFI_THRESHOLD = 40;
         static final int DL_PAGES_WIFI_THRESHOLD = 999999;
         static final boolean DL_RETRIES_ACTIVE = false;
-        static final int DL_RETRIES_NUMBER = 3;
+        static final int DL_RETRIES_NUMBER = 5;
         static final int DL_RETRIES_MEM_LIMIT = 100;
         static final boolean DL_EH_HIRES = false;
         static final int DL_SPEED_CAP = Constant.DL_SPEED_CAP_NONE;

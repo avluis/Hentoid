@@ -471,7 +471,7 @@
     <string name="pref_dl_pages_wifi_threshold_default" translatable="false">999999</string>
     <string name="pref_dl_retries_active_default" translatable="false">false</string>
     <string name="pref_dl_retries_number_summary" translatable="false">%s</string>
-    <string name="pref_dl_retries_number_default" translatable="false">3</string>
+    <string name="pref_dl_retries_number_default" translatable="false">5</string>
     <string name="pref_dl_retries_mem_limit_summary" translatable="false">%s</string>
     <string name="pref_dl_retries_mem_limit_default" translatable="false">100</string>
     <string name="pref_dl_blocked_tags_behaviour_default" translatable="false">0</string>
