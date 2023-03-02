@@ -5,14 +5,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.annimon.stream.Optional
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
@@ -288,7 +287,7 @@ class QueueViewModel(
         val errorCount = AtomicInteger(0)
         val okCount = AtomicInteger(0)
 
-        runBlocking {
+        viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 contentList.forEach {
                     val res = if (reparseContent) ContentHelper.reparseFromScratch(it)
@@ -359,9 +358,7 @@ class QueueViewModel(
                     )
                 )
             }
-            coroutineScope {
-                onSuccess.invoke(contentList.size - errorCount.get())
-            }
+            onSuccess.invoke(contentList.size - errorCount.get())
         }
     }
 
@@ -370,7 +367,7 @@ class QueueViewModel(
     }
 
     fun setDownloadMode(contentIds: List<Long>, downloadMode: Int) {
-        runBlocking {
+        viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 contentIds.forEach {
                     val theContent = dao.selectContent(it)
@@ -387,7 +384,7 @@ class QueueViewModel(
     }
 
     fun toogleFreeze(recordId: List<Long>) {
-        runBlocking {
+        viewModelScope.launch {
             launch(Dispatchers.IO) {
                 val queue = dao.selectQueue()
                 queue.forEach {

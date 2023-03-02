@@ -261,9 +261,9 @@ class QueueActivity : BaseActivity() {
         position: Int
     ) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.redownloaded_updating_webview) else ToastHelper.toast(
-                R.string.redownloaded_missing_webview
-            )
+            if (WebkitPackageHelper.getWebViewUpdating())
+                ToastHelper.toast(R.string.redownloaded_updating_webview)
+            else ToastHelper.toast(R.string.redownloaded_missing_webview)
             return
         }
         if (reparseContent || reparseImages) ProgressDialogFragment.invoke(
