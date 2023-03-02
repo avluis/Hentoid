@@ -11,15 +11,14 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
@@ -208,16 +207,14 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             snack.setAction(R.string.ok) { snack.dismiss() }
             snack.show()
         }
-        runBlocking {
-            launch(Dispatchers.Default) {
-                // Reset connection pool used by the downloader (includes an OkHttp instance reset)
-                RequestQueueManager.getInstance()?.resetRequestQueue(true)
-                // Reset all retrofit clients
-                GithubServer.init()
-                EHentaiServer.init()
-                LusciousServer.init()
-                PixivServer.init()
-            }
+        lifecycleScope.launch {
+            // Reset connection pool used by the downloader (includes an OkHttp instance reset)
+            RequestQueueManager.getInstance()?.resetRequestQueue(true)
+            // Reset all retrofit clients
+            GithubServer.init()
+            EHentaiServer.init()
+            LusciousServer.init()
+            PixivServer.init()
         }
     }
 
