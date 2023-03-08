@@ -466,8 +466,10 @@ class CustomWebViewClient extends WebViewClient {
 
             // If we're here to remove "dirty elements" or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
+            // HITOMI allows URLs with extension because of the "direct access to page n" case
+            // (e.g. direct access to /reader/bookID.html#2 by touching second image in the content page)
             if ((removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !activity.getCustomCss().isEmpty())
-                    && (HttpHelper.getExtensionFromUri(url).isEmpty() || HttpHelper.getExtensionFromUri(url).equalsIgnoreCase("html"))) {
+                    && (HttpHelper.getExtensionFromUri(url).isEmpty() || HttpHelper.getExtensionFromUri(url).equalsIgnoreCase("html")) || this.site == Site.HITOMI) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
                     return parseResponse(url, headers, false, false);
