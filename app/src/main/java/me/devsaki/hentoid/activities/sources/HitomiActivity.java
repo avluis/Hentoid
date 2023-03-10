@@ -9,6 +9,9 @@ import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.util.List;
 import java.util.Map;
 
@@ -115,16 +118,14 @@ public class HitomiActivity extends BaseWebActivity {
 
     private boolean isUrlFilterable(String url) {
         //only works on 1st page
-        if (url.equals("https://hitomi.la/") || url.equals("https://hitomi.la/?page=1") || (url.endsWith("-all.html") || url.endsWith("-all.html?page=1")))
-            return true;
-        else
-            return false;
+        return url.equals("https://hitomi.la/") || url.equals("https://hitomi.la/?page=1") || (url.endsWith("-all.html") || url.endsWith("-all.html?page=1"));
     }
 
     private class HitomiWebClient extends CustomWebViewClient {
 
         HitomiWebClient(Site site, String[] filter, CustomWebActivity activity) {
             super(site, filter, activity);
+            setCustomHtmlRewriter(this::processDoc);
         }
 
         @Override
@@ -152,9 +153,7 @@ public class HitomiActivity extends BaseWebActivity {
             }
             HitomiParser parser = new HitomiParser();
             try {
-                /*List<ImageFile> images =*/
                 parser.parseImageListWithWebview(content, webView); // Only fetch them when queue is processed
-                //content.setImageFiles(images);
                 content.setStatus(StatusContent.SAVED);
             } catch (Exception e) {
                 Timber.i(e);
@@ -162,6 +161,22 @@ public class HitomiActivity extends BaseWebActivity {
             }
 
             return super.processContent(content, url, quickDownload);
+        }
+
+        protected void processDoc(@NonNull Document doc) {
+            for (Element e : doc.select("script")) {
+                if (e.hasAttr("async") || e.attr("data-cfasync").equalsIgnoreCase("false")) {
+                    Timber.d("Removing script %s", e.toString());
+                    e.remove();
+                }
+            }
+
+            for (Element e : doc.select("head style")) {
+                if (!e.data().trim().isEmpty()) {
+                    Timber.d("Removing style %s", e.toString());
+                    e.remove();
+                }
+            }
         }
     }
 }

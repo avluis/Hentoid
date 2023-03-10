@@ -21,6 +21,7 @@ import androidx.core.util.Pair;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiFunction;
+import com.annimon.stream.function.Consumer;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -138,6 +139,9 @@ class CustomWebViewClient extends WebViewClient {
     // an inline script tag, the entire tag is removed from the HTML
     private List<String> jsContentBlacklist;
 
+    // Custom method to use while pre-processing HTML
+    private Consumer<Document> customHtmlRewriter = null;
+
     // List of JS scripts to load from app resources every time a webpage is started
     private List<String> jsStartupScripts;
 
@@ -230,6 +234,10 @@ class CustomWebViewClient extends WebViewClient {
      */
     void setResultUrlRewriter(@NonNull BiFunction<Uri, Integer, String> rewriter) {
         resultsUrlRewriter = rewriter;
+    }
+
+    void setCustomHtmlRewriter(@NonNull Consumer<Document> rewriter) {
+        customHtmlRewriter = rewriter;
     }
 
     /**
@@ -894,6 +902,8 @@ class CustomWebViewClient extends WebViewClient {
                     }
                 }
             }
+
+            if (customHtmlRewriter != null) customHtmlRewriter.accept(doc);
 
             return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
         } catch (
