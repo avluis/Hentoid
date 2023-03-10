@@ -53,6 +53,7 @@ public enum Site {
 
     private static final Site[] INVISIBLE_SITES = {
             NEXUS, // Dead
+            HBROWSE, // Dead
             HENTAICAFE, // Removed as per Fakku request
             FAKKU, // Old Fakku; kept for retrocompatibility
             FAKKU2, // Dropped after Fakku decided to flag downloading accounts and IPs
