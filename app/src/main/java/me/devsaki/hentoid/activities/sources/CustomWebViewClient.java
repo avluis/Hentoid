@@ -743,6 +743,13 @@ class CustomWebViewClient extends WebViewClient {
         try {
             Document doc = Jsoup.parse(stream, null, baseUri);
 
+            //Remove CSS to remove ads in Hitomi
+            if (site == Site.HITOMI) {
+                for (Element e : doc.select("head>style")) {
+                    e.remove();
+                }
+            }
+
             // Add custom inline CSS to the main page only
             if (customCss != null && !isHtmlLoaded.get())
                 doc.head().appendElement("style").attr("type", "text/css").appendText(customCss);
