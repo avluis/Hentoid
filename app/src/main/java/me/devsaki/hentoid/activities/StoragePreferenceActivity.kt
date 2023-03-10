@@ -232,8 +232,8 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     isIndeterminate = false
                     progress = (locationFreeBytes * 100 / locationTotalBytes).toInt()
                 }
-                actionsBtn.setOnClickListener { onActionClick(location, actionsBtn) }
             }
+            actionsBtn.setOnClickListener { onActionClick(location, actionsBtn) }
         }
     }
 
