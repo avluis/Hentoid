@@ -132,9 +132,6 @@ class CustomWebViewClient extends WebViewClient {
     // List of elements (CSS selector) to be removed before displaying the page
     private List<String> removableElements;
 
-    // List of elements (CSS selector) to be hidden by inline CSS
-    private List<String> hideableElements;
-
     // List of blacklisted Javascript strings : if any of these is found inside
     // an inline script tag, the entire tag is removed from the HTML
     private List<String> jsContentBlacklist;
@@ -193,16 +190,6 @@ class CustomWebViewClient extends WebViewClient {
     protected void addRemovableElements(String... elements) {
         if (null == removableElements) removableElements = new ArrayList<>();
         Collections.addAll(removableElements, elements);
-    }
-
-    /**
-     * Add an element filter to current site
-     *
-     * @param elements Elements (CSS selector) to addAll to page cleaner
-     */
-    protected void addHideableElements(String... elements) {
-        if (null == hideableElements) hideableElements = new ArrayList<>();
-        Collections.addAll(hideableElements, elements);
     }
 
     /**
@@ -474,7 +461,7 @@ class CustomWebViewClient extends WebViewClient {
 
             // If we're here to remove "dirty elements" or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !activity.getCustomCss().isEmpty())
+            if ((removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !activity.getCustomCss().isEmpty())
                     && (HttpHelper.getExtensionFromUri(url).isEmpty() || HttpHelper.getExtensionFromUri(url).equalsIgnoreCase("html"))) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
@@ -604,8 +591,8 @@ class CustomWebViewClient extends WebViewClient {
 
                 // Remove dirty elements from HTML resources
                 String customCss = activity.getCustomCss();
-                if (removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !customCss.isEmpty()) {
-                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, hideableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls(), activity.getPrefBlockedTags());
+                if (removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !customCss.isEmpty()) {
+                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls(), activity.getPrefBlockedTags());
                     if (null == browserStream) return null;
                 }
 
@@ -728,7 +715,6 @@ class CustomWebViewClient extends WebViewClient {
      * @param stream             Stream containing the HTML document to process; will be closed during the process
      * @param baseUri            Base URI of the document
      * @param removableElements  CSS selectors of the nodes to remove
-     * @param hideableElements   CSS selectors of the nodes to hide
      * @param jsContentBlacklist Blacklisted elements to detect script tags to remove
      * @param siteUrls           Urls of the covers or links to visually mark as downloaded
      * @param mergedSiteUrls     Urls of the covers or links to visually mark as merged
@@ -741,7 +727,6 @@ class CustomWebViewClient extends WebViewClient {
             @NonNull String baseUri,
             @Nullable String customCss,
             @Nullable List<String> removableElements,
-            @Nullable List<String> hideableElements,
             @Nullable List<String> jsContentBlacklist,
             @Nullable List<String> siteUrls,
             @Nullable List<String> mergedSiteUrls,
@@ -760,18 +745,6 @@ class CustomWebViewClient extends WebViewClient {
                         Timber.d("[%s] Removing node %s", baseUri, e.toString());
                         e.remove();
                     }
-
-            // Hide ad spaces
-            if (hideableElements != null) {
-                for (String s : hideableElements)
-                    for (Element e : doc.select(s)) {
-                        String existingStyle = e.attr("style");
-                        if (!existingStyle.contains("min-height:0px;height:0%;")) {
-                            Timber.d("[%s] Hiding node %s", baseUri, e.toString());
-                            e.attr("style", "min-height:0px;height:0%;");
-                        }
-                    }
-            }
 
             // Remove scripts
             if (jsContentBlacklist != null) {
