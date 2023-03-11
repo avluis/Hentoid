@@ -17,6 +17,11 @@ public class HttpHelperTest {
         assertEquals("ext", HttpHelper.getExtensionFromUri("http://aa.bb/a/u.ext?k"));
         assertEquals("ext", HttpHelper.getExtensionFromUri("http://aa.bb/a/u.1.ext?k"));
         assertEquals("ext", HttpHelper.getExtensionFromUri("http://aa.bb/a/u.ext?k.ext2"));
+        assertEquals("ext", HttpHelper.getExtensionFromUri("http://aa.bb/u.ext#ba"));
+        assertEquals("ext", HttpHelper.getExtensionFromUri("http://aa.bb/a/u.ext?k#ba"));
+        assertEquals("", HttpHelper.getExtensionFromUri("http://aa.bb/a/u?k#ba"));
+        assertEquals("", HttpHelper.getExtensionFromUri("http://aa.bb/a/u?k.ext2"));
+        assertEquals("", HttpHelper.getExtensionFromUri("http://aa.bb/u#ba"));
     }
 
     public void getDomainFromUri() {

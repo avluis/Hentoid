@@ -704,43 +704,48 @@ public class HttpHelper {
      */
     public static class UriParts {
         private String path;
-        private String fileName;
+        private final String fileNameNoExt;
         private String extension;
         private String query;
+        private final String fragment;
 
-        public UriParts(String uri) {
-            String theUri = uri.toLowerCase();
-            String uriNoParams = theUri;
+        public UriParts(@NonNull final String uri) {
+            String uriNoParams = uri.toLowerCase();
 
-            int paramsIndex = theUri.lastIndexOf('?');
+            int fragmentIndex = uriNoParams.lastIndexOf('#');
+            if (fragmentIndex > -1) {
+                fragment = uriNoParams.substring(fragmentIndex + 1);
+                uriNoParams = uriNoParams.substring(0, fragmentIndex);
+            } else fragment = "";
+
+            int paramsIndex = uriNoParams.lastIndexOf('?');
             if (paramsIndex > -1) {
-                uriNoParams = theUri.substring(0, paramsIndex);
-                query = theUri.substring(paramsIndex + 1);
-            } else {
-                query = "";
-            }
+                query = uriNoParams.substring(paramsIndex + 1);
+                uriNoParams = uriNoParams.substring(0, paramsIndex);
+            } else query = "";
 
             int pathIndex = uriNoParams.lastIndexOf('/');
             if (pathIndex > -1)
-                path = theUri.substring(0, pathIndex);
-            else path = theUri;
+                path = uriNoParams.substring(0, pathIndex);
+            else path = uriNoParams;
 
             int extIndex = uriNoParams.lastIndexOf('.');
-            // No extensions detected
+            // No file extension detected
             if (extIndex < 0 || extIndex < pathIndex) {
                 extension = "";
-                fileName = uriNoParams.substring(pathIndex + 1);
+                fileNameNoExt = uriNoParams.substring(pathIndex + 1);
             } else {
                 extension = uriNoParams.substring(extIndex + 1);
-                fileName = uriNoParams.substring(pathIndex + 1, extIndex);
+                fileNameNoExt = uriNoParams.substring(pathIndex + 1, extIndex);
             }
         }
 
         public String toUri() {
             StringBuilder result = new StringBuilder(path);
-            result.append("/").append(fileName);
+            result.append("/").append(fileNameNoExt);
             if (!extension.isEmpty()) result.append(".").append(extension);
             if (!query.isEmpty()) result.append("?").append(query);
+            if (!fragment.isEmpty()) result.append("#").append(fragment);
             return result.toString();
         }
 
@@ -753,7 +758,7 @@ public class HttpHelper {
         }
 
         public String getFileNameNoExt() {
-            return fileName;
+            return fileNameNoExt;
         }
 
         public String getExtension() {
@@ -770,10 +775,6 @@ public class HttpHelper {
 
         public void setQuery(String query) {
             this.query = query;
-        }
-
-        public void setFileNameNoExt(@NonNull final String fileName) {
-            this.fileName = fileName;
         }
     }
 }
