@@ -10,7 +10,7 @@ import retrofit2.http.GET
 import retrofit2.http.QueryMap
 
 object LusciousServer {
-    private const val API_URL = "https://members.luscious.net/";
+    private const val API_URL = "https://members.luscious.net/"
 
     lateinit var api: Api
 

@@ -11,7 +11,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 object PixivServer {
-    private const val API_URL = "https://www.pixiv.net/";
+    private const val API_URL = "https://www.pixiv.net/"
 
     lateinit var api: Api
 
