@@ -7,7 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.*
 import me.devsaki.hentoid.BuildConfig
-import me.devsaki.hentoid.core.Consts
+import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Helper
@@ -46,12 +46,12 @@ class CloudflareHelper {
         val oldCookieInternal: String = oldCookie ?: StringHelper.protect(
             HttpHelper.parseCookies(
                 HttpHelper.getCookies(revivedSite.url)
-            )[Consts.CLOUDFLARE_COOKIE]
+            )[CLOUDFLARE_COOKIE]
         )
 
         // Nuke the cookie to force its refresh
         val domain = "." + HttpHelper.getDomainFromUri(revivedSite.url)
-        HttpHelper.setCookies(domain, Consts.CLOUDFLARE_COOKIE + "=;Max-Age=0; secure; HttpOnly")
+        HttpHelper.setCookies(domain, "$CLOUDFLARE_COOKIE=;Max-Age=0; secure; HttpOnly")
 
         val handler = Handler(Looper.getMainLooper())
         handler.post {
@@ -69,7 +69,7 @@ class CloudflareHelper {
         // Wait for cookies to refresh
         do {
             val cfcookie =
-                HttpHelper.parseCookies(HttpHelper.getCookies(revivedSite.url))[Consts.CLOUDFLARE_COOKIE]
+                HttpHelper.parseCookies(HttpHelper.getCookies(revivedSite.url))[CLOUDFLARE_COOKIE]
             if (cfcookie != null && cfcookie.isNotEmpty() && cfcookie != oldCookieInternal) {
                 Timber.d("CF-COOKIE : refreshed !")
                 passed = true

@@ -18,7 +18,7 @@ import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.Consts
+import me.devsaki.hentoid.core.URL_GITHUB_WIKI_STORAGE
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -460,7 +460,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
     private fun onMenuItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_help -> startBrowserActivity(Consts.URL_GITHUB_WIKI_STORAGE)
+            R.id.action_help -> startBrowserActivity(URL_GITHUB_WIKI_STORAGE)
             else -> return false
         }
         return true
