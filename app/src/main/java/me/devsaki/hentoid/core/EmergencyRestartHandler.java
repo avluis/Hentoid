@@ -6,14 +6,7 @@ import android.os.Process;
 
 import androidx.annotation.NonNull;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
-import me.devsaki.hentoid.util.StringHelper;
 import timber.log.Timber;
 
 public class EmergencyRestartHandler implements

@@ -49,20 +49,6 @@ class FileUtil {
     }
 
     /**
-     * Create a folder.
-     *
-     * @param file The folder to be created.
-     * @return true if creation was successful or the folder already exists
-     */
-    static boolean makeDir(@NonNull final File file) {
-        // Nothing to create ?
-        if (file.exists()) return file.isDirectory();
-
-        // Try the normal way
-        return file.mkdirs();
-    }
-
-    /**
      * Delete a file.
      *
      * @param file The file to be deleted.

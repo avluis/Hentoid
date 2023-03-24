@@ -104,7 +104,6 @@ class CloudflareHelper {
     }
 
     class CloudflareProtectedException : Exception()
-    class CloudflareFailedException : Exception()
 
     @SuppressLint("SetJavaScriptEnabled")
     internal class CloudflareWebView constructor(context: Context) : WebView(context) {

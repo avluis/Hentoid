@@ -196,16 +196,6 @@ class CustomWebViewClient extends WebViewClient {
     }
 
     /**
-     * Add an element filter to current site
-     *
-     * @param elements Elements (CSS selector) to addAll to page cleaner
-     */
-    protected void addHideableElements(String... elements) {
-        if (null == hideableElements) hideableElements = new ArrayList<>();
-        Collections.addAll(hideableElements, elements);
-    }
-
-    /**
      * Add a Javascript blacklisted element filter to current site
      *
      * @param elements Elements (string) to addAll to page cleaner
