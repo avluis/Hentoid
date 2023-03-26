@@ -83,7 +83,7 @@ public class ImportHelper {
         int KO_OTHER = 3; // Any other issue
     }
 
-    @IntDef({ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER_PRIMARY, ProcessFolderResult.KO_OTHER})
+    @IntDef({ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER_PRIMARY, ProcessFolderResult.KO_PRIMARY_EXTERNAL, ProcessFolderResult.KO_OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ProcessFolderResult {
         int OK_EMPTY_FOLDER = 1; // OK - Existing, empty Hentoid folder
@@ -94,7 +94,8 @@ public class ImportHelper {
         int KO_DOWNLOAD_FOLDER = 7; // Selected folder is the device's download folder and can't be used as a primary folder (downloads visibility + storage calculation issues)
         int KO_CREATE_FAIL = 8; // Hentoid folder could not be created
         int KO_ALREADY_RUNNING = 9; // Import is already running
-        int KO_OTHER_PRIMARY = 10; // Selected folder is the other primary location
+        int KO_OTHER_PRIMARY = 10; // Selected folder is inside or contains the other primary location
+        int KO_PRIMARY_EXTERNAL = 11; // Selected folder is inside or contains the external location
         int KO_OTHER = 99; // Any other issue
     }
 
@@ -254,21 +255,44 @@ public class ImportHelper {
             }
         }
 
+        // Check if selected folder is separate from Hentoid's other primary location
+        String otherLocationUriStr;
+        if (location == StorageLocation.PRIMARY_1)
+            otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
+        else otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
+        if (!otherLocationUriStr.isEmpty()) {
+            String treeFullPath = FileHelper.getFullPathFromTreeUri(context, treeUri);
+            String otherLocationFullPath = FileHelper.getFullPathFromTreeUri(context, Uri.parse(otherLocationUriStr));
+            if (treeFullPath.startsWith(otherLocationFullPath)) {
+                Timber.e("Selected folder is inside the other primary location : %s", treeUri.toString());
+                return new ImmutablePair<>(ProcessFolderResult.KO_OTHER_PRIMARY, treeUri.toString());
+            }
+            if (otherLocationFullPath.startsWith(treeFullPath)) {
+                Timber.e("Selected folder contains the other primary location : %s", treeUri.toString());
+                return new ImmutablePair<>(ProcessFolderResult.KO_OTHER_PRIMARY, treeUri.toString());
+            }
+        }
+
+        // Check if selected folder is separate from Hentoid's external location
+        String extLocationStr = Preferences.getStorageUri(StorageLocation.EXTERNAL);
+        if (!extLocationStr.isEmpty()) {
+            String treeFullPath = FileHelper.getFullPathFromTreeUri(context, treeUri);
+            String extFullPath = FileHelper.getFullPathFromTreeUri(context, Uri.parse(extLocationStr));
+            if (treeFullPath.startsWith(extFullPath)) {
+                Timber.e("Selected folder is inside the external location : %s", treeUri.toString());
+                return new ImmutablePair<>(ProcessFolderResult.KO_PRIMARY_EXTERNAL, treeUri.toString());
+            }
+            if (extFullPath.startsWith(treeFullPath)) {
+                Timber.e("Selected folder contains the external location : %s", treeUri.toString());
+                return new ImmutablePair<>(ProcessFolderResult.KO_PRIMARY_EXTERNAL, treeUri.toString());
+            }
+        }
+
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
             Timber.e("Could not create Primary folder in folder %s", docFile.getUri().toString());
             return new ImmutablePair<>(ProcessFolderResult.KO_CREATE_FAIL, treeUri.toString());
-        }
-
-        // Check if the folder is not Hentoid's other primary location
-        String otherLocationUriStr;
-        if (location == StorageLocation.PRIMARY_1)
-            otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
-        else otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
-        if (hentoidFolder.getUri().toString().equalsIgnoreCase(otherLocationUriStr)) {
-            Timber.e("Selected folder is the other primary location : %s", treeUri.toString());
-            return new ImmutablePair<>(ProcessFolderResult.KO_OTHER_PRIMARY, treeUri.toString());
         }
 
         // Set the folder as the app's downloads folder
@@ -324,13 +348,30 @@ public class ImportHelper {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return new ImmutablePair<>(ProcessFolderResult.KO_INVALID_FOLDER, treeUri.toString());
         }
-        String folderUri = docFile.getUri().toString();
-        if (folderUri.equalsIgnoreCase(Preferences.getStorageUri(StorageLocation.PRIMARY_1))
-                || folderUri.equalsIgnoreCase(Preferences.getStorageUri(StorageLocation.PRIMARY_2))) {
+
+        // Check if selected folder is separate from one of Hentoid's primary locations
+        String primaryUri1 = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
+        String primaryUri2 = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
+        if (!primaryUri1.isEmpty())
+            primaryUri1 = FileHelper.getFullPathFromTreeUri(context, Uri.parse(primaryUri1));
+        if (!primaryUri2.isEmpty())
+            primaryUri2 = FileHelper.getFullPathFromTreeUri(context, Uri.parse(primaryUri2));
+        String selectedFullPath = FileHelper.getFullPathFromTreeUri(context, treeUri);
+        if ((!primaryUri1.isEmpty() && selectedFullPath.startsWith(primaryUri1))
+                || (!primaryUri2.isEmpty() && selectedFullPath.startsWith(primaryUri2))
+        ) {
             Timber.w("Trying to set the external library inside a primary library location %s", treeUri.toString());
-            return new ImmutablePair<>(ProcessFolderResult.KO_APP_FOLDER, treeUri.toString());
+            return new ImmutablePair<>(ProcessFolderResult.KO_PRIMARY_EXTERNAL, treeUri.toString());
         }
+        if ((!primaryUri1.isEmpty() && primaryUri1.startsWith(selectedFullPath))
+                || (!primaryUri2.isEmpty() && primaryUri2.startsWith(selectedFullPath))
+        ) {
+            Timber.w("Trying to set the external library over a primary library location %s", treeUri.toString());
+            return new ImmutablePair<>(ProcessFolderResult.KO_PRIMARY_EXTERNAL, treeUri.toString());
+        }
+
         // Set the folder as the app's external library folder
+        String folderUri = docFile.getUri().toString();
         Preferences.setExternalLibraryUri(folderUri);
 
         // Start the import

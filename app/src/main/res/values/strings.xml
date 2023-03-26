@@ -376,7 +376,8 @@
     <string name="import_create_fail">Primary folder creation failed - please select another location</string>
     <string name="import_invalid_uri">Folder not recognized - please select it again</string>
     <string name="import_empty">Folder has no books</string>
-    <string name="import_other_primary">You cannot set the same folder for both primary locations</string>
+    <string name="import_other_primary">Both primary locations must have separate base folders</string>
+    <string name="import_other_external_inside_primary">Primary and external locations must have separate base folders</string>
     <string name="import_other">Import has stopped</string>
     <string name="import_unexpected">Import has stopped unexpectedly</string>
     <string name="task_done">Task complete - see details in the log</string>

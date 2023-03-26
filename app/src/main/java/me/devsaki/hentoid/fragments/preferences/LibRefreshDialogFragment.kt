@@ -220,6 +220,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                     || ProcessFolderResult.KO_DOWNLOAD_FOLDER == res
                     || ProcessFolderResult.KO_ALREADY_RUNNING == res
                     || ProcessFolderResult.KO_OTHER_PRIMARY == res
+                    || ProcessFolderResult.KO_PRIMARY_EXTERNAL == res
                     || ProcessFolderResult.OK_EMPTY_FOLDER == res
                     || ProcessFolderResult.KO_OTHER == res
                 ) {
@@ -342,6 +343,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             ProcessFolderResult.KO_CREATE_FAIL,
             ProcessFolderResult.KO_ALREADY_RUNNING,
             ProcessFolderResult.KO_OTHER_PRIMARY,
+            ProcessFolderResult.KO_PRIMARY_EXTERNAL,
             ProcessFolderResult.KO_OTHER -> {
                 Snackbar.make(
                     binding2.root, getMessage(resultCode), BaseTransientBottomBar.LENGTH_LONG
@@ -362,6 +364,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             ProcessFolderResult.KO_CREATE_FAIL -> R.string.import_create_fail
             ProcessFolderResult.KO_ALREADY_RUNNING -> R.string.service_running
             ProcessFolderResult.KO_OTHER_PRIMARY -> R.string.import_other_primary
+            ProcessFolderResult.KO_PRIMARY_EXTERNAL -> R.string.import_other_external_inside_primary
             ProcessFolderResult.OK_EMPTY_FOLDER -> R.string.import_empty
             ProcessFolderResult.KO_OTHER -> R.string.import_other
             ProcessFolderResult.OK_LIBRARY_DETECTED,
