@@ -670,7 +670,9 @@ public class LibraryGroupsFragment extends Fragment implements
         List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).withoutNulls().distinct().toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK);
 
-        // Update visibility of search bar
+        // Update visibility and content of advanced search bar
+        // - After getting results from a search
+        // - When switching between Group and Content view
         activity.get().updateSearchBarOnResults(!result.isEmpty());
 
         // Reset library load indicator

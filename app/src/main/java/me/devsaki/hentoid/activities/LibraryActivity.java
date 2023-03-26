@@ -553,6 +553,7 @@ public class LibraryActivity extends BaseActivity {
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
                     setQuery("");
+                    getAdvSearchCriteria().setQuery("");
                     signalCurrentFragment(EV_SEARCH, getQuery());
                     searchClearButton.setVisibility(View.GONE);
                     searchSaveButton.setVisibility(View.GONE);

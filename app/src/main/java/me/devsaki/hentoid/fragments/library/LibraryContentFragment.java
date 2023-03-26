@@ -1322,8 +1322,11 @@ public class LibraryContentFragment extends Fragment implements
             emptyText.setText(backgroundText);
         } else emptyText.setVisibility(View.GONE);
 
-        // Update visibility of advanced search bar
-        activity.get().updateSearchBarOnResults(!result.isEmpty());
+        // Update visibility and content of advanced search bar
+        // - After getting results from a search
+        // - When switching between Group and Content view
+        // Shouldn't trigger for a new download
+        if (newSearch) activity.get().updateSearchBarOnResults(!result.isEmpty());
 
         String query = getQuery();
         // User searches a book ID
