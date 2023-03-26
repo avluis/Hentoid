@@ -138,7 +138,6 @@ public class AppStartup {
 
     public static List<Observable<Float>> getPostLaunchTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
-//        result.add(createObservableFrom(context, AppStartupDev::testImg));
         result.add(createObservableFrom(context, AppStartup::searchForUpdates));
         result.add(createObservableFrom(context, AppStartup::sendFirebaseStats));
         result.add(createObservableFrom(context, AppStartup::clearPictureCache));
