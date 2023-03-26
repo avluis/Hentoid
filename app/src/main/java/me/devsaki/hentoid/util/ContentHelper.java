@@ -193,6 +193,7 @@ public final class ContentHelper {
      */
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         if (content.getSite().equals(Site.NONE)) return;
+        if (!content.getSite().isVisible()) return; // Support is dropped
 
         if (!WebkitPackageHelper.getWebViewAvailable()) {
             if (WebkitPackageHelper.getWebViewUpdating())
