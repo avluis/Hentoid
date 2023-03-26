@@ -6,8 +6,7 @@ import androidx.fragment.app.commit
 import com.mikepenz.aboutlibraries.LibsBuilder
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.Consts
-import me.devsaki.hentoid.core.startBrowserActivity
+import me.devsaki.hentoid.core.*
 import me.devsaki.hentoid.databinding.ActivityAboutBinding
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.fragments.about.ChangelogFragment
@@ -33,10 +32,10 @@ class AboutActivity : BaseActivity() {
 
             it.toolbar.setNavigationOnClickListener { finish() }
 
-            it.appLogo.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB_WIKI) }
-            it.githubText.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB) }
-            it.discordText.setOnClickListener { startBrowserActivity(Consts.URL_DISCORD) }
-            it.redditText.setOnClickListener { startBrowserActivity(Consts.URL_REDDIT) }
+            it.appLogo.setOnClickListener { startBrowserActivity(URL_GITHUB_WIKI) }
+            it.githubText.setOnClickListener { startBrowserActivity(URL_GITHUB) }
+            it.discordText.setOnClickListener { startBrowserActivity(URL_DISCORD) }
+            it.redditText.setOnClickListener { startBrowserActivity(URL_REDDIT) }
 
             it.tvVersionName.text = getString(
                 R.string.about_app_version,

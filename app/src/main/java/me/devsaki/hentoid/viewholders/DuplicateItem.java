@@ -407,10 +407,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             }
         }
 
-        public View getViewDetailsButton() {
-            return viewDetails;
-        }
-
         public MaterialSwitch getKeepDeleteSwitch() {
             return keepDeleteSwitch;
         }

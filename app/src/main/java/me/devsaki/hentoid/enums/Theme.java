@@ -30,15 +30,6 @@ public enum Theme {
     }
 
 
-    // Same as ValueOf with a fallback to NONE
-    // (vital for forward compatibility)
-    public static Theme searchByName(String name) {
-        for (Theme s : values())
-            if (s.name().equalsIgnoreCase(name)) return s;
-
-        return NONE;
-    }
-
     public static Theme searchById(int id) {
         for (Theme s : values())
             if (id == s.id) return s;

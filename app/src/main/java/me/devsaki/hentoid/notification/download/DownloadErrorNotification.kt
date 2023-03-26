@@ -16,10 +16,6 @@ class DownloadErrorNotification : Notification {
 
     private val content: Content?
 
-    constructor() {
-        this.content = null
-    }
-
     constructor(content: Content) {
         this.content = content
     }

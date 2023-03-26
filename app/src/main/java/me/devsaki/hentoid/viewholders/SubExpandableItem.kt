@@ -74,7 +74,7 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper, val name
      * @return the type
      */
     override val type: Int
-        get() = R.id.expandable_item;
+        get() = R.id.expandable_item
 
     /**
      * defines the layout which will be used for this item in the list

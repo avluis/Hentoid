@@ -5,7 +5,7 @@ import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.notification.Notification
 
-class UpdateJsonCompleteNotification() :
+class UpdateJsonCompleteNotification :
     Notification {
 
     override fun onCreateNotification(context: Context): android.app.Notification {

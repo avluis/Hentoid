@@ -13,8 +13,8 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 
 object EHentaiServer {
-    private const val EHENTAI_URL = "http://e-hentai.org/";
-    private const val EXHENTAI_URL = "https://exhentai.org/";
+    private const val EHENTAI_URL = "http://e-hentai.org/"
+    private const val EXHENTAI_URL = "https://exhentai.org/"
 
     lateinit var ehentaiApi: Api
     lateinit var exentaiApi: Api

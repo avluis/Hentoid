@@ -79,7 +79,6 @@ public class HitomiActivity extends BaseWebActivity {
     protected CustomWebViewClient createWebClient() {
         HitomiWebClient client = new HitomiWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        //client.addHideableElements(HIDEABLE_ELEMENTS);
         client.addRemovableElements(REMOVABLE_ELEMENTS);
         client.addJavascriptBlacklist(JS_CONTENT_BLACKLIST);
         client.setResultsUrlPatterns(RESULTS_FILTER);

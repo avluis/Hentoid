@@ -16,10 +16,6 @@ class DuplicatesDAO(ctx: Context) {
         duplicatesDb.closeThreadResources()
     }
 
-    fun getDbSizeBytes(): Long {
-        return duplicatesDb.dbSizeBytes
-    }
-
     fun getEntries(): List<DuplicateEntry> {
         val entries = duplicatesDb.selectEntriesQ().find()
 
@@ -62,10 +58,6 @@ class DuplicatesDAO(ctx: Context) {
 
     fun clearEntries() {
         duplicatesDb.clearEntries()
-    }
-
-    fun insertEntry(entry: DuplicateEntry) {
-        duplicatesDb.insertEntry(entry)
     }
 
     fun insertEntries(entry: List<DuplicateEntry>) {

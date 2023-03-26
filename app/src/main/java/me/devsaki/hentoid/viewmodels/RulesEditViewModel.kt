@@ -13,7 +13,6 @@ import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import timber.log.Timber
 
