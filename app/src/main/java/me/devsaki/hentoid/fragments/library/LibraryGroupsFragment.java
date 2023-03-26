@@ -457,7 +457,7 @@ public class LibraryGroupsFragment extends Fragment implements
         // Filter on delete complete event
         if (R.id.delete_service_delete != event.processId) return;
         if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
-        viewModel.refreshCustomGroupingAvailable();
+        viewModel.refreshAvailableGroupings();
     }
 
     /**

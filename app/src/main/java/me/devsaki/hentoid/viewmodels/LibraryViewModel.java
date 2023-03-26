@@ -114,6 +114,7 @@ public class LibraryViewModel extends AndroidViewModel {
     private LiveData<List<Group>> currentGroupsTotalSource;
     private final MediatorLiveData<Integer> currentGroupTotal = new MediatorLiveData<>();
     private final MutableLiveData<Boolean> isCustomGroupingAvailable = new MutableLiveData<>();     // True if there's at least one existing custom group; false instead
+    private final MutableLiveData<Boolean> isDynamicGroupingAvailable = new MutableLiveData<>();     // True if there's at least one existing dynamic group; false instead
     private final MutableLiveData<Bundle> groupSearchBundle = new MutableLiveData<>();
     // Other data
     private final LiveData<List<SearchRecord>> searchRecords;
@@ -131,7 +132,7 @@ public class LibraryViewModel extends AndroidViewModel {
         totalContent = dao.countAllBooksLive();
         totalQueue = dao.countAllQueueBooksLive();
         searchRecords = dao.selectSearchRecordsLive();
-        refreshCustomGroupingAvailable();
+        refreshAvailableGroupings();
     }
 
     public void onSaveState(Bundle outState) {
@@ -190,6 +191,11 @@ public class LibraryViewModel extends AndroidViewModel {
     @NonNull
     public LiveData<Boolean> isCustomGroupingAvailable() {
         return isCustomGroupingAvailable;
+    }
+
+    @NonNull
+    public LiveData<Boolean> isDynamicGroupingAvailable() {
+        return isDynamicGroupingAvailable;
     }
 
     @NonNull
@@ -351,11 +357,12 @@ public class LibraryViewModel extends AndroidViewModel {
         currentGroupTotal.addSource(currentGroupsTotalSource, list -> currentGroupTotal.postValue(list.size()));
 
         groupSearchBundle.postValue(groupSearchManager.toBundle());
-        refreshCustomGroupingAvailable();
+        refreshAvailableGroupings();
     }
 
-    public void refreshCustomGroupingAvailable() {
+    public void refreshAvailableGroupings() {
         isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
+        isDynamicGroupingAvailable.postValue(dao.countGroupsFor(Grouping.DYNAMIC) > 0);
     }
 
 
@@ -670,7 +677,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 // Non-blocking performance bottleneck; run in a dedicated worker
                                 if (reparseImages) purgeItem(content, false);
                                 dao.addContentToQueue(
-                                        content, targetImageStatus, position, -1,null,
+                                        content, targetImageStatus, position, -1, null,
                                         ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                             } else {
                                 errorCount.incrementAndGet();
@@ -846,7 +853,7 @@ public class LibraryViewModel extends AndroidViewModel {
         Observer<WorkInfo> workInfoObserver = workInfo -> {
             if (workInfo.getState().isFinished()) {
                 if (onSuccess != null) onSuccess.run();
-                refreshCustomGroupingAvailable();
+                refreshAvailableGroupings();
             }
         };
 
@@ -1000,7 +1007,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.io())
                             .doOnComplete(() -> {
-                                refreshCustomGroupingAvailable();
+                                refreshAvailableGroupings();
                                 GroupHelper.updateGroupsJson(getApplication(), dao);
                             })
                             .observeOn(AndroidSchedulers.mainThread())
@@ -1031,7 +1038,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.io())
                             .doOnComplete(() -> {
-                                refreshCustomGroupingAvailable();
+                                refreshAvailableGroupings();
 
                                 // Update all JSONs of the books inside the renamed group so that they refer to the correct name
                                 UpdateJsonData.Builder builder = new UpdateJsonData.Builder();
@@ -1167,7 +1174,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .map(c -> moveContentToCustomGroup(c, group, dao))
                         .doOnNext(c -> ContentHelper.updateJson(getApplication(), c))
                         .doOnComplete(() -> {
-                            refreshCustomGroupingAvailable();
+                            refreshAvailableGroupings();
                             GroupHelper.updateGroupsJson(getApplication(), dao);
                         })
                         .observeOn(AndroidSchedulers.mainThread())
@@ -1366,5 +1373,11 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void clearSearchHistory() {
         dao.deleteAllSearchRecords();
+    }
+
+    public void saveSearchToDynamicGroup(SearchHelper.AdvancedSearchCriteria criteria, String groupName) {
+        Group g = new Group(Grouping.DYNAMIC, groupName, -1);
+        g.searchUri = SearchActivityBundle.Companion.buildSearchUri(criteria, null).toString();
+        dao.insertGroup(g);
     }
 }

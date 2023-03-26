@@ -197,6 +197,7 @@ public class LibraryContentFragment extends Fragment implements
 
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
+    // Used to check back the "exclude" checkbox when re-entering advanced search
     private boolean excludeClicked = false;
 
     // Launches the search activity according to the returned result

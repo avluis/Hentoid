@@ -87,14 +87,14 @@ public class DatabaseMaintenance {
 
             // Unflag all books marked for deletion
             Timber.i("Unflag books : start");
-            List<Content> contentList = db.selectAllFlaggedBooksQ().find();
+            List<Content> contentList = DBHelper.safeFind(db.selectAllFlaggedBooksQ());
             Timber.i("Unflag books : %s books detected", contentList.size());
             db.flagContentsForDeletion(contentList, false);
             Timber.i("Unflag books : done");
 
             // Unflag all books signaled as being deleted
             Timber.i("Unmark books as being deleted : start");
-            contentList = db.selectAllMarkedBooksQ().find();
+            contentList = DBHelper.safeFind(db.selectAllMarkedBooksQ());
             Timber.i("Unmark books as being deleted : %s books detected", contentList.size());
             db.markContentsAsBeingDeleted(contentList, false);
             Timber.i("Unmark books as being deleted : done");
@@ -271,9 +271,10 @@ public class DatabaseMaintenance {
         try {
             // Detect duplicate bookmarks (host/someurl and host/someurl/)
             Timber.i("Detecting duplicate bookmarks : start");
-            Query<SiteBookmark> entries = db.selectAllDuplicateBookmarksQ();
-            Timber.i("Detecting duplicate bookmarks : %d bookmarks detected", entries.count());
-            entries.remove();
+            try (Query<SiteBookmark> entries = db.selectAllDuplicateBookmarksQ()) {
+                Timber.i("Detecting duplicate bookmarks : %d bookmarks detected", entries.count());
+                entries.remove();
+            }
             Timber.i("Detecting duplicate bookmarks : done");
         } finally {
             db.closeThreadResources();
@@ -381,7 +382,7 @@ public class DatabaseMaintenance {
                 if (0 == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping);
 
             // Test the existence of the "Ungrouped" custom group
-            List<Group> ungroupedCustomGroup = db.selectGroupsQ(Grouping.CUSTOM.getId(), null, -1, false, 1, false, -1).find();
+            List<Group> ungroupedCustomGroup = DBHelper.safeFind(db.selectGroupsQ(Grouping.CUSTOM.getId(), null, -1, false, 1, false, -1));
             if (ungroupedCustomGroup.isEmpty()) groupingsToProcess.add(Grouping.CUSTOM);
 
             Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
@@ -391,10 +392,10 @@ public class DatabaseMaintenance {
             for (Grouping g : groupingsToProcess) {
                 if (g.equals(Grouping.ARTIST)) {
                     List<Attribute> artists = db.selectAvailableAttributes(
-                            AttributeType.ARTIST, -1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY, false,
+                            AttributeType.ARTIST, -1, new long[0], null, ContentHelper.Location.ANY, ContentHelper.Type.ANY, false,
                             null, Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC, 0, 0);
                     artists.addAll(db.selectAvailableAttributes(
-                            AttributeType.CIRCLE, -1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY, false,
+                            AttributeType.CIRCLE, -1, new long[0], null, ContentHelper.Location.ANY, ContentHelper.Type.ANY, false,
                             null, Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC, 0, 0));
                     int order = 1;
                     for (Attribute a : artists) {

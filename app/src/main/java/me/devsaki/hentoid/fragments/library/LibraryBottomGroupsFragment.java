@@ -48,6 +48,7 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
 
     // Variables
     private boolean isCustomGroupingAvailable;
+    private boolean isDynamicGroupingAvailable;
 
     public static synchronized void invoke(
             Context context,
@@ -67,16 +68,16 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        Bundle bundle = getArguments();
-        if (bundle != null) {
-            LibraryBottomSortFilterBundle parser = new LibraryBottomSortFilterBundle(bundle);
-        }
-
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         viewModel.isCustomGroupingAvailable().observe(this, b -> {
             isCustomGroupingAvailable = b;
+            itemAdapter.set(getGroupings());
+        });
+
+        viewModel.isDynamicGroupingAvailable().observe(this, b -> {
+            isDynamicGroupingAvailable = b;
             itemAdapter.set(getGroupings());
         });
     }
@@ -130,6 +131,7 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
         result.add(createFromGrouping(Grouping.FLAT));
         result.add(createFromGrouping(Grouping.ARTIST));
         result.add(createFromGrouping(Grouping.DL_DATE));
+        if (isDynamicGroupingAvailable) result.add(createFromGrouping(Grouping.DYNAMIC));
         if (isCustomGroupingAvailable) result.add(createFromGrouping(Grouping.CUSTOM));
         return result;
     }

@@ -12,6 +12,7 @@ public enum Grouping {
     FLAT(0, R.string.groups_flat, false, false, false),
     ARTIST(1, R.string.groups_by_artist, false, true, true),
     DL_DATE(2, R.string.groups_by_dl_date, false, false, false),
+    DYNAMIC(3, R.string.groups_dynamic, true, true, false),
     CUSTOM(98, R.string.groups_custom, true, true, true),
     NONE(99, R.string.none, false, false, false);
 

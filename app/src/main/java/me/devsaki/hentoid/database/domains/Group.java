@@ -40,6 +40,7 @@ public class Group {
     public boolean hasCustomBookOrder = false;
     public int propertyMin;
     public int propertyMax;
+    public String searchUri = "";
     private boolean favourite = false;
     private int rating = 0;
 

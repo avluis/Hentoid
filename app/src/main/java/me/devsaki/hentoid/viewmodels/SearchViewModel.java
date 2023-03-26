@@ -13,8 +13,11 @@ import androidx.lifecycle.ViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -116,19 +119,22 @@ public class SearchViewModel extends ViewModel {
      */
     public void setAttributeQuery(String query, int pageNum, int itemsPerPage) {
         filterDisposable.dispose();
-        filterDisposable = dao
-                .selectAttributeMasterDataPaged(
-                        attributeTypes,
-                        query,
-                        selectedGroup,
-                        selectedAttributes.getValue(),
-                        location,
-                        contentType,
-                        false,
-                        pageNum,
-                        itemsPerPage,
-                        attributeSortOrder
+        filterDisposable = Single.fromCallable(() ->
+                        dao.selectAttributeMasterDataPaged(
+                                attributeTypes,
+                                query,
+                                selectedGroup,
+                                selectedAttributes.getValue(),
+                                location,
+                                contentType,
+                                false,
+                                pageNum,
+                                itemsPerPage,
+                                attributeSortOrder
+                        )
                 )
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(availableAttributes::postValue);
     }
 
@@ -197,7 +203,11 @@ public class SearchViewModel extends ViewModel {
      */
     private void countAttributesPerType() {
         countDisposable.dispose();
-        countDisposable = dao.countAttributesPerType(selectedGroup, selectedAttributes.getValue(), location, contentType)
+        countDisposable = Single.fromCallable(() ->
+                        dao.countAttributesPerType(selectedGroup, selectedAttributes.getValue(), location, contentType)
+                )
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(results -> {
                     // Result has to take into account the number of attributes already selected (hence unavailable)
                     List<Attribute> selectedAttrs = selectedAttributes.getValue();

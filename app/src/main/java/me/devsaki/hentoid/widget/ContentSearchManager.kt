@@ -5,14 +5,21 @@ import android.os.Bundle
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.parseSearchUri
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
-import me.devsaki.hentoid.util.*
-import java.util.*
+import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.SearchHelper
+import me.devsaki.hentoid.util.boolean
+import me.devsaki.hentoid.util.int
+import me.devsaki.hentoid.util.long
+import me.devsaki.hentoid.util.string
+import java.util.Collections
 
 class ContentSearchManager(val dao: CollectionDAO) {
 
@@ -32,7 +39,6 @@ class ContentSearchManager(val dao: CollectionDAO) {
     fun loadFromBundle(b: Bundle) {
         values.bundle.putAll(b)
     }
-
 
     fun setFilterBookFavourites(value: Boolean) {
         values.filterBookFavourites = value
@@ -131,22 +137,28 @@ class ContentSearchManager(val dao: CollectionDAO) {
         }
     }
 
-    fun searchLibraryForId(): Single<List<Long>> {
-        val tags = parseSearchUri(Uri.parse(values.attributes)).attributes
-        return when {
-            // Universal search
-            values.query.isNotEmpty() -> dao.searchBookIdsUniversal(
-                values
-            )
-            // Advanced search
-            tags.isNotEmpty() || values.location > 0 || values.contentType > 0 -> dao.searchBookIds(
-                values,
-                tags
-            )
-            // Default search (display recent)
-            else -> dao.selectRecentBookIds(
-                values
-            )
+    fun searchLibraryForIdRx(): Single<List<Long>> {
+        return Single.fromCallable {
+            searchLibraryForId(values, dao)
+        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    companion object {
+        fun searchLibraryForId(data: ContentSearchBundle, dao: CollectionDAO): List<Long> {
+            val tags = parseSearchUri(Uri.parse(data.attributes)).attributes
+            return when {
+                // Universal search
+                data.query.isNotEmpty() -> dao.searchBookIdsUniversal(data)
+                // Advanced search
+                tags.isNotEmpty() || data.location > 0 || data.contentType > 0 -> dao.searchBookIds(
+                    data,
+                    tags
+                )
+                // Default search (display recent)
+                else -> dao.selectRecentBookIds(data)
+            }
         }
     }
 
@@ -193,6 +205,22 @@ class ContentSearchManager(val dao: CollectionDAO) {
                     || filterBookNotCompleted
                     || filterRating > -1
                     || filterPageFavourites
+        }
+
+        companion object {
+            fun fromSearchCriteria(data: SearchHelper.AdvancedSearchCriteria): ContentSearchBundle {
+                val result = ContentSearchBundle()
+
+                result.apply {
+                    groupId = -1; // Not applicable
+                    attributes = SearchActivityBundle.buildSearchUri(data).toString()
+                    location = data.location
+                    contentType = data.contentType
+                    query = data.query
+                }
+
+                return result
+            }
         }
     }
 }

@@ -142,20 +142,24 @@ class MetadataEditViewModel(
      */
     fun setAttributeQuery(query: String, pageNum: Int, itemsPerPage: Int) {
         filterDisposable.dispose()
-        filterDisposable = dao.selectAttributeMasterDataPaged(
-            attributeTypes.value!!,
-            query,
-            -1,
-            emptyList(),
-            ContentHelper.Location.ANY,
-            ContentHelper.Type.ANY,
-            true,
-            pageNum,
-            itemsPerPage,
-            Preferences.getSearchAttributesSortOrder()
-        ).subscribe { value: AttributeQueryResult? ->
-            libraryAttributes.postValue(value)
-        }
+        filterDisposable = Single.fromCallable {
+            dao.selectAttributeMasterDataPaged(
+                attributeTypes.value!!,
+                query,
+                -1,
+                emptyList(),
+                ContentHelper.Location.ANY,
+                ContentHelper.Type.ANY,
+                true,
+                pageNum,
+                itemsPerPage,
+                Preferences.getSearchAttributesSortOrder()
+            )
+        }.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { value: AttributeQueryResult? ->
+                libraryAttributes.postValue(value)
+            }
     }
 
     /**
@@ -266,7 +270,7 @@ class MetadataEditViewModel(
             it.author = ContentHelper.formatBookAuthor(it)
 
             // Save Content itself
-            it.imageFiles?.let { imgs->
+            it.imageFiles?.let { imgs ->
                 dao.insertImageFiles(imgs)
             }
             dao.insertContent(it)

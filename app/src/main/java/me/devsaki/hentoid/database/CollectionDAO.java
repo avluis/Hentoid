@@ -16,7 +16,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
@@ -167,11 +166,11 @@ public interface CollectionDAO {
     void streamStoredContent(boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer);
 
 
-    Single<List<Long>> selectRecentBookIds(ContentSearchManager.ContentSearchBundle searchBundle);
+    List<Long> selectRecentBookIds(ContentSearchManager.ContentSearchBundle searchBundle);
 
-    Single<List<Long>> searchBookIds(ContentSearchManager.ContentSearchBundle searchBundle, List<Attribute> metadata);
+    List<Long> searchBookIds(ContentSearchManager.ContentSearchBundle searchBundle, List<Attribute> metadata);
 
-    Single<List<Long>> searchBookIdsUniversal(ContentSearchManager.ContentSearchBundle searchBundle);
+    List<Long> searchBookIdsUniversal(ContentSearchManager.ContentSearchBundle searchBundle);
 
 
     LiveData<PagedList<Content>> selectRecentBooks(ContentSearchManager.ContentSearchBundle searchBundle);
@@ -254,7 +253,7 @@ public interface CollectionDAO {
     @Nullable
     Attribute selectAttribute(long id);
 
-    Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
+    SearchHelper.AttributeQueryResult selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
             long groupId,
@@ -266,7 +265,7 @@ public interface CollectionDAO {
             int booksPerPage,
             int orderStyle);
 
-    Single<SparseIntArray> countAttributesPerType(
+    SparseIntArray countAttributesPerType(
             long groupId,
             List<Attribute> filter,
             @ContentHelper.Location int location,

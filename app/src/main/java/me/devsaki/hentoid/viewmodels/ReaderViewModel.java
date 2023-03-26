@@ -222,7 +222,7 @@ public class ReaderViewModel extends AndroidViewModel {
      */
     private void loadContentFromSearchParams(long contentId, int pageNumber) {
         searchDisposable.dispose();
-        searchDisposable = searchManager.searchLibraryForId().subscribe(
+        searchDisposable = searchManager.searchLibraryForIdRx().subscribe(
                 list -> {
                     contentIds = list;
                     loadContentFromId(contentId, pageNumber);
