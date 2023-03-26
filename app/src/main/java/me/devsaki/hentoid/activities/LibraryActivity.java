@@ -540,7 +540,7 @@ public class LibraryActivity extends BaseActivity {
         actionSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                setQuery(s);
+                setQuery(s.trim());
                 signalCurrentFragment(EV_SEARCH, getQuery());
                 actionSearchView.clearFocus();
 

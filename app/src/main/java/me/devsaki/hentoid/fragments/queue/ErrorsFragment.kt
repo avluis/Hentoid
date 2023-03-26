@@ -275,7 +275,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
             // Change display when text query is typed
             mainSearchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(s: String): Boolean {
-                    query = s
+                    query = s.trim()
                     viewModel.searchErrorContentUniversal(query)
                     mainSearchView.clearFocus()
                     return true

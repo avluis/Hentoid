@@ -187,11 +187,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         bottomBarBinding.actionButton.setOnClickListener {
-            if (isPaused()) {
-
-                viewModel.unpauseQueue()
-            } else
-                EventBus.getDefault().post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE))
+            if (isPaused()) viewModel.unpauseQueue()
+            else EventBus.getDefault()
+                .post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE))
         }
 
         // Book list
@@ -301,7 +299,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             // Change display when text query is typed
             mainSearchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(s: String): Boolean {
-                    query = s
+                    query = s.trim()
                     viewModel.searchQueueUniversal(query)
                     mainSearchView.clearFocus()
                     return true
