@@ -11,7 +11,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.Consts
+import me.devsaki.hentoid.core.*
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -81,7 +81,7 @@ class DuplicateViewModel(
                     OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
                     TimeUnit.MILLISECONDS
                 )
-                .addTag(Consts.WORK_CLOSEABLE)
+                .addTag(WORK_CLOSEABLE)
                 .build()
         )
     }

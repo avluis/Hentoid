@@ -22,7 +22,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.Consts
+import me.devsaki.hentoid.core.*
 import me.devsaki.hentoid.databinding.DialogQueueDownloadsImportBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.ProcessEvent
@@ -213,7 +213,7 @@ class DownloadsImportDialogFragment : DialogFragment() {
             R.id.downloads_import_service.toString(),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
             OneTimeWorkRequest.Builder(DownloadsImportWorker::class.java).setInputData(builder.data)
-                .addTag(Consts.WORK_CLOSEABLE).build()
+                .addTag(WORK_CLOSEABLE).build()
         )
     }
 

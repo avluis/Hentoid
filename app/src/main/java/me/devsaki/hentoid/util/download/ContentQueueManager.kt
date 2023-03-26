@@ -5,7 +5,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.Consts
+import me.devsaki.hentoid.core.*
 import me.devsaki.hentoid.workers.ContentDownloadWorker
 
 object ContentQueueManager {
@@ -37,7 +37,7 @@ object ContentQueueManager {
                 R.id.download_service.toString(),
                 ExistingWorkPolicy.KEEP,
                 OneTimeWorkRequest.Builder(ContentDownloadWorker::class.java)
-                    .addTag(Consts.WORK_CLOSEABLE).build()
+                    .addTag(WORK_CLOSEABLE).build()
             )
         }
     }
