@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.library;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
@@ -706,6 +707,11 @@ public class LibraryContentFragment extends Fragment implements
             }
         }
 
+        if (contents.size() > 1000) {
+            Snackbar.make(recyclerView, R.string.redownload_limit, LENGTH_LONG).show();
+            return;
+        }
+
         String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
         if (externalContent > 0)
             message = getResources().getQuantityString(R.plurals.redownload_external_content, externalContent);
@@ -787,6 +793,11 @@ public class LibraryContentFragment extends Fragment implements
             } else {
                 contents.add(c);
             }
+        }
+
+        if (contents.size() > 1000) {
+            Snackbar.make(recyclerView, R.string.stream_limit, LENGTH_LONG).show();
+            return;
         }
 
         String message = getResources().getQuantityString(R.plurals.stream_confirm, contents.size());

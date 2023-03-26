@@ -956,14 +956,18 @@ public class LibraryActivity extends BaseActivity {
      * @param contents Items to be deleted if the answer is yes
      */
     public void askDeleteItems(@NonNull final List<Content> contents, @NonNull final List<Group> groups, @Nullable final Runnable onSuccess, @NonNull final SelectExtension<?> selectExtension) {
-        // TODO display the number of books and groups that will be deleted
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         int count = !groups.isEmpty() ? groups.size() : contents.size();
-        String title = getResources().getQuantityString(R.plurals.ask_delete_multiple, count, count);
-        builder.setMessage(title).setPositiveButton(R.string.yes, (dialog, which) -> {
-            selectExtension.deselect(selectExtension.getSelections());
-            viewModel.deleteItems(contents, groups, false, onSuccess);
-        }).setNegativeButton(R.string.no, (dialog, which) -> selectExtension.deselect(selectExtension.getSelections())).setOnCancelListener(dialog -> selectExtension.deselect(selectExtension.getSelections())).create().show();
+        if (count > 1000) {
+            // TODO provide a link to the mass-delete tool when it's ready (#992)
+            Snackbar.make(viewPager, R.string.delete_limit, LENGTH_LONG).show();
+        } else {
+            String title = getResources().getQuantityString(R.plurals.ask_delete_multiple, count, count);
+            builder.setMessage(title).setPositiveButton(R.string.yes, (dialog, which) -> {
+                selectExtension.deselect(selectExtension.getSelections());
+                viewModel.deleteItems(contents, groups, false, onSuccess);
+            }).setNegativeButton(R.string.no, (dialog, which) -> selectExtension.deselect(selectExtension.getSelections())).setOnCancelListener(dialog -> selectExtension.deselect(selectExtension.getSelections())).create().show();
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

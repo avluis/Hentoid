@@ -21,6 +21,7 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.delete.DeleteCompleteNotification;
 import me.devsaki.hentoid.notification.delete.DeleteProgressNotification;
@@ -31,6 +32,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.FileNotProcessedException;
 import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.data.DeleteData;
 
 
@@ -225,6 +227,11 @@ public abstract class BaseDeleteWorker extends BaseWorker {
                     ContentHelper.updateJson(getApplicationContext(), movedContent);
                 }
                 theGroup = dao.selectGroup(theGroup.id);
+            } else if (theGroup.grouping.equals(Grouping.DYNAMIC)) { // Delete books from dynamic group
+                ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle();
+                bundle.setGroupId(theGroup.id);
+                long[] containedContentList = Helper.getPrimitiveArrayFromList(dao.searchBookIdsUniversal(bundle));
+                removeContentList(containedContentList);
             }
             if (theGroup != null) {
                 if (!theGroup.items.isEmpty()) {

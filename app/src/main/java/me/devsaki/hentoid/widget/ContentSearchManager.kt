@@ -139,14 +139,14 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
     fun searchLibraryForIdRx(): Single<List<Long>> {
         return Single.fromCallable {
-            searchLibraryForId(values, dao)
+            searchContentIds(values, dao)
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
 
     companion object {
-        fun searchLibraryForId(data: ContentSearchBundle, dao: CollectionDAO): List<Long> {
+        fun searchContentIds(data: ContentSearchBundle, dao: CollectionDAO): List<Long> {
             val tags = parseSearchUri(Uri.parse(data.attributes)).attributes
             return when {
                 // Universal search
