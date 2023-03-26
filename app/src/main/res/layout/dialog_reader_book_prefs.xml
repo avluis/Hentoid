@@ -1,137 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="@dimen/dialog_width"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:clipToPadding="false"
-    android:padding="16dp">
+    android:layout_height="match_parent"
+    android:layout_gravity="center|center_vertical">
 
-    <TextView
-        android:id="@+id/export_title"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="@dimen/dialog_width"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="@string/book_prefs"
-        android:textAlignment="center"
-        android:textSize="@dimen/text_header_6"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:clipToPadding="false"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/book_prefs_browse_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:padding="8dp"
-        android:text="@string/pref_viewer_browse_mode"
-        android:textSize="@dimen/text_subtitle_1"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_title" />
+        <TextView
+            android:id="@+id/export_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="@string/book_prefs"
+            android:textAlignment="center"
+            android:textSize="@dimen/text_header_6"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <com.skydoves.powerspinner.PowerSpinnerView
-        android:id="@+id/book_prefs_browse_spin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:background="@drawable/bg_spinner_border"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_browse_txt"
-        app:spinner_arrow_gravity="end"
-        app:spinner_arrow_padding="8dp"
-        app:spinner_arrow_tint="@color/white_opacity_66"
-        app:spinner_divider_show="true"
-        app:spinner_divider_size="0.4dp"
-        app:spinner_popup_background="@color/dark_gray"
-        app:spinner_popup_elevation="14dp" />
+        <TextView
+            android:id="@+id/book_prefs_browse_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:text="@string/pref_viewer_browse_mode"
+            android:textSize="@dimen/text_subtitle_1"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/export_title" />
 
-    <TextView
-        android:id="@+id/book_prefs_rendering_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:padding="8dp"
-        android:text="@string/pref_viewer_rendering"
-        android:textSize="@dimen/text_subtitle_1"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_browse_spin" />
+        <com.skydoves.powerspinner.PowerSpinnerView
+            android:id="@+id/book_prefs_browse_spin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/bg_spinner_border"
+            android:gravity="center_vertical"
+            android:padding="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/book_prefs_browse_txt"
+            app:spinner_arrow_gravity="end"
+            app:spinner_arrow_padding="8dp"
+            app:spinner_arrow_tint="@color/white_opacity_66"
+            app:spinner_divider_show="true"
+            app:spinner_divider_size="0.4dp"
+            app:spinner_popup_background="@color/dark_gray"
+            app:spinner_popup_elevation="14dp" />
 
-    <com.skydoves.powerspinner.PowerSpinnerView
-        android:id="@+id/book_prefs_rendering_spin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:background="@drawable/bg_spinner_border"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_txt"
-        app:spinner_arrow_gravity="end"
-        app:spinner_arrow_padding="8dp"
-        app:spinner_arrow_tint="@color/white_opacity_66"
-        app:spinner_divider_show="true"
-        app:spinner_divider_size="0.4dp"
-        app:spinner_popup_background="@color/dark_gray"
-        app:spinner_popup_elevation="14dp" />
+        <TextView
+            android:id="@+id/book_prefs_rendering_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:text="@string/pref_viewer_rendering"
+            android:textSize="@dimen/text_subtitle_1"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/book_prefs_browse_spin" />
 
-    <TextView
-        android:id="@+id/book_prefs_display_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:padding="8dp"
-        android:text="@string/pref_viewer_display_mode"
-        android:textSize="@dimen/text_subtitle_1"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_spin" />
+        <com.skydoves.powerspinner.PowerSpinnerView
+            android:id="@+id/book_prefs_rendering_spin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/bg_spinner_border"
+            android:gravity="center_vertical"
+            android:padding="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_txt"
+            app:spinner_arrow_gravity="end"
+            app:spinner_arrow_padding="8dp"
+            app:spinner_arrow_tint="@color/white_opacity_66"
+            app:spinner_divider_show="true"
+            app:spinner_divider_size="0.4dp"
+            app:spinner_popup_background="@color/dark_gray"
+            app:spinner_popup_elevation="14dp" />
 
-    <com.skydoves.powerspinner.PowerSpinnerView
-        android:id="@+id/book_prefs_display_spin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:background="@drawable/bg_spinner_border"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_display_txt"
-        app:spinner_arrow_gravity="end"
-        app:spinner_arrow_padding="8dp"
-        app:spinner_arrow_tint="@color/white_opacity_66"
-        app:spinner_divider_show="true"
-        app:spinner_divider_size="0.4dp"
-        app:spinner_popup_background="@color/dark_gray"
-        app:spinner_popup_elevation="14dp" />
+        <TextView
+            android:id="@+id/book_prefs_display_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:text="@string/pref_viewer_display_mode"
+            android:textSize="@dimen/text_subtitle_1"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_spin" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/book_prefs_app_prefs_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
-        android:layout_width="wrap_content"
-        android:layout_height="?android:attr/actionBarSize"
-        android:layout_marginTop="40dp"
-        android:text="@string/goto_app_prefs"
-        app:icon="@drawable/ic_settings"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_display_spin" />
+        <com.skydoves.powerspinner.PowerSpinnerView
+            android:id="@+id/book_prefs_display_spin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/bg_spinner_border"
+            android:gravity="center_vertical"
+            android:padding="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/book_prefs_display_txt"
+            app:spinner_arrow_gravity="end"
+            app:spinner_arrow_padding="8dp"
+            app:spinner_arrow_tint="@color/white_opacity_66"
+            app:spinner_divider_show="true"
+            app:spinner_divider_size="0.4dp"
+            app:spinner_popup_background="@color/dark_gray"
+            app:spinner_popup_elevation="14dp" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/action_button"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="96dp"
-        android:layout_height="?android:attr/actionBarSize"
-        android:layout_marginTop="40dp"
-        android:text="@string/ok"
-        android:textColor="?colorSecondary"
-        android:textSize="@dimen/text_body_1"
-        app:icon="@drawable/ic_checked"
-        app:iconTint="?colorSecondary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_display_spin" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/book_prefs_app_prefs_btn"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+            android:layout_width="wrap_content"
+            android:layout_height="?android:attr/actionBarSize"
+            android:layout_marginTop="40dp"
+            android:text="@string/goto_app_prefs"
+            app:icon="@drawable/ic_settings"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/book_prefs_display_spin" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/action_button"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="96dp"
+            android:layout_height="?android:attr/actionBarSize"
+            android:layout_marginTop="40dp"
+            android:text="@string/ok"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_body_1"
+            app:icon="@drawable/ic_checked"
+            app:iconTint="?colorSecondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/book_prefs_display_spin" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

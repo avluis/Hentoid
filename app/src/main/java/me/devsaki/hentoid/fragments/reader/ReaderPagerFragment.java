@@ -497,7 +497,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      * Show the book viewer settings dialog
      */
     private void onBookSettingsClick() {
-        ReaderPrefsDialogFragment.invoke(this, bookPreferences);
+        ReaderPrefsDialogFragment.Companion.invoke(this, bookPreferences);
     }
 
     /**
