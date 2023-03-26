@@ -18,7 +18,9 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
@@ -208,13 +210,15 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             snack.show()
         }
         lifecycleScope.launch {
-            // Reset connection pool used by the downloader (includes an OkHttp instance reset)
-            RequestQueueManager.getInstance()?.resetRequestQueue(true)
-            // Reset all retrofit clients
-            GithubServer.init()
-            EHentaiServer.init()
-            LusciousServer.init()
-            PixivServer.init()
+            withContext(Dispatchers.IO) {
+                // Reset connection pool used by the downloader (includes an OkHttp instance reset)
+                RequestQueueManager.getInstance()?.resetRequestQueue(true)
+                // Reset all retrofit clients
+                GithubServer.init()
+                EHentaiServer.init()
+                LusciousServer.init()
+                PixivServer.init()
+            }
         }
     }
 
