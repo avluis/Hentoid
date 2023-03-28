@@ -587,8 +587,7 @@ public class LibraryActivity extends BaseActivity {
         } else {
             collapseSearchMenu();
             if (actionSearchView.getQuery().length() > 0) actionSearchView.setQuery("", false);
-            searchClearButton.setVisibility(View.GONE);
-            searchSaveButton.setVisibility(View.GONE);
+            hideSearchSubBar();
         }
     }
 
@@ -666,6 +665,7 @@ public class LibraryActivity extends BaseActivity {
         advancedSearchButton.setVisibility(View.GONE);
         searchClearButton.setVisibility(View.GONE);
         searchSaveButton.setVisibility(View.GONE);
+        if (searchHistory != null) searchHistory.dismiss();;
     }
 
     public boolean closeLeftDrawer() {
