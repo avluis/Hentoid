@@ -393,6 +393,13 @@ public class LibraryContentFragment extends Fragment implements
                 .setPopupTextProvider(this)
                 .build();
 
+        // Hide FAB when scrolling up
+        scrollListener.setDeltaYListener(activity.get(), i -> {
+            if (Preferences.isTopFabEnabled() && i > 0)
+                topFab.setVisibility(View.VISIBLE);
+            else topFab.setVisibility(View.GONE);
+        });
+
         // Top FAB
         topFab = requireViewById(rootView, R.id.top_fab);
         topFab.setOnClickListener(v -> llm.scrollToPositionWithOffset(0, 0));

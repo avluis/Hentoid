@@ -1,16 +1,20 @@
 package me.devsaki.hentoid.widget;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.function.IntConsumer;
 
+import me.devsaki.hentoid.util.Debouncer;
+
 public final class ScrollPositionListener extends RecyclerView.OnScrollListener {
 
-    private final IntConsumer onPositionChangeListener;
     private boolean isScrollEnabled = true;
 
+    private int mInitialOffsetY = -1;
     private int mTotalScrolledX = 0;
     private int mTotalScrolledY = 0;
 
@@ -21,11 +25,22 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
     private int dragStartPositionX = -1;
     private int dragStartPositionY = -1;
 
+    private Debouncer<Integer> deltaEventDebouncer;
+
+    private final IntConsumer onPositionChangeListener;
     private Runnable onStartOutOfBoundScroll = null;
     private Runnable onEndOutOfBoundScroll = null;
 
+
     public ScrollPositionListener(IntConsumer onPositionChangeListener) {
         this.onPositionChangeListener = onPositionChangeListener;
+    }
+
+    public void setDeltaYListener(Context context, IntConsumer deltaYListener) {
+        deltaEventDebouncer = new Debouncer<>(context, 75, i -> {
+            deltaYListener.accept(i - mInitialOffsetY);
+            mInitialOffsetY = -1;
+        });
     }
 
     public void setOnStartOutOfBoundScrollListener(Runnable onStartOutOfBoundScrollListener) {
@@ -39,9 +54,12 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
     @Override
     public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
         super.onScrolled(recyclerView, dx, dy);
+        if (mInitialOffsetY < 0) mInitialOffsetY = mTotalScrolledY;
 
         mTotalScrolledY += dy;
         mTotalScrolledX += dx;
+
+        if (deltaEventDebouncer != null) deltaEventDebouncer.submit(mTotalScrolledY);
 
         LinearLayoutManager llm = (LinearLayoutManager) recyclerView.getLayoutManager();
         if (llm != null) {
