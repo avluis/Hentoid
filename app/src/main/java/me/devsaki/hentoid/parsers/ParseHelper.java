@@ -242,8 +242,12 @@ public class ParseHelper {
         List<ImageFile> result = new ArrayList<>();
 
         int order = initialOrder;
-        // Remove duplicates before creating the ImageFiles
-        List<String> imgUrlsUnique = Stream.of(imgUrls).distinct().toList();
+        // Remove duplicates and MACOSX indexes (yes, it does happen!) before creating the ImageFiles
+        List<String> imgUrlsUnique = Stream.of(imgUrls)
+                .distinct()
+                .filterNot(s -> s.contains("__MACOSX"))
+                .toList();
+
         for (String s : imgUrlsUnique)
             result.add(urlToImageFile(s.trim(), order++, totalBookPages, status, chapter));
 
