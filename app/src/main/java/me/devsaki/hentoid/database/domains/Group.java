@@ -137,6 +137,11 @@ public class Group {
         return name;
     }
 
+    public Group setSearchUri(String value) {
+        searchUri = value;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

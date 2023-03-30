@@ -99,6 +99,10 @@ public final class GroupHelper {
 
         JsonContentCollection contentCollection = new JsonContentCollection();
 
+        // Save dynamic groups
+        List<Group> dynamicGroups = dao.selectGroups(Grouping.DYNAMIC.getId());
+        contentCollection.setGroups(Grouping.DYNAMIC, dynamicGroups);
+
         // Save custom groups
         List<Group> customGroups = dao.selectGroups(Grouping.CUSTOM.getId());
         contentCollection.setGroups(Grouping.CUSTOM, customGroups);
