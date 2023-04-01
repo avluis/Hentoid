@@ -80,6 +80,7 @@ public class PixivParser extends BaseImageListParser {
             Timber.d(e);
             throw new EmptyResultException(StringHelper.protect(e.getMessage()));
         }
+        DownloadRateLimiter.INSTANCE.take(); // One last delay before download phase
         return Collections.emptyList();
     }
 
