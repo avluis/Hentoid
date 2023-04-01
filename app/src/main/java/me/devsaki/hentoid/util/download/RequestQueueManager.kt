@@ -43,8 +43,6 @@ class RequestQueueManager private constructor(
 
     init {
         downloadThreadCount = getPreferredThreadCount(context)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.setCustomKey("Download thread count", downloadThreadCount)
         init(resetActiveRequests = false, cancelQueue = true)
     }
 
@@ -136,8 +134,7 @@ class RequestQueueManager private constructor(
      */
     private fun isNewRequestAllowed(): Boolean {
         val remainingSlots = downloadThreadCount - nbActiveRequests
-        if (0 == remainingSlots) return false
-        DownloadRateLimiter.take()
+        if (remainingSlots < 1) return false
         return true
     }
 
@@ -185,6 +182,7 @@ class RequestQueueManager private constructor(
         mRequestQueue?.let {
             if (!it.active) return
             if (insert) synchronized(activeRequests) { activeRequests.add(order) }
+            DownloadRateLimiter.take()
             it.executeRequest(order)
             synchronized(waitingRequestQueue) {
                 Timber.d(
@@ -229,6 +227,7 @@ class RequestQueueManager private constructor(
 
     fun setNbRequestsPerSecond(value: Int) {
         DownloadRateLimiter.setRateLimit(value.toLong())
+        Timber.d("Downloader : Settings download rate limit to %d/s", value)
     }
 
     private val nbActiveRequests: Int
