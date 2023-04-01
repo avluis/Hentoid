@@ -3,14 +3,11 @@ package me.devsaki.hentoid.viewmodels;
 import static me.devsaki.hentoid.util.GroupHelper.moveContentToCustomGroup;
 
 import android.app.Application;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -271,59 +268,9 @@ public class LibraryViewModel extends AndroidViewModel {
         contentSearchManager.setContentType(metadata.getContentType());
         newContentSearch.setValue(true);
 
-        if (!metadata.isEmpty()) {
-            List<String> labelElts = Stream.of(metadata.getAttributes()).map(a -> formatAttribute(a, getApplication().getResources())).toList();
-            if (metadata.getLocation() != ContentHelper.Location.ANY)
-                labelElts.add("loc:" + getApplication().getResources().getString(formatLocation(metadata.getLocation())).toLowerCase());
-            if (metadata.getContentType() != ContentHelper.Type.ANY)
-                labelElts.add("type:" + getApplication().getResources().getString(formatContentType(metadata.getContentType())).toLowerCase());
-            String label = TextUtils.join("|", labelElts);
-            if (label.length() > 50) label = label.substring(0, 50) + "…";
-            dao.insertSearchRecord(SearchRecord.fromContentAdvancedSearch(searchUri, label), 10);
-        }
+        if (!metadata.isEmpty())
+            dao.insertSearchRecord(SearchRecord.fromContentAdvancedSearch(searchUri, metadata.toString(getApplication())), 10);
         doSearchContent();
-    }
-
-    private @StringRes
-    int formatLocation(@ContentHelper.Location int value) {
-        switch (value) {
-            case ContentHelper.Location.PRIMARY:
-                return R.string.refresh_location_internal;
-            case ContentHelper.Location.PRIMARY_1:
-                return R.string.refresh_location_internal_1;
-            case ContentHelper.Location.PRIMARY_2:
-                return R.string.refresh_location_internal_2;
-            case ContentHelper.Location.EXTERNAL:
-                return R.string.refresh_location_external;
-            case ContentHelper.Location.ANY:
-            default:
-                return R.string.search_location_entries_1;
-        }
-    }
-
-    private @StringRes
-    int formatContentType(@ContentHelper.Type int value) {
-        switch (value) {
-            case ContentHelper.Type.FOLDER:
-                return R.string.search_type_entries_2;
-            case ContentHelper.Type.STREAMED:
-                return R.string.search_type_entries_3;
-            case ContentHelper.Type.ARCHIVE:
-                return R.string.search_type_entries_4;
-            case ContentHelper.Type.PLACEHOLDER:
-                return R.string.search_type_entries_5;
-            case ContentHelper.Type.ANY:
-            default:
-                return R.string.search_type_entries_1;
-        }
-    }
-
-    private String formatAttribute(@NonNull Attribute a, @NonNull Resources res) {
-        return String.format("%s%s:%s",
-                a.isExcluded() ? "[x]" : "",
-                res.getString(a.getType().getDisplayName()),
-                a.getDisplayName()
-        );
     }
 
     public void clearContent() {
@@ -979,18 +926,20 @@ public class LibraryViewModel extends AndroidViewModel {
         return dao.selectContent(Helper.getPrimitiveArrayFromList(group.getContentIds()));
     }
 
-    public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName,
+    public void newGroup(@NonNull final Grouping grouping,
+                         @NonNull final String newGroupName,
+                         @Nullable final String searchUri,
                          @NonNull final Runnable onNameExists) {
         // Check if the group already exists
-        List<Group> localGroups = getGroups().getValue();
-        if (null == localGroups) return;
-
-        List<Group> groupMatchingName = Stream.of(localGroups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
+        List<Group> groupingGroups = dao.selectGroups(grouping.getId());
+        List<Group> groupMatchingName = Stream.of(groupingGroups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
         if (!groupMatchingName.isEmpty()) { // Existing group with the same name
             onNameExists.run();
         } else {
+            Group newGroup = new Group(grouping, newGroupName, -1);
+            if (searchUri != null && !searchUri.isEmpty()) newGroup.searchUri = searchUri;
             compositeDisposable.add(
-                    Completable.fromRunnable(() -> dao.insertGroup(new Group(grouping, newGroupName, -1)))
+                    Completable.fromRunnable(() -> dao.insertGroup(newGroup))
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.io())
                             .doOnComplete(() -> {
@@ -1360,11 +1309,5 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void clearSearchHistory() {
         dao.deleteAllSearchRecords();
-    }
-
-    public void saveSearchToDynamicGroup(SearchHelper.AdvancedSearchCriteria criteria, String groupName) {
-        Group g = new Group(Grouping.DYNAMIC, groupName, -1);
-        g.searchUri = SearchActivityBundle.Companion.buildSearchUri(criteria, null).toString();
-        dao.insertGroup(g);
     }
 }

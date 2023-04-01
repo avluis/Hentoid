@@ -93,6 +93,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LocaleHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.SearchHelper;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.file.PermissionHelper;
@@ -423,13 +424,7 @@ public class LibraryActivity extends BaseActivity {
 
         // Save search
         searchSaveButton = findViewById(R.id.search_save_btn);
-        searchSaveButton.setOnClickListener(v -> InputDialog.invokeInputDialog(
-                this,
-                R.string.group_new_name_dynamic,
-                "TODO",
-                s -> viewModel.saveSearchToDynamicGroup(getAdvSearchCriteria(), s),
-                null
-        ));
+        searchSaveButton.setOnClickListener(v -> saveSearchAsGroup());
 
         // Clear search
         searchClearButton = findViewById(R.id.search_clear_btn);
@@ -504,7 +499,7 @@ public class LibraryActivity extends BaseActivity {
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                showSearchSubBar(true, null, !preventShowSearchHistoryNextExpand);
+                showSearchSubBar(true, null, null, !preventShowSearchHistoryNextExpand);
                 preventShowSearchHistoryNextExpand = false;
                 invalidateNextQueryTextChange = true;
 
@@ -551,7 +546,6 @@ public class LibraryActivity extends BaseActivity {
                 setQuery(s.trim());
                 signalCurrentFragment(EV_SEARCH, getQuery());
                 actionSearchView.clearFocus();
-
                 return true;
             }
 
@@ -562,13 +556,15 @@ public class LibraryActivity extends BaseActivity {
                 } else if (s.isEmpty()) {
                     searchClearDebouncer.submit(1);
                 } else searchClearDebouncer.clear();
-
                 return true;
             }
         });
     }
 
-    public void initFragmentToolbars(@NonNull final SelectExtension<?> selectExtension, @NonNull final Toolbar.OnMenuItemClickListener toolbarOnItemClicked, @NonNull final Toolbar.OnMenuItemClickListener selectionToolbarOnItemClicked) {
+    public void initFragmentToolbars(
+            @NonNull final SelectExtension<?> selectExtension,
+            @NonNull final Toolbar.OnMenuItemClickListener toolbarOnItemClicked,
+            @NonNull final Toolbar.OnMenuItemClickListener selectionToolbarOnItemClicked) {
         toolbar.setOnMenuItemClickListener(toolbarOnItemClicked);
         if (selectionToolbar != null) {
             selectionToolbar.setOnMenuItemClickListener(selectionToolbarOnItemClicked);
@@ -587,7 +583,7 @@ public class LibraryActivity extends BaseActivity {
             } else if (nonEmptyResults) {
                 collapseSearchMenu();
             }
-            showSearchSubBar(!isGroupDisplayed(), true, false);
+            showSearchSubBar(!isGroupDisplayed(), true, !getAdvSearchCriteria().isEmpty(), false);
         } else {
             collapseSearchMenu();
             if (actionSearchView.getQuery().length() > 0) actionSearchView.setQuery("", false);
@@ -622,13 +618,13 @@ public class LibraryActivity extends BaseActivity {
         return true;
     }
 
-    private void showSearchSubBar(boolean showAdvancedSearch, Boolean showClear, boolean showSearchHistory) {
+    private void showSearchSubBar(boolean showAdvancedSearch, Boolean showClear, Boolean showSaveSearch, boolean showSearchHistory) {
         searchSubBar.setVisibility(View.VISIBLE);
         advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
-        if (showClear != null) {
+        if (showClear != null)
             searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
-            searchSaveButton.setVisibility(showClear && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
-        }
+        if (showSaveSearch != null)
+            searchSaveButton.setVisibility(showSaveSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
 
         if (showSearchHistory && !searchRecords.isEmpty()) {
             PowerMenu.Builder powerMenuBuilder = new PowerMenu.Builder(this).setAnimation(MenuAnimation.DROP_DOWN).setLifecycleOwner(this).setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87)).setTextTypeface(Typeface.DEFAULT).setShowBackground(false).setWidth((int) getResources().getDimension(R.dimen.dialog_width)).setMenuColor(ContextCompat.getColor(this, R.color.medium_gray)).setTextSize(Helper.dimensAsDp(this, R.dimen.text_subtitle_2)).setAutoDismiss(true);
@@ -1101,6 +1097,22 @@ public class LibraryActivity extends BaseActivity {
             default:
                 return R.string.sort_invalid;
         }
+    }
+
+    private void saveSearchAsGroup() {
+        SearchHelper.AdvancedSearchCriteria criteria = getAdvSearchCriteria();
+        InputDialog.invokeInputDialog(
+                this,
+                R.string.group_new_name_dynamic,
+                criteria.toString(this),
+                s -> viewModel.newGroup(Grouping.DYNAMIC, s, SearchActivityBundle.Companion.buildSearchUri(criteria, null).toString(), this::onNewSearchGroupNameExists),
+                null
+        );
+    }
+
+    private void onNewSearchGroupNameExists() {
+        ToastHelper.toast(R.string.group_name_exists);
+        saveSearchAsGroup();
     }
 
     /**

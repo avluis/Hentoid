@@ -327,7 +327,7 @@ public class LibraryGroupsFragment extends Fragment implements
     }
 
     private void newGroupPrompt() {
-        InputDialog.invokeInputDialog(requireActivity(), R.string.new_group_name, groupName -> viewModel.newGroup(Preferences.getGroupingDisplay(), groupName, this::onNewGroupNameExists));
+        InputDialog.invokeInputDialog(requireActivity(), R.string.new_group_name, groupName -> viewModel.newGroup(Preferences.getGroupingDisplay(), groupName, null, this::onNewGroupNameExists));
     }
 
     private void onNewGroupNameExists() {
