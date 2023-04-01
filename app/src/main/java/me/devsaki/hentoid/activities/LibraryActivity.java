@@ -317,13 +317,7 @@ public class LibraryActivity extends BaseActivity {
             searchRecords.addAll(records);
         });
 
-        searchClearDebouncer = new Debouncer<>(this, 1500, i -> {
-            setQuery("");
-            getAdvSearchCriteria().setQuery("");
-            signalCurrentFragment(EV_SEARCH, getQuery());
-            searchClearButton.setVisibility(View.GONE);
-            searchSaveButton.setVisibility(View.GONE);
-        });
+        searchClearDebouncer = new Debouncer<>(this, 1500, i -> clearSearch());
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
@@ -539,6 +533,16 @@ public class LibraryActivity extends BaseActivity {
         actionSearchView.setImeOptions(IME_FLAG_NO_PERSONALIZED_LEARNING);
         actionSearchView.setIconifiedByDefault(true);
         actionSearchView.setQueryHint(getString(R.string.library_search_hint));
+
+        View clearButton = actionSearchView.findViewById(androidx.appcompat.R.id.search_close_btn);
+        if (clearButton != null)
+            clearButton.setOnClickListener(v -> {
+                invalidateNextQueryTextChange = true;
+                actionSearchView.setQuery("", false);
+                actionSearchView.setIconified(true);
+                clearSearch(); // Immediately; don't use the debouncer
+            });
+
         // Change display when text query is typed
         actionSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -559,6 +563,14 @@ public class LibraryActivity extends BaseActivity {
                 return true;
             }
         });
+    }
+
+    private void clearSearch() {
+        setQuery("");
+        getAdvSearchCriteria().setQuery("");
+        signalCurrentFragment(EV_SEARCH, getQuery());
+        searchClearButton.setVisibility(View.GONE);
+        searchSaveButton.setVisibility(View.GONE);
     }
 
     public void initFragmentToolbars(

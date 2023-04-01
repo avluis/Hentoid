@@ -257,6 +257,13 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         activity.get()?.getToolbar()?.let {
             val searchMenu = it.menu.findItem(R.id.action_search)
             val mainSearchView = searchMenu?.actionView as SearchView?
+            mainSearchView?.findViewById<View>(androidx.appcompat.R.id.search_close_btn)
+                ?.setOnClickListener {
+                    invalidateNextQueryTextChange = true
+                    mainSearchView.setQuery("", false)
+                    mainSearchView.isIconified = true
+                    viewModel.searchErrorContentUniversal("")
+                }
             searchMenu?.setOnActionExpandListener(
                 object : MenuItem.OnActionExpandListener {
                     override fun onMenuItemActionExpand(item: MenuItem): Boolean {
