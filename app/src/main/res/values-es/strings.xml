@@ -47,7 +47,7 @@
     <string name="remove_generic">Eliminar</string>
 <string name="title_activity_downloads">Biblioteca</string>
     <string name="title_activity_queue">Cola de descargas</string>
-    <string name="title_activity_preferences">Ajustes</string>
+    <string name="title_activity_settings">Ajustes</string>
     <string name="title_activity_about">Acerca de</string>
     <string name="title_activity_app_lock">Bloqueo de la aplicación</string>
     <string name="title_activity_search">Búsqueda Avanzada</string>

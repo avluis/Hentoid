@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.util.Pair;
+import androidx.core.view.MenuCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleObserver;
@@ -402,6 +403,7 @@ public final class Helper {
         } catch (Exception e) {
             Timber.i(e);
         }
+        MenuCompat.setGroupDividerEnabled(menu, true);
     }
 
     /**

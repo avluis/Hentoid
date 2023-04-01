@@ -49,7 +49,7 @@
     <string name="remove_generic">Rimuovi</string>
 <string name="title_activity_downloads">Libreria</string>
     <string name="title_activity_queue">Coda</string>
-    <string name="title_activity_preferences">Preferenze</string>
+    <string name="title_activity_settings">Preferenze</string>
     <string name="title_activity_about">Informazioni</string>
     <string name="title_activity_app_lock">Blocco app</string>
     <string name="title_activity_search">Ricerca avanzata</string>

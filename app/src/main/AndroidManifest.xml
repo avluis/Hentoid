@@ -149,7 +149,7 @@
         <activity
             android:name=".activities.PrefsActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_preferences"
+            android:label="@string/title_activity_settings"
             android:parentActivityName=".activities.LibraryActivity"
             android:theme="@style/Theme.Light.Prefs"
             tools:ignore="UnusedAttribute">
@@ -160,7 +160,7 @@
         <activity
             android:name=".activities.ToolsActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_preferences"
+            android:label="@string/title_activity_settings"
             android:parentActivityName=".activities.LibraryActivity"
             android:theme="@style/Theme.Light.Prefs"
             tools:ignore="UnusedAttribute">

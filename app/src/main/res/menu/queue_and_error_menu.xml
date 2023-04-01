@@ -22,8 +22,8 @@
     <item
         android:id="@+id/action_queue_prefs"
         android:icon="@drawable/ic_settings"
-        android:title="@string/title_activity_preferences"
-        android:tooltipText="@string/title_activity_preferences"
+        android:title="@string/title_activity_settings"
+        android:tooltipText="@string/title_activity_settings"
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item

@@ -47,7 +47,7 @@
     <string name="remove_generic">Törlés</string>
 <string name="title_activity_downloads">Könyvtár</string>
     <string name="title_activity_queue">Várólista</string>
-    <string name="title_activity_preferences">Beállítások</string>
+    <string name="title_activity_settings">Beállítások</string>
     <string name="title_activity_about">Névjegy</string>
     <string name="title_activity_app_lock">Alkalmazás Zárolása</string>
     <string name="title_activity_search">Haladó keresés</string>

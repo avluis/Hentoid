@@ -72,6 +72,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.AboutActivity;
 import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.MissingWebViewActivity;
@@ -263,6 +264,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // Toolbar
         // Top toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
+        Helper.tryShowMenuIcons(this, toolbar.getMenu());
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
         toolbar.setTitle(getStartSite().getDescription());
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
@@ -341,6 +343,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 break;
             case R.id.web_menu_settings:
                 this.onSettingsClick();
+                break;
+            case R.id.web_menu_about:
+                this.onAboutClick();
                 break;
             default:
                 return false;
@@ -1460,7 +1465,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     /**
-     * Show the viewer settings dialog
+     * Show the browser settings dialog
      */
     private void onSettingsClick() {
         Intent intent = new Intent(this, PrefsActivity.class);
@@ -1470,6 +1475,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         intent.putExtras(prefsBundle.getBundle());
 
         startActivity(intent);
+    }
+
+    /**
+     * Show the About page
+     */
+    private void onAboutClick() {
+        startActivity(new Intent(this, AboutActivity.class));
     }
 
     @Override

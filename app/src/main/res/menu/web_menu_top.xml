@@ -5,29 +5,41 @@
     tools:context=".activities.sources.BaseWebActivity"
     tools:ignore="AlwaysShowAction"
     tools:targetApi="o">
-    <item
-        android:id="@+id/web_menu_refresh_stop"
-        android:icon="@drawable/ic_action_refresh"
-        android:title="@string/web_refresh_stop"
-        android:tooltipText="@string/web_refresh_stop"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/web_menu_bookmark"
-        android:icon="@drawable/ic_bookmark"
-        android:title="@string/web_bookmarks"
-        android:tooltipText="@string/web_bookmarks"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/web_menu_copy"
-        android:icon="@drawable/ic_action_copy"
-        android:title="@string/web_copy_url"
-        android:tooltipText="@string/web_copy_url"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/web_menu_settings"
-        android:icon="@drawable/ic_settings"
-        android:title="@string/title_activity_preferences"
-        android:tooltipText="@string/title_activity_preferences"
-        android:visible="true"
-        app:showAsAction="ifRoom" />
+    <group android:id="@+id/web_menu_top_1">
+        <item
+            android:id="@+id/web_menu_refresh_stop"
+            android:icon="@drawable/ic_action_refresh"
+            android:title="@string/web_refresh_stop"
+            android:tooltipText="@string/web_refresh_stop"
+            app:showAsAction="always" />
+    </group>
+    <group android:id="@+id/web_menu_top_2">
+        <item
+            android:id="@+id/web_menu_bookmark"
+            android:icon="@drawable/ic_bookmark"
+            android:title="@string/web_bookmarks"
+            android:tooltipText="@string/web_bookmarks"
+            app:showAsAction="never" />
+    </group>
+    <group android:id="@+id/web_menu_top_3">
+        <item
+            android:id="@+id/web_menu_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/title_activity_settings"
+            android:tooltipText="@string/title_activity_settings"
+            android:visible="true"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/web_menu_copy"
+            android:icon="@drawable/ic_link"
+            android:title="@string/web_copy_url"
+            android:tooltipText="@string/web_copy_url"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/web_menu_about"
+            android:icon="@drawable/ic_info"
+            android:title="@string/title_activity_about"
+            android:tooltipText="@string/title_activity_about"
+            app:showAsAction="never" />
+    </group>
 </menu>

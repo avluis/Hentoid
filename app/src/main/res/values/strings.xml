@@ -55,7 +55,7 @@
     <!-- Activities -->
     <string name="title_activity_downloads">Library</string>
     <string name="title_activity_queue">Queue</string>
-    <string name="title_activity_preferences">Preferences</string>
+    <string name="title_activity_settings">Settings</string>
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
@@ -269,7 +269,7 @@
     <string name="refresh_location_internal_1">Primary library 1</string>
     <string name="refresh_location_internal_2">Primary library 2</string>
     <string name="refresh_location_external">External library</string>
-    <string name="refresh_options_rename">Rename all folders according to the current naming and max length preference</string>
+    <string name="refresh_options_rename">Rename all folders according to the current naming and max length settings</string>
     <string name="refresh_options_remove_placeholders">Remove placeholder books imported through metadata</string>
     <string name="refresh_options_renumber_pages">Renumber pages</string>
     <string name="refresh_renumber_warning">This will check all books and correct any mistaken page counts.\nBe aware this option WILL slow down the process significantly.</string>
@@ -679,7 +679,7 @@
     <string name="web_forward">Forward</string>
     <string name="web_bookmarks">Bookmarks</string>
     <string name="web_refresh_stop">Refresh/stop</string>
-    <string name="web_copy_url">Copy current URL to clipboard</string>
+    <string name="web_copy_url">Get link</string>
     <string name="web_download">Download</string>
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
     <string name="web_url_clipboard">URL copied to clipboard</string>

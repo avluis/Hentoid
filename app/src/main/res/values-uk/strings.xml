@@ -53,7 +53,7 @@
     <!-- Activities -->
     <string name="title_activity_downloads">Бібліотека</string>
     <string name="title_activity_queue">Черга</string>
-    <string name="title_activity_preferences">Налаштування</string>
+    <string name="title_activity_settings">Налаштування</string>
     <string name="title_activity_about">Про Hentoid</string>
     <string name="title_activity_app_lock">Код-пароль</string>
     <string name="title_activity_search">Розширений пошук</string>
