@@ -750,7 +750,7 @@
 
     <!-- DB migration & Maintenance -->
 
-    <!-- Image viewer -->
+    <!-- Image reader -->
     <string name="no_images">Could not load the book: No image found</string>
     <string name="loading_archive">Loading: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
     <string name="loading_image">Loading image: <x:g example="50%" id="percentage">%d%%</x:g></string>

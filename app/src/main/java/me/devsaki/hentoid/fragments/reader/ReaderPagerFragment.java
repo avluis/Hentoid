@@ -74,6 +74,7 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
@@ -457,6 +458,11 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         // Fix page button
         binding.viewerFixBtn.setOnClickListener(v -> fixPage());
 
+        // Redownload from scratch button
+        binding.viewerRedownloadBtn.setOnClickListener(v -> viewModel.redownloadImages(
+                t -> Snackbar.make(binding.recyclerView, R.string.redownloaded_error, BaseTransientBottomBar.LENGTH_LONG).show()
+        ));
+
         // Bottom navigation controls
         navigator = new ReaderNavigation(this, binding);
 
@@ -618,11 +624,13 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (images.isEmpty()) {
             setSystemBarsVisible(true);
             binding.viewerNoImgTxt.setVisibility(View.VISIBLE);
-        } else if (absImageIndex > -1 && absImageIndex < images.size()) {
-            isPageFavourite = images.get(absImageIndex).isFavourite();
-            updateFavouriteButtonIcon();
+        } else {
             binding.viewerNoImgTxt.setVisibility(View.GONE);
             binding.viewerLoadingTxt.setVisibility(View.GONE);
+            if (absImageIndex > -1 && absImageIndex < images.size()) {
+                isPageFavourite = images.get(absImageIndex).isFavourite();
+                updateFavouriteButtonIcon();
+            }
         }
     }
 
@@ -691,6 +699,9 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         navigator.onContentChanged(content);
         updateFavouriteButtonIcon();
+
+        // Display "redownload images" button if folder no longer exists and is not external
+        binding.viewerRedownloadBtn.setVisibility(!content.isFolderExists() && !content.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -927,7 +938,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
                 if (0 == tag) {
                     viewModel.onPageChange(absImageIndex, 0);
                 } else if (1 == tag) {
-                    viewModel.reparseBook(t -> {
+                    viewModel.reparseContent(t -> {
                         Timber.w(t);
                         binding.viewerLoadingTxt.setText(getResources().getString(R.string.redownloaded_error));
                     });

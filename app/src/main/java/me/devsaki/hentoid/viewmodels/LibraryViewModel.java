@@ -82,7 +82,6 @@ import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.widget.GroupSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
-import me.devsaki.hentoid.workers.PurgeWorker;
 import me.devsaki.hentoid.workers.UpdateJsonWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
 import me.devsaki.hentoid.workers.data.UpdateJsonData;
@@ -675,7 +674,8 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (c.isPresent()) {
                                 Content content = c.get();
                                 // Non-blocking performance bottleneck; run in a dedicated worker
-                                if (reparseImages) purgeItem(content, false);
+                                if (reparseImages)
+                                    ContentHelper.purgeContent(getApplication(), content, false);
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position, -1, null,
                                         ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
@@ -801,7 +801,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Content dbContent = dao.selectContent(c.get().getId());
                                 if (null == dbContent) return;
                                 // Non-blocking performance bottleneck; scheduled in a dedicated worker
-                                purgeItem(c.get(), true);
+                                ContentHelper.purgeContent(getApplication(), c.get(), true);
                                 dbContent.setDownloadMode(Content.DownloadMode.STREAM);
                                 List<ImageFile> imgs = dbContent.getImageFiles();
                                 if (imgs != null) {
@@ -859,19 +859,6 @@ public class LibraryViewModel extends AndroidViewModel {
 
         workObservers.add(new ImmutablePair<>(request.getId(), workInfoObserver));
         workManager.getWorkInfoByIdLiveData(request.getId()).observeForever(workInfoObserver);
-    }
-
-    public void purgeItem(@NonNull final Content content, boolean keepCover) {
-        DeleteData.Builder builder = new DeleteData.Builder();
-        builder.setContentPurgeIds(Stream.of(content).map(Content::getId).toList());
-        builder.setContentPurgeKeepCovers(keepCover);
-
-        WorkManager workManager = WorkManager.getInstance(getApplication());
-        workManager.enqueueUniqueWork(
-                Integer.toString(R.id.delete_service_purge),
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                new OneTimeWorkRequest.Builder(PurgeWorker.class).setInputData(builder.getData()).build()
-        );
     }
 
     public void archiveContents(@NonNull final List<Content> contentList, Consumer<

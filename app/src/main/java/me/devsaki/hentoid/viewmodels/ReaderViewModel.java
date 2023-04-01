@@ -78,6 +78,7 @@ import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
@@ -795,19 +796,7 @@ public class ReaderViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> {
-                                    currentImageSource = null;
-                                    // Switch to the next book if the list is populated (multi-book)
-                                    if (!contentIds.isEmpty()) {
-                                        contentIds.remove(currentContentIndex);
-                                        if (currentContentIndex >= contentIds.size() && currentContentIndex > 0)
-                                            currentContentIndex--;
-                                        if (contentIds.size() > currentContentIndex)
-                                            loadContentFromId(contentIds.get(currentContentIndex), -1);
-                                    } else { // Close the viewer if the list is empty (single book)
-                                        content.postValue(null);
-                                    }
-                                },
+                                this::onContentRemoved,
                                 e -> {
                                     onError.accept(e);
                                     // Restore image source listener on error
@@ -815,6 +804,20 @@ public class ReaderViewModel extends AndroidViewModel {
                                 }
                         )
         );
+    }
+
+    private void onContentRemoved() {
+        currentImageSource = null;
+        // Switch to the next book if the list is populated (multi-book)
+        if (!contentIds.isEmpty()) {
+            contentIds.remove(currentContentIndex);
+            if (currentContentIndex >= contentIds.size() && currentContentIndex > 0)
+                currentContentIndex--;
+            if (contentIds.size() > currentContentIndex)
+                loadContentFromId(contentIds.get(currentContentIndex), -1);
+        } else { // Close the viewer if the list is empty (single book)
+            content.postValue(null);
+        }
     }
 
     /**
@@ -914,6 +917,10 @@ public class ReaderViewModel extends AndroidViewModel {
         theContent.setLast(currentContentIndex >= contentIds.size() - 1);
         if (contentIds.size() > currentContentIndex && loadedContentId != contentIds.get(currentContentIndex))
             imageLocationCache.clear();
+
+        if (null == FileHelper.getDocumentFromTreeUriString(getApplication(), theContent.getStorageUri()))
+            theContent.setFolderExists(false);
+
         content.postValue(theContent);
         loadDatabaseImages(theContent, pageNumber);
     }
@@ -1417,7 +1424,7 @@ public class ReaderViewModel extends AndroidViewModel {
      *
      * @param onError Consumer to call in case reparsing fails
      */
-    public void reparseBook(Consumer<Throwable> onError) {
+    public void reparseContent(Consumer<Throwable> onError) {
         Content theContent = content.getValue();
         if (null == theContent) return;
 
@@ -1435,6 +1442,63 @@ public class ReaderViewModel extends AndroidViewModel {
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
                                 ContentQueueManager.INSTANCE.resumeQueue(getApplication());
+                        })
+                        .subscribe(
+                                v -> { // Nothing; feedback is done through LiveData
+                                },
+                                onError::accept
+                        )
+        );
+    }
+
+    /**
+     * Send the current book to the queue to be redownloaded from scratch
+     *
+     * @param onError Consumer to call in case reparsing fails
+     */
+    public void redownloadImages(@NonNull final Consumer<Throwable> onError) {
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating())
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_updating_webview)));
+            else
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_missing_webview)));
+            return;
+        }
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        List<Content> contentList = Stream.of(theContent).toList();
+
+        // Flag the content as "being deleted" (triggers blink animation)
+        for (Content c : contentList) dao.updateContentDeleteFlag(c.getId(), true);
+
+        StatusContent targetImageStatus = StatusContent.ERROR;
+        AtomicInteger errorCount = new AtomicInteger(0);
+
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        // don't reparse content
+                        .map(Optional::of)
+                        .doOnNext(c -> {
+                            if (c.isPresent()) {
+                                Content content = c.get();
+                                // Non-blocking performance bottleneck; run in a dedicated worker
+                                ContentHelper.purgeContent(getApplication(), content, false);
+                                dao.addContentToQueue(
+                                        content, targetImageStatus, ContentHelper.QueuePosition.TOP, -1, null,
+                                        ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
+
+                            } else {
+                                errorCount.incrementAndGet();
+                                onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
+                            }
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnComplete(() -> {
+                            if (Preferences.isQueueAutostart())
+                                ContentQueueManager.INSTANCE.resumeQueue(getApplication());
+                            onContentRemoved();
                         })
                         .subscribe(
                                 v -> { // Nothing; feedback is done through LiveData

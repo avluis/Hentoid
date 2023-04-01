@@ -15,6 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
@@ -89,6 +92,8 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
+import me.devsaki.hentoid.workers.PurgeWorker;
+import me.devsaki.hentoid.workers.data.DeleteData;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
@@ -1839,6 +1844,20 @@ public final class ContentHelper {
         }
         return StorageLocation.NONE;
     }
+
+    public static void purgeContent(@NonNull final Context context, @NonNull final Content content, boolean keepCover) {
+        DeleteData.Builder builder = new DeleteData.Builder();
+        builder.setContentPurgeIds(Stream.of(content).map(Content::getId).toList());
+        builder.setContentPurgeKeepCovers(keepCover);
+
+        WorkManager workManager = WorkManager.getInstance(context);
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.delete_service_purge),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                new OneTimeWorkRequest.Builder(PurgeWorker.class).setInputData(builder.getData()).build()
+        );
+    }
+
 
     /**
      * Comparator to be used to sort files according to their names

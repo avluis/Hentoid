@@ -256,10 +256,17 @@ public class ContentDownloadWorker extends BaseWorker {
         StorageLocation location = StorageLocation.NONE;
         // Folder already set (e.g. resume paused download)
         if (!content.getStorageUri().isEmpty()) {
-            ImmutablePair<QueuingResult, Content> result = testFolder(context, content.getStorageUri());
-            if (result != null) return result;
-            dir = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri()); // Will come out null if invalid
-        } else {
+            // Reset storage URI if unreachable (will be re-created later in the method)
+            DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
+            if (null == rootFolder) content.setStorageUri("");
+            else {
+                ImmutablePair<QueuingResult, Content> result = testFolder(context, content.getStorageUri());
+                if (result != null) return result;
+                dir = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri()); // Will come out null if invalid
+            }
+        }
+        // Auto-select location according to storage management strategy
+        if (content.getStorageUri().isEmpty()) {
             location = DownloadHelper.selectDownloadLocation(context);
             ImmutablePair<QueuingResult, Content> result = testFolder(context, Preferences.getStorageUri(location));
             if (result != null) return result;
@@ -289,7 +296,8 @@ public class ContentDownloadWorker extends BaseWorker {
         else
             images = new ArrayList<>(images); // Safe copy of the original list
 
-        for (ImageFile img : images) if (img.getStatus().equals(StatusContent.ERROR)) nbErrors++;
+        for (ImageFile img : images)
+            if (img.getStatus().equals(StatusContent.ERROR)) nbErrors++;
         StatusContent targetImageStatus = (downloadMode == Content.DownloadMode.DOWNLOAD) ? StatusContent.SAVED : StatusContent.ONLINE;
 
         if (images.isEmpty()
@@ -1153,7 +1161,8 @@ public class ContentDownloadWorker extends BaseWorker {
      * @param downloadParamsStr Download parameters to extract the headers from
      * @return HTTP request headers
      */
-    private Map<String, String> getRequestHeaders(@NonNull final String url, @NonNull final String downloadParamsStr) {
+    private Map<String, String> getRequestHeaders(@NonNull final String url,
+                                                  @NonNull final String downloadParamsStr) {
         Map<String, String> result = new HashMap<>();
         String cookieStr = null;
         Map<String, String> downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr);
@@ -1199,12 +1208,14 @@ public class ContentDownloadWorker extends BaseWorker {
         List<RenamingRule> rules = dao.selectRenamingRules(AttributeType.UNDEFINED, "");
         for (RenamingRule rule : rules) rule.computeParts();
 
-        for (Attribute attr : content.getAttributes()) newAttrs.add(applyRenamingRule(attr, rules));
+        for (Attribute attr : content.getAttributes())
+            newAttrs.add(applyRenamingRule(attr, rules));
 
         content.putAttributes(newAttrs);
     }
 
-    private Attribute applyRenamingRule(@NonNull Attribute attr, @NonNull List<RenamingRule> rules) {
+    private Attribute applyRenamingRule(@NonNull Attribute
+                                                attr, @NonNull List<RenamingRule> rules) {
         Attribute result = attr;
         for (RenamingRule rule : rules) {
             if (attr.getType().equals(rule.getAttributeType())) {
@@ -1224,7 +1235,8 @@ public class ContentDownloadWorker extends BaseWorker {
         else return null;
     }
 
-    private ImmutablePair<QueuingResult, Content> testFolder(@NonNull Context context, @NonNull String uriString) {
+    private ImmutablePair<QueuingResult, Content> testFolder(@NonNull Context
+                                                                     context, @NonNull String uriString) {
         if (uriString.isEmpty()) {
             Timber.i("No download folder set"); // May happen if user has skipped it during the intro
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
