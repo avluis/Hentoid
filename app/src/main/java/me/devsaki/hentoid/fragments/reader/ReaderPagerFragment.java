@@ -56,6 +56,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.threeten.bp.Instant;
 
 import java.util.List;
 import java.util.Map;
@@ -98,6 +99,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
     private static final String KEY_SLIDESHOW_ON = "slideshow_on";
+    private static final String KEY_SLIDESHOW_REMAINING_MS = "slideshow_remaining_ms";
     private static final String KEY_IMG_INDEX = "image_index";
 
     private final Transformation<Bitmap> centerInside = new CenterInside();
@@ -113,6 +115,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
     private Disposable slideshowTimer = null;
     private boolean isSlideshowActive = false;
+    private long slideshowPeriodMs = -1;
+    private long latestSlideshowTick = -1;
 
     // Properties
     private Map<String, String> bookPreferences; // Preferences of current book; to feed the book prefs dialog
@@ -244,6 +248,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (binding != null)
             outState.putInt(KEY_HUD_VISIBLE, binding.controlsOverlay.getRoot().getVisibility());
         outState.putBoolean(KEY_SLIDESHOW_ON, isSlideshowActive);
+        long currentSlideshowSeconds = Instant.now().toEpochMilli() - latestSlideshowTick;
+        outState.putLong(KEY_SLIDESHOW_REMAINING_MS, slideshowPeriodMs - currentSlideshowSeconds);
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         // Memorize the current page
         outState.putInt(KEY_IMG_INDEX, absImageIndex);
@@ -258,7 +264,9 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE);
             hasGalleryBeenShown = savedInstanceState.getBoolean(KEY_GALLERY_SHOWN, false);
             absImageIndex = savedInstanceState.getInt(KEY_IMG_INDEX, -1);
-            if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) startSlideshow(false);
+            if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) {
+                startSlideshow(false, savedInstanceState.getLong(KEY_SLIDESHOW_REMAINING_MS));
+            }
         }
         binding.controlsOverlay.getRoot().setVisibility(hudVisibility);
     }
@@ -1221,10 +1229,10 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         Helper.removeLabels(binding.controlsOverlay.slideshowDelaySlider);
         binding.controlsOverlay.slideshowDelaySlider.setVisibility(View.GONE);
-        startSlideshow(true);
+        startSlideshow(true, -1);
     }
 
-    private void startSlideshow(boolean showToast) {
+    private void startSlideshow(boolean showToast, long initialDelayMs) {
         // Hide UI
         hideControlsOverlay();
 
@@ -1272,9 +1280,20 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             smoothScroller.setSpeed(900f / (factor / 4f));
             llm.startSmoothScroll(smoothScroller);
         } else {
-            slideshowTimer = Observable.timer((long) (factor * 1000), TimeUnit.MILLISECONDS).subscribeOn(Schedulers.computation()).repeat().observeOn(AndroidSchedulers.mainThread()).subscribe(v -> nextPage());
+            slideshowPeriodMs = (long) (factor * 1000);
+            if (-1 == initialDelayMs) {
+                slideshowTimer = Observable.interval(slideshowPeriodMs, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.computation()).repeat().observeOn(AndroidSchedulers.mainThread()).subscribe(v -> onSlideshowTick());
+            } else {
+                slideshowTimer = Observable.interval(initialDelayMs, slideshowPeriodMs, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.computation()).repeat().observeOn(AndroidSchedulers.mainThread()).subscribe(v -> onSlideshowTick());
+            }
+            latestSlideshowTick = Instant.now().toEpochMilli();
         }
         isSlideshowActive = true;
+    }
+
+    private void onSlideshowTick() {
+        latestSlideshowTick = Instant.now().toEpochMilli();
+        nextPage();
     }
 
     private void stopSlideshow() {
