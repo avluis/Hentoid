@@ -546,7 +546,7 @@
     <string name="group_existing">Existing group</string>
     <string name="group_new">Create new</string>
     <string name="group_new_name">New custom group name</string>
-    <string name="group_new_name_dynamic">New dynamic group name</string>
+    <string name="group_new_name_dynamic">New saved search</string>
     <string name="group_remove">Detach from current group</string>
     <string name="group_name_exists">A group with that name already exists.</string>
     <string name="group_rename_forbidden">Renaming that group is forbidden!</string>
@@ -585,7 +585,7 @@
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
     <string name="groups_by_dl_date">By Download date (processed)</string>
-    <string name="groups_dynamic">Dynamic</string>
+    <string name="groups_dynamic">Saved searches</string>
     <string name="groups_custom">Custom groups</string>
     <string name="no_artist_group_name">[no artist]</string>
 
