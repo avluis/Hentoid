@@ -83,6 +83,9 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     // Used to start processing when the recyclerView has finished updating
     private lateinit var listRefreshDebouncer: Debouncer<Int>
 
+    // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
+    private lateinit var searchClearDebouncer: Debouncer<Int>
+
     // Indicate if the fragment is currently canceling all items
     private var isDeletingAll = false
 
@@ -102,6 +105,12 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
 
         listRefreshDebouncer = Debouncer(context, 75)
         { topItemPosition: Int -> this.onRecyclerUpdated(topItemPosition) }
+
+        searchClearDebouncer = Debouncer(context, 1500)
+        {
+            query = ""
+            viewModel.searchErrorContentUniversal(query)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -285,9 +294,8 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                     if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
                         invalidateNextQueryTextChange = false
                     } else if (s.isEmpty()) {
-                        query = ""
-                        viewModel.searchErrorContentUniversal(query)
-                    }
+                        searchClearDebouncer.submit(0)
+                    } else searchClearDebouncer.clear();
                     return true
                 }
             })

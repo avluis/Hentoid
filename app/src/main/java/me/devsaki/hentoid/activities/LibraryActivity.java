@@ -88,6 +88,7 @@ import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
 import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LocaleHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -206,6 +207,8 @@ public class LibraryActivity extends BaseActivity {
     private Bundle contentSearchBundle = null;
     // TODO doc
     private Bundle groupSearchBundle = null;
+    // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
+    private Debouncer<Integer> searchClearDebouncer;
 
 
     // === PUBLIC ACCESSORS (to be used by fragments)
@@ -313,6 +316,14 @@ public class LibraryActivity extends BaseActivity {
             searchRecords.addAll(records);
         });
 
+        searchClearDebouncer = new Debouncer<>(this, 1500, i -> {
+            setQuery("");
+            getAdvSearchCriteria().setQuery("");
+            signalCurrentFragment(EV_SEARCH, getQuery());
+            searchClearButton.setVisibility(View.GONE);
+            searchSaveButton.setVisibility(View.GONE);
+        });
+
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
@@ -412,15 +423,13 @@ public class LibraryActivity extends BaseActivity {
 
         // Save search
         searchSaveButton = findViewById(R.id.search_save_btn);
-        searchSaveButton.setOnClickListener(v -> {
-            InputDialog.invokeInputDialog(
-                    this,
-                    R.string.group_new_name_dynamic,
-                    "TODO",
-                    s -> viewModel.saveSearchToDynamicGroup(getAdvSearchCriteria(), s),
-                    null
-            );
-        });
+        searchSaveButton.setOnClickListener(v -> InputDialog.invokeInputDialog(
+                this,
+                R.string.group_new_name_dynamic,
+                "TODO",
+                s -> viewModel.saveSearchToDynamicGroup(getAdvSearchCriteria(), s),
+                null
+        ));
 
         // Clear search
         searchClearButton = findViewById(R.id.search_clear_btn);
@@ -484,7 +493,6 @@ public class LibraryActivity extends BaseActivity {
         pagerAdapter.notifyDataSetChanged();
         if (targetGroupingId == Grouping.FLAT.getId()) { // Display books right away
             viewPager.setCurrentItem(1);
-//            viewModel.searchContent();
         }
         enableCurrentFragment();
     }
@@ -552,12 +560,8 @@ public class LibraryActivity extends BaseActivity {
                 if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
-                    setQuery("");
-                    getAdvSearchCriteria().setQuery("");
-                    signalCurrentFragment(EV_SEARCH, getQuery());
-                    searchClearButton.setVisibility(View.GONE);
-                    searchSaveButton.setVisibility(View.GONE);
-                }
+                    searchClearDebouncer.submit(1);
+                } else searchClearDebouncer.clear();
 
                 return true;
             }
@@ -665,7 +669,8 @@ public class LibraryActivity extends BaseActivity {
         advancedSearchButton.setVisibility(View.GONE);
         searchClearButton.setVisibility(View.GONE);
         searchSaveButton.setVisibility(View.GONE);
-        if (searchHistory != null) searchHistory.dismiss();;
+        if (searchHistory != null) searchHistory.dismiss();
+        ;
     }
 
     public boolean closeLeftDrawer() {

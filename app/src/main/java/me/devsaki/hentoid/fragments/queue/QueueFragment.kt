@@ -111,8 +111,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     // State
     private var isPreparingDownload = false
-//    private var isPaused = false
-//    private var isEmpty = false
 
     // Indicate if the fragment is currently canceling all items
     private var isCancelingAll = false
@@ -135,6 +133,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     private lateinit var listRefreshDebouncer: Debouncer<Int>
     private var itemToRefreshIndex = -1
 
+    // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
+    private lateinit var searchClearDebouncer: Debouncer<Int>
+
     // Used to keep scroll position when moving items
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
     private var topItemPosition = -1
@@ -152,10 +153,14 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         check(requireActivity() is QueueActivity) { "Parent activity has to be a QueueActivity" }
         activity = WeakReference(requireActivity() as QueueActivity)
 
-        listRefreshDebouncer = Debouncer(
-            context,
-            75
-        ) { topItemPosition: Int -> this.onRecyclerUpdated(topItemPosition) }
+        listRefreshDebouncer = Debouncer(context, 75)
+        { topItemPosition: Int -> this.onRecyclerUpdated(topItemPosition) }
+
+        searchClearDebouncer = Debouncer(context, 1500)
+        {
+            query = ""
+            viewModel.searchQueueUniversal(query)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -309,9 +314,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
                         invalidateNextQueryTextChange = false
                     } else if (s.isEmpty()) {
-                        query = ""
-                        viewModel.searchQueueUniversal(query)
-                    }
+                        searchClearDebouncer.submit(1)
+                    } else searchClearDebouncer.clear()
                     return true
                 }
             })
