@@ -39,7 +39,7 @@
     },
     "PIXIV": {
       "useWebviewAgent": false,
-      "requestsCapPerSecond": 2,
+      "requestsCapPerSecond": 3,
       "parallelDownloadCap": 3
     },
     "IMHENTAI": {
