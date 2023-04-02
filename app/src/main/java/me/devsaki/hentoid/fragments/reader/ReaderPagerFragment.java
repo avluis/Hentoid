@@ -550,7 +550,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      */
     private void onInfoMicroMenuClick(int position) {
         if (0 == position) { // Content
-            ReaderBottomContentFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager());
+            ReaderContentBottomSheetFragment.Companion.invoke(requireContext(), requireActivity().getSupportFragmentManager());
         } else { // Image
             float currentScale = adapter.getAbsoluteScaleAtPosition(absImageIndex);
             ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), absImageIndex, currentScale);
