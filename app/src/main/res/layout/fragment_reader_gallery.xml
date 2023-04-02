@@ -7,7 +7,7 @@
     tools:context=".activities.ReaderActivity">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/viewer_gallery_toolbar"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?colorPrimaryVariant"
@@ -19,7 +19,7 @@
         app:title="@string/gallery_title" />
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/viewer_gallery_selection_toolbar"
+        android:id="@+id/selection_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?colorPrimaryVariant"
@@ -35,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="bottom"
-        app:constraint_referenced_ids="viewer_gallery_selection_toolbar,viewer_gallery_toolbar" />
+        app:constraint_referenced_ids="selection_toolbar,toolbar" />
 
     <com.skydoves.powerspinner.PowerSpinnerView
         android:id="@+id/chapter_selector"
@@ -57,7 +57,7 @@
         tools:visibility="visible" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/viewer_gallery_recycler"
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"

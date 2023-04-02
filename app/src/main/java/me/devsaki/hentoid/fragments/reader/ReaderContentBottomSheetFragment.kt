@@ -93,12 +93,14 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.content.observe(viewLifecycleOwner) { content: Content ->
+        viewModel.getContent().observe(viewLifecycleOwner) { content ->
             this.onContentChanged(content)
         }
     }
 
-    private fun onContentChanged(content: Content) {
+    private fun onContentChanged(content: Content?) {
+        if (null == content) return
+
         val thumbLocation = content.cover.usableUri
         if (thumbLocation.isEmpty()) {
             binding.ivCover.visibility = View.INVISIBLE

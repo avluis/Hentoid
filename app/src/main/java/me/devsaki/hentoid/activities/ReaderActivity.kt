@@ -35,7 +35,7 @@ class ReaderActivity : BaseActivity() {
         val vmFactory = ViewModelFactory(application)
         viewModel = ViewModelProvider(this, vmFactory)[ReaderViewModel::class.java]
         viewModel.observeDbImages(this)
-        if (null == viewModel.content.value) { // ViewModel hasn't loaded anything yet (fresh start)
+        if (null == viewModel.getContent().value) { // ViewModel hasn't loaded anything yet (fresh start)
             val searchParams = parser.searchParams
             if (searchParams != null) viewModel.loadContentFromSearchParams(
                 contentId,

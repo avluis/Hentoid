@@ -238,21 +238,22 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[ReaderViewModel::class.java]
 
 //        viewModel.onRestoreState(savedInstanceState);
-        viewModel.content.observe(viewLifecycleOwner) { content: Content? ->
+        viewModel.getContent().observe(viewLifecycleOwner) { content: Content? ->
             onContentChanged(content)
         }
-        viewModel.viewerImages.observe(viewLifecycleOwner) { images: List<ImageFile> ->
+        viewModel.getViewerImages().observe(viewLifecycleOwner) { images: List<ImageFile> ->
             onImagesChanged(images)
         }
-        viewModel.startingIndex.observe(viewLifecycleOwner) { startingIndex: Int ->
+        viewModel.getStartingIndex().observe(viewLifecycleOwner) { startingIndex: Int ->
             onStartingIndexChanged(startingIndex)
         }
-        viewModel.shuffled.observe(viewLifecycleOwner) { isShuffled: Boolean ->
+        viewModel.getShuffled().observe(viewLifecycleOwner) { isShuffled: Boolean ->
             onShuffleChanged(isShuffled)
         }
-        viewModel.showFavouritesOnly.observe(viewLifecycleOwner) { showFavouritePages: Boolean ->
-            updateShowFavouriteDisplay(showFavouritePages)
-        }
+        viewModel.getShowFavouritesOnly()
+            .observe(viewLifecycleOwner) { showFavouritePages: Boolean ->
+                updateShowFavouriteDisplay(showFavouritePages)
+            }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -1258,7 +1259,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             ) // Leave only the latest element in the back stack
         } else { // Pager mode (Library -> pager -> gallery -> pager)
             parentFragmentManager.beginTransaction()
-                .replace(R.id.content, ReaderGalleryFragment.newInstance()).addToBackStack(null)
+                .replace(android.R.id.content, ReaderGalleryFragment()).addToBackStack(null)
                 .commit()
         }
     }

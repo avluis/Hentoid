@@ -145,6 +145,10 @@ class ContentSearchManager(val dao: CollectionDAO) {
             .observeOn(AndroidSchedulers.mainThread())
     }
 
+    fun searchContentIds(): List<Long> {
+        return searchContentIds(values, dao)
+    }
+
     companion object {
         fun searchContentIds(data: ContentSearchBundle, dao: CollectionDAO): List<Long> {
             val tags = parseSearchUri(Uri.parse(data.attributes)).attributes

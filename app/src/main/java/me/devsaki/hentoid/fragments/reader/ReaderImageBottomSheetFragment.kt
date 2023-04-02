@@ -105,7 +105,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.viewerImages.observe(viewLifecycleOwner) { images: List<ImageFile> ->
+        viewModel.getViewerImages().observe(viewLifecycleOwner) { images ->
             this.onImagesChanged(images)
         }
     }
