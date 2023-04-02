@@ -35,10 +35,10 @@ class GalleyPickerDialogFragment : DialogFragment() {
         super.onCreate(savedInstanceState)
 
         val imgs = requireArguments().getLongArray(KEY_IMGS)
-        require(!(null == imgs || imgs.isEmpty())) { "No images provided" }
+        requireNotNull(imgs) { "No images provided" }
+        require(imgs.isNotEmpty()) { "No images provided" }
 
-        imageIds = imgs!!
-
+        imageIds = imgs
         parent = activity as Parent
     }
 
