@@ -14,8 +14,6 @@ import me.devsaki.hentoid.databinding.DialogMetaRenameBinding
 /**
  * Dialog to rename an attribute
  */
-const val KEY_ID = "id"
-
 class MetaRenameDialogFragment : DialogFragment() {
 
     // UI
@@ -84,6 +82,8 @@ class MetaRenameDialogFragment : DialogFragment() {
     }
 
     companion object {
+        const val KEY_ID = "id"
+
         /*
         fun invoke(parentFragment: Fragment, newAttrName: String) {
             val fragment = AttributeTypePickerDialogFragment()
