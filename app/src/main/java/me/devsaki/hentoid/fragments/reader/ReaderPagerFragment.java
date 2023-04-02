@@ -553,7 +553,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             ReaderContentBottomSheetFragment.Companion.invoke(requireContext(), requireActivity().getSupportFragmentManager());
         } else { // Image
             float currentScale = adapter.getAbsoluteScaleAtPosition(absImageIndex);
-            ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), absImageIndex, currentScale);
+            ReaderImageBottomSheetFragment.Companion.invoke(requireContext(), requireActivity().getSupportFragmentManager(), absImageIndex, currentScale);
         }
         binding.controlsOverlay.informationMicroMenu.dips();
     }
@@ -1141,7 +1141,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private void onLongTap() {
         if (!Preferences.isReaderHoldToZoom()) {
             float currentScale = adapter.getAbsoluteScaleAtPosition(absImageIndex);
-            ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), absImageIndex, currentScale);
+            ReaderImageBottomSheetFragment.Companion.invoke(requireContext(), requireActivity().getSupportFragmentManager(), absImageIndex, currentScale);
         }
     }
 
