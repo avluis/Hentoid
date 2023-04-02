@@ -196,7 +196,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
                     break;
                 case R.id.action_delete_book:
                     if (Constant.VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode())
-                        ReaderDeleteDialogFragment.invoke(this, !isContentArchive);
+                        ReaderDeleteDialogFragment.Companion.invoke(this, !isContentArchive);
                     else // We already know what to delete
                         onDeleteElement(Constant.VIEWER_DELETE_TARGET_PAGE == Preferences.getReaderDeleteTarget());
                     break;
