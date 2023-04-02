@@ -293,7 +293,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         setSystemBarsVisible(binding.controlsOverlay.getRoot().getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
         if (Preferences.Constant.VIEWER_BROWSE_NONE == Preferences.getReaderBrowseMode())
-            ReaderBrowseModeDialogFragment.invoke(this);
+            ReaderBrowseModeDialogFragment.Companion.invoke(this);
         navigator.updatePageControls();
     }
 

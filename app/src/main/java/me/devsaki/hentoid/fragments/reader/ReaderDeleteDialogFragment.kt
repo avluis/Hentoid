@@ -10,8 +10,6 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogReaderDeleteBinding
 import me.devsaki.hentoid.util.Preferences
 
-const val KEY_DELETE_PAGE_ALLOWED = "delete_page_allowed"
-
 class ReaderDeleteDialogFragment : DialogFragment() {
 
     // UI
@@ -67,6 +65,8 @@ class ReaderDeleteDialogFragment : DialogFragment() {
     }
 
     companion object {
+        const val KEY_DELETE_PAGE_ALLOWED = "delete_page_allowed"
+
         fun invoke(parent: Fragment, isDeletePageAllowed: Boolean) {
             val fragment = ReaderDeleteDialogFragment()
 
