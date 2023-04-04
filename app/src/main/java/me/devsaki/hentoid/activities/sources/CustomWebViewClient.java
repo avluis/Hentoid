@@ -117,6 +117,8 @@ class CustomWebViewClient extends WebViewClient {
     private final AtomicBoolean isPageLoading = new AtomicBoolean(false);
     // Loading state of the HTML code of the current webpage (used to trigger the action button)
     private final AtomicBoolean isHtmlLoaded = new AtomicBoolean(false);
+    // URL string of the main page (used for custom CSS loading)
+    private String mainPageUrl;
 
     protected final AdBlocker adBlocker;
 
@@ -431,7 +433,8 @@ class CustomWebViewClient extends WebViewClient {
             Timber.v("[%s] ignored by interceptor; method = %s", url, request.getMethod());
             return sendRequest(request);
         }
-
+        if (request.isForMainFrame())
+            mainPageUrl = url;
         WebResourceResponse result = shouldInterceptRequestInternal(url, request.getRequestHeaders());
         if (result != null) return result;
         else return sendRequest(request);
@@ -751,7 +754,7 @@ class CustomWebViewClient extends WebViewClient {
             Document doc = Jsoup.parse(stream, null, baseUri);
 
             // Add custom inline CSS to the main page only
-            if (customCss != null && !isHtmlLoaded.get())
+            if (customCss != null && baseUri.equals(mainPageUrl))
                 doc.head().appendElement("style").attr("type", "text/css").appendText(customCss);
 
             // Remove ad spaces
