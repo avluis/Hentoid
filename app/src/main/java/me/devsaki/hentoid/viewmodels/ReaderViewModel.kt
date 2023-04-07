@@ -430,18 +430,19 @@ class ReaderViewModel(
      * @param shuffle Trye if shuffle mode is on; false if not
      */
     private fun sortAndSetViewerImages(images: List<ImageFile>, shuffle: Boolean) {
-        val imgs = images.toMutableList()
-        if (shuffle) {
+        var imgs = images.toList()
+        imgs = if (shuffle) {
             imgs.shuffled(Random(RandomSeedSingleton.getInstance().getSeed(SEED_PAGES)))
         } else {
             // Sort images according to their Order; don't keep the cover thumb
             imgs.sortedBy { obj -> obj.order }
         }
         // Don't keep the cover thumb
-        imgs.filter { obj -> obj.isReadable }
+        imgs = imgs.filter { obj -> obj.isReadable }
         val showFavouritesOnlyVal = getShowFavouritesOnly().value
-        if (showFavouritesOnlyVal != null && showFavouritesOnlyVal)
-            imgs.filter { obj -> obj.isFavourite }
+        if (showFavouritesOnlyVal != null && showFavouritesOnlyVal) {
+            imgs = imgs.filter { obj -> obj.isFavourite }
+        }
         for (i in imgs.indices) imgs[i].displayOrder = i
 
         // Only update if there's any noticeable difference on images...
@@ -1406,7 +1407,7 @@ class ReaderViewModel(
      * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
      * @return Pair containing
      * - Left : Downloaded file
-     * - Right : Detected mime-type of the downloades resource
+     * - Right : Detected mime-type of the downloaded resource
      * @throws UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException in case something horrible happens
      */
     @Throws(
