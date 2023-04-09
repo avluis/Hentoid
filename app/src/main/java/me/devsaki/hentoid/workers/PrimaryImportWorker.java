@@ -412,8 +412,9 @@ public class PrimaryImportWorker extends BaseWorker {
                         }
 
                         // Remove non-cover pages that have the cover URL (old issue about extra page downloads)
+                        // (exclude the 1st page because it have a same url with the cover in some sites)
                         String coverUrl = content.getCoverImageUrl();
-                        List<ImageFile> coverImgs = Stream.of(contentImages).filterNot(i -> (i.getUrl().equals(coverUrl) && !i.isCover())).toList();
+                        List<ImageFile> coverImgs = Stream.of(contentImages).filterNot(i -> (i.getUrl().equals(coverUrl) && !i.isCover() && i.getOrder() != 1)).toList();
                         if (coverImgs.size() < contentImages.size()) {
                             contentImages = coverImgs;
                             int nbCovers = (int) Stream.of(contentImages).filter(ImageFile::isCover).count();
