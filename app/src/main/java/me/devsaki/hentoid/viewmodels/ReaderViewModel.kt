@@ -179,12 +179,13 @@ class ReaderViewModel(
      * @param pageNumber Page number to start with
      */
     fun loadContentFromId(contentId: Long, pageNumber: Int) {
+        /*
         if (contentId > 0) {
             val loadedContent = dao.selectContent(contentId)
             if (loadedContent != null) loadContent(loadedContent, pageNumber)
         }
-        // TODO TEMP
-    // loadFavPages()
+        */
+        loadFavPages()
     }
 
     /**
@@ -1031,18 +1032,22 @@ class ReaderViewModel(
         val cachePicFolder =
             FileHelper.getOrCreateCacheFolder(getApplication(), PICTURE_CACHE_FOLDER) ?: return
 
-        // TODO group by archive for efficiency
-        indexesToLoad.forEach {
-            if (viewerImagesInternal[it].status.equals(StatusContent.ONLINE)) {
-                downloadPics(listOf(it), cachePicFolder)
-            } else { // Archive
-                val archiveFile = FileHelper.getFileFromSingleUriString(
-                    getApplication(),
-                    viewerImagesInternal[it].content.target.storageUri
-                )
-                if (archiveFile != null) extractPics(listOf(it), archiveFile, cachePicFolder)
-            }
+        // Group by archive for efficiency
+        val indexesByArchive = indexesToLoad
+            .filter { viewerImagesInternal[it].isArchived }
+            .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
+        indexesByArchive.keys.forEach {
+            val archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), it)
+            if (archiveFile != null) extractPics(
+                indexesByArchive[it]!!,
+                archiveFile,
+                cachePicFolder
+            )
         }
+
+        val onlineIndexes =
+            indexesToLoad.filter { viewerImagesInternal[it].status.equals(StatusContent.ONLINE) }
+        downloadPics(onlineIndexes, cachePicFolder)
     }
 
     /**
