@@ -753,10 +753,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         navigator.onContentChanged(content)
         updateFavouriteButtonIcon()
 
-        // Display "redownload images" button if folder no longer exists and is not external
+        // Display "redownload images" button if folder no longer exists and is not external nor dynamic
         binding?.apply {
-            viewerRedownloadBtn.visibility =
-                if (!content.isFolderExists && content.status != StatusContent.EXTERNAL) View.VISIBLE else View.GONE
+            viewerRedownloadBtn.isVisible =
+                (!content.isFolderExists && !content.isDynamic && content.status != StatusContent.EXTERNAL)
         }
     }
 

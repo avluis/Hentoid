@@ -176,6 +176,8 @@ public class Content implements Serializable {
     private boolean updatedProperties = false;  // Only used when using ImageListParsers to indicate the passed Content has been updated
     @Transient
     private boolean folderExists = true;  // Only used when loading the Content into the reader
+    @Transient
+    private boolean isDynamic = false;  // Only used when loading the Content into the reader
 
     public Content() { // Required by ObjectBox when an alternate constructor exists
     }
@@ -1007,6 +1009,14 @@ public class Content implements Serializable {
 
     public void setFolderExists(boolean folderExists) {
         this.folderExists = folderExists;
+    }
+
+    public boolean isDynamic() {
+        return isDynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        isDynamic = dynamic;
     }
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {
