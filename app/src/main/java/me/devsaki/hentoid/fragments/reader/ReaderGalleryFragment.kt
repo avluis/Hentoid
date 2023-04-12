@@ -28,6 +28,7 @@ import com.mikepenz.fastadapter.diff.DiffCallback
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
 import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.drag.SimpleDragCallback
+import com.mikepenz.fastadapter.expandable.getExpandableExtension
 import com.mikepenz.fastadapter.select.getSelectExtension
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import com.skydoves.powerspinner.OnSpinnerItemSelectedListener
@@ -58,6 +59,7 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import timber.log.Timber
 import java.lang.ref.WeakReference
 
+
 class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTouchCallback {
 
     enum class EditMode {
@@ -85,8 +87,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private val fastAdapter = FastAdapter.with(itemAdapter)
     private val selectExtension = fastAdapter.getSelectExtension()
 
-    private val itemAdapter2 = ItemAdapter<INestedItem<SubExpandableItem.ViewHolder>>()
-    private val fastAdapter2 = FastAdapter.with(itemAdapter2)
+    private val nestedItemAdapter = ItemAdapter<INestedItem<SubExpandableItem.ViewHolder>>()
+    private val nestedFastAdapter = FastAdapter.with(nestedItemAdapter)
+    private val expandableExtension = nestedFastAdapter.getExpandableExtension()
     private var touchHelper: ItemTouchHelper? = null
 
     private var mDragSelectTouchListener: DragSelectTouchListener? = null
@@ -256,8 +259,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     private fun updateListAdapter(isChapterEditMode: Boolean) {
         if (isChapterEditMode) {
-            if (!fastAdapter2.hasObservers()) fastAdapter2.setHasStableIds(true)
-            itemAdapter2.clear()
+            if (!nestedFastAdapter.hasObservers()) nestedFastAdapter.setHasStableIds(true)
+            nestedItemAdapter.clear()
+
             binding?.apply {
                 val glm = recyclerView.layoutManager as GridLayoutManager?
                 if (glm != null) {
@@ -267,7 +271,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                     // Use the correct size to display chapter separators, if any
                     val spanSizeLookup: SpanSizeLookup = object : SpanSizeLookup() {
                         override fun getSpanSize(position: Int): Int {
-                            return if (fastAdapter2.getItemViewType(position) == R.id.expandable_item) {
+                            return if (nestedFastAdapter.getItemViewType(position) == R.id.expandable_item) {
                                 spanCount
                             } else 1
                         }
@@ -282,8 +286,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             touchHelper = ItemTouchHelper(dragCallback)
             binding?.apply {
                 touchHelper?.attachToRecyclerView(recyclerView)
-                recyclerView.adapter = fastAdapter2
-                fastAdapter2.addEventHook(
+                recyclerView.adapter = nestedFastAdapter
+                nestedFastAdapter.addEventHook(
                     SubExpandableItem.DragHandlerTouchEvent { position: Int ->
                         val vh = recyclerView.findViewHolderForAdapterPosition(position)
                         if (vh != null) touchHelper?.startDrag(vh)
@@ -291,7 +295,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 )
 
                 // Item click listener
-                fastAdapter2.onClickListener = { _, _, i, _ -> onNestedItemClick(i) }
+                nestedFastAdapter.onClickListener = { _, _, i, _ -> onNestedItemClick(i) }
 
                 // Select on swipe
                 if (mDragSelectTouchListener != null) {
@@ -464,7 +468,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 expandableItem.subItems.addAll(imgs)
                 chapterItems.add(expandableItem)
             }
-            itemAdapter2.set(chapterItems)
+            nestedItemAdapter.set(chapterItems)
         } else { // Classic gallery
             var imgs: MutableList<ImageFileItem> = ArrayList()
             for (img in images) {
@@ -762,9 +766,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     override fun itemTouchDropped(oldPosition: Int, newPosition: Int) {
         if (oldPosition == newPosition) return
         if (oldPosition < 0 || newPosition < 0) return
-        if (itemAdapter2.getAdapterItem(oldPosition).getLevel() > 0) return
+        if (nestedItemAdapter.getAdapterItem(oldPosition).getLevel() > 0) return
         val nbLevelZeroItems =
-            itemAdapter2.adapterItems.count { i: INestedItem<SubExpandableItem.ViewHolder> -> 0 == i.getLevel() }
+            nestedItemAdapter.adapterItems.count { i: INestedItem<SubExpandableItem.ViewHolder> -> 0 == i.getLevel() }
         if (newPosition > nbLevelZeroItems - 1) return
 
         // Save final position of item in DB
@@ -791,13 +795,13 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     override fun itemTouchOnMove(oldPosition: Int, newPosition: Int): Boolean {
         if (oldPosition < 0 || newPosition < 0) return false
-        if (itemAdapter2.getAdapterItem(oldPosition).getLevel() > 0) return false
+        if (nestedItemAdapter.getAdapterItem(oldPosition).getLevel() > 0) return false
         val nbLevelZeroItems =
-            itemAdapter2.adapterItems.count { i: INestedItem<SubExpandableItem.ViewHolder> -> 0 == i.getLevel() }
+            nestedItemAdapter.adapterItems.count { i: INestedItem<SubExpandableItem.ViewHolder> -> 0 == i.getLevel() }
         if (newPosition > nbLevelZeroItems - 1) return false
 
         // Update visuals
-        onMove(itemAdapter2, oldPosition, newPosition)
+        onMove(nestedItemAdapter, oldPosition, newPosition)
         return true
     }
 
