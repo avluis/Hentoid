@@ -179,13 +179,10 @@ class ReaderViewModel(
      * @param pageNumber Page number to start with
      */
     fun loadContentFromId(contentId: Long, pageNumber: Int) {
-        /*
         if (contentId > 0) {
             val loadedContent = dao.selectContent(contentId)
             if (loadedContent != null) loadContent(loadedContent, pageNumber)
         }
-        */
-        loadFavPages()
     }
 
     /**
