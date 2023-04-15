@@ -21,6 +21,9 @@ import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -89,11 +92,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     ReaderBrowseModeDialogFragment.Parent,
     ReaderPrefsDialogFragment.Parent, ReaderDeleteDialogFragment.Parent, Pager {
 
-    private val KEY_HUD_VISIBLE = "hud_visible"
-    private val KEY_GALLERY_SHOWN = "gallery_shown"
-    private val KEY_SLIDESHOW_ON = "slideshow_on"
-    private val KEY_SLIDESHOW_REMAINING_MS = "slideshow_remaining_ms"
-    private val KEY_IMG_INDEX = "image_index"
+    private val keyHudVisible = "hud_visible"
+    private val keyGalleryShown = "gallery_shown"
+    private val keySlideshowOn = "slideshow_on"
+    private val keySlideshowRemainingMs = "slideshow_remaining_ms"
+    private val keyImgIndex = "image_index"
 
     private val centerInside: Transformation<Bitmap> = CenterInside()
     private val glideRequestOptions = RequestOptions().optionalTransform(centerInside)
@@ -259,14 +262,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         binding?.apply {
-            outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.root.visibility)
+            outState.putInt(keyHudVisible, controlsOverlay.root.visibility)
         }
-        outState.putBoolean(KEY_SLIDESHOW_ON, isSlideshowActive)
+        outState.putBoolean(keySlideshowOn, isSlideshowActive)
         val currentSlideshowSeconds = Instant.now().toEpochMilli() - latestSlideshowTick
-        outState.putLong(KEY_SLIDESHOW_REMAINING_MS, slideshowPeriodMs - currentSlideshowSeconds)
-        outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown)
+        outState.putLong(keySlideshowRemainingMs, slideshowPeriodMs - currentSlideshowSeconds)
+        outState.putBoolean(keyGalleryShown, hasGalleryBeenShown)
         // Memorize current page
-        outState.putInt(KEY_IMG_INDEX, absImageIndex)
+        outState.putInt(keyImgIndex, absImageIndex)
         viewModel.setViewerStartingIndex(absImageIndex)
     }
 
@@ -274,11 +277,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         super.onViewStateRestored(savedInstanceState)
         var hudVisibility = View.INVISIBLE // Default state at startup
         if (savedInstanceState != null) {
-            hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE)
-            hasGalleryBeenShown = savedInstanceState.getBoolean(KEY_GALLERY_SHOWN, false)
-            absImageIndex = savedInstanceState.getInt(KEY_IMG_INDEX, -1)
-            if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) {
-                startSlideshow(false, savedInstanceState.getLong(KEY_SLIDESHOW_REMAINING_MS))
+            hudVisibility = savedInstanceState.getInt(keyHudVisible, View.INVISIBLE)
+            hasGalleryBeenShown = savedInstanceState.getBoolean(keyGalleryShown, false)
+            absImageIndex = savedInstanceState.getInt(keyImgIndex, -1)
+            if (savedInstanceState.getBoolean(keySlideshowOn, false)) {
+                startSlideshow(false, savedInstanceState.getLong(keySlideshowRemainingMs))
             }
         }
         binding?.apply {
@@ -1271,25 +1274,28 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun setSystemBarsVisible(visible: Boolean) {
         val activity = activity ?: return
-        val uiOptions: Int
         val window = activity.window
         val params = window.attributes
-        // TODO use androidx.core 1.6.0-beta01+ & WindowCompat (see https://stackoverflow.com/questions/62643517/immersive-fullscreen-on-android-11)
-        // TODO prepare to fiddle with paddings and margins : https://stackoverflow.com/questions/57293449/go-edge-to-edge-on-android-correctly-with-windowinsets
         if (visible) {
-            uiOptions =
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            WindowCompat.setDecorFitsSystemWindows(window, true)
+            binding?.apply {
+                WindowInsetsControllerCompat(window, controlsOverlay.root)
+                    .show(WindowInsetsCompat.Type.systemBars())
+            }
             // Revert to default regarding notch area display
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 params.layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
             }
         } else {
-            uiOptions =
-                (View.SYSTEM_UI_FLAG_IMMERSIVE // Set the content to appear under the system bars so that the
-                        // content doesn't resize when the system bars hide and show.
-                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN // Hide the nav bar and status bar
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN)
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            binding?.apply {
+                WindowInsetsControllerCompat(window, controlsOverlay.root).let { controller ->
+                    controller.systemBarsBehavior =
+                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    controller.hide(WindowInsetsCompat.Type.systemBars())
+                }
+            }
             // Display around the notch area
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && Preferences.isReaderDisplayAroundNotch()) {
                 params.layoutInDisplayCutoutMode =
@@ -1297,10 +1303,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             }
         }
 
-        // Defensive programming here because crash reports show that getView() sometimes is null
-        // (just don't ask me why...)
-        val v = view
-        if (v != null) v.systemUiVisibility = uiOptions
         window.attributes = params
     }
 
