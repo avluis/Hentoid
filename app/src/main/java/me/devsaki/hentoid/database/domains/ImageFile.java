@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.database.domains;
 
+import java.io.File;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -15,6 +16,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
 
 /**
@@ -337,6 +339,14 @@ public class ImageFile {
             result = getContent().getTarget().getCoverImageUrl();
 
         return result;
+    }
+
+    public boolean isArchived() {
+        String lowerUri = url.toLowerCase();
+        for (String ext : ArchiveHelper.getSupportedExtensions()) {
+            if (lowerUri.contains("." + ext + File.separator)) return true;
+        }
+        return false;
     }
 
     public boolean needsPageParsing() {

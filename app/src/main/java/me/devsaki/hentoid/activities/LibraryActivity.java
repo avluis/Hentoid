@@ -380,7 +380,7 @@ public class LibraryActivity extends BaseActivity {
         super.onStart();
         final long previouslyViewedContent = Preferences.getReaderCurrentContent();
         final int previouslyViewedPage = Preferences.getReaderCurrentPageNum();
-        if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ReaderActivity.isRunning()) {
+        if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ReaderActivity.Companion.isRunning()) {
             Snackbar snackbar = Snackbar.make(viewPager, R.string.resume_closed, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.setAction(R.string.resume, v -> {
                 Timber.i("Reopening book %d from page %d", previouslyViewedContent, previouslyViewedPage);

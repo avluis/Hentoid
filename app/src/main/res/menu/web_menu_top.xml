@@ -19,7 +19,7 @@
             android:icon="@drawable/ic_bookmark"
             android:title="@string/web_bookmarks"
             android:tooltipText="@string/web_bookmarks"
-            app:showAsAction="never" />
+            app:showAsAction="ifRoom" />
     </group>
     <group android:id="@+id/web_menu_top_3">
         <item

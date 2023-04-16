@@ -34,8 +34,6 @@ import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
 
-const val ATTRS_PER_PAGE = 40
-
 class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
     AttributeTypePickerDialogFragment.Parent {
 
@@ -343,6 +341,8 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
     }
 
     companion object {
+        const val ATTRS_PER_PAGE = 40
+
         fun invoke(
             context: Context,
             fragmentManager: FragmentManager,

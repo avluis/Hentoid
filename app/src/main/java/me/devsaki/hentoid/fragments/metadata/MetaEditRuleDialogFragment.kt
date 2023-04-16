@@ -20,10 +20,6 @@ import me.devsaki.hentoid.enums.AttributeType
 /**
  * Dialog to edit an attribute naming rule
  */
-const val KEY_RULE_ID = "id"
-const val KEY_MODE_CREATE = "mode_create"
-const val KEY_ATTR_TYPE_CODE = "attr_type_code"
-
 class MetaEditRuleDialogFragment : DialogFragment() {
 
     // UI
@@ -226,6 +222,10 @@ class MetaEditRuleDialogFragment : DialogFragment() {
     }
 
     companion object {
+        const val KEY_RULE_ID = "id"
+        const val KEY_MODE_CREATE = "mode_create"
+        const val KEY_ATTR_TYPE_CODE = "attr_type_code"
+
         fun invoke(
             parent: FragmentActivity,
             createMode: Boolean,

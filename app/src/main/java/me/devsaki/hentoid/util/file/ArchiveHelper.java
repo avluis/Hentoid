@@ -541,7 +541,7 @@ public class ArchiveHelper {
             if (extractOperationResult != ExtractOperationResult.OK) {
                 throw new SevenZipException(extractOperationResult.toString());
             } else {
-                if (emitter != null) emitter.onNext(uri);
+                if (emitter != null && uri != null) emitter.onNext(uri);
             }
 
             if (extractAskMode != null && extractAskMode.equals(ExtractAskMode.EXTRACT)) {

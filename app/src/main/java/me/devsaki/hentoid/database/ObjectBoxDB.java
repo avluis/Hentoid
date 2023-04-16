@@ -1266,6 +1266,12 @@ public class ObjectBoxDB {
         return result;
     }
 
+    Query<ImageFile> selectAllFavouritePagesQ() {
+        return store.boxFor(ImageFile.class).query()
+                .equal(ImageFile_.favourite, true)
+                .build();
+    }
+
     Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource(String rootPath) {
         return selectMemoryUsagePerSource(new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()}, rootPath);
     }

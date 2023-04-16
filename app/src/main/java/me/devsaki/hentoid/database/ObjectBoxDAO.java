@@ -750,6 +750,14 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.countProcessedImagesById(contentId);
     }
 
+    public List<ImageFile> selectAllFavouritePages() {
+        return DBHelper.safeFind(db.selectAllFavouritePagesQ());
+    }
+
+    public LiveData<List<ImageFile>> selectAllFavouritePagesLive() {
+        return new ObjectBoxLiveData<>(db.selectAllFavouritePagesQ());
+    }
+
     public Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource() {
         return db.selectPrimaryMemoryUsagePerSource("");
     }

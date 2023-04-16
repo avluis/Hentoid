@@ -15,10 +15,6 @@ import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.databinding.DialogReaderBookPrefsBinding
 import me.devsaki.hentoid.util.Preferences
 
-const val RENDERING_MODE = "render_mode"
-const val BROWSE_MODE = "browse_mode"
-const val DISPLAY_MODE = "display_mode"
-
 class ReaderPrefsDialogFragment : DialogFragment() {
 
     // UI
@@ -160,6 +156,11 @@ class ReaderPrefsDialogFragment : DialogFragment() {
     }
 
     companion object {
+
+        const val RENDERING_MODE = "render_mode"
+        const val BROWSE_MODE = "browse_mode"
+        const val DISPLAY_MODE = "display_mode"
+
         fun invoke(parent: Fragment, bookPrefs: Map<String, String>) {
             val fragment = ReaderPrefsDialogFragment()
             val args = Bundle()
