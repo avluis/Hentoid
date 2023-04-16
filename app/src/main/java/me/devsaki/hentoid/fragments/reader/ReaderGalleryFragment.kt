@@ -142,7 +142,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        check(requireActivity() is ReaderActivity) { "Parent activity has to be a LibraryActivity" }
+        check(requireActivity() is ReaderActivity) { "Parent activity has to be a ReaderActivity" }
         activity = WeakReference(requireActivity() as ReaderActivity)
     }
 
