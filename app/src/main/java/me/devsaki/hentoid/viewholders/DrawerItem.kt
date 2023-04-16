@@ -37,7 +37,7 @@ class DrawerItem(val site: Site) :
     class ViewHolder(view: View) : FastAdapter.ViewHolder<DrawerItem>(view) {
         private val icon: ImageView = itemView.findViewById(R.id.drawer_item_icon)
         private val alert: ImageView = itemView.findViewById(R.id.drawer_item_alert)
-        private val title: TextView = itemView.findViewById(R.id.target_txt)
+        private val title: TextView = itemView.findViewById(R.id.drawer_item_txt)
 
         override fun bindView(item: DrawerItem, payloads: List<Any>) {
             icon.setImageResource(item.icon)
