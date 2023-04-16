@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -116,6 +117,8 @@ class CustomWebViewClient extends WebViewClient {
     private final AtomicBoolean isPageLoading = new AtomicBoolean(false);
     // Loading state of the HTML code of the current webpage (used to trigger the action button)
     private final AtomicBoolean isHtmlLoaded = new AtomicBoolean(false);
+    // URL string of the main page (used for custom CSS loading)
+    private String mainPageUrl;
 
     protected final AdBlocker adBlocker;
 
@@ -430,7 +433,8 @@ class CustomWebViewClient extends WebViewClient {
             Timber.v("[%s] ignored by interceptor; method = %s", url, request.getMethod());
             return sendRequest(request);
         }
-
+        if (request.isForMainFrame())
+            mainPageUrl = url;
         WebResourceResponse result = shouldInterceptRequestInternal(url, request.getRequestHeaders());
         if (result != null) return result;
         else return sendRequest(request);
@@ -541,106 +545,121 @@ class CustomWebViewClient extends WebViewClient {
 
         List<Pair<String, String>> requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, urlStr);
 
+        Response response = null;
         try {
             // Query resource here, using OkHttp
-            Response response = HttpHelper.getOnlineResourceFast(urlStr, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent(), false);
-
-            // Scram if the response is an error
-            if (response.code() >= 400) return null;
-
-            // Handle redirection and force the browser to reload to be able to process the page
-            // NB1 : shouldInterceptRequest doesn't trigger on redirects
-            // NB2 : parsing alone won't cut it because the adblocker needs the new content on the new URL
-            if (response.code() >= 300) {
-                String targetUrl = StringHelper.protect(response.header("location"));
-                if (targetUrl.isEmpty())
-                    targetUrl = StringHelper.protect(response.header("Location"));
-                if (BuildConfig.DEBUG)
-                    Timber.v("WebView : redirection from %s to %s", urlStr, targetUrl);
-                if (!targetUrl.isEmpty())
-                    browserLoadAsync(HttpHelper.fixUrl(targetUrl, site.getUrl()));
-                return null;
-            }
-
-            // Scram if the response is something else than html
-            String rawContentType = response.header(HEADER_CONTENT_TYPE, "");
-            if (null == rawContentType) return null;
-
-            Pair<String, String> contentType = HttpHelper.cleanContentType(rawContentType);
-            if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
-                return null;
-
-            // Scram if the response is empty
-            ResponseBody body = response.body();
-            if (null == body) throw new IOException("Empty body");
-
-            InputStream parserStream;
-            WebResourceResponse result;
-            if (canUseSingleOkHttpRequest()) {
-                InputStream browserStream;
-                if (analyzeForDownload) {
-                    // Response body bytestream needs to be duplicated
-                    // because Jsoup closes it, which makes it unavailable for the WebView to use
-                    List<InputStream> is = Helper.duplicateInputStream(body.byteStream(), 2);
-                    parserStream = is.get(0);
-                    browserStream = is.get(1);
-                } else {
-                    parserStream = null;
-                    browserStream = body.byteStream();
-                }
-
-                // Remove dirty elements from HTML resources
-                String customCss = activity.getCustomCss();
-                if (removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !customCss.isEmpty()) {
-                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls(), activity.getPrefBlockedTags());
-                    if (null == browserStream) return null;
-                }
-
-                // Convert OkHttp response to the expected format
-                result = HttpHelper.okHttpResponseToWebkitResponse(response, browserStream);
-
-                // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
-                if (result.getResponseHeaders().containsKey("set-cookie") || result.getResponseHeaders().containsKey("Set-Cookie")) {
-                    String cookiesStr = result.getResponseHeaders().get("set-cookie");
-                    if (null == cookiesStr)
-                        cookiesStr = result.getResponseHeaders().get("Set-Cookie");
-                    if (cookiesStr != null) {
-                        // Set-cookie might contain multiple cookies to set separated by a line feed (see HttpHelper.getValuesSeparatorFromHttpHeader)
-                        String[] cookieParts = cookiesStr.split("\n");
-                        for (String cookie : cookieParts)
-                            if (!cookie.isEmpty())
-                                HttpHelper.setCookies(urlStr, cookie);
-                    }
-                }
-            } else {
-                parserStream = body.byteStream();
-                result = null; // Default webview behaviour
-            }
-
-            if (analyzeForDownload) {
-                compositeDisposable.add(
-                        Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
-                                .subscribeOn(Schedulers.computation())
-                                .observeOn(Schedulers.computation())
-                                .map(content -> processContent(content, urlStr, quickDownload))
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(
-                                        content2 -> activity.onResultReady(content2, quickDownload),
-                                        throwable -> {
-                                            Timber.e(throwable, "Error parsing content.");
-                                            isHtmlLoaded.set(true);
-                                            activity.onResultFailed();
-                                        })
-                );
-            } else {
-                isHtmlLoaded.set(true);
-            }
-
-            return result;
+            response = HttpHelper.getOnlineResourceFast(urlStr, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent(), false);
         } catch (MalformedURLException e) {
             Timber.e(e, "Malformed URL : %s", urlStr);
+        } catch (SocketTimeoutException e) {
+            // If fast method occurred timeout, reconnect with non-fast method
+            Timber.d("Timeout; Reconnect with non-fast method : %s", urlStr);
+            try {
+                response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+            } catch (IOException | IllegalStateException ex) {
+                Timber.e(ex);
+            }
         } catch (IOException | IllegalStateException e) {
             Timber.e(e);
+        }
+
+        if (response != null) {
+            try {
+                // Scram if the response is an error
+                if (response.code() >= 400) return null;
+
+                // Handle redirection and force the browser to reload to be able to process the page
+                // NB1 : shouldInterceptRequest doesn't trigger on redirects
+                // NB2 : parsing alone won't cut it because the adblocker needs the new content on the new URL
+                if (response.code() >= 300) {
+                    String targetUrl = StringHelper.protect(response.header("location"));
+                    if (targetUrl.isEmpty())
+                        targetUrl = StringHelper.protect(response.header("Location"));
+                    if (BuildConfig.DEBUG)
+                        Timber.v("WebView : redirection from %s to %s", urlStr, targetUrl);
+                    if (!targetUrl.isEmpty())
+                        browserLoadAsync(HttpHelper.fixUrl(targetUrl, site.getUrl()));
+                    return null;
+                }
+
+                // Scram if the response is something else than html
+                String rawContentType = response.header(HEADER_CONTENT_TYPE, "");
+                if (null == rawContentType) return null;
+
+                Pair<String, String> contentType = HttpHelper.cleanContentType(rawContentType);
+                if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
+                    return null;
+
+                // Scram if the response is empty
+                ResponseBody body = response.body();
+                if (null == body) throw new IOException("Empty body");
+
+                InputStream parserStream;
+                WebResourceResponse result;
+                if (canUseSingleOkHttpRequest()) {
+                    InputStream browserStream;
+                    if (analyzeForDownload) {
+                        // Response body bytestream needs to be duplicated
+                        // because Jsoup closes it, which makes it unavailable for the WebView to use
+                        List<InputStream> is = Helper.duplicateInputStream(body.byteStream(), 2);
+                        parserStream = is.get(0);
+                        browserStream = is.get(1);
+                    } else {
+                        parserStream = null;
+                        browserStream = body.byteStream();
+                    }
+
+                    // Remove dirty elements from HTML resources
+                    String customCss = activity.getCustomCss();
+                    if (removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !customCss.isEmpty()) {
+                        browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls(), activity.getPrefBlockedTags());
+                        if (null == browserStream) return null;
+                    }
+
+                    // Convert OkHttp response to the expected format
+                    result = HttpHelper.okHttpResponseToWebkitResponse(response, browserStream);
+
+                    // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
+                    if (result.getResponseHeaders().containsKey("set-cookie") || result.getResponseHeaders().containsKey("Set-Cookie")) {
+                        String cookiesStr = result.getResponseHeaders().get("set-cookie");
+                        if (null == cookiesStr)
+                            cookiesStr = result.getResponseHeaders().get("Set-Cookie");
+                        if (cookiesStr != null) {
+                            // Set-cookie might contain multiple cookies to set separated by a line feed (see HttpHelper.getValuesSeparatorFromHttpHeader)
+                            String[] cookieParts = cookiesStr.split("\n");
+                            for (String cookie : cookieParts)
+                                if (!cookie.isEmpty())
+                                    HttpHelper.setCookies(urlStr, cookie);
+                        }
+                    }
+                } else {
+                    parserStream = body.byteStream();
+                    result = null; // Default webview behaviour
+                }
+
+                if (analyzeForDownload) {
+                    compositeDisposable.add(
+                            Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
+                                    .subscribeOn(Schedulers.computation())
+                                    .observeOn(Schedulers.computation())
+                                    .map(content -> processContent(content, urlStr, quickDownload))
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(
+                                            content2 -> activity.onResultReady(content2, quickDownload),
+                                            throwable -> {
+                                                Timber.e(throwable, "Error parsing content.");
+                                                isHtmlLoaded.set(true);
+                                                activity.onResultFailed();
+                                            })
+                    );
+                } else {
+                    isHtmlLoaded.set(true);
+                }
+
+                return result;
+            } catch (IOException | IllegalStateException e) {
+                Timber.e(e);
+            }
         }
         return null;
     }
@@ -735,7 +754,7 @@ class CustomWebViewClient extends WebViewClient {
             Document doc = Jsoup.parse(stream, null, baseUri);
 
             // Add custom inline CSS to the main page only
-            if (customCss != null && !isHtmlLoaded.get())
+            if (customCss != null && baseUri.equals(mainPageUrl))
                 doc.head().appendElement("style").attr("type", "text/css").appendText(customCss);
 
             // Remove ad spaces
