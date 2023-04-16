@@ -115,6 +115,7 @@ public class LibraryViewModel extends AndroidViewModel {
     // Other data
     private final LiveData<List<SearchRecord>> searchRecords;
     private final LiveData<Integer> totalQueue;
+    private final LiveData<Integer> favPages;
 
     // Updated whenever a new Contentsearch is performed
     private final MediatorLiveData<Boolean> newContentSearch = new MediatorLiveData<>();
@@ -127,6 +128,7 @@ public class LibraryViewModel extends AndroidViewModel {
         groupSearchManager = new GroupSearchManager(dao);
         totalContent = dao.countAllBooksLive();
         totalQueue = dao.countAllQueueBooksLive();
+        favPages = dao.countAllFavouritePagesLive();
         searchRecords = dao.selectSearchRecordsLive();
         refreshAvailableGroupings();
     }
@@ -212,6 +214,11 @@ public class LibraryViewModel extends AndroidViewModel {
     @NonNull
     public LiveData<Integer> getTotalQueue() {
         return totalQueue;
+    }
+
+    @NonNull
+    public LiveData<Integer> getFavPages() {
+        return favPages;
     }
 
     // =========================

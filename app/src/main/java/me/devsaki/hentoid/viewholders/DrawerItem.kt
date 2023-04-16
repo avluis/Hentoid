@@ -13,17 +13,20 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AlertStatus
 import me.devsaki.hentoid.enums.Site
 
-class DrawerItem(val site: Site) :
+class DrawerItem(
+    val label: String,
+    val icon: Int,
+    val activityClass: Class<out AppCompatActivity>,
+    uniqueId: Long
+) :
     AbstractItem<DrawerItem.ViewHolder>() {
 
-    val label: String = site.description.uppercase()
-    val icon : Int = site.ico
-    val activityClass: Class<out AppCompatActivity> = Content.getWebActivityClass(site)
-    var flagNew  = false
+    var site: Site? = null
+    var flagNew = false
     var alertStatus = AlertStatus.NONE
 
     init {
-        identifier = site.code.toLong()
+        identifier = uniqueId
     }
 
     override val type: Int get() = R.id.drawer
@@ -53,6 +56,19 @@ class DrawerItem(val site: Site) :
 
         override fun unbindView(item: DrawerItem) {
             // Nothing special here
+        }
+    }
+
+    companion object {
+        fun fromSite(site: Site): DrawerItem {
+            val result = DrawerItem(
+                site.description.uppercase(),
+                site.ico,
+                Content.getWebActivityClass(site),
+                site.code.toLong()
+            )
+            result.site = site
+            return result
         }
     }
 }

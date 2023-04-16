@@ -750,12 +750,19 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.countProcessedImagesById(contentId);
     }
 
-    public List<ImageFile> selectAllFavouritePages() {
-        return DBHelper.safeFind(db.selectAllFavouritePagesQ());
-    }
-
     public LiveData<List<ImageFile>> selectAllFavouritePagesLive() {
         return new ObjectBoxLiveData<>(db.selectAllFavouritePagesQ());
+    }
+
+    public LiveData<Integer> countAllFavouritePagesLive() {
+        // This is not optimal because it fetches all the content and returns its size only
+        // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
+        // See https://github.com/objectbox/objectbox-java/issues/776
+        ObjectBoxLiveData<ImageFile> livedata = new ObjectBoxLiveData<>(db.selectAllFavouritePagesQ());
+
+        MediatorLiveData<Integer> result = new MediatorLiveData<>();
+        result.addSource(livedata, v -> result.setValue(v.size()));
+        return result;
     }
 
     public Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource() {

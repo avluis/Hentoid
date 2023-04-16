@@ -50,11 +50,10 @@ public enum Site {
     NONE(98, "none", "", R.drawable.ic_attribute_source), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_site_panda); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
-
     private static final Site[] INVISIBLE_SITES = {
             NEXUS, // Dead
             HBROWSE, // Dead
-            HENTAICAFE, // Removed as per Fakku request
+            HENTAICAFE, // Removed as per Fakku request + dead
             FAKKU, // Old Fakku; kept for retrocompatibility
             FAKKU2, // Dropped after Fakku decided to flag downloading accounts and IPs
             ASMHENTAI_COMICS, // Does not work directly

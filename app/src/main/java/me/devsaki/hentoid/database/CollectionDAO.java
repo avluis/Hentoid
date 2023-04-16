@@ -220,9 +220,9 @@ public interface CollectionDAO {
 
     Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId);
 
-    List<ImageFile> selectAllFavouritePages();
-
     LiveData<List<ImageFile>> selectAllFavouritePagesLive();
+
+    LiveData<Integer> countAllFavouritePagesLive();
 
     Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource();
 

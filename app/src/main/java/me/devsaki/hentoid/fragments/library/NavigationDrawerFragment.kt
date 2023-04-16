@@ -18,6 +18,7 @@ import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.ToolsActivity
+import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
@@ -34,6 +35,8 @@ import java.lang.ref.WeakReference
 
 
 class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
+
+    private val favBookId = Long.MAX_VALUE
 
     // ======== COMMUNICATION
     // Viewmodel
@@ -100,6 +103,8 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
         viewModel.totalQueue.observe(viewLifecycleOwner)
         { totalQueue: Int -> onTotalQueueChanged(totalQueue) }
+        viewModel.favPages.observe(viewLifecycleOwner)
+        { favPages: Int -> onFavPagesChanged(favPages) }
 
         updateItems()
     }
@@ -107,7 +112,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     private fun updateItems() {
         val drawerItems: MutableList<DrawerItem> = ArrayList()
         val activeSites = Preferences.getActiveSites()
-        for (s in activeSites) if (s.isVisible) drawerItems.add(DrawerItem(s))
+        for (s in activeSites) if (s.isVisible) drawerItems.add(DrawerItem.fromSite(s))
         itemAdapter.clear()
         itemAdapter.add(0, drawerItems)
         applyFlagsAndAlerts()
@@ -115,8 +120,13 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     private fun onItemClick(position: Int): Boolean {
         val item: DrawerItem = itemAdapter.getAdapterItem(position)
-        launchActivity(item.activityClass)
+        if (item.identifier == favBookId) launchFavBook()
+        else launchActivity(item.activityClass)
         return true
+    }
+
+    private fun launchFavBook() {
+
     }
 
     private fun launchActivity(activityClass: Class<*>) {
@@ -138,6 +148,24 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
             binding?.drawerQueueBtnBadge?.visibility = View.VISIBLE
         } else {
             binding?.drawerQueueBtnBadge?.visibility = View.GONE
+        }
+    }
+
+    private fun onFavPagesChanged(favPages: Int) {
+        val favItem = itemAdapter.adapterItems.firstOrNull { i -> (favBookId == i.identifier) }
+        if (favPages > 0) {
+            if (null == favItem) {
+                itemAdapter.add(
+                    DrawerItem(
+                        resources.getString(R.string.fav_pages).uppercase(),
+                        R.drawable.ic_page_fav,
+                        Content.getWebActivityClass(Site.NONE),
+                        favBookId
+                    )
+                )
+            }
+        } else {
+            if (favItem != null) itemAdapter.removeByIdentifier(favItem.identifier)
         }
     }
 
@@ -172,7 +200,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDrawerClosed(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.RC_DRAWER) return
-        if (CommunicationEvent.EV_CLOSED == event.type) binding!!.drawerList.scrollToPosition(0)
+        if (CommunicationEvent.EV_CLOSED == event.type) binding?.drawerList?.scrollToPosition(0)
     }
 
     private fun onAboutClick() {
