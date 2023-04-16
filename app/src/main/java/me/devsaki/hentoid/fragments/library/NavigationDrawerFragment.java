@@ -156,7 +156,8 @@ public final class NavigationDrawerFragment extends Fragment {
         List<DrawerItem> menuItems = drawerAdapter.getAdapterItems();
         int index = 0;
         for (DrawerItem menuItem : menuItems) {
-            if (menuItem.getSite() != null && alerts.containsKey(menuItem.getSite())) {
+            menuItem.getSite();
+            if (alerts.containsKey(menuItem.getSite())) {
                 UpdateInfo.SourceAlert alert = alerts.get(menuItem.getSite());
                 if (alert != null) {
                     menuItem.setAlertStatus(alert.getStatus());
