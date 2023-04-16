@@ -21,10 +21,12 @@ import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -513,6 +515,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
                 // Gallery
                 galleryBtn.setOnClickListener { displayGallery() }
+
+                // Fullscreen switch
+                ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+                    v.updatePadding(bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom)
+                    v.updatePadding(top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top)
+                    insets
+                }
             }
         }
     }
@@ -1276,8 +1285,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val activity = activity ?: return
         val window = activity.window
         val params = window.attributes
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (visible) {
-            WindowCompat.setDecorFitsSystemWindows(window, true)
             binding?.apply {
                 WindowInsetsControllerCompat(window, controlsOverlay.root)
                     .show(WindowInsetsCompat.Type.systemBars())
@@ -1288,7 +1297,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
             }
         } else {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
             binding?.apply {
                 WindowInsetsControllerCompat(window, controlsOverlay.root).let { controller ->
                     controller.systemBarsBehavior =
