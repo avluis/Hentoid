@@ -127,7 +127,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     }
 
     private fun showFlagAboutItem() {
-        binding?.drawerAboutBtnBadge?.visibility = View.VISIBLE
+        binding!!.drawerAboutBtnBadge.visibility = View.VISIBLE
     }
 
     private fun onTotalQueueChanged(totalQueue: Int) {
