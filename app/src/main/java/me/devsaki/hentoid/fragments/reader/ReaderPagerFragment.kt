@@ -125,6 +125,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     // True if current content is an archive
     private var isContentArchive = false
 
+    // True if current content is dynamic
+    private var isContentDynamic = false
+
     // True if current page is favourited
     private var isPageFavourite = false
 
@@ -590,7 +593,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onInfoMicroMenuClick(menuPosition: Int) {
         if (0 == menuPosition) { // Content
             adapter.getImageAt(absImageIndex)?.let {
-                invoke(requireContext(), requireActivity().supportFragmentManager, it.contentId)
+                invoke(
+                    requireContext(),
+                    requireActivity().supportFragmentManager,
+                    it.contentId,
+                    isContentDynamic
+                )
             }
         } else { // Image
             val currentScale = adapter.getAbsoluteScaleAtPosition(absImageIndex)
@@ -757,6 +765,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         bookPreferences = content.bookPreferences
         isContentArchive = content.isArchive
+        isContentDynamic = content.isDynamic
         isContentFavourite = content.isFavourite
         // Wait for starting index only if content actually changes
         if (content.id != contentId) startingIndexLoaded = false

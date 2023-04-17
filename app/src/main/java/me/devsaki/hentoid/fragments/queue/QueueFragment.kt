@@ -870,7 +870,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             if (c.storageUri.isEmpty()) c = ObjectBoxDAO(requireContext()).selectContent(c.id)
             return if (c != null) {
                 if (!ContentHelper.openReader(
-                        requireContext(), c, -1, null, false
+                        requireContext(), c, -1, null, false, false
                     )
                 ) ToastHelper.toast(R.string.err_no_content)
                 true

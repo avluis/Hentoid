@@ -19,6 +19,8 @@
             android:layout_width="75dp"
             android:layout_height="100dp"
             android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
             app:layout_constraintBottom_toBottomOf="@id/img_divider"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

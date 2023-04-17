@@ -324,7 +324,7 @@ public final class ContentHelper {
      *                         is faithful to the library screen's order)
      * @param forceShowGallery True to force the gallery screen to show first; false to follow app settings
      */
-    public static boolean openReader(@NonNull Context context, @NonNull Content content, int pageNumber, Bundle searchParams, boolean forceShowGallery) {
+    public static boolean openReader(@NonNull Context context, @NonNull Content content, int pageNumber, Bundle searchParams, boolean forceShowGallery, boolean newTask) {
         // Check if the book has at least its own folder
         if (content.getStorageUri().isEmpty()) return false;
         if (content.getStatus().equals(StatusContent.PLACEHOLDER)) return false;
@@ -337,10 +337,12 @@ public final class ContentHelper {
         if (pageNumber > -1) builder.setPageNumber(pageNumber);
         builder.setForceShowGallery(forceShowGallery);
 
-        Intent viewer = new Intent(context, ReaderActivity.class);
-        viewer.putExtras(builder.getBundle());
+        Intent intent = new Intent(context, newTask ? ReaderActivity.ReaderActivityMulti.class : ReaderActivity.class);
+        intent.putExtras(builder.getBundle());
 
-        context.startActivity(viewer);
+        if (newTask) intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        context.startActivity(intent);
         return true;
     }
 

@@ -20,7 +20,7 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.ReaderKeyListener
 
 
-class ReaderActivity : BaseActivity() {
+open class ReaderActivity : BaseActivity() {
     private var readerKeyListener: ReaderKeyListener? = null
     private lateinit var viewModel: ReaderViewModel
 
@@ -124,5 +124,9 @@ class ReaderActivity : BaseActivity() {
         fun isRunning(): Boolean {
             return isRunning
         }
+    }
+
+    class ReaderActivityMulti : ReaderActivity() {
+        // Only exists to be able to launch ReaderActivity without launchMode=singleTask
     }
 }

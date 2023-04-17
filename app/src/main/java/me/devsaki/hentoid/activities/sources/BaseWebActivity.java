@@ -838,7 +838,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                         || StatusContent.ERROR == currentContent.getStatus()
                         || StatusContent.MIGRATED == currentContent.getStatus()))
-                    ContentHelper.openReader(this, currentContent, -1, null, false);
+                    ContentHelper.openReader(this, currentContent, -1, null, false, false);
                 else {
                     binding.actionButton.setVisibility(View.INVISIBLE);
                     binding.actionBtnBadge.setVisibility(View.INVISIBLE);

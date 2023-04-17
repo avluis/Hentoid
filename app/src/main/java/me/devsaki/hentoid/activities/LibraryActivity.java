@@ -388,7 +388,7 @@ public class LibraryActivity extends BaseActivity {
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openReader(this, c, previouslyViewedPage, contentSearchBundle, false);
+                        ContentHelper.openReader(this, c, previouslyViewedPage, contentSearchBundle, false, false);
                 } finally {
                     dao.cleanup();
                 }

@@ -195,7 +195,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             return
         }
 
-        if (!ContentHelper.openReader(requireContext(), c, -1, null, false))
+        if (!ContentHelper.openReader(requireContext(), c, -1, null, false, true))
             ToastHelper.toast(R.string.err_no_content)
     }
 

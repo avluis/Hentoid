@@ -1425,7 +1425,7 @@ public class LibraryContentFragment extends Fragment implements
     // TODO doc
     public void readBook(@NonNull Content content, boolean forceShowGallery) {
         topItemPosition = getTopItemPosition();
-        ContentHelper.openReader(requireContext(), content, -1, contentSearchBundle, forceShowGallery);
+        ContentHelper.openReader(requireContext(), content, -1, contentSearchBundle, forceShowGallery, false);
     }
 
     /**

@@ -501,6 +501,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                     c,
                     -1,
                     null,
+                    false,
                     false
                 )
             ) ToastHelper.toast(R.string.err_no_content)

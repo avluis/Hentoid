@@ -46,6 +46,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
     // VARS
     private var contentId = -1L
+    private var openOnTap = false
     private var currentRating = -1
     private val glideRequestOptions: RequestOptions
 
@@ -74,6 +75,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
         requireNotNull(arguments) { "No arguments found" }
         contentId = requireArguments().getLong(CONTENT_ID, -1)
         require(contentId > -1)
+        openOnTap = requireArguments().getBoolean(OPEN_ON_TAP, false)
     }
 
     override fun onCreateView(
@@ -140,6 +142,16 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
                 .apply(glideRequestOptions)
                 .into(binding.ivCover)
         }
+        if (openOnTap) binding.ivCover.setOnClickListener {
+            ContentHelper.openReader(
+                requireActivity(),
+                content,
+                -1,
+                null,
+                false,
+                true
+            )
+        }
         binding.contentTitle.text = content.title
         binding.contentArtist.text = ContentHelper.formatArtistForDisplay(requireContext(), content)
         updateFavouriteDisplay(content.isFavourite)
@@ -178,10 +190,12 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
     companion object {
         const val CONTENT_ID = "content_id"
+        const val OPEN_ON_TAP = "open_on_tap"
         fun invoke(
             context: Context,
             fragmentManager: FragmentManager,
-            contentId: Long
+            contentId: Long,
+            openOnTap: Boolean
         ) {
             val fragment = ReaderContentBottomSheetFragment()
 
@@ -194,6 +208,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
             val args = Bundle()
             args.putLong(CONTENT_ID, contentId)
+            args.putBoolean(OPEN_ON_TAP, openOnTap)
             fragment.arguments = args
             fragment.show(fragmentManager, "metaEditBottomSheetFragment")
         }

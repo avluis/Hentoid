@@ -571,6 +571,15 @@
         </activity>
 
         <activity
+            android:name=".activities.ReaderActivity$ReaderActivityMulti"
+            android:label="Image Viewer"
+            android:theme="@style/Theme.Light.Monochrome">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.LibraryActivity" />
+        </activity>
+
+        <activity
             android:name=".activities.ReaderActivity"
             android:label="Image Viewer"
             android:launchMode="singleTask"
