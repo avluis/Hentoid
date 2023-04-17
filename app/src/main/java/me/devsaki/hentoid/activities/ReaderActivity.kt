@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import me.devsaki.hentoid.R
@@ -25,24 +26,35 @@ class ReaderActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (Preferences.isReaderKeepScreenOn()) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        val intent = intent
-        require(!(null == intent || null == intent.extras)) { "Required init arguments not found" }
-        val parser = ReaderActivityBundle(intent.extras!!)
-        val contentId = parser.contentId
-        require(0L != contentId) { "Incorrect ContentId" }
-        val pageNumber = parser.pageNumber
+
         val vmFactory = ViewModelFactory(application)
         viewModel = ViewModelProvider(this, vmFactory)[ReaderViewModel::class.java]
         viewModel.observeDbImages(this)
-        if (null == viewModel.getContent().value) { // ViewModel hasn't loaded anything yet (fresh start)
-            val searchParams = parser.searchParams
-            if (searchParams != null) viewModel.loadContentFromSearchParams(
-                contentId,
-                pageNumber,
-                searchParams
-            ) else viewModel.loadContentFromId(contentId, pageNumber)
+
+        val intent = intent
+        require(!(null == intent || null == intent.extras)) { "Required init arguments not found" }
+        val parser = ReaderActivityBundle(intent.extras!!)
+
+        if (parser.isOpenFavPages) {
+            // ViewModel hasn't loaded anything yet (fresh start)
+            if (null == viewModel.getContent().value) viewModel.loadFavPages()
+        } else {
+            val contentId = parser.contentId
+            require(0L != contentId) { "Incorrect ContentId" }
+            val pageNumber = parser.pageNumber
+            // ViewModel hasn't loaded anything yet (fresh start)
+            if (null == viewModel.getContent().value) {
+                val searchParams = parser.searchParams
+                if (searchParams != null) viewModel.loadContentFromSearchParams(
+                    contentId,
+                    pageNumber,
+                    searchParams
+                ) else viewModel.loadContentFromId(contentId, pageNumber)
+            }
         }
+
         if (!PermissionHelper.requestExternalStorageReadPermission(
                 this,
                 PermissionHelper.RQST_STORAGE_PERMISSION
@@ -56,6 +68,8 @@ class ReaderActivity : BaseActivity() {
         // Allows an full recolor of the status bar with the custom color defined in the activity's theme
         window.statusBarColor = ContextCompat.getColor(this, R.color.black)
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         if (null == savedInstanceState) {
             val fragment: Fragment =
                 if (Preferences.isReaderOpenBookInGalleryMode() || parser.isForceShowGallery) ReaderGalleryFragment() else ReaderPagerFragment()

@@ -1,7 +1,11 @@
 package me.devsaki.hentoid.activities.bundles
 
 import android.os.Bundle
-import me.devsaki.hentoid.util.*
+import me.devsaki.hentoid.util.boolean
+import me.devsaki.hentoid.util.bundle
+import me.devsaki.hentoid.util.float
+import me.devsaki.hentoid.util.int
+import me.devsaki.hentoid.util.long
 
 /**
  * Helper class to transfer data from any Activity to [me.devsaki.hentoid.activities.ReaderActivity]
@@ -20,4 +24,6 @@ class ReaderActivityBundle(val bundle: Bundle = Bundle()) {
     var scale by bundle.float(default = -1f)
 
     var isForceShowGallery by bundle.boolean(default = false)
+
+    var isOpenFavPages by bundle.boolean(default = false)
 }

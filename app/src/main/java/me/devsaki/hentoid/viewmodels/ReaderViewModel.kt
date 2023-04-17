@@ -218,7 +218,7 @@ class ReaderViewModel(
         }
     }
 
-    private fun loadFavPages() {
+    fun loadFavPages() {
         // Forge content with the images alone
         val c = Content()
         c.id = Long.MAX_VALUE

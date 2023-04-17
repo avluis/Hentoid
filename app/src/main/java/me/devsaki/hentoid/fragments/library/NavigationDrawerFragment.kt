@@ -17,7 +17,9 @@ import me.devsaki.hentoid.activities.AboutActivity
 import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.QueueActivity
+import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.ToolsActivity
+import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
 import me.devsaki.hentoid.enums.Site
@@ -126,7 +128,13 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     }
 
     private fun launchFavBook() {
+        val builder = ReaderActivityBundle()
+        builder.isOpenFavPages = true
 
+        val viewer = Intent(context, ReaderActivity::class.java)
+        viewer.putExtras(builder.bundle)
+
+        requireContext().startActivity(viewer)
     }
 
     private fun launchActivity(activityClass: Class<*>) {

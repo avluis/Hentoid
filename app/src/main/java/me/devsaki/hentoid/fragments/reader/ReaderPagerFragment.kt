@@ -22,7 +22,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
@@ -1285,7 +1284,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val activity = activity ?: return
         val window = activity.window
         val params = window.attributes
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (visible) {
             binding?.apply {
                 WindowInsetsControllerCompat(window, controlsOverlay.root)
