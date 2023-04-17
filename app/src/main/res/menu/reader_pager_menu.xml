@@ -12,14 +12,6 @@
         android:tooltipText="@string/viewer_slideshow_help"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_view_book"
-        android:enabled="true"
-        android:icon="@drawable/ic_book"
-        android:title="@string/view_book"
-        android:tooltipText="@string/view_book"
-        app:showAsAction="always"
-        tools:ignore="AlwaysShowAction" />
-    <item
         android:id="@+id/action_delete_book"
         android:enabled="true"
         android:icon="@drawable/ic_action_delete"

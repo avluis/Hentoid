@@ -146,7 +146,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private var smoothScroller: ReaderSmoothScroller? = null
 
     // Top menu items
-    private lateinit var viewBookMenu: MenuItem
     private lateinit var deleteMenu: MenuItem
     private lateinit var showFavoritePagesMenu: MenuItem
     private lateinit var shuffleMenu: MenuItem
@@ -216,8 +215,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 }
                 true
             }
-            viewBookMenu =
-                it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_view_book)
             deleteMenu =
                 it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_delete_book)
             showFavoritePagesMenu =
@@ -769,7 +766,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         updateFavouriteButtonIcon()
 
         showFavoritePagesMenu.isVisible = !content.isDynamic
-        viewBookMenu.isVisible = content.isDynamic
         deleteMenu.isVisible = !content.isDynamic
 
         // Display "redownload images" button if folder no longer exists and is not external nor dynamic
