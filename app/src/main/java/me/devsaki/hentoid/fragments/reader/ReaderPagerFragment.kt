@@ -93,12 +93,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     ReaderBrowseModeDialogFragment.Parent,
     ReaderPrefsDialogFragment.Parent, ReaderDeleteDialogFragment.Parent, Pager {
 
-    private val keyHudVisible = "hud_visible"
-    private val keyGalleryShown = "gallery_shown"
-    private val keySlideshowOn = "slideshow_on"
-    private val keySlideshowRemainingMs = "slideshow_remaining_ms"
-    private val keyImgIndex = "image_index"
-
     private val centerInside: Transformation<Bitmap> = CenterInside()
     private val glideRequestOptions = RequestOptions().optionalTransform(centerInside)
 
@@ -263,14 +257,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         binding?.apply {
-            outState.putInt(keyHudVisible, controlsOverlay.root.visibility)
+            outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.root.visibility)
         }
-        outState.putBoolean(keySlideshowOn, isSlideshowActive)
+        outState.putBoolean(KEY_SLIDESHOW_ON, isSlideshowActive)
         val currentSlideshowSeconds = Instant.now().toEpochMilli() - latestSlideshowTick
-        outState.putLong(keySlideshowRemainingMs, slideshowPeriodMs - currentSlideshowSeconds)
-        outState.putBoolean(keyGalleryShown, hasGalleryBeenShown)
+        outState.putLong(KEY_SLIDESHOW_REMAINING_MS, slideshowPeriodMs - currentSlideshowSeconds)
+        outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown)
         // Memorize current page
-        outState.putInt(keyImgIndex, absImageIndex)
+        outState.putInt(KEY_IMG_INDEX, absImageIndex)
         viewModel.setViewerStartingIndex(absImageIndex)
     }
 
@@ -278,11 +272,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         super.onViewStateRestored(savedInstanceState)
         var hudVisibility = View.INVISIBLE // Default state at startup
         if (savedInstanceState != null) {
-            hudVisibility = savedInstanceState.getInt(keyHudVisible, View.INVISIBLE)
-            hasGalleryBeenShown = savedInstanceState.getBoolean(keyGalleryShown, false)
-            absImageIndex = savedInstanceState.getInt(keyImgIndex, -1)
-            if (savedInstanceState.getBoolean(keySlideshowOn, false)) {
-                startSlideshow(false, savedInstanceState.getLong(keySlideshowRemainingMs))
+            hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE)
+            hasGalleryBeenShown = savedInstanceState.getBoolean(KEY_GALLERY_SHOWN, false)
+            absImageIndex = savedInstanceState.getInt(KEY_IMG_INDEX, -1)
+            if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) {
+                startSlideshow(false, savedInstanceState.getLong(KEY_SLIDESHOW_REMAINING_MS))
             }
         }
         binding?.apply {
@@ -1408,5 +1402,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         isSlideshowActive = false
         scrollListener.enableScroll()
         ToastHelper.toast(R.string.slideshow_stop)
+    }
+
+    companion object {
+        const val KEY_HUD_VISIBLE = "hud_visible"
+        const val KEY_GALLERY_SHOWN = "gallery_shown"
+        const val KEY_SLIDESHOW_ON = "slideshow_on"
+        const val KEY_SLIDESHOW_REMAINING_MS = "slideshow_remaining_ms"
+        const val KEY_IMG_INDEX = "image_index"
     }
 }

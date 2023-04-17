@@ -73,13 +73,6 @@ class ReaderViewModel(
     application: Application,
     private val dao: CollectionDAO
 ) : AndroidViewModel(application) {
-
-    // Number of concurrent image downloads
-    private val CONCURRENT_DOWNLOADS = 3
-    private val EXTRACT_RANGE = 35
-
-    private var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
-
     // Collection DAO
     private val searchManager: ContentSearchManager = ContentSearchManager(dao)
 
@@ -1980,5 +1973,13 @@ class ReaderViewModel(
 
         // Reset locations cache as image order has changed
         imageLocationCache.clear()
+    }
+
+    companion object {
+        // Number of concurrent image downloads
+        const val CONCURRENT_DOWNLOADS = 3
+        const val EXTRACT_RANGE = 35
+
+        private var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
     }
 }
