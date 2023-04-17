@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -98,6 +99,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private var startIndex = 0
     private var firstMoveDone = false
+    private var isContentDynamic = false
 
     private var editMode = EditMode.NONE
 
@@ -152,6 +154,11 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentReaderGalleryBinding.inflate(inflater, container, false)
+
+        activity.get()?.window?.let {
+            WindowCompat.setDecorFitsSystemWindows(it, true)
+        }
+
         updateListAdapter(editMode == EditMode.EDIT_CHAPTERS)
         binding?.apply {
             FastScrollerBuilder(recyclerView).build()
@@ -393,7 +400,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     private fun onContentChanged(content: Content?) {
         if (null == content) return
-        val chapters: List<Chapter>? = content.chapters
+        val chapters = content.chaptersList
+        isContentDynamic = content.isDynamic
         if (chapters.isNullOrEmpty()) return
         binding?.apply {
             chapterSelector.setIsFocusable(true)
@@ -543,8 +551,10 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     }
 
     private fun updateToolbar() {
-        showFavouritePagesMenu.isVisible = editMode == EditMode.NONE && hasFavourite()
-        editChaptersMenu.isVisible = editMode == EditMode.NONE && !shuffledState
+        showFavouritePagesMenu.isVisible =
+            editMode == EditMode.NONE && hasFavourite() && !isContentDynamic
+        editChaptersMenu.isVisible =
+            editMode == EditMode.NONE && !shuffledState && !isContentDynamic
         addChapterMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS
         removeChaptersMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS
         binding?.apply {

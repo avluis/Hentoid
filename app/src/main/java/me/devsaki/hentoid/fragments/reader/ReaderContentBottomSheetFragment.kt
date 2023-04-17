@@ -14,13 +14,18 @@ import android.widget.ImageView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.IncludeReaderContentBottomPanelBinding
 import me.devsaki.hentoid.util.ContentHelper
@@ -40,6 +45,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
     private val stars: Array<ImageView?> = arrayOfNulls(5)
 
     // VARS
+    private var contentId = -1L
     private var currentRating = -1
     private val glideRequestOptions: RequestOptions
 
@@ -56,12 +62,18 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
             .error(d)
     }
 
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[ReaderViewModel::class.java]
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requireNotNull(arguments) { "No arguments found" }
+        contentId = requireArguments().getLong(CONTENT_ID, -1)
+        require(contentId > -1)
     }
 
     override fun onCreateView(
@@ -93,8 +105,17 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.getContent().observe(viewLifecycleOwner) { content ->
-            this.onContentChanged(content)
+        lifecycleScope.launch {
+            var content: Content? = null
+            withContext(Dispatchers.IO) {
+                val dao = ObjectBoxDAO(requireContext())
+                try {
+                    content = dao.selectContent(contentId)
+                } finally {
+                    dao.cleanup()
+                }
+            }
+            onContentChanged(content)
         }
     }
 
@@ -156,18 +177,25 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     companion object {
+        const val CONTENT_ID = "content_id"
         fun invoke(
             context: Context,
-            fragmentManager: FragmentManager
+            fragmentManager: FragmentManager,
+            contentId: Long
         ) {
-            val bottomSheetFragment = ReaderContentBottomSheetFragment()
+            val fragment = ReaderContentBottomSheetFragment()
+
             ThemeHelper.setStyle(
                 context,
-                bottomSheetFragment,
+                fragment,
                 DialogFragment.STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
             )
-            bottomSheetFragment.show(fragmentManager, "metaEditBottomSheetFragment")
+
+            val args = Bundle()
+            args.putLong(CONTENT_ID, contentId)
+            fragment.arguments = args
+            fragment.show(fragmentManager, "metaEditBottomSheetFragment")
         }
     }
 }

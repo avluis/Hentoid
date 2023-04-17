@@ -822,6 +822,7 @@
     <string name="slideshow_start_vertical">Starting slideshow (<x:g example="fast" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Slideshow stopped</string>
     <string name="ask_clear_chapters">Clear all chapters?</string>
+    <string name="view_book">View book</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

@@ -22,6 +22,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
@@ -145,8 +146,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private var smoothScroller: ReaderSmoothScroller? = null
 
     // Top menu items
-    private lateinit var showFavoritePagesButton: MenuItem
-    private lateinit var shuffleButton: MenuItem
+    private lateinit var viewBookMenu: MenuItem
+    private lateinit var deleteMenu: MenuItem
+    private lateinit var showFavoritePagesMenu: MenuItem
+    private lateinit var shuffleMenu: MenuItem
 
     private lateinit var navigator: ReaderNavigation
 
@@ -203,18 +206,23 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                         slideshowSliderDebouncer.submit(startIndex)
                     }
 
-                    R.id.action_delete_book -> if (VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode()) invoke(
-                        this, !isContentArchive
-                    ) else  // We already know what to delete
-                        onDeleteElement(VIEWER_DELETE_TARGET_PAGE == Preferences.getReaderDeleteTarget())
+                    R.id.action_delete_book ->
+                        if (VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode())
+                            invoke(this, !isContentArchive)
+                        else  // We already know what to delete
+                            onDeleteElement(VIEWER_DELETE_TARGET_PAGE == Preferences.getReaderDeleteTarget())
 
                     else -> {}
                 }
                 true
             }
-            showFavoritePagesButton =
+            viewBookMenu =
+                it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_view_book)
+            deleteMenu =
+                it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_delete_book)
+            showFavoritePagesMenu =
                 it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_show_favorite_pages)
-            shuffleButton = it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_shuffle)
+            shuffleMenu = it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_shuffle)
         }
         return binding!!.root
     }
@@ -560,7 +568,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Handle click on "Show favourite pages" toggle action button
      */
     private fun onShowFavouriteClick() {
-        viewModel.filterFavouriteImages(!showFavoritePagesButton.isChecked)
+        viewModel.filterFavouriteImages(!showFavoritePagesMenu.isChecked)
     }
 
     /**
@@ -569,22 +577,24 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * @param showFavouritePages True if the button has to represent a favourite page; false instead
      */
     private fun updateShowFavouriteDisplay(showFavouritePages: Boolean) {
-        showFavoritePagesButton.isChecked = showFavouritePages
+        showFavoritePagesMenu.isChecked = showFavouritePages
         if (showFavouritePages) {
-            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_on)
-            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_on)
+            showFavoritePagesMenu.setIcon(R.drawable.ic_filter_favs_on)
+            showFavoritePagesMenu.setTitle(R.string.viewer_filter_favourite_on)
         } else {
-            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_off)
-            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_off)
+            showFavoritePagesMenu.setIcon(R.drawable.ic_filter_favs_off)
+            showFavoritePagesMenu.setTitle(R.string.viewer_filter_favourite_off)
         }
     }
 
     /**
      * Handle click on "Information" micro menu
      */
-    private fun onInfoMicroMenuClick(position: Int) {
-        if (0 == position) { // Content
-            invoke(requireContext(), requireActivity().supportFragmentManager)
+    private fun onInfoMicroMenuClick(menuPosition: Int) {
+        if (0 == menuPosition) { // Content
+            adapter.getImageAt(absImageIndex)?.let {
+                invoke(requireContext(), requireActivity().supportFragmentManager, it.contentId)
+            }
         } else { // Image
             val currentScale = adapter.getAbsoluteScaleAtPosition(absImageIndex)
             invoke(
@@ -758,6 +768,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         navigator.onContentChanged(content)
         updateFavouriteButtonIcon()
 
+        showFavoritePagesMenu.isVisible = !content.isDynamic
+        viewBookMenu.isVisible = content.isDynamic
+        deleteMenu.isVisible = !content.isDynamic
+
         // Display "redownload images" button if folder no longer exists and is not external nor dynamic
         binding?.apply {
             viewerRedownloadBtn.isVisible =
@@ -772,11 +786,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onShuffleChanged(isShuffled: Boolean) {
         if (isShuffled) {
-            shuffleButton.setIcon(R.drawable.ic_menu_sort_123)
-            shuffleButton.setTitle(R.string.viewer_order_123)
+            shuffleMenu.setIcon(R.drawable.ic_menu_sort_123)
+            shuffleMenu.setTitle(R.string.viewer_order_123)
         } else {
-            shuffleButton.setIcon(R.drawable.ic_menu_sort_random)
-            shuffleButton.setTitle(R.string.viewer_order_shuffle)
+            shuffleMenu.setIcon(R.drawable.ic_menu_sort_random)
+            shuffleMenu.setTitle(R.string.viewer_order_shuffle)
         }
     }
 
@@ -1278,6 +1292,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val activity = activity ?: return
         val window = activity.window
         val params = window.attributes
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (visible) {
             binding?.apply {
                 WindowInsetsControllerCompat(window, controlsOverlay.root)

@@ -18,6 +18,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,7 @@ import me.devsaki.hentoid.activities.sources.PururinActivity;
 import me.devsaki.hentoid.activities.sources.SimplyActivity;
 import me.devsaki.hentoid.activities.sources.ToonilyActivity;
 import me.devsaki.hentoid.activities.sources.TsuminoActivity;
+import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
@@ -205,7 +207,7 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        if (attributes != null)
+        if (attributes != null && !DBHelper.isDetached(this))
             for (Attribute a : attributes) result.add(a);
         return result;
     }
@@ -637,6 +639,10 @@ public class Content implements Serializable {
         return imageFiles;
     }
 
+    public List<ImageFile> getImageList() {
+        return (null == imageFiles || DBHelper.isDetached(this)) ? Collections.emptyList() : imageFiles;
+    }
+
     public Content setImageFiles(List<ImageFile> imageFiles) {
         // We do want to compare array references, not content
         if (imageFiles != null && imageFiles != this.imageFiles) {
@@ -647,11 +653,8 @@ public class Content implements Serializable {
     }
 
     public ImageFile getCover() {
-        List<ImageFile> images = getImageFiles();
-        if (images != null && !images.isEmpty()) {
-            for (ImageFile img : images)
-                if (img.isCover()) return img;
-        }
+        List<ImageFile> images = getImageList();
+        for (ImageFile img : images) if (img.isCover()) return img;
         ImageFile makeupCover = ImageFile.fromImageUrl(0, getCoverImageUrl(), StatusContent.ONLINE, 1);
         makeupCover.setImageHash(Long.MIN_VALUE); // Makeup cover is unhashable
         return makeupCover;
@@ -927,6 +930,10 @@ public class Content implements Serializable {
     @Nullable
     public ToMany<Chapter> getChapters() {
         return chapters;
+    }
+
+    public List<Chapter> getChaptersList() {
+        return (null == chapters || DBHelper.isDetached(this)) ? Collections.emptyList() : chapters;
     }
 
     public void setChapters(List<Chapter> chapters) {

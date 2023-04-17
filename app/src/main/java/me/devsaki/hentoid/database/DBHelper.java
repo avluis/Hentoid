@@ -1,11 +1,14 @@
 package me.devsaki.hentoid.database;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
+import io.objectbox.internal.ReflectionCache;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
+import io.objectbox.relation.ToMany;
 
-class DBHelper {
+public class DBHelper {
 
     static <T> List<T> safeFind(QueryBuilder<T> qb) {
         try (Query<T> q = qb.build()) {
@@ -74,6 +77,16 @@ class DBHelper {
             q.remove();
         } finally {
             q.close();
+        }
+    }
+
+    // Inspired by ToMany.ensureBoxes
+    public static boolean isDetached(Object entity) {
+        Field boxStoreField = ReflectionCache.getInstance().getField(entity.getClass(), "__boxStore");
+        try {
+            return (null == boxStoreField.get(entity));
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 }
