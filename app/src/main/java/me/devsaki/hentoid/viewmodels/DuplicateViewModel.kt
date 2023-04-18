@@ -3,7 +3,12 @@ package me.devsaki.hentoid.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.work.*
+import androidx.work.BackoffPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -11,7 +16,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.*
+import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -78,7 +83,7 @@ class DuplicateViewModel(
                 .setInputData(builder.data)
                 .setBackoffCriteria(
                     BackoffPolicy.LINEAR,
-                    OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
+                    WorkRequest.MIN_BACKOFF_MILLIS,
                     TimeUnit.MILLISECONDS
                 )
                 .addTag(WORK_CLOSEABLE)
