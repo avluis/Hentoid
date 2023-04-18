@@ -87,14 +87,14 @@ class CustomWebViewClient extends WebViewClient {
 
     // Pre-built object to represent an empty input stream
     // (will be used instead of the actual stream when the requested resource is blocked)
-    private final byte[] nothing = "".getBytes();
+    private final byte[] NOTHING = new byte[0];
     // Pre-built object to represent WEBP binary data for the checkmark icon used to mark downloaded books
     // (will be fed directly to the browser when the resourcei is requested)
-    private final byte[] checkmark;
+    private final byte[] CHECKMARK;
     // this is for merged books
-    private final byte[] mergedMark;
+    private final byte[] MERGED_MARK;
     // this is for books with blocked tags;
-    private final byte[] blockedMark;
+    private final byte[] BLOCKED_MARK;
 
     // Site for the session
     protected final Site site;
@@ -158,21 +158,21 @@ class CustomWebViewClient extends WebViewClient {
 
         for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
 
-        checkmark = ImageHelper.BitmapToWebp(
+        CHECKMARK = ImageHelper.BitmapToWebp(
                 ImageHelper.tintBitmap(
                         ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_checked),
                         HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
 
-        mergedMark = ImageHelper.BitmapToWebp(
+        MERGED_MARK = ImageHelper.BitmapToWebp(
                 ImageHelper.tintBitmap(
                         ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_action_merge),
                         HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
 
-        blockedMark = ImageHelper.BitmapToWebp(
+        BLOCKED_MARK = ImageHelper.BitmapToWebp(
                 ImageHelper.tintBitmap(
                         ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_forbidden),
                         HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
@@ -452,13 +452,13 @@ class CustomWebViewClient extends WebViewClient {
     private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                @Nullable final Map<String, String> headers) {
         if ((Preferences.isBrowserAugmented() && adBlocker.isBlocked(url, headers)) || !url.startsWith("http")) {
-            return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(nothing));
+            return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(NOTHING));
         } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {
-            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(checkmark));
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(CHECKMARK));
         } else if (isMarkMerged() && url.contains("hentoid-mergedmark")) {
-            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(mergedMark));
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(MERGED_MARK));
         } else if (url.contains("hentoid-blockedmark")) {
-            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(blockedMark));
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(BLOCKED_MARK));
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
             else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url);
@@ -654,6 +654,7 @@ class CustomWebViewClient extends WebViewClient {
                     );
                 } else {
                     isHtmlLoaded.set(true);
+                    activity.onNoResult();
                 }
 
                 return result;
@@ -933,6 +934,11 @@ class CustomWebViewClient extends WebViewClient {
          * @param quickDownload True if the action has been triggered by a quick download action
          */
         void onResultReady(@NonNull Content results, boolean quickDownload);
+
+        /**
+         * Callback when the page does not have any Content to parse
+         */
+        void onNoResult();
 
         /**
          * Callback when the page should have been parsed into a Content, but the parsing failed

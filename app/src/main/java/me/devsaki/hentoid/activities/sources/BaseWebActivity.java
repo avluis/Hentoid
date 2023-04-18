@@ -608,11 +608,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             List<String> jsStartupScripts) {
         refreshStopMenu.setIcon(R.drawable.ic_close);
         binding.progressBar.setVisibility(View.GONE);
-        if (!isHtmlLoaded) {
-            binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon));
-            binding.actionButton.setVisibility(View.INVISIBLE);
-            binding.actionBtnBadge.setVisibility(View.INVISIBLE);
-        }
+        if (!isHtmlLoaded) disableActions();
 
         // Activate fetch handler
         if (fetchHandler != null) {
@@ -847,6 +843,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             default:
                 // Nothing
         }
+    }
+
+    private void disableActions() {
+        binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon));
+        binding.actionButton.setVisibility(View.INVISIBLE);
+        binding.actionBtnBadge.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -1259,6 +1261,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         blockedTags = ContentHelper.getBlockedTags(currentContent);
     }
 
+    @Override
+    public void onNoResult() {
+        runOnUiThread(this::disableActions);
+    }
+
+    @Override
     public void onResultFailed() {
         runOnUiThread(() -> ToastHelper.toast(R.string.web_unparsable));
         parseResponseDisposable.clear();
