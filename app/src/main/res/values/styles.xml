@@ -108,12 +108,13 @@
 
     <style name="App.Tooltip" parent="Widget.Material3.Tooltip">
         <!-- background color of the Tooltip -->
-        <item name="backgroundTint">@color/medium_gray</item>
+        <item name="backgroundTint">@color/dark_gray</item>
         <!-- textAppearance of the Tooltip -->
         <item name="android:textAppearance">@style/TextAppearance.App.Tooltip</item>
     </style>
 
-    <style name="TextAppearance.App.Tooltip" parent="Widget.Material3.Tooltip">
+    <style name="TextAppearance.App.Tooltip" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/white_opacity_87</item>
     </style>
 
