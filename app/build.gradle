@@ -106,11 +106,11 @@ dependencies {
      * TESTING
      */
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:5.1.1'
+    testImplementation 'org.mockito:mockito-core:5.3.0'
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
-    testImplementation 'org.robolectric:robolectric:4.9.2'
+    testImplementation 'org.robolectric:robolectric:4.10'
     // Auto Timber trees that redirect logs to the JUnit output
     testImplementation 'net.lachlanmckee:timber-junit-rule:1.0.1'
     androidTestImplementation 'androidx.test:runner:1.5.2'
@@ -285,7 +285,7 @@ dependencies {
     implementation 'org.apache.commons:commons-text:1.9'
 
     // Cleaner date manipulation
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.4.4'
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.4.6'
 
     // Archive management
     implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
@@ -306,7 +306,7 @@ dependencies {
      * ANALYTICS
      */
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:31.2.1')
+    implementation platform('com.google.firebase:firebase-bom:31.5.0')
 
     // Crashlytics
     implementation 'com.google.firebase:firebase-crashlytics'
