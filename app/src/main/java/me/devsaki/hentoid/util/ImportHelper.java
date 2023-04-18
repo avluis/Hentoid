@@ -620,6 +620,7 @@ public class ImportHelper {
 
         result.setStatus(targetStatus).setStorageUri(bookFolder.getUri().toString());
         if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
+        result.setLastEditDate(Instant.now().toEpochMilli());
         List<ImageFile> images = new ArrayList<>();
         scanFolderImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles);
 
@@ -692,6 +693,8 @@ public class ImportHelper {
 
         result.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.getUri().toString());
         if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
+        result.setLastEditDate(Instant.now().toEpochMilli());
+
         List<ImageFile> images = new ArrayList<>();
         // Scan pages across all subfolders
         for (DocumentFile chapterFolder : chapterFolders)
@@ -888,6 +891,7 @@ public class ImportHelper {
         }
         result.setStatus(targetStatus).setStorageUri(archive.getUri().toString()); // Here storage URI is a file URI, not a folder
         if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
+        result.setLastEditDate(Instant.now().toEpochMilli());
         result.setArchiveLocationUri(parentFolder.getUri().toString());
 
         result.setImageFiles(images);
