@@ -267,6 +267,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         Helper.tryShowMenuIcons(this, toolbar.getMenu());
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
         toolbar.setTitle(getStartSite().getDescription());
+        toolbar.setOnClickListener(v -> loadUrl(getStartSite().getUrl()));
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
         bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
         languageFilterButton = findViewById(R.id.language_filter_button);
