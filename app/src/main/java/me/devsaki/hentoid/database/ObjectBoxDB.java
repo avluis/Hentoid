@@ -1198,6 +1198,7 @@ public class ObjectBoxDB {
             case ContentHelper.Type.PLACEHOLDER:
                 return qc.and(Content_.status.equal(StatusContent.PLACEHOLDER.getCode()));
             case ContentHelper.Type.FOLDER:
+                // TODO : Should also not be an archive, but that would require Content_.storageUri.doesNotEndWith (see ObjectBox issue #1129)
                 qc = qc.and(Content_.downloadMode.equal(Content.DownloadMode.DOWNLOAD));
                 return qc.and(Content_.status.notEqual(StatusContent.PLACEHOLDER.getCode()));
             case ContentHelper.Type.ANY:
