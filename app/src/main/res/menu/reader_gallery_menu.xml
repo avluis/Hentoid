@@ -29,4 +29,18 @@
         android:title="@string/gallery_clear_chapters"
         android:tooltipText="@string/gallery_clear_chapters"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_edit_confirm"
+        android:icon="@drawable/ic_checked"
+        android:title="@string/menu_edit_confirm"
+        android:tooltipText="@string/menu_edit_confirm"
+        android:visible="false"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_edit_cancel"
+        android:icon="@drawable/ic_close"
+        android:title="@string/menu_edit_cancel"
+        android:tooltipText="@string/menu_edit_cancel"
+        android:visible="false"
+        app:showAsAction="always" />
 </menu>

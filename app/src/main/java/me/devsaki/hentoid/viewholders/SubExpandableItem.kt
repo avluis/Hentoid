@@ -20,17 +20,25 @@ import me.devsaki.hentoid.R
 /**
  * Inspired by mikepenz
  */
-open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper, val name: String) :
+class SubExpandableItem<T>(
+    private val mTouchHelper: ItemTouchHelper,
+    val name: String,
+    entity: T?
+) :
     AbstractExpandableItem<SubExpandableItem.ViewHolder>(),
-    IClickable<SubExpandableItem>, ISubItem<SubExpandableItem.ViewHolder>,
+    IClickable<SubExpandableItem<T>>, ISubItem<SubExpandableItem.ViewHolder>,
     IExtendedDraggable<SubExpandableItem.ViewHolder>,
     INestedItem<SubExpandableItem.ViewHolder> {
+
+    init {
+        super.tag = entity
+    }
 
     var header: String? = null
     var description: StringHolder? = null
     private var draggable: Boolean = false
 
-    private var mOnClickListener: ClickListener<SubExpandableItem>? = null
+    private var mOnClickListener: ClickListener<SubExpandableItem<T>>? = null
 
     //we define a clickListener in here so we can directly animate
     /**
@@ -39,8 +47,8 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper, val name
      * @return
      */
     @Suppress("SetterBackingFieldAssignment")
-    override var onItemClickListener: ClickListener<SubExpandableItem>? =
-        { v: View?, adapter: IAdapter<SubExpandableItem>, item: SubExpandableItem, position: Int ->
+    override var onItemClickListener: ClickListener<SubExpandableItem<T>>? =
+        { v: View?, adapter: IAdapter<SubExpandableItem<T>>, item: SubExpandableItem<T>, position: Int ->
             if (item.subItems.isNotEmpty()) {
                 v?.findViewById<View>(R.id.material_drawer_icon)?.let {
                     if (!item.isExpanded) {
@@ -57,7 +65,7 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper, val name
             this.mOnClickListener = onClickListener // on purpose
         }
 
-    override var onPreItemClickListener: ClickListener<SubExpandableItem>?
+    override var onPreItemClickListener: ClickListener<SubExpandableItem<T>>?
         get() = null
         set(_) {}
 
@@ -84,22 +92,22 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper, val name
     override val layoutRes: Int
         get() = R.layout.item_expandable
 
-    fun withHeader(header: String): SubExpandableItem {
+    fun withHeader(header: String): SubExpandableItem<T> {
         this.header = header
         return this
     }
 
-    fun withDescription(description: String): SubExpandableItem {
+    fun withDescription(description: String): SubExpandableItem<T> {
         this.description = StringHolder(description)
         return this
     }
 
-    fun withDescription(@StringRes descriptionRes: Int): SubExpandableItem {
+    fun withDescription(@StringRes descriptionRes: Int): SubExpandableItem<T> {
         this.description = StringHolder(descriptionRes)
         return this
     }
 
-    fun withDraggable(value: Boolean): SubExpandableItem {
+    fun withDraggable(value: Boolean): SubExpandableItem<T> {
         this.draggable = value
         return this
     }
@@ -165,15 +173,15 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper, val name
 
     override val isDraggable: Boolean
         get() = draggable
-    override val touchHelper: ItemTouchHelper?
+    override val touchHelper: ItemTouchHelper
         get() = mTouchHelper
 
-    override fun getDragView(viewHolder: ViewHolder): View? {
+    override fun getDragView(viewHolder: ViewHolder): View {
         return viewHolder.dragHandle
     }
 
-    class DragHandlerTouchEvent(val action: (position: Int) -> Unit) :
-        TouchEventHook<SubExpandableItem>() {
+    class DragHandlerTouchEvent<T>(val action: (position: Int) -> Unit) :
+        TouchEventHook<SubExpandableItem<T>>() {
         override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
             return if (viewHolder is ViewHolder) viewHolder.dragHandle else null
         }
@@ -182,8 +190,8 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper, val name
             v: View,
             event: MotionEvent,
             position: Int,
-            fastAdapter: FastAdapter<SubExpandableItem>,
-            item: SubExpandableItem
+            fastAdapter: FastAdapter<SubExpandableItem<T>>,
+            item: SubExpandableItem<T>
         ): Boolean {
             return if (event.action == MotionEvent.ACTION_DOWN) {
                 action(position)

@@ -43,6 +43,7 @@ import me.devsaki.hentoid.databinding.FragmentReaderGalleryBinding
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Preferences.Constant.*
+import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.viewholders.INestedItem
@@ -83,14 +84,16 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private lateinit var editChaptersMenu: MenuItem
     private lateinit var addChapterMenu: MenuItem
     private lateinit var removeChaptersMenu: MenuItem
+    private lateinit var confirmReorderMenu: MenuItem
+    private lateinit var cancelReorderMenu: MenuItem
 
     private val itemAdapter = ItemAdapter<ImageFileItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
     private val selectExtension = fastAdapter.getSelectExtension()
 
-    private val nestedItemAdapter = ItemAdapter<INestedItem<SubExpandableItem.ViewHolder>>()
-    private val nestedFastAdapter = FastAdapter.with(nestedItemAdapter)
-    private val expandableExtension = nestedFastAdapter.getExpandableExtension()
+    private val expandableItemAdapter = ItemAdapter<INestedItem<SubExpandableItem.ViewHolder>>()
+    private val expandableFastAdapter = FastAdapter.with(expandableItemAdapter)
+    private val expandableExtension = expandableFastAdapter.getExpandableExtension()
     private var touchHelper: ItemTouchHelper? = null
 
     private var mDragSelectTouchListener: DragSelectTouchListener? = null
@@ -102,6 +105,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private var isContentDynamic = false
 
     private var editMode = EditMode.NONE
+    private var isReorderingChapters = false
 
     private var filterFavouritesState = false
     private var shuffledState = false
@@ -180,8 +184,22 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                         setChapterEditMode(EditMode.ADD_CHAPTER)
                     }
 
+                    R.id.action_edit_confirm -> {
+                        onConfirmChapterReordering()
+                    }
+
+                    R.id.action_edit_cancel -> {
+                        onCancelChapterReordering()
+                    }
+
                     R.id.action_remove_chapters -> {
-                        val builder = MaterialAlertDialogBuilder(requireActivity())
+                        val builder = MaterialAlertDialogBuilder(
+                            requireActivity(),
+                            ThemeHelper.getIdForCurrentTheme(
+                                requireContext(),
+                                R.style.Theme_Light_Dialog
+                            )
+                        )
                         val title = requireActivity().getString(R.string.ask_clear_chapters)
                         builder.setMessage(title)
                             .setPositiveButton(R.string.yes) { _, _ -> stripChapters() }
@@ -195,6 +213,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             editChaptersMenu = toolbar.menu.findItem(R.id.action_edit_chapters)
             removeChaptersMenu = toolbar.menu.findItem(R.id.action_remove_chapters)
             addChapterMenu = toolbar.menu.findItem(R.id.action_add_remove_chapters)
+            confirmReorderMenu = toolbar.menu.findItem(R.id.action_edit_confirm)
+            cancelReorderMenu = toolbar.menu.findItem(R.id.action_edit_cancel)
             itemSetCoverMenu = selectionToolbar.menu.findItem(R.id.action_set_group_cover)
             selectionToolbar.setNavigationOnClickListener {
                 selectExtension.deselect(selectExtension.selections.toMutableSet())
@@ -266,8 +286,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     private fun updateListAdapter(isChapterEditMode: Boolean) {
         if (isChapterEditMode) {
-            if (!nestedFastAdapter.hasObservers()) nestedFastAdapter.setHasStableIds(true)
-            nestedItemAdapter.clear()
+            if (!expandableFastAdapter.hasObservers()) expandableFastAdapter.setHasStableIds(true)
+            expandableItemAdapter.clear()
 
             binding?.apply {
                 val glm = recyclerView.layoutManager as GridLayoutManager?
@@ -278,7 +298,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                     // Use the correct size to display chapter separators, if any
                     val spanSizeLookup: SpanSizeLookup = object : SpanSizeLookup() {
                         override fun getSpanSize(position: Int): Int {
-                            return if (nestedFastAdapter.getItemViewType(position) == R.id.expandable_item) {
+                            return if (expandableFastAdapter.getItemViewType(position) == R.id.expandable_item) {
                                 spanCount
                             } else 1
                         }
@@ -293,16 +313,16 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             touchHelper = ItemTouchHelper(dragCallback)
             binding?.apply {
                 touchHelper?.attachToRecyclerView(recyclerView)
-                recyclerView.adapter = nestedFastAdapter
-                nestedFastAdapter.addEventHook(
-                    SubExpandableItem.DragHandlerTouchEvent { position: Int ->
+                recyclerView.adapter = expandableFastAdapter
+                expandableFastAdapter.addEventHook(
+                    SubExpandableItem.DragHandlerTouchEvent<Chapter> { position: Int ->
                         val vh = recyclerView.findViewHolderForAdapterPosition(position)
                         if (vh != null) touchHelper?.startDrag(vh)
                     }
                 )
 
                 // Item click listener
-                nestedFastAdapter.onClickListener = { _, _, i, _ -> onNestedItemClick(i) }
+                expandableFastAdapter.onClickListener = { _, _, i, _ -> onNestedItemClick(i) }
 
                 // Select on swipe
                 if (mDragSelectTouchListener != null) {
@@ -442,7 +462,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             var displayOrder = 0
             for (c in chapters) {
                 val expandableItem =
-                    SubExpandableItem(touchHelper!!, c.name).withDraggable(!isArchive)
+                    SubExpandableItem(touchHelper!!, c.name, c).withDraggable(!isArchive)
                 expandableItem.identifier = c.id
                 val imgs: MutableList<ImageFileItem> = ArrayList()
                 val chpImgs: List<ImageFile>? = c.imageFiles
@@ -465,7 +485,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             if (chapterlessImages.isNotEmpty()) {
                 val expandableItem = SubExpandableItem(
                     touchHelper!!,
-                    resources.getString(R.string.gallery_no_chapter)
+                    resources.getString(R.string.gallery_no_chapter),
+                    null
                 ).withDraggable(!isArchive)
                 expandableItem.identifier = Long.MAX_VALUE
                 val imgs: MutableList<ImageFileItem> = ArrayList()
@@ -476,7 +497,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 expandableItem.subItems.addAll(imgs)
                 chapterItems.add(expandableItem)
             }
-            nestedItemAdapter.set(chapterItems)
+            expandableItemAdapter.set(chapterItems)
         } else { // Classic gallery
             var imgs: MutableList<ImageFileItem> = ArrayList()
             for (img in images) {
@@ -555,8 +576,10 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             editMode == EditMode.NONE && hasFavourite() && !isContentDynamic
         editChaptersMenu.isVisible =
             editMode == EditMode.NONE && !shuffledState && !isContentDynamic
-        addChapterMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS
-        removeChaptersMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS
+        addChapterMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && !isReorderingChapters
+        removeChaptersMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && !isReorderingChapters
+        confirmReorderMenu.isVisible = isReorderingChapters
+        cancelReorderMenu.isVisible = isReorderingChapters
         binding?.apply {
             if (chapterSelector.selectedIndex > -1) chapterSelector.visibility =
                 if (editMode == EditMode.NONE) View.VISIBLE else View.GONE
@@ -776,19 +799,13 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     override fun itemTouchDropped(oldPosition: Int, newPosition: Int) {
         if (oldPosition == newPosition) return
         if (oldPosition < 0 || newPosition < 0) return
-        if (nestedItemAdapter.getAdapterItem(oldPosition).getLevel() > 0) return
+        if (expandableItemAdapter.getAdapterItem(oldPosition).getLevel() > 0) return
         val nbLevelZeroItems =
-            nestedItemAdapter.adapterItems.count { i: INestedItem<SubExpandableItem.ViewHolder> -> 0 == i.getLevel() }
+            expandableItemAdapter.adapterItems.count { i: INestedItem<SubExpandableItem.ViewHolder> -> 0 == i.getLevel() }
         if (newPosition > nbLevelZeroItems - 1) return
 
-        // Save final position of item in DB
-        viewModel.moveChapter(oldPosition, newPosition) { t: Throwable ->
-            onChapterMoveError(t)
-        }
-        ProgressDialogFragment.invoke(
-            parentFragmentManager,
-            resources.getString(R.string.renaming_progress), R.plurals.file
-        )
+        isReorderingChapters = true
+        updateToolbar()
     }
 
     private fun onChapterMoveError(t: Throwable) {
@@ -802,16 +819,15 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         }
     }
 
-
     override fun itemTouchOnMove(oldPosition: Int, newPosition: Int): Boolean {
         if (oldPosition < 0 || newPosition < 0) return false
-        if (nestedItemAdapter.getAdapterItem(oldPosition).getLevel() > 0) return false
+        if (expandableItemAdapter.getAdapterItem(oldPosition).getLevel() > 0) return false
         val nbLevelZeroItems =
-            nestedItemAdapter.adapterItems.count { i: INestedItem<SubExpandableItem.ViewHolder> -> 0 == i.getLevel() }
+            expandableItemAdapter.adapterItems.count { i: INestedItem<SubExpandableItem.ViewHolder> -> 0 == i.getLevel() }
         if (newPosition > nbLevelZeroItems - 1) return false
 
         // Update visuals
-        onMove(nestedItemAdapter, oldPosition, newPosition)
+        onMove(expandableItemAdapter, oldPosition, newPosition)
         return true
     }
 
@@ -821,5 +837,24 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     override fun itemTouchStopDrag(viewHolder: RecyclerView.ViewHolder) {
         // Nothing
+    }
+
+    private fun onConfirmChapterReordering() {
+        // Save final position of items in DB
+        viewModel.saveChapterPositions(
+            expandableItemAdapter.adapterItems.mapNotNull { c -> c.tag }.map { ch -> ch as Chapter }
+        )
+        ProgressDialogFragment.invoke(
+            parentFragmentManager,
+            resources.getString(R.string.renaming_progress), R.plurals.file
+        )
+        isReorderingChapters = false
+        updateToolbar()
+    }
+
+    private fun onCancelChapterReordering() {
+        viewModel.repostImages()
+        isReorderingChapters = false
+        updateToolbar()
     }
 }

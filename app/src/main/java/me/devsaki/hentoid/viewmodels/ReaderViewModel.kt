@@ -13,6 +13,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.annimon.stream.Optional
+import com.bumptech.glide.Glide
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -38,7 +39,6 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.RandomSeedSingleton
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.download.DownloadHelper
@@ -50,6 +50,7 @@ import me.devsaki.hentoid.util.file.ArchiveHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.widget.ContentSearchManager
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -319,7 +320,7 @@ class ReaderViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    FileHelper.emptyCacheFolder(getApplication<Application>(), PICTURE_CACHE_FOLDER)
+                    FileHelper.emptyCacheFolder(getApplication(), PICTURE_CACHE_FOLDER)
                 } catch (t: Throwable) {
                     Timber.e(t)
                 }
@@ -856,6 +857,10 @@ class ReaderViewModel(
         }
     }
 
+    private fun reloadContent() {
+        loadContentFromId(contentIds[currentContentIndex], -1)
+    }
+
     /**
      * Load the given content at the given page number
      *
@@ -946,7 +951,7 @@ class ReaderViewModel(
         if (content.jsonUri.isNotEmpty() || content.isArchive) return
         val folder = FileHelper.getDocumentFromTreeUriString(context, content.storageUri) ?: return
         val foundFile =
-            FileHelper.findFile(getApplication<Application>(), folder, JSON_FILE_NAME_V2)
+            FileHelper.findFile(getApplication(), folder, JSON_FILE_NAME_V2)
         if (null == foundFile) {
             Timber.e("JSON file not detected in %s", content.storageUri)
             return
@@ -1800,91 +1805,62 @@ class ReaderViewModel(
         dao.deleteChapter(toRemove)
     }
 
-    /**
-     * Move the chapter of the current Content from oldIndex to newIndex and renumber pages & files accordingly
-     *
-     * @param oldIndex Old index (0-based) of the chapter to move
-     * @param newIndex New index (0-based) of the chapter to move
-     * @param onError  Callback in case processing fails
-     */
-    fun moveChapter(oldIndex: Int, newIndex: Int, onError: (Throwable) -> Unit) {
+    fun saveChapterPositions(chapters: List<Chapter>) {
         val theContent = content.value ?: return
-
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    doMoveChapter(theContent.id, oldIndex, newIndex)
+                    doSaveChapterPositions(theContent.id, chapters.map { c -> c.id })
+                    reloadContent()
                 }
-                val updatedContent = dao.selectContent(theContent.id)
-                if (updatedContent != null) loadContent(updatedContent, -1)
             } catch (t: Throwable) {
                 Timber.e(t)
-                onError.invoke(t)
             }
         }
     }
 
-    /**
-     * Move the chapter of the given Content from oldPosition to newPosition and renumber pages & files accordingly
-     *
-     * @param contentId ID of the Content to work on
-     * @param oldIndex  Old index (0-based) of the chapter to move
-     * @param newIdx  New index (0-based) of the chapter to move
-     */
-    private fun doMoveChapter(contentId: Long, oldIndex: Int, newIdx: Int) {
-        var newIndex = newIdx
+    private fun doSaveChapterPositions(contentId: Long, newChapterOrder: List<Long>) {
         Helper.assertNonUiThread()
         val chapterStr = getApplication<Application>().getString(R.string.gallery_chapter_prefix)
         if (null == VANILLA_CHAPTERNAME_PATTERN) VANILLA_CHAPTERNAME_PATTERN = Pattern.compile(
             "$chapterStr [0-9]+"
         )
-        val chapters: MutableList<Chapter> = dao.selectChapters(contentId)
+        var chapters: MutableList<Chapter> = dao.selectChapters(contentId)
         require(chapters.isNotEmpty()) { "No chapters found" }
-        if (oldIndex < 0 || oldIndex >= chapters.size) return
 
-        // Don't take the last chapter into account if it doesn't exist (means the user has moved the item below "no chapter")
-        if (newIndex >= chapters.size) newIndex = chapters.size - 1
-
-        // Move the item
-        val fromValue = chapters[oldIndex]
-        val delta = if (oldIndex < newIndex) 1 else -1
-        var i = oldIndex
-        while (i != newIndex) {
-            chapters[i] = chapters[i + delta]
-            i += delta
-        }
-        chapters[newIndex] = fromValue
+        // Reorder chapters according to target order
+        val orderById = newChapterOrder.withIndex().associate { (index, it) -> it to index }
+        chapters = chapters.sortedBy { orderById[it.id] }.toMutableList()
 
         // Renumber all chapters and update the DB
-        var index = 1
-        for (c in chapters) {
+        chapters.forEachIndexed { index, c ->
             // Update names with the default "Chapter x" naming
-            if (VANILLA_CHAPTERNAME_PATTERN!!.matcher(c.name).matches()) c.name =
-                "$chapterStr $index"
+            if (VANILLA_CHAPTERNAME_PATTERN!!.matcher(c.name).matches())
+                c.name = "$chapterStr " + (index + 1)
             // Update order
-            c.order = index++
+            c.order = index + 1
         }
         dao.insertChapters(chapters)
 
-        // Renumber all readable images and update the DB
-        val images = chapters.mapNotNull { obj: Chapter -> obj.imageFiles }
-            .flatMap { imgLst -> imgLst.toList() }
-        require(images.isNotEmpty()) { "No images found" }
-        index = 1
-        val nbMaxDigits = images[images.size - 1].name.length // Keep existing formatting
-        val fileNames: MutableMap<String, ImageFile> = HashMap()
-        for (img in images) {
+        // Renumber all readable images
+        val orderedImages =
+            chapters.mapNotNull { ch -> ch.imageFiles }.flatMap { imgLst -> imgLst.toList() }
+        require(orderedImages.isNotEmpty()) { "No images found" }
+        val nbMaxDigits =
+            orderedImages[orderedImages.size - 1].name.length // Keep existing formatting
+        val fileNames = HashMap<String, Pair<String, ImageFile>>()
+        orderedImages.forEachIndexed { index, img ->
             if (img.isReadable) {
-                img.order = index++
+                img.order = index + 1
                 img.computeName(nbMaxDigits)
-                fileNames[img.fileUri] = img
+                fileNames[img.fileUri] =
+                    Pair(img.name + "." + getExtensionFromUri(img.fileUri), img)
             }
         }
 
-        // = Rename all files that need to be renamed
-
-        // Compute all renaming tasks
-        val firstPass: MutableList<ImmutableTriple<ImageFile, DocumentFile, String>> = ArrayList()
+        // Compute file swaps
+        val swaps = HashMap<Uri, Triple<Uri, Uri, ImageFile>>()
+        val renames = ArrayList<Triple<DocumentFile, String, ImageFile>>()
         val parentFolder = FileHelper.getDocumentFromTreeUriString(
             getApplication(),
             chapters[0].content.target.storageUri
@@ -1892,72 +1868,79 @@ class ReaderViewModel(
         if (parentFolder != null) {
             val contentFiles = FileHelper.listFiles(getApplication(), parentFolder, null)
             for (doc in contentFiles) {
-                val img = fileNames[doc.uri.toString()]
-                if (img != null) {
-                    val docName = doc.name
-                    if (docName != null) {
-                        val rawName = FileHelper.getFileNameWithoutExtension(docName)
-                        if (rawName != img.name) {
-                            Timber.d("Adding to 1st pass : %s != %s", rawName, img.name)
-                            val extension = FileHelper.getExtension(docName)
-                            firstPass.add(ImmutableTriple(img, doc, img.name + "." + extension))
-                        }
-                    }
+                val newName = fileNames[doc.uri.toString()]
+                if (newName != null) {
+                    val duplicate = contentFiles.firstOrNull { f -> f.name.equals(newName.first) }
+                    if (duplicate != null) swaps[duplicate.uri] =
+                        Triple(duplicate.uri, doc.uri, newName.second)
+                    else renames.add(Triple(doc, newName.first, newName.second))
                 }
             }
         }
 
-        // Moving pages inside the same folder invariably result in having to give files a name that is already taken during processing
-        // => need to do two passes to make sure every file eventually gets its right name
+        val nbTasks = swaps.size + renames.size
+        var nbProcessedTasks = 1
 
-        // Keep an snapshot of all filenames to keep track of which files belong to the 2nd pass
-        val existingNames =
-            firstPass.mapNotNull { triple -> triple.getMiddle().name }.toMutableList()
-        val secondPass: MutableList<ImmutableTriple<ImageFile, DocumentFile, String>> = ArrayList()
+        // Perform swaps by exchanging file content
+        // NB : "thanks to" SAF; this works faster than renaming the files
+        if (swaps.isNotEmpty()) {
+            val firstTask = swaps.values.first()
+            var firstFileContent: ByteArray
+            FileHelper.getInputStream(getApplication(), firstTask.first).use {
+                firstFileContent = it.readBytes()
+            }
+            var nextTask = firstTask.first
 
-        // Run 1st pass
-        var nbImages = firstPass.size
-        var nbProcessedPics = 1
-        for (renamingTask in firstPass) {
-            val doc = renamingTask.middle
-            val existingName = StringHelper.protect(doc.name)
-            val newName = renamingTask.getRight()
-            if (existingNames.contains(newName)) secondPass.add(renamingTask)
-            doc.renameTo(newName)
-            renamingTask.getLeft().fileUri = doc.uri.toString()
-            existingNames.remove(existingName)
+            while (swaps.isNotEmpty()) {
+                swaps[nextTask]?.let {
+                    if (swaps.size > 1) {
+                        FileHelper.getOutputStream(getApplication(), it.first).use { os ->
+                            FileHelper.getInputStream(getApplication(), it.second).use { input ->
+                                Helper.copy(input, os)
+                            }
+                        }
+                        it.third.fileUri = it.first.toString()
+                        swaps.remove(it.first)
+                        nextTask = it.second
+                    } else { // Last task
+                        FileHelper.getOutputStream(getApplication(), it.first).use { os ->
+                            os.write(firstFileContent)
+                        }
+                        it.third.fileUri = it.first.toString()
+                        swaps.remove(it.first)
+                    }
+                }
+                EventBus.getDefault().post(
+                    ProcessEvent(
+                        ProcessEvent.EventType.PROGRESS,
+                        R.id.generic_progress,
+                        0,
+                        nbProcessedTasks++,
+                        0,
+                        nbTasks
+                    )
+                )
+            }
+        }
+
+        // Perform renames
+        renames.forEach { task ->
+            task.first.renameTo(task.second)
+            task.third.fileUri = task.first.uri.toString()
             EventBus.getDefault().post(
                 ProcessEvent(
                     ProcessEvent.EventType.PROGRESS,
                     R.id.generic_progress,
                     0,
-                    nbProcessedPics++,
+                    nbProcessedTasks++,
                     0,
-                    nbImages
+                    nbTasks
                 )
             )
         }
 
-        // Run 2nd pass
-        nbImages = secondPass.size
-        nbProcessedPics = 1
-        for (renamingTask in secondPass) {
-            val doc = renamingTask.middle
-            val newName = renamingTask.getRight()
-            doc.renameTo(newName)
-            renamingTask.getLeft().fileUri = doc.uri.toString()
-            EventBus.getDefault().post(
-                ProcessEvent(
-                    ProcessEvent.EventType.PROGRESS,
-                    R.id.generic_progress,
-                    0,
-                    nbProcessedPics++,
-                    0,
-                    nbImages
-                )
-            )
-        }
-        dao.insertImageFiles(images)
+        // Finalize
+        dao.insertImageFiles(orderedImages)
         val finalContent = dao.selectContent(contentId)
         if (finalContent != null) ContentHelper.persistJson(getApplication(), finalContent)
         EventBus.getDefault().postSticky(
@@ -1965,11 +1948,14 @@ class ReaderViewModel(
                 ProcessEvent.EventType.COMPLETE,
                 R.id.generic_progress,
                 0,
-                nbImages,
+                nbTasks,
                 0,
-                nbImages
+                nbTasks
             )
         )
+
+        // Reset Glide cache as it gets confused by the swapping
+        Glide.get(getApplication()).clearDiskCache()
 
         // Reset locations cache as image order has changed
         imageLocationCache.clear()
