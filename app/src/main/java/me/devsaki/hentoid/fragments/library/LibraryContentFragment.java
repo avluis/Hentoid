@@ -125,6 +125,7 @@ import me.devsaki.hentoid.widget.AddQueueMenu;
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
+import me.devsaki.hentoid.widget.RedownloadMenu;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import me.zhanghai.android.fastscroll.PopupTextProvider;
@@ -719,25 +720,22 @@ public class LibraryContentFragment extends Fragment implements
             return;
         }
 
-        String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
-        if (externalContent > 0)
-            message = getResources().getQuantityString(R.plurals.redownload_external_content, externalContent);
+        RedownloadMenu.Companion.show(requireContext(), recyclerView, this, (position, item) -> {
+            if (0 == position) redownloadFromScratch(contents);
+            else viewModel.redownloadContent(contents, true, false, 0,
+                    nbSuccess -> {
+                        String message = getResources().getQuantityString(R.plurals.add_to_queue, contents.size(), nbSuccess, contents.size());
+                        Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
+                        snackbar.setAction(R.string.view_queue, v -> viewQueue());
+                        snackbar.show();
+                    },
+                    t -> {
+                        Timber.w(t);
+                        Snackbar.make(recyclerView, R.string.redownloaded_error, BaseTransientBottomBar.LENGTH_LONG).show();
+                    });
 
-        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
-                .setIcon(R.drawable.ic_warning)
-                .setCancelable(false)
-                .setTitle(R.string.app_name)
-                .setMessage(message)
-                .setPositiveButton(R.string.yes,
-                        (dialog1, which) -> {
-                            dialog1.dismiss();
-                            redownloadFromScratch(contents);
-                            leaveSelectionMode();
-                        })
-                .setNegativeButton(R.string.no,
-                        (dialog12, which) -> dialog12.dismiss())
-                .create()
-                .show();
+            leaveSelectionMode();
+        });
     }
 
     /**

@@ -191,6 +191,8 @@
     <string name="menu_change_dl_mode">Change download mode</string>
     <string name="mode_dl">Picture download</string>
     <string name="mode_stream">Streaming</string>
+    <string name="redl_scratch">Redownload from scratch</string>
+    <string name="redl_refresh">Update metadata only</string>
 
     <!-- Import downloads -->
     <string name="import_downloads_title">Import downloads</string>
