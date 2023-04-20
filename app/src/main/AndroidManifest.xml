@@ -128,6 +128,9 @@
             android:name=".activities.sources.HdPornComicsActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.EdoujinActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -566,6 +569,17 @@
                 <data
                     android:host="hdporncomics.com"
                     android:pathPattern="/..*/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="edoujin.net"
+                    android:pathPattern="/manga/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>

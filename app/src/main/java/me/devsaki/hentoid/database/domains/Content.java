@@ -38,6 +38,7 @@ import me.devsaki.hentoid.activities.sources.AllPornComicActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
 import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
+import me.devsaki.hentoid.activities.sources.EdoujinActivity;
 import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.HdPornComicsActivity;
@@ -296,6 +297,7 @@ public class Content implements Serializable {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
                 return url.replace(site.getUrl() + "/g", "");
+            case EDOUJIN:
             case LUSCIOUS:
                 return url.replace(site.getUrl().replace("/manga/", ""), "");
             case PORNCOMIX:
@@ -340,6 +342,7 @@ public class Content implements Serializable {
             case IMHENTAI:
             case ALLPORNCOMIC:
             case MULTPORN:
+            case EDOUJIN:
             case SIMPLY:
                 paths = url.split("/");
                 return paths[paths.length - 1];
@@ -414,6 +417,8 @@ public class Content implements Serializable {
                 return SimplyActivity.class;
             case HDPORNCOMICS:
                 return HdPornComicsActivity.class;
+            case EDOUJIN:
+                return EdoujinActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -443,6 +448,7 @@ public class Content implements Serializable {
             case FAKKU2:
                 galleryConst = "/hentai/";
                 break;
+            case EDOUJIN:
             case LUSCIOUS:
                 return site.getUrl().replace("/manga/", "") + url;
             case PORNCOMIX:

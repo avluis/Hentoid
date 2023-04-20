@@ -49,7 +49,7 @@ public class Hentai2ReadContent extends BaseContentParser {
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
         content.setRawUrl(url);
 
-        if (GALLERY_PATTERN.matcher(url).find()) return updateGallery(content, url, updateImages);
+        if (GALLERY_PATTERN.matcher(url).find()) return updateGallery(content, updateImages);
         else return updateSingleChapter(content, url, updateImages);
     }
 
@@ -68,8 +68,7 @@ public class Hentai2ReadContent extends BaseContentParser {
 
                 List<String> chapterImgs = Stream.of(info.images).map(s -> IMAGE_PATH + s).toList();
                 if (updateImages && !chapterImgs.isEmpty()) {
-                    String coverUrl = "";
-                    coverUrl = chapterImgs.get(0);
+                    String coverUrl = chapterImgs.get(0);
                     content.setImageFiles(ParseHelper.urlsToImageFiles(chapterImgs, coverUrl, StatusContent.SAVED));
                     content.setQtyPages(chapterImgs.size());
                 }
@@ -81,7 +80,7 @@ public class Hentai2ReadContent extends BaseContentParser {
         return content;
     }
 
-    public Content updateGallery(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content updateGallery(@NonNull final Content content, boolean updateImages) {
         if (cover != null)
             content.setCoverImageUrl(ParseHelper.getImgSrc(cover));
         if (title != null && !title.isEmpty()) {
