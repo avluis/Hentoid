@@ -747,6 +747,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 if (0 == pagesKO && !hasError) {
                     content.setDownloadParams("");
                     content.setDownloadCompletionDate(now);
+                    content.setLastEditDate(now);
                     content.setStatus(StatusContent.DOWNLOADED);
 
                     applyRenamingRules(content);
