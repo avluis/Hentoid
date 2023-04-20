@@ -435,8 +435,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 .toList())
             chapterSelector.selectItemByIndex(0)
             chapterSelector.setOnSpinnerItemSelectedListener(
-                OnSpinnerItemSelectedListener<Any> { _: Int, _: Any?, newIndex: Int, _: Any? ->
-                    val imgs: List<ImageFile>? = chapters[newIndex].imageFiles
+                OnSpinnerItemSelectedListener<Any> { _, _, newIndex, _ ->
+                    val imgs: List<ImageFile>? =
+                        chapters.first { ch -> ch.order == newIndex + 1 }.imageFiles
                     if (!imgs.isNullOrEmpty()) {
                         viewModel.setViewerStartingIndex(imgs[0].order - 1)
                         moveToIndex(imgs[0].order - 1, true)
