@@ -127,19 +127,8 @@ public class IntentActivity extends AppCompatActivity {
                 return toParse.replace("/gallery", "");
             case PORNCOMIX:
                 return data.toString();
-            case MUSES:
-            case DOUJINS:
-            case LUSCIOUS:
-            case HENTAI2READ:
-            case MRM:
-            case MANHWA:
-            case TOONILY:
-            case ALLPORNCOMIC:
-            case PIXIV:
-            case MANHWA18:
-                return toParse;
             default:
-                return null;
+                return toParse;
         }
     }
 }
