@@ -247,11 +247,11 @@
         android:id="@+id/action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|center"
         android:backgroundTint="?colorPrimaryDark"
         android:contentDescription="@string/menu_download_streamed"
         android:visibility="invisible"
         app:layout_anchor="@id/bottom_navigation"
+        app:layout_anchorGravity="center_vertical|center_horizontal"
         app:srcCompat="@drawable/selector_download_action"
         tools:visibility="visible" />
 
@@ -274,6 +274,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
+        android:elevation="8dp"
         android:visibility="gone"
         app:layout_anchor="@id/action_button"
         app:layout_anchorGravity="end"
