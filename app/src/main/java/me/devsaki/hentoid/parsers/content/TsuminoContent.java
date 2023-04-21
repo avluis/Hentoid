@@ -25,7 +25,7 @@ public class TsuminoContent extends BaseContentParser {
     private String galleryUrl;
     @Selector(value = "img.book-page-image")
     private Element cover;
-    @Selector(value = "div#Title", defValue = "")
+    @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
     private String title;
     @Selector(value = "div#Uploaded", defValue = "")
     private String uploadDate;
