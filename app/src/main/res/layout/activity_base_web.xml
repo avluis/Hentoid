@@ -173,8 +173,7 @@
         android:layout_height="?android:attr/actionBarSize"
         android:layout_gravity="bottom"
         android:background="?colorPrimary"
-        app:hideOnScroll="true"
-        app:layout_scrollFlags="scroll|enterAlways">
+        app:layout_behavior="me.devsaki.hentoid.widget.BottomNavigationBehaviour">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -191,7 +190,8 @@
                 android:src="@drawable/ic_menu_home"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription" />
 
             <ImageButton
                 android:id="@+id/menu_seek"
@@ -205,7 +205,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/menu_back"
                 app:layout_constraintStart_toEndOf="@id/menu_home"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription" />
 
             <ImageButton
                 android:id="@+id/menu_back"
@@ -219,7 +220,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/menu_forward"
                 app:layout_constraintStart_toEndOf="@id/menu_seek"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription" />
 
             <ImageButton
                 android:id="@+id/menu_forward"
@@ -234,7 +236,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/menu_back"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -244,10 +247,10 @@
         android:id="@+id/action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|center"
         android:backgroundTint="?colorPrimaryDark"
         android:contentDescription="@string/menu_download_streamed"
         android:visibility="invisible"
-        android:layout_gravity="center_vertical|center"
         app:layout_anchor="@id/bottom_navigation"
         app:srcCompat="@drawable/selector_download_action"
         tools:visibility="visible" />
@@ -256,12 +259,13 @@
         android:id="@+id/language_filter_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="?colorPrimaryDark"
-        android:visibility="gone"
         android:layout_gravity="right"
         android:layout_marginBottom="80dp"
+        android:backgroundTint="?colorPrimaryDark"
+        android:visibility="gone"
         app:layout_anchor="@id/action_button"
         app:srcCompat="@drawable/ic_attribute_language"
+        tools:ignore="ContentDescription"
         tools:visibility="visible" />
 
     <TextView

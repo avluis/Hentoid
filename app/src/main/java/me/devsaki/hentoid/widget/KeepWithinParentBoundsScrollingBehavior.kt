@@ -7,14 +7,14 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.google.android.material.appbar.AppBarLayout
 
 // https://stackoverflow.com/questions/39739882/viewpagers-height-in-coordinator-layout-is-more-than-available
-class KeepWithinParentBoundsScrollingBehavior : AppBarLayout.ScrollingViewBehavior {
+class KeepWithinParentBoundsScrollingBehavior(context: Context, attrs: AttributeSet) :
+    AppBarLayout.ScrollingViewBehavior(context, attrs) {
 
-    constructor() : super()
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-
-
-    override fun onDependentViewChanged(parent: CoordinatorLayout, child: View, dependency: View): Boolean {
+    override fun onDependentViewChanged(
+        parent: CoordinatorLayout,
+        child: View,
+        dependency: View
+    ): Boolean {
         if (dependency !is AppBarLayout) {
             return super.onDependentViewChanged(parent, child, dependency)
         }
