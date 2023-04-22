@@ -8,7 +8,7 @@ import com.annimon.stream.function.Consumer
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
 
-class ReaderKeyListenerK(context: Context) : View.OnKeyListener {
+class ReaderKeyListener(context: Context) : View.OnKeyListener {
     private var onVolumeDownListener: Consumer<Boolean>? = null
 
     private var onVolumeUpListener: Consumer<Boolean>? = null
@@ -31,27 +31,27 @@ class ReaderKeyListenerK(context: Context) : View.OnKeyListener {
             }
     }
 
-    fun setOnVolumeDownListener(onVolumeDownListener: Consumer<Boolean>?): ReaderKeyListenerK {
+    fun setOnVolumeDownListener(onVolumeDownListener: Consumer<Boolean>?): ReaderKeyListener {
         this.onVolumeDownListener = onVolumeDownListener
         return this
     }
 
-    fun setOnVolumeUpListener(onVolumeUpListener: Consumer<Boolean>?): ReaderKeyListenerK {
+    fun setOnVolumeUpListener(onVolumeUpListener: Consumer<Boolean>?): ReaderKeyListener {
         this.onVolumeUpListener = onVolumeUpListener
         return this
     }
 
-    fun setOnKeyLeftListener(onKeyLeftListener: Consumer<Boolean>?): ReaderKeyListenerK {
+    fun setOnKeyLeftListener(onKeyLeftListener: Consumer<Boolean>?): ReaderKeyListener {
         this.onKeyLeftListener = onKeyLeftListener
         return this
     }
 
-    fun setOnKeyRightListener(onKeyRightListener: Consumer<Boolean>?): ReaderKeyListenerK {
+    fun setOnKeyRightListener(onKeyRightListener: Consumer<Boolean>?): ReaderKeyListener {
         this.onKeyRightListener = onKeyRightListener
         return this
     }
 
-    fun setOnBackListener(onBackListener: Consumer<Boolean>?): ReaderKeyListenerK {
+    fun setOnBackListener(onBackListener: Consumer<Boolean>?): ReaderKeyListener {
         this.onBackListener = onBackListener
         return this
     }
