@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".activities.ReaderActivity">
 
-    <me.devsaki.hentoid.views.ZoomableFrame
+    <me.devsaki.hentoid.views.ZoomableFrameK
         android:id="@+id/zoom_frame"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -23,7 +23,7 @@
             android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_reader_image" />
-    </me.devsaki.hentoid.views.ZoomableFrame>
+    </me.devsaki.hentoid.views.ZoomableFrameK>
 
     <TextView
         android:id="@+id/viewer_no_img_txt"
