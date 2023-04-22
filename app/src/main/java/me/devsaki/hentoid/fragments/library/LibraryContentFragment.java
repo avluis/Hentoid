@@ -1548,7 +1548,7 @@ public class LibraryContentFragment extends Fragment implements
     public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle, boolean deleteAfterMerging) {
         leaveSelectionMode();
         viewModel.mergeContents(contentList, newTitle, deleteAfterMerging, this::onMergeSuccess);
-        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), R.plurals.page);
+        ProgressDialogFragment.Companion.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), R.plurals.page);
     }
 
     private void onMergeSuccess() {
@@ -1559,7 +1559,7 @@ public class LibraryContentFragment extends Fragment implements
     public void splitContent(@NonNull Content content, @NonNull List<Chapter> chapters) {
         leaveSelectionMode();
         viewModel.splitContent(content, chapters, this::onSplitSuccess);
-        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.split_progress), R.plurals.page);
+        ProgressDialogFragment.Companion.invoke(getParentFragmentManager(), getResources().getString(R.string.split_progress), R.plurals.page);
     }
 
     private void onSplitSuccess() {
