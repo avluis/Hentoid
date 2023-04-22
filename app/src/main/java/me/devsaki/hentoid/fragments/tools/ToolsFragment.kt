@@ -92,7 +92,7 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.P
             }
 
             IMPORT_LIBRARY -> {
-                MetaImportDialogFragmentz.invoke(parentFragmentManager)
+                MetaImportDialogFragment.invoke(parentFragmentManager)
                 true
             }
 

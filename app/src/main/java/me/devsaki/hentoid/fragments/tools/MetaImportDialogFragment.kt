@@ -40,7 +40,7 @@ import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.io.IOException
 
-class MetaImportDialogFragmentz : DialogFragment() {
+class MetaImportDialogFragment : DialogFragment() {
     // UI
     private var binding: DialogToolsMetaImportBinding? = null
 
@@ -360,7 +360,7 @@ class MetaImportDialogFragmentz : DialogFragment() {
         const val IMPORT_AS_ERROR = 3
 
         operator fun invoke(fragmentManager: FragmentManager) {
-            val fragment = MetaImportDialogFragmentz()
+            val fragment = MetaImportDialogFragment()
             fragment.show(fragmentManager, null)
         }
     }
