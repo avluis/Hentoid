@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.widget.OnZoneTapListener
-import me.devsaki.hentoid.widget.ViewZoomGestureListenerK
+import me.devsaki.hentoid.widget.ViewZoomGestureListener
 import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -258,7 +258,7 @@ class ZoomableRecyclerView : RecyclerView {
         }
     }
 
-    inner class GestureListener : ViewZoomGestureListenerK.Listener() {
+    inner class GestureListener : ViewZoomGestureListener.Listener() {
         override fun onDoubleTap(e: MotionEvent): Boolean {
             detector.isDoubleTapping = true
             return false
@@ -305,7 +305,7 @@ class ZoomableRecyclerView : RecyclerView {
     }
 
     inner class Detector(context: Context, listener: Listener) :
-        ViewZoomGestureListenerK(context, listener) {
+        ViewZoomGestureListener(context, listener) {
         private var scrollPointerId = 0
         private var downX = 0
         private var downY = 0

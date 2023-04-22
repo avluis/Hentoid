@@ -11,7 +11,7 @@ import kotlin.math.abs
 /**
  * Credits go to the Tachiyomi team
  */
-open class ViewZoomGestureListenerK(context: Context, private val listener: Listener) :
+open class ViewZoomGestureListener(context: Context, private val listener: Listener) :
     GestureDetector(context, listener) {
 
     private val handler = Handler(Looper.getMainLooper())
