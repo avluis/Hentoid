@@ -56,7 +56,7 @@ public class LibraryPager {
         pageCarousel = requireViewById(rootView, R.id.pager_pageCarousel);
         pageCarousel.setHasFixedSize(true);
 
-        View.OnTouchListener tapListener = new OnZoneTapListenerK(pageCarousel, 1).setOnMiddleZoneTapListener(this::onCarouselClick);
+        View.OnTouchListener tapListener = new OnZoneTapListener(pageCarousel, 1).setOnMiddleZoneTapListener(this::onCarouselClick);
         decorator = new CarouselDecorator(rootView.getContext(), R.layout.item_pagecarousel);
         decorator.decorate(pageCarousel);
         decorator.setOnPageChangeListener(this::pageChanged);

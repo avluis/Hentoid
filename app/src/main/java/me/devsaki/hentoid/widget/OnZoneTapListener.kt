@@ -11,7 +11,7 @@ import me.devsaki.hentoid.R
 /**
  * Zoned tap listener for the reader
  */
-class OnZoneTapListenerK(val view: View, tapZoneScale: Int) : OnTouchListener {
+class OnZoneTapListener(val view: View, tapZoneScale: Int) : OnTouchListener {
     /**
      * This view's dimensions are used to determine which zone a tap belongs to
      */
@@ -35,22 +35,22 @@ class OnZoneTapListenerK(val view: View, tapZoneScale: Int) : OnTouchListener {
             context.resources.getDimensionPixelSize(R.dimen.tap_zone_width) * tapZoneScale
     }
 
-    fun setOnLeftZoneTapListener(onLeftZoneTapListener: Runnable?): OnZoneTapListenerK {
+    fun setOnLeftZoneTapListener(onLeftZoneTapListener: Runnable?): OnZoneTapListener {
         this.onLeftZoneTapListener = onLeftZoneTapListener
         return this
     }
 
-    fun setOnRightZoneTapListener(onRightZoneTapListener: Runnable?): OnZoneTapListenerK {
+    fun setOnRightZoneTapListener(onRightZoneTapListener: Runnable?): OnZoneTapListener {
         this.onRightZoneTapListener = onRightZoneTapListener
         return this
     }
 
-    fun setOnMiddleZoneTapListener(onMiddleZoneTapListener: Runnable?): OnZoneTapListenerK {
+    fun setOnMiddleZoneTapListener(onMiddleZoneTapListener: Runnable?): OnZoneTapListener {
         this.onMiddleZoneTapListener = onMiddleZoneTapListener
         return this
     }
 
-    fun setOnLongTapListener(onLongTapListener: Runnable?): OnZoneTapListenerK {
+    fun setOnLongTapListener(onLongTapListener: Runnable?): OnZoneTapListener {
         this.onLongTapListener = onLongTapListener
         return this
     }
