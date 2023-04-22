@@ -208,7 +208,7 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        if (attributes != null && !DBHelper.isDetached(this))
+        if (attributes != null && (!DBHelper.isDetached(this) || !attributes.isEmpty()))
             for (Attribute a : attributes) result.add(a);
         return result;
     }
@@ -585,8 +585,12 @@ public class Content implements Serializable {
         return this;
     }
 
+    public void computeAuthor() {
+        author = ContentHelper.formatBookAuthor(this);
+    }
+
     public String getAuthor() {
-        if (null == author) author = ContentHelper.formatBookAuthor(this);
+        if (null == author) computeAuthor();
         return author;
     }
 

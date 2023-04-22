@@ -157,6 +157,7 @@ public class JsonContent {
         result.setManuallyMerged(manuallyMerged);
         result.setFrozen(isFrozen);
 
+
         // ATTRIBUTES
         if (attributes != null) {
             result.clearAttributes();
@@ -168,6 +169,7 @@ public class JsonContent {
                 result.addAttributes(attrList);
             }
         }
+        result.computeAuthor();
 
 
         // CHAPTERS

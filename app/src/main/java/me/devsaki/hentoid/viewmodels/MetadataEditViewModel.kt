@@ -267,7 +267,7 @@ class MetadataEditViewModel(
         // Update DB
         contentList.value?.forEach {
             it.lastEditDate = Instant.now().toEpochMilli()
-            it.author = ContentHelper.formatBookAuthor(it)
+            it.computeAuthor()
 
             // Save Content itself
             it.imageFiles?.let { imgs ->
@@ -360,7 +360,7 @@ class MetadataEditViewModel(
             contents.forEach {
                 // Update the 'author' pre-calculated field for all related books if needed
                 if (attr.type.equals(AttributeType.ARTIST) || attr.type.equals(AttributeType.CIRCLE)) {
-                    it.author = ContentHelper.formatBookAuthor(it)
+                    it.computeAuthor()
                     ContentHelper.persistJson(getApplication(), it)
                 }
                 it.lastEditDate = Instant.now().toEpochMilli()
