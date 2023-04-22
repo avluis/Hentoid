@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.widget.OnZoneTapListener
+import me.devsaki.hentoid.widget.OnZoneTapListenerK
 import me.devsaki.hentoid.widget.ViewZoomGestureListener
 import timber.log.Timber
 import kotlin.math.abs
@@ -48,7 +48,7 @@ class ZoomableRecyclerView : RecyclerView {
     private val detector = Detector(context, listener)
     private var getMaxDimensionsListener: Consumer<Point>? = null
 
-    private var tapListener: OnZoneTapListener? = null
+    private var tapListener: OnZoneTapListenerK? = null
     private var longTapListener: LongTapListener? = null
 
     // Hack to access these values outside of a View
@@ -80,7 +80,7 @@ class ZoomableRecyclerView : RecyclerView {
         this.getMaxDimensionsListener = getMaxDimensionsListener
     }
 
-    fun setTapListener(tapListener: OnZoneTapListener?) {
+    fun setTapListener(tapListener: OnZoneTapListenerK) {
         this.tapListener = tapListener
     }
 

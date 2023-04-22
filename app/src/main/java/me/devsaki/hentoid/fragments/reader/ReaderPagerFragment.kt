@@ -77,7 +77,7 @@ import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.views.ZoomableRecyclerView
-import me.devsaki.hentoid.widget.OnZoneTapListener
+import me.devsaki.hentoid.widget.OnZoneTapListenerK
 import me.devsaki.hentoid.widget.PageSnapWidget
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
 import me.devsaki.hentoid.widget.ReaderKeyListener
@@ -408,13 +408,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             })
 
             val tapZoneScale = if (Preferences.isReaderTapToTurn2x()) 2 else 1
-            val onHorizontalZoneTapListener = OnZoneTapListener(
+            val onHorizontalZoneTapListener = OnZoneTapListenerK(
                 recyclerView,
                 tapZoneScale
             ).setOnLeftZoneTapListener { onLeftTap() }.setOnRightZoneTapListener { onRightTap() }
                 .setOnMiddleZoneTapListener { onMiddleTap() }.setOnLongTapListener { onLongTap() }
             val onVerticalZoneTapListener =
-                OnZoneTapListener(recyclerView, 1).setOnMiddleZoneTapListener { onMiddleTap() }
+                OnZoneTapListenerK(recyclerView, 1).setOnMiddleZoneTapListener { onMiddleTap() }
                     .setOnLongTapListener { onLongTap() }
             recyclerView.setTapListener(onVerticalZoneTapListener) // For paper roll mode (vertical)
             adapter.setItemTouchListener(onHorizontalZoneTapListener) // For independent images mode (horizontal)
