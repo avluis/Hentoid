@@ -650,7 +650,7 @@ public class Content implements Serializable {
     }
 
     public List<ImageFile> getImageList() {
-        return (null == imageFiles || DBHelper.isDetached(this)) ? Collections.emptyList() : imageFiles;
+        return (imageFiles != null && (!DBHelper.isDetached(this) || !imageFiles.isEmpty())) ? imageFiles : Collections.emptyList();
     }
 
     public Content setImageFiles(List<ImageFile> imageFiles) {
@@ -943,7 +943,7 @@ public class Content implements Serializable {
     }
 
     public List<Chapter> getChaptersList() {
-        return (null == chapters || DBHelper.isDetached(this)) ? Collections.emptyList() : chapters;
+        return (chapters != null && (!DBHelper.isDetached(this) || !chapters.isEmpty())) ? chapters : Collections.emptyList();
     }
 
     public void setChapters(List<Chapter> chapters) {
