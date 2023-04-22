@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import me.devsaki.hentoid.R
@@ -17,11 +16,11 @@ import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.widget.ReaderKeyListener
+import me.devsaki.hentoid.widget.ReaderKeyListenerK
 
 
 open class ReaderActivity : BaseActivity() {
-    private var readerKeyListener: ReaderKeyListener? = null
+    private var readerKeyListener: ReaderKeyListenerK? = null
     private lateinit var viewModel: ReaderViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,7 +82,7 @@ open class ReaderActivity : BaseActivity() {
         setRunning(true)
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         return if (readerKeyListener != null) readerKeyListener!!.onKey(
             null,
             keyCode,
@@ -102,7 +101,7 @@ open class ReaderActivity : BaseActivity() {
         super.onStop()
     }
 
-    fun registerKeyListener(listener: ReaderKeyListener?) {
+    fun registerKeyListener(listener: ReaderKeyListenerK) {
         takeKeyEvents(true)
         readerKeyListener = listener
     }

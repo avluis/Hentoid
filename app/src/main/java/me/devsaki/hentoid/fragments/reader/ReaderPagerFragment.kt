@@ -80,7 +80,7 @@ import me.devsaki.hentoid.views.ZoomableRecyclerView
 import me.devsaki.hentoid.widget.OnZoneTapListener
 import me.devsaki.hentoid.widget.PageSnapWidget
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
-import me.devsaki.hentoid.widget.ReaderKeyListener
+import me.devsaki.hentoid.widget.ReaderKeyListenerK
 import me.devsaki.hentoid.widget.ReaderSmoothScroller
 import me.devsaki.hentoid.widget.ScrollPositionListener
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -295,7 +295,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override fun onStart() {
         super.onStart()
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-        (requireActivity() as ReaderActivity).registerKeyListener(ReaderKeyListener(requireContext()).setOnVolumeDownListener { b: Boolean -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.previousFunctional() else previousPage() }
+        (requireActivity() as ReaderActivity).registerKeyListener(ReaderKeyListenerK(requireContext()).setOnVolumeDownListener { b: Boolean -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.previousFunctional() else previousPage() }
             .setOnVolumeUpListener { b: Boolean -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.nextFunctional() else nextPage() }
             .setOnKeyLeftListener { onLeftTap() }.setOnKeyRightListener { onRightTap() }
             .setOnBackListener { onBackClick() })

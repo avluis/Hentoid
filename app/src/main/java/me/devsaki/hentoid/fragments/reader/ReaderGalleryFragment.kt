@@ -56,7 +56,7 @@ import me.devsaki.hentoid.widget.DragSelectTouchListener.OnDragSelectListener
 import me.devsaki.hentoid.widget.DragSelectionProcessor
 import me.devsaki.hentoid.widget.DragSelectionProcessor.ISelectionHandler
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
-import me.devsaki.hentoid.widget.ReaderKeyListener
+import me.devsaki.hentoid.widget.ReaderKeyListenerK
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import timber.log.Timber
 import java.lang.ref.WeakReference
@@ -264,7 +264,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     override fun onStart() {
         super.onStart()
         (requireActivity() as ReaderActivity).registerKeyListener(
-            ReaderKeyListener(requireContext()).setOnBackListener { onBackClick() }
+            ReaderKeyListenerK(requireContext()).setOnBackListener { onBackClick() }
         )
     }
 
