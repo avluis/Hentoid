@@ -34,14 +34,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/missing_web_view_title" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/open_library"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:paddingStart="10sp"
-        android:paddingEnd="10sp"
+        android:padding="12dp"
         android:text="@string/missing_web_view_library"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_menu_home"
+        app:iconTint="?colorSecondary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/missing_web_view" />
