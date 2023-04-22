@@ -78,7 +78,7 @@ import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.views.ZoomableRecyclerView
 import me.devsaki.hentoid.widget.OnZoneTapListener
-import me.devsaki.hentoid.widget.PageSnapWidgetK
+import me.devsaki.hentoid.widget.PageSnapWidget
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
 import me.devsaki.hentoid.widget.ReaderKeyListener
 import me.devsaki.hentoid.widget.ReaderSmoothScroller
@@ -101,7 +101,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private lateinit var adapter: ImagePagerAdapter
     private lateinit var llm: PrefetchLinearLayoutManager
-    private lateinit var pageSnapWidget: PageSnapWidgetK
+    private lateinit var pageSnapWidget: PageSnapWidget
     private val listener =
         OnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
             onSharedPreferenceChanged(key)
@@ -423,7 +423,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             llm = PrefetchLinearLayoutManager(context)
             llm.setExtraLayoutSpace(10)
             recyclerView.layoutManager = llm
-            pageSnapWidget = PageSnapWidgetK(recyclerView)
+            pageSnapWidget = PageSnapWidget(recyclerView)
         }
         smoothScroller = ReaderSmoothScroller(requireContext())
         scrollListener.setOnStartOutOfBoundScrollListener { if (Preferences.isReaderContinuous()) navigator.previousFunctional() }

@@ -7,7 +7,7 @@ import kotlin.math.abs
 /**
  * Manages page snapping for a RecyclerView
  */
-class PageSnapWidgetK(val recyclerView: RecyclerView) {
+class PageSnapWidget(val recyclerView: RecyclerView) {
 
     private val snapHelper = SnapHelper()
 
