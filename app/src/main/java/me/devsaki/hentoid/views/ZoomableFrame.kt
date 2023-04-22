@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
  * <p>
  * Credits for this go to the Tachiyomi team
  */
-class ZoomableFrameK : FrameLayout {
+class ZoomableFrame : FrameLayout {
 
     private var enabled = true
 
