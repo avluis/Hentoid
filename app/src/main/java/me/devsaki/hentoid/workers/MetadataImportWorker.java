@@ -40,7 +40,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.fragments.tools.MetaImportDialogFragment;
+import me.devsaki.hentoid.fragments.tools.MetaImportDialogFragmentz;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
@@ -239,7 +239,7 @@ public class MetadataImportWorker extends BaseWorker {
                 return;
             }
             switch (emptyBooksOption) {
-                case MetaImportDialogFragment.IMPORT_AS_STREAMED:
+                case MetaImportDialogFragmentz.IMPORT_AS_STREAMED:
                     // Greenlighted if images exist and are available online
                     if (c.getImageFiles() != null && c.getImageFiles().size() > 0 && ContentHelper.isDownloadable(c)) {
                         c.setDownloadMode(Content.DownloadMode.STREAM);
@@ -253,13 +253,13 @@ public class MetadataImportWorker extends BaseWorker {
                         break;
                     }
                     // no break here - import as empty if content unavailable online
-                case MetaImportDialogFragment.IMPORT_AS_EMPTY:
+                case MetaImportDialogFragmentz.IMPORT_AS_EMPTY:
                     c.setImageFiles(Collections.emptyList());
                     c.clearChapters();
                     c.setStatus(StatusContent.PLACEHOLDER);
                     // Don't create any folder for a placeholder book
                     break;
-                case MetaImportDialogFragment.IMPORT_AS_ERROR:
+                case MetaImportDialogFragmentz.IMPORT_AS_ERROR:
                     if (!ContentHelper.isInQueue(c.getStatus()))
                         c.setStatus(StatusContent.ERROR);
                     List<ErrorRecord> errors = new ArrayList<>();
@@ -267,7 +267,7 @@ public class MetadataImportWorker extends BaseWorker {
                     c.setErrorLog(errors);
                     break;
                 default:
-                case MetaImportDialogFragment.DONT_IMPORT:
+                case MetaImportDialogFragmentz.DONT_IMPORT:
                     return;
             }
         }
