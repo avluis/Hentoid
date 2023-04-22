@@ -81,7 +81,7 @@ import me.devsaki.hentoid.widget.OnZoneTapListener
 import me.devsaki.hentoid.widget.PageSnapWidget
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
 import me.devsaki.hentoid.widget.ReaderKeyListener
-import me.devsaki.hentoid.widget.ReaderSmoothScrollerK
+import me.devsaki.hentoid.widget.ReaderSmoothScroller
 import me.devsaki.hentoid.widget.ScrollPositionListener
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.commons.lang3.tuple.Pair
@@ -146,7 +146,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     // == UI ==
     private var binding: FragmentReaderPagerBinding? = null
-    private lateinit var smoothScroller: ReaderSmoothScrollerK
+    private lateinit var smoothScroller: ReaderSmoothScroller
 
     // Top menu items
     private lateinit var deleteMenu: MenuItem
@@ -425,7 +425,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             recyclerView.layoutManager = llm
             pageSnapWidget = PageSnapWidget(recyclerView)
         }
-        smoothScroller = ReaderSmoothScrollerK(requireContext())
+        smoothScroller = ReaderSmoothScroller(requireContext())
         scrollListener.setOnStartOutOfBoundScrollListener { if (Preferences.isReaderContinuous()) navigator.previousFunctional() }
         scrollListener.setOnEndOutOfBoundScrollListener { if (Preferences.isReaderContinuous()) navigator.nextFunctional() }
     }
@@ -1378,7 +1378,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         scrollListener.disableScroll()
         if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) {
             // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
-            smoothScroller = ReaderSmoothScrollerK(requireContext())
+            smoothScroller = ReaderSmoothScroller(requireContext())
             smoothScroller.apply {
                 setCurrentPositionY(scrollListener.totalScrolledY)
                 setItemHeight(adapter.getDimensionsAtPosition(absImageIndex).y)
@@ -1415,7 +1415,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             slideshowTimer = null
         } else {
             // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
-            smoothScroller = ReaderSmoothScrollerK(requireContext())
+            smoothScroller = ReaderSmoothScroller(requireContext())
             smoothScroller.apply {
                 setCurrentPositionY(scrollListener.totalScrolledY)
                 targetPosition = llm.findFirstVisibleItemPosition()
