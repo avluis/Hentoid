@@ -88,6 +88,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import io.reactivex.disposables.CompositeDisposable;
+import kotlin.Unit;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
@@ -126,7 +127,7 @@ import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
 import me.devsaki.hentoid.widget.RedownloadMenu;
-import me.devsaki.hentoid.widget.ScrollPositionListener;
+import me.devsaki.hentoid.widget.ScrollPositionListenerK;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import me.zhanghai.android.fastscroll.PopupTextProvider;
 import timber.log.Timber;
@@ -168,7 +169,10 @@ public class LibraryContentFragment extends Fragment implements
     // "Go to top" FAB
     private FloatingActionButton topFab;
     // Scroll listener for the top FAB
-    private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
+    private final ScrollPositionListenerK scrollListener = new ScrollPositionListenerK(i -> {
+        onScrollPositionChange(i);
+        return Unit.INSTANCE;
+    });
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -399,6 +403,7 @@ public class LibraryContentFragment extends Fragment implements
             if (Preferences.isTopFabEnabled() && i > 0)
                 topFab.setVisibility(View.VISIBLE);
             else topFab.setVisibility(View.GONE);
+            return Unit.INSTANCE;
         });
 
         // Top FAB
