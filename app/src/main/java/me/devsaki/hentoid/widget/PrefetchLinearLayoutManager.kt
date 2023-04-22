@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Recycler
 
 // Courtesy of https://blog.usejournal.com/improve-recyclerview-performance-ede5cec6c5bf
-class PrefetchLinearLayoutManagerK(context: Context) : LinearLayoutManager(context) {
+class PrefetchLinearLayoutManager(context: Context) : LinearLayoutManager(context) {
 
     private var extraLayoutSpace = -1
 

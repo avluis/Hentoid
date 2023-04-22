@@ -79,7 +79,7 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.views.ZoomableRecyclerView
 import me.devsaki.hentoid.widget.OnZoneTapListener
 import me.devsaki.hentoid.widget.PageSnapWidget
-import me.devsaki.hentoid.widget.PrefetchLinearLayoutManagerK
+import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
 import me.devsaki.hentoid.widget.ReaderKeyListener
 import me.devsaki.hentoid.widget.ReaderSmoothScroller
 import me.devsaki.hentoid.widget.ScrollPositionListener
@@ -100,7 +100,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private val glideRequestOptions = RequestOptions().optionalTransform(centerInside)
 
     private lateinit var adapter: ImagePagerAdapter
-    private lateinit var llm: PrefetchLinearLayoutManagerK
+    private lateinit var llm: PrefetchLinearLayoutManager
     private lateinit var pageSnapWidget: PageSnapWidget
     private val listener =
         OnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
@@ -420,7 +420,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             recyclerView.setTapListener(onVerticalZoneTapListener) // For paper roll mode (vertical)
             adapter.setItemTouchListener(onHorizontalZoneTapListener) // For independent images mode (horizontal)
             adapter.setRecyclerView(recyclerView)
-            llm = PrefetchLinearLayoutManagerK(requireContext())
+            llm = PrefetchLinearLayoutManager(requireContext())
             llm.setExtraLayoutSpace(10)
             recyclerView.layoutManager = llm
             pageSnapWidget = PageSnapWidget(recyclerView)
