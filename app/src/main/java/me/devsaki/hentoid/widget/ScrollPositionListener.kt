@@ -86,7 +86,7 @@ class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit
                 val onStartOut = onStartOutOfBoundScroll
                 if (null == onEndOut || null == onStartOut) return
                 var scrollDirection = 0
-                if (llm is PrefetchLinearLayoutManager) scrollDirection = llm.rawDeltaPx
+                if (llm is PrefetchLinearLayoutManagerK) scrollDirection = llm.rawDeltaPx
                 if (recyclerView.computeHorizontalScrollOffset() == dragStartPositionX && !isSettlingX && llm.canScrollHorizontally()) {
                     if (!llm.reverseLayout && scrollDirection >= 0 || llm.reverseLayout && scrollDirection < 0) onEndOut.run() else onStartOut.run()
                 }
