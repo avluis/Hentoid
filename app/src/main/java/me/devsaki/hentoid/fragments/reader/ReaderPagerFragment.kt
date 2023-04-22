@@ -76,7 +76,7 @@ import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.views.ZoomableRecyclerViewK
+import me.devsaki.hentoid.views.ZoomableRecyclerView
 import me.devsaki.hentoid.widget.OnZoneTapListener
 import me.devsaki.hentoid.widget.PageSnapWidget
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
@@ -402,7 +402,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     )
                 ) rescaleDebouncer.submit(scale.toFloat())
             }
-            recyclerView.setLongTapListener(object : ZoomableRecyclerViewK.LongTapListener {
+            recyclerView.setLongTapListener(object : ZoomableRecyclerView.LongTapListener {
                 override fun onListen(ev: MotionEvent?): Boolean {
                     onLongTap()
                     return false

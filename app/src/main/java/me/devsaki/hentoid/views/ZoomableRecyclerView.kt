@@ -28,7 +28,7 @@ import kotlin.math.roundToInt
  * <p>
  * Credits go to the Tachiyomi team
  */
-class ZoomableRecyclerViewK : RecyclerView {
+class ZoomableRecyclerView : RecyclerView {
 
     private var isZooming = false
     private var isLongTapZooming = false
