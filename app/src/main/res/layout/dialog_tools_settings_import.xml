@@ -21,7 +21,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/import_select_file_btn"
+        android:id="@+id/select_file_btn"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="?android:attr/actionBarSize"
@@ -45,7 +45,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/import_select_file_btn"
+        app:layout_constraintTop_toBottomOf="@id/select_file_btn"
         tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
