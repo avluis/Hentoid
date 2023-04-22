@@ -48,11 +48,11 @@ public class ZoomableFrame extends FrameLayout {
     /**
      * Recycler view added in this frame.
      */
-    private ZoomableRecyclerView recycler;
+    private ZoomableRecyclerViewK recycler;
 
-    private ZoomableRecyclerView getRecycler() {
+    private ZoomableRecyclerViewK getRecycler() {
         if (null == recycler && getChildCount() > 0)
-            recycler = (ZoomableRecyclerView) getChildAt(0);
+            recycler = (ZoomableRecyclerViewK) getChildAt(0);
         return recycler;
     }
 

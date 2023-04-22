@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup
@@ -75,6 +76,7 @@ import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.views.ZoomableRecyclerViewK
 import me.devsaki.hentoid.widget.OnZoneTapListener
 import me.devsaki.hentoid.widget.PageSnapWidget
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
@@ -400,10 +402,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     )
                 ) rescaleDebouncer.submit(scale.toFloat())
             }
-            recyclerView.setLongTapListener {
-                onLongTap()
-                false
-            }
+            recyclerView.setLongTapListener(object : ZoomableRecyclerViewK.LongTapListener {
+                override fun onListen(ev: MotionEvent?): Boolean {
+                    onLongTap()
+                    return false
+                }
+            })
+
             val tapZoneScale = if (Preferences.isReaderTapToTurn2x()) 2 else 1
             val onHorizontalZoneTapListener = OnZoneTapListener(
                 recyclerView,
