@@ -82,7 +82,7 @@ import me.devsaki.hentoid.widget.PageSnapWidget
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
 import me.devsaki.hentoid.widget.ReaderKeyListener
 import me.devsaki.hentoid.widget.ReaderSmoothScroller
-import me.devsaki.hentoid.widget.ScrollPositionListenerK
+import me.devsaki.hentoid.widget.ScrollPositionListener
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.commons.lang3.tuple.Pair
 import org.greenrobot.eventbus.EventBus
@@ -110,7 +110,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private var absImageIndex = -1 // Absolute (book scale) 0-based image index
 
     private var hasGalleryBeenShown = false
-    private val scrollListener = ScrollPositionListenerK { scrollPosition: Int ->
+    private val scrollListener = ScrollPositionListener { scrollPosition: Int ->
         onScrollPositionChange(scrollPosition)
     }
     private var slideshowTimer: Disposable? = null

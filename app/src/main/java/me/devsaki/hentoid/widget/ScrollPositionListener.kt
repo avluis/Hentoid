@@ -5,7 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import me.devsaki.hentoid.util.Debouncer
 
-class ScrollPositionListenerK(private val onPositionChangeListener: (Int) -> Unit) :
+class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit) :
     RecyclerView.OnScrollListener() {
     private var isScrollEnabled = true
 

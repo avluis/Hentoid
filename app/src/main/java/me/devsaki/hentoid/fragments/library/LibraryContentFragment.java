@@ -127,7 +127,7 @@ import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
 import me.devsaki.hentoid.widget.RedownloadMenu;
-import me.devsaki.hentoid.widget.ScrollPositionListenerK;
+import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import me.zhanghai.android.fastscroll.PopupTextProvider;
 import timber.log.Timber;
@@ -169,7 +169,7 @@ public class LibraryContentFragment extends Fragment implements
     // "Go to top" FAB
     private FloatingActionButton topFab;
     // Scroll listener for the top FAB
-    private final ScrollPositionListenerK scrollListener = new ScrollPositionListenerK(i -> {
+    private final ScrollPositionListener scrollListener = new ScrollPositionListener(i -> {
         onScrollPositionChange(i);
         return Unit.INSTANCE;
     });
