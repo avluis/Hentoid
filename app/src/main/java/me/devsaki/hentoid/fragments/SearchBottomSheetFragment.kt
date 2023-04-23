@@ -43,7 +43,7 @@ import timber.log.Timber
  * NB : only possible when ObjectBox implements SELECT Object.Field, COUNT(Object.Field) GROUP BY Object.Field to handle
  * source selection in a native ObjectBox query.
  */
-class SearchBottomSheetFragmentK : BottomSheetDialogFragment() {
+class SearchBottomSheetFragment : BottomSheetDialogFragment() {
     // ViewModel of the current activity
     private lateinit var viewModel: SearchViewModel
 
@@ -310,7 +310,7 @@ class SearchBottomSheetFragmentK : BottomSheetDialogFragment() {
             val attrTypes = types.map { at -> at.code }
             builder.attributeTypes = ArrayList(attrTypes)
             builder.excludeMode = excludeClicked
-            val searchBottomSheetFragment = SearchBottomSheetFragmentK()
+            val searchBottomSheetFragment = SearchBottomSheetFragment()
             searchBottomSheetFragment.arguments = builder.bundle
             ThemeHelper.setStyle(
                 context,
