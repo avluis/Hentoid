@@ -23,7 +23,7 @@ import me.devsaki.hentoid.util.file.FileHelper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.*
+import java.util.EnumMap
 
 /**
  * Info dialog for download errors details
@@ -166,6 +166,7 @@ class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
     }
 
     companion object {
+        const val ID = "ID"
         fun invoke(fragmentManager: FragmentManager, id: Long) {
             val fragment = ErrorStatsDialogFragment()
 
