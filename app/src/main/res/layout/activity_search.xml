@@ -151,9 +151,8 @@
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/horz_divider"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_margin="8dp"
-        app:dividerColor="@color/medium_gray"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textCategorySource" />
@@ -162,22 +161,20 @@
         android:id="@+id/location_picker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         app:entries="@array/search_location_entries"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/horz_divider"
         app:title="@string/search_location" />
-
-    <com.google.android.material.divider.MaterialDivider
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        app:layout_constraintTop_toBottomOf="@id/location_picker"
-        />
 
     <me.devsaki.hentoid.views.ListPickerView
         android:id="@+id/type_picker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         app:entries="@array/search_type_entries"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/location_picker"

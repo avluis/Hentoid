@@ -22,7 +22,7 @@
         android:id="@+id/change_group_existing_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="16dp"
         android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
