@@ -191,9 +191,6 @@ dependencies {
     // Tooltips
     implementation 'com.github.skydoves:balloon:1.5.3'
 
-    // Dropdown lists
-    implementation 'com.github.skydoves:powerspinner:1.2.5'
-
     // Popup menus with icons
     implementation 'com.github.skydoves:powermenu:2.2.2'
 
