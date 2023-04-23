@@ -72,47 +72,38 @@ class SearchActivity : BaseActivity() {
             textCategoryAny.isEnabled = true
             textCategoryTag.setOnClickListener {
                 onAttrButtonClick(
-                    excludeClicked,
-                    AttributeType.TAG
+                    excludeClicked, AttributeType.TAG
                 )
             }
             textCategoryArtist.setOnClickListener {
                 onAttrButtonClick(
-                    excludeClicked,
-                    AttributeType.ARTIST,
-                    AttributeType.CIRCLE
+                    excludeClicked, AttributeType.ARTIST, AttributeType.CIRCLE
                 )
             }
             textCategorySeries.setOnClickListener {
                 onAttrButtonClick(
-                    excludeClicked,
-                    AttributeType.SERIE
+                    excludeClicked, AttributeType.SERIE
                 )
             }
             textCategoryCharacter.setOnClickListener {
                 onAttrButtonClick(
-                    excludeClicked,
-                    AttributeType.CHARACTER
+                    excludeClicked, AttributeType.CHARACTER
                 )
             }
             textCategoryLanguage.setOnClickListener {
                 onAttrButtonClick(
-                    excludeClicked,
-                    AttributeType.LANGUAGE
+                    excludeClicked, AttributeType.LANGUAGE
                 )
             }
             textCategorySource.setOnClickListener {
                 onAttrButtonClick(
-                    excludeClicked,
-                    AttributeType.SOURCE
+                    excludeClicked, AttributeType.SOURCE
                 )
             }
             excludeCheckbox.setOnClickListener { view: View ->
                 onExcludeClick(view)
             }
             excludeCheckbox.isChecked = excludeClicked
-            val locations = resources.getStringArray(R.array.search_location_entries)
-            locationSpin.setItems(listOf(*locations))
             val bookTypes = resources.getStringArray(R.array.search_type_entries)
             typeSpin.setItems(listOf(*bookTypes))
             val llm =
@@ -126,9 +117,7 @@ class SearchActivity : BaseActivity() {
                 // Auto-Scroll to last added item
                 override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                     llm.smoothScrollToPosition(
-                        searchTags,
-                        null,
-                        selectedAttributeAdapter.itemCount
+                        searchTags, null, selectedAttributeAdapter.itemCount
                     )
                 }
             })
@@ -152,21 +141,17 @@ class SearchActivity : BaseActivity() {
                     preSelectedCriteria.attributes
                 )
                 if (preSelectedCriteria.location > 0) viewModel.setLocation(preSelectedCriteria.location)
-                locationSpin.selectItemByIndex(preSelectedCriteria.location)
+                locationPicker.setIndex(preSelectedCriteria.location)
                 if (preSelectedCriteria.contentType > 0) viewModel.setContentType(
                     preSelectedCriteria.contentType
                 )
                 typeSpin.selectItemByIndex(preSelectedCriteria.contentType)
             } else {
-                locationSpin.selectItemByIndex(0)
+                locationPicker.setIndex(0)
                 typeSpin.selectItemByIndex(0)
                 viewModel.update()
             }
-            locationSpin.setOnSpinnerItemSelectedListener { _, _: String?, i1, _: String ->
-                viewModel.setLocation(i1)
-            }
-            locationSpin.isFocusable = true
-            locationSpin.lifecycleOwner = this@SearchActivity
+            locationPicker.setOnIndexChangeListener { index: Int -> viewModel.setLocation(index) }
             typeSpin.setOnSpinnerItemSelectedListener { _, _: String?, i1, _: String ->
                 viewModel.setContentType(i1)
             }
@@ -188,7 +173,7 @@ class SearchActivity : BaseActivity() {
             builder.uri = buildSearchUri(
                 selectedAttributeAdapter.currentList,
                 "",
-                locationSpin.selectedIndex,
+                locationPicker.getIndex(),
                 typeSpin.selectedIndex
             ).toString()
             outState.putAll(builder.bundle)
@@ -206,7 +191,7 @@ class SearchActivity : BaseActivity() {
             binding?.apply {
                 if (location > 0) {
                     viewModel.setLocation(location)
-                    locationSpin.selectItemByIndex(location)
+                    locationPicker.setIndex(location)
                 }
                 if (contentType > 0) {
                     viewModel.setContentType(contentType)
@@ -225,27 +210,20 @@ class SearchActivity : BaseActivity() {
         binding?.apply {
             updateAttributeTypeButton(textCategoryTag, attrCount, AttributeType.TAG)
             updateAttributeTypeButton(
-                textCategoryArtist,
-                attrCount,
-                AttributeType.ARTIST,
-                AttributeType.CIRCLE
+                textCategoryArtist, attrCount, AttributeType.ARTIST, AttributeType.CIRCLE
             )
             updateAttributeTypeButton(textCategorySeries, attrCount, AttributeType.SERIE)
             updateAttributeTypeButton(
-                textCategoryCharacter,
-                attrCount,
-                AttributeType.CHARACTER
+                textCategoryCharacter, attrCount, AttributeType.CHARACTER
             )
             updateAttributeTypeButton(
-                textCategoryLanguage,
-                attrCount,
-                AttributeType.LANGUAGE
+                textCategoryLanguage, attrCount, AttributeType.LANGUAGE
             )
             updateAttributeTypeButton(textCategorySource, attrCount, AttributeType.SOURCE)
         }
     }
 
-    fun onExcludeClick(view: View) {
+    private fun onExcludeClick(view: View) {
         excludeClicked = (view as CheckBox).isChecked
     }
 
@@ -257,17 +235,13 @@ class SearchActivity : BaseActivity() {
      * @param types     Type(s) to fetch the count for
      */
     private fun updateAttributeTypeButton(
-        button: TextView,
-        attrCount: SparseIntArray,
-        vararg types: AttributeType
+        button: TextView, attrCount: SparseIntArray, vararg types: AttributeType
     ) {
         if (types.isEmpty()) return
         var count = 0
         for (type in types) count += attrCount[type.code, 0]
         button.text = String.format(
-            "%s (%s)",
-            StringHelper.capitalizeString(getString(types[0].displayName)),
-            count
+            "%s (%s)", StringHelper.capitalizeString(getString(types[0].displayName)), count
         )
         button.isEnabled = count > 0
     }
@@ -280,8 +254,7 @@ class SearchActivity : BaseActivity() {
      */
     private fun onAttrButtonClick(excludeClicked: Boolean, vararg attributeTypes: AttributeType) {
         invoke(
-            this,
-            supportFragmentManager, attributeTypes.toList(), excludeClicked
+            this, supportFragmentManager, attributeTypes.toList(), excludeClicked
         )
     }
 
@@ -323,9 +296,7 @@ class SearchActivity : BaseActivity() {
         binding?.apply {
             if (count >= 0) {
                 searchFab.text = resources.getQuantityString(
-                    R.plurals.search_button,
-                    count,
-                    count
+                    R.plurals.search_button, count, count
                 )
                 searchFab.visibility = View.VISIBLE
             } else {
@@ -343,7 +314,7 @@ class SearchActivity : BaseActivity() {
             val searchUri = buildSearchUri(
                 selectedAttributeAdapter.currentList,
                 "",
-                locationSpin.selectedIndex,
+                locationPicker.getIndex(),
                 typeSpin.selectedIndex
             )
             Timber.d("URI :%s", searchUri)

@@ -18,7 +18,16 @@ class ListPickerView : ConstraintLayout {
     private var entries: Array<CharSequence> = emptyArray()
     private var entriesId = -1
     private var currentEntry = ""
-    private var onChangeListener: ((String) -> Unit)? = null
+
+    private var onIndexChangeListener: ((Int) -> Unit)? = null
+
+    fun setIndex(value: Int) {
+        selectIndex(value, false)
+    }
+
+    fun getIndex(): Int {
+        return entries.indexOf(currentEntry)
+    }
 
     constructor(context: Context) : super(context)
 
@@ -49,15 +58,15 @@ class ListPickerView : ConstraintLayout {
         }
     }
 
-    fun setOnChangeListener(changeListener: (String) -> Unit) {
-        onChangeListener = changeListener
+    fun setOnIndexChangeListener(listener: (Int) -> Unit) {
+        onIndexChangeListener = listener
     }
 
     private fun onClick() {
         val materialDialog: AlertDialog = MaterialAlertDialogBuilder(context)
             .setSingleChoiceItems(
                 entriesId,
-                entries.indexOf(currentEntry),
+                getIndex(),
                 this::onSelect
             )
             .setCancelable(true)
@@ -67,9 +76,13 @@ class ListPickerView : ConstraintLayout {
     }
 
     private fun onSelect(dialog: DialogInterface, selectedIndex: Int) {
+        selectIndex(selectedIndex)
+        dialog.dismiss()
+    }
+
+    private fun selectIndex(selectedIndex: Int, triggerListener: Boolean = true) {
         currentEntry = entries[selectedIndex].toString()
         binding.description.text = currentEntry
-        onChangeListener?.invoke(currentEntry)
-        dialog.dismiss()
+        if (triggerListener) onIndexChangeListener?.invoke(selectedIndex)
     }
 }

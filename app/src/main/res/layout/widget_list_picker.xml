@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="56dp"
+    android:layout_height="48dp"
     android:background="@color/transparent"
     android:padding="4dp"
     tools:targetApi="o">
@@ -15,6 +15,7 @@
         android:textAlignment="viewStart"
         android:textColor="?colorOnPrimary"
         android:textSize="@dimen/text_body_1"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/description"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

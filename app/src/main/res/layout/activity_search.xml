@@ -158,36 +158,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textCategorySource" />
 
-    <TextView
-        android:id="@+id/location_txt"
-        android:layout_width="wrap_content"
+    <me.devsaki.hentoid.views.ListPickerView
+        android:id="@+id/location_picker"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/search_location"
-        android:textSize="@dimen/text_subtitle_1"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/horz_divider" />
-
-    <com.skydoves.powerspinner.PowerSpinnerView
-        android:id="@+id/location_spin"
-        android:layout_width="250dp"
-        android:layout_height="48dp"
-        android:layout_margin="8dp"
-        android:background="@drawable/bg_spinner_border"
-        android:gravity="center_vertical"
-        android:padding="8dp"
+        app:entries="@array/search_location_entries"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/horz_divider"
-        app:spinner_arrow_gravity="end"
-        app:spinner_arrow_padding="8dp"
-        app:spinner_arrow_tint="@color/white_opacity_66"
-        app:spinner_divider_show="true"
-        app:spinner_divider_size="0.4dp"
-        app:spinner_popup_background="@color/dark_gray"
-        app:spinner_popup_elevation="14dp"
-        tools:ignore="SpeakableTextPresentCheck" />
+        app:title="@string/search_location" />
 
     <TextView
         android:id="@+id/type_txt"
@@ -199,7 +177,7 @@
         android:textSize="@dimen/text_subtitle_1"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/location_spin" />
+        app:layout_constraintTop_toBottomOf="@id/location_picker" />
 
     <com.skydoves.powerspinner.PowerSpinnerView
         android:id="@+id/type_spin"
@@ -210,7 +188,7 @@
         android:gravity="center_vertical"
         android:padding="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/location_spin"
+        app:layout_constraintTop_toBottomOf="@id/location_picker"
         app:spinner_arrow_gravity="end"
         app:spinner_arrow_padding="8dp"
         app:spinner_arrow_tint="@color/white_opacity_66"
