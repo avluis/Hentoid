@@ -11,7 +11,8 @@ import me.devsaki.hentoid.database.domains.Attribute
 class SearchHelper {
 
     data class AttributeQueryResult(
-        val attributes: List<Attribute>, val totalSelectedAttributes: Long
+        val attributes: List<Attribute>,
+        val totalSelectedAttributes: Long
     )
 
     data class AdvancedSearchCriteria(

@@ -27,7 +27,7 @@ import me.devsaki.hentoid.adapters.SelectedAttributeAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.databinding.ActivitySearchBinding;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
+import me.devsaki.hentoid.fragments.SearchBottomSheetFragmentK;
 import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
@@ -219,7 +219,7 @@ public class SearchActivity extends BaseActivity {
      * @param attributeTypes Attribute type(s) to select
      */
     private void onAttrButtonClick(boolean excludeClicked, AttributeType... attributeTypes) {
-        SearchBottomSheetFragment.invoke(this, getSupportFragmentManager(), attributeTypes, excludeClicked);
+        SearchBottomSheetFragmentK.Companion.invoke(this, getSupportFragmentManager(), attributeTypes, excludeClicked);
     }
 
     /**
