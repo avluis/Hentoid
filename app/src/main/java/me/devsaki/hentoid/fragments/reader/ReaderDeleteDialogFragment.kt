@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogReaderDeleteBinding
 import me.devsaki.hentoid.util.Preferences
 
@@ -46,18 +45,13 @@ class ReaderDeleteDialogFragment : DialogFragment() {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        binding.bookPrefsDeleteSpin.apply {
-            setIsFocusable(true)
-            lifecycleOwner = requireActivity()
-            setItems(R.array.page_delete_choices)
-            selectItemByIndex(0)
-        }
+        binding.deleteWhat.index = 0
 
         if (!isDeletePageAllowed) binding.deleteModePage.isEnabled = false
 
         binding.actionButton.setOnClickListener {
             if (!binding.deleteModePage.isChecked && !binding.deleteModeBook.isChecked) return@setOnClickListener
-            Preferences.setReaderDeleteAskMode(binding.bookPrefsDeleteSpin.selectedIndex)
+            Preferences.setReaderDeleteAskMode(binding.deleteWhat.index)
             Preferences.setReaderDeleteTarget(if (binding.deleteModePage.isChecked) Preferences.Constant.VIEWER_DELETE_TARGET_PAGE else Preferences.Constant.VIEWER_DELETE_TARGET_BOOK)
             parent?.onDeleteElement(binding.deleteModePage.isChecked)
             dismiss()

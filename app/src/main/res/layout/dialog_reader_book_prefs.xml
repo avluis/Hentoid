@@ -23,95 +23,35 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/book_prefs_browse_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:text="@string/pref_viewer_browse_mode"
-            android:textSize="@dimen/text_subtitle_1"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/export_title" />
-
-        <com.skydoves.powerspinner.PowerSpinnerView
-            android:id="@+id/book_prefs_browse_spin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:background="@drawable/bg_spinner_border"
-            android:gravity="center_vertical"
-            android:padding="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/book_prefs_browse_txt"
-            app:spinner_arrow_gravity="end"
-            app:spinner_arrow_padding="8dp"
-            app:spinner_arrow_tint="@color/white_opacity_66"
-            app:spinner_divider_show="true"
-            app:spinner_divider_size="0.4dp"
-            app:spinner_popup_background="@color/dark_gray"
-            app:spinner_popup_elevation="14dp" />
-
-        <TextView
-            android:id="@+id/book_prefs_rendering_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <me.devsaki.hentoid.views.ListPickerView
+            android:id="@+id/browse_picker"
+            android:layout_width="0dp"
             android:layout_marginTop="8dp"
-            android:padding="8dp"
-            android:text="@string/pref_viewer_rendering"
-            android:textSize="@dimen/text_subtitle_1"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/book_prefs_browse_spin" />
-
-        <com.skydoves.powerspinner.PowerSpinnerView
-            android:id="@+id/book_prefs_rendering_spin"
-            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:background="@drawable/bg_spinner_border"
-            android:gravity="center_vertical"
-            android:padding="8dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_txt"
-            app:spinner_arrow_gravity="end"
-            app:spinner_arrow_padding="8dp"
-            app:spinner_arrow_tint="@color/white_opacity_66"
-            app:spinner_divider_show="true"
-            app:spinner_divider_size="0.4dp"
-            app:spinner_popup_background="@color/dark_gray"
-            app:spinner_popup_elevation="14dp" />
+            app:layout_constraintTop_toBottomOf="@id/export_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:title="@string/pref_viewer_browse_mode" />
 
-        <TextView
-            android:id="@+id/book_prefs_display_txt"
-            android:layout_width="wrap_content"
+        <me.devsaki.hentoid.views.ListPickerView
+            android:id="@+id/rendering_picker"
+            android:layout_width="0dp"
+            android:layout_marginTop="12dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:padding="8dp"
-            android:text="@string/pref_viewer_display_mode"
-            android:textSize="@dimen/text_subtitle_1"
-            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_spin" />
+            app:layout_constraintTop_toBottomOf="@id/browse_picker"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:title="@string/pref_viewer_rendering" />
 
-        <com.skydoves.powerspinner.PowerSpinnerView
-            android:id="@+id/book_prefs_display_spin"
-            android:layout_width="match_parent"
+        <me.devsaki.hentoid.views.ListPickerView
+            android:id="@+id/display_picker"
+            android:layout_width="0dp"
+            android:layout_marginTop="12dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:background="@drawable/bg_spinner_border"
-            android:gravity="center_vertical"
-            android:padding="8dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/book_prefs_display_txt"
-            app:spinner_arrow_gravity="end"
-            app:spinner_arrow_padding="8dp"
-            app:spinner_arrow_tint="@color/white_opacity_66"
-            app:spinner_divider_show="true"
-            app:spinner_divider_size="0.4dp"
-            app:spinner_popup_background="@color/dark_gray"
-            app:spinner_popup_elevation="14dp" />
+            app:layout_constraintTop_toBottomOf="@id/rendering_picker"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:title="@string/pref_viewer_display_mode" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/book_prefs_app_prefs_btn"
@@ -122,7 +62,7 @@
             android:text="@string/goto_app_prefs"
             app:icon="@drawable/ic_settings"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/book_prefs_display_spin" />
+            app:layout_constraintTop_toBottomOf="@id/display_picker" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
@@ -136,7 +76,7 @@
             app:icon="@drawable/ic_checked"
             app:iconTint="?colorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/book_prefs_display_spin" />
+            app:layout_constraintTop_toBottomOf="@id/display_picker" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

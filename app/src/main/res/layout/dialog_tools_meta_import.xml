@@ -95,24 +95,14 @@
         app:layout_constraintTop_toBottomOf="@id/import_file_library_chk"
         tools:visibility="visible" />
 
-    <com.skydoves.powerspinner.PowerSpinnerView
+    <me.devsaki.hentoid.views.ListPickerView
         android:id="@+id/import_empty_books_options"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_spinner_border"
-        android:gravity="center_vertical"
-        android:padding="8dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/import_empty_books_label"
         app:layout_constraintTop_toBottomOf="@id/import_empty_books_label"
-        app:spinner_arrow_gravity="end"
-        app:spinner_arrow_padding="8dp"
-        app:spinner_arrow_tint="@color/white_opacity_66"
-        app:spinner_divider_show="true"
-        app:spinner_divider_size="0.4dp"
-        app:spinner_popup_background="@color/dark_gray"
-        app:spinner_popup_elevation="14dp"
         tools:visibility="visible" />
 
     <CheckBox

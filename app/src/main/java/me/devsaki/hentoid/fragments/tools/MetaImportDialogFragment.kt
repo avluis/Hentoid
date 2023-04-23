@@ -73,8 +73,8 @@ class MetaImportDialogFragment : DialogFragment() {
         val browseModes = resources.getStringArray(R.array.tools_import_empty_books_entries)
         val browseItems = ArrayList(listOf(*browseModes))
         binding?.apply {
-            importEmptyBooksOptions.setItems(browseItems)
-            importEmptyBooksOptions.setOnSpinnerItemSelectedListener { _, _: String?, _, _: String -> refreshDisplay() }
+            importEmptyBooksOptions.entries = browseItems
+            importEmptyBooksOptions.setOnIndexChangeListener { refreshDisplay() }
             importSelectFileBtn.setOnClickListener { pickFile.launch(0) }
         }
     }
@@ -207,7 +207,7 @@ class MetaImportDialogFragment : DialogFragment() {
                         jsonFile.uri.toString(),
                         importModeAdd.isChecked,
                         importFileLibraryChk.isChecked,
-                        importEmptyBooksOptions.selectedIndex,
+                        importEmptyBooksOptions.index,
                         importFileQueueChk.isChecked,
                         importFileGroupsChk.isChecked,
                         importFileBookmarksChk.isChecked
@@ -225,7 +225,7 @@ class MetaImportDialogFragment : DialogFragment() {
             importEmptyBooksOptions.visibility =
                 (if (importFileLibraryChk.isChecked) View.VISIBLE else View.GONE)
             importRunBtn.isEnabled =
-                importFileLibraryChk.isChecked && importEmptyBooksOptions.selectedIndex > -1 || !importFileLibraryChk.isChecked && (importFileQueueChk.isChecked || importFileBookmarksChk.isChecked)
+                importFileLibraryChk.isChecked && importEmptyBooksOptions.index > -1 || !importFileLibraryChk.isChecked && (importFileQueueChk.isChecked || importFileBookmarksChk.isChecked)
         }
     }
 

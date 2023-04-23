@@ -123,8 +123,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
         binding.useArtist.isChecked = Preferences.isDuplicateUseArtist()
         binding.useSameLanguage.isChecked = Preferences.isDuplicateUseSameLanguage()
         binding.ignoreChapters.isChecked = Preferences.isDuplicateIgnoreChapters()
-        binding.useSensitivity.setItems(R.array.duplicate_use_sensitivities)
-        binding.useSensitivity.selectItemByIndex(Preferences.getDuplicateSensitivity())
+        binding.useSensitivity.index = Preferences.getDuplicateSensitivity()
         updateUI(context)
     }
 
@@ -159,7 +158,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
         Preferences.setDuplicateUseArtist(binding.useArtist.isChecked)
         Preferences.setDuplicateUseSameLanguage(binding.useSameLanguage.isChecked)
         Preferences.setDuplicateIgnoreChapters(binding.ignoreChapters.isChecked)
-        Preferences.setDuplicateSensitivity(binding.useSensitivity.selectedIndex)
+        Preferences.setDuplicateSensitivity(binding.useSensitivity.index)
 
         activateScanUi()
 
@@ -170,7 +169,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
             binding.useArtist.isChecked,
             binding.useSameLanguage.isChecked,
             binding.ignoreChapters.isChecked,
-            binding.useSensitivity.selectedIndex
+            binding.useSensitivity.index
         )
     }
 
@@ -259,7 +258,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
         }
     }
 
-    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onProcessStickyEvent(event: ProcessEvent) {
         if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
 

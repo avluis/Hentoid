@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import com.skydoves.powerspinner.PowerSpinnerView
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
@@ -70,11 +69,8 @@ class ReaderPrefsDialogFragment : DialogFragment() {
         // Available prefs
         browseItems.addAll(listOf(*browseModes))
 
-        val browseSpin = rootView.findViewById<PowerSpinnerView>(R.id.book_prefs_browse_spin)
-        browseSpin.setIsFocusable(true)
-        browseSpin.lifecycleOwner = this
-        browseSpin.setItems(browseItems)
-        browseSpin.selectItemByIndex(browseMode + 1)
+        binding.browsePicker.entries = browseItems
+        binding.browsePicker.index = browseMode + 1
 
 
         val renderingModes = resources.getStringArray(R.array.pref_viewer_rendering_entries)
@@ -100,14 +96,11 @@ class ReaderPrefsDialogFragment : DialogFragment() {
             )
         }
 
-        val renderSpin = rootView.findViewById<PowerSpinnerView>(R.id.book_prefs_rendering_spin)
-        renderSpin.setIsFocusable(true)
-        renderSpin.lifecycleOwner = this
-        renderSpin.setItems(renderingItems)
+        binding.renderingPicker.entries = renderingItems
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            renderSpin.selectItemByIndex(0)
-            renderSpin.isEnabled = false
-        } else renderSpin.selectItemByIndex(renderingMode + 1)
+            binding.renderingPicker.index = 0
+            binding.renderingPicker.isEnabled = false
+        } else binding.renderingPicker.index = renderingMode + 1
 
 
         val displayModes = resources.getStringArray(R.array.pref_viewer_display_mode_entries)
@@ -124,11 +117,8 @@ class ReaderPrefsDialogFragment : DialogFragment() {
             displayItems.add(mode.replace(" (" + getString(R.string._default) + ")", ""))
         }
 
-        val displaySpin = rootView.findViewById<PowerSpinnerView>(R.id.book_prefs_display_spin)
-        displaySpin.setIsFocusable(true)
-        displaySpin.lifecycleOwner = this
-        displaySpin.setItems(displayItems)
-        displaySpin.selectItemByIndex(displayMode + 1)
+        binding.displayPicker.entries = displayItems
+        binding.displayPicker.index = displayMode + 1
 
         // == Bottom buttons
         val appSettingsBtn = rootView.findViewById<View>(R.id.book_prefs_app_prefs_btn)
@@ -144,12 +134,12 @@ class ReaderPrefsDialogFragment : DialogFragment() {
         okBtn.setOnClickListener {
             val newPrefs: MutableMap<String, String> =
                 HashMap()
-            if (renderSpin.selectedIndex > 0) newPrefs[Preferences.Key.VIEWER_RENDERING] =
-                (renderSpin.selectedIndex - 1).toString() + ""
-            if (browseSpin.selectedIndex > 0) newPrefs[Preferences.Key.VIEWER_BROWSE_MODE] =
-                (browseSpin.selectedIndex - 1).toString() + ""
-            if (displaySpin.selectedIndex > 0) newPrefs[Preferences.Key.VIEWER_IMAGE_DISPLAY] =
-                (displaySpin.selectedIndex - 1).toString() + ""
+            if (binding.renderingPicker.index > 0) newPrefs[Preferences.Key.VIEWER_RENDERING] =
+                (binding.renderingPicker.index - 1).toString() + ""
+            if (binding.browsePicker.index > 0) newPrefs[Preferences.Key.VIEWER_BROWSE_MODE] =
+                (binding.browsePicker.index - 1).toString() + ""
+            if (binding.displayPicker.index > 0) newPrefs[Preferences.Key.VIEWER_IMAGE_DISPLAY] =
+                (binding.displayPicker.index - 1).toString() + ""
             parent?.onBookPreferenceChanged(newPrefs)
             dismiss()
         }

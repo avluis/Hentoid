@@ -9,24 +9,13 @@
     android:padding="8dp"
     tools:context=".activities.RenamingRulesActivity">
 
-    <com.skydoves.powerspinner.PowerSpinnerView
+    <me.devsaki.hentoid.views.ListPickerView
         android:id="@+id/attributeType"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_spinner_border"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:spinner_arrow_gravity="end"
-        app:spinner_arrow_padding="8dp"
-        app:spinner_arrow_tint="@color/white_opacity_66"
-        app:spinner_divider_show="true"
-        app:spinner_divider_size="0.4dp"
-        app:spinner_popup_background="@color/dark_gray"
-        app:spinner_popup_elevation="14dp"
         tools:visibility="visible" />
 
     <com.google.android.material.textfield.TextInputLayout

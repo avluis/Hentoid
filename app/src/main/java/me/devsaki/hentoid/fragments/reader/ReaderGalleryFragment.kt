@@ -32,7 +32,6 @@ import com.mikepenz.fastadapter.drag.SimpleDragCallback
 import com.mikepenz.fastadapter.expandable.getExpandableExtension
 import com.mikepenz.fastadapter.select.getSelectExtension
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
-import com.skydoves.powerspinner.OnSpinnerItemSelectedListener
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle
@@ -253,9 +252,6 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     override fun onDestroy() {
         binding?.apply {
             recyclerView.adapter = null
-            // Have to do that as the callback contains references to the fragment
-            chapterSelector.getSpinnerAdapter<Any>().onSpinnerItemSelectedListener = null
-            chapterSelector.dismiss()
         }
         binding = null
         super.onDestroy()
@@ -424,27 +420,22 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         isContentDynamic = content.isDynamic
         if (chapters.isNullOrEmpty()) return
         binding?.apply {
-            chapterSelector.setIsFocusable(true)
-            chapterSelector.lifecycleOwner = requireActivity()
             chapterSelector.onFocusChangeListener =
                 OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                     Timber.i("hasFocus %s", hasFocus)
                 }
-            chapterSelector.setItems(chapters.sortedBy { obj -> obj.order }
+            chapterSelector.entries = chapters.sortedBy { obj -> obj.order }
                 .filter { c: Chapter -> c.order > -1 }.map { obj: Chapter -> obj.name }
-                .toList())
-            chapterSelector.selectItemByIndex(0)
-            chapterSelector.setOnSpinnerItemSelectedListener(
-                OnSpinnerItemSelectedListener<Any> { _, _, newIndex, _ ->
-                    val imgs: List<ImageFile>? =
-                        chapters.first { ch -> ch.order == newIndex + 1 }.imageFiles
-                    if (!imgs.isNullOrEmpty()) {
-                        viewModel.setViewerStartingIndex(imgs[0].order - 1)
-                        moveToIndex(imgs[0].order - 1, true)
-                    }
-                    chapterSelector.dismiss()
+                .toList()
+            chapterSelector.index = 0
+            chapterSelector.setOnIndexChangeListener { index ->
+                val imgs: List<ImageFile>? =
+                    chapters.first { ch -> ch.order == index + 1 }.imageFiles
+                if (!imgs.isNullOrEmpty()) {
+                    viewModel.setViewerStartingIndex(imgs[0].order - 1)
+                    moveToIndex(imgs[0].order - 1, true)
                 }
-            )
+            }
             chapterSelector.visibility = View.VISIBLE
         }
     }
@@ -582,7 +573,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         confirmReorderMenu.isVisible = isReorderingChapters
         cancelReorderMenu.isVisible = isReorderingChapters
         binding?.apply {
-            if (chapterSelector.selectedIndex > -1) chapterSelector.visibility =
+            if (chapterSelector.index > -1) chapterSelector.visibility =
                 if (editMode == EditMode.NONE) View.VISIBLE else View.GONE
         }
     }
@@ -779,9 +770,6 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             chapterEditHelpBanner.visibility =
                 if (editMode == EditMode.ADD_CHAPTER) View.VISIBLE else View.GONE
             updateListAdapter(editMode == EditMode.EDIT_CHAPTERS)
-
-            // Dismiss spinner dropdown
-            chapterSelector.dismiss()
         }
         // Don't filter favs when editing chapters
         if (filterFavouritesState) {
@@ -807,17 +795,6 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
         isReorderingChapters = true
         updateToolbar()
-    }
-
-    private fun onChapterMoveError(t: Throwable) {
-        Timber.e(t)
-        binding?.apply {
-            Snackbar.make(
-                recyclerView,
-                R.string.chapter_move_failed,
-                BaseTransientBottomBar.LENGTH_LONG
-            ).show()
-        }
     }
 
     override fun itemTouchOnMove(oldPosition: Int, newPosition: Int): Boolean {
