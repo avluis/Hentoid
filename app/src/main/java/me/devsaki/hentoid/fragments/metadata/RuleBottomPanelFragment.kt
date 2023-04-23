@@ -57,7 +57,7 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[RulesEditViewModel::class.java]
-        viewModel.getAttributeTypeFilter().observe(requireActivity()) { updateAttributeFilters(it) }
+        viewModel.attributeTypeFilter.observe(requireActivity()) { updateAttributeFilters(it) }
     }
 
     override fun onCreateView(

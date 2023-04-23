@@ -99,8 +99,8 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
         bindUI()
         bindInteractions()
 
-        viewModel.getRules().observe(this) { this.onRulesChanged(it) }
-        viewModel.getAttributeTypeFilter().observe(this) { attributeTypeFilter = it }
+        viewModel.rulesList.observe(this) { this.onRulesChanged(it) }
+        viewModel.attributeTypeFilter.observe(this) { attributeTypeFilter = it }
     }
 
     override fun onDestroy() {
@@ -166,7 +166,7 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
     }
 
     private fun bindInteractions() {
-        binding?.let { it ->
+        binding?.let {
             // Rules list init
             it.list.adapter = fastAdapter
             // New rule FAB
