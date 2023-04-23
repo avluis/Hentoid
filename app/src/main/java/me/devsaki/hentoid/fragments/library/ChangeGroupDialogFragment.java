@@ -14,7 +14,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.annimon.stream.Stream;
 import com.google.android.material.textfield.TextInputLayout;
-import com.skydoves.powerspinner.PowerSpinnerView;
 
 import java.util.List;
 
@@ -27,6 +26,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.devsaki.hentoid.views.ListPickerView;
 
 /**
  * Dialog to select or create a custom group
@@ -39,7 +39,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
     private List<Group> customGroups;
 
     private RadioButton existingRadio;
-    private PowerSpinnerView existingSpin;
+    private ListPickerView existingSpin;
     private RadioButton newRadio;
     private TextInputLayout newNameTxt;
     private RadioButton detachRadio;
@@ -81,10 +81,8 @@ public class ChangeGroupDialogFragment extends DialogFragment {
 
                 if (!customGroups.isEmpty()) { // "Existing group" by default
                     existingRadio.setChecked(true);
-                    existingSpin.setIsFocusable(true);
-                    existingSpin.setLifecycleOwner(requireActivity());
                     existingSpin.setVisibility(View.VISIBLE);
-                    existingSpin.setItems(Stream.of(customGroups).map(g -> g.name).toList());
+                    existingSpin.setEntries(Stream.of(customGroups).map(g -> g.name).toList());
 
                     // If there's only one content selected, indicate its group
                     if (1 == bookIds.length) {
@@ -92,7 +90,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
                         if (!gi.isEmpty())
                             for (int i = 0; i < customGroups.size(); i++) {
                                 if (gi.get(0).group.getTargetId() == customGroups.get(i).id) {
-                                    existingSpin.selectItemByIndex(i);
+                                    existingSpin.setIndex(i);
                                     break;
                                 }
                             }
@@ -151,8 +149,8 @@ public class ChangeGroupDialogFragment extends DialogFragment {
         LibraryViewModel viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         if (existingRadio.isChecked()) {
-            if (existingSpin.getSelectedIndex() > -1) {
-                viewModel.moveContentsToCustomGroup(bookIds, customGroups.get(existingSpin.getSelectedIndex()), getParent()::onChangeGroupSuccess);
+            if (existingSpin.getIndex() > -1) {
+                viewModel.moveContentsToCustomGroup(bookIds, customGroups.get(existingSpin.getIndex()), getParent()::onChangeGroupSuccess);
                 dismissAllowingStateLoss();
             } else {
                 ToastHelper.toast(R.string.group_not_selected);

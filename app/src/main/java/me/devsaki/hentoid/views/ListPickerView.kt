@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.WidgetListPickerBinding
@@ -14,19 +15,18 @@ import me.devsaki.hentoid.databinding.WidgetListPickerBinding
 class ListPickerView : ConstraintLayout {
     private val binding = WidgetListPickerBinding.inflate(LayoutInflater.from(context), this, true)
 
-    private var title = ""
-    private var entries: Array<CharSequence> = emptyArray()
-    private var entriesId = -1
-    private var currentEntry = ""
-
     private var onIndexChangeListener: ((Int) -> Unit)? = null
 
-    var index: Int
+    var entries: List<String> = emptyList()
         set(value) {
-            selectIndex(value, false)
+            field = value.toList()
+            index = 0
         }
-        get() {
-            return entries.indexOf(currentEntry)
+
+    var index: Int = -1
+        set(value) {
+            selectIndex(value)
+            field = value
         }
 
 
@@ -44,18 +44,26 @@ class ListPickerView : ConstraintLayout {
     private fun initialize(context: Context, attrs: AttributeSet?) {
         val arr = context.obtainStyledAttributes(attrs, R.styleable.ListPickerView)
         try {
-            title = arr.getString(R.styleable.ListPickerView_title) ?: ""
-            entriesId = arr.getResourceId(R.styleable.ListPickerView_entries, -1)
-            entries = arr.getTextArray(R.styleable.ListPickerView_entries) ?: emptyArray()
-            currentEntry = arr.getString(R.styleable.ListPickerView_currentEntry) ?: ""
+            val title = arr.getString(R.styleable.ListPickerView_title) ?: ""
+            val rawEntries = arr.getTextArray(R.styleable.ListPickerView_entries)
+            if (rawEntries != null) entries = rawEntries.map { cs -> cs.toString() }.toList()
+
+            val currentEntry = arr.getString(R.styleable.ListPickerView_currentEntry) ?: ""
+            index = entries.indexOf(currentEntry)
+
+            binding.let {
+                it.title.isVisible = title.isNotEmpty()
+                if (title.isNotEmpty()) it.title.text = title
+
+                it.description.textSize =
+                    (if (title.isEmpty()) resources.getDimension(R.dimen.text_body_1)
+                    else resources.getDimension(R.dimen.caption)) / resources.displayMetrics.density
+                it.description.text = currentEntry
+
+                it.root.setOnClickListener { onClick() }
+            }
         } finally {
             arr.recycle()
-        }
-
-        binding.let {
-            it.title.text = title
-            it.description.text = currentEntry
-            it.root.setOnClickListener { onClick() }
         }
     }
 
@@ -66,7 +74,7 @@ class ListPickerView : ConstraintLayout {
     private fun onClick() {
         val materialDialog: AlertDialog = MaterialAlertDialogBuilder(context)
             .setSingleChoiceItems(
-                entriesId,
+                entries.toTypedArray(),
                 index,
                 this::onSelect
             )
@@ -77,13 +85,13 @@ class ListPickerView : ConstraintLayout {
     }
 
     private fun onSelect(dialog: DialogInterface, selectedIndex: Int) {
-        selectIndex(selectedIndex)
+        index = selectedIndex
+        onIndexChangeListener?.invoke(selectedIndex)
         dialog.dismiss()
     }
 
-    private fun selectIndex(selectedIndex: Int, triggerListener: Boolean = true) {
-        currentEntry = entries[selectedIndex].toString()
-        binding.description.text = currentEntry
-        if (triggerListener) onIndexChangeListener?.invoke(selectedIndex)
+    private fun selectIndex(selectedIndex: Int) {
+        if (selectedIndex > -1 && selectedIndex < entries.size)
+            binding.description.text = entries[selectedIndex]
     }
 }
