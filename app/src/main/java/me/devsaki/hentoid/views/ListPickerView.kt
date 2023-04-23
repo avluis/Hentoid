@@ -21,13 +21,14 @@ class ListPickerView : ConstraintLayout {
 
     private var onIndexChangeListener: ((Int) -> Unit)? = null
 
-    fun setIndex(value: Int) {
-        selectIndex(value, false)
-    }
+    var index: Int
+        set(value) {
+            selectIndex(value, false)
+        }
+        get() {
+            return entries.indexOf(currentEntry)
+        }
 
-    fun getIndex(): Int {
-        return entries.indexOf(currentEntry)
-    }
 
     constructor(context: Context) : super(context)
 
@@ -66,7 +67,7 @@ class ListPickerView : ConstraintLayout {
         val materialDialog: AlertDialog = MaterialAlertDialogBuilder(context)
             .setSingleChoiceItems(
                 entriesId,
-                getIndex(),
+                index,
                 this::onSelect
             )
             .setCancelable(true)

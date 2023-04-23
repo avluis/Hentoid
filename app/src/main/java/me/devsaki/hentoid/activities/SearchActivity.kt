@@ -141,13 +141,13 @@ class SearchActivity : BaseActivity() {
                     preSelectedCriteria.attributes
                 )
                 if (preSelectedCriteria.location > 0) viewModel.setLocation(preSelectedCriteria.location)
-                locationPicker.setIndex(preSelectedCriteria.location)
+                locationPicker.index = preSelectedCriteria.location
                 if (preSelectedCriteria.contentType > 0) viewModel.setContentType(
                     preSelectedCriteria.contentType
                 )
                 typeSpin.selectItemByIndex(preSelectedCriteria.contentType)
             } else {
-                locationPicker.setIndex(0)
+                locationPicker.index = 0
                 typeSpin.selectItemByIndex(0)
                 viewModel.update()
             }
@@ -173,7 +173,7 @@ class SearchActivity : BaseActivity() {
             builder.uri = buildSearchUri(
                 selectedAttributeAdapter.currentList,
                 "",
-                locationPicker.getIndex(),
+                locationPicker.index,
                 typeSpin.selectedIndex
             ).toString()
             outState.putAll(builder.bundle)
@@ -191,7 +191,7 @@ class SearchActivity : BaseActivity() {
             binding?.apply {
                 if (location > 0) {
                     viewModel.setLocation(location)
-                    locationPicker.setIndex(location)
+                    locationPicker.index = location
                 }
                 if (contentType > 0) {
                     viewModel.setContentType(contentType)
@@ -314,7 +314,7 @@ class SearchActivity : BaseActivity() {
             val searchUri = buildSearchUri(
                 selectedAttributeAdapter.currentList,
                 "",
-                locationPicker.getIndex(),
+                locationPicker.index,
                 typeSpin.selectedIndex
             )
             Timber.d("URI :%s", searchUri)
