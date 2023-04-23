@@ -14,7 +14,7 @@ import me.devsaki.hentoid.viewholders.AttributeViewHolder
  * <p>
  * Can only be removed when prerequisites are met : see comments in {@link me.devsaki.hentoid.fragments.SearchBottomSheetFragment}
  */
-class SelectedAttributeAdapterK() : ListAdapter<Attribute, AttributeViewHolder>(DIFF_CALLBACK) {
+class SelectedAttributeAdapter() : ListAdapter<Attribute, AttributeViewHolder>(DIFF_CALLBACK) {
     private var onClickListener: View.OnClickListener? = null
 
 
