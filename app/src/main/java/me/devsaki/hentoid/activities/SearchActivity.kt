@@ -104,8 +104,6 @@ class SearchActivity : BaseActivity() {
                 onExcludeClick(view)
             }
             excludeCheckbox.isChecked = excludeClicked
-            val bookTypes = resources.getStringArray(R.array.search_type_entries)
-            typeSpin.setItems(listOf(*bookTypes))
             val llm =
                 LinearLayoutManager(this@SearchActivity, LinearLayoutManager.HORIZONTAL, false)
             searchTags.layoutManager = llm
@@ -145,18 +143,14 @@ class SearchActivity : BaseActivity() {
                 if (preSelectedCriteria.contentType > 0) viewModel.setContentType(
                     preSelectedCriteria.contentType
                 )
-                typeSpin.selectItemByIndex(preSelectedCriteria.contentType)
+                typePicker.index = preSelectedCriteria.contentType
             } else {
                 locationPicker.index = 0
-                typeSpin.selectItemByIndex(0)
+                typePicker.index = 0
                 viewModel.update()
             }
             locationPicker.setOnIndexChangeListener { index: Int -> viewModel.setLocation(index) }
-            typeSpin.setOnSpinnerItemSelectedListener { _, _: String?, i1, _: String ->
-                viewModel.setContentType(i1)
-            }
-            typeSpin.isFocusable = true
-            typeSpin.lifecycleOwner = this@SearchActivity
+            typePicker.setOnIndexChangeListener { index: Int -> viewModel.setContentType(index) }
         }
     }
 
@@ -174,7 +168,7 @@ class SearchActivity : BaseActivity() {
                 selectedAttributeAdapter.currentList,
                 "",
                 locationPicker.index,
-                typeSpin.selectedIndex
+                typePicker.index
             ).toString()
             outState.putAll(builder.bundle)
             outState.putBoolean("exclude", excludeClicked)
@@ -195,7 +189,7 @@ class SearchActivity : BaseActivity() {
                 }
                 if (contentType > 0) {
                     viewModel.setContentType(contentType)
-                    typeSpin.selectItemByIndex(contentType)
+                    typePicker.index = contentType
                 }
             }
         }
@@ -315,7 +309,7 @@ class SearchActivity : BaseActivity() {
                 selectedAttributeAdapter.currentList,
                 "",
                 locationPicker.index,
-                typeSpin.selectedIndex
+                typePicker.index
             )
             Timber.d("URI :%s", searchUri)
             val builder = SearchActivityBundle()
