@@ -14,10 +14,11 @@ import me.devsaki.hentoid.databinding.WidgetListPickerBinding
 class ListPickerView : ConstraintLayout {
     private val binding = WidgetListPickerBinding.inflate(LayoutInflater.from(context), this, true)
 
-    var title = ""
-    var entries: Array<CharSequence> = emptyArray()
-    var entriesId = -1
-    var currentEntry = ""
+    private var title = ""
+    private var entries: Array<CharSequence> = emptyArray()
+    private var entriesId = -1
+    private var currentEntry = ""
+    private var onChangeListener: ((String) -> Unit)? = null
 
     constructor(context: Context) : super(context)
 
@@ -48,6 +49,10 @@ class ListPickerView : ConstraintLayout {
         }
     }
 
+    fun setOnChangeListener(changeListener: (String) -> Unit) {
+        onChangeListener = changeListener
+    }
+
     private fun onClick() {
         val materialDialog: AlertDialog = MaterialAlertDialogBuilder(context)
             .setSingleChoiceItems(
@@ -64,6 +69,7 @@ class ListPickerView : ConstraintLayout {
     private fun onSelect(dialog: DialogInterface, selectedIndex: Int) {
         currentEntry = entries[selectedIndex].toString()
         binding.description.text = currentEntry
+        onChangeListener?.invoke(currentEntry)
         dialog.dismiss()
     }
 }
