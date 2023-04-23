@@ -94,7 +94,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.MetadataEditActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.activities.SearchActivityK;
+import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
@@ -1013,7 +1013,7 @@ public class LibraryContentFragment extends Fragment implements
      * Handler for the "Advanced search" button
      */
     private void onAdvancedSearchButtonClick() {
-        Intent search = new Intent(this.getContext(), SearchActivityK.class);
+        Intent search = new Intent(this.getContext(), SearchActivity.class);
 
         SearchActivityBundle builder = new SearchActivityBundle();
 

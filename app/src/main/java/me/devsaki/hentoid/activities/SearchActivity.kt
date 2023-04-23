@@ -28,7 +28,7 @@ import timber.log.Timber
 /**
  * Activity for the advanced search screen
  */
-class SearchActivityK : BaseActivity() {
+class SearchActivity : BaseActivity() {
 
     private var binding: ActivitySearchBinding? = null
 
@@ -118,7 +118,7 @@ class SearchActivityK : BaseActivity() {
             val bookTypes = resources.getStringArray(R.array.search_type_entries)
             typeSpin.setItems(listOf(*bookTypes))
             val llm =
-                LinearLayoutManager(this@SearchActivityK, LinearLayoutManager.HORIZONTAL, false)
+                LinearLayoutManager(this@SearchActivity, LinearLayoutManager.HORIZONTAL, false)
             searchTags.layoutManager = llm
             selectedAttributeAdapter = SelectedAttributeAdapter()
             selectedAttributeAdapter.setOnClickListener { button: View ->
@@ -139,14 +139,14 @@ class SearchActivityK : BaseActivity() {
 
             val vmFactory = ViewModelFactory(application)
             viewModel =
-                ViewModelProvider(this@SearchActivityK, vmFactory)[SearchViewModel::class.java]
-            viewModel.nbAttributesPerType.observe(this@SearchActivityK) { attrCount: SparseIntArray ->
+                ViewModelProvider(this@SearchActivity, vmFactory)[SearchViewModel::class.java]
+            viewModel.nbAttributesPerType.observe(this@SearchActivity) { attrCount: SparseIntArray ->
                 onQueryUpdated(attrCount)
             }
-            viewModel.selectedAttributes.observe(this@SearchActivityK) { selectedAttributes: List<Attribute> ->
+            viewModel.selectedAttributes.observe(this@SearchActivity) { selectedAttributes: List<Attribute> ->
                 onSelectedAttributesChanged(selectedAttributes)
             }
-            viewModel.selectedContentCount.observe(this@SearchActivityK) { count: Int ->
+            viewModel.selectedContentCount.observe(this@SearchActivity) { count: Int ->
                 onBooksCounted(count)
             }
             if (preSelectedCriteria != null) {
@@ -168,12 +168,12 @@ class SearchActivityK : BaseActivity() {
                 viewModel.setLocation(i1)
             }
             locationSpin.isFocusable = true
-            locationSpin.lifecycleOwner = this@SearchActivityK
+            locationSpin.lifecycleOwner = this@SearchActivity
             typeSpin.setOnSpinnerItemSelectedListener { _, _: String?, i1, _: String ->
                 viewModel.setContentType(i1)
             }
             typeSpin.isFocusable = true
-            typeSpin.lifecycleOwner = this@SearchActivityK
+            typeSpin.lifecycleOwner = this@SearchActivity
         }
     }
 

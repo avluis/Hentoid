@@ -5,5 +5,5 @@
     style="@style/Chip.Choice"
     android:id="@+id/attributeChip"
     app:layout_flexGrow="1"
-    tools:context=".activities.SearchActivityK"
+    tools:context=".activities.SearchActivity"
     tools:text="tag name (123)" />

@@ -189,7 +189,7 @@
             android:label="@string/title_activity_duplicate_detector"
             tools:ignore="UnusedAttribute" />
         <activity
-            android:name=".activities.SearchActivityK"
+            android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
             tools:ignore="UnusedAttribute" />
         <activity
