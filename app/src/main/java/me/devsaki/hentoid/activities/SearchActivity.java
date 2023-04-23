@@ -23,7 +23,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
-import me.devsaki.hentoid.adapters.SelectedAttributeAdapter;
+import me.devsaki.hentoid.adapters.SelectedAttributeAdapterK;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.databinding.ActivitySearchBinding;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -42,7 +42,7 @@ public class SearchActivity extends BaseActivity {
     private ActivitySearchBinding binding;
 
     // Container where selected attributed are displayed
-    private SelectedAttributeAdapter selectedAttributeAdapter;
+    private SelectedAttributeAdapterK selectedAttributeAdapter;
 
     // ViewModel of this activity
     private SearchViewModel viewModel;
@@ -130,7 +130,7 @@ public class SearchActivity extends BaseActivity {
 
         LinearLayoutManager llm = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.searchTags.setLayoutManager(llm);
-        selectedAttributeAdapter = new SelectedAttributeAdapter();
+        selectedAttributeAdapter = new SelectedAttributeAdapterK();
         selectedAttributeAdapter.setOnClickListener(this::onSelectedAttributeClick);
         selectedAttributeAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() { // Auto-Scroll to last added item
             @Override
