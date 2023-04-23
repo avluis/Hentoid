@@ -54,7 +54,7 @@ import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
-import me.devsaki.hentoid.adapters.ImagePagerAdapterK
+import me.devsaki.hentoid.adapters.ImagePagerAdapter
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -99,7 +99,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private val centerInside: Transformation<Bitmap> = CenterInside()
     private val glideRequestOptions = RequestOptions().optionalTransform(centerInside)
 
-    private lateinit var adapter: ImagePagerAdapterK
+    private lateinit var adapter: ImagePagerAdapter
     private lateinit var llm: PrefetchLinearLayoutManager
     private lateinit var pageSnapWidget: PageSnapWidget
     private val listener =
@@ -378,7 +378,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     private fun initPager() {
-        adapter = ImagePagerAdapterK(requireContext())
+        adapter = ImagePagerAdapter(requireContext())
         binding?.apply {
             recyclerView.adapter = adapter
             recyclerView.setHasFixedSize(true)

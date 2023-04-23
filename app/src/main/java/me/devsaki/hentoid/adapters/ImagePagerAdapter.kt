@@ -40,8 +40,8 @@ import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import timber.log.Timber
 import kotlin.math.roundToInt
 
-class ImagePagerAdapterK(context: Context) :
-    ListAdapter<ImageFile, ImagePagerAdapterK.ImageViewHolder>(IMAGE_DIFF_CALLBACK) {
+class ImagePagerAdapter(context: Context) :
+    ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder>(IMAGE_DIFF_CALLBACK) {
 
     enum class ViewType(val value: Int) {
         DEFAULT(0), IMAGEVIEW_STRETCH(1), SSIV_VERTICAL(2)
