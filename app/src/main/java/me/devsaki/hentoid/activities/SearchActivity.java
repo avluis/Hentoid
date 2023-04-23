@@ -30,7 +30,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
 import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.util.StringHelper;
-import me.devsaki.hentoid.viewmodels.SearchViewModel;
+import me.devsaki.hentoid.viewmodels.SearchViewModelK;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
 
@@ -45,7 +45,7 @@ public class SearchActivity extends BaseActivity {
     private SelectedAttributeAdapter selectedAttributeAdapter;
 
     // ViewModel of this activity
-    private SearchViewModel viewModel;
+    private SearchViewModelK viewModel;
 
     private boolean excludeClicked = false;
 
@@ -143,9 +143,9 @@ public class SearchActivity extends BaseActivity {
         binding.searchFab.setOnClickListener(v -> searchBooks());
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
-        viewModel = new ViewModelProvider(this, vmFactory).get(SearchViewModel.class);
-        viewModel.getAttributesCountData().observe(this, this::onQueryUpdated);
-        viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
+        viewModel = new ViewModelProvider(this, vmFactory).get(SearchViewModelK.class);
+        viewModel.getNbAttributesPerType().observe(this, this::onQueryUpdated);
+        viewModel.getSelectedAttributes().observe(this, this::onSelectedAttributesChanged);
         viewModel.getSelectedContentCount().observe(this, this::onBooksCounted);
 
         if (preSelectedCriteria != null) {

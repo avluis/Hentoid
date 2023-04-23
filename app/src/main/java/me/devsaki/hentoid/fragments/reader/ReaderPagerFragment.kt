@@ -1061,7 +1061,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                         bookPreferences
                     )
                 ) recyclerView.smoothScrollToPosition(absImageIndex + 1) else {
-                    smoothScroller!!.targetPosition = absImageIndex + 1
+                    smoothScroller.targetPosition = absImageIndex + 1
                     llm.startSmoothScroll(smoothScroller)
                 }
             } else {

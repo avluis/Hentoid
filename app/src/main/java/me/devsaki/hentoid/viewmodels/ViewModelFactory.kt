@@ -16,7 +16,7 @@ class ViewModelFactory(val application: Application) : ViewModelProvider.Factory
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when (modelClass) {
             LibraryViewModel::class.java -> LibraryViewModel(application, ObjectBoxDAO(application))
-            SearchViewModel::class.java -> SearchViewModel(ObjectBoxDAO(application), Preferences.getSearchAttributesSortOrder())
+            SearchViewModelK::class.java -> SearchViewModelK(application, ObjectBoxDAO(application), Preferences.getSearchAttributesSortOrder())
             QueueViewModel::class.java -> QueueViewModel(application, ObjectBoxDAO(application))
             ReaderViewModel::class.java -> ReaderViewModel(application,ObjectBoxDAO(application))
             PreferencesViewModel::class.java -> PreferencesViewModel(application, ObjectBoxDAO(application))

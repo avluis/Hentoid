@@ -29,7 +29,7 @@ import me.devsaki.hentoid.util.LanguageHelper
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.viewmodels.SearchViewModel
+import me.devsaki.hentoid.viewmodels.SearchViewModelK
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
 
@@ -45,7 +45,7 @@ import timber.log.Timber
  */
 class SearchBottomSheetFragment : BottomSheetDialogFragment() {
     // ViewModel of the current activity
-    private lateinit var viewModel: SearchViewModel
+    private lateinit var viewModel: SearchViewModelK
 
     // UI
     private var binding: IncludeSearchBottomPanelBinding? = null
@@ -94,7 +94,8 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
             currentPage = 1
             require(selectedAttributeTypes.isNotEmpty()) { "Initialization failed" }
             val vmFactory = ViewModelFactory(requireActivity().application)
-            viewModel = ViewModelProvider(requireActivity(), vmFactory)[SearchViewModel::class.java]
+            viewModel =
+                ViewModelProvider(requireActivity(), vmFactory)[SearchViewModelK::class.java]
             viewModel.setAttributeTypes(selectedAttributeTypes)
             viewModel.setGroup(groupId)
         }
@@ -158,7 +159,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        viewModel.availableAttributesData.observe(viewLifecycleOwner) { results: AttributeQueryResult ->
+        viewModel.availableAttributes.observe(viewLifecycleOwner) { results: AttributeQueryResult ->
             onAttributesReady(results)
         }
         searchMasterData("")
@@ -220,7 +221,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
         if (!isInitialized) return  // Hack to avoid double calls from LiveData
         binding?.tagWaitDescription?.clearAnimation()
 
-        var selectedAttributes = viewModel.selectedAttributesData.value
+        var selectedAttributes = viewModel.selectedAttributes.value
         selectedAttributes = selectedAttributes
             ?.filter { a -> selectedAttributeTypes.contains(a.type) }
             ?: emptyList()
@@ -254,8 +255,8 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
      */
     private fun onAttributeChosen(button: View) {
         val a = button.tag as Attribute
-        if (null == viewModel.selectedAttributesData.value
-            || !viewModel.selectedAttributesData.value!!.contains(a)
+        if (null == viewModel.selectedAttributes.value
+            || !viewModel.selectedAttributes.value!!.contains(a)
         ) { // Add selected tag
             button.isPressed = true
             a.isExcluded = excludeAttr
