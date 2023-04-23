@@ -3,18 +3,16 @@ package me.devsaki.hentoid.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.work.BackoffPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import io.reactivex.Observable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.CollectionDAO
@@ -39,9 +37,6 @@ class DuplicateViewModel(
     private val duplicatesDao: DuplicatesDAO
 ) : AndroidViewModel(application) {
 
-    // Cleanup for all RxJava calls
-    private val compositeDisposable = CompositeDisposable()
-
     // LiveData for the UI
     val allDuplicates = duplicatesDao.getEntriesLive()
     val selectedDuplicates = MutableLiveData<List<DuplicateEntry>>()
@@ -51,7 +46,6 @@ class DuplicateViewModel(
     override fun onCleared() {
         super.onCleared()
         duplicatesDao.cleanup()
-        compositeDisposable.clear()
     }
 
     fun setFirstUse(value: Boolean) {
@@ -137,30 +131,22 @@ class DuplicateViewModel(
         if (deleteList.isNotEmpty()) remove(deleteList)
 
         // Actually delete
-        compositeDisposable.add(
-            Observable.fromIterable(selectedDupes)
-                .observeOn(Schedulers.io())
-                .doOnNext {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                selectedDupes.forEach {
                     // Remove duplicate entries on display
                     if (!it.keep) {
+                        // Post a copy so that we don't modify the collection we're looping on
                         val updateDisplayList2 = selectedDupes.toMutableList()
                         updateDisplayList2.remove(it)
-                        selectedDuplicates.postValue(updateDisplayList2) // Post a copy so that we don't modify the collection we're looping on
+                        selectedDuplicates.postValue(updateDisplayList2)
                     }
-                    if (it.titleScore <= 1f) // Don't delete the fake reference entry that has been put there for display
-                        duplicatesDao.delete(it)
+                    // Don't delete the fake reference entry that has been put there for display
+                    if (it.titleScore <= 1f) duplicatesDao.delete(it)
                 }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeBy(
-                    onNext = {
-                        // Already done on IO thread by doOnNext
-                    },
-                    onError = { t -> Timber.w(t) },
-                    onComplete = {
-                        onComplete.run()
-                    }
-                )
-        )
+            }
+            onComplete.run()
+        }
     }
 
     fun remove(contentList: List<Long>) {
@@ -184,9 +170,8 @@ class DuplicateViewModel(
         val selectedDupes = selectedDuplicates.value!!.toImmutableList()
         val context = getApplication<Application>().applicationContext
 
-        compositeDisposable.add(
-            Single.fromCallable {
-                var result = false
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) {
                 try {
                     // Create merged book
                     ContentHelper.mergeContents(context, contentList, newTitle, dao)
@@ -210,17 +195,13 @@ class DuplicateViewModel(
                                 duplicatesDao.delete(dupeEntry)
                         }
                     }
-                    result = true
+                    return@withContext true
                 } catch (e: ContentNotProcessedException) {
                     Timber.e(e)
                 }
-                result
+                return@withContext false
             }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { b: Boolean -> if (b) onSuccess.run() }
-                ) { t: Throwable? -> Timber.e(t) }
-        )
+            if (result) onSuccess.run()
+        }
     }
 }
