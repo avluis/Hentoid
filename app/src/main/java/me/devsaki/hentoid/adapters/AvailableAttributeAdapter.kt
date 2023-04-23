@@ -13,7 +13,7 @@ import me.devsaki.hentoid.viewholders.AttributeViewHolder
  * <p>
  * Can only be removed when prerequisites are met : see comments in {@link me.devsaki.hentoid.fragments.SearchBottomSheetFragment}
  */
-class AvailableAttributeAdapterK : RecyclerView.Adapter<AttributeViewHolder>() {
+class AvailableAttributeAdapter : RecyclerView.Adapter<AttributeViewHolder>() {
     private val dataset: MutableList<Attribute> = ArrayList()
     private var onScrollToEndListener: Runnable? = null
     private var onClickListener: View.OnClickListener? = null

@@ -20,7 +20,7 @@ import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle
-import me.devsaki.hentoid.adapters.AvailableAttributeAdapterK
+import me.devsaki.hentoid.adapters.AvailableAttributeAdapter
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.IncludeSearchBottomPanelBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -47,7 +47,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
     private lateinit var searchMasterDataDebouncer: Debouncer<String>
 
     // Container where all suggested attributes are loaded
-    private lateinit var attributeAdapter: AvailableAttributeAdapterK
+    private lateinit var attributeAdapter: AvailableAttributeAdapter
 
 
     // Vars
@@ -120,7 +120,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         layoutManager.alignItems = AlignItems.STRETCH
         layoutManager.flexWrap = FlexWrap.WRAP
         binding.tagSuggestion.layoutManager = layoutManager
-        attributeAdapter = AvailableAttributeAdapterK()
+        attributeAdapter = AvailableAttributeAdapter()
         attributeAdapter.setOnScrollToEndListener { this.loadMore() }
         attributeAdapter.setOnClickListener { button: View ->
             this.onAttributeClicked(button)
