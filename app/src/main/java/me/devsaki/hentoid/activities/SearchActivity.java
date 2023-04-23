@@ -12,10 +12,11 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,8 +102,7 @@ public class SearchActivity extends BaseActivity {
                 preSelectedCriteria = SearchActivityBundle.Companion.parseSearchUri(searchUri);
         }
 
-        Toolbar toolbar = findViewById(R.id.search_toolbar);
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        binding.toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         // Attribute type buttons
         TextView anyTypeButton = findViewById(R.id.textCategoryAny);
@@ -117,7 +117,7 @@ public class SearchActivity extends BaseActivity {
         binding.textCategoryLanguage.setOnClickListener(v -> onAttrButtonClick(excludeClicked, AttributeType.LANGUAGE));
         binding.textCategorySource.setOnClickListener(v -> onAttrButtonClick(excludeClicked, AttributeType.SOURCE));
 
-        CheckBox excludeCheckBox = findViewById(R.id.checkBox);
+        CheckBox excludeCheckBox = findViewById(R.id.excludeCheckbox);
         excludeCheckBox.setOnClickListener(this::onExcludeClick);
         excludeCheckBox.setChecked(excludeClicked);
 
@@ -219,7 +219,7 @@ public class SearchActivity extends BaseActivity {
      * @param attributeTypes Attribute type(s) to select
      */
     private void onAttrButtonClick(boolean excludeClicked, AttributeType... attributeTypes) {
-        SearchBottomSheetFragment.Companion.invoke(this, getSupportFragmentManager(), attributeTypes, excludeClicked);
+        SearchBottomSheetFragment.Companion.invoke(this, getSupportFragmentManager(), Stream.of(attributeTypes).toList(), excludeClicked);
     }
 
     /**

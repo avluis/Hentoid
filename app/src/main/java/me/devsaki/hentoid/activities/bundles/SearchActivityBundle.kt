@@ -13,7 +13,7 @@ import me.devsaki.hentoid.util.long
 import me.devsaki.hentoid.util.string
 
 /**
- * Helper class to transfer data from any Activity to [me.devsaki.hentoid.activities.SearchActivity]
+ * Helper class to transfer data from any Activity to [me.devsaki.hentoid.activities.SearchActivityK]
  * through a Bundle
  */
 class SearchActivityBundle(val bundle: Bundle = Bundle()) {

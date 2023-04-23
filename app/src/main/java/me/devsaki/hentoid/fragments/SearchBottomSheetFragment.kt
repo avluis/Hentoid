@@ -304,7 +304,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
         fun invoke(
             context: Context,
             fragmentManager: FragmentManager,
-            types: Array<AttributeType>,
+            types: List<AttributeType>,
             excludeClicked: Boolean
         ) {
             val builder = SearchActivityBundle()
