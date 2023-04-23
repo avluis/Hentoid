@@ -29,7 +29,7 @@ import me.devsaki.hentoid.util.LanguageHelper
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.viewmodels.SearchViewModelK
+import me.devsaki.hentoid.viewmodels.SearchViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
 
@@ -45,7 +45,7 @@ import timber.log.Timber
  */
 class SearchBottomSheetFragment : BottomSheetDialogFragment() {
     // ViewModel of the current activity
-    private lateinit var viewModel: SearchViewModelK
+    private lateinit var viewModel: SearchViewModel
 
     // UI
     private var binding: IncludeSearchBottomPanelBinding? = null
@@ -95,7 +95,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
             require(selectedAttributeTypes.isNotEmpty()) { "Initialization failed" }
             val vmFactory = ViewModelFactory(requireActivity().application)
             viewModel =
-                ViewModelProvider(requireActivity(), vmFactory)[SearchViewModelK::class.java]
+                ViewModelProvider(requireActivity(), vmFactory)[SearchViewModel::class.java]
             viewModel.setAttributeTypes(selectedAttributeTypes)
             viewModel.setGroup(groupId)
         }

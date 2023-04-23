@@ -17,7 +17,7 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import java.util.Objects
 
-class SearchViewModelK(
+class SearchViewModel(
     application: Application,
     private val dao: CollectionDAO,
     private val attributeSortOrder: Int
