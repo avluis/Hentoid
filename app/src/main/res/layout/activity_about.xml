@@ -28,9 +28,9 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:padding="8dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:padding="8dp">
 
             <ImageView
                 android:id="@+id/appLogo"
@@ -92,9 +92,9 @@
                 android:layout_height="@dimen/about_ic_icons_height"
                 android:cropToPadding="true"
                 android:src="@drawable/ic_social_reddit"
+                app:layout_constraintBottom_toTopOf="@id/changelogButton"
                 app:layout_constraintStart_toEndOf="@id/appLogo"
                 app:layout_constraintTop_toBottomOf="@id/discordIcon"
-                app:layout_constraintBottom_toTopOf="@id/changelogButton"
                 tools:ignore="ContentDescription" />
 
             <TextView
@@ -112,17 +112,17 @@
                 android:id="@+id/changelogButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:layout_marginStart="5dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/view_changelog"
                 android:textColor="?attr/colorSecondary"
                 android:textSize="@dimen/about_textSize"
                 android:textStyle="bold"
                 app:flow_horizontalAlign="start"
-                app:layout_constraintStart_toEndOf="@id/appLogo"
-                app:layout_constraintTop_toBottomOf="@id/redditIcon"
                 app:layout_constraintBottom_toBottomOf="@id/appLogo"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/appLogo"
+                app:layout_constraintTop_toBottomOf="@id/redditIcon" />
 
             <TextView
                 android:id="@+id/tv_version_name"
@@ -207,6 +207,13 @@
                 app:layout_constraintEnd_toEndOf="@id/personalDataStatement3"
                 app:layout_constraintStart_toStartOf="@id/personalDataStatement3"
                 app:layout_constraintTop_toBottomOf="@id/personalDataStatement3" />
+
+            <me.devsaki.hentoid.views.ListPickerView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:description="aaa"
+                app:layout_constraintTop_toBottomOf="@id/licensesButton"
+                app:title="aaa" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
