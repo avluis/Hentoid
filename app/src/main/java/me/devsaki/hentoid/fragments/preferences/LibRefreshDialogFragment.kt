@@ -43,10 +43,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 
-const val SHOW_OPTIONS = "show_options"
-const val CHOOSE_FOLDER = "choose_folder"
-const val LOCATION = "location"
-
 /**
  * Launcher dialog for the following features :
  * - Set/replace download folder
@@ -525,6 +521,10 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     }
 
     companion object {
+        const val SHOW_OPTIONS = "show_options"
+        const val CHOOSE_FOLDER = "choose_folder"
+        const val LOCATION = "location"
+
         fun invoke(
             fragmentManager: FragmentManager,
             showOptions: Boolean,

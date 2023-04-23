@@ -22,8 +22,6 @@ import me.devsaki.hentoid.util.file.FileHelper
 /**
  * Info dialog for download errors details
  */
-const val ID = "ID"
-
 class ErrorsDialogFragment : DialogFragment(R.layout.dialog_library_errors) {
 
     // == UI
@@ -132,6 +130,8 @@ class ErrorsDialogFragment : DialogFragment(R.layout.dialog_library_errors) {
     }
 
     companion object {
+        const val ID = "ID"
+
         fun invoke(parentFragment: Fragment, id: Long) {
             val fragment = ErrorsDialogFragment()
 
