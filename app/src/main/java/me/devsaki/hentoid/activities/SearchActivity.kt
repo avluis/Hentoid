@@ -83,34 +83,32 @@ class SearchActivity : BaseActivity() {
                     AttributeType.CIRCLE
                 )
             }
-            textCategorySeries.setOnClickListener { v ->
+            textCategorySeries.setOnClickListener {
                 onAttrButtonClick(
                     excludeClicked,
                     AttributeType.SERIE
                 )
             }
-            textCategoryCharacter.setOnClickListener { v ->
+            textCategoryCharacter.setOnClickListener {
                 onAttrButtonClick(
                     excludeClicked,
                     AttributeType.CHARACTER
                 )
             }
-            textCategoryLanguage.setOnClickListener { v ->
+            textCategoryLanguage.setOnClickListener {
                 onAttrButtonClick(
                     excludeClicked,
                     AttributeType.LANGUAGE
                 )
             }
-            textCategorySource.setOnClickListener { v ->
+            textCategorySource.setOnClickListener {
                 onAttrButtonClick(
                     excludeClicked,
                     AttributeType.SOURCE
                 )
             }
             excludeCheckbox.setOnClickListener { view: View ->
-                onExcludeClick(
-                    view
-                )
+                onExcludeClick(view)
             }
             excludeCheckbox.isChecked = excludeClicked
             val locations = resources.getStringArray(R.array.search_location_entries)
