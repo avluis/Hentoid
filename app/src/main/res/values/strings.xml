@@ -911,6 +911,10 @@
     <string name="meta_rule_target">Target</string>
     <string name="meta_rule_wildcard">If target has a wildcard, source must have a wildcard too</string>
 
+    <!-- Image transform -->
+    <string name="transform_resizing">Resizing</string>
+    <string name="transform_resize_pics">Resize pictures</string>
+
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>
     <string name="notif_delete_title">Content deletion</string>
