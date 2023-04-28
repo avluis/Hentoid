@@ -127,9 +127,8 @@ class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
             dao.cleanup()
         }
         val log: MutableList<LogEntry> = ArrayList()
-        val errorLogInfo = LogInfo()
+        val errorLogInfo = LogInfo("error_log" + content.id)
         errorLogInfo.setHeaderName(resources.getString(R.string.error))
-        errorLogInfo.setFileName("error_log" + content.id)
         errorLogInfo.setNoDataMessage(resources.getString(R.string.no_error_detected))
         errorLogInfo.setEntries(log)
         val errorLog: List<ErrorRecord>? = content.errorLog

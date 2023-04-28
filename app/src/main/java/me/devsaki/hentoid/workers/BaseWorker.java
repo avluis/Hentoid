@@ -148,11 +148,10 @@ public abstract class BaseWorker extends Worker {
     }
 
     private void dumpLog() {
-        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-        logInfo.setFileName(logName);
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo(logName);
         logInfo.setHeaderName(logName);
         logInfo.setEntries(logs);
-        LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
+        LogHelper.Companion.writeLog(HentoidApp.getInstance(), logInfo);
     }
 
     abstract Notification getStartNotification();

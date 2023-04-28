@@ -32,8 +32,8 @@ import me.devsaki.hentoid.workers.PurgeWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.greenrobot.eventbus.EventBus
-import org.threeten.bp.Instant
 import timber.log.Timber
+import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
 

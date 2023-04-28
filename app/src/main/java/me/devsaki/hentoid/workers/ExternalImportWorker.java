@@ -197,7 +197,7 @@ public class ExternalImportWorker extends BaseWorker {
             eventComplete(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO, null);
 
             // Write log in root folder
-            logFile = LogHelper.writeLog(context, buildLogInfo(log));
+            logFile = LogHelper.Companion.writeLog(context, buildLogInfo(log));
         } catch (IOException e) {
             Timber.w(e);
         } finally {
@@ -207,9 +207,8 @@ public class ExternalImportWorker extends BaseWorker {
     }
 
     private LogHelper.LogInfo buildLogInfo(@NonNull List<LogHelper.LogEntry> log) {
-        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo("import_external_log");
         logInfo.setHeaderName("Import external");
-        logInfo.setFileName("import_external_log");
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);
         return logInfo;

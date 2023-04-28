@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.json;
 
-import org.threeten.bp.Instant;
+import java.time.Instant;
 
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.enums.ErrorType;

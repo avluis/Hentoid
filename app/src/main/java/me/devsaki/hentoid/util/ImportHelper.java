@@ -26,12 +26,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.squareup.moshi.JsonDataException;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

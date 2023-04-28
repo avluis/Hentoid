@@ -1,8 +1,9 @@
 package me.devsaki.hentoid.util.network
 
 import org.apache.commons.lang3.tuple.ImmutablePair
-import org.threeten.bp.Instant
-import java.util.*
+import java.time.Instant
+import java.util.LinkedList
+import java.util.Queue
 
 object DownloadSpeedCalculator {
     private const val MAX_SAMPLES_SIZE = 15

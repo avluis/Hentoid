@@ -16,11 +16,9 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.jakewharton.threetenabp.AndroidThreeTen;
-
-import org.threeten.bp.Instant;
 
 import java.io.IOException;
+import java.time.Instant;
 
 import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.plugins.RxJavaPlugins;
@@ -96,9 +94,6 @@ public class HentoidApp extends Application {
         setInstance(this);
 
         Timber.i("Initializing %s", R.string.app_name);
-
-        // Init datetime
-        AndroidThreeTen.init(this);
 
         // Timber
         if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());

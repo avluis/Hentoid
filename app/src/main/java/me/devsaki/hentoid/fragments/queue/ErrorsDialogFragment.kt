@@ -14,8 +14,6 @@ import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.databinding.DialogLibraryErrorsBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.LogHelper
-import me.devsaki.hentoid.util.LogHelper.LogEntry
-import me.devsaki.hentoid.util.LogHelper.LogInfo
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
 
@@ -94,17 +92,16 @@ class ErrorsDialogFragment : DialogFragment(R.layout.dialog_library_errors) {
         }
     }
 
-    private fun createLog(content: Content): LogInfo {
-        val log: MutableList<LogEntry> = ArrayList()
-        val errorLogInfo = LogInfo()
+    private fun createLog(content: Content): LogHelper.LogInfo {
+        val log: MutableList<LogHelper.LogEntry> = ArrayList()
+        val errorLogInfo = LogHelper.LogInfo("error_log" + content.id)
         errorLogInfo.setHeaderName("Error")
-        errorLogInfo.setFileName("error_log" + content.id)
         errorLogInfo.setNoDataMessage("No error detected.")
         errorLogInfo.setEntries(log)
         val errorLog: List<ErrorRecord>? = content.errorLog
         if (errorLog != null) {
             errorLogInfo.setHeader("Error log for " + content.title + " [" + content.uniqueSiteId + "@" + content.site.description + "] : " + errorLog.size + " errors")
-            for (e in errorLog) log.add(LogEntry(e.timestamp, e.toString()))
+            for (e in errorLog) log.add(LogHelper.LogEntry(e.timestamp, e.toString()))
         }
         return errorLogInfo
     }
