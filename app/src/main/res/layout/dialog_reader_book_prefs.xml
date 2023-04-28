@@ -26,31 +26,31 @@
         <me.devsaki.hentoid.views.ListPickerView
             android:id="@+id/browse_picker"
             android:layout_width="0dp"
-            android:layout_marginTop="8dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/export_title"
-            app:layout_constraintEnd_toEndOf="parent"
             app:title="@string/pref_viewer_browse_mode" />
 
         <me.devsaki.hentoid.views.ListPickerView
             android:id="@+id/rendering_picker"
             android:layout_width="0dp"
-            android:layout_marginTop="12dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/browse_picker"
-            app:layout_constraintEnd_toEndOf="parent"
             app:title="@string/pref_viewer_rendering" />
 
         <me.devsaki.hentoid.views.ListPickerView
             android:id="@+id/display_picker"
             android:layout_width="0dp"
-            android:layout_marginTop="12dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rendering_picker"
-            app:layout_constraintEnd_toEndOf="parent"
             app:title="@string/pref_viewer_display_mode" />
 
         <com.google.android.material.button.MaterialButton
