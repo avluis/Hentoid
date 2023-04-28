@@ -88,13 +88,13 @@ import org.apache.commons.lang3.tuple.Pair
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.threeten.bp.Instant
 import timber.log.Timber
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
-    ReaderBrowseModeDialogFragment.Parent,
-    ReaderPrefsDialogFragment.Parent, ReaderDeleteDialogFragment.Parent, Pager {
+    ReaderBrowseModeDialogFragment.Parent, ReaderPrefsDialogFragment.Parent,
+    ReaderDeleteDialogFragment.Parent, Pager {
 
     private val centerInside: Transformation<Bitmap> = CenterInside()
     private val glideRequestOptions = RequestOptions().optionalTransform(centerInside)
@@ -102,10 +102,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var adapter: ImagePagerAdapter
     private lateinit var llm: PrefetchLinearLayoutManager
     private lateinit var pageSnapWidget: PageSnapWidget
-    private val listener =
-        OnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
-            onSharedPreferenceChanged(key)
-        }
+    private val listener = OnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
+        onSharedPreferenceChanged(key)
+    }
     private lateinit var viewModel: ReaderViewModel
     private var absImageIndex = -1 // Absolute (book scale) 0-based image index
 
@@ -208,11 +207,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                         slideshowSliderDebouncer.submit(startIndex)
                     }
 
-                    R.id.action_delete_book ->
-                        if (VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode())
-                            invoke(this, !isContentArchive)
-                        else  // We already know what to delete
-                            onDeleteElement(VIEWER_DELETE_TARGET_PAGE == Preferences.getReaderDeleteTarget())
+                    R.id.action_delete_book -> if (VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode()) invoke(
+                        this,
+                        !isContentArchive
+                    )
+                    else  // We already know what to delete
+                        onDeleteElement(VIEWER_DELETE_TARGET_PAGE == Preferences.getReaderDeleteTarget())
 
                     else -> {}
                 }
@@ -410,8 +410,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
             val tapZoneScale = if (Preferences.isReaderTapToTurn2x()) 2 else 1
             val onHorizontalZoneTapListener = OnZoneTapListener(
-                recyclerView,
-                tapZoneScale
+                recyclerView, tapZoneScale
             ).setOnLeftZoneTapListener { onLeftTap() }.setOnRightZoneTapListener { onRightTap() }
                 .setOnMiddleZoneTapListener { onMiddleTap() }.setOnLongTapListener { onLongTap() }
             val onVerticalZoneTapListener =
@@ -1102,8 +1101,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             if (View.VISIBLE == controlsOverlay.imagePreviewCenter.visibility) {
                 val previousImageView: ImageView
                 val nextImageView: ImageView
-                if (VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences)
-                ) {
+                if (VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences)) {
                     previousImageView = controlsOverlay.imagePreviewLeft
                     nextImageView = controlsOverlay.imagePreviewRight
                 } else {
@@ -1182,8 +1180,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isReaderTapToTurn()) return
-        if (VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
-            previousPage() else nextPage()
+        if (VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences)) previousPage() else nextPage()
     }
 
     /**
@@ -1207,8 +1204,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isReaderTapToTurn()) return
-        if (VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
-            nextPage() else previousPage()
+        if (VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences)) nextPage() else previousPage()
     }
 
     /**
@@ -1304,8 +1300,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         WindowCompat.setDecorFitsSystemWindows(window, false)
         if (visible) {
             binding?.apply {
-                WindowInsetsControllerCompat(window, controlsOverlay.root)
-                    .show(WindowInsetsCompat.Type.systemBars())
+                WindowInsetsControllerCompat(
+                    window,
+                    controlsOverlay.root
+                ).show(WindowInsetsCompat.Type.systemBars())
             }
             // Revert to default regarding notch area display
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -1367,13 +1365,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             else -> 2f
         }
         if (showToast) {
-            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
-                ToastHelper.toast(
-                    R.string.slideshow_start_vertical,
-                    resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)[convertPrefsDelayToSliderPosition(
-                        delayPref
-                    )]
-                ) else ToastHelper.toast(R.string.slideshow_start, factor)
+            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) ToastHelper.toast(
+                R.string.slideshow_start_vertical,
+                resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)[convertPrefsDelayToSliderPosition(
+                    delayPref
+                )]
+            ) else ToastHelper.toast(R.string.slideshow_start, factor)
         }
         scrollListener.disableScroll()
         if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) {
@@ -1391,13 +1388,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             slideshowTimer = if (-1L == initialDelayMs) {
                 Observable.interval(slideshowPeriodMs, TimeUnit.MILLISECONDS)
                     .subscribeOn(Schedulers.computation()).repeat()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { onSlideshowTick() }
+                    .observeOn(AndroidSchedulers.mainThread()).subscribe { onSlideshowTick() }
             } else {
                 Observable.interval(initialDelayMs, slideshowPeriodMs, TimeUnit.MILLISECONDS)
                     .subscribeOn(Schedulers.computation()).repeat()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { onSlideshowTick() }
+                    .observeOn(AndroidSchedulers.mainThread()).subscribe { onSlideshowTick() }
             }
             latestSlideshowTick = Instant.now().toEpochMilli()
         }

@@ -23,6 +23,7 @@ aboutLibraries {
 android {
     compileSdkVersion 33
     compileOptions {
+        coreLibraryDesugaringEnabled true
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
@@ -145,6 +146,9 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
     kapt("androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_version")
 
+    // Desugaring (java.time is required for bucket4j)
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
+
 
     /**
      * MEDIA
@@ -239,7 +243,8 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
 
     // Download speed limit
-    implementation "org.isomorphism:token-bucket:1.7"
+    implementation "com.bucket4j:bucket4j_jdk8-core:8.2.0"
+
 
     /**
      * UTILS
@@ -281,9 +286,6 @@ dependencies {
     // v1.10.0 causes a crash on Android 6, calling an unsupported feature when calling StringEscapeUtils
     implementation 'org.apache.commons:commons-text:1.9'
 
-    // Cleaner date manipulation
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.4.6'
-
     // Archive management
     implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
 
@@ -295,8 +297,6 @@ dependencies {
 
     // Sentence similarity detection
     implementation 'info.debatty:java-string-similarity:2.0.0'
-
-    implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
 
 
     /**

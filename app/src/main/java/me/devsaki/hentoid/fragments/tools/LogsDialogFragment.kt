@@ -26,8 +26,8 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.viewholders.TextItem
-import org.threeten.bp.format.DateTimeFormatter
 import timber.log.Timber
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class LogsDialogFragment : DialogFragment(R.layout.dialog_tools_app_logs) {

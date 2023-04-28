@@ -16,9 +16,9 @@ import com.squareup.moshi.JsonDataException;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
-import org.threeten.bp.Instant;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -279,7 +279,7 @@ public class PrimaryImportWorker extends BaseWorker {
             Thread.currentThread().interrupt();
         } finally {
             // Write log in root folder
-            DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, location, log));
+            DocumentFile logFile = LogHelper.Companion.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, location, log));
 
             if (!isStopped()) { // Should only be done when things have run properly
                 CollectionDAO dao = new ObjectBoxDAO(context);
@@ -515,9 +515,8 @@ public class PrimaryImportWorker extends BaseWorker {
     }
 
     private LogHelper.LogInfo buildLogInfo(boolean cleanup, StorageLocation location, @NonNull List<LogHelper.LogEntry> log) {
-        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo((cleanup ? "cleanup_log_" : "import_log_") + location.name());
         logInfo.setHeaderName(cleanup ? "Cleanup" : "Import");
-        logInfo.setFileName((cleanup ? "cleanup_log_" : "import_log_") + location.name());
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);
         return logInfo;

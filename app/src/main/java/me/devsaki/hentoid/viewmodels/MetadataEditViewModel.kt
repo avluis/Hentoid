@@ -27,8 +27,8 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
-import org.threeten.bp.Instant
 import timber.log.Timber
+import java.time.Instant
 
 
 class MetadataEditViewModel(

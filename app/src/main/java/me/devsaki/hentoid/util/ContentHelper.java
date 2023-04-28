@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -30,7 +28,6 @@ import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
-import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +36,7 @@ import java.io.OutputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1202,7 +1200,7 @@ public final class ContentHelper {
         if (response.code() >= 300) return Optional.empty();
 
         // Scram if the response is something else than html
-        Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")));
+        Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE, "")));
         if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
             return Optional.empty();
 
@@ -1263,7 +1261,7 @@ public final class ContentHelper {
         if (response.code() >= 300) return Optional.empty();
 
         // Scram if the response is something else than html
-        Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")));
+        Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE, "")));
         if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
             return Optional.empty();
 

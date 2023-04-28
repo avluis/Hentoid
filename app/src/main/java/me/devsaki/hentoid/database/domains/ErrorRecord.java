@@ -2,9 +2,9 @@ package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.NonNull;
 
-import org.threeten.bp.Instant;
-import org.threeten.bp.ZoneId;
-import org.threeten.bp.format.DateTimeFormatter;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;

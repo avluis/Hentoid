@@ -34,14 +34,6 @@ import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.Slider;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
-import org.threeten.bp.Instant;
-import org.threeten.bp.ZoneId;
-import org.threeten.bp.format.DateTimeFormatter;
-import org.threeten.bp.format.DateTimeFormatterBuilder;
-import org.threeten.bp.format.DateTimeParseException;
-import org.threeten.bp.format.ResolverStyle;
-import org.threeten.bp.temporal.ChronoField;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,6 +42,13 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -547,10 +546,10 @@ public final class Helper {
         log.add(new LogHelper.LogEntry(StringHelper.protect(t.getMessage())));
         log.add(new LogHelper.LogEntry(Helper.getStackTraceString(t)));
 
-        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo("latest-crash");
         logInfo.setEntries(log);
         logInfo.setHeaderName("latest-crash");
-        LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
+        LogHelper.Companion.writeLog(HentoidApp.getInstance(), logInfo);
     }
 
     public static String getStackTraceString(Throwable t) {

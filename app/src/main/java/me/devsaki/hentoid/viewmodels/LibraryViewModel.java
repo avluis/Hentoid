@@ -28,11 +28,11 @@ import com.annimon.stream.function.Consumer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.greenrobot.eventbus.EventBus;
-import org.threeten.bp.Instant;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

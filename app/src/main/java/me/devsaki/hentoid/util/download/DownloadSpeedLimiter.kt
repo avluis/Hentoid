@@ -1,21 +1,23 @@
 package me.devsaki.hentoid.util.download
 
+import io.github.bucket4j.Bandwidth
+import io.github.bucket4j.BlockingBucket
+import io.github.bucket4j.Bucket
 import me.devsaki.hentoid.util.Preferences
-import org.isomorphism.util.TokenBucket
-import org.isomorphism.util.TokenBuckets
-import java.util.concurrent.TimeUnit
-import kotlin.math.round
+import java.time.Duration
 
 object DownloadSpeedLimiter {
-    private var bucket: TokenBucket? = null
+    private var bucket: BlockingBucket? = null
 
-    fun setSpeedLimitKbps(value: Int) {
-        bucket = if (value <= 0) null
-        else
-            TokenBuckets.builder()
-                .withCapacity(round(value * 1.1 * 1000).toLong())
-                .withFixedIntervalRefillStrategy(value * 1000L, 1, TimeUnit.SECONDS)
-                .build()
+    fun setSpeedLimitKbps(kbps: Int) {
+        bucket = if (kbps <= 0) null
+        else {
+            val limit = Bandwidth.simple(
+                kbps * 1000L,
+                Duration.ofSeconds(1)
+            )
+            Bucket.builder().addLimit(limit).build().asBlocking()
+        }
     }
 
     fun take(bytes: Long): Boolean {

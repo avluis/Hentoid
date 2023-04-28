@@ -2,7 +2,7 @@ package me.devsaki.hentoid.database.converters;
 
 import androidx.annotation.Nullable;
 
-import org.threeten.bp.Instant;
+import java.time.Instant;
 
 import io.objectbox.converter.PropertyConverter;
 
