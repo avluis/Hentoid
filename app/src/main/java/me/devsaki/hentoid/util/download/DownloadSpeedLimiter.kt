@@ -3,20 +3,18 @@ package me.devsaki.hentoid.util.download
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.BlockingBucket
 import io.github.bucket4j.Bucket
-import io.github.bucket4j.Refill
 import me.devsaki.hentoid.util.Preferences
 import java.time.Duration
-import kotlin.math.round
 
 object DownloadSpeedLimiter {
     private var bucket: BlockingBucket? = null
 
-    fun setSpeedLimitKbps(value: Int) {
-        bucket = if (value <= 0) null
+    fun setSpeedLimitKbps(kbps: Int) {
+        bucket = if (kbps <= 0) null
         else {
-            val limit = Bandwidth.classic(
-                round(value * 1.1 * 1000).toLong(),
-                Refill.intervally(value * 1000L, Duration.ofSeconds(1))
+            val limit = Bandwidth.simple(
+                kbps * 1000L,
+                Duration.ofSeconds(1)
             )
             Bucket.builder().addLimit(limit).build().asBlocking()
         }
