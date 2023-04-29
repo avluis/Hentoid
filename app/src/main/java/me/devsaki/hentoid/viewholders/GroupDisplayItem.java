@@ -46,7 +46,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
-import me.devsaki.hentoid.util.image.ImageHelperK;
+import me.devsaki.hentoid.util.image.ImageHelper;
 
 public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHolder> implements IExtendedDraggable, ISwipeable {
 
@@ -75,7 +75,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
-        Drawable d = new BitmapDrawable(context.getResources(), ImageHelperK.INSTANCE.tintBitmap(bmp, tintColor));
+        Drawable d = new BitmapDrawable(context.getResources(), ImageHelper.INSTANCE.tintBitmap(bmp, tintColor));
 
         final Transformation<Bitmap> centerInside = new CenterInside();
         glideRequestOptions = new RequestOptions()

@@ -32,7 +32,7 @@ import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.NetworkingException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.image.ImageHelperK;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -118,7 +118,7 @@ public class DownloadHelper {
                 // Read mime-type on the fly if not forced
                 if (0 == iteration++) {
                     if (mimeType.isEmpty()) {
-                        mimeType = ImageHelperK.INSTANCE.getMimeTypeFromPictureBinary(buffer);
+                        mimeType = ImageHelper.INSTANCE.getMimeTypeFromPictureBinary(buffer);
                         if (mimeType.isEmpty() || mimeType.endsWith("/*")) {
                             String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", url, size / 1024.0);
                             throw new UnsupportedContentException(message);

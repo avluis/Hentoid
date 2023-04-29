@@ -71,7 +71,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.image.ImageHelperK;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -158,23 +158,23 @@ class CustomWebViewClient extends WebViewClient {
 
         for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
 
-        CHECKMARK = ImageHelperK.INSTANCE.bitmapToWebp(
-                ImageHelperK.INSTANCE.tintBitmap(
-                        ImageHelperK.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_checked),
+        CHECKMARK = ImageHelper.INSTANCE.bitmapToWebp(
+                ImageHelper.INSTANCE.tintBitmap(
+                        ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_checked),
                         HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
 
-        MERGED_MARK = ImageHelperK.INSTANCE.bitmapToWebp(
-                ImageHelperK.INSTANCE.tintBitmap(
-                        ImageHelperK.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_action_merge),
+        MERGED_MARK = ImageHelper.INSTANCE.bitmapToWebp(
+                ImageHelper.INSTANCE.tintBitmap(
+                        ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_action_merge),
                         HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
 
-        BLOCKED_MARK = ImageHelperK.INSTANCE.bitmapToWebp(
-                ImageHelperK.INSTANCE.tintBitmap(
-                        ImageHelperK.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_forbidden),
+        BLOCKED_MARK = ImageHelper.INSTANCE.bitmapToWebp(
+                ImageHelper.INSTANCE.tintBitmap(
+                        ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_forbidden),
                         HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
@@ -454,11 +454,11 @@ class CustomWebViewClient extends WebViewClient {
         if ((Preferences.isBrowserAugmented() && adBlocker.isBlocked(url, headers)) || !url.startsWith("http")) {
             return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(NOTHING));
         } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {
-            return new WebResourceResponse(ImageHelperK.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(CHECKMARK));
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(CHECKMARK));
         } else if (isMarkMerged() && url.contains("hentoid-mergedmark")) {
-            return new WebResourceResponse(ImageHelperK.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(MERGED_MARK));
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(MERGED_MARK));
         } else if (url.contains("hentoid-blockedmark")) {
-            return new WebResourceResponse(ImageHelperK.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(BLOCKED_MARK));
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(BLOCKED_MARK));
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
             else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url);

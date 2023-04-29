@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 import kotlin.math.pow
 
-object ImageHelperK {
+object ImageHelper {
     private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
     const val MIME_IMAGE_GENERIC = "image/*"

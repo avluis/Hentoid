@@ -84,7 +84,7 @@ import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.image.ImageHelperK;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.network.CloudflareHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.WebkitPackageHelper;
@@ -384,7 +384,7 @@ public final class ContentHelper {
             return new ArrayList<>();
         }
 
-        return FileHelper.listFoldersFilter(context, folder, displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME) && ImageHelperK.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(displayName))));
+        return FileHelper.listFoldersFilter(context, folder, displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME) && ImageHelper.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(displayName))));
     }
 
     /**
@@ -472,7 +472,7 @@ public final class ContentHelper {
 
         // Remove all images stored in the app's persistent folder (archive covers)
         File appFolder = context.getFilesDir();
-        File[] images = appFolder.listFiles((file, s) -> ImageHelperK.INSTANCE.isSupportedImage(s));
+        File[] images = appFolder.listFiles((file, s) -> ImageHelper.INSTANCE.isSupportedImage(s));
         if (images != null) for (File f : images) FileHelper.removeFile(f);
     }
 
@@ -575,7 +575,7 @@ public final class ContentHelper {
                                         finalFile = new File(targetFolder, targetFileName);
                                     }
                                     try (OutputStream os = FileHelper.getOutputStream(finalFile)) {
-                                        Bitmap resizedBitmap = ImageHelperK.INSTANCE.getScaledDownBitmap(b, context.getResources().getDimensionPixelSize(R.dimen.card_grid_width), false);
+                                        Bitmap resizedBitmap = ImageHelper.INSTANCE.getScaledDownBitmap(b, context.getResources().getDimensionPixelSize(R.dimen.card_grid_width), false);
                                         resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os);
                                         resizedBitmap.recycle();
                                     }
@@ -1039,7 +1039,7 @@ public final class ContentHelper {
      * @return List of ImageFiles corresponding to all supported pictures inside the given folder, sorted numerically then alphabetically
      */
     public static List<ImageFile> createImageListFromFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
-        List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, ImageHelperK.INSTANCE.getImageNamesFilter());
+        List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, ImageHelper.INSTANCE.getImageNamesFilter());
         if (!imageFiles.isEmpty()) return createImageListFromFiles(imageFiles);
         else return Collections.emptyList();
     }
@@ -1674,9 +1674,9 @@ public final class ContentHelper {
         // Read mime-type on the fly
         try (InputStream in = body.byteStream()) {
             if (in.read(buffer) > -1) {
-                String mimeType = ImageHelperK.INSTANCE.getMimeTypeFromPictureBinary(buffer);
+                String mimeType = ImageHelper.INSTANCE.getMimeTypeFromPictureBinary(buffer);
                 Timber.d("Testing online picture accessibility : found %s at %s", mimeType, img.getUrl());
-                return (!mimeType.isEmpty() && !mimeType.equals(ImageHelperK.MIME_IMAGE_GENERIC));
+                return (!mimeType.isEmpty() && !mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC));
             }
         }
         return false;

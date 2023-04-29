@@ -59,7 +59,7 @@ import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.image.ImageHelperK;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.workers.ExternalImportWorker;
 import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import me.devsaki.hentoid.workers.data.PrimaryImportData;
@@ -732,7 +732,7 @@ public class ImportHelper {
         int order = (images.isEmpty()) ? 0 : Stream.of(images).map(ImageFile::getOrder).max(Integer::compareTo).get();
         String folderName = (null == bookFolder.getName()) ? "" : bookFolder.getName();
         if (null == imageFiles)
-            imageFiles = explorer.listFiles(context, bookFolder, ImageHelperK.INSTANCE.getImageNamesFilter());
+            imageFiles = explorer.listFiles(context, bookFolder, ImageHelper.INSTANCE.getImageNamesFilter());
 
         String namePrefix = "";
         if (addFolderNametoImgName) namePrefix = folderName + "-";
@@ -873,7 +873,7 @@ public class ImportHelper {
         }
 
         List<ArchiveHelper.ArchiveEntry> imageEntries = Stream.of(entries)
-                .filter(s -> ImageHelperK.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(s.path)))
+                .filter(s -> ImageHelper.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(s.path)))
                 .toList();
 
         if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);

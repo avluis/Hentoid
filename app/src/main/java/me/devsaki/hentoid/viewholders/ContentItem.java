@@ -61,7 +61,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.image.ImageHelperK;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.views.CircularProgressView;
 
 public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable, ISwipeable {
@@ -106,7 +106,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
-        Drawable d = new BitmapDrawable(context.getResources(), ImageHelperK.INSTANCE.tintBitmap(bmp, tintColor));
+        Drawable d = new BitmapDrawable(context.getResources(), ImageHelper.INSTANCE.tintBitmap(bmp, tintColor));
 
         final Transformation<Bitmap> centerInside = new CenterInside();
         glideRequestOptions = new RequestOptions().optionalTransform(centerInside).error(d);
