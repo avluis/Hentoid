@@ -396,6 +396,29 @@
         <item>@string/refresh_location_internal_1</item>
         <item>@string/refresh_location_internal_2</item>
     </string-array>
+    <string-array name="resize_method_entries" translatable="false">
+        <item>@string/resize_method_1</item>
+        <item>@string/resize_method_2</item>
+        <item>@string/resize_method_3</item>
+    </string-array>
+    <string-array name="transcode_method_entries" translatable="false">
+        <item>@string/transcode_method_1</item>
+        <item>@string/transcode_method_2</item>
+    </string-array>
+    <string-array name="transcode_encoders_all" translatable="false">
+        <item>@string/transcode_encoder_webp_lossless</item>
+        <item>@string/transcode_encoder_png</item>
+        <item>@string/transcode_encoder_webp_lossy</item>
+        <item>@string/transcode_encoder_jpeg</item>
+    </string-array>
+    <string-array name="transcode_encoders_lossless" translatable="false">
+        <item>@string/transcode_encoder_webp_lossless</item>
+        <item>@string/transcode_encoder_png</item>
+    </string-array>
+    <string-array name="transcode_encoders_lossy" translatable="false">
+        <item>@string/transcode_encoder_webp_lossy</item>
+        <item>@string/transcode_encoder_jpeg</item>
+    </string-array>
 
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>

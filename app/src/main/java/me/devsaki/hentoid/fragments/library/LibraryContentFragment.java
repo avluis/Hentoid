@@ -563,6 +563,10 @@ public class LibraryContentFragment extends Fragment implements
                 }
                 keepToolbar = true;
                 break;
+            case R.id.action_transform:
+                LibraryTransformDialogFragment.Companion.invoke(this, Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList());
+                keepToolbar = true;
+                break;
             case R.id.action_edit:
                 List<Long> selectedIds = Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).withoutNulls().map(Content::getId).toList();
                 if (!selectedIds.isEmpty()) {

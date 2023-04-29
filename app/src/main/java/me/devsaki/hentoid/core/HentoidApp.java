@@ -28,6 +28,7 @@ import me.devsaki.hentoid.activities.SplashActivity;
 import me.devsaki.hentoid.receiver.WebViewUpdateCycleReceiver;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.Settings;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import timber.log.Timber;
@@ -102,6 +103,7 @@ public class HentoidApp extends Application {
         // Prefs
         Preferences.init(this);
         Preferences.performHousekeeping();
+        Settings.INSTANCE.init(this);
 
         // Init version number
         if (0 == Preferences.getLastKnownAppVersionCode())

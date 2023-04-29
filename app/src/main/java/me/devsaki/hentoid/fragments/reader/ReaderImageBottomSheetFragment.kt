@@ -32,7 +32,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.image.ImageHelper
+import me.devsaki.hentoid.util.image.ImageHelperK
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
@@ -58,7 +58,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
         val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
 
         val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-        val d: Drawable = BitmapDrawable(context.resources, ImageHelper.tintBitmap(bmp, tintColor))
+        val d: Drawable = BitmapDrawable(context.resources, ImageHelperK.tintBitmap(bmp, tintColor))
 
         val centerInside: Transformation<Bitmap> = CenterInside()
         glideRequestOptions = RequestOptions()

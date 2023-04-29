@@ -171,6 +171,7 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem groupCoverMenu;
     private MenuItem mergeMenu;
     private MenuItem splitMenu;
+    private MenuItem transformMenu;
 
     private ViewPager2 viewPager;
     private FragmentStateAdapter pagerAdapter;
@@ -724,6 +725,7 @@ public class LibraryActivity extends BaseActivity {
         groupCoverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_group_cover);
         mergeMenu = selectionToolbar.getMenu().findItem(R.id.action_merge);
         splitMenu = selectionToolbar.getMenu().findItem(R.id.action_split);
+        transformMenu = selectionToolbar.getMenu().findItem(R.id.action_transform);
     }
 
     /**
@@ -945,6 +947,7 @@ public class LibraryActivity extends BaseActivity {
             groupCoverMenu.setVisible(false);
             mergeMenu.setVisible(false);
             splitMenu.setVisible(false);
+            transformMenu.setVisible(false);
         } else { // Flat view
             editMenu.setVisible(true);
             deleteMenu.setVisible(((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0 == selectedExternalCount) || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary()));
@@ -960,6 +963,7 @@ public class LibraryActivity extends BaseActivity {
             groupCoverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
             mergeMenu.setVisible((selectedLocalCount > 1 && 0 == selectedStreamedCount && 0 == selectedExternalCount) || (selectedStreamedCount > 1 && 0 == selectedLocalCount && 0 == selectedExternalCount) || (selectedNonArchiveExternalCount > 1 && 0 == selectedArchiveExternalCount && 0 == selectedLocalCount && 0 == selectedStreamedCount)); // Can only merge downloaded, streamed or non-archive external content together
             splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
+            transformMenu.setVisible(0 == selectedStreamedCount && 0 == selectedArchiveExternalCount);
         }
     }
 

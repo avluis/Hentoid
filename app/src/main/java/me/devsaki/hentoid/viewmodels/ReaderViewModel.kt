@@ -48,7 +48,7 @@ import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.ArchiveHelper
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.image.ImageHelper
+import me.devsaki.hentoid.util.image.ImageHelperK
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -1236,7 +1236,7 @@ class ReaderViewModel(
                         // Instanciate a new ImageFile not to modify the one used by the UI
                         val extractedPic = ImageFile(img.get().second)
                         extractedPic.fileUri = uri.toString()
-                        extractedPic.mimeType = ImageHelper.getMimeTypeFromUri(
+                        extractedPic.mimeType = ImageHelperK.getMimeTypeFromUri(
                             getApplication<Application>().applicationContext,
                             uri
                         )
@@ -1333,7 +1333,7 @@ class ReaderViewModel(
                     ignoreCase = true
                 )
             }
-            var mimeType = ImageHelper.MIME_IMAGE_GENERIC
+            var mimeType = ImageHelperK.MIME_IMAGE_GENERIC
             if (existing != null) {
                 val targetFile: File
                 // No cached image -> fetch online

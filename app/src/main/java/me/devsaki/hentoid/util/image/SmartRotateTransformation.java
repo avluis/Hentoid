@@ -26,7 +26,7 @@ public class SmartRotateTransformation extends BitmapTransformation {
     protected Bitmap transform(@NonNull BitmapPool pool, @NonNull Bitmap toTransform, int outWidth, int outHeight) {
         Matrix matrix = new Matrix();
 
-        if (ImageHelper.needsRotating(screenWidth, screenHeight, toTransform.getWidth(), toTransform.getHeight()))
+        if (ImageHelperK.INSTANCE.needsRotating(screenWidth, screenHeight, toTransform.getWidth(), toTransform.getHeight()))
             matrix.postRotate(rotateRotationAngle);
 
         return Bitmap.createBitmap(toTransform, 0, 0, toTransform.getWidth(), toTransform.getHeight(), matrix, true);

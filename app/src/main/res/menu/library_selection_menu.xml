@@ -92,6 +92,12 @@
         android:tooltipText="@string/merge_split"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_transform"
+        android:icon="@drawable/ic_action_transform"
+        android:title="@string/transform"
+        android:tooltipText="@string/transform"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_select_all"
         android:icon="@drawable/ic_action_select_all"
         android:title="@string/menu_select_all"

@@ -17,7 +17,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
-import me.devsaki.hentoid.util.image.ImageHelper;
+import me.devsaki.hentoid.util.image.ImageHelperK;
 
 /**
  * Image File builder
@@ -260,7 +260,7 @@ public class ImageFile {
     }
 
     public String getMimeType() {
-        return (null == mimeType) ? ImageHelper.MIME_IMAGE_GENERIC : mimeType;
+        return (null == mimeType) ? ImageHelperK.MIME_IMAGE_GENERIC : mimeType;
     }
 
     public ImageFile setMimeType(String mimeType) {

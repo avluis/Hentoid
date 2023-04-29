@@ -83,7 +83,7 @@ import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.image.ImageHelper;
+import me.devsaki.hentoid.util.image.ImageHelperK;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.NetworkHelper;
@@ -1068,7 +1068,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 }
 
                 // Assemble the GIF
-                Uri ugoiraGifFile = ImageHelper.assembleGif(
+                Uri ugoiraGifFile = ImageHelperK.INSTANCE.assembleGif(
                         getApplicationContext(),
                         ugoiraCacheFolder,
                         frames
@@ -1079,11 +1079,11 @@ public class ContentDownloadWorker extends BaseWorker {
                         getApplicationContext(),
                         ugoiraGifFile,
                         dir.getUri(),
-                        ImageHelper.MIME_IMAGE_GIF,
+                        ImageHelperK.MIME_IMAGE_GIF,
                         img.getName() + ".gif"
                 );
                 if (finalImgUri != null) {
-                    img.setMimeType(ImageHelper.MIME_IMAGE_GIF);
+                    img.setMimeType(ImageHelperK.MIME_IMAGE_GIF);
                     img.setSize(FileHelper.fileSizeFromUri(getApplicationContext(), ugoiraGifFile));
                     updateImageProperties(img, true, finalImgUri.toString());
                 } else

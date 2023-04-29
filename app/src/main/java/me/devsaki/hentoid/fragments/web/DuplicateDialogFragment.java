@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.fragments.web;
 
-import static me.devsaki.hentoid.util.image.ImageHelper.tintBitmap;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -42,6 +40,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.util.image.ImageHelperK;
 
 public final class DuplicateDialogFragment extends DialogFragment {
 
@@ -69,7 +68,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
-        Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
+        Drawable d = new BitmapDrawable(context.getResources(), ImageHelperK.INSTANCE.tintBitmap(bmp, tintColor));
 
         final Transformation<Bitmap> centerInside = new CenterInside();
         glideRequestOptions = new RequestOptions()
