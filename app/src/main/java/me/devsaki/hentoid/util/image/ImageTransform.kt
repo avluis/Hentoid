@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util.image
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.PictureEncoder
@@ -28,13 +29,10 @@ object ImageTransform {
     private val screenHeight: Int = HentoidApp.getInstance().resources.displayMetrics.heightPixels
 
     /**
-     * Transform the given bitmap using the given params
-     * WARNING : The given bitmap gets recycled
-     * @param isLossless True if given bitmap is lossless; false if not
+     * Transform the given raw picture data using the given params
      */
-    fun transform(bmpIn: Bitmap, isLossless: Boolean, params: Params): ByteArray {
-        var bitmapOut = bmpIn.copy(bmpIn.config, true)
-        bmpIn.recycle()
+    fun transform(source: ByteArray, params: Params): ByteArray {
+        var bitmapOut = BitmapFactory.decodeByteArray(source, 0, source.size)
         if (params.resizeEnabled) {
             when (params.resizeMethod) {
                 0 -> bitmapOut = resizeScreenRatio(bitmapOut, params.resize1Ratio / 100f)
@@ -42,6 +40,7 @@ object ImageTransform {
                 2 -> bitmapOut = resizePlainRatio(bitmapOut, params.resize3Ratio / 100f)
             }
         }
+        val isLossless = ImageHelper.isImageLossless(source)
         return transcodeTo(bitmapOut, determineEncoder(isLossless, params), params.transcodeQuality)
     }
 

@@ -44,8 +44,6 @@ import okio.use
 
 class LibraryTransformDialogFragment : DialogFragment() {
 
-    // TODO exclude animated pics
-
     // UI
     private var _binding: DialogLibraryTransformBinding? = null
     private val binding get() = _binding!!
@@ -200,34 +198,27 @@ class LibraryTransformDialogFragment : DialogFragment() {
     @SuppressLint("SetTextI18n")
     private fun refreshPreview() {
         val rawSourceBitmap = getCurrentBitmap() ?: return
+        val rawData = rawSourceBitmap.second
+        val picName = rawSourceBitmap.first
 
         lifecycleScope.launch {
-            val isLossless = ImageHelper.isImageLossless(rawSourceBitmap.second)
-            val sourceBitmap =
-                BitmapFactory.decodeByteArray(
-                    rawSourceBitmap.second,
-                    0,
-                    rawSourceBitmap.second.size
-                )
-            val sourceSize =
-                FileHelper.formatHumanReadableSize(
-                    rawSourceBitmap.second.size.toLong(),
-                    resources
-                )
+            val isLossless = ImageHelper.isImageLossless(rawData)
+            val sourceSize = FileHelper.formatHumanReadableSize(rawData.size.toLong(), resources)
+            val sourceBitmap = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
             val sourceDims = Point(sourceBitmap.width, sourceBitmap.height)
-            val sourceMime = ImageHelper.getMimeTypeFromPictureBinary(rawSourceBitmap.second)
-            val sourceName =
-                rawSourceBitmap.first + "." + FileHelper.getExtensionFromMimeType(sourceMime)
+            sourceBitmap.recycle()
+            val sourceMime = ImageHelper.getMimeTypeFromPictureBinary(rawData)
+            val sourceName = picName + "." + FileHelper.getExtensionFromMimeType(sourceMime)
             val params = buildParams()
             val targetData = withContext(Dispatchers.IO) {
-                return@withContext ImageTransform.transform(sourceBitmap, isLossless, params)
+                return@withContext ImageTransform.transform(rawData, params)
             }
             val targetSize = FileHelper.formatHumanReadableSize(targetData.size.toLong(), resources)
             val targetBitmap = BitmapFactory.decodeByteArray(targetData, 0, targetData.size)
             val targetDims = Point(targetBitmap.width, targetBitmap.height)
             val targetMime = ImageTransform.determineEncoder(isLossless, params).mimeType
             val targetName =
-                rawSourceBitmap.first + "." + FileHelper.getExtensionFromMimeType(targetMime)
+                picName + "." + FileHelper.getExtensionFromMimeType(targetMime)
 
             binding.apply {
                 previewName.text = "$sourceName ➤ $targetName"
