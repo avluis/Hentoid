@@ -765,6 +765,10 @@ public class HttpHelper {
             return extension;
         }
 
+        public String getEntireFileName() {
+            return fileNameNoExt + "." + extension;
+        }
+
         public void setExtension(String extension) {
             this.extension = extension;
         }
