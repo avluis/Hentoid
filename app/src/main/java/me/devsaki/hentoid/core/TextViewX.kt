@@ -3,12 +3,21 @@ package me.devsaki.hentoid.core
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.TextView
+import androidx.lifecycle.LifecycleCoroutineScope
+import me.devsaki.hentoid.util.DebouncerK
 
-fun TextView.setOnTextChangedListener(listener: (value: String) -> Unit) {
+fun TextView.setOnTextChangedListener(
+    scope: LifecycleCoroutineScope,
+    listener: (value: String) -> Unit
+) {
     addTextChangedListener(
         object : TextWatcher {
+            private val debouncer: DebouncerK<String> = DebouncerK(scope, 750) { s: String ->
+                listener.invoke(s)
+            }
+
             override fun afterTextChanged(s: Editable?) {
-                if (s != null) listener.invoke(s.toString())
+                if (s != null) debouncer.submit(s.toString())
             }
 
             override fun beforeTextChanged(

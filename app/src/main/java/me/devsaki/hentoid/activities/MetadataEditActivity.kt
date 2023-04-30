@@ -12,6 +12,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
@@ -281,7 +282,9 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                     b2.tagsFab.visibility = View.GONE
                 }
             }
-            it.titleNew.editText?.setOnTextChangedListener { value -> viewModel.setTitle(value) }
+            it.titleNew.editText?.setOnTextChangedListener(lifecycleScope) { value ->
+                viewModel.setTitle(value)
+            }
             it.titleNew.editText?.setOnEditorActionListener { _, actionId, _ ->
                 var handled = false
                 if (actionId == EditorInfo.IME_ACTION_DONE) {

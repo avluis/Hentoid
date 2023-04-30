@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -26,6 +27,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.textfield.TextInputLayout
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +49,9 @@ import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.workers.TransformWorker
 import okio.use
+import kotlin.math.floor
+import kotlin.math.log10
+import kotlin.math.max
 
 class LibraryTransformDialogFragment : DialogFragment() {
 
@@ -55,9 +60,6 @@ class LibraryTransformDialogFragment : DialogFragment() {
     // UI
     private var _binding: DialogLibraryTransformBinding? = null
     private val binding get() = _binding!!
-
-    // Text listener debouncers
-    // TODO
 
     // === VARIABLES
     private lateinit var contentIds: LongArray
@@ -115,30 +117,36 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 refreshControls()
                 refreshPreview()
             }
-            // TODO apply a debouncer here
-            resizeMethod1Ratio.editText?.setOnTextChangedListener { value ->
-                if (value.isNotEmpty()) {
+            resizeMethod1Ratio.editText?.setOnTextChangedListener(lifecycleScope) { value ->
+                if (checkRange(resizeMethod1Ratio, 100, 200)) {
                     Settings.resizeMethod1Ratio = value.toInt()
                     refreshPreview()
                 }
             }
-            // TODO apply a debouncer here
-            resizeMethod2MaxWidth.editText?.setOnTextChangedListener { value ->
-                if (value.isNotEmpty()) {
+            resizeMethod2MaxWidth.editText?.setOnTextChangedListener(lifecycleScope) { value ->
+                if (checkRange(
+                        resizeMethod2MaxWidth,
+                        ImageTransform.screenWidth,
+                        ImageTransform.screenWidth * 10
+                    )
+                ) {
                     Settings.resizeMethod2Width = value.toInt()
                     refreshPreview()
                 }
             }
-            // TODO apply a debouncer here
-            resizeMethod2MaxHeight.editText?.setOnTextChangedListener { value ->
-                if (value.isNotEmpty()) {
+            resizeMethod2MaxHeight.editText?.setOnTextChangedListener(lifecycleScope) { value ->
+                if (checkRange(
+                        resizeMethod2MaxHeight,
+                        ImageTransform.screenHeight,
+                        ImageTransform.screenHeight * 10
+                    )
+                ) {
                     Settings.resizeMethod2Height = value.toInt()
                     refreshPreview()
                 }
             }
-            // TODO apply a debouncer here
-            resizeMethod3Ratio.editText?.setOnTextChangedListener { value ->
-                if (value.isNotEmpty()) {
+            resizeMethod3Ratio.editText?.setOnTextChangedListener(lifecycleScope) { value ->
+                if (checkRange(resizeMethod3Ratio, 10, 400)) {
                     Settings.resizeMethod3Ratio = value.toInt()
                     refreshPreview()
                 }
@@ -161,9 +169,8 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 Settings.transcodeEncoderLossy = value.toInt()
                 refreshPreview()
             }
-            // TODO apply a debouncer here
-            encoderQuality.editText?.setOnTextChangedListener { value ->
-                if (value.isNotEmpty()) {
+            encoderQuality.editText?.setOnTextChangedListener(lifecycleScope) { value ->
+                if (checkRange(encoderQuality, 60, 100)) {
                     Settings.transcodeQuality = value.toInt()
                     refreshPreview()
                 }
@@ -181,9 +188,15 @@ class LibraryTransformDialogFragment : DialogFragment() {
             resizeMethod1Ratio.isVisible = (0 == resizeMethod.index && resizeMethod.isVisible)
             if (applyValues) resizeMethod1Ratio.editText?.setText(Settings.resizeMethod1Ratio.toString())
             resizeMethod2MaxWidth.isVisible = (1 == resizeMethod.index && resizeMethod.isVisible)
-            if (applyValues) resizeMethod2MaxWidth.editText?.setText(Settings.resizeMethod2Width.toString())
+            if (applyValues) {
+                val value = max(Settings.resizeMethod2Width, ImageTransform.screenWidth)
+                resizeMethod2MaxWidth.editText?.setText(value.toString())
+            }
             resizeMethod2MaxHeight.isVisible = (1 == resizeMethod.index && resizeMethod.isVisible)
-            if (applyValues) resizeMethod2MaxHeight.editText?.setText(Settings.resizeMethod2Height.toString())
+            if (applyValues) {
+                val value = max(Settings.resizeMethod2Height, ImageTransform.screenHeight)
+                resizeMethod2MaxHeight.editText?.setText(value.toString())
+            }
             resizeMethod3Ratio.isVisible = (2 == resizeMethod.index && resizeMethod.isVisible)
             if (applyValues) resizeMethod3Ratio.editText?.setText(Settings.resizeMethod3Ratio.toString())
 
@@ -280,15 +293,14 @@ class LibraryTransformDialogFragment : DialogFragment() {
     }
 
     private fun onActionClick(params: ImageTransform.Params) {
-        /*
-        val vmFactory = ViewModelFactory(requireActivity().application)
-        val viewModel =
-            ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
-         */
-        /*
-        val builder = TransformData.Builder()
-        builder.setFileUri(fileUri)
-         */
+        // Check if no dialog is in error state
+        val nbError = binding.container.children
+            .filter { c -> c is TextInputLayout }
+            .map { c -> c as TextInputLayout }
+            .count { til -> til.isErrorEnabled }
+
+        if (nbError > 0) return
+
         val moshi = Moshi.Builder()
             .addLast(KotlinJsonAdapterFactory())
             .build()
@@ -309,6 +321,27 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 .addTag(WORK_CLOSEABLE).build()
         )
         dismissAllowingStateLoss()
+    }
+
+    private fun checkRange(text: TextInputLayout, minValue: Int, maxValue: Int): Boolean {
+        val editTxt = text.editText
+        require(editTxt != null)
+        val errMsg = resources.getString(R.string.range_check, minValue, maxValue)
+        val nbMaxDigits = floor(log10(maxValue.toDouble())) + 1
+        if (editTxt.text.toString().isEmpty() || editTxt.text.toString().length > nbMaxDigits) {
+            text.isErrorEnabled = true
+            text.error = errMsg
+            return false
+        }
+        val intValue = editTxt.text.toString().toInt()
+        if (intValue < minValue || intValue > maxValue) {
+            text.isErrorEnabled = true
+            text.error = errMsg
+            return false
+        }
+        text.isErrorEnabled = false
+        text.error = null
+        return true
     }
 
     companion object {

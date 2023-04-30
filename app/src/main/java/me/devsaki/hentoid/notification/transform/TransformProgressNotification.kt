@@ -12,14 +12,15 @@ class TransformProgressNotification(
     private val max: Int
 ) : Notification {
 
-    private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
+    private val progressPc: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
+    private val progressStr = if (0 == max) "" else "($progress / $max)"
 
     override fun onCreateNotification(context: Context): android.app.Notification {
         return NotificationCompat.Builder(context, TransformNotificationChannel.ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
-            .setContentTitle(context.getString(R.string.transform_progress))
+            .setContentTitle(context.getString(R.string.transform_progress) + progressStr)
             .setContentText("")
-            .setContentInfo(progressString)
+            .setContentInfo(progressPc)
             .setProgress(max, progress, false)
             .setColor(ThemeHelper.getColor(context, R.color.secondary_light))
             .setLocalOnly(true)

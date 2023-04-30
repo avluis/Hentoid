@@ -18,8 +18,8 @@ object Settings {
     var isResizeEnabled: Boolean by BoolSetting("TRANSFORM_RESIZE_ENABLED", false)
     var resizeMethod: Int by IntSetting("TRANSFORM_RESIZE_METHOD", 0)
     var resizeMethod1Ratio: Int by IntSetting("TRANSFORM_RESIZE_1_RATIO", 120)
-    var resizeMethod2Height: Int by IntSetting("TRANSFORM_RESIZE_2_HEIGHT", 1500)
-    var resizeMethod2Width: Int by IntSetting("TRANSFORM_RESIZE_2_WIDTH", 760)
+    var resizeMethod2Height: Int by IntSetting("TRANSFORM_RESIZE_2_HEIGHT", 0)
+    var resizeMethod2Width: Int by IntSetting("TRANSFORM_RESIZE_2_WIDTH", 0)
     var resizeMethod3Ratio: Int by IntSetting("TRANSFORM_RESIZE_3_RATIO", 80)
     var transcodeMethod: Int by IntSetting("TRANSFORM_TRANSCODE_METHOD", 0)
     var transcodeEncoderAll: Int by IntSetting(

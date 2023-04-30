@@ -27,8 +27,8 @@ object ImageTransform {
         val transcodeQuality: Int
     )
 
-    private val screenWidth: Int = HentoidApp.getInstance().resources.displayMetrics.widthPixels
-    private val screenHeight: Int = HentoidApp.getInstance().resources.displayMetrics.heightPixels
+    val screenWidth: Int = HentoidApp.getInstance().resources.displayMetrics.widthPixels
+    val screenHeight: Int = HentoidApp.getInstance().resources.displayMetrics.heightPixels
 
     /**
      * Transform the given raw picture data using the given params
