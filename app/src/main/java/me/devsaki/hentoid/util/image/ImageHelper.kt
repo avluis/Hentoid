@@ -376,10 +376,10 @@ object ImageHelper {
         return if (width == height && width <= threshold) {
             //the bitmap is already smaller than our required dimension, no need to resize it
             bitmap
-        } else smoothRescale(bitmap, newWidth, newHeight, noRecycle)
+        } else sharpRescale(bitmap, newWidth, newHeight, noRecycle)
     }
 
-    private fun smoothRescale(
+    private fun sharpRescale(
         source: Bitmap,
         newWidth: Int,
         newHeight: Int,
@@ -389,14 +389,14 @@ object ImageHelper {
         val height = source.height
         val scaleWidth = newWidth.toFloat() / width
         val scaleHeight = newHeight.toFloat() / height
-        val rescaled = smoothRescale(source, scaleHeight.coerceAtMost(scaleWidth))
+        val rescaled = sharpRescale(source, scaleHeight.coerceAtMost(scaleWidth))
         if (!noRecycle && source != rescaled) { // Don't recycle if the result is the same object as the source
             source.recycle()
         }
         return rescaled
     }
 
-    fun smoothRescale(src: Bitmap, targetScale: Float): Bitmap {
+    fun sharpRescale(src: Bitmap, targetScale: Float): Bitmap {
         val resizeParams = computeRescaleParams(targetScale)
         Timber.d(">> resizing successively to scale %s", resizeParams.right)
         return successiveRescale(src, resizeParams.left)

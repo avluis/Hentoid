@@ -74,7 +74,7 @@ object ImageTransform {
         // TODO use upscaler if needed
         return if (ratio > 0.99 && ratio < 1.01) source
         else {
-            val rescaled = ImageHelper.smoothRescale(source, ratio)
+            val rescaled = ImageHelper.sharpRescale(source, ratio)
             val final = Bitmap.createScaledBitmap(
                 rescaled,
                 (source.width * ratio).toInt(),
