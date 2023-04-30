@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.net.Uri
+import android.os.Build
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
@@ -174,7 +175,10 @@ object ImageHelper {
 
     fun bitmapToWebp(bitmap: Bitmap): ByteArray {
         val output = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.WEBP, 100, output)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, output)
+        else
+            bitmap.compress(Bitmap.CompressFormat.WEBP, 100, output)
         return output.toByteArray()
     }
 
@@ -203,7 +207,7 @@ object ImageHelper {
      * @param targetHeight Target height of the picture, in pixels
      * @return Sample size to use to load the picture with
      */
-    fun calculateInSampleSize(
+    private fun calculateInSampleSize(
         rawWidth: Int,
         rawHeight: Int,
         targetWidth: Int,
