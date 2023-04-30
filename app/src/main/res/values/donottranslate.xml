@@ -419,6 +419,21 @@
         <item>@string/transcode_encoder_webp_lossy</item>
         <item>@string/transcode_encoder_jpeg</item>
     </string-array>
+    <!-- Values from PictureEncoder -->
+    <string-array name="transcode_encoders_all_vals" translatable="false">
+        <item>0</item>
+        <item>2</item>
+        <item>1</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="transcode_encoders_lossless_vals" translatable="false">
+        <item>0</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="transcode_encoders_lossy_vals" translatable="false">
+        <item>1</item>
+        <item>3</item>
+    </string-array>
 
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>

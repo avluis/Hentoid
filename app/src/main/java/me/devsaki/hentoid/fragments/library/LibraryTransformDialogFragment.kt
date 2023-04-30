@@ -126,11 +126,11 @@ class LibraryTransformDialogFragment : DialogFragment() {
 
             transcodeMethod.index = Settings.transcodeMethod
             encoderAll.isVisible = (0 == transcodeMethod.index)
-            encoderAll.index = Settings.transcodeEncoderAll // TODO adjust
+            encoderAll.value = Settings.transcodeEncoderAll.toString()
             encoderLossless.isVisible = (1 == transcodeMethod.index)
-            encoderLossless.index = Settings.transcodeEncoderLossless // TODO adjust
+            encoderLossless.value = Settings.transcodeEncoderLossless.toString()
             encoderLossy.isVisible = (1 == transcodeMethod.index)
-            encoderLossy.index = Settings.transcodeEncoderLossy // TODO adjust
+            encoderLossy.value = Settings.transcodeEncoderLossy.toString()
             encoderQuality.isVisible = (1 == transcodeMethod.index
                     || (0 == transcodeMethod.index && (Settings.transcodeEncoderAll == PictureEncoder.JPEG.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value))
                     )

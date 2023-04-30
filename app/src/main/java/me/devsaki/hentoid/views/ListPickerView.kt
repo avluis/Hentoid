@@ -16,6 +16,7 @@ class ListPickerView : ConstraintLayout {
     private val binding = WidgetListPickerBinding.inflate(LayoutInflater.from(context), this, true)
 
     private var onIndexChangeListener: ((Int) -> Unit)? = null
+    lateinit var values: List<String>
 
     var entries: List<String> = emptyList()
         set(value) {
@@ -27,6 +28,15 @@ class ListPickerView : ConstraintLayout {
         set(value) {
             selectIndex(value)
             field = value
+        }
+
+    var value: String
+        set(value) {
+            index = values.indexOf(value)
+        }
+        get() {
+            return if (index > -1 && index < values.size - 1) values[index]
+            else ""
         }
 
 
@@ -46,10 +56,9 @@ class ListPickerView : ConstraintLayout {
         try {
             val title = arr.getString(R.styleable.ListPickerView_title) ?: ""
             val rawEntries = arr.getTextArray(R.styleable.ListPickerView_entries)
-            if (rawEntries != null) entries = rawEntries.map { cs -> cs.toString() }.toList()
-
-            val currentEntry = arr.getString(R.styleable.ListPickerView_currentEntry) ?: ""
-            index = entries.indexOf(currentEntry)
+            if (rawEntries != null) entries = rawEntries.map { cs -> cs.toString() }
+            val rawValues = arr.getTextArray(R.styleable.ListPickerView_values)
+            if (rawValues != null) values = rawValues.map { cs -> cs.toString() }
 
             binding.let {
                 it.title.isVisible = title.isNotEmpty()
@@ -58,7 +67,7 @@ class ListPickerView : ConstraintLayout {
                 it.description.textSize =
                     (if (title.isEmpty()) resources.getDimension(R.dimen.text_body_1)
                     else resources.getDimension(R.dimen.caption)) / resources.displayMetrics.density
-                it.description.text = currentEntry
+                it.description.text = ""
 
                 it.root.setOnClickListener { onClick() }
             }

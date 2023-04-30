@@ -131,7 +131,8 @@
             android:layout_marginTop="4dp"
             app:entries="@array/transcode_encoders_all"
             app:layout_constraintTop_toBottomOf="@id/transcode_method"
-            app:title="@string/encoder" />
+            app:title="@string/encoder"
+            app:values="@array/transcode_encoders_all_vals" />
 
         <me.devsaki.hentoid.views.ListPickerView
             android:id="@+id/encoder_lossless"
@@ -141,7 +142,8 @@
             android:visibility="gone"
             app:entries="@array/transcode_encoders_lossless"
             app:layout_constraintTop_toBottomOf="@id/encoder_all"
-            app:title="@string/encoder_lossless" />
+            app:title="@string/encoder_lossless"
+            app:values="@array/transcode_encoders_lossless_vals" />
 
         <me.devsaki.hentoid.views.ListPickerView
             android:id="@+id/encoder_lossy"
@@ -151,7 +153,8 @@
             android:visibility="gone"
             app:entries="@array/transcode_encoders_lossy"
             app:layout_constraintTop_toBottomOf="@id/encoder_lossless"
-            app:title="@string/encoder_lossy" />
+            app:title="@string/encoder_lossy"
+            app:values="@array/transcode_encoders_lossy_vals" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/encoder_quality"

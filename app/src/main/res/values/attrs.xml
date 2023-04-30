@@ -26,8 +26,8 @@
 
     <declare-styleable name="ListPickerView">
         <attr name="title" format="string" localization="suggested" />
-        <attr name="currentEntry" format="string" />
         <attr name="entries" format="reference" />
+        <attr name="values" format="reference" />
     </declare-styleable>
 
 </resources>
