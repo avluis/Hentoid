@@ -8,10 +8,6 @@ import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -26,8 +22,6 @@ import me.devsaki.hentoid.util.notification.Notification
 
 class TransformWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.transform_service, null) {
-
-    private val threadPoolScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val dao: CollectionDAO
     private var totalItems = 0
@@ -149,14 +143,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun notifyProcessProgress() {
-        threadPoolScope.launch {
-            notificationManager.notify(
-                TransformProgressNotification(
-                    nbOK + nbKO,
-                    totalItems
-                )
-            )
-        }
+        notificationManager.notify(TransformProgressNotification(nbOK + nbKO, totalItems))
     }
 
     private fun notifyProcessEnd() {
