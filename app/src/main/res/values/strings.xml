@@ -936,6 +936,7 @@
     <string name="encoder_quality">Quality</string>
     <string name="preview">Preview</string>
     <string name="transform">Transform</string>
+    <string name="transform_unsupported">Transformation unsupported</string>
 
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>

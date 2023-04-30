@@ -32,6 +32,8 @@ object ImageTransform {
      * Transform the given raw picture data using the given params
      */
     fun transform(source: ByteArray, params: Params): ByteArray {
+        if (ImageHelper.isImageAnimated(source)) return source
+
         var bitmapOut = BitmapFactory.decodeByteArray(source, 0, source.size)
         if (params.resizeEnabled) {
             when (params.resizeMethod) {

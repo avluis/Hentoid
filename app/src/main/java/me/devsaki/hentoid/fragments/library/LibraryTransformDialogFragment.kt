@@ -44,6 +44,8 @@ import okio.use
 
 class LibraryTransformDialogFragment : DialogFragment() {
 
+    // TODO lower limits
+
     // UI
     private var _binding: DialogLibraryTransformBinding? = null
     private val binding get() = _binding!!
@@ -186,15 +188,13 @@ class LibraryTransformDialogFragment : DialogFragment() {
             encoderLossy.isVisible = (1 == transcodeMethod.index)
             if (applyValues) encoderLossy.value = Settings.transcodeEncoderLossy.toString()
             encoderQuality.isVisible = (1 == transcodeMethod.index
-                    || (
-                    0 == transcodeMethod.index
-                            && (Settings.transcodeEncoderAll == PictureEncoder.JPEG.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value)
-                    )
-                    )
+                    || (0 == transcodeMethod.index
+                    && (Settings.transcodeEncoderAll == PictureEncoder.JPEG.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value)))
             if (applyValues) encoderQuality.editText?.setText(Settings.transcodeQuality.toString())
         }
     }
 
+    @Suppress("ReplaceArrayEqualityOpWithArraysEquals")
     @SuppressLint("SetTextI18n")
     private fun refreshPreview() {
         val rawSourceBitmap = getCurrentBitmap() ?: return
@@ -213,18 +213,24 @@ class LibraryTransformDialogFragment : DialogFragment() {
             val targetData = withContext(Dispatchers.IO) {
                 return@withContext ImageTransform.transform(rawData, params)
             }
+            val unchanged = targetData == rawData
             val targetSize = FileHelper.formatHumanReadableSize(targetData.size.toLong(), resources)
             val targetBitmap = BitmapFactory.decodeByteArray(targetData, 0, targetData.size)
             val targetDims = Point(targetBitmap.width, targetBitmap.height)
             val targetMime = ImageTransform.determineEncoder(isLossless, params).mimeType
-            val targetName =
-                picName + "." + FileHelper.getExtensionFromMimeType(targetMime)
+            val targetName = picName + "." + FileHelper.getExtensionFromMimeType(targetMime)
 
             binding.apply {
-                previewName.text = "$sourceName ➤ $targetName"
-                previewDims.text =
-                    "${sourceDims.x} x ${sourceDims.y} ➤ ${targetDims.x} x ${targetDims.y}"
-                previewSize.text = "$sourceSize ➤ $targetSize"
+                if (unchanged) {
+                    previewName.text = resources.getText(R.string.transform_unsupported)
+                    previewDims.text = "${sourceDims.x} x ${sourceDims.y}"
+                    previewSize.text = sourceSize
+                } else {
+                    previewName.text = "$sourceName ➤ $targetName"
+                    previewDims.text =
+                        "${sourceDims.x} x ${sourceDims.y} ➤ ${targetDims.x} x ${targetDims.y}"
+                    previewSize.text = "$sourceSize ➤ $targetSize"
+                }
                 // TODO zoom on tap
                 // TODO buttons
                 Glide.with(thumb).load(targetBitmap).apply(glideRequestOptions).into(thumb)
