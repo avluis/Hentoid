@@ -13,6 +13,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -25,6 +26,7 @@ import me.devsaki.hentoid.databinding.IncludeSearchBottomPanelBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Debouncer
+import me.devsaki.hentoid.util.DebouncerK
 import me.devsaki.hentoid.util.LanguageHelper
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import me.devsaki.hentoid.util.StringHelper
@@ -56,7 +58,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
      *
      * @see Debouncer
      */
-    private lateinit var searchMasterDataDebouncer: Debouncer<String>
+    private lateinit var searchMasterDataDebouncer: DebouncerK<String>
 
     // Container where all suggested attributes are loaded
     private lateinit var attributeAdapter: AvailableAttributeAdapter
@@ -99,7 +101,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
             viewModel.setAttributeTypes(selectedAttributeTypes)
             viewModel.setGroup(groupId)
         }
-        searchMasterDataDebouncer = Debouncer(context, 1000) { filter: String ->
+        searchMasterDataDebouncer = DebouncerK(this.lifecycleScope, 1000) { filter: String ->
             this.searchMasterData(filter)
         }
     }

@@ -1,14 +1,14 @@
 package me.devsaki.hentoid.widget
 
-import android.content.Context
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewConfiguration
 import com.annimon.stream.function.Consumer
-import me.devsaki.hentoid.util.Debouncer
+import kotlinx.coroutines.CoroutineScope
+import me.devsaki.hentoid.util.DebouncerK
 import me.devsaki.hentoid.util.Preferences
 
-class ReaderKeyListener(context: Context) : View.OnKeyListener {
+class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
     private var onVolumeDownListener: Consumer<Boolean>? = null
 
     private var onVolumeUpListener: Consumer<Boolean>? = null
@@ -21,12 +21,12 @@ class ReaderKeyListener(context: Context) : View.OnKeyListener {
 
     // Internal variables
     private var nextNotifyTime = Long.MAX_VALUE
-    private val simpleTapDebouncer: Debouncer<Consumer<Boolean>>
+    private val simpleTapDebouncer: DebouncerK<Consumer<Boolean>>
     private val longPressTimeout = ViewConfiguration.getLongPressTimeout()
 
     init {
         simpleTapDebouncer =
-            Debouncer(context, longPressTimeout.toLong()) { consumer: Consumer<Boolean> ->
+            DebouncerK(scope, longPressTimeout.toLong()) { consumer: Consumer<Boolean> ->
                 consumer.accept(false)
             }
     }

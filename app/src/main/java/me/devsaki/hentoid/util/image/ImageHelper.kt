@@ -133,6 +133,29 @@ object ImageHelper {
     }
 
     /**
+     * Analyze the given binary picture header to try and detect if the picture is lossless.
+     * If the format is supported by the app, returns true if lossless (PNG, lossless WEBP); false if not
+     *
+     * @param data Binary picture file header (16 bytes minimum)
+     * @return True if the format is lossless and supported by the app
+     */
+    fun isImageLossless(data: ByteArray): Boolean {
+        return if (data.size < 16) false else when (getMimeTypeFromPictureBinary(data)) {
+            MIME_IMAGE_PNG -> true
+            MIME_IMAGE_APNG -> true
+            MIME_IMAGE_GIF -> true
+            MIME_IMAGE_WEBP -> FileHelper.findSequencePosition(
+                data,
+                0,
+                "VP8L".toByteArray(CHARSET_LATIN_1),
+                16
+            ) > -1
+
+            else -> false
+        }
+    }
+
+    /**
      * Try to detect the mime-type of the picture file at the given URI
      *
      * @param context Context to use
@@ -319,12 +342,12 @@ object ImageHelper {
     /**
      * @param bitmap                the Bitmap to be scaled
      * @param threshold             the maxium dimension (either width or height) of the scaled bitmap
-     * @param isNecessaryToKeepOrig is it necessary to keep the original bitmap? If not recycle the original bitmap to prevent memory leak.
+     * @param noRecycle is it necessary to keep the original bitmap? If not recycle the original bitmap to prevent memory leak.
      */
     fun getScaledDownBitmap(
         bitmap: Bitmap,
         threshold: Int,
-        isNecessaryToKeepOrig: Boolean
+        noRecycle: Boolean
     ): Bitmap {
         val width = bitmap.width
         val height = bitmap.height
@@ -353,30 +376,30 @@ object ImageHelper {
         return if (width == height && width <= threshold) {
             //the bitmap is already smaller than our required dimension, no need to resize it
             bitmap
-        } else getResizedBitmap(bitmap, newWidth, newHeight, isNecessaryToKeepOrig)
+        } else smoothRescale(bitmap, newWidth, newHeight, noRecycle)
     }
 
-    private fun getResizedBitmap(
-        bm: Bitmap,
+    private fun smoothRescale(
+        source: Bitmap,
         newWidth: Int,
         newHeight: Int,
-        isNecessaryToKeepOrig: Boolean
+        noRecycle: Boolean
     ): Bitmap {
-        val width = bm.width
-        val height = bm.height
+        val width = source.width
+        val height = source.height
         val scaleWidth = newWidth.toFloat() / width
         val scaleHeight = newHeight.toFloat() / height
-        val resizedBitmap = resizeBitmap(bm, scaleHeight.coerceAtMost(scaleWidth))
-        if (!isNecessaryToKeepOrig && bm != resizedBitmap) { // Don't recycle if the result is the same object as the source
-            bm.recycle()
+        val rescaled = smoothRescale(source, scaleHeight.coerceAtMost(scaleWidth))
+        if (!noRecycle && source != rescaled) { // Don't recycle if the result is the same object as the source
+            source.recycle()
         }
-        return resizedBitmap
+        return rescaled
     }
 
-    private fun resizeBitmap(src: Bitmap, targetScale: Float): Bitmap {
-        val resizeParams = computeResizeParams(targetScale)
+    fun smoothRescale(src: Bitmap, targetScale: Float): Bitmap {
+        val resizeParams = computeRescaleParams(targetScale)
         Timber.d(">> resizing successively to scale %s", resizeParams.right)
-        return successiveResize(src, resizeParams.left)
+        return successiveRescale(src, resizeParams.left)
     }
 
     /**
@@ -387,7 +410,7 @@ object ImageHelper {
      * - First : Number of half-resizes to perform
      * - Second : Corresponding scale
      */
-    private fun computeResizeParams(targetScale: Float): ImmutablePair<Int, Float> {
+    private fun computeRescaleParams(targetScale: Float): ImmutablePair<Int, Float> {
         var resultScale = 1f
         var nbResize = 0
 
@@ -398,7 +421,7 @@ object ImageHelper {
         return ImmutablePair(nbResize, resultScale)
     }
 
-    private fun successiveResize(src: Bitmap, resizeNum: Int): Bitmap {
+    private fun successiveRescale(src: Bitmap, resizeNum: Int): Bitmap {
         if (0 == resizeNum) return src
         var srcWidth = src.width
         var srcHeight = src.height

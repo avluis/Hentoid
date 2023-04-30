@@ -15,7 +15,6 @@ object Settings {
     }
 
     // Fields
-
     var isResizeEnabled: Boolean by BoolSetting("TRANSFORM_RESIZE_ENABLED", false)
     var resizeMethod: Int by IntSetting("TRANSFORM_RESIZE_METHOD", 0)
     var resizeMethod1Ratio: Int by IntSetting("TRANSFORM_RESIZE_1_RATIO", 120)

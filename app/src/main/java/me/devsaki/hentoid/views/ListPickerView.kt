@@ -16,7 +16,8 @@ class ListPickerView : ConstraintLayout {
     private val binding = WidgetListPickerBinding.inflate(LayoutInflater.from(context), this, true)
 
     private var onIndexChangeListener: ((Int) -> Unit)? = null
-    lateinit var values: List<String>
+    private var onValueChangeListener: ((String) -> Unit)? = null
+    private var values: List<String> = emptyList()
 
     var entries: List<String> = emptyList()
         set(value) {
@@ -35,7 +36,7 @@ class ListPickerView : ConstraintLayout {
             index = values.indexOf(value)
         }
         get() {
-            return if (index > -1 && index < values.size - 1) values[index]
+            return if (index > -1 && index < values.size) values[index]
             else ""
         }
 
@@ -80,6 +81,10 @@ class ListPickerView : ConstraintLayout {
         onIndexChangeListener = listener
     }
 
+    fun setOnValueChangeListener(listener: (String) -> Unit) {
+        onValueChangeListener = listener
+    }
+
     private fun onClick() {
         val materialDialog: AlertDialog = MaterialAlertDialogBuilder(context)
             .setSingleChoiceItems(
@@ -96,6 +101,7 @@ class ListPickerView : ConstraintLayout {
     private fun onSelect(dialog: DialogInterface, selectedIndex: Int) {
         index = selectedIndex
         onIndexChangeListener?.invoke(selectedIndex)
+        if (value.isNotEmpty()) onValueChangeListener?.invoke(value)
         dialog.dismiss()
     }
 

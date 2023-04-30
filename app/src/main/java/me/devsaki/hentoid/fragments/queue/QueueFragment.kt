@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -130,11 +131,11 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     private var contentHashToDisplayFirst: Long = 0
 
     // Used to start processing when the recyclerView has finished updating
-    private lateinit var listRefreshDebouncer: Debouncer<Int>
+    private lateinit var listRefreshDebouncer: DebouncerK<Int>
     private var itemToRefreshIndex = -1
 
     // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
-    private lateinit var searchClearDebouncer: Debouncer<Int>
+    private lateinit var searchClearDebouncer: DebouncerK<Int>
 
     // Used to keep scroll position when moving items
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
@@ -153,10 +154,10 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         check(requireActivity() is QueueActivity) { "Parent activity has to be a QueueActivity" }
         activity = WeakReference(requireActivity() as QueueActivity)
 
-        listRefreshDebouncer = Debouncer(context, 75)
+        listRefreshDebouncer = DebouncerK(lifecycleScope, 75)
         { topItemPosition: Int -> this.onRecyclerUpdated(topItemPosition) }
 
-        searchClearDebouncer = Debouncer(context, 1500)
+        searchClearDebouncer = DebouncerK(lifecycleScope, 1500)
         {
             query = ""
             viewModel.searchQueueUniversal(query)

@@ -4,8 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -36,6 +34,7 @@ import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.AttributeItemBundle
 import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle
+import me.devsaki.hentoid.core.setOnTextChangedListener
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
@@ -282,31 +281,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                     b2.tagsFab.visibility = View.GONE
                 }
             }
-            it.titleNew.editText?.addTextChangedListener(
-                object : TextWatcher {
-                    override fun afterTextChanged(s: Editable?) {
-                        if (s != null) viewModel.setTitle(s.toString())
-                    }
-
-                    override fun beforeTextChanged(
-                        s: CharSequence?,
-                        start: Int,
-                        count: Int,
-                        after: Int
-                    ) {
-                        // Nothing to override here
-                    }
-
-                    override fun onTextChanged(
-                        s: CharSequence?,
-                        start: Int,
-                        before: Int,
-                        count: Int
-                    ) {
-                        // Nothing to override here
-                    }
-                }
-            )
+            it.titleNew.editText?.setOnTextChangedListener { value -> viewModel.setTitle(value) }
             it.titleNew.editText?.setOnEditorActionListener { _, actionId, _ ->
                 var handled = false
                 if (actionId == EditorInfo.IME_ACTION_DONE) {

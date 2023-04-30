@@ -14,6 +14,7 @@ import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -260,7 +261,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     override fun onStart() {
         super.onStart()
         (requireActivity() as ReaderActivity).registerKeyListener(
-            ReaderKeyListener(requireContext()).setOnBackListener { onBackClick() }
+            ReaderKeyListener(lifecycleScope).setOnBackListener { onBackClick() }
         )
     }
 

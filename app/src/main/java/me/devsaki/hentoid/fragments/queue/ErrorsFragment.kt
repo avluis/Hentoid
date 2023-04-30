@@ -15,6 +15,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -81,10 +82,10 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     private var contentHashToDisplayFirst: Long = 0
 
     // Used to start processing when the recyclerView has finished updating
-    private lateinit var listRefreshDebouncer: Debouncer<Int>
+    private lateinit var listRefreshDebouncer: DebouncerK<Int>
 
     // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
-    private lateinit var searchClearDebouncer: Debouncer<Int>
+    private lateinit var searchClearDebouncer: DebouncerK<Int>
 
     // Indicate if the fragment is currently canceling all items
     private var isDeletingAll = false
@@ -103,10 +104,10 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         check(requireActivity() is QueueActivity) { "Parent activity has to be a QueueActivity" }
         activity = WeakReference(requireActivity() as QueueActivity)
 
-        listRefreshDebouncer = Debouncer(context, 75)
+        listRefreshDebouncer = DebouncerK(lifecycleScope, 75)
         { topItemPosition: Int -> this.onRecyclerUpdated(topItemPosition) }
 
-        searchClearDebouncer = Debouncer(context, 1500)
+        searchClearDebouncer = DebouncerK(lifecycleScope, 1500)
         {
             query = ""
             viewModel.searchErrorContentUniversal(query)

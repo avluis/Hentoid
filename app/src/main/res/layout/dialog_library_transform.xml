@@ -195,7 +195,43 @@
             tools:src="@drawable/ic_hentoid_trans"
             tools:tint="@color/light_gray" />
 
-        <!-- TODO -->
+        <TextView
+            android:id="@+id/preview_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text=""
+            android:textSize="@dimen/caption"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/thumb"
+            app:layout_constraintTop_toTopOf="@id/thumb"
+            tools:text="001.png ➤ 001.webp" />
+
+        <TextView
+            android:id="@+id/preview_dims"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:text=""
+            android:textSize="@dimen/caption"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/thumb"
+            app:layout_constraintTop_toBottomOf="@id/preview_name"
+            tools:text="1250x1800 ➤ 1250x1800" />
+
+        <TextView
+            android:id="@+id/preview_size"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:text=""
+            android:textSize="@dimen/caption"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/thumb"
+            app:layout_constraintTop_toBottomOf="@id/preview_dims"
+            tools:text="548 KB ➤ 450 KB" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
