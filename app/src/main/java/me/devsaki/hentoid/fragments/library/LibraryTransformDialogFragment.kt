@@ -250,7 +250,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
         try {
             val content = dao.selectContent(contentIds[contentIndex])
             if (content != null) {
-                val page = content.imageList[pageIndex]
+                val page = content.imageList.filter { i -> i.isReadable }[pageIndex]
                 FileHelper.getInputStream(requireContext(), Uri.parse(page.fileUri)).use {
                     return Pair(page.name, it.readBytes())
                 }
