@@ -55,8 +55,6 @@ import kotlin.math.max
 
 class LibraryTransformDialogFragment : DialogFragment() {
 
-    // TODO lower limits
-
     // UI
     private var _binding: DialogLibraryTransformBinding? = null
     private val binding get() = _binding!!
