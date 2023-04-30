@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util.image
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
+import com.squareup.moshi.JsonClass
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.PictureEncoder
 import java.io.ByteArrayOutputStream
@@ -11,6 +12,7 @@ import kotlin.math.min
 
 object ImageTransform {
 
+    @JsonClass(generateAdapter = true)
     data class Params(
         val resizeEnabled: Boolean,
         val resizeMethod: Int,

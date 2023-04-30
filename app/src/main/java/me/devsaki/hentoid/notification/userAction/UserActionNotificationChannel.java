@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.notification.action;
+package me.devsaki.hentoid.notification.userAction;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;

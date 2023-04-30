@@ -937,6 +937,13 @@
     <string name="preview">Preview</string>
     <string name="transform">Transform</string>
     <string name="transform_unsupported">Transformation unsupported</string>
+    <string name="transform_start">Transforming images</string>
+    <string name="transform_progress">Transforming images</string>
+    <string name="transform_complete">Transforming complete</string>
+    <plurals name="transform_complete_details">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> image transformed successfully</item>
+        <item quantity="other"><x:g example="1" id="number">%d</x:g> images transformed successfully</item>
+    </plurals>
 
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>

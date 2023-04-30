@@ -56,7 +56,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadReviveEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.sources.PixivIllustMetadata;
-import me.devsaki.hentoid.notification.action.UserActionNotification;
+import me.devsaki.hentoid.notification.userAction.UserActionNotification;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;

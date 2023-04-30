@@ -222,6 +222,8 @@ dependencies {
     def moshi_version = '1.14.0'
     implementation "com.squareup.moshi:moshi:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
+    implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
 
     // HTTP & HTTP/2 client: github.com/square/okhttp
     def okhttpVersion = "4.10.0"

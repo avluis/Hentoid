@@ -15,18 +15,25 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.annimon.stream.Stream
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.core.setOnTextChangedListener
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -38,8 +45,7 @@ import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
-import me.devsaki.hentoid.viewmodels.LibraryViewModel
-import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.workers.TransformWorker
 import okio.use
 
 class LibraryTransformDialogFragment : DialogFragment() {
@@ -162,6 +168,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
                     refreshPreview()
                 }
             }
+            actionButton.setOnClickListener { onActionClick(buildParams()) }
         }
     }
 
@@ -272,11 +279,36 @@ class LibraryTransformDialogFragment : DialogFragment() {
         }
     }
 
-    private fun onActionClick() {
+    private fun onActionClick(params: ImageTransform.Params) {
+        /*
         val vmFactory = ViewModelFactory(requireActivity().application)
         val viewModel =
             ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
+         */
+        /*
+        val builder = TransformData.Builder()
+        builder.setFileUri(fileUri)
+         */
+        val moshi = Moshi.Builder()
+            .addLast(KotlinJsonAdapterFactory())
+            .build()
 
+        val serializedParams = moshi.adapter(ImageTransform.Params::class.java).toJson(params)
+
+        val myData: Data = workDataOf(
+            "IDS" to contentIds,
+            "PARAMS" to serializedParams
+        )
+
+        val workManager = WorkManager.getInstance(requireContext())
+        workManager.enqueueUniqueWork(
+            R.id.transform_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequest.Builder(TransformWorker::class.java)
+                .setInputData(myData)
+                .addTag(WORK_CLOSEABLE).build()
+        )
+        dismissAllowingStateLoss()
     }
 
     companion object {
