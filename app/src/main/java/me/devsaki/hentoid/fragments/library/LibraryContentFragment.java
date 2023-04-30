@@ -564,7 +564,12 @@ public class LibraryContentFragment extends Fragment implements
                 keepToolbar = true;
                 break;
             case R.id.action_transform:
-                LibraryTransformDialogFragment.Companion.invoke(this, Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList());
+                List<Content> contents = Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList();
+                if (contents.size() > 1000) {
+                    Snackbar.make(recyclerView, R.string.transform_limit, LENGTH_LONG).show();
+                    return false;
+                }
+                LibraryTransformDialogFragment.Companion.invoke(this, contents);
                 keepToolbar = true;
                 break;
             case R.id.action_edit:
