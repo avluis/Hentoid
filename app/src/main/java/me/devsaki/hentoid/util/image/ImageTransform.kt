@@ -24,7 +24,9 @@ object ImageTransform {
         val transcoderAll: PictureEncoder,
         val transcoderLossy: PictureEncoder,
         val transcoderLossless: PictureEncoder,
-        val transcodeQuality: Int
+        val transcodeQuality: Int,
+        @Transient
+        var forceManhwa: Boolean = false
     )
 
     val screenWidth: Int = HentoidApp.getInstance().resources.displayMetrics.widthPixels
@@ -40,7 +42,13 @@ object ImageTransform {
         if (params.resizeEnabled) {
             when (params.resizeMethod) {
                 0 -> bitmapOut = resizeScreenRatio(bitmapOut, params.resize1Ratio / 100f)
-                1 -> bitmapOut = resizeDims(bitmapOut, params.resize2Height, params.resize2Width)
+                1 -> bitmapOut = resizeDims(
+                    bitmapOut,
+                    params.resize2Height,
+                    params.resize2Width,
+                    params.forceManhwa
+                )
+
                 2 -> bitmapOut = resizePlainRatio(bitmapOut, params.resize3Ratio / 100f)
             }
         }
@@ -59,8 +67,13 @@ object ImageTransform {
         return resizePlainRatio(bitmap, targetRatio)
     }
 
-    private fun resizeDims(bitmap: Bitmap, maxHeight: Int, maxWidth: Int): Bitmap {
-        val isManhwa = bitmap.height / bitmap.width > 3
+    private fun resizeDims(
+        bitmap: Bitmap,
+        maxHeight: Int,
+        maxWidth: Int,
+        forceManhwa: Boolean
+    ): Bitmap {
+        val isManhwa = forceManhwa || (bitmap.height * 1.0 / bitmap.width > 3)
         val ratio = if (isManhwa) {
             if (bitmap.width > maxWidth) maxWidth * 1f / bitmap.width else 1f
         } else {

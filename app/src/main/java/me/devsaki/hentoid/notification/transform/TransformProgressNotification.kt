@@ -13,7 +13,7 @@ class TransformProgressNotification(
 ) : Notification {
 
     private val progressPc: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
-    private val progressStr = if (0 == max) "" else "($progress / $max)"
+    private val progressStr = if (0 == max) "" else " ($progress / $max)"
 
     override fun onCreateNotification(context: Context): android.app.Notification {
         return NotificationCompat.Builder(context, TransformNotificationChannel.ID)

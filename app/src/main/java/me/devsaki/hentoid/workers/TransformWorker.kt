@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
@@ -19,6 +20,8 @@ import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.notification.Notification
+import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 
 class TransformWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.transform_service, null) {
@@ -82,13 +85,25 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     private fun transformContent(content: Content, params: ImageTransform.Params) {
         val contentFolder =
             FileHelper.getDocumentFromTreeUriString(applicationContext, content.storageUri)
-        val images = content.imageList.filter { i -> i.isReadable }
+        val images = content.imageList
         if (contentFolder != null) {
-            images.forEach { img ->
-                transformImage(img, contentFolder, params)
+            val imagesWithoutChapters = images
+                .filter { i -> null == i.linkedChapter }
+                .filter { i -> i.isReadable }
+            transformChapter(imagesWithoutChapters, contentFolder, params)
+
+            val chapteredImgs = images
+                .filterNot { i -> null == i.linkedChapter }
+                .filter { i -> i.isReadable }
+                .groupBy { i -> i.linkedChapter!!.id }
+
+            chapteredImgs.forEach {
+                transformChapter(it.value, contentFolder, params)
             }
+
             dao.insertImageFiles(images)
             content.computeSize()
+            content.lastEditDate = Instant.now().toEpochMilli()
             dao.insertContentCore(content)
         } else {
             nbKO += images.size
@@ -96,19 +111,39 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
+    private fun transformChapter(
+        imgs: List<ImageFile>,
+        contentFolder: DocumentFile,
+        params: ImageTransform.Params
+    ) {
+        val nbManhwa = AtomicInteger(0)
+        params.forceManhwa = false
+        imgs.forEach {
+            transformImage(it, contentFolder, params, nbManhwa, imgs.size)
+        }
+    }
+
     @Suppress("ReplaceArrayEqualityOpWithArraysEquals")
     private fun transformImage(
         img: ImageFile,
         contentFolder: DocumentFile,
-        params: ImageTransform.Params
+        params: ImageTransform.Params,
+        nbManhwa: AtomicInteger,
+        nbPages: Int
     ) {
         val fileUri = Uri.parse(img.fileUri)
         val rawData = FileHelper.getInputStream(applicationContext, fileUri).use {
             return@use it.readBytes()
         }
-        val sourceName = HttpHelper.UriParts(img.fileUri).entireFileName
-
         val isLossless = ImageHelper.isImageLossless(rawData)
+        val sourceName = HttpHelper.UriParts(img.fileUri).entireFileName
+        val sourceBitmap = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
+        val isManhwa = sourceBitmap.height * 1.0 / sourceBitmap.width > 3
+        sourceBitmap.recycle()
+
+        if (isManhwa) nbManhwa.incrementAndGet()
+        params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9
+
         val targetMime = ImageTransform.determineEncoder(isLossless, params).mimeType
         val targetName = img.name + "." + FileHelper.getExtensionFromMimeType(targetMime)
 
