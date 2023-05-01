@@ -62,6 +62,7 @@ class ListPickerView : ConstraintLayout {
             if (rawValues != null) values = rawValues.map { cs -> cs.toString() }
 
             binding.let {
+                it.root.clipToOutline = true
                 it.title.isVisible = title.isNotEmpty()
                 if (title.isNotEmpty()) it.title.text = title
 
