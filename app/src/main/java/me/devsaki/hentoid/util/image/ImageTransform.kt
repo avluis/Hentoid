@@ -92,9 +92,9 @@ object ImageTransform {
     }
 
     private fun resizePlainRatio(source: ByteArray, dims: Point, ratio: Float): Bitmap {
-        // TODO use upscaler if needed
+        // TODO use smart upscaler
         val sourceBmp = BitmapFactory.decodeByteArray(source, 0, source.size)
-        return if (ratio > 0.99 && ratio < 1.01) sourceBmp
+        return if (ratio > 0.99 /*&& ratio < 1.01*/) sourceBmp // Prevent upscaling
         else {
             val rescaled = ImageHelper.sharpRescale(sourceBmp, ratio)
             if (rescaled != sourceBmp) sourceBmp.recycle()

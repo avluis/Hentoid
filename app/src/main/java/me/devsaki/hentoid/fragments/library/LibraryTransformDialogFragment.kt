@@ -145,7 +145,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 }
             }
             resizeMethod3Ratio.editText?.setOnTextChangedListener(lifecycleScope) { value ->
-                if (checkRange(resizeMethod3Ratio, 10, 400)) {
+                if (checkRange(resizeMethod3Ratio, 10, 100)) {
                     Settings.resizeMethod3Ratio = value.toInt()
                     refreshPreview()
                 }
