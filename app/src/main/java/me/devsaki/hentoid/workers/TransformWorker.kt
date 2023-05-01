@@ -3,7 +3,6 @@ package me.devsaki.hentoid.workers
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Point
-import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -19,7 +18,6 @@ import me.devsaki.hentoid.notification.transform.TransformProgressNotification
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
-import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.notification.Notification
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
@@ -132,12 +130,16 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         nbManhwa: AtomicInteger,
         nbPages: Int
     ) {
-        val fileUri = Uri.parse(img.fileUri)
-        val rawData = FileHelper.getInputStream(applicationContext, fileUri).use {
+        val sourceFile = FileHelper.getDocumentFromTreeUriString(applicationContext, img.fileUri)
+        if (null == sourceFile) {
+            nextKO()
+            return
+        }
+        val rawData = FileHelper.getInputStream(applicationContext, sourceFile).use {
             return@use it.readBytes()
         }
         val isLossless = ImageHelper.isImageLossless(rawData)
-        val sourceName = HttpHelper.UriParts(img.fileUri).entireFileName
+        val sourceName = sourceFile.name ?: ""
         val options = BitmapFactory.Options()
         options.inJustDecodeBounds = true
         BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options)
@@ -153,12 +155,12 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val targetDims = Point(options.outWidth, options.outHeight)
         val targetMime = ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
         val targetName = img.name + "." + FileHelper.getExtensionFromMimeType(targetMime)
-        val newFile = !sourceName.equals(targetName)
+        val newFile = sourceName != targetName
 
-        val targetUri = if (!newFile) fileUri
+        val targetUri = if (!newFile) sourceFile.uri
         else {
             val targetFile = contentFolder.createFile(targetMime, targetName)
-            if (targetFile != null) FileHelper.removeFile(applicationContext, fileUri)
+            if (targetFile != null) sourceFile.delete()
             targetFile?.uri
         }
         if (targetUri != null) {
