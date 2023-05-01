@@ -175,6 +175,37 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
+            android:id="@+id/encoder_warning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@color/white_opacity_25"
+            android:paddingStart="56dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="8dp"
+            android:text="@string/encoder_warning"
+            android:textStyle="italic"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/encoder_quality"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/encoder_warning_icon"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:adjustViewBounds="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_warning"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/encoder_warning"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/encoder_warning"
+            app:tint="@color/white_opacity_87"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+
+        <TextView
             android:id="@+id/preview_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -184,7 +215,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/preview_progress"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/encoder_quality" />
+            app:layout_constraintTop_toBottomOf="@id/encoder_warning" />
 
         <ProgressBar
             android:id="@+id/preview_progress"

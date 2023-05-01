@@ -209,6 +209,11 @@ class LibraryTransformDialogFragment : DialogFragment() {
                     || (0 == transcodeMethod.index
                     && (Settings.transcodeEncoderAll == PictureEncoder.JPEG.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value)))
             if (applyValues) encoderQuality.editText?.setText(Settings.transcodeQuality.toString())
+            encoderWarning.isVisible = (
+                    (0 == transcodeMethod.index && (Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSLESS.value))
+                            || (1 == transcodeMethod.index && (Settings.transcodeEncoderLossy == PictureEncoder.WEBP_LOSSY.value || Settings.transcodeEncoderLossless == PictureEncoder.WEBP_LOSSLESS.value))
+                    )
+            encoderWarningIcon.isVisible = encoderWarning.isVisible
         }
     }
 
@@ -235,10 +240,12 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 return@withContext ImageTransform.transform(rawData, params)
             }
             val unchanged = targetData == rawData
+
             val targetSize = FileHelper.formatHumanReadableSize(targetData.size.toLong(), resources)
             BitmapFactory.decodeByteArray(targetData, 0, targetData.size, options)
             val targetDims = Point(options.outWidth, options.outHeight)
-            val targetMime = ImageTransform.determineEncoder(isLossless, params).mimeType
+            val targetMime =
+                ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
             val targetName = picName + "." + FileHelper.getExtensionFromMimeType(targetMime)
 
             binding.apply {

@@ -935,6 +935,7 @@
     <string name="transcode_encoder_webp_lossy">WEBP (lossy)</string>
     <string name="transcode_encoder_jpeg">JPEG</string>
     <string name="encoder_quality">Quality</string>
+    <string name="encoder_warning">WEBP format is limited to 16383 pixels in width and height. Larger pictures will automatically be encoded to PNG or JPG.</string>
     <string name="preview">Preview</string>
     <string name="transform">Transform</string>
     <string name="transform_unsupported">Transformation unsupported</string>

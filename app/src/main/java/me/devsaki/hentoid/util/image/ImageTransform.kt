@@ -44,9 +44,8 @@ object ImageTransform {
         options.inJustDecodeBounds = true
         BitmapFactory.decodeByteArray(source, 0, source.size, options)
         val dims = Point(options.outWidth, options.outHeight)
-        val bitmapOut: Bitmap
-        if (params.resizeEnabled) {
-            bitmapOut = when (params.resizeMethod) {
+        val bitmapOut: Bitmap = if (params.resizeEnabled) {
+            when (params.resizeMethod) {
                 0 -> resizeScreenRatio(source, dims, params.resize1Ratio / 100f)
                 1 -> resizeDims(
                     source, dims, params.resize2Height, params.resize2Width, params.forceManhwa
@@ -55,12 +54,14 @@ object ImageTransform {
                 else -> resizePlainRatio(source, dims, params.resize3Ratio / 100f)
             }
         } else {
-            bitmapOut = BitmapFactory.decodeByteArray(source, 0, source.size)
+            BitmapFactory.decodeByteArray(source, 0, source.size)
         }
+
         val isLossless = ImageHelper.isImageLossless(source)
+        val targetDims = Point(bitmapOut.width, bitmapOut.height)
         try {
             return transcodeTo(
-                bitmapOut, determineEncoder(isLossless, params), params.transcodeQuality
+                bitmapOut, determineEncoder(isLossless, targetDims, params), params.transcodeQuality
             )
         } finally {
             bitmapOut.recycle()
@@ -107,11 +108,16 @@ object ImageTransform {
         }
     }
 
-    fun determineEncoder(isLossless: Boolean, params: Params): PictureEncoder {
-        return when (params.transcodeMethod) {
+    fun determineEncoder(isLossless: Boolean, dims: Point, params: Params): PictureEncoder {
+        val result = when (params.transcodeMethod) {
             0 -> params.transcoderAll
             else -> if (isLossless) params.transcoderLossless else params.transcoderLossy
         }
+        return if (PictureEncoder.WEBP_LOSSY == result && max(dims.x, dims.y) > MAX_WEBP_DIMENSION)
+            PictureEncoder.JPEG
+        else if (PictureEncoder.WEBP_LOSSLESS == result && max(dims.x, dims.y) > MAX_WEBP_DIMENSION)
+            PictureEncoder.PNG
+        else result
     }
 
     private fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArray {

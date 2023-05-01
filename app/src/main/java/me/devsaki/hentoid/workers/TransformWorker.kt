@@ -2,6 +2,7 @@ package me.devsaki.hentoid.workers
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.graphics.Point
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
@@ -145,13 +146,15 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         if (isManhwa) nbManhwa.incrementAndGet()
         params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9
 
-        val targetMime = ImageTransform.determineEncoder(isLossless, params).mimeType
-        val targetName = img.name + "." + FileHelper.getExtensionFromMimeType(targetMime)
-
         val targetData = ImageTransform.transform(rawData, params)
         if (targetData == rawData) return // Unchanged picture
 
+        BitmapFactory.decodeByteArray(targetData, 0, targetData.size, options)
+        val targetDims = Point(options.outWidth, options.outHeight)
+        val targetMime = ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
+        val targetName = img.name + "." + FileHelper.getExtensionFromMimeType(targetMime)
         val newFile = !sourceName.equals(targetName)
+
         val targetUri = if (!newFile) fileUri
         else {
             val targetFile = contentFolder.createFile(targetMime, targetName)
