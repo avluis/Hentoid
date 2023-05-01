@@ -63,6 +63,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
     private lateinit var contentIds: LongArray
     private var contentIndex = 0
     private var pageIndex = 0
+    private var maxPages = -1
     private val glideRequestOptions: RequestOptions
 
     init {
@@ -173,6 +174,14 @@ class LibraryTransformDialogFragment : DialogFragment() {
                     refreshPreview()
                 }
             }
+            prevPageBtn.setOnClickListener {
+                if (pageIndex > 0) pageIndex--
+                refreshPreview()
+            }
+            nextPageBtn.setOnClickListener {
+                if (pageIndex < maxPages - 1) pageIndex++
+                refreshPreview()
+            }
             actionButton.setOnClickListener { onActionClick(buildParams()) }
         }
     }
@@ -272,7 +281,9 @@ class LibraryTransformDialogFragment : DialogFragment() {
         try {
             val content = dao.selectContent(contentIds[contentIndex])
             if (content != null) {
-                val page = content.imageList.filter { i -> i.isReadable }[pageIndex]
+                val pages = content.imageList.filter { i -> i.isReadable }
+                maxPages = pages.size
+                val page = pages[pageIndex]
                 FileHelper.getInputStream(requireContext(), Uri.parse(page.fileUri)).use {
                     return Pair(page.name, it.readBytes())
                 }

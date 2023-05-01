@@ -282,6 +282,40 @@
             app:layout_constraintTop_toBottomOf="@id/preview_dims"
             tools:text="548 KB ➤ 450 KB" />
 
+        <ImageButton
+            android:id="@+id/prev_page_btn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_action_previous_item"
+            android:tooltipText="@string/previous_page"
+            app:layout_constraintBottom_toBottomOf="@id/thumb"
+            app:layout_constraintEnd_toStartOf="@id/next_page_btn"
+            app:layout_constraintStart_toEndOf="@id/thumb"
+            app:tint="?colorOnPrimary"
+            tools:ignore="ContentDescription"
+            tools:targetApi="o" />
+
+        <ImageButton
+            android:id="@+id/next_page_btn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_action_next_item"
+            android:tooltipText="@string/next_page"
+            app:layout_constraintBottom_toBottomOf="@id/thumb"
+            app:layout_constraintStart_toEndOf="@id/prev_page_btn"
+            app:tint="?colorOnPrimary"
+            tools:ignore="ContentDescription"
+            tools:targetApi="o" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"

@@ -947,6 +947,8 @@
         <item quantity="other"><x:g example="1" id="number">%d</x:g> images transformed successfully</item>
     </plurals>
     <string name="range_check">Value must be between %1$d and %2$d</string>
+    <string name="previous_page">Previous page</string>
+    <string name="next_page">Next page</string>
 
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>
