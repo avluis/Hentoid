@@ -219,6 +219,8 @@ class LibraryTransformDialogFragment : DialogFragment() {
         val rawData = rawSourceBitmap.second
         val picName = rawSourceBitmap.first
 
+        binding.previewProgress.isVisible = true
+
         lifecycleScope.launch {
             val isLossless = ImageHelper.isImageLossless(rawData)
             val sourceSize = FileHelper.formatHumanReadableSize(rawData.size.toLong(), resources)
@@ -253,6 +255,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 // TODO zoom on tap
                 // TODO buttons
                 Glide.with(thumb).load(targetData).apply(glideRequestOptions).into(thumb)
+                previewProgress.isVisible = false
             }
         }
     }
