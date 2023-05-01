@@ -269,7 +269,6 @@ class LibraryTransformDialogFragment : DialogFragment() {
                     previewSize.text = "$sourceSize ➤ $targetSize"
                 }
                 // TODO zoom on tap
-                // TODO buttons
                 Glide.with(thumb).load(targetData).apply(glideRequestOptions).into(thumb)
                 previewProgress.isVisible = false
             }
