@@ -222,9 +222,10 @@ class LibraryTransformDialogFragment : DialogFragment() {
         lifecycleScope.launch {
             val isLossless = ImageHelper.isImageLossless(rawData)
             val sourceSize = FileHelper.formatHumanReadableSize(rawData.size.toLong(), resources)
-            val sourceBitmap = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
-            val sourceDims = Point(sourceBitmap.width, sourceBitmap.height)
-            sourceBitmap.recycle()
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options)
+            val sourceDims = Point(options.outWidth, options.outHeight)
             val sourceMime = ImageHelper.getMimeTypeFromPictureBinary(rawData)
             val sourceName = picName + "." + FileHelper.getExtensionFromMimeType(sourceMime)
             val params = buildParams()
@@ -233,8 +234,8 @@ class LibraryTransformDialogFragment : DialogFragment() {
             }
             val unchanged = targetData == rawData
             val targetSize = FileHelper.formatHumanReadableSize(targetData.size.toLong(), resources)
-            val targetBitmap = BitmapFactory.decodeByteArray(targetData, 0, targetData.size)
-            val targetDims = Point(targetBitmap.width, targetBitmap.height)
+            BitmapFactory.decodeByteArray(targetData, 0, targetData.size, options)
+            val targetDims = Point(options.outWidth, options.outHeight)
             val targetMime = ImageTransform.determineEncoder(isLossless, params).mimeType
             val targetName = picName + "." + FileHelper.getExtensionFromMimeType(targetMime)
 
@@ -251,7 +252,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 }
                 // TODO zoom on tap
                 // TODO buttons
-                Glide.with(thumb).load(targetBitmap).apply(glideRequestOptions).into(thumb)
+                Glide.with(thumb).load(targetData).apply(glideRequestOptions).into(thumb)
             }
         }
     }

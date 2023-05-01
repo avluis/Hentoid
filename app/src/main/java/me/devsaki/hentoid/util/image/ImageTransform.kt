@@ -48,7 +48,6 @@ object ImageTransform {
                     params.resize2Width,
                     params.forceManhwa
                 )
-
                 2 -> bitmapOut = resizePlainRatio(bitmapOut, params.resize3Ratio / 100f)
             }
         }

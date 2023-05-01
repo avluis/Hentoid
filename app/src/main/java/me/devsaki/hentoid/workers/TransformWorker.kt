@@ -137,9 +137,10 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         }
         val isLossless = ImageHelper.isImageLossless(rawData)
         val sourceName = HttpHelper.UriParts(img.fileUri).entireFileName
-        val sourceBitmap = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
-        val isManhwa = sourceBitmap.height * 1.0 / sourceBitmap.width > 3
-        sourceBitmap.recycle()
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options)
+        val isManhwa = options.outHeight * 1.0 / options.outWidth > 3
 
         if (isManhwa) nbManhwa.incrementAndGet()
         params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9

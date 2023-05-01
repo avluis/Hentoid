@@ -1,3 +1,5 @@
+## Fix for https://github.com/square/okhttp/issues/3959 when profiling
+-keep class okhttp3.Headers { *; }
 ## Fix for https://github.com/square/okhttp/issues/6299
 -dontwarn org.conscrypt.ConscryptHostnameVerifier
 ## Fix for https://github.com/square/okhttp/issues/6258
