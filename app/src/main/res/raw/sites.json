@@ -24,7 +24,10 @@
     },
     "EHENTAI": {
       "useHentoidAgent": true,
-      "hasBackupURLs": true
+      "hasBackupURLs": true,
+      "bookCardExcludedParentClasses": [
+        "gm", "gtb"
+      ]
     },
     "EXHENTAI": {
       "hasBackupURLs": true
