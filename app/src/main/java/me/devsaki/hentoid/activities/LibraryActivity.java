@@ -953,7 +953,7 @@ public class LibraryActivity extends BaseActivity {
             deleteMenu.setVisible(((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0 == selectedExternalCount) || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary()));
             completedMenu.setVisible(true);
             resetReadStatsMenu.setVisible(true);
-            shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
+            shareMenu.setVisible(0 == selectedArchiveExternalCount);
             archiveMenu.setVisible(true);
             changeGroupMenu.setVisible(true);
             folderMenu.setVisible(!isMultipleSelection);

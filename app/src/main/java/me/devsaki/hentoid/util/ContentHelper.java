@@ -26,6 +26,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 
@@ -897,19 +898,22 @@ public final class ContentHelper {
     }
 
     /**
-     * Open the "share with..." Android dialog for the given Content
+     * Open the "share with..." Android dialog for the given list of Content
      *
      * @param context Context to use for the action
-     * @param item    Content to share
+     * @param items   List of Content to share
      */
-    public static void shareContent(@NonNull final Context context, @NonNull final Content item) {
-        String url = item.getGalleryUrl();
+    public static void shareContent(@NonNull final Context context, @NonNull final List<Content> items) {
+        if (items.isEmpty()) return;
+
+        String subject = (1 == items.size()) ? items.get(0).getTitle() : "";
+        String text = StringUtils.join(Stream.of(items).map(Content::getGalleryUrl).toList(), System.getProperty("line.separator"));
 
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, item.getTitle());
-        intent.putExtra(Intent.EXTRA_TEXT, url);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, text);
 
         context.startActivity(Intent.createChooser(intent, context.getString(R.string.send_to)));
     }

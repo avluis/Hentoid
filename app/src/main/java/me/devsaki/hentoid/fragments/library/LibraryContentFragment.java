@@ -613,11 +613,10 @@ public class LibraryContentFragment extends Fragment implements
      */
     private void shareSelectedItems() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
-        Context context = getActivity();
-        if (1 == selectedItems.size() && context != null) {
-            Content c = Stream.of(selectedItems).findFirst().get().getContent();
+        if (!selectedItems.isEmpty()) {
+            List<Content> c = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
             leaveSelectionMode();
-            if (c != null) ContentHelper.shareContent(context, c);
+            ContentHelper.shareContent(requireContext(), c);
         }
     }
 
