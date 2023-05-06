@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.customssiv.decoder;
 
+import static android.content.Context.ACTIVITY_SERVICE;
+
 import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -30,10 +32,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
-
-import static android.content.Context.ACTIVITY_SERVICE;
 
 /**
  * <p>
@@ -78,19 +76,12 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
     @Keep
     @SuppressWarnings("unused")
     public SkiaPooledImageRegionDecoder() {
-        this(null);
+        this.bitmapConfig = Bitmap.Config.RGB_565;
     }
 
     @SuppressWarnings({"WeakerAccess", "SameParameterValue"})
-    public SkiaPooledImageRegionDecoder(@Nullable Bitmap.Config bitmapConfig) {
-        Bitmap.Config globalBitmapConfig = CustomSubsamplingScaleImageView.getPreferredBitmapConfig();
-        if (bitmapConfig != null) {
-            this.bitmapConfig = bitmapConfig;
-        } else if (globalBitmapConfig != null) {
-            this.bitmapConfig = globalBitmapConfig;
-        } else {
-            this.bitmapConfig = Bitmap.Config.RGB_565;
-        }
+    public SkiaPooledImageRegionDecoder(@NonNull Bitmap.Config bitmapConfig) {
+        this.bitmapConfig = bitmapConfig;
     }
 
     /**

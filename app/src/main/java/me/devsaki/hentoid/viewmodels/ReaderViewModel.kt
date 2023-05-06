@@ -71,8 +71,7 @@ import kotlin.math.roundToInt
 
 
 class ReaderViewModel(
-    application: Application,
-    private val dao: CollectionDAO
+    application: Application, private val dao: CollectionDAO
 ) : AndroidViewModel(application) {
     // Collection DAO
     private val searchManager: ContentSearchManager = ContentSearchManager(dao)
@@ -86,6 +85,8 @@ class ReaderViewModel(
     private var currentContentIndex = -1 // Index of current content within the above list
 
     private var loadedContentId: Long = -1 // ID of currently loaded book
+
+    private var forceImgReload = false
 
 
     // Pictures data
@@ -126,6 +127,7 @@ class ReaderViewModel(
 
     // FIFO switches to interrupt downloads when browsing the book
     private val downloadsQueue: Queue<AtomicBoolean> = ConcurrentLinkedQueue()
+
 
     private var archiveExtractDisposable: Disposable? = null
 
@@ -172,10 +174,10 @@ class ReaderViewModel(
      * @param contentId  ID of the Content to load
      * @param pageNumber Page number to start with
      */
-    fun loadContentFromId(contentId: Long, pageNumber: Int) {
+    fun loadContentFromId(contentId: Long, pageNumber: Int, forceImageReload: Boolean = false) {
         if (contentId > 0) {
             val loadedContent = dao.selectContent(contentId)
-            if (loadedContent != null) loadContent(loadedContent, pageNumber)
+            if (loadedContent != null) loadContent(loadedContent, pageNumber, forceImageReload)
         }
     }
 
@@ -248,16 +250,18 @@ class ReaderViewModel(
      * @param newImages  Images to process
      */
     private fun loadImages(
-        theContent: Content,
-        pageNumber: Int,
-        newImages: MutableList<ImageFile>
+        theContent: Content, pageNumber: Int, newImages: MutableList<ImageFile>
     ) {
         databaseImages.postValue(newImages)
 
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
-        if (!theContent.isArchive && (imageLocationCache.isEmpty() || newImages.size != imageLocationCache.size)) {
+        if (forceImgReload || (!theContent.isArchive && (imageLocationCache.isEmpty() || newImages.size != imageLocationCache.size))) {
             viewModelScope.launch {
+                if (forceImgReload) {
+                    newImages.forEach { it.isForceRefresh = true }
+                    forceImgReload = false
+                }
                 withContext(Dispatchers.IO) {
                     processStorageImages(theContent, newImages)
                     cacheJson(getApplication<Application>().applicationContext, theContent)
@@ -284,8 +288,7 @@ class ReaderViewModel(
      * @param newImages  Images to process
      */
     private fun processStorageImages(
-        theContent: Content,
-        newImages: MutableList<ImageFile>
+        theContent: Content, newImages: MutableList<ImageFile>
     ) {
         require(!theContent.isArchive) { "Content must not be an archive" }
         val missingUris = newImages.any { img: ImageFile -> img.fileUri.isEmpty() }
@@ -337,16 +340,13 @@ class ReaderViewModel(
      * @return Matched ImageFile with the valued Uri if found; empty ImageFile if not found
      */
     private fun mapUriToImageFile(
-        contentId: Long,
-        imageFiles: List<ImageFile>,
-        uri: Uri
+        contentId: Long, imageFiles: List<ImageFile>, uri: Uri
     ): Optional<Pair<Int, ImageFile>> {
         uri.path ?: return Optional.empty()
 
         // Feed the Uri's of unzipped files back into the corresponding images for viewing
         for ((index, img) in imageFiles.withIndex()) {
-            if (FileHelper.getFileNameWithoutExtension(uri.path!!).endsWith("$contentId.$index")
-            ) {
+            if (FileHelper.getFileNameWithoutExtension(uri.path!!).endsWith("$contentId.$index")) {
                 return Optional.of(Pair(index, img))
             }
         }
@@ -376,9 +376,7 @@ class ReaderViewModel(
      * @param imageFiles Pictures to process
      */
     private fun contentFirstLoad(
-        theContent: Content,
-        pageNumber: Int,
-        imageFiles: List<ImageFile>
+        theContent: Content, pageNumber: Int, imageFiles: List<ImageFile>
     ) {
         var startingIndex = 0
 
@@ -409,10 +407,10 @@ class ReaderViewModel(
 
         // Init the read pages write cache
         readPageNumbers.clear()
-        val readPages = imageFiles.filter { obj -> obj.isRead }
+        val readPages = imageFiles
+            .filter { obj -> obj.isRead }
             .filter { obj -> obj.isReadable }
-            .map { obj -> obj.order }
-            .toList()
+            .map { obj -> obj.order }.toList()
 
         // Fix pre-v1.13 books where ImageFile.read has no value
         if (readPages.isEmpty() && theContent.lastReadPageIndex > 0 && theContent.lastReadPageIndex < imageFiles.size) {
@@ -486,7 +484,7 @@ class ReaderViewModel(
                 viewerImagesInternal.clear()
                 viewerImagesInternal.addAll(imgs)
             }
-            viewerImages.postValue(ArrayList(viewerImagesInternal))
+            viewerImages.postValue(viewerImagesInternal.toList())
         }
     }
 
@@ -537,10 +535,7 @@ class ReaderViewModel(
             withContext(Dispatchers.IO) {
                 try {
                     doLeaveBook(
-                        theContent.id,
-                        indexToSet,
-                        updateReads,
-                        markAsComplete
+                        theContent.id, indexToSet, updateReads, markAsComplete
                     )
                 } catch (t: Throwable) {
                     Timber.e(t)
@@ -558,10 +553,7 @@ class ReaderViewModel(
      * @param markAsCompleted True if the book has to be marked as completed
      */
     private fun doLeaveBook(
-        contentId: Long,
-        indexToSet: Int,
-        updateReads: Boolean,
-        markAsCompleted: Boolean
+        contentId: Long, indexToSet: Int, updateReads: Boolean, markAsCompleted: Boolean
     ) {
         Helper.assertNonUiThread()
 
@@ -716,8 +708,7 @@ class ReaderViewModel(
                     targetContent.rating = rating
                     dao.insertContent(targetContent)
                     ContentHelper.persistJson(
-                        getApplication<Application>().applicationContext,
-                        targetContent
+                        getApplication<Application>().applicationContext, targetContent
                     )
                 }
                 successCallback.invoke(rating)
@@ -733,8 +724,7 @@ class ReaderViewModel(
      * @param onError Callback to call in case an error occurs
      */
     fun deleteContent(onError: (Throwable) -> Unit) {
-        val targetContent: Content = dao.selectContent(loadedContentId)
-            ?: return
+        val targetContent: Content = dao.selectContent(loadedContentId) ?: return
 
         // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
         if (currentImageSource != null) databaseImages.removeSource(
@@ -745,10 +735,7 @@ class ReaderViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     ContentHelper.removeQueuedContent(
-                        getApplication(),
-                        dao,
-                        targetContent,
-                        true
+                        getApplication(), dao, targetContent, true
                     )
                 }
                 onContentRemoved()
@@ -771,8 +758,7 @@ class ReaderViewModel(
             contentIds.removeAt(currentContentIndex)
             if (currentContentIndex >= contentIds.size && currentContentIndex > 0) currentContentIndex--
             if (contentIds.size > currentContentIndex) loadContentFromId(
-                contentIds[currentContentIndex],
-                -1
+                contentIds[currentContentIndex], -1
             )
         } else { // Close the viewer if the list is empty (single book)
             content.postValue(null)
@@ -787,8 +773,10 @@ class ReaderViewModel(
      */
     fun deletePage(pageViewerIndex: Int, onError: (Throwable) -> Unit) {
         val imageFiles = viewerImagesInternal
-        if (imageFiles.size > pageViewerIndex && pageViewerIndex > -1)
-            deletePages(listOf(imageFiles[pageViewerIndex]), onError)
+        if (imageFiles.size > pageViewerIndex && pageViewerIndex > -1) deletePages(
+            listOf(imageFiles[pageViewerIndex]),
+            onError
+        )
     }
 
     /**
@@ -857,8 +845,8 @@ class ReaderViewModel(
         }
     }
 
-    private fun reloadContent() {
-        loadContentFromId(contentIds[currentContentIndex], -1)
+    private fun reloadContent(forceImageReload: Boolean = false) {
+        loadContentFromId(contentIds[currentContentIndex], -1, forceImageReload)
     }
 
     /**
@@ -867,17 +855,20 @@ class ReaderViewModel(
      * @param c Content to load
      * @param pageNumber Page number to start with
      */
-    private fun loadContent(c: Content, pageNumber: Int) {
+    private fun loadContent(c: Content, pageNumber: Int, forceImageReload: Boolean = false) {
         Preferences.setReaderCurrentContent(c.id)
         currentContentIndex = contentIds.indexOf(c.id)
         if (-1 == currentContentIndex) currentContentIndex = 0
         c.isFirst = 0 == currentContentIndex
         c.isLast = currentContentIndex >= contentIds.size - 1
         if (contentIds.size > currentContentIndex && loadedContentId != contentIds[currentContentIndex]) imageLocationCache.clear()
-        if (null == FileHelper.getDocumentFromTreeUriString(getApplication(), c.storageUri))
-            c.isFolderExists = false
+        if (null == FileHelper.getDocumentFromTreeUriString(
+                getApplication(),
+                c.storageUri
+            )
+        ) c.isFolderExists = false
         content.postValue(c)
-        loadDatabaseImages(c, pageNumber)
+        loadDatabaseImages(c, pageNumber, forceImageReload)
     }
 
     /**
@@ -886,13 +877,23 @@ class ReaderViewModel(
      * @param theContent Content to load the pictures for
      * @param pageNumber Page number to start with
      */
-    private fun loadDatabaseImages(theContent: Content, pageNumber: Int) {
+    private fun loadDatabaseImages(
+        theContent: Content,
+        pageNumber: Int,
+        forceImageReload: Boolean = false
+    ) {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource!!)
         currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.id)
-        databaseImages.addSource(currentImageSource!!)
-        { imgs -> loadImages(theContent, pageNumber, imgs) }
+        forceImgReload = forceImageReload
+        databaseImages.addSource(currentImageSource!!) { imgs ->
+            loadImages(
+                theContent,
+                pageNumber,
+                imgs,
+            )
+        }
     }
 
     /**
@@ -903,41 +904,25 @@ class ReaderViewModel(
     fun updateContentPreferences(newPrefs: Map<String, String>) {
         viewModelScope.launch {
             try {
+                var theContent: Content?
                 withContext(Dispatchers.IO) {
-                    val value = doUpdateContentPreferences(
-                        getApplication<Application>().applicationContext,
-                        loadedContentId,
-                        newPrefs
-                    )
-                    content.postValue(value)
+                    theContent = dao.selectContent(loadedContentId)
+                    theContent?.let {
+                        it.bookPreferences = newPrefs
+                        dao.insertContent(it)
+                    }
+                }
+                reloadContent(true) // Must run on the main thread
+                withContext(Dispatchers.IO) {
+                    // Persist in JSON
+                    theContent?.let {
+                        ContentHelper.persistJson(getApplication(), it)
+                    }
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
             }
         }
-    }
-
-    /**
-     * Update local preferences for the given Content
-     *
-     * @param context   Context to use
-     * @param contentId ID of the Content whose local preferences will be replaced
-     * @param newPrefs  Preferences to replace the current Content's local preferences
-     * @return Updated Content
-     */
-    private fun doUpdateContentPreferences(
-        context: Context, contentId: Long,
-        newPrefs: Map<String, String>
-    ): Content? {
-        Helper.assertNonUiThread()
-        val theContent: Content = dao.selectContent(contentId) ?: return null
-        theContent.bookPreferences = newPrefs
-        // Persist in DB
-        dao.insertContent(theContent)
-
-        // Persist in JSON
-        ContentHelper.persistJson(context, theContent)
-        return theContent
     }
 
     /**
@@ -950,8 +935,7 @@ class ReaderViewModel(
         Helper.assertNonUiThread()
         if (content.jsonUri.isNotEmpty() || content.isArchive) return
         val folder = FileHelper.getDocumentFromTreeUriString(context, content.storageUri) ?: return
-        val foundFile =
-            FileHelper.findFile(getApplication(), folder, JSON_FILE_NAME_V2)
+        val foundFile = FileHelper.findFile(getApplication(), folder, JSON_FILE_NAME_V2)
         if (null == foundFile) {
             Timber.e("JSON file not detected in %s", content.storageUri)
             return
@@ -989,9 +973,12 @@ class ReaderViewModel(
         if (viewerImagesInternal.size <= viewerIndex) return
         val theContent = getContent().value ?: return
         val isArchive = theContent.isArchive
-        val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
-            .filter { i -> isPictureNeedsProcessing(i, viewerImagesInternal) }
-            .toSet()
+        val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1).filter { i ->
+            isPictureNeedsProcessing(
+                i,
+                viewerImagesInternal
+            )
+        }.toSet()
         if (picturesLeftToProcess.isEmpty()) return
 
         // Identify pages to be loaded
@@ -1018,8 +1005,8 @@ class ReaderViewModel(
             if (!greenlight) {
                 val from = if (increment > 0) initialIndex else 0
                 val to = if (increment > 0) viewerImagesInternal.size else initialIndex + 1
-                val leftToProcessDirection = IntRange(from, to - 1)
-                    .count { o: Int -> picturesLeftToProcess.contains(o) }
+                val leftToProcessDirection =
+                    IntRange(from, to - 1).count { o: Int -> picturesLeftToProcess.contains(o) }
                 greenlight = indexesToLoad.size == leftToProcessDirection
             }
         }
@@ -1028,15 +1015,12 @@ class ReaderViewModel(
             FileHelper.getOrCreateCacheFolder(getApplication(), PICTURE_CACHE_FOLDER) ?: return
 
         // Group by archive for efficiency
-        val indexesByArchive = indexesToLoad
-            .filter { viewerImagesInternal[it].isArchived }
+        val indexesByArchive = indexesToLoad.filter { viewerImagesInternal[it].isArchived }
             .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
         indexesByArchive.keys.forEach {
             val archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), it)
             if (archiveFile != null) extractPics(
-                indexesByArchive[it]!!,
-                archiveFile,
-                cachePicFolder
+                indexesByArchive[it]!!, archiveFile, cachePicFolder
             )
         }
 
@@ -1054,8 +1038,7 @@ class ReaderViewModel(
      * @return True if the picture at the given index needs processing; false if not
      */
     private fun isPictureNeedsProcessing(
-        pageIndex: Int,
-        images: List<ImageFile>
+        pageIndex: Int, images: List<ImageFile>
     ): Boolean {
         if (pageIndex < 0 || images.size <= pageIndex) return false
         val img = images[pageIndex]
@@ -1070,8 +1053,7 @@ class ReaderViewModel(
      * @param targetFolder  Target folder to download the pictures to
      */
     private fun downloadPics(
-        indexesToLoad: List<Int>,
-        targetFolder: File
+        indexesToLoad: List<Int>, targetFolder: File
     ) {
         for (index in indexesToLoad) {
             if (indexDlInProgress.contains(index)) continue
@@ -1101,8 +1083,7 @@ class ReaderViewModel(
                             if (viewerImagesInternal.size <= downloadedPageIndex) return@withContext
 
                             // Instanciate a new ImageFile not to modify the one used by the UI
-                            val downloadedPic =
-                                ImageFile(viewerImagesInternal[downloadedPageIndex])
+                            val downloadedPic = ImageFile(viewerImagesInternal[downloadedPageIndex])
                             downloadedPic.fileUri = resultOpt.get().middle
                             downloadedPic.mimeType = resultOpt.get().right
                             viewerImagesInternal.removeAt(downloadedPageIndex)
@@ -1134,9 +1115,7 @@ class ReaderViewModel(
      * @param targetFolder  Folder to extract the files to
      */
     private fun extractPics(
-        indexesToLoad: List<Int>,
-        archiveFile: DocumentFile,
-        targetFolder: File
+        indexesToLoad: List<Int>, archiveFile: DocumentFile, targetFolder: File
     ) {
         viewModelScope.launch {
             try {
@@ -1150,9 +1129,7 @@ class ReaderViewModel(
     }
 
     private fun doExtractPics(
-        indexesToLoad: List<Int>,
-        archiveFile: DocumentFile,
-        targetFolder: File
+        indexesToLoad: List<Int>, archiveFile: DocumentFile, targetFolder: File
     ) {
         Helper.assertNonUiThread()
         // Interrupt current extracting process, if any
@@ -1179,15 +1156,13 @@ class ReaderViewModel(
             extractInstructions.add(
                 Pair(
                     img.url.replace(
-                        c.storageUri + File.separator,
-                        ""
+                        c.storageUri + File.separator, ""
                     ), "$loadedContentId.$index"
                 )
             )
         }
         Timber.d(
-            "Extracting %d files starting from index %s", extractInstructions.size,
-            indexesToLoad[0]
+            "Extracting %d files starting from index %s", extractInstructions.size, indexesToLoad[0]
         )
 
         val nbProcessed = AtomicInteger()
@@ -1202,18 +1177,16 @@ class ReaderViewModel(
             )
         }
 
-        archiveExtractDisposable = observable
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.io())
-            // Called this way to properly run on io thread
-            .doOnComplete {
-                val c = getContent().value
-                if (c != null && c.isFolderExists)
-                    cacheJson(getApplication<Application>().applicationContext, c)
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { uri: Uri ->
+        archiveExtractDisposable =
+            observable.subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
+                // Called this way to properly run on io thread
+                .doOnComplete {
+                    val c = getContent().value
+                    if (c != null && c.isFolderExists) cacheJson(
+                        getApplication<Application>().applicationContext,
+                        c
+                    )
+                }.observeOn(AndroidSchedulers.mainThread()).subscribe({ uri: Uri ->
                     nbProcessed.getAndIncrement()
                     EventBus.getDefault().post(
                         ProcessEvent(
@@ -1226,9 +1199,7 @@ class ReaderViewModel(
                         )
                     )
                     val img = mapUriToImageFile(
-                        loadedContentId,
-                        viewerImagesInternal,
-                        uri
+                        loadedContentId, viewerImagesInternal, uri
                     )
                     if (img.isPresent) {
                         indexExtractInProgress.remove(img.get().first)
@@ -1237,8 +1208,7 @@ class ReaderViewModel(
                         val extractedPic = ImageFile(img.get().second)
                         extractedPic.fileUri = uri.toString()
                         extractedPic.mimeType = ImageHelper.getMimeTypeFromUri(
-                            getApplication<Application>().applicationContext,
-                            uri
+                            getApplication<Application>().applicationContext, uri
                         )
                         synchronized(viewerImagesInternal) {
                             viewerImagesInternal.removeAt(img.get().first.toInt())
@@ -1258,8 +1228,7 @@ class ReaderViewModel(
                         }
                         imageLocationCache[extractedPic.order] = extractedPic.fileUri
                     }
-                },
-                { t: Throwable? ->
+                }, { t: Throwable? ->
                     Timber.e(t)
                     EventBus.getDefault().post(
                         ProcessEvent(
@@ -1274,23 +1243,22 @@ class ReaderViewModel(
                     indexExtractInProgress.clear()
                     interruptArchiveExtract.set(false)
                     archiveExtractDisposable?.dispose()
-                }
-            ) {
-                Timber.d("Extracted %d files successfuly", extractInstructions.size)
-                EventBus.getDefault().post(
-                    ProcessEvent(
-                        ProcessEvent.EventType.COMPLETE,
-                        R.id.viewer_load,
-                        0,
-                        nbProcessed.get(),
-                        0,
-                        indexesToLoad.size
+                }) {
+                    Timber.d("Extracted %d files successfuly", extractInstructions.size)
+                    EventBus.getDefault().post(
+                        ProcessEvent(
+                            ProcessEvent.EventType.COMPLETE,
+                            R.id.viewer_load,
+                            0,
+                            nbProcessed.get(),
+                            0,
+                            indexesToLoad.size
+                        )
                     )
-                )
-                indexExtractInProgress.clear()
-                interruptArchiveExtract.set(false)
-                archiveExtractDisposable?.dispose()
-            }
+                    indexExtractInProgress.clear()
+                    interruptArchiveExtract.set(false)
+                    archiveExtractDisposable?.dispose()
+                }
     }
 
     /**
@@ -1307,9 +1275,7 @@ class ReaderViewModel(
      * The return value is empty if the download fails
      */
     private fun downloadPic(
-        pageIndex: Int,
-        targetFolder: File,
-        stopDownload: AtomicBoolean
+        pageIndex: Int, targetFolder: File, stopDownload: AtomicBoolean
     ): Optional<ImmutableTriple<Int, String?, String?>> {
         Helper.assertNonUiThread()
         if (viewerImagesInternal.size <= pageIndex) return Optional.empty()
@@ -1318,9 +1284,7 @@ class ReaderViewModel(
         // Already downloaded
         if (img.fileUri.isNotEmpty()) return Optional.of(
             ImmutableTriple(
-                pageIndex,
-                img.fileUri,
-                img.mimeType
+                pageIndex, img.fileUri, img.mimeType
             )
         )
 
@@ -1329,8 +1293,7 @@ class ReaderViewModel(
             val targetFileName = content.id.toString() + "." + pageIndex
             val existing = targetFolder.listFiles { _: File?, name: String ->
                 name.equals(
-                    targetFileName,
-                    ignoreCase = true
+                    targetFileName, ignoreCase = true
                 )
             }
             var mimeType = ImageHelper.MIME_IMAGE_GENERIC
@@ -1399,9 +1362,7 @@ class ReaderViewModel(
                 }
                 return Optional.of(
                     ImmutableTriple(
-                        pageIndex,
-                        Uri.fromFile(targetFile).toString(),
-                        mimeType
+                        pageIndex, Uri.fromFile(targetFile).toString(), mimeType
                     )
                 )
             }
@@ -1542,7 +1503,11 @@ class ReaderViewModel(
                         // Non-blocking performance bottleneck; run in a dedicated worker
                         ContentHelper.purgeContent(getApplication(), it, false)
                         dao.addContentToQueue(
-                            it, targetImageStatus, ContentHelper.QueuePosition.TOP, -1, null,
+                            it,
+                            targetImageStatus,
+                            ContentHelper.QueuePosition.TOP,
+                            -1,
+                            null,
                             isQueueActive(getApplication())
                         )
                     }
@@ -1708,13 +1673,9 @@ class ReaderViewModel(
         // (we don't want to depend on LiveData being on time here)
         val theViewerImages = dao.selectDownloadedImagesFromContent(theContent.id)
         // Rely on the order of pictures to get chapter in the right order
-        val allChapters = theViewerImages
-            .asSequence()
-            .map { obj -> obj.linkedChapter }
-            .distinct()
-            .filterNotNull()
-            .filter { c -> c.order > -1 }
-            .toList()
+        val allChapters =
+            theViewerImages.asSequence().map { obj -> obj.linkedChapter }.distinct().filterNotNull()
+                .filter { c -> c.order > -1 }.toList()
 
         // Renumber all chapters to reflect changes
         var order = 1
@@ -1784,9 +1745,7 @@ class ReaderViewModel(
      * @param chapterImages Images of the chapter to remove
      */
     private fun doRemoveChapter(
-        content: Content,
-        toRemove: Chapter,
-        chapterImages: List<ImageFile>
+        content: Content, toRemove: Chapter, chapterImages: List<ImageFile>
     ) {
         var contentChapters: List<Chapter> = content.chapters ?: return
         contentChapters = contentChapters.sortedBy { obj: Chapter -> obj.order }
@@ -1835,8 +1794,8 @@ class ReaderViewModel(
         // Renumber all chapters and update the DB
         chapters.forEachIndexed { index, c ->
             // Update names with the default "Chapter x" naming
-            if (VANILLA_CHAPTERNAME_PATTERN!!.matcher(c.name).matches())
-                c.name = "$chapterStr " + (index + 1)
+            if (VANILLA_CHAPTERNAME_PATTERN!!.matcher(c.name).matches()) c.name =
+                "$chapterStr " + (index + 1)
             // Update order
             c.order = index + 1
         }
@@ -1862,8 +1821,7 @@ class ReaderViewModel(
         val swaps = HashMap<Uri, Triple<Uri, Uri, ImageFile>>()
         val renames = ArrayList<Triple<DocumentFile, String, ImageFile>>()
         val parentFolder = FileHelper.getDocumentFromTreeUriString(
-            getApplication(),
-            chapters[0].content.target.storageUri
+            getApplication(), chapters[0].content.target.storageUri
         )
         if (parentFolder != null) {
             val contentFiles = FileHelper.listFiles(getApplication(), parentFolder, null)
@@ -1945,12 +1903,7 @@ class ReaderViewModel(
         if (finalContent != null) ContentHelper.persistJson(getApplication(), finalContent)
         EventBus.getDefault().postSticky(
             ProcessEvent(
-                ProcessEvent.EventType.COMPLETE,
-                R.id.generic_progress,
-                0,
-                nbTasks,
-                0,
-                nbTasks
+                ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbTasks, 0, nbTasks
             )
         )
 

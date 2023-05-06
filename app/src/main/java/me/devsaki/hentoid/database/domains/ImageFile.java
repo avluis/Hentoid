@@ -63,6 +63,9 @@ public class ImageFile {
     // Has the image been read from a backup URL ? (download-time only)
     @Transient
     private boolean isBackup = false;
+    // Force refresh
+    @Transient
+    public boolean isForceRefresh = false;
 
     // WARNING : Update copy constructor when adding attributes
 
@@ -361,6 +364,8 @@ public class ImageFile {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ImageFile imageFile = (ImageFile) o;
+        if (imageFile.isForceRefresh || isForceRefresh) return false;
+
         return getId() == imageFile.getId() &&
                 Objects.equals(getUrl(), imageFile.getUrl())
                 && Objects.equals(getPageUrl(), imageFile.getPageUrl())
@@ -374,12 +379,12 @@ public class ImageFile {
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getPageUrl(), getUrl(), getFileUri(), getOrder(), isCover(), isFavourite(), chapter.getTargetId());
+        return Objects.hash(getId(), getPageUrl(), getUrl(), getFileUri(), getOrder(), isCover(), isFavourite(), chapter.getTargetId(), isForceRefresh);
     }
 
     public long uniqueHash() {
         if (0 == uniqueHash)
-            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId()).getBytes());
+            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId() + "." + isForceRefresh).getBytes());
         return uniqueHash;
     }
 }

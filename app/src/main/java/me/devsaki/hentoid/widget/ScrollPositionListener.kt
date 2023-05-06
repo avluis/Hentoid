@@ -75,10 +75,10 @@ class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit
             } else if (RecyclerView.SCROLL_STATE_SETTLING == newState) {
                 // If the settling position is different from the original position, ignore that scroll
                 // (e.g. snapping back to the original position after a small scroll)
-                if (recyclerView.computeHorizontalScrollOffset() != dragStartPositionX) isSettlingX =
-                    true
-                if (recyclerView.computeVerticalScrollOffset() != dragStartPositionY) isSettlingY =
-                    true
+                if (recyclerView.computeHorizontalScrollOffset() != dragStartPositionX)
+                    isSettlingX = true
+                if (recyclerView.computeVerticalScrollOffset() != dragStartPositionY)
+                    isSettlingY = true
             } else if (RecyclerView.SCROLL_STATE_IDLE == newState) {
                 // Don't do anything if we're not on a boundary
                 if (!(llm.findLastVisibleItemPosition() == llm.itemCount - 1 || 0 == llm.findFirstVisibleItemPosition())) return

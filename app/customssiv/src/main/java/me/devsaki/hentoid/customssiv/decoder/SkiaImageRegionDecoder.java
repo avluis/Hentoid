@@ -15,15 +15,12 @@ import android.os.Build;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 
 /**
  * Default implementation of {@link ImageRegionDecoder}
@@ -50,19 +47,12 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
     @Keep
     @SuppressWarnings("unused")
     public SkiaImageRegionDecoder() {
-        this(null);
+        this.bitmapConfig = Bitmap.Config.RGB_565;
     }
 
     @SuppressWarnings({"WeakerAccess", "SameParameterValue"})
-    public SkiaImageRegionDecoder(@Nullable Bitmap.Config bitmapConfig) {
-        Bitmap.Config globalBitmapConfig = CustomSubsamplingScaleImageView.getPreferredBitmapConfig();
-        if (bitmapConfig != null) {
-            this.bitmapConfig = bitmapConfig;
-        } else if (globalBitmapConfig != null) {
-            this.bitmapConfig = globalBitmapConfig;
-        } else {
-            this.bitmapConfig = Bitmap.Config.RGB_565;
-        }
+    public SkiaImageRegionDecoder(@NonNull Bitmap.Config bitmapConfig) {
+        this.bitmapConfig = bitmapConfig;
     }
 
     @Override

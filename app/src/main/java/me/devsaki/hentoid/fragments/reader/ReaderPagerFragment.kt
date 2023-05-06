@@ -55,7 +55,6 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.adapters.ImagePagerAdapter
-import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
@@ -112,10 +111,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private val scrollListener = ScrollPositionListener { scrollPosition: Int ->
         onScrollPositionChange(scrollPosition)
     }
+
+    // Slideshow
     private var slideshowTimer: Disposable? = null
     private var isSlideshowActive = false
     private var slideshowPeriodMs: Long = -1
     private var latestSlideshowTick: Long = -1
+
+    private lateinit var displayParams: DisplayParams
 
     // Properties
     // Preferences of current book; to feed the book prefs dialog
@@ -157,6 +160,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     // Debouncer for the slideshow slider
     private lateinit var slideshowSliderDebouncer: DebouncerK<Int>
 
+    // Pager implementation
+    override val currentImg: ImageFile?
+        get() {
+            val img = adapter.getImageAt(absImageIndex)
+            if (null == img) Timber.w("No image at absolute position %s", absImageIndex)
+            return img
+        }
+
 
     @SuppressLint("NonConstantResourceId")
     override fun onCreateView(
@@ -170,7 +181,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             onSlideShowSliderChosen(sliderIndex)
         }
         processPositionDebouncer = DebouncerK(this.lifecycleScope, 500) { pair: Pair<Int, Int> ->
-            viewModel.onPageChange(pair.left, pair.right)
+            onPageChanged(pair.left, pair.right)
         }
         rescaleDebouncer = DebouncerK(this.lifecycleScope, 100) { scale: Float ->
             adapter.multiplyScale(scale)
@@ -208,8 +219,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     }
 
                     R.id.action_delete_book -> if (VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode()) invoke(
-                        this,
-                        !isContentArchive
+                        this, !isContentArchive
                     )
                     else  // We already know what to delete
                         onDeleteElement(VIEWER_DELETE_TARGET_PAGE == Preferences.getReaderDeleteTarget())
@@ -413,13 +423,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 recyclerView, tapZoneScale
             ).setOnLeftZoneTapListener { onLeftTap() }.setOnRightZoneTapListener { onRightTap() }
                 .setOnMiddleZoneTapListener { onMiddleTap() }.setOnLongTapListener { onLongTap() }
+            adapter.setItemTouchListener(onHorizontalZoneTapListener) // For independent images mode (horizontal)
             val onVerticalZoneTapListener =
                 OnZoneTapListener(recyclerView, 1).setOnMiddleZoneTapListener { onMiddleTap() }
                     .setOnLongTapListener { onLongTap() }
             recyclerView.setTapListener(onVerticalZoneTapListener) // For paper roll mode (vertical)
-            adapter.setItemTouchListener(onHorizontalZoneTapListener) // For independent images mode (horizontal)
             adapter.setRecyclerView(recyclerView)
             llm = PrefetchLinearLayoutManager(requireContext())
+            llm.orientation = LinearLayoutManager.HORIZONTAL
             llm.setExtraLayoutSpace(10)
             recyclerView.layoutManager = llm
             pageSnapWidget = PageSnapWidget(recyclerView)
@@ -554,8 +565,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Show the book viewer settings dialog
      */
     private fun onBookSettingsClick() {
-        bookPreferences?.let {
-            invoke(this, it)
+        currentImg?.let {
+            invoke(this, it.content.target.bookPreferences)
         }
     }
 
@@ -773,7 +784,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         // Wait for starting index only if content actually changes
         if (content.id != contentId) startingIndexLoaded = false
         contentId = content.id
-        onBrowseModeChange() // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
+        //onBrowseModeChange() // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
         navigator.onContentChanged(content)
         updateFavouriteButtonIcon()
 
@@ -834,12 +845,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onScrollPositionChange(scrollPosition: Int) {
         if (null == binding) return
         if (!startingIndexLoaded) return
+
         if (scrollPosition != absImageIndex) {
             var isScrollLTR = true
             val direction = Preferences.getContentDirection(bookPreferences)
-            if (VIEWER_DIRECTION_LTR == direction && absImageIndex > scrollPosition) isScrollLTR =
-                false else if (VIEWER_DIRECTION_RTL == direction && absImageIndex < scrollPosition) isScrollLTR =
-                false
+            if (VIEWER_DIRECTION_LTR == direction && absImageIndex > scrollPosition)
+                isScrollLTR = false
+            else if (VIEWER_DIRECTION_RTL == direction && absImageIndex < scrollPosition)
+                isScrollLTR = false
             adapter.setScrollLTR(isScrollLTR)
             hidePendingMicroMenus()
 
@@ -861,19 +874,34 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 viewerLoadingTxt.visibility = View.GONE
                 viewerFixBtn.visibility = View.GONE
             }
-        }
-        val scrollDirection = scrollPosition - absImageIndex
-        absImageIndex = scrollPosition
-        val currentImage = adapter.getImageAt(absImageIndex)
-        if (currentImage != null) {
-            Preferences.setReaderCurrentPageNum(currentImage.order)
-            viewModel.markPageAsRead(currentImage.order)
+
+            val scrollDirection = scrollPosition - absImageIndex
+            absImageIndex = scrollPosition
             // Remember the last relevant movement and schedule it for execution
             processPositionDebouncer.submit(ImmutablePair(absImageIndex, scrollDirection))
-            isPageFavourite = currentImage.isFavourite
+
+            adapter.getImageAt(absImageIndex)?.let {
+//                adjustDisplay(it.content.target.bookPreferences)
+                viewModel.markPageAsRead(it.order)
+                isPageFavourite = it.isFavourite
+                updateFavouriteButtonIcon()
+                Preferences.setReaderCurrentPageNum(it.order)
+            }
+            navigator.updatePageControls()
         }
-        navigator.updatePageControls()
-        updateFavouriteButtonIcon()
+        /*
+        val scrollDirection = scrollPosition - absImageIndex
+        absImageIndex = scrollPosition
+        // Remember the last relevant movement and schedule it for execution
+        processPositionDebouncer.submit(ImmutablePair(absImageIndex, scrollDirection))
+         */
+    }
+
+    private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {
+        currentImg?.let {
+            adjustDisplay(it.content.target.bookPreferences)
+        }
+        viewModel.onPageChange(absImageIndex, scrollDirection)
     }
 
     /**
@@ -885,7 +913,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         when (key) {
             Preferences.Key.VIEWER_BROWSE_MODE, Preferences.Key.VIEWER_HOLD_TO_ZOOM, Preferences.Key.VIEWER_CONTINUOUS -> onBrowseModeChange()
             Preferences.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()
-            Preferences.Key.VIEWER_ZOOM_TRANSITIONS, Preferences.Key.VIEWER_SEPARATING_BARS, Preferences.Key.VIEWER_IMAGE_DISPLAY, Preferences.Key.VIEWER_AUTO_ROTATE, Preferences.Key.VIEWER_RENDERING -> onUpdateImageDisplay()
+            Preferences.Key.VIEWER_ZOOM_TRANSITIONS, Preferences.Key.VIEWER_SEPARATING_BARS, Preferences.Key.VIEWER_AUTO_ROTATE
+            -> onUpdateImageDisplay(true)
+
+            Preferences.Key.VIEWER_IMAGE_DISPLAY, Preferences.Key.VIEWER_RENDERING
+            -> onUpdateImageDisplay(false)
+
             Preferences.Key.VIEWER_SWIPE_TO_FLING -> onUpdateSwipeToFling()
             Preferences.Key.VIEWER_DISPLAY_PAGENUM -> onUpdatePageNumDisplay()
             Preferences.Key.VIEWER_PAGE_TURN_SWIPE -> onUpdateSwipeToTurn()
@@ -896,7 +929,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override fun onBookPreferenceChanged(newPrefs: Map<String, String>) {
         viewModel.updateContentPreferences(newPrefs)
         bookPreferences = newPrefs
-        onBrowseModeChange()
     }
 
     private fun onUpdatePrefsScreenOn() {
@@ -915,26 +947,25 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     /**
-     * Re-create and re-bind all Viewholders
+     * Re-bind necessary Viewholders
      */
     @SuppressLint("NotifyDataSetChanged")
-    private fun onUpdateImageDisplay() {
-        adapter.refreshPrefs(bookPreferences!!)
+    private fun onUpdateImageDisplay(isReaderWide: Boolean = true) {
+        adapter.refreshPrefs()
 
-        // Needs ARGB_8888 to be able to resize images using RenderScript
-        if (Preferences.isContentSmoothRendering(bookPreferences)) CustomSubsamplingScaleImageView.setPreferredBitmapConfig(
-            Bitmap.Config.ARGB_8888
-        ) else CustomSubsamplingScaleImageView.setPreferredBitmapConfig(
-            Bitmap.Config.RGB_565
-        )
-        binding?.apply {
-            recyclerView.adapter = null
-            recyclerView.layoutManager = null
-            recyclerView.recycledViewPool.clear()
-            recyclerView.swapAdapter(adapter, false)
-            recyclerView.layoutManager = llm
+        if (isContentDynamic && !isReaderWide) {
+            // Rebind currently displayed ViewHolder
+            adapter.notifyItemChanged(absImageIndex)
+        } else {
+            binding?.apply {
+                recyclerView.adapter = null
+                recyclerView.layoutManager = null
+                recyclerView.recycledViewPool.clear()
+                recyclerView.swapAdapter(adapter, false)
+                recyclerView.layoutManager = llm
+            }
+            adapter.notifyDataSetChanged() // NB : will re-run onBindViewHolder for all displayed pictures
         }
-        adapter.notifyDataSetChanged() // NB : will re-run onBindViewHolder for all displayed pictures
         seekToPosition(absImageIndex)
     }
 
@@ -945,31 +976,60 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
     }
 
+    private fun adjustDisplay(bookPreferences: Map<String, String>) {
+        val newDisplayParams = DisplayParams(
+            Preferences.getContentBrowseMode(bookPreferences),
+            Preferences.getContentDisplayMode(bookPreferences),
+            Preferences.isContentSmoothRendering(bookPreferences)
+        )
+        if (!::displayParams.isInitialized || newDisplayParams != displayParams) {
+            onDisplayParamsChange(newDisplayParams)
+        }
+    }
+
     override fun onBrowseModeChange() {
+        onDisplayParamsChange(displayParams)
+    }
+
+    private fun onDisplayParamsChange(newDisplayParams: DisplayParams) {
         // LinearLayoutManager.setReverseLayout behaves _relatively_ to current Layout Direction
         // => need to know that direction before deciding how to set setReverseLayout
-        binding?.apply {
-            val currentLayoutDirection: Int =
-                if (View.LAYOUT_DIRECTION_LTR == controlsOverlay.root.layoutDirection) VIEWER_DIRECTION_LTR else VIEWER_DIRECTION_RTL
-            llm.reverseLayout =
-                Preferences.getContentDirection(bookPreferences) != currentLayoutDirection
-            val orientation = Preferences.getContentOrientation(bookPreferences)
-            llm.orientation = getOrientation(orientation)
 
-            // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
-            recyclerView.resetScale()
-            onUpdateImageDisplay()
-            if (VIEWER_ORIENTATION_VERTICAL == orientation) {
-                zoomFrame.enable()
-                recyclerView.setLongTapZoomEnabled(Preferences.isReaderHoldToZoom())
-            } else {
-                zoomFrame.disable()
-                recyclerView.setLongTapZoomEnabled(!Preferences.isReaderHoldToZoom())
+        val isOrientationChange =
+            (!::displayParams.isInitialized || displayParams.orientation != newDisplayParams.orientation)
+        val isDirectionChange =
+            (!::displayParams.isInitialized || displayParams.direction != newDisplayParams.direction)
+        displayParams = newDisplayParams
+
+        binding?.apply {
+            // Orientation changes
+            if (isOrientationChange) {
+                llm.orientation = getOrientation(displayParams.orientation)
+
+                // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
+                recyclerView.resetScale()
+
+                if (VIEWER_ORIENTATION_VERTICAL == displayParams.orientation) {
+                    zoomFrame.enable()
+                    recyclerView.setLongTapZoomEnabled(Preferences.isReaderHoldToZoom())
+                    onUpdateImageDisplay(false)
+                } else {
+                    zoomFrame.disable()
+                    recyclerView.setLongTapZoomEnabled(!Preferences.isReaderHoldToZoom())
+                }
+                pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == displayParams.orientation)
             }
-            pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == orientation)
-            val direction = Preferences.getContentDirection(bookPreferences)
-            adapter.setScrollLTR(VIEWER_DIRECTION_LTR == direction)
-            navigator.setDirection(direction)
+
+            // Direction changes
+            if (isDirectionChange) {
+                val currentLayoutDirection: Int =
+                    if (View.LAYOUT_DIRECTION_LTR == controlsOverlay.root.layoutDirection) VIEWER_DIRECTION_LTR else VIEWER_DIRECTION_RTL
+                llm.reverseLayout = displayParams.direction != currentLayoutDirection
+
+                adapter.setScrollLTR(VIEWER_DIRECTION_LTR == displayParams.direction)
+                navigator.setDirection(displayParams.direction)
+                navigator.updatePageControls()
+            }
         }
     }
 
@@ -1141,13 +1201,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         viewModel.loadPreviousContent(absImageIndex)
     }
 
-    override val currentImg: ImageFile?
-        get() {
-            val img = adapter.getImageAt(absImageIndex)
-            if (null == img) Timber.w("No image at absolute position %s", absImageIndex)
-            return img
-        }
-
     /**
      * Go to the given page number
      *
@@ -1301,8 +1354,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         if (visible) {
             binding?.apply {
                 WindowInsetsControllerCompat(
-                    window,
-                    controlsOverlay.root
+                    window, controlsOverlay.root
                 ).show(WindowInsetsCompat.Type.systemBars())
             }
             // Revert to default regarding notch area display
@@ -1429,5 +1481,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         const val KEY_SLIDESHOW_ON = "slideshow_on"
         const val KEY_SLIDESHOW_REMAINING_MS = "slideshow_remaining_ms"
         const val KEY_IMG_INDEX = "image_index"
+    }
+
+    data class DisplayParams(
+        val browseMode: Int, val displayMode: Int, val isSmoothRendering: Boolean
+    ) {
+        val orientation =
+            if (browseMode == VIEWER_BROWSE_TTB) VIEWER_ORIENTATION_VERTICAL else VIEWER_ORIENTATION_HORIZONTAL
+        val direction =
+            if (browseMode == VIEWER_BROWSE_RTL) VIEWER_DIRECTION_RTL else VIEWER_DIRECTION_LTR
     }
 }

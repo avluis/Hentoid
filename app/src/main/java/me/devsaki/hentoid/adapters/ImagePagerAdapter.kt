@@ -34,8 +34,10 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEven
 import me.devsaki.hentoid.customssiv.ImageSource
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import timber.log.Timber
 import kotlin.math.roundToInt
@@ -46,10 +48,6 @@ class ImagePagerAdapter(context: Context) :
     enum class ViewType(val value: Int) {
         DEFAULT(0), IMAGEVIEW_STRETCH(1), SSIV_VERTICAL(2)
     }
-
-    // Screen width and height; used to adjust dimensions of small images handled by Glide
-    val screenWidth = HentoidApp.getInstance().resources.displayMetrics.widthPixels
-    val screenHeight = HentoidApp.getInstance().resources.displayMetrics.heightPixels
 
     private val pageMinHeight =
         HentoidApp.getInstance().resources.getDimension(R.dimen.page_min_height).toInt()
@@ -71,11 +69,9 @@ class ImagePagerAdapter(context: Context) :
 
     // Cached prefs
     private var separatingBarsHeight = 0
-    private var viewerOrientation = 0
-    private var displayMode = 0
+
     private var longTapZoomEnabled = false
     private var autoRotate = false
-    private var isSmoothRendering = false
     private var doubleTapZoomCap = 0f
 
 
@@ -85,7 +81,7 @@ class ImagePagerAdapter(context: Context) :
 
     // Book prefs have to be set explicitely because the cached Content linked from each ImageFile
     // might not have the latest properties
-    fun refreshPrefs(bookPreferences: Map<String, String>) {
+    fun refreshPrefs() {
         val separatingBarsPrefs = Preferences.getReaderSeparatingBars()
         separatingBarsHeight = when (separatingBarsPrefs) {
             Preferences.Constant.VIEWER_SEPARATING_BARS_SMALL -> 4
@@ -95,9 +91,7 @@ class ImagePagerAdapter(context: Context) :
         }
         longTapZoomEnabled = Preferences.isReaderHoldToZoom()
         autoRotate = Preferences.isReaderAutoRotate()
-        displayMode = Preferences.getContentDisplayMode(bookPreferences)
-        viewerOrientation = Preferences.getContentOrientation(bookPreferences)
-        isSmoothRendering = Preferences.isContentSmoothRendering(bookPreferences)
+
         val doubleTapZoomCapCode = Preferences.getReaderCapTapZoom()
         doubleTapZoomCap =
             if (Preferences.Constant.VIEWER_CAP_TAP_ZOOM_NONE == doubleTapZoomCapCode) -1f else doubleTapZoomCapCode.toFloat()
@@ -125,83 +119,101 @@ class ImagePagerAdapter(context: Context) :
         } else IMG_TYPE_OTHER
     }
 
-    override fun getItemViewType(position: Int): Int {
-        if (Preferences.Constant.VIEWER_DISPLAY_STRETCH == displayMode) return ViewType.IMAGEVIEW_STRETCH.value
-        return if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewType.SSIV_VERTICAL.value else ViewType.DEFAULT.value
+    private fun getImageViewType(displayParams: ReaderPagerFragment.DisplayParams): Int {
+        return if (Preferences.Constant.VIEWER_DISPLAY_STRETCH == displayParams.displayMode) ViewType.IMAGEVIEW_STRETCH.value
+        else if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == displayParams.orientation) ViewType.SSIV_VERTICAL.value
+        else ViewType.DEFAULT.value
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ImageViewHolder {
         val inflater = LayoutInflater.from(viewGroup.context)
         val view: View = inflater.inflate(R.layout.item_reader_image, viewGroup, false)
-        if (ViewType.DEFAULT.value == viewType) {
-            // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
-            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
-                val image = view.findViewById<View>(R.id.imageview)
-                image.isClickable = false
-                image.isFocusable = false
-            }
-        } else if (ViewType.IMAGEVIEW_STRETCH.value == viewType) {
-            val image = view.findViewById<ImageView>(R.id.imageview)
-            image.scaleType = ImageView.ScaleType.FIT_XY
-        } else if (ViewType.SSIV_VERTICAL.value == viewType) {
-            val image = view.findViewById<CustomSubsamplingScaleImageView>(R.id.ssiv)
-            image.setIgnoreTouchEvents(true)
-            image.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL)
-        }
-        if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) view.minimumHeight =
-            pageMinHeight // Avoid stacking 0-px tall images on screen and load all of them at the same time
         return ImageViewHolder(view)
     }
 
     // TODO make all that method less ugly
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         Timber.d("Picture %d : BindViewHolder", position)
-        val imageType = getImageType(getImageAt(position))
-        if (holder.forceImageView != null) { // ImageView has been forced
-            holder.switchImageView(holder.forceImageView!!)
-            holder.forceImageView = null // Reset force flag
-        } else if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType)
-            holder.switchImageView(true)
-        else holder.switchImageView(holder.itemViewType == ViewType.IMAGEVIEW_STRETCH.value)
 
+        val displayParams = getDisplayParamsForPosition(position)
+        holder.apply {
+            viewerOrientation = displayParams.orientation
+            displayMode = displayParams.displayMode
+            isSmoothRendering = displayParams.isSmoothRendering
 
-        // Initialize SSIV when required
-        if ((holder.itemViewType == ViewType.DEFAULT.value) && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !holder.isImageView) {
-            holder.ssiv.setPreloadDimensions(holder.itemView.width, holder.imgView.height)
-            if (!Preferences.isReaderZoomTransitions()) holder.ssiv.setDoubleTapZoomDuration(10)
-            holder.ssiv.setOffsetLeftSide(isScrollLTR)
-            holder.ssiv.setScaleListener { s: Double ->
-                onAbsoluteScaleChanged(position, s)
+            val imgViewType = getImageViewType(displayParams)
+
+            if (ViewType.DEFAULT.value == imgViewType) {
+                // ImageView shouldn't react to click events when in vertical mode (controlled by Z+oomableFrame / ZoomableRecyclerView)
+                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+                    val image = rootView.findViewById<View>(R.id.imageview)
+                    image.isClickable = false
+                    image.isFocusable = false
+                }
+            } else if (ViewType.IMAGEVIEW_STRETCH.value == imgViewType) {
+                val image = rootView.findViewById<ImageView>(R.id.imageview)
+                image.scaleType = ImageView.ScaleType.FIT_XY
+            } else if (ViewType.SSIV_VERTICAL.value == imgViewType) {
+                val image = rootView.findViewById<CustomSubsamplingScaleImageView>(R.id.ssiv)
+                image.setIgnoreTouchEvents(true)
+                image.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL)
             }
-        }
-        val layoutStyle =
-            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
-        val layoutParams = holder.imgView.layoutParams
-        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
-        layoutParams.height = layoutStyle
-        holder.imgView.layoutParams = layoutParams
-        if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation) holder.imgView.setOnTouchListener(
-            itemTouchListener
-        )
-        var imageAvailable = true
-        val img = getImageAt(position)
-        if (img != null && img.fileUri.isNotEmpty()) holder.setImage(img)
-        else imageAvailable = false
-        val isStreaming = (img != null && !imageAvailable) && img.status == StatusContent.ONLINE
-        val isExtracting = img != null && !imageAvailable && !img.url.startsWith("http")
-        if (holder.noImgTxt != null) {
-            @StringRes var text: Int = R.string.image_not_found
-            if (isStreaming) text = R.string.image_streaming else if (isExtracting) text =
-                R.string.image_extracting
-            holder.noImgTxt.setText(text)
-            holder.noImgTxt.visibility = if (!imageAvailable) View.VISIBLE else View.GONE
+            // Avoid stacking 0-px tall images on screen and load all of them at the same time
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+                rootView.minimumHeight = pageMinHeight
+
+            val imageType = getImageType(getImageAt(position))
+            if (forceImageView != null) { // ImageView has been forced
+                switchImageView(forceImageView!!)
+                forceImageView = null // Reset force flag
+            } else if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType)
+                switchImageView(true)
+            else switchImageView(imgViewType == ViewType.IMAGEVIEW_STRETCH.value)
+
+            // Initialize SSIV when required
+            if ((imgViewType == ViewType.DEFAULT.value) && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
+                // Needs ARGB_8888 to be able to resize images using RenderScript
+                if (displayParams.isSmoothRendering)
+                    ssiv.preferredBitmapConfig = Bitmap.Config.ARGB_8888
+                else ssiv.preferredBitmapConfig = Bitmap.Config.RGB_565
+
+                ssiv.setPreloadDimensions(itemView.width, imgView.height)
+                if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
+                ssiv.setOffsetLeftSide(isScrollLTR)
+                ssiv.setScaleListener { s: Double ->
+                    onAbsoluteScaleChanged(position, s)
+                }
+            }
+            val layoutStyle =
+                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
+            val layoutParams = imgView.layoutParams
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+            layoutParams.height = layoutStyle
+            imgView.layoutParams = layoutParams
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
+                imgView.setOnTouchListener(itemTouchListener)
+            else
+                imgView.setOnTouchListener(null)
+            var imageAvailable = true
+            val img = getImageAt(position)
+            if (img != null && img.fileUri.isNotEmpty()) setImage(img)
+            else imageAvailable = false
+            val isStreaming = (img != null && !imageAvailable) && img.status == StatusContent.ONLINE
+            val isExtracting = img != null && !imageAvailable && !img.url.startsWith("http")
+            if (noImgTxt != null) {
+                @StringRes var text: Int = R.string.image_not_found
+                if (isStreaming) text = R.string.image_streaming else if (isExtracting) text =
+                    R.string.image_extracting
+                noImgTxt.setText(text)
+                noImgTxt.visibility = if (!imageAvailable) View.VISIBLE else View.GONE
+            }
         }
     }
 
     override fun onViewRecycled(holder: ImageViewHolder) {
         // Set the holder back to its original constraints while in vertical mode
         // (not doing this will cause super high memory usage by trying to load _all_ images)
-        if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+        if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == holder.viewerOrientation) {
             holder.rootView.minimumHeight = pageMinHeight
             val layoutParams = holder.rootView.layoutParams
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
@@ -225,6 +237,15 @@ class ImagePagerAdapter(context: Context) :
     fun reset() {
         absoluteScales.clear()
         initialAbsoluteScales.clear()
+    }
+
+    private fun getDisplayParamsForPosition(position: Int): ReaderPagerFragment.DisplayParams {
+        val bookPreferences = getItem(position).content.target.bookPreferences
+        return ReaderPagerFragment.DisplayParams(
+            Preferences.getContentBrowseMode(bookPreferences),
+            Preferences.getContentDisplayMode(bookPreferences),
+            Preferences.isContentSmoothRendering(bookPreferences)
+        )
     }
 
     fun getDimensionsAtPosition(position: Int): Point {
@@ -310,6 +331,10 @@ class ImagePagerAdapter(context: Context) :
 
         lateinit var imgView: View
 
+        var displayMode: Int = 0
+        var viewerOrientation: Int = 0
+        var isSmoothRendering: Boolean = false
+
         var isImageView = false
         var forceImageView: Boolean? = null
         private var img: ImageFile? = null
@@ -343,7 +368,7 @@ class ImagePagerAdapter(context: Context) :
                 Timber.d("Using Glide")
                 val centerInside: Transformation<Bitmap> = CenterInside()
                 val smartRotate90 = if (autoRotate) SmartRotateTransformation(
-                    90f, screenWidth, screenHeight
+                    90f, ImageTransform.screenWidth, ImageTransform.screenHeight
                 ) else UnitTransformation.get()
                 GlideApp.with(view).load(uri)
                     .optionalTransform(MultiTransformation(centerInside, smartRotate90))
@@ -414,7 +439,7 @@ class ImagePagerAdapter(context: Context) :
             rootView.layoutParams = layoutParams
             var targetImgHeight = imgHeight
             // If we display a picture smaller than the screen dimensions, we have to zoom it
-            if (resizeSmallPics && imgHeight < screenHeight && imgWidth < screenWidth) {
+            if (resizeSmallPics && imgHeight < ImageTransform.screenHeight && imgWidth < ImageTransform.screenWidth) {
                 targetImgHeight =
                     (imgHeight * getTargetScale(imgWidth, imgHeight, displayMode)).roundToInt()
                 val imgLayoutParams = imgView.layoutParams
@@ -430,13 +455,13 @@ class ImagePagerAdapter(context: Context) :
             return if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
                 if (imgHeight > imgWidth) {
                     // Fit to width
-                    screenWidth / imgWidth.toFloat()
+                    ImageTransform.screenWidth / imgWidth.toFloat()
                 } else {
-                    if (screenHeight > screenWidth) screenHeight / imgHeight.toFloat() // Fit to height when in portrait mode
-                    else screenWidth / imgWidth.toFloat() // Fit to width when in landscape mode
+                    if (ImageTransform.screenHeight > ImageTransform.screenWidth) ImageTransform.screenHeight / imgHeight.toFloat() // Fit to height when in portrait mode
+                    else ImageTransform.screenWidth / imgWidth.toFloat() // Fit to width when in landscape mode
                 }
             } else { // Fit screen
-                (screenWidth / imgWidth.toFloat()).coerceAtMost(screenHeight / imgHeight.toFloat())
+                (ImageTransform.screenWidth / imgWidth.toFloat()).coerceAtMost(ImageTransform.screenHeight / imgHeight.toFloat())
             }
         }
 
@@ -512,9 +537,8 @@ class ImagePagerAdapter(context: Context) :
             dataSource: DataSource,
             isFirstResource: Boolean
         ): Boolean {
-            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) adjustHeight(
-                resource.intrinsicWidth, resource.intrinsicHeight, true
-            )
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+                adjustHeight(resource.intrinsicWidth, resource.intrinsicHeight, true)
             return false
         }
     }
