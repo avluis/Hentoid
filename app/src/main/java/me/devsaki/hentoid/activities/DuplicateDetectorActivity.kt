@@ -38,7 +38,7 @@ class DuplicateDetectorActivity : BaseActivity() {
         binding = ActivityDuplicateDetectorBinding.inflate(layoutInflater)
         binding?.let {
             setContentView(it.root)
-            it.toolbar.setNavigationOnClickListener { finish() }
+            it.toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
         }
 
         val vmFactory = ViewModelFactory(application)
