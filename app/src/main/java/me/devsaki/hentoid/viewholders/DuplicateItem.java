@@ -407,6 +407,10 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             }
         }
 
+        public View getSiteButton() {
+            return ivSite;
+        }
+
         public MaterialSwitch getKeepDeleteSwitch() {
             return keepDeleteSwitch;
         }

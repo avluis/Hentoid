@@ -146,6 +146,25 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             false
         }
 
+        // Site button click listener
+        fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
+            override fun onClick(
+                v: View,
+                position: Int,
+                fastAdapter: FastAdapter<DuplicateItem>,
+                item: DuplicateItem
+            ) {
+                val c = item.content
+                if (c != null) ContentHelper.viewContentGalleryPage(requireContext(), c)
+            }
+
+            override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+                return if (viewHolder is DuplicateItem.ContentViewHolder) {
+                    viewHolder.siteButton
+                } else super.onBind(viewHolder)
+            }
+        })
+
         // "Keep/delete" switch click listener
         fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
             override fun onClick(
