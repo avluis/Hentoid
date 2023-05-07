@@ -34,6 +34,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
 
     // Relative (chapter-scale) max page number
     private var maxPageNumber = 0
+    private var isContentDynamic = false
 
     private var isContentFirst = false
     private var isContentLast = false
@@ -92,6 +93,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
             if (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) binding?.prevBookBtn else binding?.nextBookBtn
         isContentFirst = content.isFirst
         isContentLast = content.isLast
+        isContentDynamic = content.isDynamic
     }
 
     fun onImagesChanged(images: List<ImageFile>) {
@@ -152,9 +154,9 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
      */
     fun updatePageControls() {
         val img = pager.currentImg ?: return
-        var pageNum = img.order
+        var pageNum = if (isContentDynamic) img.displayOrder + 1 else img.order
         var pageOffset = 0
-        if (Preferences.isReaderChapteredNavigation()) {
+        if (Preferences.isReaderChapteredNavigation() && !isContentDynamic) {
             val newChap = getCurrentChapter()
             if (newChap != null) {
                 if (null != currentChapter && newChap.uniqueHash() != currentChapter!!.uniqueHash())
@@ -170,8 +172,8 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
             currentChapter = null
         }
         var maxPageNum = maxPageNumber
-        if (Preferences.isReaderChapteredNavigation()) {
-            if (currentChapter != null) maxPageNum = currentChapter!!.readableImageFiles.size
+        if (Preferences.isReaderChapteredNavigation() && currentChapter != null) {
+            maxPageNum = currentChapter!!.readableImageFiles.size
         }
         pageCurrentNumber?.text = String.format(Locale.ENGLISH, "%d", pageNum)
         pageMaxNumber?.text = String.format(Locale.ENGLISH, "%d", maxPageNum)
