@@ -135,7 +135,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.touchHelper = touchHelper;
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
-        isSwipeable = (content != null && !content.isBeingDeleted() && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
+        isSwipeable = (content != null && !content.isBeingProcessed() && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
         if (content != null) setIdentifier(content.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
     }
@@ -359,7 +359,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ContentItemBundle bundleParser = new ContentItemBundle(bundle);
 
                 Boolean boolValue = bundleParser.isBeingDeleted();
-                if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
+                if (boolValue != null) item.content.setIsBeingProcessed(boolValue);
                 boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.content.setFavourite(boolValue);
                 Integer intValue = bundleParser.getRating();
@@ -423,7 +423,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 baseLayout.setLayoutParams(layoutParams);
             }
 
-            if (item.getContent() != null && item.getContent().isBeingDeleted())
+            if (item.getContent() != null && item.getContent().isBeingProcessed())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else baseLayout.clearAnimation();
 

@@ -732,7 +732,7 @@ public class LibraryGroupsFragment extends Fragment implements
      */
     private boolean onItemClick(@NonNull GroupDisplayItem item) {
         if (selectExtension.getSelections().isEmpty()) {
-            if (item.getGroup() != null && !item.getGroup().isBeingDeleted()) {
+            if (item.getGroup() != null && !item.getGroup().isBeingProcessed()) {
                 activity.get().showBooksInGroup(item.getGroup());
             }
             return true;

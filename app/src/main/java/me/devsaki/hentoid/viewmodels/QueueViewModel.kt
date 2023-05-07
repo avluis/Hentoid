@@ -371,7 +371,7 @@ class QueueViewModel(
             withContext(Dispatchers.IO) {
                 contentIds.forEach {
                     val theContent = dao.selectContent(it)
-                    if (theContent != null && !theContent.isBeingDeleted) {
+                    if (theContent != null && !theContent.isBeingProcessed) {
                         theContent.downloadMode = downloadMode
                         dao.insertContent(theContent)
                     }

@@ -46,7 +46,7 @@ public class Group {
 
     // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON
-    private boolean isBeingDeleted = false;
+    private boolean isBeingProcessed = false;
     // Useful only during cleanup operations; no need to get it into the JSON
     private boolean isFlaggedForDeletion = false;
 
@@ -94,12 +94,12 @@ public class Group {
         return order;
     }
 
-    public boolean isBeingDeleted() {
-        return isBeingDeleted;
+    public boolean isBeingProcessed() {
+        return isBeingProcessed;
     }
 
-    public void setIsBeingDeleted(boolean isBeingDeleted) {
-        this.isBeingDeleted = isBeingDeleted;
+    public void setIsBeingProcessed(boolean data) {
+        this.isBeingProcessed = data;
     }
 
     public boolean isFlaggedForDeletion() {

@@ -1163,7 +1163,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         val contents: MutableList<Content> = ArrayList()
         for (ci in selectedItems) {
             val c = ci.content
-            if (null == c || c.isBeingDeleted) continue  // Don't redownload if the content is being purged
+            if (null == c || c.isBeingProcessed) continue  // Don't redownload if the content is being purged
             contents.add(c)
         }
         val message = resources.getQuantityString(R.plurals.redownload_confirm, contents.size)

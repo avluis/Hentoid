@@ -188,7 +188,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             }
 
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
-            if (item.getGroup() != null && item.getGroup().isBeingDeleted())
+            if (item.getGroup() != null && item.getGroup().isBeingProcessed())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();

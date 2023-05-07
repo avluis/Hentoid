@@ -782,7 +782,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             db.updateImageContentStatus(content.getId(), null, targetImageStatus);
 
         content.setStatus(StatusContent.PAUSED);
-        content.setIsBeingDeleted(false); // Remove any UI animation
+        content.setIsBeingProcessed(false); // Remove any UI animation
         if (replacedContentId > -1) content.setContentIdToReplace(replacedContentId);
         if (replacementTitle != null) content.setReplacementTitle(replacementTitle);
         insertContent(content);

@@ -414,10 +414,10 @@ public class ContentDownloadWorker extends BaseWorker {
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
 
         // Wait until the end of purge if the content is being purged (e.g. redownload from scratch)
-        boolean isBeingDeleted = content.isBeingDeleted();
+        boolean isBeingDeleted = content.isBeingProcessed();
         if (isBeingDeleted)
             EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.WAIT_PURGE, content));
-        while (content.isBeingDeleted()) {
+        while (content.isBeingProcessed()) {
             Timber.d("Waiting for purge to complete");
             content = dao.selectContent(content.getId());
             if (null == content)

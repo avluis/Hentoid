@@ -215,7 +215,7 @@ public class ObjectBoxDB {
         store.runInTx(() -> {
             Content c = store.boxFor(Content.class).get(contentId);
             if (c != null) {
-                c.setIsBeingDeleted(flag);
+                c.setIsBeingProcessed(flag);
                 store.boxFor(Content.class).put(c);
             }
         });
@@ -274,8 +274,8 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.isFlaggedForDeletion, true).build();
     }
 
-    Query<Content> selectAllMarkedBooksQ() {
-        return store.boxFor(Content.class).query().equal(Content_.isBeingDeleted, true).build();
+    Query<Content> selectAllProcessedBooksQ() {
+        return store.boxFor(Content.class).query().equal(Content_.isBeingProcessed, true).build();
     }
 
     void flagContentsForDeletion(List<Content> contentList, boolean flag) {
@@ -283,8 +283,8 @@ public class ObjectBoxDB {
         store.boxFor(Content.class).put(contentList);
     }
 
-    void markContentsAsBeingDeleted(List<Content> contentList, boolean flag) {
-        for (Content c : contentList) c.setIsBeingDeleted(flag);
+    void markContentsAsBeingProcessed(List<Content> contentList, boolean flag) {
+        for (Content c : contentList) c.setIsBeingProcessed(flag);
         store.boxFor(Content.class).put(contentList);
     }
 

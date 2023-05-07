@@ -107,7 +107,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             dao.insertImageFiles(images)
             content.computeSize()
             content.lastEditDate = Instant.now().toEpochMilli()
-            content.setIsBeingDeleted(false)
+            content.setIsBeingProcessed(false)
             dao.insertContentCore(content)
         } else {
             nbKO += images.size

@@ -460,7 +460,7 @@ public class LibraryViewModel extends AndroidViewModel {
         Content theContent = dao.selectContent(contentId);
 
         if (theContent != null) {
-            if (theContent.isBeingDeleted()) return;
+            if (theContent.isBeingProcessed()) return;
             theContent.setCompleted(!theContent.isCompleted());
             ContentHelper.persistJson(getApplication(), theContent);
             dao.insertContentCore(theContent);
@@ -498,7 +498,7 @@ public class LibraryViewModel extends AndroidViewModel {
         Content theContent = dao.selectContent(contentId);
 
         if (theContent != null) {
-            if (theContent.isBeingDeleted()) return;
+            if (theContent.isBeingProcessed()) return;
             theContent.setReads(0);
             theContent.setReadPagesCount(0);
             theContent.setLastReadPageIndex(0);
@@ -522,7 +522,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param content Content whose favourite state to toggle
      */
     public void toggleContentFavourite(@NonNull final Content content, @NonNull final Runnable onSuccess) {
-        if (content.isBeingDeleted()) return;
+        if (content.isBeingProcessed()) return;
 
         compositeDisposable.add(
                 Single.fromCallable(() -> doToggleContentFavourite(content.getId()))
@@ -767,7 +767,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                     dao.insertImageFiles(imgs);
                                 }
                                 dbContent.forceSize(0);
-                                dbContent.setIsBeingDeleted(false);
+                                dbContent.setIsBeingProcessed(false);
                                 dao.insertContent(dbContent);
                                 ContentHelper.updateJson(getApplication(), dbContent);
                             } else {
@@ -1012,7 +1012,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param group Group whose favourite state to toggle
      */
     public void toggleGroupFavourite(@NonNull final Group group) {
-        if (group.isBeingDeleted()) return;
+        if (group.isBeingProcessed()) return;
 
         compositeDisposable.add(
                 Single.fromCallable(() -> doToggleGroupFavourite(group.id))
@@ -1087,7 +1087,7 @@ public class LibraryViewModel extends AndroidViewModel {
         // Check if given content still exists in DB
         Group theGroup = dao.selectGroup(groupId);
 
-        if (theGroup != null && !theGroup.isBeingDeleted()) {
+        if (theGroup != null && !theGroup.isBeingProcessed()) {
             theGroup.setRating(targetRating);
             // Persist in it JSON
             GroupHelper.updateGroupsJson(getApplication(), dao);

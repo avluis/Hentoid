@@ -148,7 +148,7 @@ public class Content implements Serializable {
     private ToMany<ErrorRecord> errorLog;
     // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON
-    private boolean isBeingDeleted = false;
+    private boolean isBeingProcessed = false;
     // Needs to be in the DB to optimize I/O
     // No need to save that into the JSON file itself, obviously
     private String jsonUri;
@@ -875,12 +875,12 @@ public class Content implements Serializable {
         this.lastReadPageIndex = index;
     }
 
-    public boolean isBeingDeleted() {
-        return isBeingDeleted;
+    public boolean isBeingProcessed() {
+        return isBeingProcessed;
     }
 
-    public void setIsBeingDeleted(boolean isBeingDeleted) {
-        this.isBeingDeleted = isBeingDeleted;
+    public void setIsBeingProcessed(boolean data) {
+        this.isBeingProcessed = data;
     }
 
     public String getJsonUri() {
@@ -1069,7 +1069,7 @@ public class Content implements Serializable {
                 getDownloadDate() == content.getDownloadDate() && // To differentiate external books that have no URL
                 getSize() == content.getSize() && // To differentiate external books that have no URL
                 getLastReadDate() == content.getLastReadDate() &&
-                isBeingDeleted() == content.isBeingDeleted() &&
+                isBeingProcessed() == content.isBeingProcessed() &&
                 Objects.equals(getUrl(), content.getUrl()) &&
                 Objects.equals(getCoverImageUrl(), content.getCoverImageUrl()) &&
                 getSite() == content.getSite() &&
@@ -1079,7 +1079,7 @@ public class Content implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingDeleted(), getDownloadMode(), getLastEditDate());
+        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingProcessed(), getDownloadMode(), getLastEditDate());
     }
 
     public long uniqueHash() {
