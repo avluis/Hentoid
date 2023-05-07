@@ -751,8 +751,9 @@ public class LibraryGroupsFragment extends Fragment implements
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
         } else {
+            long selectedProcessedCount = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().filter(Group::isBeingProcessed).count();
             long selectedLocalCount = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, 0, 0, 0);
+            activity.get().updateSelectionToolbar(selectedCount, selectedProcessedCount, selectedLocalCount, 0, 0, 0);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }

@@ -331,7 +331,7 @@ public class LibraryActivity extends BaseActivity {
         initSelectionToolbar();
         initUI();
         updateToolbar();
-        updateSelectionToolbar(0, 0, 0, 0, 0);
+        updateSelectionToolbar(0, 0, 0, 0, 0, 0);
 
         onCreated();
 
@@ -440,7 +440,7 @@ public class LibraryActivity extends BaseActivity {
                 enableCurrentFragment();
                 hideSearchSubBar();
                 updateToolbar();
-                updateSelectionToolbar(0, 0, 0, 0, 0);
+                updateSelectionToolbar(0, 0, 0, 0, 0, 0);
             }
         });
         viewPager.setAdapter(pagerAdapter);
@@ -926,19 +926,26 @@ public class LibraryActivity extends BaseActivity {
         signalCurrentFragment(EV_UPDATE_TOOLBAR, null);
     }
 
-    public void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount, long selectedStreamedCount, long selectedNonArchiveExternalCount, long selectedArchiveExternalCount) {
+    public void updateSelectionToolbar(
+            long selectedTotalCount,
+            long selectedProcessedCount,
+            long selectedLocalCount,
+            long selectedStreamedCount,
+            long selectedNonArchiveExternalCount,
+            long selectedArchiveExternalCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
+        boolean hasProcessed = selectedProcessedCount > 0;
         long selectedDownloadedCount = selectedLocalCount - selectedStreamedCount;
         long selectedExternalCount = selectedNonArchiveExternalCount + selectedArchiveExternalCount;
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
 
         if (isGroupDisplayed()) {
-            editMenu.setVisible(!isMultipleSelection && Preferences.getGroupingDisplay().canReorderGroups());
-            deleteMenu.setVisible(true);
+            editMenu.setVisible(!hasProcessed && !isMultipleSelection && Preferences.getGroupingDisplay().canReorderGroups());
+            deleteMenu.setVisible(!hasProcessed);
             shareMenu.setVisible(false);
             completedMenu.setVisible(false);
             resetReadStatsMenu.setVisible(false);
-            archiveMenu.setVisible(true);
+            archiveMenu.setVisible(!hasProcessed);
             changeGroupMenu.setVisible(false);
             folderMenu.setVisible(false);
             redownloadMenu.setVisible(false);
@@ -949,21 +956,22 @@ public class LibraryActivity extends BaseActivity {
             splitMenu.setVisible(false);
             transformMenu.setVisible(false);
         } else { // Flat view
-            editMenu.setVisible(true);
-            deleteMenu.setVisible(((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0 == selectedExternalCount) || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary()));
+            editMenu.setVisible(!hasProcessed);
+            deleteMenu.setVisible(!hasProcessed && (((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0 == selectedExternalCount) || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary())));
             completedMenu.setVisible(true);
             resetReadStatsMenu.setVisible(true);
             shareMenu.setVisible(0 == selectedArchiveExternalCount);
-            archiveMenu.setVisible(true);
-            changeGroupMenu.setVisible(true);
+            archiveMenu.setVisible(!hasProcessed);
+            changeGroupMenu.setVisible(!hasProcessed);
             folderMenu.setVisible(!isMultipleSelection);
-            redownloadMenu.setVisible(selectedDownloadedCount > 0);
-            downloadStreamedMenu.setVisible(selectedStreamedCount > 0);
-            streamMenu.setVisible(selectedDownloadedCount > 0);
+            redownloadMenu.setVisible(!hasProcessed && selectedDownloadedCount > 0);
+            downloadStreamedMenu.setVisible(!hasProcessed && selectedStreamedCount > 0);
+            streamMenu.setVisible(!hasProcessed && selectedDownloadedCount > 0);
             groupCoverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
-            mergeMenu.setVisible((selectedLocalCount > 1 && 0 == selectedStreamedCount && 0 == selectedExternalCount) || (selectedStreamedCount > 1 && 0 == selectedLocalCount && 0 == selectedExternalCount) || (selectedNonArchiveExternalCount > 1 && 0 == selectedArchiveExternalCount && 0 == selectedLocalCount && 0 == selectedStreamedCount)); // Can only merge downloaded, streamed or non-archive external content together
-            splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
-            transformMenu.setVisible(0 == selectedStreamedCount && 0 == selectedArchiveExternalCount);
+            // Can only merge downloaded, streamed or non-archive external content together
+            mergeMenu.setVisible(!hasProcessed && ((selectedLocalCount > 1 && 0 == selectedStreamedCount && 0 == selectedExternalCount) || (selectedStreamedCount > 1 && 0 == selectedLocalCount && 0 == selectedExternalCount) || (selectedNonArchiveExternalCount > 1 && 0 == selectedArchiveExternalCount && 0 == selectedLocalCount && 0 == selectedStreamedCount)));
+            splitMenu.setVisible(!hasProcessed && !isMultipleSelection && 1 == selectedLocalCount);
+            transformMenu.setVisible(!hasProcessed && 0 == selectedStreamedCount && 0 == selectedArchiveExternalCount);
         }
     }
 

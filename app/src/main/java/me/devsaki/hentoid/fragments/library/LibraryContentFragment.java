@@ -1533,11 +1533,12 @@ public class LibraryContentFragment extends Fragment implements
             selectExtension.setSelectOnLongClick(true);
         } else {
             List<Content> contentList = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+            long selectedProcessedCount = Stream.of(contentList).filter(Content::isBeingProcessed).count();
             long selectedLocalCount = Stream.of(contentList).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).filterNot(c -> c.getDownloadMode() == Content.DownloadMode.STREAM).count();
             long selectedStreamedCount = Stream.of(contentList).map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
             long selectedNonArchiveExternalCount = Stream.of(contentList).filter(c -> c.getStatus().equals(StatusContent.EXTERNAL) && !c.isArchive()).count();
             long selectedArchiveExternalCount = Stream.of(contentList).filter(c -> c.getStatus().equals(StatusContent.EXTERNAL) && c.isArchive()).count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedStreamedCount, selectedNonArchiveExternalCount, selectedArchiveExternalCount);
+            activity.get().updateSelectionToolbar(selectedCount, selectedProcessedCount, selectedLocalCount, selectedStreamedCount, selectedNonArchiveExternalCount, selectedArchiveExternalCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }
