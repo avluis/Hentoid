@@ -135,7 +135,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.touchHelper = touchHelper;
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
-        isSwipeable = (content != null && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
+        isSwipeable = (content != null && !content.isBeingDeleted() && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
         if (content != null) setIdentifier(content.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
     }
