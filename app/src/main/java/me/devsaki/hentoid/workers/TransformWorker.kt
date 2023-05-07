@@ -68,15 +68,19 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun transform(contentIds: LongArray, params: ImageTransform.Params) {
-        // Count the total number of images to convert
+        // Flag contents as "being deleted" (triggers blink animation; lock operations)
+        // +count the total number of images to convert
         contentIds.forEach {
+            if (it > 0) dao.updateContentDeleteFlag(it, true)
             totalItems += dao.selectDownloadedImagesFromContent(it).count { i -> i.isReadable }
+            if (isStopped) return
         }
 
         // Process images
         contentIds.forEach {
             val content = dao.selectContent(it)
             if (content != null) transformContent(content, params)
+            if (isStopped) return
         }
         notifyProcessEnd()
     }
@@ -103,6 +107,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             dao.insertImageFiles(images)
             content.computeSize()
             content.lastEditDate = Instant.now().toEpochMilli()
+            content.setIsBeingDeleted(false)
             dao.insertContentCore(content)
         } else {
             nbKO += images.size
@@ -119,6 +124,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         params.forceManhwa = false
         imgs.forEach {
             transformImage(it, contentFolder, params, nbManhwa, imgs.size)
+            if (isStopped) return
         }
     }
 
