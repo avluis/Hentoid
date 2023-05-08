@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.WidgetListPickerBinding
+import me.devsaki.hentoid.util.ThemeHelper
 
 
 class ListPickerView : ConstraintLayout {
@@ -87,7 +88,10 @@ class ListPickerView : ConstraintLayout {
     }
 
     private fun onClick() {
-        val materialDialog: AlertDialog = MaterialAlertDialogBuilder(context)
+        val materialDialog = MaterialAlertDialogBuilder(
+            context,
+            ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog)
+        )
             .setSingleChoiceItems(
                 entries.toTypedArray(),
                 index,
