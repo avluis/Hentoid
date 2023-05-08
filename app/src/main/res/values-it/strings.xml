@@ -144,7 +144,7 @@
         <item quantity="other">%d libri selezionati sono gi? scaricati\nSaranno ignorati.</item>
     </plurals>
     <string name="download_notif_failed">Attenzione: download fallito</string>
-    <string name="download_notif_failed_details">Impossibile scaricare %1$s: incapace di creare la cartella %2%s. Perfavore controlla la tua posizione primaria e riprova usando il pulsante \'!\'</string>
+    <string name="download_notif_failed_details">Impossibile scaricare %1$s: incapace di creare la cartella %2$s. Perfavore controlla la tua posizione primaria e riprova usando il pulsante \'!\'</string>
     <string name="download_notif_speed">%1$d%2$s MB a %3$d KBps</string>
     <string name="download_updating_webview">Download cancellato - WebView si sta aggiornando</string>
     <string name="downloader_title">Downloader</string>
@@ -640,7 +640,7 @@
     <string name="queue_paused">Coda in pausa</string>
     <string name="queue_preparing">Preparazione del download</string>
     <string name="queue_queue_tab">In corso</string>
-    <string name="range_check">Il valore deve essere tra %1$d e %2%d</string>
+    <string name="range_check">Il valore deve essere tra %1$d e %2$d</string>
     <string name="rating_help">Voto libro</string>
     <string name="read_log">Leggi registro</string>
     <string name="redl_refresh">Aggiorna solo metadata</string>
