@@ -32,6 +32,7 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.Light"
         android:usesCleartextTraffic="true"
+        android:enableOnBackInvokedCallback="true"
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
 
         <meta-data

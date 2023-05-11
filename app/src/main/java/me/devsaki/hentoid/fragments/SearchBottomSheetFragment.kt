@@ -244,7 +244,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
                 val searchQuery = tagFilter.query.toString()
                 if (searchQuery.isEmpty()) dismiss() else tagWaitDescription.setText(R.string.masterdata_no_result)
             } else {
-                tagFilter.visibility = View.GONE
+                tagWaitPanel.visibility = View.GONE
                 attributeAdapter.add(attrs)
             }
         }
