@@ -118,7 +118,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private var slideshowPeriodMs: Long = -1
     private var latestSlideshowTick: Long = -1
 
-    private lateinit var displayParams: DisplayParams
+    private var displayParams: DisplayParams? = null
 
     // Properties
     // Preferences of current book; to feed the book prefs dialog
@@ -169,24 +169,31 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
 
 
-    @SuppressLint("NonConstantResourceId")
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentReaderPagerBinding.inflate(inflater, container, false)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         indexRefreshDebouncer = DebouncerK(this.lifecycleScope, 75) { startingIndex: Int ->
             applyStartingIndexInternal(startingIndex)
         }
         slideshowSliderDebouncer = DebouncerK(this.lifecycleScope, 2500) { sliderIndex: Int ->
             onSlideShowSliderChosen(sliderIndex)
         }
-        processPositionDebouncer = DebouncerK(this.lifecycleScope, 500) { pair: Pair<Int, Int> ->
+        processPositionDebouncer = DebouncerK(this.lifecycleScope, 75) { pair: Pair<Int, Int> ->
             onPageChanged(pair.left, pair.right)
         }
         rescaleDebouncer = DebouncerK(this.lifecycleScope, 100) { scale: Float ->
             adapter.multiplyScale(scale)
         }
         Preferences.registerPrefsChangedListener(listener)
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentReaderPagerBinding.inflate(inflater, container, false)
+
+        displayParams = null
+
         initPager()
         initControlsOverlay()
         onUpdateSwipeToFling()
@@ -982,34 +989,36 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             Preferences.getContentDisplayMode(bookPreferences),
             Preferences.isContentSmoothRendering(bookPreferences)
         )
-        if (!::displayParams.isInitialized || newDisplayParams != displayParams) {
+        if (null == displayParams || newDisplayParams != displayParams)
             onDisplayParamsChange(newDisplayParams)
-        }
     }
 
     override fun onBrowseModeChange() {
-        onDisplayParamsChange(displayParams)
+        displayParams?.let {
+            onDisplayParamsChange(it)
+        }
     }
 
     private fun onDisplayParamsChange(newDisplayParams: DisplayParams) {
         // LinearLayoutManager.setReverseLayout behaves _relatively_ to current Layout Direction
         // => need to know that direction before deciding how to set setReverseLayout
+        val currentDisplayParams = displayParams
 
         val isOrientationChange =
-            (!::displayParams.isInitialized || displayParams.orientation != newDisplayParams.orientation)
+            (null == currentDisplayParams || currentDisplayParams.orientation != newDisplayParams.orientation)
         val isDirectionChange =
-            (!::displayParams.isInitialized || displayParams.direction != newDisplayParams.direction)
+            (null == currentDisplayParams || currentDisplayParams.direction != newDisplayParams.direction)
         displayParams = newDisplayParams
 
         binding?.apply {
             // Orientation changes
             if (isOrientationChange) {
-                llm.orientation = getOrientation(displayParams.orientation)
+                llm.orientation = getOrientation(newDisplayParams.orientation)
 
                 // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
                 recyclerView.resetScale()
 
-                if (VIEWER_ORIENTATION_VERTICAL == displayParams.orientation) {
+                if (VIEWER_ORIENTATION_VERTICAL == newDisplayParams.orientation) {
                     zoomFrame.enable()
                     recyclerView.setLongTapZoomEnabled(Preferences.isReaderHoldToZoom())
                     onUpdateImageDisplay(false)
@@ -1017,17 +1026,17 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     zoomFrame.disable()
                     recyclerView.setLongTapZoomEnabled(!Preferences.isReaderHoldToZoom())
                 }
-                pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == displayParams.orientation)
+                pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation)
             }
 
             // Direction changes
             if (isDirectionChange) {
                 val currentLayoutDirection: Int =
                     if (View.LAYOUT_DIRECTION_LTR == controlsOverlay.root.layoutDirection) VIEWER_DIRECTION_LTR else VIEWER_DIRECTION_RTL
-                llm.reverseLayout = displayParams.direction != currentLayoutDirection
+                llm.reverseLayout = newDisplayParams.direction != currentLayoutDirection
 
-                adapter.setScrollLTR(VIEWER_DIRECTION_LTR == displayParams.direction)
-                navigator.setDirection(displayParams.direction)
+                adapter.setScrollLTR(VIEWER_DIRECTION_LTR == newDisplayParams.direction)
+                navigator.setDirection(newDisplayParams.direction)
                 navigator.updatePageControls()
             }
         }
