@@ -77,6 +77,7 @@ class ImagePagerAdapter(context: Context) :
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) rs = RenderScript.create(context)
+        refreshPrefs()
     }
 
     // Book prefs have to be set explicitely because the cached Content linked from each ImageFile
