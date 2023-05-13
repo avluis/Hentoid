@@ -415,7 +415,7 @@ class ReaderViewModel(
         // Fix pre-v1.13 books where ImageFile.read has no value
         if (readPages.isEmpty() && theContent.lastReadPageIndex > 0 && theContent.lastReadPageIndex < imageFiles.size) {
             val lastReadPageNumber = imageFiles[theContent.lastReadPageIndex].order
-            readPageNumbers.addAll(IntRange(1, lastReadPageNumber - 1).toList())
+            readPageNumbers.addAll(IntRange(1, lastReadPageNumber).toList())
         } else {
             readPageNumbers.addAll(readPages)
         }

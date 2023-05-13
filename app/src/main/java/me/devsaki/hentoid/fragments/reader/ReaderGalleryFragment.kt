@@ -400,9 +400,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                             calledFromOnStart: Boolean
                         ) {
                             if (isSelected) selectExtension.select(
-                                IntRange(start, end - 1)
+                                IntRange(start, end)
                             ) else selectExtension.deselect(
-                                IntRange(start, end - 1).toMutableList()
+                                IntRange(start, end).toMutableList()
                             )
                         }
                     }).withMode(DragSelectionProcessor.Mode.Simple)
