@@ -46,9 +46,8 @@ android {
         buildConfigField 'String', 'GITHUB_API_URL', '"https://api.github.com/repos/avluis/Hentoid/"'
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        resConfigs 'en', 'ru', 'it', 'uk', 'hu', 'ko', 'ja', 'es'
-
         // Only include complete translations
+        resConfigs 'en', 'ru', 'it', 'uk', 'hu', 'ko', 'ja', 'es'
 
         renderscriptTargetApi 21
         renderscriptSupportModeEnabled false
@@ -65,6 +64,9 @@ android {
             buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/dev/app/"'
 
             proguardFile 'proguard-rules-debug.pro'
+
+            // Library specific proguard files
+            proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
         }
         release {
             debuggable false

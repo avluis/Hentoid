@@ -30,11 +30,6 @@
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 
 #keep rules
-
--keep class me.devsaki.hentoid.parsers.content.** { *; }
--keep class me.devsaki.hentoid.json.** { *; }
--keep class com.bumptech.glide.integration.okhttp3.OkHttpGlideModule
-
 -keep class androidx.paging.PagedListAdapter.** { *; }
 -keep class androidx.paging.AsyncPagedListDiffer.** { *; }
 -keep public class * extends android.app.Activity
@@ -66,7 +61,6 @@
     public void *(android.view.View);
     public void *(android.view.MenuItem);
 }
--keepclassmembers enum me.devsaki.hentoid.** { *; }
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
