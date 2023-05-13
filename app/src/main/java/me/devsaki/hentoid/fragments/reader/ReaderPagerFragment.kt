@@ -888,20 +888,15 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             processPositionDebouncer.submit(ImmutablePair(absImageIndex, scrollDirection))
 
             adapter.getImageAt(absImageIndex)?.let {
-//                adjustDisplay(it.content.target.bookPreferences)
                 viewModel.markPageAsRead(it.order)
                 isPageFavourite = it.isFavourite
                 updateFavouriteButtonIcon()
                 Preferences.setReaderCurrentPageNum(it.order)
             }
-            navigator.updatePageControls()
         }
-        /*
-        val scrollDirection = scrollPosition - absImageIndex
-        absImageIndex = scrollPosition
-        // Remember the last relevant movement and schedule it for execution
-        processPositionDebouncer.submit(ImmutablePair(absImageIndex, scrollDirection))
-         */
+        // If book changes but position stays the same,
+        // we still need to update max page on the UI
+        navigator.updatePageControls()
     }
 
     private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {
