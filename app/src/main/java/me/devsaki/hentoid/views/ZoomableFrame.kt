@@ -57,9 +57,9 @@ class ZoomableFrame : FrameLayout {
     /**
      * Dispatches a touch event to the detectors.
      */
-    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         if (enabled) {
-            scaleDetector.onTouchEvent(ev!!)
+            scaleDetector.onTouchEvent(ev)
             flingDetector.onTouchEvent(ev)
         }
         return super.dispatchTouchEvent(ev)
@@ -70,20 +70,17 @@ class ZoomableFrame : FrameLayout {
      */
     inner class ScaleListener : SimpleOnScaleGestureListener() {
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-            val recycler = getRecycler()
-            if (enabled && null != recycler) recycler.onScaleBegin()
+            if (enabled) getRecycler()?.onScaleBegin()
             return enabled
         }
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            val recycler = getRecycler()
-            if (enabled && null != recycler) recycler.onScale(detector.scaleFactor)
+            if (enabled) getRecycler()?.onScale(detector.scaleFactor)
             return enabled
         }
 
         override fun onScaleEnd(detector: ScaleGestureDetector) {
-            val recycler = getRecycler()
-            if (enabled && null != recycler) recycler.onScaleEnd()
+            if (enabled) getRecycler()?.onScaleEnd()
         }
     }
 

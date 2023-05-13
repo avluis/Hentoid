@@ -61,7 +61,8 @@ class OnZoneTapListener(val view: View, tapZoneScale: Int) : OnTouchListener {
         } else if (e.x > view.width - pagerTapZoneWidth && onRightZoneTapListener != null) {
             onRightZoneTapListener!!.run()
         } else {
-            if (onMiddleZoneTapListener != null) onMiddleZoneTapListener!!.run() else return false
+            if (onMiddleZoneTapListener != null) onMiddleZoneTapListener!!.run()
+            else return false
         }
         return true
     }
