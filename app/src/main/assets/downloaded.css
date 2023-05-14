@@ -20,6 +20,7 @@
   background-position: 50% 50%;
   background-repeat: no-repeat;
   z-index:11;
+  pointer-events: none;
 }
 
 /* Custom styles to mark merged books */
@@ -44,6 +45,7 @@
   background-position: 50% 50%;
   background-repeat: no-repeat;
   z-index:11;
+  pointer-events: none;
 }
 
 /* Custom styles to mark books with blocked tags*/
@@ -68,4 +70,5 @@
   background-position: 50% 50%;
   background-repeat: no-repeat;
   z-index:auto;
+  pointer-events: none;
 }
