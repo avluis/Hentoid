@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Point
@@ -132,6 +133,7 @@ class ImagePagerAdapter(context: Context) :
         return ImageViewHolder(view)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     fun reset(holder: ImageViewHolder) {
         holder.apply {
             val image = rootView.findViewById<ImageView>(R.id.imageview)
@@ -193,14 +195,17 @@ class ImagePagerAdapter(context: Context) :
             else switchImageView(imgViewType == ViewType.IMAGEVIEW_STRETCH.value)
 
             // Initialize SSIV when required
-            if ((imgViewType == ViewType.DEFAULT.value) && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
+            if (imgViewType == ViewType.DEFAULT.value && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
                 // Needs ARGB_8888 to be able to resize images using RenderScript
                 if (displayParams.isSmoothRendering) ssiv.preferredBitmapConfig =
                     Bitmap.Config.ARGB_8888
 
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
-                ssiv.setOffsetLeftSide(isScrollLTR)
+
+                val scrollLTR = Preferences.Constant.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
+                ssiv.setOffsetLeftSide(scrollLTR)
+
                 ssiv.setScaleListener { s: Double ->
                     onAbsoluteScaleChanged(position, s)
                 }
