@@ -791,7 +791,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         // Wait for starting index only if content actually changes
         if (content.id != contentId) startingIndexLoaded = false
         contentId = content.id
-        //onBrowseModeChange() // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
+        absImageIndex = -1 // Will be updated by onStartingIndexChanged
         navigator.onContentChanged(content)
         updateFavouriteButtonIcon()
 
@@ -893,10 +893,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 updateFavouriteButtonIcon()
                 Preferences.setReaderCurrentPageNum(it.order)
             }
+
+            navigator.updatePageControls()
         }
-        // If book changes but position stays the same,
-        // we still need to update max page on the UI
-        navigator.updatePageControls()
     }
 
     private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {

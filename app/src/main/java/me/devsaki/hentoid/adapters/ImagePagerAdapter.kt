@@ -132,20 +132,41 @@ class ImagePagerAdapter(context: Context) :
         return ImageViewHolder(view)
     }
 
+    fun reset(holder: ImageViewHolder) {
+        holder.apply {
+            val image = rootView.findViewById<ImageView>(R.id.imageview)
+            image.isClickable = true
+            image.isFocusable = true
+            image.scaleType = ImageView.ScaleType.FIT_CENTER
+            image.setOnTouchListener(null)
+
+            val ssiv = rootView.findViewById<CustomSubsamplingScaleImageView>(R.id.ssiv)
+            ssiv.setIgnoreTouchEvents(false)
+            ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.HORIZONTAL)
+            ssiv.preferredBitmapConfig = Bitmap.Config.RGB_565
+            ssiv.setDoubleTapZoomDuration(500)
+            ssiv.setOnTouchListener(null)
+
+            rootView.minimumHeight = 0
+        }
+    }
+
     // TODO make all that method less ugly
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         Timber.d("Picture %d : BindViewHolder", position)
 
         val displayParams = getDisplayParamsForPosition(position)
+        val imgViewType = getImageViewType(displayParams)
+
+        reset(holder)
+
         holder.apply {
             viewerOrientation = displayParams.orientation
             displayMode = displayParams.displayMode
             isSmoothRendering = displayParams.isSmoothRendering
 
-            val imgViewType = getImageViewType(displayParams)
-
             if (ViewType.DEFAULT.value == imgViewType) {
-                // ImageView shouldn't react to click events when in vertical mode (controlled by Z+oomableFrame / ZoomableRecyclerView)
+                // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
                 if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
                     val image = rootView.findViewById<View>(R.id.imageview)
                     image.isClickable = false
@@ -174,9 +195,8 @@ class ImagePagerAdapter(context: Context) :
             // Initialize SSIV when required
             if ((imgViewType == ViewType.DEFAULT.value) && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
                 // Needs ARGB_8888 to be able to resize images using RenderScript
-                if (displayParams.isSmoothRendering)
-                    ssiv.preferredBitmapConfig = Bitmap.Config.ARGB_8888
-                else ssiv.preferredBitmapConfig = Bitmap.Config.RGB_565
+                if (displayParams.isSmoothRendering) ssiv.preferredBitmapConfig =
+                    Bitmap.Config.ARGB_8888
 
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
@@ -193,13 +213,13 @@ class ImagePagerAdapter(context: Context) :
             imgView.layoutParams = layoutParams
             if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
                 imgView.setOnTouchListener(itemTouchListener)
-            else
-                imgView.setOnTouchListener(null)
+            
             var imageAvailable = true
             val img = getImageAt(position)
             if (img != null && img.fileUri.isNotEmpty()) setImage(img)
             else imageAvailable = false
-            val isStreaming = (img != null && !imageAvailable) && img.status == StatusContent.ONLINE
+
+            val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
             val isExtracting = img != null && !imageAvailable && !img.url.startsWith("http")
             if (noImgTxt != null) {
                 @StringRes var text: Int = R.string.image_not_found
