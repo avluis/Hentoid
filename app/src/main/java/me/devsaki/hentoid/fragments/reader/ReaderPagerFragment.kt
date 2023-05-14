@@ -1365,6 +1365,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 params.layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
             }
+            window.navigationBarColor = ContextCompat.getColor(requireContext(), R.color.black_opacity_50)
         } else {
             binding?.apply {
                 WindowInsetsControllerCompat(window, controlsOverlay.root).let { controller ->
@@ -1378,6 +1379,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 params.layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
+            window.navigationBarColor = ContextCompat.getColor(requireContext(), R.color.transparent)
         }
 
         window.attributes = params

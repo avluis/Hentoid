@@ -66,7 +66,6 @@
         <item name="colorOnPrimary">@color/light_gray</item>
         <item name="android:windowBackground">@color/cod_gray</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
-        <item name="android:navigationBarColor">@color/transparent</item>
     </style>
 
     <!-- Prefs Activity -->
