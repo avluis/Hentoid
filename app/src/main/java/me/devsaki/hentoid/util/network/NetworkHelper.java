@@ -1,14 +1,14 @@
 package me.devsaki.hentoid.util.network;
 
+import static android.content.Context.ACTIVITY_SERVICE;
+
 import android.app.ActivityManager;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.net.TrafficStats;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -16,8 +16,6 @@ import androidx.annotation.NonNull;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
-
-import static android.content.Context.ACTIVITY_SERVICE;
 
 /**
  * Helper for general newtworking
@@ -49,29 +47,20 @@ public class NetworkHelper {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (null == connectivityManager) return Connectivity.NO_INTERNET;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Network activeNetwork = connectivityManager.getActiveNetwork();
-            if (null == activeNetwork) return Connectivity.NO_INTERNET;
-            NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(activeNetwork);
-            if (null == actNw) return Connectivity.NO_INTERNET;
+        Network activeNetwork = connectivityManager.getActiveNetwork();
+        if (null == activeNetwork) return Connectivity.NO_INTERNET;
+        NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(activeNetwork);
+        if (null == actNw) return Connectivity.NO_INTERNET;
 
-            // Below code _does not_ detect wifi properly when there's a VPN on -> using WifiManager instead (!)
+        // Below code _does not_ detect wifi properly when there's a VPN on -> using WifiManager instead (!)
             /*
             if (actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return Connectivity.WIFI;
             else return Connectivity.OTHER;
              */
-            WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if (wifiManager != null && wifiManager.isWifiEnabled() && wifiManager.getConnectionInfo().getBSSID() != null)
-                return Connectivity.WIFI;
-            else return Connectivity.OTHER;
-        } else {
-            NetworkInfo info = connectivityManager.getActiveNetworkInfo();
-            if (null == info) return Connectivity.NO_INTERNET;
-
-            NetworkInfo mWifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-            if (mWifi != null && mWifi.isConnected()) return Connectivity.WIFI;
-            else return Connectivity.OTHER;
-        }
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager != null && wifiManager.isWifiEnabled() && wifiManager.getConnectionInfo().getBSSID() != null)
+            return Connectivity.WIFI;
+        else return Connectivity.OTHER;
     }
 
     /**

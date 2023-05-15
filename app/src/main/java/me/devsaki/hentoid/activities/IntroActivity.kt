@@ -13,7 +13,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.fragments.intro.*
+import me.devsaki.hentoid.fragments.intro.EndIntroFragment
+import me.devsaki.hentoid.fragments.intro.ImportIntroFragment
+import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment
+import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment
+import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment
+import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 
@@ -28,11 +33,7 @@ class IntroActivity : AppIntro2() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addSlide(WelcomeIntroFragment())
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
-        ) {
-            addSlide(PermissionIntroFragment())
-        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) addSlide(PermissionIntroFragment())
         addSlide(ImportIntroFragment())
         addSlide(ThemeIntroFragment())
         addSlide(SourcesIntroFragment())

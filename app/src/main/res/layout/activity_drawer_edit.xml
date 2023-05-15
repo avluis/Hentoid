@@ -15,8 +15,7 @@
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/drawer_edit_menu"
-        app:navigationIcon="@drawable/ic_close"
-        tools:targetApi="lollipop" />
+        app:navigationIcon="@drawable/ic_close" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drawer_edit_list"

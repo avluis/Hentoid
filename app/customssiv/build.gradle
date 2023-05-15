@@ -15,10 +15,10 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 33
 
-        renderscriptTargetApi 21
+        renderscriptTargetApi 23
         renderscriptSupportModeEnabled false
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

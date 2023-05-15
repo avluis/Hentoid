@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.Build
 import android.renderscript.RenderScript
 import android.view.LayoutInflater
 import android.view.View
@@ -77,7 +76,7 @@ class ImagePagerAdapter(context: Context) :
 
 
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) rs = RenderScript.create(context)
+        rs = RenderScript.create(context)
         refreshPrefs()
     }
 
@@ -203,7 +202,8 @@ class ImagePagerAdapter(context: Context) :
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
 
-                val scrollLTR = Preferences.Constant.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
+                val scrollLTR =
+                    Preferences.Constant.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
                 ssiv.setOffsetLeftSide(scrollLTR)
 
                 ssiv.setScaleListener { s: Double ->
@@ -218,7 +218,7 @@ class ImagePagerAdapter(context: Context) :
             imgView.layoutParams = layoutParams
             if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
                 imgView.setOnTouchListener(itemTouchListener)
-            
+
             var imageAvailable = true
             val img = getImageAt(position)
             if (img != null && img.fileUri.isNotEmpty()) setImage(img)

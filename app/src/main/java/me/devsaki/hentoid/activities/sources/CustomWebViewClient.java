@@ -325,7 +325,7 @@ class CustomWebViewClient extends WebViewClient {
     }
 
     /**
-     * @deprecated kept for API19-API23
+     * @deprecated kept for API23
      */
     @Override
     @Deprecated

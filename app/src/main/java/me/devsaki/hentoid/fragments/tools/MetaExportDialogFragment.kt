@@ -1,8 +1,5 @@
 package me.devsaki.hentoid.fragments.tools
 
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -34,7 +31,6 @@ import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -206,15 +202,6 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
             it.exportFileBookmarksChk.isEnabled = false
             it.exportRunBtn.visibility = View.GONE
             it.exportProgressBar.isIndeterminate = true
-
-            // fixes <= Lollipop progressBar tinting
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) it.exportProgressBar.indeterminateDrawable.colorFilter =
-                PorterDuffColorFilter(
-                    ThemeHelper.getColor(
-                        requireContext(),
-                        R.color.secondary_light
-                    ), PorterDuff.Mode.SRC_IN
-                )
             it.exportProgressBar.visibility = View.VISIBLE
 
             lifecycleScope.launch {

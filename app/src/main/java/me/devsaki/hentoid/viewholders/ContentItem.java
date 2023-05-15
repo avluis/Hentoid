@@ -9,7 +9,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -231,10 +230,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (isQueueReady && isIndividual)
                     color = ThemeHelper.getColor(pb.getContext(), R.color.secondary_light);
                 else color = ContextCompat.getColor(pb.getContext(), R.color.medium_gray);
-                // fixes <= Lollipop progressBar tinting
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                    pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-                else pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
+                pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
 
                 if (content.getBookSizeEstimate() > 0 && tvPages != null && View.VISIBLE == tvPages.getVisibility()) {
                     String pagesText = tvPages.getText().toString();
@@ -246,9 +242,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             } else if (isQueueReady && isFirst) {
                 pb.setVisibility(isIndividual ? View.VISIBLE : View.GONE);
                 pb.setIndeterminate(true);
-                // fixes <= Lollipop progressBar tinting
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                    pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
             } else pb.setVisibility(View.GONE);
         } else {
             pb.setVisibility(View.GONE);

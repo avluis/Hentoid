@@ -14,8 +14,7 @@
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="@string/changelog"
-        tools:targetApi="lollipop" />
+        app:title="@string/changelog" />
 
     <ImageView
         android:id="@+id/changelogDownloadLatestButton"

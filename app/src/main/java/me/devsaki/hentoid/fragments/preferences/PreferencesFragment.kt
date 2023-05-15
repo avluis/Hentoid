@@ -2,7 +2,6 @@ package me.devsaki.hentoid.fragments.preferences
 
 import android.content.SharedPreferences
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
@@ -125,12 +124,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
             Preferences.Key.STORAGE_MANAGEMENT -> {
                 requireContext().startLocalActivity<StoragePreferenceActivity>()
-                true
-            }
-
-            Preferences.Key.VIEWER_RENDERING -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                    ToastHelper.toast(R.string.pref_viewer_rendering_no_android5)
                 true
             }
 

@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments.reader
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -86,8 +85,6 @@ class ReaderPrefsDialogFragment : DialogFragment() {
         )
         // Available prefs
         for (i in renderingModes.indices) {
-            // No smooth mode for Android 5
-            if (1 == i && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) continue
             renderingItems.add(
                 renderingModes[i].replace(
                     " (" + getString(R.string._default) + ")",
@@ -97,10 +94,7 @@ class ReaderPrefsDialogFragment : DialogFragment() {
         }
 
         binding.renderingPicker.entries = renderingItems
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            binding.renderingPicker.index = 0
-            binding.renderingPicker.isEnabled = false
-        } else binding.renderingPicker.index = renderingMode + 1
+        binding.renderingPicker.index = renderingMode + 1
 
 
         val displayModes = resources.getStringArray(R.array.pref_viewer_display_mode_entries)
