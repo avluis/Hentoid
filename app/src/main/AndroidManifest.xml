@@ -44,7 +44,7 @@
             android:label="@string/missing_web_view"
             android:noHistory="true" />
         <activity
-            android:name=".activities.SplashActivityK"
+            android:name=".activities.SplashActivity"
             android:exported="true"
             android:noHistory="true">
             <intent-filter>

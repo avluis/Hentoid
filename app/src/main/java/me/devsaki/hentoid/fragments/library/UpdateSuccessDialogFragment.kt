@@ -22,7 +22,7 @@ import timber.log.Timber
 /**
  * "update success" dialog
  */
-class UpdateSuccessDialogFragmentK : DialogFragment() {
+class UpdateSuccessDialogFragment : DialogFragment() {
 
     // UI
     private var _binding: DialogLibraryUpdateSuccessBinding? = null
@@ -75,12 +75,12 @@ class UpdateSuccessDialogFragmentK : DialogFragment() {
 
     companion object {
         fun invoke(parent: Fragment) {
-            val fragment = UpdateSuccessDialogFragmentK()
+            val fragment = UpdateSuccessDialogFragment()
             fragment.show(parent.childFragmentManager, null)
         }
 
         fun invoke(parent: FragmentActivity) {
-            val fragment = UpdateSuccessDialogFragmentK()
+            val fragment = UpdateSuccessDialogFragment()
             fragment.show(parent.supportFragmentManager, null)
         }
     }

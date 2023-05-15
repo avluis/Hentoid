@@ -5,9 +5,9 @@ import android.content.Context
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.AppStartupK
+import me.devsaki.hentoid.core.AppStartup
 import me.devsaki.hentoid.core.BiConsumer
-import me.devsaki.hentoid.database.DatabaseMaintenanceK
+import me.devsaki.hentoid.database.DatabaseMaintenance
 import me.devsaki.hentoid.notification.startup.StartupCompleteNotification
 import me.devsaki.hentoid.notification.startup.StartupProgressNotification
 import me.devsaki.hentoid.util.notification.Notification
@@ -15,7 +15,7 @@ import timber.log.Timber
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
-class StartupWorkerK(context: Context, parameters: WorkerParameters) :
+class StartupWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.startup_service, null) {
 
     private val killSwitch = AtomicBoolean(false)
@@ -36,8 +36,8 @@ class StartupWorkerK(context: Context, parameters: WorkerParameters) :
     @SuppressLint("TimberArgCount")
     override fun getToWork(input: Data) {
         val launchTasks: MutableList<BiConsumer<Context, (Float) -> Unit>> = ArrayList()
-        launchTasks.addAll(AppStartupK.getPostLaunchTasks())
-        launchTasks.addAll(DatabaseMaintenanceK.getPostLaunchCleanupTasks())
+        launchTasks.addAll(AppStartup.getPostLaunchTasks())
+        launchTasks.addAll(DatabaseMaintenance.getPostLaunchCleanupTasks())
         launchTasks.forEachIndexed { index, task ->
             val message = String.format(
                 Locale.ENGLISH,

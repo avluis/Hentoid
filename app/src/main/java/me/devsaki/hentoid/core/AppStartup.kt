@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
-import me.devsaki.hentoid.database.DatabaseMaintenanceK
+import me.devsaki.hentoid.database.DatabaseMaintenance
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
@@ -36,7 +36,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.workers.StartupWorkerK
+import me.devsaki.hentoid.workers.StartupWorker
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -44,7 +44,7 @@ import java.io.IOException
 
 typealias BiConsumer<T, U> = (T, U) -> Unit
 
-object AppStartupK {
+object AppStartup {
     private var isInitialized = false
 
     @Synchronized
@@ -65,7 +65,7 @@ object AppStartupK {
 
         val prelaunchTasks: MutableList<BiConsumer<Context, (Float) -> Unit>> = ArrayList()
         prelaunchTasks.addAll(getPreLaunchTasks())
-        prelaunchTasks.addAll(DatabaseMaintenanceK.getPreLaunchCleanupTasks())
+        prelaunchTasks.addAll(DatabaseMaintenance.getPreLaunchCleanupTasks())
 
         // Wait until pre-launch tasks are completed
         runPrelaunchTasks(
@@ -83,7 +83,7 @@ object AppStartupK {
         workManager.enqueueUniqueWork(
             R.id.startup_service.toString(),
             ExistingWorkPolicy.KEEP,
-            OneTimeWorkRequestBuilder<StartupWorkerK>().build()
+            OneTimeWorkRequestBuilder<StartupWorker>().build()
         )
     }
 

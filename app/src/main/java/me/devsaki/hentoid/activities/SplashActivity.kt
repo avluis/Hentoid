@@ -6,7 +6,7 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.AppStartupK.initApp
+import me.devsaki.hentoid.core.AppStartup.initApp
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import timber.log.Timber
@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
  * <p>
  * Nothing but a splash/activity selection should be defined here.
  */
-class SplashActivityK : BaseActivity() {
+class SplashActivity : BaseActivity() {
     private lateinit var mainPb: ProgressBar
     private lateinit var secondaryPb: ProgressBar
 

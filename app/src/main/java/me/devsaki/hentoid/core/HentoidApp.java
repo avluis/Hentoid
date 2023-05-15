@@ -24,7 +24,7 @@ import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.plugins.RxJavaPlugins;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.SplashActivityK;
+import me.devsaki.hentoid.activities.SplashActivity;
 import me.devsaki.hentoid.receiver.WebViewUpdateCycleReceiver;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
@@ -114,7 +114,7 @@ public class HentoidApp extends Application {
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
         // Make sure the app restarts with the splash screen in case of any unhandled issue
-        Thread.setDefaultUncaughtExceptionHandler(new EmergencyRestartHandler(this, SplashActivityK.class));
+        Thread.setDefaultUncaughtExceptionHandler(new EmergencyRestartHandler(this, SplashActivity.class));
 
         // Plug the lifecycle listener to handle locking
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());

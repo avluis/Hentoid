@@ -20,7 +20,7 @@ import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
 
-object DatabaseMaintenanceK {
+object DatabaseMaintenance {
     /**
      * Clean up and upgrade database
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup
