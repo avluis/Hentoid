@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <item name="update_check_service" type="id" />
     <item name="startup_service" type="id" />
     <item name="update_download_service" type="id" />
     <item name="download_service" type="id" />

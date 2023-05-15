@@ -909,7 +909,7 @@ public class LibraryContentFragment extends Fragment implements
     public void onAppUpdated(AppUpdatedEvent event) {
         EventBus.getDefault().removeStickyEvent(event);
         // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getParentFragmentManager());
+        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragmentK.Companion.invoke(this);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

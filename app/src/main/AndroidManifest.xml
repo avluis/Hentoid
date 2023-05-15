@@ -44,7 +44,7 @@
             android:label="@string/missing_web_view"
             android:noHistory="true" />
         <activity
-            android:name=".activities.SplashActivity"
+            android:name=".activities.SplashActivityK"
             android:exported="true"
             android:noHistory="true">
             <intent-filter>
@@ -602,10 +602,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.LibraryActivity" />
         </activity>
-
-        <!-- Services -->
-
-        <service android:name=".services.UpdateCheckService" />
 
         <!-- Receivers -->
 

@@ -4,7 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import me.devsaki.hentoid.core.AppStartup
+import me.devsaki.hentoid.core.AppStartupK
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.ContentHelper
@@ -23,7 +23,7 @@ class IntentActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppStartup().initApp(this,
+        AppStartupK.initApp(this,
             { f -> onMainProgress(f) },
             { f -> onSecondaryProgress(f) }
         ) { onInitComplete() }
