@@ -1,861 +1,917 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-<string name="app_intro">ようこそ</string>
-<string name="yes">はい</string>
-<string name="no">いいえ</string>
-    <string name="ok" tools:ignore="MissingTranslation">OK</string>
-    <string name="on">オン</string>
-    <string name="off">オフ</string>
-    <string name="select_all">全て選択</string>
-    <string name="select_none">選択無し</string>
-    <string name="goto_page">ページに移動...</string>
-    <string name="confirm">確認</string>
-    <string name="please_wait">お待ちください</string>
-    <plurals name="book" tools:ignore="ImpliedQuantity">
-        <item quantity="one">本</item>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="_default">デフォルト</string>
+    <string name="about_app_version">Hentoid v%1$s (%2$d)</string>
+    <string name="about_chrome_unavailable">WebViewは利用できません</string>
+    <string name="about_chrome_updating">WebViewは現在更新中です</string>
+    <string name="about_chrome_version">Chrome v%1$d</string>
+    <string name="about_licenses">ディスプレイライセンス</string>
+    <string name="about1">Hentoidは同人誌＆amp; H-マンガアーカイブアプリ。 Hentoidは、もともとCesar Arasakiによって作成されました。</string>
+    <string name="actions_generic">行動</string>
+    <string name="add_external">外部の場所を追加</string>
+    <string name="add_primary_1">プライマリ ロケーション １ を追加</string>
+    <string name="add_primary_2">プライマリ ロケーション ２ を追加</string>
+    <string name="alert_black">このサイトは現在実際には利用できません。 アプリはそれについては何の関係もありません。 後でもう一度やり直してください。</string>
+    <string name="alert_browser_mode">ブラウザモードが有効: ストレージへのアクセスなし</string>
+    <string name="alert_fix_available">アプリの最新バージョンで修正が利用可能です。 更新してください。</string>
+    <string name="alert_grey">このサイトには現在、深刻な安定性の問題があります。 アプリはそれについては何の関係もありません。 後でもう一度やり直してください。</string>
+    <string name="alert_low_memory">お使いのデバイスのストレージが不足しています！</string>
+    <string name="alert_notifications">通知が無効になっています！</string>
+    <string name="alert_orange">このサイトではダウンロードが失敗する可能性があることに注意してください。</string>
+    <string name="alert_permissions_lost">ファイルのアクセス許可が失われました</string>
+    <string name="alert_red">現在、このサイトのダウンロードボタンは壊れています。</string>
+    <string name="alert_unwanted_tags">この本はでタグ付けされています%s</string>
+    <string name="alert_wip">Hentoid開発チームは修正に取り組んでいます。 新しいバージョンの準備ができると、アプリから通知されます。</string>
+    <string name="app_intro">ようこそ</string>
+    <string name="app_lock_disabled">アプリのロックを無効にする</string>
+    <string name="app_lock_enable">アプリのロックを有効にする</string>
+    <string name="app_lock_pin">PINを入力してください</string>
+    <string name="app_settings">アプリの設定</string>
+    <string name="apply_final">選択肢を適用する</string>
+    <string name="archive_progress">本のアーカイブ</string>
+    <string name="archive_progress_subtitle">終わり：%s</string>
+    <plurals name="archive_success">
+        <item quantity="one">%dダウンロードフォルダにアーカイブされた本</item>
+        <item quantity="other">%dダウンロードフォルダにアーカイブされた書籍</item>
+    </plurals>
+    <plurals name="ask_archive_multiple">
+        <item quantity="one">選択したアイテムをアーカイブしますか\？</item>
+        <item quantity="other">選択したアイテム%dをアーカイブ\？</item>
+    </plurals>
+    <plurals name="ask_cancel_multiple">
+        <item quantity="one">選択したアイテムをキャンセルしますか\？</item>
+        <item quantity="other">選択したアイテムをキャンセルしますか\？</item>
+    </plurals>
+    <string name="ask_clear_chapters">すべてのチャプターをクリアしますか？</string>
+    <plurals name="ask_delete_multiple">
+        <item quantity="one">選択したアイテムを削除しますか\？</item>
+        <item quantity="other">選択したアイテム%dを削除しますか\？</item>
+    </plurals>
+    <string name="blocked_tag">書籍にブロックされたタグがあります (%s)\nダウンロードがキャンセルされました</string>
+    <string name="blocked_tag_queued">書籍にブロックされたタグがあります (%s)\nエラーとしてnQueued</string>
+    <plurals name="book">
         <item quantity="other">本</item>
     </plurals>
-    <plurals name="page" tools:ignore="ImpliedQuantity">
-        <item quantity="one">ページ</item>
-        <item quantity="other">ページ</item>
+    <string name="book_edit_title">本のタイトルを編集</string>
+    <string name="book_favourite_success">お気に入りの本</string>
+    <plurals name="book_keep">
+        <item quantity="one">%1$dの本を保管します</item>
+        <item quantity="other">%1$d冊の本を保管する</item>
     </plurals>
-    <plurals name="file" tools:ignore="ImpliedQuantity">
+    <string name="book_launchcode">起動コード：%s</string>
+    <string name="book_list_loading_failed">ブックリストの読み込みに失敗しました</string>
+    <string name="book_prefs">ブックの設定</string>
+    <plurals name="book_progress">
+        <item quantity="one">%1$d/ %2$d本</item>
+        <item quantity="other">%1$d/ %2$d本</item>
+    </plurals>
+    <string name="book_settings">ブックの設定</string>
+    <string name="book_unfavourite_success">嫌いな本</string>
+    <string name="bookmark_copy_url">ブックマークURLをクリップボードにコピー</string>
+    <string name="bookmark_current">現在のページをブックマーク</string>
+    <string name="bookmark_edit_title">ブックマークのタイトルを編集する</string>
+    <string name="bookmark_homepage">ホームページ</string>
+    <string name="bookmark_toggle_welcome">ブックマークURLをウェルカムページとして切り替えます</string>
+    <string name="browse_mode_warning">ブラウズ専用モードが有効です\ストレージへのアクセス許可なしでアプリを使用しています.</string>
+    <string name="cancel">キャンセル</string>
+    <string name="cancel_all">全てキャンセル</string>
+    <string name="cancel_all_errors">全てのエラーをキャンセル</string>
+    <string name="cancel_queue_progress">キューアイテムのキャンセル</string>
+    <string name="category_any">どれか</string>
+    <string name="category_artist">作家</string>
+    <string name="category_category">カテゴリー</string>
+    <string name="category_character">キャラクター</string>
+    <string name="category_circle">サークル</string>
+    <string name="category_language">言語</string>
+    <string name="category_publisher">出版社</string>
+    <string name="category_series">シリーズ</string>
+    <string name="category_source">ソース</string>
+    <string name="category_tag">タグ</string>
+    <string name="category_translator">翻訳者</string>
+    <string name="category_undefined">未定義</string>
+    <string name="category_uploader">アップローダー</string>
+    <string name="changelog">変更ログ</string>
+    <string name="chapter_move_failed">チャプターを移動できませんでした</string>
+    <string name="chapter_toggle_failed">ページでチャプターを切り替えることができませんでした%d</string>
+    <string name="chapters_remove_failed">チャプターを削除できませんでした</string>
+    <string name="checking_file">ファイルをチェックしています…</string>
+    <string name="checking_updates">アップデートの確認</string>
+    <string name="clear_rating">明確な評価</string>
+    <string name="clear_search_history">検索履歴をクリア</string>
+    <string name="clear_search_history_confirm">検索履歴をクリアしますか？</string>
+    <string name="close_drawer">引き出しを閉じる</string>
+    <string name="confirm">確認</string>
+    <string name="confirm_cancel_all">キュー全体をキャンセルします\？</string>
+    <plurals name="confirm_cancel_all_errors">
+        <item quantity="other">エラーのある%dすべての本をキャンセルしますか\？</item>
+    </plurals>
+    <plurals name="confirm_redownload_all">
+        <item quantity="other">アイテム%dを再ダウンロード\？</item>
+    </plurals>
+    <string name="content_not_found">エラー-コンテンツが見つかりません</string>
+    <string name="content_removal_failed">コンテンツの削除に失敗しました</string>
+    <string name="contents_detected">Hentoidは、この場所にある既存のライブラリを認識しました。\ nこのライブラリをインポートしますか？</string>
+    <string name="copy_download_folder_fail">ダウンロードフォルダに書き込めませんでした</string>
+    <string name="copy_download_folder_success">ダウンロードフォルダにコピー</string>
+    <string name="create_generic">作成</string>
+    <string name="delete_limit">一度に1000冊を超える書籍は削除できません</string>
+    <string name="delete_progress">本の削除</string>
+    <string name="delete_success">削除</string>
+    <plurals name="delete_success_books">
+        <item quantity="one">%d本</item>
+        <item quantity="other">%d本</item>
+    </plurals>
+    <plurals name="delete_success_groups">
+        <item quantity="one">%dグループ</item>
+        <item quantity="other">%dグループ</item>
+    </plurals>
+    <string name="delete_title">お気に入りを除くすべてを削除する</string>
+    <string name="dialog_prompt">フォルダを選択</string>
+    <string name="disabled_generic">無効</string>
+    <string name="display">画面</string>
+    <string name="display_artists">アーティスト</string>
+    <string name="display_groups">グループ</string>
+    <string name="display_groups_title">表示グループ</string>
+    <string name="download_canceled">ダウンロードをキャンセル - オンラインで利用できない予約</string>
+    <plurals name="download_confirm">
+        <item quantity="one">選択した本をダウンロード\？</item>
+        <item quantity="other">選択した本をダウンロード\？</item>
+    </plurals>
+    <string name="download_missing_webview">ダウンロードをキャンセル-WebViewは利用できません</string>
+    <plurals name="download_non_streamed_content">
+        <item quantity="one">選択した書籍の1つはすでにダウンロードされています\nこの書籍は無視されます。</item>
+        <item quantity="other">%d選択した書籍はすでにダウンロードされています\n無視されます。</item>
+    </plurals>
+    <string name="download_notif_failed">ダウンロードに失敗しました</string>
+    <string name="download_notif_failed_details">%1$sをダウンロードできません： フォルダ%2$sを作成できません。 プライマリフォルダを確認し、「!」ボタンを使用してダウンロードを再試行してください。</string>
+    <string name="download_notif_speed">%1$d%2$sメガバイト＠%3$d KBps</string>
+    <string name="download_updating_webview">ダウンロードをキャンセル-WebViewは更新されています</string>
+    <string name="downloader_title">ダウンロード</string>
+    <string name="downloading_update">アップデートのダウンロード</string>
+    <string name="downloads_empty_library">さあ、何かをダウンロードしてください。</string>
+    <string name="downloads_loading">ロードアップ〜</string>
+    <string name="drag_help">アイテムをドラッグ</string>
+    <string name="duplicate_alert">重複アラート！</string>
+    <string name="duplicate_alert_always_download">常にダウンロードして、二度と聞かない</string>
+    <string name="duplicate_alert_download_book">本をダウンロード</string>
+    <string name="duplicate_alert_download_pages">追加のページをダウンロード</string>
+    <string name="duplicate_alert_never_extra_on_dupes">重複する可能性のあるページを再度追加しない</string>
+    <string name="duplicate_alert_replace_existing">既存の本を置き換える</string>
+    <string name="duplicate_alert_similarity">類似性：%.0f%%</string>
+    <string name="duplicate_alert_subtitle_book">ダウンロードしようとしている本は、すでに所有している本の複製である可能性があります。</string>
+    <string name="duplicate_alert_subtitle_pages">ページをダウンロードしようとしている本は、すでに所有している本ではない可能性があります。</string>
+    <string name="duplicate_artist_score">作家: %.0f%%</string>
+    <string name="duplicate_artist_score_nodata">作家:データなし</string>
+    <plurals name="duplicate_count">
+        <item quantity="one">%d複製</item>
+        <item quantity="other">%d重複</item>
+    </plurals>
+    <string name="duplicate_cover_score">表紙: %.0f%%</string>
+    <string name="duplicate_cover_score_nodata">表紙: データなし</string>
+    <string name="duplicate_delete">消去</string>
+    <plurals name="duplicate_detail_title">
+        <item quantity="one">%d複製</item>
+        <item quantity="other">%d重複</item>
+    </plurals>
+    <string name="duplicate_empty_first_use">表示するものがありません-新しい重複検索を実行します</string>
+    <string name="duplicate_empty_no_result">重複は見つかりませんでした</string>
+    <string name="duplicate_find">重複する本の検出</string>
+    <string name="duplicate_find_action">重複を検索</string>
+    <string name="duplicate_ignore_chapters">チャプターと続編を無視する</string>
+    <string name="duplicate_index_covers">表紙写真のインデックス作成</string>
+    <string name="duplicate_keep">保つ</string>
+    <plurals name="duplicate_main_title">
+        <item quantity="one">%d残りのアイテム</item>
+        <item quantity="other">%d残りのアイテム</item>
+    </plurals>
+    <plurals name="duplicate_notif_complete_desc">
+        <item quantity="one">%d重複が検出されました</item>
+        <item quantity="other">%d重複が検出されました</item>
+    </plurals>
+    <string name="duplicate_notif_complete_title">重複検出が完了しました</string>
+    <string name="duplicate_notif_start">重複検出の開始</string>
+    <string name="duplicate_processing">重複の検出…</string>
+    <string name="duplicate_title_score">タイトル: %.0f%%</string>
+    <string name="duplicate_title_score_nodata">タイトル: データなし</string>
+    <string name="duplicate_use_artist">作家</string>
+    <string name="duplicate_use_cover">表紙</string>
+    <string name="duplicate_use_same_language">同じ言語のみ</string>
+    <string-array name="duplicate_use_sensitivities">
+        <item>寛容</item>
+        <item>標準</item>
+        <item>厳しい</item>
+    </string-array>
+    <string name="duplicate_use_sensitivity">感度</string>
+    <string name="duplicate_use_title">タイトル</string>
+    <string name="duplicate_wait_index">索引付け…</string>
+    <string name="edit_generic">編集</string>
+    <string name="empty">空</string>
+    <string name="encoder">エンコーダー</string>
+    <string name="encoder_lossless">ロスレスエンコーダー</string>
+    <string name="encoder_lossy">非可逆エンコーダー</string>
+    <string name="encoder_quality">品質</string>
+    <string name="encoder_warning">WEBP 形式は、横幅と高さが16383ピクセルに制限されています。 大きな画像は自動的にPNGまたはJPGにエンコードされます。</string>
+    <string name="err_no_content">本はまだ存在しません</string>
+    <string name="err_stats_help">現在のダウンロードエラーに関する詳細な統計を表示</string>
+    <string name="err_stats_title">エラー統計</string>
+    <string name="error_browser">リンクを開くときにエラーが発生しました：ブラウザが見つかりません</string>
+    <string name="error_creating_folder">フォルダが無効です。</string>
+    <string name="error_missing_webview">WebViewは利用できません。現在、アプリ内ブラウザを開くことができません</string>
+    <string name="error_open">ファイルを開くときにエラーが発生しました：関連するアプリケーションが見つかりません</string>
+    <string name="error_updating_webview">WebViewは現在更新されています。アプリ内ブラウザをまだ開くことはできません</string>
+    <string name="error_write_permission">そのフォルダに書き込む権限がありません。別のフォルダを試してみてください。</string>
+    <string name="errors_empty">ダウンロード間でエラーは検出されません</string>
+    <string name="errortype_account">アカウントがないか、資格情報が不十分です</string>
+    <string name="errortype_blocked">書籍にブロックされたタグが含まれています</string>
+    <string name="errortype_captcha">Captcha</string>
+    <string name="errortype_img_processing">画像処理</string>
+    <string name="errortype_import">インポート中にローカルファイルが見つかりません</string>
+    <string name="errortype_io">I/O</string>
+    <string name="errortype_networking">ネットワーキング</string>
+    <string name="errortype_parsing">構文解析</string>
+    <string name="errortype_site_limit">ダウンロード/帯域幅の制限に達しました</string>
+    <string name="errortype_undefined">未定義</string>
+    <string name="errortype_wifi">Wi-Fiのダウンロードサイズの制限により、書籍がスキップされました</string>
+    <string name="exclude">除外する</string>
+    <string name="export_answer_yes">この機能は、コレクションを別の端末に転送するために作成されたものではありません。 場合によっては機能しますが、再ダウンロードできない書籍もあるかもしれません。</string>
+    <string name="export_failed">エクスポートに失敗しました</string>
+    <string name="export_favs_only">お気に入りのみをエクスポート</string>
+    <plurals name="export_file_bookmarks">
+        <item quantity="one">ブックマークをエクスポート (%d アイテム)</item>
+        <item quantity="other">ブックマークをエクスポートする(%d アイテム)</item>
+    </plurals>
+    <plurals name="export_file_library">
+        <item quantity="one">プライマリ ライブラリのエクスポート (%d書籍)</item>
+        <item quantity="other">プライマリ ライブラリのエクスポート (%d本)</item>
+    </plurals>
+    <plurals name="export_file_queue">
+        <item quantity="one">エクスポートキュー (%d本)</item>
+        <item quantity="other">エクスポートキュー (%d本)</item>
+    </plurals>
+    <string name="export_groups">カスタムグループをエクスポートする</string>
+    <string name="export_location">ロケーション：%s</string>
+    <string name="export_question">ライブラリを別の端末に転送しますか?</string>
+    <string name="export_run">エクスポートを実行</string>
+    <string name="export_title">メタデータをエクスポート</string>
+    <string name="export_transfer_tutorial">ライブラリ転送に関するウィキをチェック</string>
+    <string name="export_warning1">メタデータのエクスポートは、JSON形式で書籍のリストを作成することを目的としています。\nコレクションをPCやSDカードに移動することを目的としたものではありません。\nその方法については、こちらをタップしてください。</string>
+    <string name="export_warning2">書籍は画像なしでエクスポートされます。\n画像フォルダが存在しない場合は、復元時に再度ダウンロードする必要があります。</string>
+    <string name="external_help">外部ライブラリに属します</string>
+    <string name="external_library">外部ライブラリ</string>
+    <string name="external_library_subtitle">アーカイブ、サードパーティの書籍</string>
+    <plurals name="external_not_removed">
+        <item quantity="one">外部図書館から1冊の本は削除されません</item>
+        <item quantity="other">%d外部ライブラリの本は削除されません</item>
+    </plurals>
+    <string name="fav_help">お気に入りとしてマーク/マークを外す</string>
+    <string name="fav_pages">お気に入りのページ</string>
+    <plurals name="file">
         <item quantity="one">ファイル</item>
         <item quantity="other">ファイル</item>
     </plurals>
-    <plurals name="item" tools:ignore="ImpliedQuantity">
+    <string name="file_removal_failed">ファイルの削除に失敗しました</string>
+    <string name="filter_completed">完成した本のみを表示</string>
+    <string name="filter_not_completed">未完成の本のみを表示</string>
+    <string name="filter_rating">評価によるフィルタリング</string>
+    <string name="fix_permissions">修正</string>
+    <string name="folder_undefined">エラー - 未定義のフォルダーを含む</string>
+    <string name="freeze">フリーズトグル</string>
+    <string name="gallery_add_remove_chapters">追加＆amp; チャプターを削除する</string>
+    <string name="gallery_chapter_prefix">チャプター</string>
+    <string name="gallery_clear_chapters">すべてのチャプターをクリアします</string>
+    <string name="gallery_display_chapter">Chp %d</string>
+    <string name="gallery_display_page">%1$sページ%2$d%3$s%4$s</string>
+    <string name="gallery_edit_chapters_help">チャプターを作成または削除するには、その最初のページをタップします</string>
+    <string name="gallery_help">ブックギャラリー</string>
+    <string name="gallery_no_chapter">チャプターなし</string>
+    <string name="gallery_title">ギャラリー</string>
+    <string name="generic_progress">%1$d/%2$d%3$s</string>
+    <string name="get_latest">最新バージョンを入手する (%1$s)</string>
+    <string name="goto_app_prefs">アプリの設定</string>
+    <string name="goto_page">ページに移動...</string>
+    <string name="group_30">過去30日間</string>
+    <string name="group_60">過去60日間</string>
+    <string name="group_7">過去7日間</string>
+    <string name="group_change">カスタムグループに移動します</string>
+    <string name="group_delete_nothing">削除するものはありません - 「外部コンテンツの削除を許可する」を確認してそれを変更します</string>
+    <plurals name="group_delete_selected_book">
+        <item quantity="one">%d本を削除</item>
+        <item quantity="other">%d本を削除する</item>
+    </plurals>
+    <plurals name="group_delete_selected_group">
+        <item quantity="one">グループのみを削除</item>
+        <item quantity="other">グループのみを削除</item>
+    </plurals>
+    <plurals name="group_delete_selected_group_books">
+        <item quantity="one">グループと本を削除する</item>
+        <item quantity="other">グループと本を削除する</item>
+    </plurals>
+    <string name="group_edit_name">グループ名を編集</string>
+    <string name="group_existing">既存のグループ</string>
+    <string name="group_long">ずっと前</string>
+    <string name="group_make_cover">グループカバーとして設定</string>
+    <string name="group_make_cover_ask">この本のカバーを現在のグループカバー\として設定しますか？</string>
+    <string name="group_name_empty">グループ名は空です！</string>
+    <string name="group_name_exists">その名前のグループはすでに存在しています。</string>
+    <string name="group_new">新規作成</string>
+    <string name="group_new_name">新しいカスタムグループ名</string>
+    <string name="group_new_name_dynamic">新しく保存された検索</string>
+    <string name="group_no_group">グループ化されていない</string>
+    <string name="group_not_selected">グループは選択されていません！</string>
+    <plurals name="group_progress">
+        <item quantity="one">%1$d / %2$dグループ</item>
+        <item quantity="other">%1$d/ %2$dグループ</item>
+    </plurals>
+    <string name="group_remove">現在のグループから切り離します</string>
+    <string name="group_rename_forbidden">そのグループの名前を変更することは禁止されています！</string>
+    <string name="group_today">今日</string>
+    <string name="group_year">去年</string>
+    <string name="groups">グループ</string>
+    <string name="groups_by_artist">アーティストによる</string>
+    <string name="groups_by_dl_date">ダウンロード日（処理済み）</string>
+    <string name="groups_custom">カスタムグループ</string>
+    <string name="groups_dynamic">保存された検索</string>
+    <string name="groups_flat">すべての本</string>
+    <string name="help_generic">ヘルプ</string>
+    <string name="help_page_slider">ページ番号をスライドすることで、より速く閲覧できます</string>
+    <string name="help_search">何でも検索：タイトル、アーティスト、タグ\ nand起動コードも！</string>
+    <string name="help_swipe_cancel">左にスワイプするとダウンロードをキャンセルできます</string>
+    <string name="help_web_download">書籍のページに到達しました。\n下のバーからダウンロードしてください。</string>
+    <string name="help_web_exh_account">ExHentaiアカウントを使用または作成してください</string>
+    <string name="help_web_hires_eh_account">高解像度の画像をダウンロードするには、e-Hentaiアカウントを使用または作成する必要があります</string>
+    <string name="help_web_incomplete_exh_credentials">クレデンシャルが不完全です。もう一度ログインしてください。 問題が解決しない場合は、別の国からサイトにアクセスするか、新しいアカウントを作成することを検討してください。</string>
+    <string name="help_web_invalid_exh_credentials">クレデンシャルが無効です。もう一度ログインしてください</string>
+    <string name="image_extracting">画像を抽出しています…</string>
+    <string name="image_not_found">画像が見つかりません</string>
+    <string name="image_streaming">ストリーミング画像…</string>
+    <string name="import_app_folder">アプリフォルダを外部フォルダとして選択することはできません。別のフォルダを選択してください</string>
+    <string name="import_canceled">インポートがキャンセルされました</string>
+    <string name="import_complete">インポートが完了しました</string>
+    <plurals name="import_complete_details_failure">
+        <item quantity="one">%sが失敗</item>
+        <item quantity="other">%sが失敗</item>
+    </plurals>
+    <plurals name="import_complete_details_success">
+        <item quantity="one">%s正常にインポートされました</item>
+        <item quantity="other">%s正常にインポートされました</item>
+    </plurals>
+    <string name="import_create_fail">プライマリフォルダーの作成に失敗しました - 別の場所を選択してください</string>
+    <string name="import_download_folder">デバイスのダウンロードフォルダを選択しないでください。別のフォルダを作成または選択してください</string>
+    <string name="import_downloads">ダウンロードのインポート</string>
+    <plurals name="import_downloads_found">
+        <item quantity="one">%d有効なダウンロードが見つかりました</item>
+        <item quantity="other">%d有効なダウンロードが見つかりました</item>
+    </plurals>
+    <string name="import_downloads_title">ダウンロードのインポート</string>
+    <string name="import_empty">フォルダーに書籍がありません</string>
+    <plurals name="import_file_bookmarks">
+        <item quantity="one">ブックマークをインポート (%dアイテム)</item>
+        <item quantity="other">Import bookmarks (%d アイテム)</item>
+    </plurals>
+    <plurals name="import_file_groups">
+        <item quantity="one">カスタムグループをインポート(%d グループ)</item>
+        <item quantity="other">カスタムグループをインポート(%dグループ)</item>
+    </plurals>
+    <string name="import_file_invalid">ファイル%sが無効です</string>
+    <plurals name="import_file_library">
+        <item quantity="one">ライブラリをインポート (%d 本)</item>
+        <item quantity="other">ライブラリをインポート (%d本)</item>
+    </plurals>
+    <plurals name="import_file_queue">
+        <item quantity="one">インポートキュー ( %d本)</item>
+        <item quantity="other">インポートキュー ( %d本)</item>
+    </plurals>
+    <string name="import_invalid">無効なフォルダが選択されました-別のフォルダを選択してください</string>
+    <string name="import_invalid_uri">フォルダが認識されません-もう一度選択してください</string>
+    <string name="import_mode_add">インポートしたアイテムを追加する</string>
+    <string name="import_mode_replace">インポートしたアイテムと交換する</string>
+    <string name="import_other">インポートが停止しました</string>
+    <string name="import_other_external_inside_primary">プライマリと外部の場所には個別のベースフォルダーが必要です</string>
+    <string name="import_other_primary">両方の主要な場所に同じフォルダーを設定することは出来ません</string>
+    <plurals name="import_result">
+        <item quantity="one">%1$d / %2$dアイテムが正常にインポートされました</item>
+        <item quantity="other">%1$d /%2$d正常にインポートされたアイテム</item>
+    </plurals>
+    <plurals name="import_result_bookmarks">
+        <item quantity="one">%dブックマークが正常にインポートされました</item>
+        <item quantity="other">%dブックマークが正常にインポートされました</item>
+    </plurals>
+    <plurals name="import_result_books">
+        <item quantity="one">%d 書籍が正常にインポートされました</item>
+        <item quantity="other">%d書籍が正常にインポートされました</item>
+    </plurals>
+    <string name="import_run">インポートを実行</string>
+    <string name="import_select_file">インポートするファイルを選択</string>
+    <string name="import_settings_success">インポート</string>
+    <string name="import_settings_title">インポートの設定</string>
+    <string name="import_streamed">ストリーミング ブックとしてインポート</string>
+    <string name="import_title">メタデータをインポート</string>
+    <string name="import_unexpected">インポートが予期せず停止しました</string>
+    <string name="importing_downloads">ダウンロードのインポート…</string>
+    <string name="importing_library">ライブラリのインポート</string>
+    <string name="importing_metadata">メタデータのインポート…</string>
+    <string name="information_help">情報</string>
+    <string name="invert_queue">キューを反転</string>
+    <plurals name="item">
         <item quantity="one">アイテム</item>
         <item quantity="other">アイテム</item>
     </plurals>
-    <string name="groups">グループ</string>
-    <string name="pause">一時停止</string>
-    <string name="stop">ストップ</string>
-    <string name="resume">再開する</string>
-    <string name="cancel">キャンセル</string>
-    <string name="cancel_all">全てキャンセル</string>
-    <string name="freeze">フリーズトグル</string>
-    <string name="menu_completed_single">完了としてマーク</string>
-    <string name="menu_reset_read">未読としてマーク</string>
-    <string name="service_running">サービスはすでに実行されています</string>
-    <string name="open_folder">開いたフォルダ</string>
-    <string name="_default">デフォルト</string>
-    <string name="empty">空</string>
-    <string name="none">無し</string>
-    <string name="help_generic">ヘルプ</string>
-    <string name="actions_generic">行動</string>
-    <string name="disabled_generic">無効</string>
-    <string name="create_generic">作成</string>
-    <string name="edit_generic">編集</string>
-    <string name="remove_generic">削除する</string>
-<string name="title_activity_downloads">ライブラリー</string>
-    <string name="title_activity_queue">キュー</string>
-    <string name="title_activity_settings">環境設定</string>
-    <string name="title_activity_about">Hentoidについて</string>
-    <string name="title_activity_app_lock">アプリをロック</string>
-    <string name="title_activity_search">高度な検索</string>
-    <string name="title_activity_meta_edit">メタデータの編集</string>
-    <string name="title_activity_rules">名前の変更規則</string>
-    <string name="title_activity_storage">ストレージ管理</string>
-
-    <string name="refresh_step1_external">外部フォルダー</string>
-
-    <string name="refresh_step1_select_external">外部フォルダを選択</string>
-    <string name="refresh_step2">サイトフォルダをスキャンする</string>
-    <string name="refresh_step3_init">スキャンライブラリ…</string>
-    <string name="refresh_step3">ライブラリをスキャン(<x:g example="1" id="number">%1$d</x:g>/ <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="refresh_step4_init">キューをインポートしています…</string>
-    <string name="refresh_allow_write">書き込み許可を許可してください</string>
-<string name="menu_search">検索</string>
-    <string name="menu_fav">お気に入りのフィルターを切り替えます</string>
-    <string name="menu_mark_fav">お気に入りを切り替える</string>
-    <string name="menu_group_new">新しいグループ</string>
-    <string name="menu_edit_order">再注文</string>
-    <string name="menu_edit_name">名前を変更</string>
-    <string name="menu_edit_confirm">編集を確認する</string>
-    <string name="menu_edit_cancel">編集をキャンセルする</string>
-    <string name="menu_edit_warning_custom">新しいカスタム注文は、以前の注文を上書きします。</string>
-    <string name="menu_sort_filter">並べ替えとフィルタリング</string>
-    <string name="menu_delete_single">消去</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d選択したアイテム</item>
+        <item quantity="other">%d選択したアイテム</item>
+    </plurals>
+    <string name="keep_fav_books">お気に入りの本を保管しておく</string>
+    <string name="keep_fav_groups">お気に入りのグループを保存する</string>
+    <string name="lang_cs">チェコ語</string>
+    <string name="lang_de">ドイツ語</string>
+    <string name="lang_en">英語</string>
+    <string name="lang_es">スペイン語</string>
+    <string name="lang_fr">フランス語</string>
+    <string name="lang_hu">ハンガリー語</string>
+    <string name="lang_id">インドネシア語</string>
+    <string name="lang_it">イタリア語</string>
+    <string name="lang_ja">日本語</string>
+    <string name="lang_ko">韓国語</string>
+    <string name="lang_pl">ポーランド語</string>
+    <string name="lang_pt">ポルトガル語</string>
+    <string name="lang_ru">ロシア語</string>
+    <string name="lang_th">タイ語</string>
+    <string name="lang_tr">トルコ語</string>
+    <string name="lang_vi">ベトナム語</string>
+    <string name="lang_zh">中国語</string>
+    <string name="launchcode_present">あなたはすでにこの本を持っています。 他のソースを検索\？</string>
+    <string name="library_filter_favourite_help">お気に入りの本の表示を切り替えます</string>
+    <string name="library_filters_title">フィルター</string>
+    <string name="library_imports_title">ライブラリのインポート</string>
+    <string name="library_metrics_storage">%.0fメガバイト</string>
+    <string name="library_search_hint">タイトル、アーティスト、タグ、または本のID</string>
+    <string name="loading_archive">読み込み中：%1$d/%2$d</string>
+    <string name="loading_image">画像の読み込み：%d%%</string>
+    <string name="location_storage">%1$s（%2$d%%）空き</string>
+    <string name="log_api29_migration">Hentoidv1.11からのライブラリの移行</string>
+    <string name="log_cleanup">プライマリライブラリのクリーンアップ</string>
+    <string name="log_import">プライマリライブラリのインポート/更新</string>
+    <string name="log_import_external">外部ライブラリのインポート/更新</string>
+    <string name="logs_open">ログを開く</string>
+    <string name="logs_share">ログを共有</string>
+    <string name="logs_title">最新のログ</string>
+    <string name="malformed_url">エラー - 不正なURL</string>
+    <string name="mass_delete_action">一括削除</string>
+    <string name="masterdata_no_result">結果がありません  :(</string>
+    <string name="memory_database">データベース：%1$s (%2$.1f%% 満杯)</string>
+    <string name="memory_details">詳細を表示（プライマリ）</string>
+    <string name="memory_details_books">本</string>
+    <string name="memory_details_size">サイズ</string>
+    <string name="memory_details_source">ソース</string>
+    <string name="memory_free">この端末で使用できる残りの空き容量：%s</string>
+    <string name="memory_hentoid_ext">Hentoid(外部): %s</string>
+    <string name="memory_hentoid_main">Hentoid (一次): %s</string>
+    <string name="memory_title">ストレージの使用量</string>
+    <string name="memory_total">合計：%s</string>
+    <string name="menu_archive">アーカイブ</string>
+    <string name="menu_archive_help">書籍をZIPファイルにアーカイブする</string>
+    <string name="menu_change_dl_mode">ダウンロードモードの変更</string>
     <string name="menu_change_group">グループに移動</string>
+    <string name="menu_completed_single">完了としてマーク</string>
+    <string name="menu_delete_single">消去</string>
+    <string name="menu_download_streamed">ダウンロード</string>
+    <string name="menu_edit_cancel">編集をキャンセルする</string>
+    <string name="menu_edit_chapters">チャプターを編集する</string>
+    <string name="menu_edit_confirm">編集を確認する</string>
+    <string name="menu_edit_name">名前を変更</string>
+    <string name="menu_edit_order">再注文</string>
+    <string name="menu_edit_warning_custom">新しいカスタム注文は、以前の注文を上書きします。</string>
+    <string name="menu_fav">お気に入りのフィルターを切り替えます</string>
+    <string name="menu_group_new">新しいグループ</string>
+    <string name="menu_mark_fav">お気に入りを切り替える</string>
     <string name="menu_open_folder">含まれているフォルダを開く</string>
     <string name="menu_redownload">再ダウンロード</string>
     <string name="menu_redownload_scratch">ゼロから再ダウンロード</string>
-    <string name="menu_stream">ストリーミングに切り替える</string>
-    <string name="menu_download_streamed">ダウンロード</string>
+    <string name="menu_reset_read">未読としてマーク</string>
+    <string name="menu_search">検索</string>
     <string name="menu_select_all">全て選択</string>
     <string name="menu_share">共有</string>
     <string name="menu_share_help">別のアプリを使用して本のURLとタイトルを共有する</string>
     <string name="menu_share_title">書籍のURL</string>
-    <string name="menu_archive">アーカイブ</string>
-    <string name="menu_archive_help">書籍をZIPファイルにアーカイブする</string>
-    <string name="library_search_hint">タイトル、アーティスト、タグ、または本のID</string>
-    <string name="send_to">共有する：</string>
-    <string name="open_settings">設定を開く</string>
-    <string name="app_settings">アプリの設定</string>
-    <string name="book_settings">ブックの設定</string>
-    <string name="alert_browser_mode">ブラウザモードが有効: ストレージへのアクセスなし</string>
-    <string name="alert_low_memory">お使いのデバイスのストレージが不足しています！</string>
-    <string name="alert_permissions_lost">ファイルのアクセス許可が失われました</string>
-    <string name="alert_notifications">通知が無効になっています！</string>
-    <string name="fix_permissions">修正</string>
-    <string name="view_queue">キューを表示</string>
-    <string name="clear_search_history">検索履歴をクリア</string>
-<string name="downloader_title">ダウンロード</string>
-    <string name="queue_queue_tab">進行中</string>
-    <string name="queue_errors_tab">エラー</string>
-    <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
-        <item quantity="one">選択したアイテムをキャンセルしますか\？</item>
-        <item quantity="other">選択したアイテムをキャンセルしますか\？</item>
-    </plurals>
-    <string name="invert_queue">キューを反転</string>
-    <string name="redownload_all">全て再ダウンロード</string>
-    <string name="cancel_all_errors">全てのエラーをキャンセル</string>
-    <string name="import_downloads">ダウンロードのインポート</string>
-    <string name="move_top">上に移動</string>
-    <string name="move_bottom">下に移動</string>
-    <string name="queue_paused">キューが一時停止しました</string>
-    <string name="queue_preparing">ダウンロードの準備中</string>
-    <string name="queue_dl">ダウンロード中<x:g example="Cool H-Manga" id="book_name">%s</x:g></string>
-    <string name="err_stats_title">エラー統計</string>
-    <string name="err_stats_help">現在のダウンロードエラーに関する詳細な統計を表示</string>
-    <string name="err_no_content">本はまだ存在しません</string>
-    <string name="confirm_cancel_all">キュー全体をキャンセルします\？</string>
-    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
-        <item quantity="other">エラーのある<x:g example="42" id="count">%d</x:g>すべての本をキャンセルしますか\？</item>
-    </plurals>
-    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
-        <item quantity="other">アイテム<x:g example="42" id="count">%d</x:g>を再ダウンロード\？</item>
-    </plurals>
-    <string name="paused_no_internet">ダウンロード出来ません-インターネットがありません</string>
-    <string name="paused_no_wifi">ダウンロード出来ません-Wi-Fiがありません</string>
-    <string name="paused_no_storage">ダウンロードできません-ストレージが不足しています（<x:g example="0 bytes" id="size_left_bytes">%s</x:g>左）。 空き容量を増やすか、ダウンロードフォルダの場所を変更してください</string>
-    <string name="paused_no_dl_folder">ダウンロードできません-ダウンロードフォルダがありません。 アプリの設定を使用して1つを選択します</string>
-    <string name="paused_dl_folder_not_found">ダウンロードできません-ダウンロードフォルダが見つかりません。 アプリの設定を使用して1つを選択します</string>
-    <string name="paused_dl_folder_credentials">ダウンロードできません-ダウンロードフォルダのクレデンシャルが不十分です。 アプリの設定を使用して再選択します</string>
-    <string name="paused_dl_stale_online_credentials">ダウンロードできません-古いCookieまたはクレデンシャル。 通知を使用してそれらを再生成します</string>
-    <string name="paused_dl_no_available_downloads">利用可能なダウンロードが残っていません</string>
-    <string name="step_init">初期化中</string>
-    <string name="step_prepare_img">画像の準備</string>
-    <string name="step_fetch_img">画像の取得</string>
-    <string name="step_prepare_folder">ダウンロードフォルダの準備</string>
-    <string name="step_prepare_download">ダウンロードチェーンの準備</string>
-    <string name="step_save_queue">キューの保存</string>
-    <string name="step_wait_purge">パージが完了するのを待っています</string>
-    <string name="step_start_download">ダウンロードチェーンが始まりました！</string>
-    <string name="step_complete_download">ダウンロードの完了</string>
-    <string name="step_remove_duplicate">重複を置き換える</string>
-    <string name="help_swipe_cancel">左にスワイプするとダウンロードをキャンセルできます</string>
-    <string name="redownloaded_error">再ダウンロード中に問題が発生しました-キャンセルされました</string>
-    <string name="redownloaded_missing_webview">WebViewは利用できません。今すぐ再ダウンロードできません</string>
-    <string name="redownloaded_updating_webview">WebViewは現在更新中ですが、まだ再ダウンロードできません</string>
-    <plurals name="redownloaded_scratch">
-        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g>再ダウンロードのためにクリアされたアイテム</item>
-        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g>再ダウンロードのためにクリアされたアイテム</item>
-    </plurals>
-    <string name="queue_add_top">トップに追加</string>
-    <string name="queue_add_bottom">下に追加</string>
-    <string name="notification_user_action_title">ユーザーアクション</string>
-    <string name="notification_user_action_needed">必要なユーザーアクション</string>
-    <string name="notification_action_dl_revive">ここをタップしてダウンロードを再開します</string>
-    <string name="revive_wait">ダウンロードが再開するまでの間、この画面でお待ち下さい</string>
-    <string name="revive_missing_webview">WebViewは利用できません。今すぐダウンロードを復活させることはできません</string>
-    <string name="revive_updating_webview">WebViewは現在更新中ですが、ダウンロードを復活させることはできません</string>
-    <string name="queue_json_saved">保存されたキューのJSON</string>
-    <string name="queue_json_failed">キューのJSONを保存できませんでした</string>
-    <string name="queue_content_size_estimate">推定<x:g example="13.37" id="size_mbytes">%.1f</x:g> メガバイト</string>
-    <string name="queue_bottom_bar_processed"><x:g example="3" id="processed">%1$s</x:g>/<x:g example="7" id="total">%2$d</x:g>処理済み</string>
-    <plurals name="queue_bottom_bar_errors">
-        <item quantity="one">(<x:g example="1" id="errors">%d</x:g> エラー)</item>
-        <item quantity="other">(<x:g example="2" id="errors">%d</x:g> エラー)</item>
-    </plurals>
-    <string name="queue_bottom_bar_retry">リトライ<x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
-    <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
-    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g>メガバイト＠<x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
-    <string name="download_notif_failed">ダウンロードに失敗しました</string>
-    <string name="menu_change_dl_mode">ダウンロードモードの変更</string>
+    <string name="menu_sort_filter">並べ替えとフィルタリング</string>
+    <string name="menu_stream">ストリーミングに切り替える</string>
+    <string name="merge_delete_after_merging">マージ後にこれらの書籍を削除する</string>
+    <string name="merge_merge">マージ</string>
+    <string name="merge_progress">本をマージする…</string>
+    <string name="merge_split">分割</string>
+    <string name="merge_success">マージされたコンテンツ</string>
+    <string name="meta_choose_type">\'%s\' のタイプを選択してください</string>
+    <string name="meta_cover_archive_warning">アーカイブの表紙は変更できません</string>
+    <string name="meta_cover_multiple_warning">複数冊の表紙は変更できません</string>
+    <string name="meta_rename_new_name">新しい名前</string>
+    <string name="meta_rename_new_rule">今後のダウンロードのために記憶しておく</string>
+    <string name="meta_replace_with">と置換する…</string>
+    <string name="meta_rule_source">ソース</string>
+    <string name="meta_rule_target">ターゲット</string>
+    <string name="meta_rule_wildcard">ターゲットにワイルドカードがある場合、ソースにもワイルドカードが必要です</string>
+    <string name="meta_tag_all_selected">選択したすべての本にタグを付ける</string>
+    <string name="meta_tag_all_selected_confirm">選択したすべての書籍%2$sに「?」のタグ%1$dを付けますか？</string>
+    <string name="method">メソッド</string>
+    <string name="missing_web_view">Hentoidは、Androidに組み込まれているアプリ用のWebビューアを見つけることができませんでした。\ nこれがないと、ソースを閲覧したり、書籍を再ダウンロードしたりできません。 インターネットを必要とすることは実際にはできません。\n\nインターネットは実際にシステムにインストールされている可能性がありますが、無効になっています。設定に移動してください＆gt; アプリ＆gt; アプリを無効にし Android System WebViewを有効にします。\n\nアプリが見つからない場合は、デバイスのアプリストアからをインストールしてください。\".</string>
+    <string name="missing_web_view_library">ライブラリに戻る</string>
+    <string name="missing_web_view_title">WebViewがインストールまたは無効化されていません</string>
     <string name="mode_dl">画像のダウンロード</string>
     <string name="mode_stream">ストリーミング</string>
-<string name="import_downloads_title">ダウンロードのインポート</string>
-    <plurals name="import_downloads_found">
-        <item quantity="one"><x:g example="1" id="downloads">%d</x:g>有効なダウンロードが見つかりました</item>
-        <item quantity="other"><x:g example="2" id="downloads">%d</x:g>有効なダウンロードが見つかりました</item>
+    <string name="move_bottom">下に移動</string>
+    <string name="move_top">上に移動</string>
+    <string name="new_group_name">新しいグループの名前\？</string>
+    <string name="new_title">新しいタイトル</string>
+    <string name="next_book_help">次の本</string>
+    <string name="next_page">次のページ</string>
+    <string name="no">いいえ</string>
+    <string name="no_artist_group_name">[アーティストなし]</string>
+    <string name="no_error_detected">エラーは検出されませんでした。</string>
+    <string name="no_images">書籍を読み込めませんでした：画像が見つかりません</string>
+    <string name="none">無し</string>
+    <string name="notif_archive_complete">完全なアーカイブ</string>
+    <plurals name="notif_archive_complete_details">
+        <item quantity="one">%d書籍が正常にアーカイブされました</item>
+        <item quantity="other">%d書籍が正常にアーカイブされました</item>
     </plurals>
-    <string name="import_streamed">ストリーミング ブックとしてインポート</string>
-    <string name="importing_downloads">ダウンロードのインポート…</string>
-<string name="work_series">シリーズ：<x:g example="original" id="series">%s</x:g></string>
-    <string name="work_artist">作者：<x:g example="hayao miyazaki" id="artist">%s</x:g></string>
-    <plurals name="work_pages_missing">
-        <item quantity="one">(<x:g example="1" id="number">%d</x:g> ない)</item>
-        <item quantity="other">(<x:g example="2" id="number">%d</x:g>ない)</item>
+    <string name="notif_archive_fail">アーカイブは失敗しました</string>
+    <string name="notif_archive_fail_details">少なくとも1つの本がアーカイブされなかった</string>
+    <string name="notif_archive_title">コンテンツのアーカイブ</string>
+    <string name="notif_delete_complete">削除が完了しました</string>
+    <plurals name="notif_delete_complete_details">
+        <item quantity="one">%dが正常に削除されました</item>
+        <item quantity="other">%dが正常に削除されました</item>
     </plurals>
-    <string name="work_pages_queue">ページ：%1$s%2$s</string>
-    <plurals name="work_pages_library">
-        <item quantity="one"><x:g example="1" id="pages_count">%1$d</x:g> ページ/ <x:g example="3.88" id="size_mb">%2$.1f</x:g> メガバイト</item>
-        <item quantity="other"><x:g example="2" id="pages_count">%1$d</x:g>ページ/ <x:g example="3.88" id="size_mb">%2$.1f</x:g> メガバイト</item>
+    <string name="notif_delete_fail">削除に失敗しました</string>
+    <string name="notif_delete_fail_details">少なくとも1冊の本を削除できませんでした</string>
+    <string name="notif_delete_title">コンテンツの削除</string>
+    <string name="notif_json_complete">更新が完了しました</string>
+    <string name="notif_json_progress">JSONを更新中</string>
+    <string name="notif_json_title">JSONの更新</string>
+    <string name="notification_action_dl_revive">ここをタップしてダウンロードを再開します</string>
+    <string name="notification_user_action_needed">必要なユーザーアクション</string>
+    <string name="notification_user_action_title">ユーザーアクション</string>
+    <plurals name="number_of_book_search_results">
+        <item quantity="one">%1$d/%2$d結果</item>
+        <item quantity="other">%1$d/%2$d結果</item>
     </plurals>
-    <string name="work_pages_duplicate_dialog_library">ページ（ライブラリ内）：%d</string>
-    <string name="work_pages_duplicate_dialog_queue">ページ（キュー内）：%d</string>
-    <string name="work_pages_duplicate_dialog_source">ページ（このソース）：%d</string>
-    <string name="library_metrics_storage"><x:g example="3.88" id="size_mb">%.0f</x:g>メガバイト</string>
-    <string name="redownload_queue_progress">選択した書籍の再ダウンロード</string>
-    <string name="errortype_parsing">構文解析</string>
-    <string name="errortype_networking">ネットワーキング</string>
-    <string name="errortype_io">I/O</string>
-    <string name="errortype_captcha">Captcha</string>
-    <string name="errortype_img_processing">画像処理</string>
-    <string name="errortype_site_limit">ダウンロード/帯域幅の制限に達しました</string>
-    <string name="errortype_account">アカウントがないか、資格情報が不十分です</string>
-    <string name="errortype_import">インポート中にローカルファイルが見つかりません</string>
-    <string name="errortype_wifi">Wi-Fiのダウンロードサイズの制限により、書籍がスキップされました</string>
-    <string name="errortype_blocked">書籍にブロックされたタグが含まれています</string>
-    <string name="errortype_undefined">未定義</string>
-<string name="browse_mode_warning">ブラウズ専用モードが有効です\ストレージへのアクセス許可なしでアプリを使用しています.</string>
+    <plurals name="number_of_items">
+        <item quantity="one">%dアイテム</item>
+        <item quantity="other">%dアイテム</item>
+    </plurals>
+    <string name="object_artist">作家</string>
+    <string name="object_category">カテゴリー</string>
+    <string name="object_character">キャラクター</string>
+    <string name="object_circle">サークル</string>
+    <string name="object_language">言語</string>
+    <string name="object_publisher">出版社</string>
+    <string name="object_series">シリーズ</string>
+    <string name="object_source">ソース</string>
+    <string name="object_tag">タグ</string>
+    <string name="object_translator">翻訳者</string>
+    <string name="object_undefined">未定義</string>
+    <string name="object_uploader">アップローダー</string>
+    <string name="off">オフ</string>
+    <string name="ok">OK</string>
+    <string name="on">オン</string>
+    <string name="open_drawer">引き出しを開く</string>
+    <string name="open_folder">開いたフォルダ</string>
+    <string name="open_settings">設定を開く</string>
+    <plurals name="page">
+        <item quantity="one">ページ</item>
+        <item quantity="other">ページ</item>
+    </plurals>
+    <string name="page_copy_help">ページをAndroidダウンロードフォルダーにコピーします</string>
+    <string-array name="page_delete_choices">
+        <item>次回また聞いてください</item>
+        <item>現在の本を二度と聞かない</item>
+        <item>現在の視聴セッションについて二度と質問しないでください</item>
+    </string-array>
+    <string name="page_delete_help">ページを削除</string>
+    <string name="page_fav_help">ページをお気に入りとしてマーク/マーク解除</string>
+    <string name="page_favourite_success">お気に入りのページ</string>
+    <string name="page_removal_failed">ページの削除に失敗しました</string>
+    <string name="page_share_help">別のアプリを使用してページを共有する</string>
+    <string name="page_unfavourite_success">嫌いなページ</string>
+    <string name="pause">一時停止</string>
+    <string name="paused_dl_folder_credentials">ダウンロードできません-ダウンロードフォルダのクレデンシャルが不十分です。 アプリの設定を使用して再選択します</string>
+    <string name="paused_dl_folder_not_found">ダウンロードできません-ダウンロードフォルダが見つかりません。 アプリの設定を使用して1つを選択します</string>
+    <string name="paused_dl_no_available_downloads">利用可能なダウンロードが残っていません</string>
+    <string name="paused_dl_stale_online_credentials">ダウンロードできません-古いCookieまたはクレデンシャル。 通知を使用してそれらを再生成します</string>
+    <string name="paused_no_dl_folder">ダウンロードできません-ダウンロードフォルダがありません。 アプリの設定を使用して1つを選択します</string>
+    <string name="paused_no_internet">ダウンロード出来ません-インターネットがありません</string>
+    <string name="paused_no_storage">ダウンロードできません-ストレージが不足しています（%s左）。 空き容量を増やすか、ダウンロードフォルダの場所を変更してください</string>
+    <string name="paused_no_wifi">ダウンロード出来ません-Wi-Fiがありません</string>
+    <string name="permissioncomplaint_snackbar">続行する前に、権限を付与する必要があります</string>
+    <string name="permissioncomplaint_snackbar_manual">続行する前に、手動で権限を付与する必要があります</string>
+    <string name="personalDataStatement1">個人情報のプライバシーに関する声明\n\nHentoidは、Hentoidコミュニティによって管理されている無料のオープンソースソフトウェアです（Discordに参加してください-上記のリンクを参照してください）</string>
+    <string name="personalDataStatement2">Hentoidは次の個人データを収集し、Firebaseライブラリを介して処理するためにGoogleに送信します。\n-セッションID\n-IPアドレス</string>
+    <string name="personalDataStatement3">上記のデータは、180日以内にFirebaseのライブおよびバックアップシステムから削除されます（詳細については、https://firebase.google.com/support/privacy/を参照してください)\n\n他の個人データが収集されたり、他の人に送信されたりすることはありません パーティ。</string>
+    <string name="pin_current">現在のPINを入力してください</string>
+    <string name="pin_explanation">App Lockは、起動時に4桁のPINを要求することで、このアプリの不正使用を防ぎます</string>
+    <string name="pin_lock_on_restore">復元時にロック\nバックグラウンドから</string>
+    <string name="pin_new">新しいPINを入力してください</string>
+    <string name="pin_new_confirm">新しいPINを確認する</string>
+    <string name="pin_reset">PINをリセット</string>
+    <string name="pin_reset_success">PINのリセット</string>
+    <string name="please_wait">お待ちください</string>
+    <string name="press_back_again">2回（すばやく）戻って終了します。</string>
+    <string name="preview">プレビュー</string>
+    <string name="previous_book_help">前の本</string>
+    <string name="previous_page">前のページ</string>
     <string name="primary_library">一次図書館</string>
     <string name="primary_library_subtitle">ダウンロード</string>
-    <string name="add_primary_1">プライマリ ロケーション １ を追加</string>
-    <string name="add_primary_2">プライマリ ロケーション ２ を追加</string>
-    <string name="external_library">外部ライブラリ</string>
-    <string name="external_library_subtitle">アーカイブ、サードパーティの書籍</string>
-    <string name="add_external">外部の場所を追加</string>
-    <string name="location_storage">%1$s（%2$d%%）空き</string>
-    <string name="storage_action_change">ロケーションを変更…</string>
-    <string name="storage_action_remove">切り離す</string>
-    <string name="storage_remove_ask">選択した場所を切り離しますか?\n注: ブックは削除されません</string>
-    <string name="storage_remove_ko1">ロケーション 2 が設定されている場合、ロケーション 1 を切り離すことはできません</string>
-    <string name="storage_remove_complete">切り離された場所</string>
-    <string name="storage_action_merge_to_1">ロケーション 1 にマージ</string>
-    <string name="storage_merge_ask">書籍を%dロケーション 2 からロケーション 1 にマージしますか？\nNB : 結合が完了するとブックは削除されます</string>
-    <string name="storage_merge_ko1">ロケーション 1 に結合できません： 十分な空き容量が残っていません</string>
-    <string name="storage_merge_ko2">結合できません： ロケーション 2 に書籍がありません</string>
-    <string name="storage_merge_progress">ロケーション１へのブックの結合</string>
-    <string name="storage_merge_complete">マージ完了</string>
-    <string name="storage_strategy_title">ダウンロード戦略：%s</string>
-    <string name="storage_strategy_balance">空き容量のバランスを取る</string>
-    <string name="storage_strategy_balance_desc">Hentoidは、空き容量が多い場所にダウンロードし、バランスを維持しようとします。 ライブラリに既にある本は移動しません。</string>
-    <string name="storage_strategy_fallover">フォールオーバー</string>
-    <string name="storage_strategy_fallover_desc">Hentoidが場所１にダウンロードユニット %d%%の容量がいっぱいになった後、場所２にダウンロードします。</string>
-    <string name="storage_fallover_threshold">低い空き容量の値 (%%)</string>
-    <string name="storage_set_strategy">ダウンロード戦略を設定</string>
-    <string name="storage_stats">統計</string>
-    <string name="storage_stats_view">使用統計を表示する</string>
-<string name="refresh_title">ロケーションを更新</string>
+    <string name="purge_progress">本のパージ</string>
+    <string name="queue_add_bottom">下に追加</string>
+    <string name="queue_add_top">トップに追加</string>
+    <plurals name="queue_bottom_bar_errors">
+        <item quantity="one">(%d エラー)</item>
+        <item quantity="other">(%d エラー)</item>
+    </plurals>
+    <string name="queue_bottom_bar_processed">%1$s/%2$d処理済み</string>
+    <string name="queue_bottom_bar_retry">リトライ%1$d/%2$d</string>
+    <string name="queue_bottom_bar_speed">%d KBps</string>
+    <string name="queue_content_size_estimate">推定%.1f メガバイト</string>
+    <string name="queue_dl">ダウンロード中%s</string>
+    <string name="queue_empty">なぜ私は空いているのですか\？</string>
+    <string name="queue_errors_tab">エラー</string>
+    <string name="queue_json_failed">キューのJSONを保存できませんでした</string>
+    <string name="queue_json_saved">保存されたキューのJSON</string>
+    <string name="queue_paused">キューが一時停止しました</string>
+    <string name="queue_preparing">ダウンロードの準備中</string>
+    <string name="queue_queue_tab">進行中</string>
+    <string name="range_check">値は%1$dから%2$dまでの範囲にする必要があります</string>
+    <string name="rating_help">書籍の評価</string>
+    <string name="read_log">ログを読む</string>
+    <string name="redl_refresh">メタデータのみを更新する</string>
+    <string name="redl_scratch">最初から再ダウンロード</string>
+    <string name="redownload_action">再ダウンロード</string>
+    <string name="redownload_all">全て再ダウンロード</string>
+    <plurals name="redownload_confirm">
+        <item quantity="one">選択した本を最初から再ダウンロードしますか\？</item>
+        <item quantity="other">選択した本を最初から再ダウンロードしますか\？</item>
+    </plurals>
+    <string name="redownload_dialog_message">ダウンロードの合計画像：%1$d\ nimagesエラーのない：%2$d\エラーのあるニメージ：%3$d</string>
+    <string name="redownload_dialog_title">もう一度ダウンロードしてみてください\？</string>
+    <plurals name="redownload_external_content">
+        <item quantity="one">選択した書籍の1つが外部ライブラリに保存されているため、ダウンロードできません\nこの書籍は無視されます。</item>
+        <item quantity="other">%d選択した書籍は外部ライブラリに保存されているため、再ダウンロードできません\n無視されます。</item>
+    </plurals>
+    <string name="redownload_first_error">最初のエラー：%s</string>
+    <string name="redownload_generating_log_file">ログファイルの生成…</string>
+    <string name="redownload_limit">一度に1000冊を超える書籍を再ダウンロードすることはできません</string>
+    <string name="redownload_open_log">エラーログを開く</string>
+    <string name="redownload_queue_progress">選択した書籍の再ダウンロード</string>
+    <string name="redownload_share_log">エラーログを共有</string>
+    <string name="redownloaded_error">再ダウンロード中に問題が発生しました-キャンセルされました</string>
+    <string name="redownloaded_missing_webview">WebViewは利用できません。今すぐ再ダウンロードできません</string>
+    <plurals name="redownloaded_scratch">
+        <item quantity="one">%1$d/%2$d再ダウンロードのためにクリアされたアイテム</item>
+        <item quantity="other">%1$d/%2$d再ダウンロードのためにクリアされたアイテム</item>
+    </plurals>
+    <string name="redownloaded_updating_webview">WebViewは現在更新中ですが、まだ再ダウンロードできません</string>
+    <string name="refresh_allow_write">書き込み許可を許可してください</string>
     <string name="refresh_caption">ファイルとフォルダを再スキャンすることにより、ライブラリデータを自動的に更新します。</string>
-    <string name="refresh_options">クリーンアップオプション</string>
+    <string name="refresh_location_external">外部ライブラリ</string>
     <string name="refresh_location_internal">プライマリライブラリ (全て)</string>
     <string name="refresh_location_internal_1">プライマリライブラリ１</string>
     <string name="refresh_location_internal_2">プライマリライブラリ２</string>
-    <string name="refresh_location_external">外部ライブラリ</string>
-    <string name="refresh_options_rename">現在の名前と最大長の設定に従って、すべてのフォルダの名前を変更します</string>
-    <string name="refresh_options_remove_placeholders">メタデータを介してインポートされたプレースホルダーブックを削除する</string>
-    <string name="refresh_options_renumber_pages">ページ番号を付け直す</string>
-    <string name="refresh_renumber_warning">これを有効にすることにより、全ての書籍がチェックされ、間違ったページ数があれば修正されます。\nこのオプションを選択すると、プロセスが大幅に遅くなることに注意してください。</string>
+    <string name="refresh_options">クリーンアップオプション</string>
     <string name="refresh_options_remove">次の場所にあるフォルダを削除します…</string>
     <string name="refresh_options_remove_1">JSONファイルが存在しないフォルダーを削除する (推奨)</string>
     <string name="refresh_options_remove_2">画像がダウンロードされていないフォルダを削除する</string>
     <string name="refresh_options_remove_or">または</string>
-<string name="delete_title">お気に入りを除くすべてを削除する</string>
-    <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g><x:g example="books" id="type">%3$s</x:g></string>
-    <plurals name="book_progress">
-        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/ <x:g example="42" id="total">%2$d</x:g>本</item>
-        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/ <x:g example="42" id="total">%2$d</x:g>本</item>
-    </plurals>
-    <plurals name="group_progress">
-        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g>グループ</item>
-        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/ <x:g example="42" id="total">%2$d</x:g>グループ</item>
-    </plurals>
-<string name="import_title">メタデータをインポート</string>
-    <string name="import_mode_add">インポートしたアイテムを追加する</string>
-    <string name="import_mode_replace">インポートしたアイテムと交換する</string>
-    <string name="import_select_file">インポートするファイルを選択</string>
-    <string name="checking_file">ファイルをチェックしています…</string>
-    <string name="import_file_invalid">ファイル<x:g example="metadata.json" id="filename">%s</x:g>が無効です</string>
-    <plurals name="import_file_library">
-        <item quantity="one">ライブラリをインポート (<x:g example="1" id="number">%d</x:g> 本)</item>
-        <item quantity="other">ライブラリをインポート (<x:g example="2" id="number">%d</x:g>本)</item>
-    </plurals>
-    <plurals name="import_file_queue">
-        <item quantity="one">インポートキュー ( <x:g example="1" id="number">%d</x:g>本)</item>
-        <item quantity="other">インポートキュー ( <x:g example="2" id="number">%d</x:g>本)</item>
-    </plurals>
-    <plurals name="import_file_groups">
-        <item quantity="one">カスタムグループをインポート(<x:g example="1" id="number">%d</x:g> グループ)</item>
-        <item quantity="other">カスタムグループをインポート(<x:g example="2" id="number">%d</x:g>グループ)</item>
-    </plurals>
-    <plurals name="import_file_bookmarks">
-        <item quantity="one">ブックマークをインポート (<x:g example="1" id="number">%d</x:g>アイテム)</item>
-        <item quantity="other">Import bookmarks (<x:g example="2" id="number">%d</x:g> アイテム)</item>
-    </plurals>
-    <string name="import_run">インポートを実行</string>
-    <plurals name="import_result_books">
-        <item quantity="one"><x:g example="1" id="number">%d</x:g> 書籍が正常にインポートされました</item>
-        <item quantity="other"><x:g example="2" id="number">%d</x:g>書籍が正常にインポートされました</item>
-    </plurals>
-    <plurals name="import_result_bookmarks">
-        <item quantity="one"><x:g example="1" id="number">%d</x:g>ブックマークが正常にインポートされました</item>
-        <item quantity="other"><x:g example="2" id="number">%d</x:g>ブックマークが正常にインポートされました</item>
-    </plurals>
-    <plurals name="import_result">
-        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="2" id="number">%2$d</x:g>アイテムが正常にインポートされました</item>
-        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> /<x:g example="2" id="number">%2$d</x:g>正常にインポートされたアイテム</item>
-    </plurals>
-    <string name="dialog_prompt">フォルダを選択</string>
-    <string name="importing_metadata">メタデータのインポート…</string>
-<string name="export_title">メタデータをエクスポート</string>
-    <string name="export_question">ライブラリを別の端末に転送しますか?</string>
-
-    <string name="export_answer_yes">この機能は、コレクションを別の端末に転送するために作成されたものではありません。 場合によっては機能しますが、再ダウンロードできない書籍もあるかもしれません。</string>
-    <string name="export_transfer_tutorial"><u>ライブラリ転送に関するウィキをチェック</u></string>
-
-    <plurals name="export_file_library">
-        <item quantity="one">プライマリ ライブラリのエクスポート (<x:g example="1" id="number">%d</x:g>書籍)</item>
-        <item quantity="other">プライマリ ライブラリのエクスポート (<x:g example="2" id="number">%d</x:g>本)</item>
-    </plurals>
-    <string name="export_location">ロケーション：%s</string>
-    <string name="export_favs_only">お気に入りのみをエクスポート</string>
-    <string name="export_groups">カスタムグループをエクスポートする</string>
-    <plurals name="export_file_queue">
-        <item quantity="one">エクスポートキュー (<x:g example="1" id="number">%d</x:g>  本)</item>
-        <item quantity="other">エクスポートキュー (<x:g example="2" id="number">%d</x:g>本)</item>
-    </plurals>
-    <plurals name="export_file_bookmarks">
-        <item quantity="one">ブックマークをエクスポート (<x:g example="1" id="number">%d</x:g> アイテム)</item>
-        <item quantity="other">ブックマークをエクスポートする(<x:g example="2" id="number">%d</x:g> アイテム)</item>
-    </plurals>
-    <string name="export_warning1">メタデータのエクスポートは、JSON形式で書籍のリストを作成することを目的としています。\nコレクションをPCやSDカードに移動することを目的としたものではありません。\nその方法については、こちらをタップしてください。</string>
-    <string name="export_warning2">書籍は画像なしでエクスポートされます。\n画像フォルダが存在しない場合は、復元時に再度ダウンロードする必要があります。</string>
-    <string name="export_run">エクスポートを実行</string>
-    <string name="export_failed">エクスポートに失敗しました</string>
-    <string name="import_settings_title">インポートの設定</string>
-    <string name="import_settings_success">インポート</string>
-<string name="permissioncomplaint_snackbar">続行する前に、権限を付与する必要があります</string>
-    <string name="permissioncomplaint_snackbar_manual">続行する前に、手動で権限を付与する必要があります</string>
-    <string name="import_canceled">インポートがキャンセルされました</string>
-    <string name="import_invalid">無効なフォルダが選択されました-別のフォルダを選択してください</string>
-    <string name="import_app_folder">アプリフォルダを外部フォルダとして選択することはできません。別のフォルダを選択してください</string>
-    <string name="import_download_folder">デバイスのダウンロードフォルダを選択しないでください。別のフォルダを作成または選択してください</string>
-    <string name="import_invalid_uri">フォルダが認識されません-もう一度選択してください</string>
-    <string name="import_empty">フォルダーに書籍がありません</string>
-    <string name="import_other_primary">両方の主要な場所に同じフォルダーを設定することは出来ません</string>
-    <string name="import_other">インポートが停止しました</string>
-    <string name="import_unexpected">インポートが予期せず停止しました</string>
-    <string name="task_done">タスクが完了しました-ログの詳細を参照してください</string>
-    <string name="content_not_found">エラー-コンテンツが見つかりません</string>
-    <string name="contents_detected">Hentoidは、この場所にある既存のライブラリを認識しました。\ nこのライブラリをインポートしますか？</string>
-    <string name="library_imports_title">ライブラリのインポート</string>
-    <string name="starting_import">インポートを開始しています…</string>
-    <string name="importing_library">ライブラリのインポート</string>
-    <string name="import_complete">インポートが完了しました</string>
-    <plurals name="import_complete_details_success">
-        <item quantity="one"><x:g example="1" id="number">%s</x:g>正常にインポートされました</item>
-        <item quantity="other"><x:g example="2" id="number">%s</x:g>正常にインポートされました</item>
-    </plurals>
-    <plurals name="import_complete_details_failure">
-        <item quantity="one"><x:g example="1" id="number">%s</x:g>失敗した</item>
-        <item quantity="other"><x:g example="2" id="number">%s</x:g>失敗した</item>
-    </plurals>
-<string name="memory_title">ストレージの使用量</string>
-    <string name="memory_total">合計：<x:g example="100 MB" id="total">%s</x:g></string>
-    <string name="memory_free">この端末で使用できる空き容量:<x:g example="50 MB" id="total">%s</x:g></string>
-    <string name="memory_hentoid_main">Hentoid (一次): <x:g example="2 MB" id="total">%s</x:g></string>
-    <string name="memory_hentoid_ext">Hentoid(外部): <x:g example="3 MB" id="total">%s</x:g></string>
-    <string name="memory_database">データベース：<x:g example="1.52 MB" id="size_mb">%1$s</x:g> (<x:g example="40%" id="percentage">%2$.1f%%</x:g> 満杯)</string>
-    <string name="memory_details">詳細を表示（プライマリ）</string>
-    <string name="memory_details_source">ソース</string>
-    <string name="memory_details_books">本</string>
-    <string name="memory_details_size">サイズ</string>
-<string name="logs_title">最新のログ</string>
-    <string name="logs_open">ログを開く</string>
-    <string name="read_log">ログを読む</string>
-    <string name="logs_share">ログを共有</string>
-    <string name="no_error_detected">エラーは検出されませんでした。</string>
-    <string name="log_import_external">外部ライブラリのインポート/更新</string>
-    <string name="log_import">プライマリライブラリのインポート/更新</string>
-    <string name="log_cleanup">プライマリライブラリのクリーンアップ</string>
-    <string name="log_api29_migration">Hentoidv1.11からのライブラリの移行</string>
-<string name="error_write_permission">そのフォルダに書き込む権限がありません。別のフォルダを試してみてください。</string>
-    <string name="error_creating_folder">フォルダが無効です。</string>
-    <string name="error_open">ファイルを開くときにエラーが発生しました：関連するアプリケーションが見つかりません</string>
-    <string name="error_browser">リンクを開くときにエラーが発生しました：ブラウザが見つかりません</string>
-    <string name="error_missing_webview">WebViewは利用できません。現在、アプリ内ブラウザを開くことができません</string>
-    <string name="error_updating_webview">WebViewは現在更新されています。アプリ内ブラウザをまだ開くことはできません</string>
-<string name="redownload_dialog_title">もう一度ダウンロードしてみてください\？</string>
-    <string name="redownload_dialog_message">ダウンロードの合計画像：<x:g example="10" id="total_imgs">%1$d</x:g>\ nimagesエラーのない：<x:g example="8" id="fine_imgs">%2$d</x:g>\エラーのあるニメージ：<x:g example="2" id="failed_imgs">%3$d</x:g></string>
-    <string name="redownload_first_error">最初のエラー：<x:g id="errortype">%s</x:g></string>
-    <string name="redownload_action">再ダウンロード</string>
-    <string name="redownload_open_log">エラーログを開く</string>
-    <string name="redownload_share_log">エラーログを共有</string>
-    <string name="redownload_generating_log_file">ログファイルの生成…</string>
-<string name="resume_closed">あなたが\を去った場所から読むことを再開しますか？</string>
-    <string name="open_drawer">引き出しを開く</string>
-    <string name="close_drawer">引き出しを閉じる</string>
-    <plurals name="ask_delete_multiple">
-        <item quantity="one">選択したアイテムを削除しますか\？</item>
-        <item quantity="other">選択したアイテム<x:g example="2" id="count">%d</x:g>を削除しますか\？</item>
-    </plurals>
-    <plurals name="ask_archive_multiple">
-        <item quantity="one">選択したアイテムをアーカイブしますか\？</item>
-        <item quantity="other">選択したアイテム<x:g example="2" id="count">%d</x:g>をアーカイブ\？</item>
-    </plurals>
-    <string name="new_group_name">新しいグループの名前\？</string>
-    <string name="group_edit_name">グループ名を編集</string>
-    <string name="book_edit_title">本のタイトルを編集</string>
-    <string name="delete_progress">本の削除</string>
-    <string name="purge_progress">本のパージ</string>
-    <string name="cancel_queue_progress">キューアイテムのキャンセル</string>
-    <plurals name="delete_success_books">
-        <item quantity="one"><x:g example="1" id="count">%d</x:g>本</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>本</item>
-    </plurals>
-    <plurals name="delete_success_groups">
-        <item quantity="one"><x:g example="1" id="count">%d</x:g>グループ</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>グループ</item>
-    </plurals>
-    <string name="delete_success">削除</string>
-    <string name="archive_progress">本のアーカイブ</string>
-    <string name="archive_progress_subtitle">終わり：<x:g example="42" id="count">%s</x:g></string>
-    <string name="notif_archive_complete">完全なアーカイブ</string>
-    <plurals name="notif_archive_complete_details">
-        <item quantity="one"><x:g example="1" id="count">%d</x:g>書籍が正常にアーカイブされました</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>書籍が正常にアーカイブされました</item>
-    </plurals>
-    <string name="notif_archive_fail">アーカイブは失敗しました</string>
-    <string name="notif_archive_fail_details">少なくとも1つの本がアーカイブされなかった</string>
-    <plurals name="archive_success">
-        <item quantity="one"><x:g example="1" id="count">%d</x:g>ダウンロードフォルダにアーカイブされた本</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>ダウンロードフォルダにアーカイブされた書籍</item>
-    </plurals>
-    <string name="stream_canceled">ストリーミングキャンセル - オンラインで利用できない予約</string>
-    <string name="stream_missing_webview">ストリーミングキャンセル-WebViewは利用できません</string>
-    <string name="stream_updating_webview">ストリーミングキャンセル-WebViewは更新されています</string>
-    <string name="download_canceled">ダウンロードをキャンセル - オンラインで利用できない予約</string>
-    <string name="download_missing_webview">ダウンロードをキャンセル-WebViewは利用できません</string>
-    <string name="download_updating_webview">ダウンロードをキャンセル-WebViewは更新されています</string>
-    <string name="press_back_again">2回（すばやく）戻って終了します。</string>
-    <string name="queue_empty">なぜ私は空いているのですか\？</string>
-    <string name="errors_empty">ダウンロード間でエラーは検出されません</string>
-    <string name="downloads_empty_library">さあ、何かをダウンロードしてください。</string>
-    <string name="downloads_loading">ロードアップ〜</string>
-    <string name="masterdata_no_result">結果がありません  :(</string>
-    <string name="search_entry_not_found">それはここにありません、それをダウンロードしてください。</string>
-    <string name="search_bookid_label"><x:g example="4567" id="launchcode">\'%s\'</x:g>で検索…</string>
-    <string name="book_launchcode">起動コード：<x:g example="4567" id="launchcode">%s</x:g></string>
-    <plurals name="number_of_items">
-        <item quantity="one"><x:g example="1" id="count">%d</x:g>アイテム</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>アイテム</item>
-    </plurals>
-    <plurals name="number_of_book_search_results">
-        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g>結果</item>
-        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g>結果</item>
-    </plurals>
+    <string name="refresh_options_remove_placeholders">メタデータを介してインポートされたプレースホルダーブックを削除する</string>
+    <string name="refresh_options_rename">現在の名前と最大長の設定に従って、すべてのフォルダの名前を変更します</string>
+    <string name="refresh_options_renumber_pages">ページ番号を付け直す</string>
+    <string name="refresh_renumber_warning">これを有効にすることにより、全ての書籍がチェックされ、間違ったページ数があれば修正されます。\nこのオプションを選択すると、プロセスが大幅に遅くなることに注意してください。</string>
+    <string name="refresh_select_folder">既存のプライマリフォルダーを選択してください。その位置が画面に表示されます。</string>
+    <string name="refresh_step1">プライマリフォルダー</string>
+    <string name="refresh_step1_2">プライマリ フォルダー（場所 2）</string>
+    <string name="refresh_step1_external">外部フォルダー</string>
+    <string name="refresh_step1_select">プライマリフォルダーを選択</string>
+    <string name="refresh_step1_select_2">プライマリ フォルダー （場所 2）を選択します。</string>
+    <string name="refresh_step1_select_external">外部フォルダを選択</string>
+    <string name="refresh_step2">サイトフォルダをスキャンする</string>
+    <string name="refresh_step3">ライブラリをスキャン(%1$d/ %2$d)</string>
+    <string name="refresh_step3_init">スキャンライブラリ…</string>
+    <string name="refresh_step4_init">キューをインポートしています…</string>
+    <string name="refresh_title">ロケーションを更新</string>
+    <string name="remove_generic">削除する</string>
+    <string name="renaming_progress">ファイルの名前を変更しています…</string>
+    <string name="resize_method_1">画面サイズの最大 %</string>
+    <string name="resize_method_1_prompt">画面サイズ %</string>
+    <string name="resize_method_2">絶対最大寸法</string>
+    <string name="resize_method_2_prompt_max_height">最大の高さ（マンガ）</string>
+    <string name="resize_method_2_prompt_max_width">横幅の最大（漫画、ウェブトゥーン）</string>
+    <string name="resize_method_3">元の画像サイズ %</string>
+    <string name="resize_method_3_prompt">元のサイズ %</string>
     <string name="restart_needed">「Hentoidが再起動された後、変更が適用されます」</string>
-    <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">選択した本を最初から再ダウンロードしますか\？</item>
-        <item quantity="other">選択した本を最初から再ダウンロードしますか\？</item>
-    </plurals>
-    <plurals name="download_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">選択した本をダウンロード\？</item>
-        <item quantity="other">選択した本をダウンロード\？</item>
-    </plurals>
-    <plurals name="stream_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">選択した本をストリーミングに切り替えますか\？</item>
-        <item quantity="other">選択した書籍をストリーミングに切り替えますか\？</item>
-    </plurals>
-    <plurals name="redownload_external_content">
-        <item quantity="one">選択した書籍の1つが外部ライブラリに保存されているため、ダウンロードできません\nこの書籍は無視されます。</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>選択した書籍は外部ライブラリに保存されているため、再ダウンロードできません\n無視されます。</item>
-    </plurals>
-    <plurals name="download_non_streamed_content">
-        <item quantity="one">選択した書籍の1つはすでにダウンロードされています\nこの書籍は無視されます。</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>選択した書籍はすでにダウンロードされています\n無視されます。</item>
-    </plurals>
-    <plurals name="stream_external_streamed_content">
-        <item quantity="one">選択した書籍の1つがすでにストリーミングされているか、外部にあります\nこの書籍は無視されます。</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>選択した書籍はすでにストリーミングに設定されているか、外部ライブラリにあります\n無視されます。</item>
-    </plurals>
-    <string name="help_search">何でも検索：タイトル、アーティスト、タグ\ nand起動コードも！</string>
-    <string name="help_page_slider">ページ番号をスライドすることで、より速く閲覧できます</string>
-    <plurals name="items_selected">
-        <item quantity="one"><x:g example="1" id="count">%d</x:g>選択したアイテム</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>選択したアイテム</item>
-    </plurals>
-    <string name="folder_undefined">エラー - 未定義のフォルダーを含む</string>
-    <string name="malformed_url">エラー - 不正なURL</string>
-    <string name="unsupported_site">エラー - サイトはサポートされていません</string>
-    <plurals name="external_not_removed">
-        <item quantity="one">外部図書館から1冊の本は削除されません</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>外部ライブラリの本は削除されません</item>
-    </plurals>
-    <string name="group_make_cover">グループカバーとして設定</string>
-    <string name="group_make_cover_ask">この本のカバーを現在のグループカバー\として設定しますか？</string>
-    <string name="group_change">カスタムグループに移動します</string>
-    <string name="group_existing">既存のグループ</string>
-    <string name="group_new">新規作成</string>
-    <string name="group_new_name">新しいカスタムグループ名</string>
-    <string name="group_remove">現在のグループから切り離します</string>
-    <string name="group_name_exists">その名前のグループはすでに存在しています。</string>
-    <string name="group_rename_forbidden">そのグループの名前を変更することは禁止されています！</string>
-    <string name="group_name_empty">グループ名は空です！</string>
-    <string name="group_not_selected">グループは選択されていません！</string>
-    <plurals name="group_delete_selected_group" tools:ignore="ImpliedQuantity">
-        <item quantity="one">グループのみを削除</item>
-        <item quantity="other">グループのみを削除</item>
-    </plurals>
-    <plurals name="group_delete_selected_book">
-        <item quantity="one"><x:g example="1" id="count">%d</x:g>本を削除</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g>本を削除する</item>
-    </plurals>
-    <plurals name="group_delete_selected_group_books" tools:ignore="ImpliedQuantity">
-        <item quantity="one">グループと本を削除する</item>
-        <item quantity="other">グループと本を削除する</item>
-    </plurals>
-    <string name="group_delete_nothing">削除するものはありません - 「外部コンテンツの削除を許可する」を確認してそれを変更します</string>
-    <string name="clear_rating">明確な評価</string>
-    <string name="clear_search_history_confirm">検索履歴をクリアしますか？</string>
-<string name="merge_merge">マージ</string>
-    <string name="merge_progress">本をマージする…</string>
-    <string name="split_progress">分割本…</string>
-    <string name="merge_split">分割</string>
-    <string name="new_title">新しいタイトル</string>
-    <string name="merge_delete_after_merging">マージ後にこれらの書籍を削除する</string>
-    <string name="split_select_help">押したままドラッグして選択します\n選択した各章で1冊の新しい本が作成されます</string>
-    <string name="split_no_chapters">まだチャプターは作成されていません:-(</string>
-    <string name="split_create_chapters">チャプターを作成する</string>
-    <string name="merge_success">マージされたコンテンツ</string>
-    <string name="split_success">コンテンツを分割</string>
-<string name="groups_flat">すべての本</string>
-    <string name="groups_by_artist">アーティストによる</string>
-    <string name="groups_by_dl_date">ダウンロード日（処理済み）</string>
-    <string name="groups_custom">カスタムグループ</string>
-    <string name="no_artist_group_name">[アーティストなし]</string>
-<string name="sort_ascending">昇順</string>
-    <string name="sort_descending">降順</string>
-    <string name="sort_reshuffle">改造</string>
-    <string name="sort_title">タイトル</string>
-    <string name="sort_artist">作家</string>
-    <string name="sort_pages">ページ</string>
-    <string name="sort_dl_date">ダウンロード日（処理済み）</string>
-    <string name="sort_dl_completion_date">ダウンロード日（完了）</string>
-    <string name="sort_read_date">日付を読む</string>
-    <string name="sort_reads">読み取り</string>
-    <string name="sort_size">サイズ</string>
-    <string name="sort_reading_progress">読書の進捗状況</string>
-    <string name="sort_random">ランダム</string>
-    <string name="sort_custom">カスタム</string>
-    <string name="sort_invalid">-無効-</string>
-    <string name="sort_books">本</string>
-    <string name="sort_uplodad_date">アップロード日</string>
-    <string name="library_filters_title">フィルター</string>
-    <string name="library_filter_favourite_help">お気に入りの本の表示を切り替えます</string>
-    <string name="filter_completed">完成した本のみを表示</string>
-    <string name="filter_not_completed">未完成の本のみを表示</string>
-    <string name="filter_rating">評価によるフィルタリング</string>
-<string name="display_groups_title">表示グループ</string>
-    <string name="display">画面</string>
-    <string name="display_artists">アーティスト</string>
-    <string name="display_groups">グループ</string>
-<string name="drag_help">アイテムをドラッグ</string>
-    <string name="external_help">外部ライブラリに属します</string>
-    <string name="rating_help">書籍の評価</string>
-    <string name="streamed_help">ストリーミング本</string>
-    <string name="view_source_help">ブラウザでソースを表示</string>
-    <string name="fav_help">お気に入りとしてマーク/マークを外す</string>
-<string name="launchcode_present">あなたはすでにこの本を持っています。 他のソースを検索\？</string>
-<string name="updates_title">更新</string>
-    <string name="checking_updates">アップデートの確認</string>
-    <string name="update_available">アップデートが利用可能です！</string>
-    <string name="tap_to_download">タップしてダウンロード</string>
-    <string name="update_download_failed">アップデートのダウンロードに失敗しました</string>
-    <string name="tap_to_retry">タップして再試行します</string>
-    <string name="downloading_update">アップデートのダウンロード</string>
-    <string name="update_ready">アップデートの準備ができました！</string>
-    <string name="tap_to_install">タップしてインストール</string>
-<string name="alert_orange">このサイトではダウンロードが失敗する可能性があることに注意してください。</string>
-    <string name="alert_red">現在、このサイトのダウンロードボタンは壊れています。</string>
-    <string name="alert_grey">このサイトには現在、深刻な安定性の問題があります。 アプリはそれについては何の関係もありません。 後でもう一度やり直してください。</string>
-    <string name="alert_black">このサイトは現在実際には利用できません。 アプリはそれについては何の関係もありません。 後でもう一度やり直してください。</string>
-    <string name="alert_wip">Hentoid開発チームは修正に取り組んでいます。 新しいバージョンの準備ができると、アプリから通知されます。</string>
-    <string name="alert_fix_available">アプリの最新バージョンで修正が利用可能です。 更新してください。</string>
-<string name="app_lock_pin">PINを入力してください</string>
-    <string name="app_lock_enable">アプリのロックを有効にする</string>
-    <string name="app_lock_disabled">アプリのロックを無効にする</string>
-    <string name="pin_reset">PINをリセット</string>
-    <string name="pin_reset_success">PINのリセット</string>
-    <string name="pin_current">現在のPINを入力してください</string>
-    <string name="pin_new">新しいPINを入力してください</string>
-    <string name="pin_new_confirm">新しいPINを確認する</string>
-    <string name="pin_explanation">App Lockは、起動時に4桁のPINを要求することで、このアプリの不正使用を防ぎます</string>
-    <string name="pin_lock_on_restore">復元時にロック\nバックグラウンドから</string>
-<string name="about1"><b>Hentoid</b>は同人誌＆amp; H-マンガアーカイブアプリ。 Hentoidは、もともと<b>Cesar Arasaki</b>によって作成されました。</string>
-    <string name="personalDataStatement1"><b>個人情報のプライバシーに関する声明</b>\n\nHentoidは、Hentoidコミュニティによって管理されている無料のオープンソースソフトウェアです（Discordに参加してください-上記のリンクを参照してください）</string>
-    <string name="personalDataStatement2">Hentoidは次の個人データを収集し、Firebaseライブラリを介して処理するためにGoogleに送信します。\n-セッションID\n-IPアドレス</string>
-    <string name="personalDataStatement3">上記のデータは、180日以内にFirebaseのライブおよびバックアップシステムから削除されます（詳細については、https://firebase.google.com/support/privacy/を参照してください)\n\n他の個人データが収集されたり、他の人に送信されたりすることはありません パーティ。</string>
-    <string name="about_licenses">ディスプレイライセンス</string>
-    <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
-    <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g></string>
-    <string name="about_chrome_unavailable">WebViewは利用できません</string>
-    <string name="about_chrome_updating">WebViewは現在更新中です</string>
-<string name="web_gallery">最新のギャラリーページに戻る</string>
-    <string name="web_home">ライブラリに戻る</string>
-    <string name="web_back">戻る</string>
-    <string name="web_forward">前方</string>
-    <string name="web_bookmarks">ブックマーク</string>
-    <string name="web_refresh_stop">更新/停止</string>
-    <string name="web_copy_url">現在のURLをクリップボードにコピーする</string>
-    <string name="web_download">ダウンロード</string>
-    <string name="web_unparsable">このコンテンツはダウンロードできません。 すみません〜</string>
-    <string name="web_url_clipboard">URLがクリップボードにコピーされました</string>
-    <string name="help_web_download">書籍のページに到達しました。\n下のバーからダウンロードしてください。</string>
-    <string name="blocked_tag">書籍にブロックされたタグがあります (<x:g example="bad" id="tag">%s</x:g>)\nダウンロードがキャンセルされました</string>
-    <string name="blocked_tag_queued">書籍にブロックされたタグがあります (<x:g example="bad" id="tag">%s</x:g>)\nエラーとしてnQueued</string>
-    <string name="bookmark_current">現在のページをブックマーク</string>
-    <string name="unbookmark_current">現在のページのブックマークを削除する</string>
-    <string name="bookmark_copy_url">ブックマークURLをクリップボードにコピー</string>
-    <string name="bookmark_toggle_welcome">ブックマークURLをウェルカムページとして切り替えます</string>
-    <string name="alert_unwanted_tags">この本はでタグ付けされています<x:g example="bad" id="tag">%s</x:g></string>
-    <string name="bookmark_homepage">ホームページ</string>
-    <string name="torrent_dl_fail">トレントのダウンロードに失敗しました：<x:g id="torrent">%s</x:g></string>
-    <string name="web_storage_permission_denied">ストレージ許可が拒否されました-ダウンローダーを使用できません</string>
-<string name="help_web_exh_account">ExHentaiアカウントを使用または作成してください</string>
-    <string name="help_web_invalid_exh_credentials">クレデンシャルが無効です。もう一度ログインしてください</string>
-    <string name="help_web_incomplete_exh_credentials">クレデンシャルが不完全です。もう一度ログインしてください。 問題が解決しない場合は、別の国からサイトにアクセスするか、新しいアカウントを作成することを検討してください。</string>
-    <string name="help_web_hires_eh_account">高解像度の画像をダウンロードするには、e-Hentaiアカウントを使用または作成する必要があります</string>
-<string name="category_any">どれか</string>
-    <string name="exclude">除外する</string>
-    <string name="search_category"><x:g example="Language" id="search_category">%s</x:g>探す</string>
-    <string name="searching_generic">検索中</string>
-    <string name="search_prompt">探す<x:g id="search_prompt">%s</x:g></string>
-<string name="category_artist">作家</string>
-    <string name="category_tag">タグ</string>
-    <string name="category_character">キャラクター</string>
-    <string name="category_series">シリーズ</string>
-    <string name="category_language">言語</string>
-    <string name="category_source">ソース</string>
-    <string name="category_uploader">アップローダー</string>
-    <string name="category_circle">サークル</string>
-    <string name="category_category">カテゴリー</string>
-    <string name="category_translator">翻訳者</string>
-    <string name="category_publisher">出版社</string>
-    <string name="category_undefined">未定義</string>
-<string name="object_artist">作家</string>
-    <string name="object_tag">タグ</string>
-    <string name="object_character">キャラクター</string>
-    <string name="object_series">シリーズ</string>
-    <string name="object_language">言語</string>
-    <string name="object_source">ソース</string>
-    <string name="object_uploader">アップローダー</string>
-    <string name="object_circle">サークル</string>
-    <string name="object_category">カテゴリー</string>
-    <string name="object_translator">翻訳者</string>
-    <string name="object_publisher">出版社</string>
-    <string name="object_undefined">未定義</string>
+    <string name="resume">再開する</string>
+    <string name="resume_closed">あなたが\を去った場所から読むことを再開しますか？</string>
+    <string name="revive_missing_webview">WebViewは利用できません。今すぐダウンロードを復活させることはできません</string>
+    <string name="revive_updating_webview">WebViewは現在更新中ですが、ダウンロードを復活させることはできません</string>
+    <string name="revive_wait">ダウンロードが再開するまでの間、この画面でお待ち下さい</string>
+    <string name="search_bookid_label">\'%s\'で検索…</string>
     <plurals name="search_button">
-        <item quantity="one"><x:g example="1" id="count">%s</x:g>結果が見つかりました</item>
-        <item quantity="other"><x:g example="2" id="count">%s</x:g>結果が見つかりました</item>
+        <item quantity="one">%s結果が見つかりました</item>
+        <item quantity="other">%s結果が見つかりました</item>
     </plurals>
-    <string name="search_select_a_filter">フィルターを選択します</string>
+    <string name="search_category">%s探す</string>
+    <string name="search_entry_not_found">それはここにありません、それをダウンロードしてください。</string>
     <string name="search_location">ロケーション</string>
     <string name="search_location_entries_1">すべてのロケーション</string>
+    <string name="search_prompt">探す%s</string>
+    <string name="search_select_a_filter">フィルターを選択します</string>
     <string name="search_type">タイプ</string>
     <string name="search_type_entries_1">すべての種類の本</string>
     <string name="search_type_entries_2">フォルダ</string>
     <string name="search_type_entries_3">ストリーミング</string>
     <string name="search_type_entries_4">アーカイブ</string>
     <string name="search_type_entries_5">プレースホルダー</string>
-
-<string name="no_images">書籍を読み込めませんでした：画像が見つかりません</string>
-    <string name="loading_archive">読み込み中：<x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
-    <string name="loading_image">画像の読み込み：<x:g example="50%" id="percentage">%d%%</x:g></string>
-    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (規模<x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="searching_generic">検索中</string>
+    <string name="select_all">全て選択</string>
+    <string name="select_file_manager">ファイルマネージャーを選択します</string>
+    <string name="select_none">選択無し</string>
+    <string name="send_to">共有する：</string>
+    <string name="service_running">サービスはすでに実行されています</string>
+    <string name="slideshow_start">スライドショーを開始する (遅延%.1f秒)</string>
+    <string name="slideshow_start_vertical">スライドショーを開始する (%s)</string>
+    <string name="slideshow_stop">スライドショーが停止しました</string>
+    <string name="sort_artist">作家</string>
+    <string name="sort_ascending">昇順</string>
+    <string name="sort_books">本</string>
+    <string name="sort_custom">カスタム</string>
+    <string name="sort_descending">降順</string>
+    <string name="sort_dl_completion_date">ダウンロード日（完了）</string>
+    <string name="sort_dl_date">ダウンロード日（処理済み）</string>
+    <string name="sort_invalid">-無効-</string>
+    <string name="sort_pages">ページ</string>
+    <string name="sort_random">ランダム</string>
+    <string name="sort_read_date">日付を読む</string>
+    <string name="sort_reading_progress">読書の進捗状況</string>
+    <string name="sort_reads">読み取り</string>
+    <string name="sort_reshuffle">改造</string>
+    <string name="sort_size">サイズ</string>
+    <string name="sort_title">タイトル</string>
+    <string name="sort_uplodad_date">アップロード日</string>
+    <string name="split_create_chapters">チャプターを作成する</string>
+    <string name="split_no_chapters">まだチャプターは作成されていません:-(</string>
+    <string name="split_progress">分割本…</string>
+    <string name="split_select_help">押したままドラッグして選択します\n選択した各章で1冊の新しい本が作成されます</string>
+    <string name="split_success">コンテンツを分割</string>
+    <string name="starting_download">ダウンロードの開始</string>
+    <string name="starting_import">インポートを開始しています…</string>
+    <string name="step_complete_download">ダウンロードの完了</string>
+    <string name="step_fetch_img">画像の取得</string>
+    <string name="step_init">初期化中</string>
+    <string name="step_prepare_download">ダウンロードチェーンの準備</string>
+    <string name="step_prepare_folder">ダウンロードフォルダの準備</string>
+    <string name="step_prepare_img">画像の準備</string>
+    <string name="step_remove_duplicate">重複を置き換える</string>
+    <string name="step_save_queue">キューの保存</string>
+    <string name="step_start_download">ダウンロードチェーンが始まりました！</string>
+    <string name="step_wait_purge">パージが完了するのを待っています</string>
+    <string name="stop">ストップ</string>
+    <string name="storage_action_change">ロケーションを変更…</string>
+    <string name="storage_action_merge_to_1">ロケーション 1 にマージ</string>
+    <string name="storage_action_remove">切り離す</string>
+    <string name="storage_fallover_threshold">低い空き容量の値 (%%)</string>
+    <string name="storage_merge_ask">書籍を%dロケーション 2 からロケーション 1 にマージしますか？\nNB : 結合が完了するとブックは削除されます</string>
+    <string name="storage_merge_complete">マージ完了</string>
+    <string name="storage_merge_ko1">ロケーション 1 に結合できません： 十分な空き容量が残っていません</string>
+    <string name="storage_merge_ko2">結合できません： ロケーション 2 に書籍がありません</string>
+    <string name="storage_merge_progress">ロケーション１へのブックの結合</string>
+    <string name="storage_permission_denied">ストレージ権限が拒否されました-ビューアを開くことができません</string>
+    <string name="storage_remove_ask">選択した場所を切り離しますか?\n注: ブックは削除されません</string>
+    <string name="storage_remove_complete">切り離された場所</string>
+    <string name="storage_remove_ko1">ロケーション 2 が設定されている場合、ロケーション 1 を切り離すことはできません</string>
+    <string name="storage_set_strategy">ダウンロード戦略を設定</string>
+    <string name="storage_stats">統計</string>
+    <string name="storage_stats_view">使用統計を表示する</string>
+    <string name="storage_strategy_balance">空き容量のバランスを取る</string>
+    <string name="storage_strategy_balance_desc">Hentoidは、空き容量が多い場所にダウンロードし、バランスを維持しようとします。 ライブラリに既にある本は移動しません。</string>
+    <string name="storage_strategy_fallover">フォールオーバー</string>
+    <string name="storage_strategy_fallover_desc">Hentoidが場所１にダウンロードユニット %d%%の容量がいっぱいになった後、場所２にダウンロードします。</string>
+    <string name="storage_strategy_title">ダウンロード戦略：%s</string>
+    <string name="stream_canceled">ストリーミングキャンセル - オンラインで利用できない予約</string>
+    <plurals name="stream_confirm">
+        <item quantity="one">選択した本をストリーミングに切り替えますか\？</item>
+        <item quantity="other">選択した書籍をストリーミングに切り替えますか\？</item>
+    </plurals>
+    <plurals name="stream_external_streamed_content">
+        <item quantity="one">選択した書籍の1つがすでにストリーミングされているか、外部にあります\nこの書籍は無視されます。</item>
+        <item quantity="other">%d選択した書籍はすでにストリーミングに設定されているか、外部ライブラリにあります\n無視されます。</item>
+    </plurals>
+    <string name="stream_limit">一度に1000冊を超える書籍をストリーミングすることはできません</string>
+    <string name="stream_missing_webview">ストリーミングキャンセル-WebViewは利用できません</string>
+    <string name="stream_updating_webview">ストリーミングキャンセル-WebViewは更新されています</string>
+    <string name="streamed_help">ストリーミング本</string>
+    <string name="tap_to_download">タップしてダウンロード</string>
+    <string name="tap_to_install">タップしてインストール</string>
+    <string name="tap_to_retry">タップして再試行します</string>
+    <string name="task_done">タスクが完了しました-ログの詳細を参照してください</string>
+    <string name="theme_dark">ダーク</string>
+    <string name="theme_deep_red">ディープレッド</string>
+    <string name="theme_light">ライト</string>
+    <string name="title_activity_about">Hentoidについて</string>
+    <string name="title_activity_app_lock">アプリをロック</string>
+    <string name="title_activity_downloads">ライブラリー</string>
+    <string name="title_activity_drawer_edit">編集メニュー</string>
+    <string name="title_activity_duplicate_detector">重複検出器</string>
+    <string name="title_activity_meta_edit">メタデータの編集</string>
+    <string name="title_activity_queue">キュー</string>
+    <string name="title_activity_rules">名前の変更規則</string>
+    <string name="title_activity_search">高度な検索</string>
+    <string name="title_activity_settings">環境設定</string>
+    <string name="title_activity_storage">ストレージ管理</string>
+    <string name="title_startup">スタートアップ</string>
+    <string name="title_startup_complete">起動が完了しました</string>
+    <string name="title_startup_progress">起動…</string>
+    <string name="torrent_dl_fail">トレントのダウンロードに失敗しました：%s</string>
+    <string name="transcode_encoder_jpeg">JPEG</string>
+    <string name="transcode_encoder_png">PNG</string>
+    <string name="transcode_encoder_webp_lossless">WEBP（ロスレス）</string>
+    <string name="transcode_encoder_webp_lossy">WEBP（非可逆）</string>
+    <string name="transcode_method_1">全ての画像に同じエンコーダー</string>
+    <string name="transcode_method_2">可逆画像とロスレス画像を区別する</string>
+    <string name="transform">変換</string>
+    <string name="transform_complete">変換完了</string>
+    <plurals name="transform_complete_details">
+        <item quantity="one">%d 画像は正常に変換されました</item>
+        <item quantity="other">%d個の画像が正常に変換されました</item>
+    </plurals>
+    <string name="transform_limit">一度に1000冊を超える本を変換することはできません</string>
+    <string name="transform_pics">写真を変換</string>
+    <string name="transform_progress">画像を変換</string>
+    <string name="transform_resize_pics">写真のサイズを変更する</string>
+    <string name="transform_resizing">サイズ変更</string>
+    <string name="transform_start">画像を変換</string>
+    <string name="transform_transcoding">トランスコーディング</string>
+    <string name="transform_unsupported">変換はサポートされていません</string>
+    <string name="u_byte">バイト</string>
+    <string name="u_exabyte">EB</string>
+    <string name="u_gigabyte">ギガバイト</string>
+    <string name="u_kilobyte">キロバイト</string>
+    <string name="u_megabyte">メガバイト</string>
+    <string name="u_petabyte">PB</string>
+    <string name="u_terabyte">テラバイト</string>
+    <string name="unbookmark_current">現在のページのブックマークを削除する</string>
+    <string name="unsupported_site">エラー - サイトはサポートされていません</string>
+    <string name="update_available">アップデートが利用可能です！</string>
+    <string name="update_download_failed">アップデートのダウンロードに失敗しました</string>
+    <string name="update_ready">アップデートの準備ができました！</string>
+    <string name="update_success">更新に成功しました！</string>
+    <string name="updates_title">更新</string>
+    <string name="use_app_prefs">アプリの設定を使用する (%s)</string>
+    <string name="view_book">本を閲覧</string>
+    <string name="view_changelog">変更ログを表示</string>
+    <string name="view_changelog_flagged">変更ログを表示*</string>
+    <string name="view_queue">キューを表示</string>
+    <string name="view_source_help">ブラウザでソースを表示</string>
+    <string name="viewer_ask_cover">このページを本の表紙に設定しますか？</string>
+    <string name="viewer_ask_delete_page">このページを削除しますか\？</string>
     <string name="viewer_choose_direction">読書の方向を選択してください</string>
+    <string name="viewer_delete_book">本を削除する</string>
     <string name="viewer_direction_ltr">左から右へ</string>
     <string name="viewer_direction_rtl">右から左へ</string>
     <string name="viewer_direction_ttb">上から下へ</string>
-    <string name="viewer_slideshow">スライドショー</string>
-    <string name="viewer_slideshow_help">スライドショーモード</string>
-    <string name="viewer_order_shuffle">ページをシャッフルする</string>
-    <string name="viewer_order_123">ページを並べ替える</string>
-    <string name="viewer_order_shuffle_help">ページシャッフルを切り替えます</string>
+    <string name="viewer_filter_favourite_help">お気に入りのページの表示を切り替えます</string>
     <string name="viewer_filter_favourite_off">お気に入りのページのみを表示する</string>
     <string name="viewer_filter_favourite_on">すべてのページを表示</string>
-    <string name="viewer_filter_favourite_help">お気に入りのページの表示を切り替えます</string>
-    <string name="viewer_make_cover">カバーとして設定</string>
-    <string name="viewer_delete_book">本を削除する</string>
-    <string name="copy_download_folder_success">ダウンロードフォルダにコピー</string>
-    <string name="copy_download_folder_fail">ダウンロードフォルダに書き込めませんでした</string>
-    <string name="viewer_ask_delete_page">このページを削除しますか\？</string>
-    <string name="information_help">情報</string>
-    <string name="previous_book_help">前の本</string>
-    <string name="next_book_help">次の本</string>
-    <string name="gallery_help">ブックギャラリー</string>
-    <string name="page_fav_help">ページをお気に入りとしてマーク/マーク解除</string>
-    <string name="page_copy_help">ページをAndroidダウンロードフォルダーにコピーします</string>
-    <string name="page_share_help">別のアプリを使用してページを共有する</string>
-    <string name="page_delete_help">ページを削除</string>
-    <string-array name="page_delete_choices">
-        <item>次回また聞いてください</item>
-        <item>現在の本を二度と聞かない</item>
-        <item>現在の視聴セッションについて二度と質問しないでください</item>
-    </string-array>
-    <string name="viewer_ask_cover">このページを本の表紙に設定しますか？</string>
-    <string name="image_not_found">画像が見つかりません</string>
-    <string name="image_streaming">ストリーミング画像…</string>
-    <string name="image_extracting">画像を抽出しています…</string>
-    <string name="book_prefs">ブックの設定</string>
-    <string name="goto_app_prefs">アプリの設定</string>
-    <string name="use_app_prefs">アプリの設定を使用する (<x:g example="Left to right" id="app_default">%s</x:g>)</string>
-    <string name="page_favourite_success">好きなページ</string>
-    <string name="page_unfavourite_success">不利なページ</string>
-    <string name="book_favourite_success">好きな本</string>
-    <string name="book_unfavourite_success">不利な本</string>
     <string name="viewer_fix">ダウンロードエラーを修正</string>
+    <string name="viewer_img_details">%1$d x %2$d (規模%3$.0f%%) - %4$s</string>
+    <string name="viewer_make_cover">カバーとして設定</string>
+    <string name="viewer_order_123">ページを並べ替える</string>
+    <string name="viewer_order_shuffle">ページをシャッフルする</string>
+    <string name="viewer_order_shuffle_help">ページシャッフルを切り替えます</string>
     <string name="viewer_reload_page">ページをリロード</string>
     <string name="viewer_reparse_book">本を再解析する</string>
-    <string name="menu_edit_chapters">チャプターを編集する</string>
-    <string name="gallery_title">ギャラリー</string>
-    <string name="gallery_chapter_prefix">チャプター</string>
-    <string name="gallery_edit_chapters_help">チャプターを作成または削除するには、その最初のページをタップします</string>
-    <string name="gallery_clear_chapters">すべてのチャプターをクリアします</string>
-    <string name="gallery_add_remove_chapters">追加＆amp; チャプターを削除する</string>
-    <string name="gallery_display_page"><x:g example="&gt;" id="startMarker">%1$s</x:g>ページ<x:g example="2" id="number">%2$d</x:g><x:g example="♥" id="isFavourite">%3$s</x:g><x:g example="&lt;" id="endMarker">%4$s</x:g></string>
-    <string name="gallery_display_chapter">Chp <x:g example="2" id="number">%d</x:g></string>
-    <string name="gallery_no_chapter">チャプターなし</string>
-    <string name="renaming_progress">ファイルの名前を変更しています…</string>
-    <string name="content_removal_failed">コンテンツの削除に失敗しました</string>
-    <string name="page_removal_failed">ページの削除に失敗しました</string>
-    <string name="file_removal_failed">ファイルの削除に失敗しました</string>
-    <string name="storage_permission_denied">ストレージ権限が拒否されました-ビューアを開くことができません</string>
-    <string name="book_list_loading_failed">ブックリストの読み込みに失敗しました</string>
-    <string name="chapter_toggle_failed">ページでチャプターを切り替えることができませんでした<x:g example="2" id="number">%d</x:g></string>
-    <string name="chapters_remove_failed">チャプターを削除できませんでした</string>
-    <string name="chapter_move_failed">チャプターを移動できませんでした</string>
-    <string name="slideshow_start">スライドショーを開始する (遅延<x:g example="0.5" id="time">%.1f</x:g>秒)</string>
-    <string name="slideshow_start_vertical">スライドショーを開始する (<x:g example="fast" id="speed">%s</x:g>)</string>
-    <string name="slideshow_stop">スライドショーが停止しました</string>
-    <string name="ask_clear_chapters">すべてのチャプターをクリアしますか？</string>
-<string name="view_changelog">変更ログを表示</string>
-    <string name="view_changelog_flagged">変更ログを表示*</string>
-    <string name="changelog">変更ログ</string>
-    <string name="get_latest">最新バージョンを入手する (<x:g example="1.18.1" id="version">%1$s</x:g>)</string>
-    <string name="update_success">更新に成功しました！</string>
-    <string name="starting_download">ダウンロードの開始</string>
-<string name="title_activity_drawer_edit">編集メニュー</string>
-<string name="title_activity_duplicate_detector">重複検出器</string>
-    <string name="duplicate_use_title">タイトル</string>
-    <string name="duplicate_use_cover">表紙</string>
-    <string name="duplicate_use_artist">作家</string>
-    <string name="duplicate_use_same_language">同じ言語のみ</string>
-    <string name="duplicate_ignore_chapters">チャプターと続編を無視する</string>
-    <string name="duplicate_use_sensitivity">感度</string>
-    <string-array name="duplicate_use_sensitivities">
-        <item>寛容</item>
-        <item>標準</item>
-        <item>厳しい</item>
-    </string-array>
-    <string name="duplicate_find_action">重複を検索</string>
-    <string name="duplicate_index_covers">表紙写真のインデックス作成</string>
-    <string name="duplicate_find">重複する本の検出</string>
-    <plurals name="duplicate_count">
-        <item quantity="one"><x:g example="1" id="number">%d</x:g>複製</item>
-        <item quantity="other"><x:g example="2" id="number">%d</x:g>重複</item>
+    <string name="viewer_slideshow">スライドショー</string>
+    <string name="viewer_slideshow_help">スライドショーモード</string>
+    <string name="web_back">戻る</string>
+    <string name="web_bookmarks">ブックマーク</string>
+    <string name="web_copy_url">現在のURLをクリップボードにコピーする</string>
+    <string name="web_download">ダウンロード</string>
+    <string name="web_forward">前方</string>
+    <string name="web_gallery">最新のギャラリーページに戻る</string>
+    <string name="web_home">ライブラリに戻る</string>
+    <string name="web_refresh_stop">更新/停止</string>
+    <string name="web_storage_permission_denied">ストレージ許可が拒否されました-ダウンローダーを使用できません</string>
+    <string name="web_unparsable">このコンテンツはダウンロードできません。 すみません〜</string>
+    <string name="web_url_clipboard">URLがクリップボードにコピーされました</string>
+    <string name="work_artist">作者：%s</string>
+    <string name="work_pages_duplicate_dialog_library">ページ（ライブラリ内）：%d</string>
+    <string name="work_pages_duplicate_dialog_queue">ページ（キュー内）：%d</string>
+    <string name="work_pages_duplicate_dialog_source">ページ（このソース）：%d</string>
+    <plurals name="work_pages_library">
+        <item quantity="one">%1$dページ/ %2$.1f メガバイト</item>
+        <item quantity="other">%1$dページ/ %2$.1f メガバイト</item>
     </plurals>
-    <string name="duplicate_title_score">タイトル: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
-    <string name="duplicate_title_score_nodata">タイトル: データなし</string>
-    <string name="duplicate_cover_score">表紙: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
-    <string name="duplicate_cover_score_nodata">表紙: データなし</string>
-    <string name="duplicate_artist_score">作家: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
-    <string name="duplicate_artist_score_nodata">作家:データなし</string>
-    <string name="apply_final">選択肢を適用する</string>
-    <string name="duplicate_notif_start">重複検出の開始</string>
-    <string name="duplicate_notif_complete_title">重複検出が完了しました</string>
-    <plurals name="duplicate_notif_complete_desc">
-        <item quantity="one"><x:g example="1" id="number">%d</x:g>重複が検出されました</item>
-        <item quantity="other"><x:g example="2" id="number">%d</x:g>重複が検出されました</item>
+    <plurals name="work_pages_missing">
+        <item quantity="one">(%dない)</item>
+        <item quantity="other">(%dない)</item>
     </plurals>
-    <string name="duplicate_empty_first_use">表示するものがありません-新しい重複検索を実行します</string>
-    <string name="duplicate_processing">重複の検出…</string>
-    <plurals name="duplicate_main_title">
-        <item quantity="one"><x:g example="1" id="number">%d</x:g>残りのアイテム</item>
-        <item quantity="other"><x:g example="2" id="number">%d</x:g>残りのアイテム</item>
-    </plurals>
-    <plurals name="duplicate_detail_title">
-        <item quantity="one"><x:g example="1" id="number">%d</x:g>複製</item>
-        <item quantity="other"><x:g example="2" id="number">%d</x:g>重複</item>
-    </plurals>
-    <string name="duplicate_empty_no_result">重複は見つかりませんでした</string>
-    <string name="duplicate_keep">保つ</string>
-    <string name="duplicate_delete">消去</string>
-<string name="duplicate_alert">重複アラート！</string>
-    <string name="duplicate_alert_subtitle_book">ダウンロードしようとしている本は、すでに所有している本の複製である可能性があります。</string>
-    <string name="duplicate_alert_subtitle_pages">ページをダウンロードしようとしている本は、すでに所有している本ではない可能性があります。</string>
-    <string name="duplicate_alert_always_download">常にダウンロードして、二度と聞かない</string>
-    <string name="duplicate_alert_never_extra_on_dupes">重複する可能性のあるページを再度追加しない</string>
-    <string name="duplicate_alert_similarity">類似性：<x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
-    <string name="duplicate_alert_replace_existing">既存の本を置き換える</string>
-    <string name="duplicate_alert_download_book">本をダウンロード</string>
-    <string name="duplicate_alert_download_pages">追加のページをダウンロード</string>
-    <string name="duplicate_wait_index">索引付け…</string>
-<string name="meta_cover_multiple_warning">複数冊の表紙は変更できません</string>
-    <string name="meta_cover_archive_warning">アーカイブの表紙は変更できません</string>
-    <string name="meta_choose_type">\'%s\' のタイプを選択してください</string>
-    <string name="meta_replace_with">と置換する…</string>
-    <string name="meta_tag_all_selected">選択したすべての本にタグを付ける</string>
-    <string name="meta_tag_all_selected_confirm">選択したすべての書籍%2$sに「?」のタグ%1$dを付けますか？</string>
-    <string name="meta_rename_new_name">新しい名前</string>
-    <string name="meta_rename_new_rule">今後のダウンロードのために覚えておく</string>
-<string name="meta_rule_source">ソース</string>
-    <string name="meta_rule_target">ターゲット</string>
-    <string name="meta_rule_wildcard">ターゲットにワイルドカードがある場合、ソースにもワイルドカードが必要です</string>
-<string name="notif_archive_title">コンテンツのアーカイブ</string>
-    <string name="notif_delete_title">コンテンツの削除</string>
-    <string name="notif_delete_complete">削除が完了しました</string>
-    <plurals name="notif_delete_complete_details">
-        <item quantity="one"><x:g example="1" id="number">%d</x:g>正常に削除されました</item>
-        <item quantity="other"><x:g example="1" id="number">%d</x:g>正常に削除されました</item>
-    </plurals>
-    <string name="notif_delete_fail">削除に失敗しました</string>
-    <string name="notif_delete_fail_details">少なくとも1冊の本を削除できませんでした</string>
-<string name="notif_json_title">JSONの更新</string>
-    <string name="notif_json_progress">JSONを更新中</string>
-    <string name="notif_json_complete">更新が完了しました</string>
-<string name="title_startup">スタートアップ</string>
-    <string name="title_startup_progress">起動…</string>
-    <string name="title_startup_complete">起動が完了しました</string>
-<string name="missing_web_view_title">WebViewがインストールまたは無効化されていない</string>
-    <string name="missing_web_view">Hentoidは、Androidに組み込まれているアプリ用のWebビューアを見つけることができませんでした。\ nこれがないと、ソースを閲覧したり、書籍を再ダウンロードしたりできません。 インターネットを必要とすることは実際にはできません。\n\nインターネットは実際にシステムにインストールされている可能性がありますが、無効になっています。<b>設定</b>に移動してください＆gt; <b>アプリ</b>＆gt; <b>アプリを無効にし</b><b> Android System WebView</b>を有効にします。\n\nアプリが見つからない場合は、デバイスのアプリストアから<b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">をインストールしてください。\"</a></b>.</string>
-    <string name="missing_web_view_library">ライブラリに戻る</string>
-<string name="group_today">今日</string>
-    <string name="group_7">過去7日間</string>
-    <string name="group_30">過去30日間</string>
-    <string name="group_60">過去60日間</string>
-    <string name="group_year">去年</string>
-    <string name="group_long">ずっと前</string>
-    <string name="group_no_group">グループ化されていない</string>
-<string name="theme_light">ライト</string>
-    <string name="theme_deep_red">ディープレッド</string>
-    <string name="theme_dark">ダーク</string>
-<string name="lang_en">英語</string>
-    <string name="lang_zh">中国語</string>
-    <string name="lang_ja">日本語</string>
-    <string name="lang_ko">韓国語</string>
-    <string name="lang_es">スペイン語</string>
-    <string name="lang_ru">ロシア語</string>
-    <string name="lang_pt">ポルトガル語</string>
-    <string name="lang_th">タイ語</string>
-    <string name="lang_fr">フランス語</string>
-    <string name="lang_vi">ベトナム語</string>
-    <string name="lang_it">イタリア語</string>
-    <string name="lang_de">ドイツ語</string>
-    <string name="lang_pl">ポーランド語</string>
-    <string name="lang_id">インドネシア語</string>
-    <string name="lang_hu">ハンガリー語</string>
-    <string name="lang_tr">トルコ語</string>
-    <string name="lang_cs">チェコ語</string>
-<string name="select_file_manager">ファイルマネージャーを選択します</string>
-    <string name="u_byte" tools:ignore="MissingTranslation">バイト</string>
-    <string name="u_kilobyte" tools:ignore="MissingTranslation">キロバイト</string>
-    <string name="u_megabyte" tools:ignore="MissingTranslation">メガバイト</string>
-    <string name="u_gigabyte" tools:ignore="MissingTranslation">ギガバイト</string>
-    <string name="u_terabyte" tools:ignore="MissingTranslation">テラバイト</string>
-    <string name="u_petabyte" tools:ignore="MissingTranslation">PB</string>
-    <string name="u_exabyte" tools:ignore="MissingTranslation">EB</string>
+    <string name="work_pages_queue">ページ：%1$s%2$s</string>
+    <string name="work_series">シリーズ：%s</string>
+    <string name="yes">はい</string>
 </resources>
