@@ -266,8 +266,8 @@ class ReaderViewModel(
                     processStorageImages(theContent, newImages)
                     cacheJson(getApplication<Application>().applicationContext, theContent)
                 }
-                for (img in newImages)
-                    if (!img.isArchived) imageLocationCache[img.order] = img.fileUri
+                for (img in newImages) if (!img.isArchived) imageLocationCache[img.order] =
+                    img.fileUri
                 processImages(theContent, -1, newImages)
             }
         } else {
@@ -381,8 +381,8 @@ class ReaderViewModel(
         var startingIndex = 0
 
         // Auto-restart at last read position if asked to
-        if (Preferences.isReaderResumeLastLeft() && theContent.lastReadPageIndex > -1)
-            startingIndex = theContent.lastReadPageIndex
+        if (Preferences.isReaderResumeLastLeft() && theContent.lastReadPageIndex > -1) startingIndex =
+            theContent.lastReadPageIndex
 
         // Start at the given page number, if any
         if (pageNumber > -1) {
@@ -407,9 +407,7 @@ class ReaderViewModel(
 
         // Init the read pages write cache
         readPageNumbers.clear()
-        val readPages = imageFiles
-            .filter { obj -> obj.isRead }
-            .filter { obj -> obj.isReadable }
+        val readPages = imageFiles.filter { obj -> obj.isRead }.filter { obj -> obj.isReadable }
             .map { obj -> obj.order }.toList()
 
         // Fix pre-v1.13 books where ImageFile.read has no value
@@ -774,8 +772,7 @@ class ReaderViewModel(
     fun deletePage(pageViewerIndex: Int, onError: (Throwable) -> Unit) {
         val imageFiles = viewerImagesInternal
         if (imageFiles.size > pageViewerIndex && pageViewerIndex > -1) deletePages(
-            listOf(imageFiles[pageViewerIndex]),
-            onError
+            listOf(imageFiles[pageViewerIndex]), onError
         )
     }
 
@@ -863,8 +860,7 @@ class ReaderViewModel(
         c.isLast = currentContentIndex >= contentIds.size - 1
         if (contentIds.size > currentContentIndex && loadedContentId != contentIds[currentContentIndex]) imageLocationCache.clear()
         if (null == FileHelper.getDocumentFromTreeUriString(
-                getApplication(),
-                c.storageUri
+                getApplication(), c.storageUri
             )
         ) c.isFolderExists = false
         content.postValue(c)
@@ -878,9 +874,7 @@ class ReaderViewModel(
      * @param pageNumber Page number to start with
      */
     private fun loadDatabaseImages(
-        theContent: Content,
-        pageNumber: Int,
-        forceImageReload: Boolean = false
+        theContent: Content, pageNumber: Int, forceImageReload: Boolean = false
     ) {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
@@ -975,8 +969,7 @@ class ReaderViewModel(
         val isArchive = theContent.isArchive
         val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1).filter { i ->
             isPictureNeedsProcessing(
-                i,
-                viewerImagesInternal
+                i, viewerImagesInternal
             )
         }.toSet()
         if (picturesLeftToProcess.isEmpty()) return
@@ -1183,8 +1176,7 @@ class ReaderViewModel(
                 .doOnComplete {
                     val c = getContent().value
                     if (c != null && c.isFolderExists) cacheJson(
-                        getApplication<Application>().applicationContext,
-                        c
+                        getApplication<Application>().applicationContext, c
                     )
                 }.observeOn(AndroidSchedulers.mainThread()).subscribe({ uri: Uri ->
                     nbProcessed.getAndIncrement()
@@ -1770,6 +1762,8 @@ class ReaderViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     doSaveChapterPositions(theContent.id, chapters.map { c -> c.id })
+                }
+                withContext(Dispatchers.Main) {
                     reloadContent()
                 }
             } catch (t: Throwable) {
@@ -1802,22 +1796,28 @@ class ReaderViewModel(
         dao.insertChapters(chapters)
 
         // Renumber all readable images
-        val orderedImages =
-            chapters.mapNotNull { ch -> ch.imageFiles }.flatMap { imgLst -> imgLst.toList() }
+        val orderedImages = chapters.mapNotNull { ch -> ch.imageFiles }
+            .flatMap { imgLst -> imgLst.toList() }
+            .filter { img -> img.isReadable }
         require(orderedImages.isNotEmpty()) { "No images found" }
-        val nbMaxDigits =
-            orderedImages[orderedImages.size - 1].name.length // Keep existing formatting
+
+        // Keep existing formatting
+        val nbMaxDigits = orderedImages[orderedImages.size - 1].name.length
         val fileNames = HashMap<String, Pair<String, ImageFile>>()
         orderedImages.forEachIndexed { index, img ->
-            if (img.isReadable) {
-                img.order = index + 1
-                img.computeName(nbMaxDigits)
-                fileNames[img.fileUri] =
-                    Pair(img.name + "." + getExtensionFromUri(img.fileUri), img)
-            }
+            img.order = index + 1
+            img.computeName(nbMaxDigits)
+            fileNames[img.fileUri] =
+                Pair(img.name + "." + getExtensionFromUri(img.fileUri), img)
         }
 
-        // Compute file swaps
+        // == Compute file swaps
+
+        //  Key = Source file URI
+        //  Value
+        //      first = Source file URI
+        //      second = Target file URI
+        //      third = Target ImageFile
         val swaps = HashMap<Uri, Triple<Uri, Uri, ImageFile>>()
         val renames = ArrayList<Triple<DocumentFile, String, ImageFile>>()
         val parentFolder = FileHelper.getDocumentFromTreeUriString(
@@ -1829,56 +1829,53 @@ class ReaderViewModel(
                 val newName = fileNames[doc.uri.toString()]
                 if (newName != null) {
                     val duplicate = contentFiles.firstOrNull { f -> f.name.equals(newName.first) }
-                    if (duplicate != null) swaps[duplicate.uri] =
-                        Triple(duplicate.uri, doc.uri, newName.second)
-                    else renames.add(Triple(doc, newName.first, newName.second))
+                    if (duplicate != null && duplicate.uri != doc.uri)
+                        swaps[duplicate.uri] = Triple(duplicate.uri, doc.uri, newName.second)
+                    else if (newName.first != doc.name) renames.add(Triple(doc, newName.first, newName.second))
                 }
             }
         }
+
+        // Groups swaps into permutation groups
+        val permutationGroups: List<List<Triple<Uri, Uri, ImageFile>>> =
+            buildPermutationGroups(swaps)
 
         val nbTasks = swaps.size + renames.size
         var nbProcessedTasks = 1
 
         // Perform swaps by exchanging file content
         // NB : "thanks to" SAF; this works faster than renaming the files
-        if (swaps.isNotEmpty()) {
-            val firstTask = swaps.values.first()
+        permutationGroups.forEach { tasks ->
             var firstFileContent: ByteArray
-            FileHelper.getInputStream(getApplication(), firstTask.first).use {
+            FileHelper.getInputStream(getApplication(), tasks[0].first).use {
                 firstFileContent = it.readBytes()
             }
-            var nextTask = firstTask.first
-
-            while (swaps.isNotEmpty()) {
-                swaps[nextTask]?.let {
-                    if (swaps.size > 1) {
-                        FileHelper.getOutputStream(getApplication(), it.first).use { os ->
-                            FileHelper.getInputStream(getApplication(), it.second).use { input ->
-                                Helper.copy(input, os)
-                            }
+            tasks.forEachIndexed { index, task ->
+                if (index < tasks.size - 1) {
+                    FileHelper.getOutputStream(getApplication(), task.first).use { os ->
+                        FileHelper.getInputStream(getApplication(), task.second).use { input ->
+                            Helper.copy(input, os)
                         }
-                        it.third.fileUri = it.first.toString()
-                        swaps.remove(it.first)
-                        nextTask = it.second
-                    } else { // Last task
-                        FileHelper.getOutputStream(getApplication(), it.first).use { os ->
-                            os.write(firstFileContent)
-                        }
-                        it.third.fileUri = it.first.toString()
-                        swaps.remove(it.first)
                     }
+                    task.third.fileUri = task.first.toString()
+                    swaps.remove(task.first)
+                } else { // Last task
+                    FileHelper.getOutputStream(getApplication(), task.first).use { os ->
+                        os.write(firstFileContent)
+                    }
+                    task.third.fileUri = task.first.toString()
                 }
-                EventBus.getDefault().post(
-                    ProcessEvent(
-                        ProcessEvent.EventType.PROGRESS,
-                        R.id.generic_progress,
-                        0,
-                        nbProcessedTasks++,
-                        0,
-                        nbTasks
-                    )
-                )
             }
+            EventBus.getDefault().post(
+                ProcessEvent(
+                    ProcessEvent.EventType.PROGRESS,
+                    R.id.generic_progress,
+                    0,
+                    nbProcessedTasks++,
+                    0,
+                    nbTasks
+                )
+            )
         }
 
         // Perform renames
@@ -1912,6 +1909,34 @@ class ReaderViewModel(
 
         // Reset locations cache as image order has changed
         imageLocationCache.clear()
+    }
+
+    private fun buildPermutationGroups(swaps: HashMap<Uri, Triple<Uri, Uri, ImageFile>>): List<List<Triple<Uri, Uri, ImageFile>>> {
+        val result: MutableList<List<Triple<Uri, Uri, ImageFile>>> = ArrayList()
+
+        if (swaps.isNotEmpty()) {
+            val processedKeys: MutableSet<Uri> = HashSet()
+            var currentGroup: MutableList<Triple<Uri, Uri, ImageFile>> = ArrayList()
+            var leftToProcess = swaps.size
+
+            var task = swaps.values.first()
+            while (leftToProcess > 0) {
+                processedKeys.add(task.first)
+                currentGroup.add(task)
+                leftToProcess--
+                if (swaps.containsKey(task.second) && !processedKeys.contains(task.second)) {
+                    task = swaps[task.second]!!
+                } else {
+                    result.add(currentGroup)
+                    currentGroup = ArrayList()
+                    if (leftToProcess > 0) {
+                        val nextKey = swaps.keys.find { k -> !processedKeys.contains(k) }!!
+                        task = swaps[nextKey]!!
+                    }
+                }
+            }
+        }
+        return result.toList()
     }
 
     companion object {
