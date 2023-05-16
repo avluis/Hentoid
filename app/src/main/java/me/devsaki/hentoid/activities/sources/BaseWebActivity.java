@@ -847,9 +847,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     private void disableActions() {
-        binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon));
-        binding.actionButton.setVisibility(View.INVISIBLE);
-        binding.actionBtnBadge.setVisibility(View.INVISIBLE);
+        final ActivityBaseWebBinding b = binding;
+        if (b != null) {
+            b.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon));
+            b.actionButton.setVisibility(View.INVISIBLE);
+            b.actionBtnBadge.setVisibility(View.INVISIBLE);
+        }
     }
 
     /**
@@ -858,10 +861,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * @param mode Mode to switch to
      */
     private void setActionMode(@ActionMode int mode) {
-        if (Preferences.isBrowserMode() && binding != null) {
-            binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_forbidden_disabled));
-            binding.actionButton.setVisibility(View.INVISIBLE);
-            binding.actionBtnBadge.setVisibility(View.INVISIBLE);
+        final ActivityBaseWebBinding b = binding;
+        if (Preferences.isBrowserMode() && b != null) {
+            b.actionButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_forbidden_disabled));
+            b.actionButton.setVisibility(View.INVISIBLE);
+            b.actionBtnBadge.setVisibility(View.INVISIBLE);
             return;
         }
 
@@ -874,12 +878,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             resId = R.drawable.ic_action_play;
         }
         actionButtonMode = mode;
-        if (binding != null) {
-            binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, resId));
-            binding.actionButton.setVisibility(View.VISIBLE);
+        if (b != null) {
+            b.actionButton.setImageDrawable(ContextCompat.getDrawable(this, resId));
+            b.actionButton.setVisibility(View.VISIBLE);
             // It will become visible whenever the count of extra pages is known
             if (ActionMode.DOWNLOAD_PLUS != mode)
-                binding.actionBtnBadge.setVisibility(View.INVISIBLE);
+                b.actionBtnBadge.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -892,8 +896,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         @DrawableRes int resId = R.drawable.selector_back_gallery;
         if (SeekMode.PAGE == mode) resId = R.drawable.selector_page_seek;
         seekButtonMode = mode;
-        binding.menuSeek.setImageDrawable(ContextCompat.getDrawable(this, resId));
-        binding.menuSeek.setEnabled(enabled);
+        final ActivityBaseWebBinding b = binding;
+        if (b != null) {
+            b.menuSeek.setImageDrawable(ContextCompat.getDrawable(this, resId));
+            b.menuSeek.setEnabled(enabled);
+        }
     }
 
     /**
