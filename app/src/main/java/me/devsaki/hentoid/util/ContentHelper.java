@@ -220,20 +220,23 @@ public final class ContentHelper {
      * @param context Context to use for the action
      * @param content Content whose JSON file to update
      */
-    public static void updateJson(@NonNull Context context, @NonNull Content content) {
+    public static boolean updateJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
 
         DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
-        if (null == file)
-            throw new IllegalArgumentException("'" + content.getJsonUri() + "' does not refer to a valid file");
-
-        try (OutputStream output = FileHelper.getOutputStream(context, file)) {
-            if (output != null)
-                JsonHelper.updateJson(JsonContent.fromEntity(content), JsonContent.class, output);
-            else Timber.w("JSON file creation failed for %s", file.getUri());
-        } catch (IOException e) {
-            Timber.e(e, "Error while writing to %s", content.getJsonUri());
+        if (file != null) {
+            try (OutputStream output = FileHelper.getOutputStream(context, file)) {
+                if (output != null) {
+                    JsonHelper.updateJson(JsonContent.fromEntity(content), JsonContent.class, output);
+                    return true;
+                } else Timber.w("JSON file creation failed for %s", file.getUri());
+            } catch (IOException e) {
+                Timber.e(e, "Error while writing to %s", content.getJsonUri());
+            }
+        } else {
+            Timber.w("%s does not refer to a valid file", content.getJsonUri());
         }
+        return false;
     }
 
     /**
@@ -268,9 +271,9 @@ public final class ContentHelper {
      * @param content Content to persist the JSON for
      */
     public static void persistJson(@NonNull Context context, @NonNull Content content) {
-        if (!content.getJsonUri().isEmpty()) // NB : Having an active Content without JSON file shouldn't be possible after the API29 migration (Hentoid v1.12)
-            ContentHelper.updateJson(context, content);
-        else ContentHelper.createJson(context, content);
+        boolean result = false;
+        if (!content.getJsonUri().isEmpty()) result = ContentHelper.updateJson(context, content);
+        if (!result) ContentHelper.createJson(context, content);
     }
 
     /**
