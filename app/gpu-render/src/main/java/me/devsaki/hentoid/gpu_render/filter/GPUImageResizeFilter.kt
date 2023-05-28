@@ -2,11 +2,11 @@ package me.devsaki.hentoid.gpu_render.filter
 
 import android.opengl.GLES20
 
-class GPUImageResizeFilter(targetSize: FloatArray) :
+class GPUImageResizeFilter(targetX: Int, targetY: Int) :
     GPUImageFilter(NO_FILTER_VERTEX_SHADER, RESIZE_FRAGMENT_SHADER) {
 
     init {
-        setRatio(targetSize)
+        setRatio(floatArrayOf(targetX.toFloat(), targetY.toFloat()))
     }
 
     companion object {
@@ -102,6 +102,6 @@ class GPUImageResizeFilter(targetSize: FloatArray) :
     fun setRatio(targetSizeXY: FloatArray) {
         this.targetSizeXY = targetSizeXY
         this.outputDimensions = Pair(targetSizeXY[0].toInt(), targetSizeXY[1].toInt())
-        setFloatVec2(targetSizeLocation, targetSizeXY)
+        if (targetSizeLocation > 0) setFloatVec2(targetSizeLocation, targetSizeXY)
     }
 }

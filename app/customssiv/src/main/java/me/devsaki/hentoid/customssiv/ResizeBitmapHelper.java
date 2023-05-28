@@ -105,18 +105,23 @@ class ResizeBitmapHelper {
         // Defensive programming in case the threading/view recycling recycles a bitmap just before that methods is reached
         if (null == src || src.isRecycled()) return src;
 
+        Timber.d(">> bmp IN %dx%d", src.getWidth(), src.getHeight());
+
         int srcWidth = src.getWidth();
         int srcHeight = src.getHeight();
+        // Must be multiple of 2
         int dstWidth = Math.round(srcWidth * xScale);
+        if (1 == dstWidth % 2) dstWidth += 1;
         int dstHeight = Math.round(srcHeight * yScale);
+        if (1 == dstHeight % 2) dstHeight += 1;
         src.setHasAlpha(false);
 
         List<GPUImageFilter> filterList = new ArrayList<>();
-        filterList.add(new GPUImageGaussianBlurFilter(radius*50));
-        filterList.add(new GPUImageResizeFilter(new float[]{dstWidth, dstHeight}));
+        filterList.add(new GPUImageGaussianBlurFilter(radius));
+        filterList.add(new GPUImageResizeFilter(dstWidth, dstHeight));
 
         Bitmap out = gpuImage.getBitmapForMultipleFilters(filterList, src);
-        Timber.d(">> bmp %dx%d => %dx%d", src.getWidth(), src.getHeight(), out.getWidth(), out.getHeight());
+        Timber.d(">> bmp OUT %dx%d => %dx%d %d", src.getWidth(), src.getHeight(), out.getWidth(), out.getHeight(), out.getAllocationByteCount());
         return out;
     }
 

@@ -89,17 +89,6 @@ class GPUImage(val context: Context) {
     }
 
     /**
-     * Update camera preview frame with YUV format data.
-     *
-     * @param data   Camera preview YUV data for frame.
-     * @param width  width of camera preview
-     * @param height height of camera preview
-     */
-    fun updatePreviewFrame(data: ByteArray, width: Int, height: Int) {
-        renderer.onPreviewFrame(data, width, height)
-    }
-
-    /**
      * This sets the scale type of GPUImage. This has to be run before setting the image.
      * If image is set and scale type changed, image needs to be reset.
      *
@@ -169,74 +158,6 @@ class GPUImage(val context: Context) {
     }
 
     /**
-     * Gets the current displayed image with applied filter as a Bitmap.
-     *
-     * @return the current image with filter applied
-     */
-    fun getBitmapWithFilterApplied(): Bitmap? {
-        currentBitmap?.let {
-            return getBitmapWithFilterApplied(it)
-        }
-        return null
-    }
-
-    /**
-     * Gets the given bitmap with current filter applied as a Bitmap.
-     *
-     * @param bitmap the bitmap on which the current filter should be applied
-     * @return the bitmap with filter applied
-     */
-    fun getBitmapWithFilterApplied(bitmap: Bitmap): Bitmap? {
-        return getBitmapWithFilterApplied(bitmap, false)
-    }
-
-    /**
-     * Gets the given bitmap with current filter applied as a Bitmap.
-     *
-     * @param bitmap  the bitmap on which the current filter should be applied
-     * @param recycle recycle the bitmap or not.
-     * @return the bitmap with filter applied
-     */
-    fun getBitmapWithFilterApplied(bitmap: Bitmap, recycle: Boolean): Bitmap {
-        renderer.deleteImage()
-        renderer.runOnDraw {
-            synchronized(filter) {
-                filter.destroy()
-//                filter.notify()
-            }
-        }
-        synchronized(filter) {
-            requestRender()
-            /*
-            try {
-                filter.wait()
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
-             */
-        }
-        val renderer = GPUImageRenderer(filter)
-        renderer.setRotation(
-            Rotation.NORMAL,
-            this.renderer.isFlippedHorizontally(), this.renderer.isFlippedVertically()
-        )
-        renderer.setScaleType(scaleType)
-        val buffer = PixelBuffer(bitmap.width, bitmap.height)
-        buffer.setRenderer(renderer)
-        renderer.setImageBitmap(bitmap, recycle)
-        val result: Bitmap = buffer.getBitmap()
-        filter.destroy()
-        renderer.deleteImage()
-        buffer.destroy()
-        this.renderer.setFilter(filter)
-        currentBitmap?.let {
-            this.renderer.setImageBitmap(it, false)
-        }
-        requestRender()
-        return result
-    }
-
-    /**
      * Gets the images for multiple filters on a image. This can be used to
      * quickly get thumbnail images for filters. <br></br>
      * Whenever a new Bitmap is ready, the listener will be called with the
@@ -249,28 +170,56 @@ class GPUImage(val context: Context) {
         filters: List<GPUImageFilter>,
         bitmap: Bitmap
     ): Bitmap {
-        if (filters.isEmpty()) return bitmap
+        var tmpBmp = bitmap
         val renderer = GPUImageRenderer(GPUImageFilter())
+
         try {
-            renderer.setImageBitmap(bitmap, false)
-            var previousFilter: GPUImageFilter? = null
-            lateinit var buffer: PixelBuffer
+            val buffer = PixelBuffer(tmpBmp.width, tmpBmp.height)
             try {
                 filters.forEach { filter ->
                     val outputDims: Pair<Int, Int> =
                         if (filter.outputDimensions != null) filter.outputDimensions!!
-                        else Pair(bitmap.width, bitmap.height)
-                    buffer = PixelBuffer(outputDims.first, outputDims.second)
+                        else Pair(tmpBmp.width, tmpBmp.height)
                     buffer.setRenderer(renderer)
+                    buffer.changeDims(outputDims.first, outputDims.second)
+
+                    renderer.setImageBitmap(tmpBmp, false) // TODO recycle!
                     renderer.setFilter(filter)
-                    previousFilter?.destroy()
-                    previousFilter = filter
+
+                    //buffer.forceRender()
+                    tmpBmp = buffer.getBitmap()
                 }
-                return buffer.getBitmap()
+                return tmpBmp
             } finally {
-                previousFilter?.destroy()
+                filters.forEach { filter -> filter.destroy() }
                 buffer.destroy()
             }
+
+            /*
+            try {
+                var buffer: PixelBuffer? = null
+                try {
+                    filters.forEach { filter ->
+                        val outputDims: Pair<Int, Int> =
+                            if (filter.outputDimensions != null) filter.outputDimensions!!
+                            else Pair(tmpBmp.width, tmpBmp.height)
+                        PixelBuffer(outputDims.first, outputDims.second).let { buffer ->
+                            buffer.setRenderer(renderer)
+
+                            renderer.setImageBitmap(tmpBmp, false) // TODO recycle!
+                            renderer.setFilter(filter)
+
+                            //buffer.forceRender()
+                            tmpBmp = buffer.getBitmap()
+                            //buffer.destroy()
+                        }
+                    }
+                    return tmpBmp
+                } finally {
+                    filters.forEach { filter -> filter.destroy() }
+                }
+                */
+
             /*
             val buffer = PixelBuffer(
                 if (targetX > -1) targetX else it.width,

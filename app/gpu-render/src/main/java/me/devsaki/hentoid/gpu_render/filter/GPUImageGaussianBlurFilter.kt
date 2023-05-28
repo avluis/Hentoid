@@ -4,7 +4,13 @@ package me.devsaki.hentoid.gpu_render.filter
  * A more generalized 9x9 Gaussian blur filter
  * blurSize value ranging from 0.0 on up, with a default of 1.0
  */
-class GPUImageGaussianBlurFilter : GPUImageTwoPassTextureSamplingFilter {
+class GPUImageGaussianBlurFilter(private var blurSize: Float) :
+    GPUImageTwoPassTextureSamplingFilter(
+        VERTEX_SHADER,
+        FRAGMENT_SHADER,
+        VERTEX_SHADER,
+        FRAGMENT_SHADER
+    ) {
     companion object {
         const val VERTEX_SHADER = """attribute vec4 position;
 attribute vec4 inputTextureCoordinate;
@@ -61,17 +67,6 @@ void main()
 
 	gl_FragColor = vec4(sum,fragColor.a);
 }"""
-    }
-
-    private var blurSize = 0f
-
-    constructor(blurSize: Float) : super(
-        VERTEX_SHADER,
-        FRAGMENT_SHADER,
-        VERTEX_SHADER,
-        FRAGMENT_SHADER
-    ) {
-        this.blurSize = blurSize
     }
 
     override fun onInitialized() {

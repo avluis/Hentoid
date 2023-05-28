@@ -10,7 +10,11 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 
-abstract class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilter>) : GPUImageFilter() {
+/**
+ * Resembles a filter that consists of multiple filters applied after each other.
+ */
+abstract class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilter>) :
+    GPUImageFilter() {
 
     private var mergedFilters: MutableList<GPUImageFilter>? = null
     private var frameBuffers: IntArray? = null

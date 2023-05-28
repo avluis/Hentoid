@@ -10,7 +10,7 @@ import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.egl.EGLSurface
 import javax.microedition.khronos.opengles.GL10
 
-internal class PixelBuffer(private val width: Int, private val height: Int) {
+internal class PixelBuffer(private var width: Int, private var height: Int) {
     // borrow this interface
     private var renderer: GLSurfaceView.Renderer? = null
 
@@ -18,9 +18,9 @@ internal class PixelBuffer(private val width: Int, private val height: Int) {
     private val eglDisplay: EGLDisplay
     private val eglConfig: EGLConfig
     private val eglContext: EGLContext
-    private val eglSurface: EGLSurface
     private val gl10: GL10
     private lateinit var eglConfigs: Array<EGLConfig?>
+    private lateinit var eglSurface: EGLSurface
 
     private var mThreadOwner: String? = null
 
@@ -55,15 +55,34 @@ internal class PixelBuffer(private val width: Int, private val height: Int) {
         this.renderer = renderer
 
         // Does this thread own the OpenGL context?
-        if (Thread.currentThread().name != mThreadOwner) {
-            Log.e(TAG, "setRenderer: This thread does not own the OpenGL context.")
-            return
-        }
+        check(Thread.currentThread().name == mThreadOwner)
 
         // Call the renderer initialization routines
         renderer.onSurfaceCreated(gl10, eglConfig)
         renderer.onSurfaceChanged(gl10, width, height)
-        //renderer.onDrawFrame(gl10)
+    }
+
+    fun changeDims(newWidth : Int, newHeight : Int) {
+        if (newWidth == width && newHeight == height) return
+        width = newWidth
+        height = newHeight
+
+        val attribList = intArrayOf(
+            EGL10.EGL_WIDTH, this.width, EGL10.EGL_HEIGHT, height, EGL10.EGL_NONE
+        )
+        eglSurface = egl10.eglCreatePbufferSurface(eglDisplay, eglConfig, attribList)
+        egl10.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)
+
+        renderer?.onSurfaceChanged(gl10, width, height)
+    }
+
+    fun forceRender() {
+        // Do we have a renderer ?
+        check(renderer != null)
+        // Does this thread own the OpenGL context?
+        check(Thread.currentThread().name == mThreadOwner)
+
+        renderer!!.onDrawFrame(gl10)
     }
 
     fun getBitmap(): Bitmap {

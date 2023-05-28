@@ -1,9 +1,9 @@
 package me.devsaki.hentoid.gpu_render
 
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
+import android.util.Log
 import me.devsaki.hentoid.gpu_render.filter.GPUImageFilter
 import me.devsaki.hentoid.gpu_render.util.OpenGlUtils
 import me.devsaki.hentoid.gpu_render.util.Rotation
@@ -17,7 +17,6 @@ import java.util.LinkedList
 import java.util.Queue
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
-import kotlin.math.roundToInt
 
 class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Renderer {
     companion object {
@@ -105,31 +104,15 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         }
     }
 
-    fun onPreviewFrame(data: ByteArray, width: Int, height: Int) {
-        if (glRgbBuffer == null) {
-            glRgbBuffer = IntBuffer.allocate(width * height)
-        }
-        if (runOnDraw.isEmpty()) {
-            runOnDraw {
-                NativeLib.YUVtoRBGA(data, width, height, glRgbBuffer!!.array())
-                glTextureId = OpenGlUtils.loadTexture(glRgbBuffer, width, height, glTextureId)
-                if (imageWidth != width) {
-                    imageWidth = width
-                    imageHeight = height
-                    adjustImageScaling()
-                }
-            }
-        }
-    }
-
     fun setFilter(filter: GPUImageFilter) {
-        runOnDraw {
-            this@GPUImageRenderer.filter = filter
-            this@GPUImageRenderer.filter.destroy()
-            this@GPUImageRenderer.filter.ifNeedInit()
-            GLES20.glUseProgram(this@GPUImageRenderer.filter.getProgram())
-            this@GPUImageRenderer.filter.onOutputSizeChanged(outputWidth, outputHeight)
-        }
+        //runOnDraw {
+            val oldFilter = this.filter
+            this.filter = filter
+            oldFilter.destroy()
+            this.filter.ifNeedInit()
+            GLES20.glUseProgram(this.filter.getProgram())
+            this.filter.onOutputSizeChanged(outputWidth, outputHeight)
+        //}
     }
 
     fun deleteImage() {
@@ -148,7 +131,7 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
     }
 
     fun setImageBitmap(bitmap: Bitmap, recycle: Boolean) {
-        runOnDraw {
+        //runOnDraw {
             var resizedBitmap: Bitmap? = null
             if (bitmap.width % 2 == 1) {
                 resizedBitmap = Bitmap.createBitmap(
@@ -165,14 +148,14 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
             } else {
                 addedPadding = 0
             }
+            imageWidth = bitmap.width
+            imageHeight = bitmap.height
             glTextureId = OpenGlUtils.loadTexture(
                 resizedBitmap ?: bitmap, glTextureId, recycle
             )
             resizedBitmap?.recycle()
-            imageWidth = bitmap.width
-            imageHeight = bitmap.height
             adjustImageScaling()
-        }
+        //}
     }
 
     fun setScaleType(scaleType: GPUImage.ScaleType) {

@@ -88,7 +88,8 @@ void main()
     }
 
     open fun onDraw(
-        textureId: Int, cubeBuffer: FloatBuffer,
+        textureId: Int,
+        cubeBuffer: FloatBuffer,
         textureBuffer: FloatBuffer
     ) {
         GLES20.glUseProgram(glProgId)
