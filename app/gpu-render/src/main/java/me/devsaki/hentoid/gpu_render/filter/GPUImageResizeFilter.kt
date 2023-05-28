@@ -6,7 +6,7 @@ class GPUImageResizeFilter(targetX: Int, targetY: Int) :
     GPUImageFilter(NO_FILTER_VERTEX_SHADER, RESIZE_FRAGMENT_SHADER) {
 
     init {
-        setRatio(floatArrayOf(targetX.toFloat(), targetY.toFloat()))
+        setTargetDimensions(floatArrayOf(targetX.toFloat(), targetY.toFloat()))
     }
 
     companion object {
@@ -96,10 +96,10 @@ class GPUImageResizeFilter(targetX: Int, targetY: Int) :
 
     override fun onInitialized() {
         super.onInitialized()
-        setRatio(targetSizeXY)
+        setTargetDimensions(targetSizeXY)
     }
 
-    fun setRatio(targetSizeXY: FloatArray) {
+    fun setTargetDimensions(targetSizeXY: FloatArray) {
         this.targetSizeXY = targetSizeXY
         this.outputDimensions = Pair(targetSizeXY[0].toInt(), targetSizeXY[1].toInt())
         if (targetSizeLocation > 0) setFloatVec2(targetSizeLocation, targetSizeXY)

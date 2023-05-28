@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.gpu_render.filter
 
-abstract class GPUImageTwoPassFilter(
+open class GPUImageTwoPassFilter(
     firstVertexShader: String, firstFragmentShader: String,
     secondVertexShader: String, secondFragmentShader: String
 ) : GPUImageFilterGroup(ArrayList()) {

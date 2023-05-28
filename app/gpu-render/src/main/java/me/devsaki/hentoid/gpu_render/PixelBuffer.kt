@@ -62,7 +62,7 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         renderer.onSurfaceChanged(gl10, width, height)
     }
 
-    fun changeDims(newWidth : Int, newHeight : Int) {
+    fun changeDims(newWidth: Int, newHeight: Int) {
         if (newWidth == width && newHeight == height) return
         width = newWidth
         height = newHeight
@@ -85,7 +85,7 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         renderer!!.onDrawFrame(gl10)
     }
 
-    fun getBitmap(): Bitmap {
+    fun getBitmap(outDimensions: Pair<Int, Int>? = null): Bitmap {
         // Do we have a renderer ?
         check(renderer != null)
         // Does this thread own the OpenGL context?
@@ -96,7 +96,7 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         // TODO WTF
         //renderer.onDrawFrame(gl10);
         renderer!!.onDrawFrame(gl10)
-        return convertToBitmap()
+        return convertToBitmap(outDimensions)
     }
 
     fun destroy() {
@@ -163,9 +163,13 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         return if (egl10.eglGetConfigAttrib(eglDisplay, config, attribute, value)) value[0] else 0
     }
 
-    private fun convertToBitmap(): Bitmap {
-        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        NativeLib.adjustBitmap(bmp)
+    private fun convertToBitmap(outDimensions: Pair<Int, Int>?): Bitmap {
+        val bmp = Bitmap.createBitmap(
+            outDimensions?.first ?: width,
+            outDimensions?.second ?: height,
+            Bitmap.Config.ARGB_8888
+        )
+        NativeLib.adjustBitmap(bmp, bmp.width, bmp.height)
         return bmp
     }
 

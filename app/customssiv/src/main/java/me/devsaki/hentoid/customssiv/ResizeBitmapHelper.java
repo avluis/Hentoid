@@ -18,6 +18,7 @@ import java.util.List;
 import me.devsaki.hentoid.customssiv.util.Helper;
 import me.devsaki.hentoid.gpu_render.GPUImage;
 import me.devsaki.hentoid.gpu_render.filter.GPUImageFilter;
+import me.devsaki.hentoid.gpu_render.filter.GPUImageFilterGroup;
 import me.devsaki.hentoid.gpu_render.filter.GPUImageGaussianBlurFilter;
 import me.devsaki.hentoid.gpu_render.filter.GPUImageResizeFilter;
 import timber.log.Timber;
@@ -121,6 +122,7 @@ class ResizeBitmapHelper {
         filterList.add(new GPUImageResizeFilter(dstWidth, dstHeight));
 
         Bitmap out = gpuImage.getBitmapForMultipleFilters(filterList, src);
+        src.recycle();
         Timber.d(">> bmp OUT %dx%d => %dx%d %d", src.getWidth(), src.getHeight(), out.getWidth(), out.getHeight(), out.getAllocationByteCount());
         return out;
     }

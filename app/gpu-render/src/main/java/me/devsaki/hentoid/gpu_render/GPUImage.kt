@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.view.WindowManager
 import me.devsaki.hentoid.gpu_render.filter.GPUImageFilter
+import me.devsaki.hentoid.gpu_render.filter.GPUImageFilterGroup
 import me.devsaki.hentoid.gpu_render.util.Rotation
 
 class GPUImage(val context: Context) {
@@ -170,76 +171,37 @@ class GPUImage(val context: Context) {
         filters: List<GPUImageFilter>,
         bitmap: Bitmap
     ): Bitmap {
-        var tmpBmp = bitmap
         val renderer = GPUImageRenderer(GPUImageFilter())
-
+        val buffer = PixelBuffer(bitmap.width, bitmap.height)
         try {
-            val buffer = PixelBuffer(tmpBmp.width, tmpBmp.height)
-            try {
-                filters.forEach { filter ->
-                    val outputDims: Pair<Int, Int> =
-                        if (filter.outputDimensions != null) filter.outputDimensions!!
-                        else Pair(tmpBmp.width, tmpBmp.height)
-                    buffer.setRenderer(renderer)
-                    buffer.changeDims(outputDims.first, outputDims.second)
-
-                    renderer.setImageBitmap(tmpBmp, false) // TODO recycle!
-                    renderer.setFilter(filter)
-
-                    //buffer.forceRender()
-                    tmpBmp = buffer.getBitmap()
-                }
-                return tmpBmp
-            } finally {
-                filters.forEach { filter -> filter.destroy() }
-                buffer.destroy()
-            }
-
-            /*
-            try {
-                var buffer: PixelBuffer? = null
-                try {
-                    filters.forEach { filter ->
-                        val outputDims: Pair<Int, Int> =
-                            if (filter.outputDimensions != null) filter.outputDimensions!!
-                            else Pair(tmpBmp.width, tmpBmp.height)
-                        PixelBuffer(outputDims.first, outputDims.second).let { buffer ->
-                            buffer.setRenderer(renderer)
-
-                            renderer.setImageBitmap(tmpBmp, false) // TODO recycle!
-                            renderer.setFilter(filter)
-
-                            //buffer.forceRender()
-                            tmpBmp = buffer.getBitmap()
-                            //buffer.destroy()
-                        }
-                    }
-                    return tmpBmp
-                } finally {
-                    filters.forEach { filter -> filter.destroy() }
-                }
-                */
-
-            /*
-            val buffer = PixelBuffer(
-                if (targetX > -1) targetX else it.width,
-                if (targetY > -1) targetY else it.height
-            )
             buffer.setRenderer(renderer)
-            return try {
-                if (filters.size > 1) {
-                    for (i in 1 until filters.size) {
-                        currentFilter.destroy()
-                        currentFilter = filters[i]
-                        renderer.setFilter(currentFilter)
-                    }
-                }
-                buffer.getBitmap()
+            renderer.setImageBitmap(bitmap, false)
+            val chainFilter: GPUImageFilter = computeFilters(filters)
+            try {
+                renderer.setFilter(chainFilter)
+                return buffer.getBitmap(chainFilter.outputDimensions)
+            } finally {
+                chainFilter.destroy()
             }
-             */
         } finally {
+            buffer.destroy()
             renderer.deleteImage()
         }
+    }
+
+    private fun computeFilters(filters: List<GPUImageFilter>): GPUImageFilter {
+        if (filters.isEmpty()) return GPUImageFilter()
+        if (1 == filters.size) return filters[0]
+
+        var filterGroup: GPUImageFilterGroup? =
+            filters.find { f -> f is GPUImageFilterGroup } as GPUImageFilterGroup?
+        if (null == filterGroup) {
+            filterGroup = GPUImageFilterGroup(ArrayList())
+        }
+        filters.forEach {
+            if (it !is GPUImageFilterGroup) filterGroup.addFilter(it)
+        }
+        return filterGroup
     }
 
     /**

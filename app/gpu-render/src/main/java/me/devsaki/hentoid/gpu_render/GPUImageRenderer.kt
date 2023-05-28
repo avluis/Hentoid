@@ -67,6 +67,7 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         filter.ifNeedInit()
     }
 
+
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         outputWidth = width
         outputHeight = height

@@ -14,6 +14,6 @@ internal class NativeLib {
 
         external fun YUVtoARBG(yuv: ByteArray, width: Int, height: Int, out: IntArray)
 
-        external fun adjustBitmap(srcBitmap: Bitmap)
+        external fun adjustBitmap(srcBitmap: Bitmap, targetWidth : Int, targetHeight : Int)
     }
 }

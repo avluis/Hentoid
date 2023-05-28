@@ -9,14 +9,15 @@ import me.devsaki.hentoid.gpu_render.util.TextureRotationUtil.Companion.TEXTURE_
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import javax.microedition.khronos.egl.EGL10
 
 /**
  * Resembles a filter that consists of multiple filters applied after each other.
  */
-abstract class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilter>) :
+open class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilter>) :
     GPUImageFilter() {
 
-    private var mergedFilters: MutableList<GPUImageFilter>? = null
+    private var mergedFilters: MutableList<GPUImageFilter> = ArrayList()
     private var frameBuffers: IntArray? = null
     private var frameBufferTextures: IntArray? = null
 
@@ -78,18 +79,64 @@ abstract class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilt
 
     override fun onOutputSizeChanged(width: Int, height: Int) {
         super.onOutputSizeChanged(width, height)
-        if (frameBuffers != null) {
-            destroyFramebuffers()
-        }
+        destroyFramebuffers()
         var size = filters.size
         for (i in 0 until size) {
             filters[i].onOutputSizeChanged(width, height)
         }
-        if (mergedFilters != null && mergedFilters!!.size > 0) {
-            size = mergedFilters!!.size
+        if (mergedFilters.size > 0) {
+            size = mergedFilters.size
             frameBuffers = IntArray(size - 1)
             frameBufferTextures = IntArray(size - 1)
             for (i in 0 until size - 1) {
+                GLES20.glGenFramebuffers(1, frameBuffers, i)
+                GLES20.glGenTextures(1, frameBufferTextures, i)
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTextures!![i])
+                GLES20.glTexImage2D(
+                    GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0,
+                    GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null
+                )
+                GLES20.glTexParameterf(
+                    GLES20.GL_TEXTURE_2D,
+                    GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR.toFloat()
+                )
+                GLES20.glTexParameterf(
+                    GLES20.GL_TEXTURE_2D,
+                    GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR.toFloat()
+                )
+                GLES20.glTexParameterf(
+                    GLES20.GL_TEXTURE_2D,
+                    GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE.toFloat()
+                )
+                GLES20.glTexParameterf(
+                    GLES20.GL_TEXTURE_2D,
+                    GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat()
+                )
+                GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffers!![i])
+                GLES20.glFramebufferTexture2D(
+                    GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0,
+                    GLES20.GL_TEXTURE_2D, frameBufferTextures!![i], 0
+                )
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
+                GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+            }
+        }
+    }
+
+    fun onOutputSizeChangedAfter(width: Int, height: Int, index : Int) {
+        super.onOutputSizeChanged(width, height)
+        var size = filters.size
+        for (i in index until size) {
+            filters[i].onOutputSizeChanged(width, height)
+        }
+        if (mergedFilters.size > index) {
+
+            GLES20.glViewport(0, 0, width, height)
+
+            size = mergedFilters.size
+            frameBuffers = IntArray(size - 1)
+            frameBufferTextures = IntArray(size - 1)
+            for (i in index until size - 1) {
                 GLES20.glGenFramebuffers(1, frameBuffers, i)
                 GLES20.glGenTextures(1, frameBufferTextures, i)
                 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTextures!![i])
@@ -134,36 +181,43 @@ abstract class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilt
         if (!isInitialized() || frameBuffers == null || frameBufferTextures == null) {
             return
         }
-        if (mergedFilters != null) {
-            val size = mergedFilters!!.size
-            var previousTexture = textureId
-            for (i in 0 until size) {
-                val filter = mergedFilters!![i]
-                val isNotLast = i < size - 1
-                if (isNotLast) {
-                    GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffers!![i])
-                    GLES20.glClearColor(0f, 0f, 0f, 0f)
-                }
-                when (i) {
-                    0 -> {
-                        filter.onDraw(previousTexture, cubeBuffer, textureBuffer)
-                    }
+        val size = mergedFilters.size
+        var previousTexture = textureId
+        for (i in 0 until size) {
+            val filter = mergedFilters[i]
+            val isNotLast = i < size - 1
+            if (isNotLast) {
+                GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffers!![i])
+                GLES20.glClearColor(0f, 0f, 0f, 0f)
+            }
 
-                    size - 1 -> {
-                        filter.onDraw(
-                            previousTexture, glCubeBuffer,
-                            (if (size % 2 == 0) glTextureFlipBuffer else glTextureBuffer)
-                        )
-                    }
+            val targetDims = filter.outputDimensions
+            if (targetDims != null &&
+                (targetDims.first != filter.getOutputWidth()
+                        || targetDims.second != filter.getOutputHeight())
+            ) {
+                onOutputSizeChangedAfter(targetDims.first, targetDims.second, i)
+            }
 
-                    else -> {
-                        filter.onDraw(previousTexture, glCubeBuffer, glTextureBuffer)
-                    }
+            when (i) {
+                0 -> {
+                    filter.onDraw(previousTexture, cubeBuffer, textureBuffer)
                 }
-                if (isNotLast) {
-                    GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
-                    previousTexture = frameBufferTextures!![i]
+
+                size - 1 -> {
+                    filter.onDraw(
+                        previousTexture, glCubeBuffer,
+                        (if (size % 2 == 0) glTextureFlipBuffer else glTextureBuffer)
+                    )
                 }
+
+                else -> {
+                    filter.onDraw(previousTexture, glCubeBuffer, glTextureBuffer)
+                }
+            }
+            if (isNotLast) {
+                GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+                previousTexture = frameBufferTextures!![i]
             }
         }
     }
@@ -177,26 +231,31 @@ abstract class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilt
         return filters
     }
 
-    fun getMergedFilters(): List<GPUImageFilter>? {
+    fun getMergedFilters(): List<GPUImageFilter> {
         return mergedFilters
     }
 
     fun updateMergedFilters() {
-        if (mergedFilters == null) {
-            mergedFilters = ArrayList()
-        } else {
-            mergedFilters!!.clear()
-        }
+        mergedFilters.clear()
         var filters: List<GPUImageFilter>?
         for (filter in this.filters) {
             if (filter is GPUImageFilterGroup) {
                 filter.updateMergedFilters()
                 filters = filter.getMergedFilters()
-                if (filters.isNullOrEmpty()) continue
-                mergedFilters!!.addAll(filters)
-                continue
+                if (filters.isEmpty()) continue
+                mergedFilters.addAll(filters)
+            } else {
+                mergedFilters.add(filter)
             }
-            mergedFilters!!.add(filter)
+            val outputDimensions = filter.outputDimensions
+            if (outputDimensions != null) {
+                this.outputDimensions.let {
+                    if (null == it
+                        || outputDimensions.first != it.first
+                        || outputDimensions.second != it.second
+                    ) this.outputDimensions = outputDimensions
+                }
+            }
         }
     }
 }

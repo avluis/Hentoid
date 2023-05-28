@@ -125,33 +125,29 @@ Java_me_devsaki_hentoid_gpu_1render_NativeLib_00024Companion_YUVtoARBG(JNIEnv *e
 
 JNIEXPORT void JNICALL
 Java_me_devsaki_hentoid_gpu_1render_NativeLib_00024Companion_adjustBitmap(JNIEnv *jenv, jclass thiz,
-                                                                       jobject src) {
+                                                                          jobject src,
+                                                                          jint targetWidth,
+                                                                          jint targetHeight) {
     unsigned char *srcByteBuffer;
-    int result = 0;
     int i, j;
-    AndroidBitmapInfo srcInfo;
 
-    result = AndroidBitmap_getInfo(jenv, src, &srcInfo);
+    int result = AndroidBitmap_lockPixels(jenv, src, (void **) &srcByteBuffer);
     if (result != ANDROID_BITMAP_RESULT_SUCCESS) {
         return;
     }
 
-    result = AndroidBitmap_lockPixels(jenv, src, (void **) &srcByteBuffer);
-    if (result != ANDROID_BITMAP_RESULT_SUCCESS) {
-        return;
-    }
-
-    int width = srcInfo.width;
-    int height = srcInfo.height;
-    glReadPixels(0, 0, srcInfo.width, srcInfo.height, GL_RGBA, GL_UNSIGNED_BYTE, srcByteBuffer);
+    glReadPixels(0,0,
+            targetWidth,
+            targetHeight,
+            GL_RGBA, GL_UNSIGNED_BYTE, srcByteBuffer);
 
     int *pIntBuffer = (int *) srcByteBuffer;
 
-    for (i = 0; i < height / 2; i++) {
-        for (j = 0; j < width; j++) {
-            int temp = pIntBuffer[(height - i - 1) * width + j];
-            pIntBuffer[(height - i - 1) * width + j] = pIntBuffer[i * width + j];
-            pIntBuffer[i * width + j] = temp;
+    for (i = 0; i < targetHeight / 2; i++) {
+        for (j = 0; j < targetWidth; j++) {
+            int temp = pIntBuffer[(targetHeight - i - 1) * targetWidth + j];
+            pIntBuffer[(targetHeight - i - 1) * targetWidth + j] = pIntBuffer[i * targetWidth + j];
+            pIntBuffer[i * targetWidth + j] = temp;
         }
     }
     AndroidBitmap_unlockPixels(jenv, src);
