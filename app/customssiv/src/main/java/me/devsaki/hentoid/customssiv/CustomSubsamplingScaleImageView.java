@@ -1987,6 +1987,7 @@ public class CustomSubsamplingScaleImageView extends View {
         Helper.assertNonUiThread();
 
         // Take any prior subsampling into consideration _before_ processing the tile
+        Timber.v("Processing tile");
         float resizeScale = targetScale * loadedTile.sampleSize;
         ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(rs, loadedTile.bitmap, resizeScale);
         loadedTile.bitmap = resizeResult.left;

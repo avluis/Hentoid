@@ -143,6 +143,7 @@ Java_me_devsaki_hentoid_gpu_1render_NativeLib_00024Companion_adjustBitmap(JNIEnv
 
     int *pIntBuffer = (int *) srcByteBuffer;
 
+    /*
     for (i = 0; i < targetHeight / 2; i++) {
         for (j = 0; j < targetWidth; j++) {
             int temp = pIntBuffer[(targetHeight - i - 1) * targetWidth + j];
@@ -150,5 +151,6 @@ Java_me_devsaki_hentoid_gpu_1render_NativeLib_00024Companion_adjustBitmap(JNIEnv
             pIntBuffer[i * targetWidth + j] = temp;
         }
     }
+     */
     AndroidBitmap_unlockPixels(jenv, src);
 }

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.gpu_render
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.util.Log
@@ -133,6 +134,7 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
 
     fun setImageBitmap(bitmap: Bitmap, recycle: Boolean) {
         //runOnDraw {
+        // TODO optimize that
             var resizedBitmap: Bitmap? = null
             if (bitmap.width % 2 == 1) {
                 resizedBitmap = Bitmap.createBitmap(
@@ -140,11 +142,11 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
                     Bitmap.Config.ARGB_8888
                 )
                 resizedBitmap.density = bitmap.density
-                /*
+
                 val can = Canvas(resizedBitmap)
                 can.drawARGB(0x00, 0x00, 0x00, 0x00)
                 can.drawBitmap(bitmap, 0f, 0f, null)
-                 */
+
                 addedPadding = 1
             } else {
                 addedPadding = 0

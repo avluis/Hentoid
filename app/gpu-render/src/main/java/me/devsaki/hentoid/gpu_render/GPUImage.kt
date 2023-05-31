@@ -9,6 +9,7 @@ import android.view.WindowManager
 import me.devsaki.hentoid.gpu_render.filter.GPUImageFilter
 import me.devsaki.hentoid.gpu_render.filter.GPUImageFilterGroup
 import me.devsaki.hentoid.gpu_render.util.Rotation
+import timber.log.Timber
 
 class GPUImage(val context: Context) {
 
@@ -172,6 +173,7 @@ class GPUImage(val context: Context) {
         bitmap: Bitmap
     ): Bitmap {
         val renderer = GPUImageRenderer(GPUImageFilter())
+        renderer.setRotation(null, flipHorizontal = false, flipVertical = true)
         val buffer = PixelBuffer(bitmap.width, bitmap.height)
         try {
             buffer.setRenderer(renderer)
@@ -181,6 +183,7 @@ class GPUImage(val context: Context) {
                 renderer.setFilter(chainFilter)
                 return buffer.getBitmap(chainFilter.outputDimensions)
             } finally {
+                Timber.d("CONVERT END")
                 chainFilter.destroy()
             }
         } finally {

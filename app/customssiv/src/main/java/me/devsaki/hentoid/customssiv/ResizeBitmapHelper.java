@@ -18,7 +18,6 @@ import java.util.List;
 import me.devsaki.hentoid.customssiv.util.Helper;
 import me.devsaki.hentoid.gpu_render.GPUImage;
 import me.devsaki.hentoid.gpu_render.filter.GPUImageFilter;
-import me.devsaki.hentoid.gpu_render.filter.GPUImageFilterGroup;
 import me.devsaki.hentoid.gpu_render.filter.GPUImageGaussianBlurFilter;
 import me.devsaki.hentoid.gpu_render.filter.GPUImageResizeFilter;
 import timber.log.Timber;
@@ -101,12 +100,10 @@ class ResizeBitmapHelper {
         // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
         float radius = 2.5f * sigma/* - 1.5f*/; // Works better that way
         radius = Math.min(25, Math.max(0.0001f, radius));
-        Timber.d(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius);
+        Timber.v(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius);
 
         // Defensive programming in case the threading/view recycling recycles a bitmap just before that methods is reached
         if (null == src || src.isRecycled()) return src;
-
-        Timber.d(">> bmp IN %dx%d", src.getWidth(), src.getHeight());
 
         int srcWidth = src.getWidth();
         int srcHeight = src.getHeight();
@@ -117,13 +114,16 @@ class ResizeBitmapHelper {
         if (1 == dstHeight % 2) dstHeight += 1;
         src.setHasAlpha(false);
 
+        Timber.v(">> bmp IN %dx%d DST %dx%d (scale %.2f)", src.getWidth(), src.getHeight(), dstWidth, dstHeight, xScale);
+
         List<GPUImageFilter> filterList = new ArrayList<>();
-        filterList.add(new GPUImageGaussianBlurFilter(radius));
+        filterList.add(new GPUImageGaussianBlurFilter(radius * 2));
         filterList.add(new GPUImageResizeFilter(dstWidth, dstHeight));
 
         Bitmap out = gpuImage.getBitmapForMultipleFilters(filterList, src);
+        Timber.v(">> bmp OUT %dx%d => %dx%d %d", src.getWidth(), src.getHeight(), out.getWidth(), out.getHeight(), out.getAllocationByteCount());
         src.recycle();
-        Timber.d(">> bmp OUT %dx%d => %dx%d %d", src.getWidth(), src.getHeight(), out.getWidth(), out.getHeight(), out.getAllocationByteCount());
+
         return out;
     }
 

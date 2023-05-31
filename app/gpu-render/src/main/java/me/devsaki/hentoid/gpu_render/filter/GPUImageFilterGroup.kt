@@ -9,7 +9,6 @@ import me.devsaki.hentoid.gpu_render.util.TextureRotationUtil.Companion.TEXTURE_
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
-import javax.microedition.khronos.egl.EGL10
 
 /**
  * Resembles a filter that consists of multiple filters applied after each other.
@@ -123,7 +122,7 @@ open class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilter>)
         }
     }
 
-    fun onOutputSizeChangedAfter(width: Int, height: Int, index : Int) {
+    fun onOutputSizeChangedAfter(width: Int, height: Int, index: Int) {
         super.onOutputSizeChanged(width, height)
         var size = filters.size
         for (i in index until size) {

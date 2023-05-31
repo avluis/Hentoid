@@ -1,8 +1,12 @@
 package me.devsaki.hentoid.gpu_render
 
 import android.graphics.Bitmap
+import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.util.Log
+import timber.log.Timber
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLContext
@@ -96,6 +100,7 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         // TODO WTF
         //renderer.onDrawFrame(gl10);
         renderer!!.onDrawFrame(gl10)
+        Timber.d("CONVERT")
         return convertToBitmap(outDimensions)
     }
 
@@ -164,12 +169,17 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
     }
 
     private fun convertToBitmap(outDimensions: Pair<Int, Int>?): Bitmap {
-        val bmp = Bitmap.createBitmap(
-            outDimensions?.first ?: width,
-            outDimensions?.second ?: height,
-            Bitmap.Config.ARGB_8888
-        )
-        NativeLib.adjustBitmap(bmp, bmp.width, bmp.height)
+        val outX = outDimensions?.first ?: width
+        val outY = outDimensions?.second ?: height
+        val bmp = Bitmap.createBitmap(outX, outY, Bitmap.Config.ARGB_8888)
+
+        val mPixelBuf = ByteBuffer.allocateDirect(outX * outY * 4)
+        mPixelBuf.order(ByteOrder.LITTLE_ENDIAN)
+        GLES20.glReadPixels(0, 0, outX, outY, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mPixelBuf)
+        mPixelBuf.rewind()
+        bmp.copyPixelsFromBuffer(mPixelBuf)
+
+        //NativeLib.adjustBitmap(bmp, outX, outY)
         return bmp
     }
 
