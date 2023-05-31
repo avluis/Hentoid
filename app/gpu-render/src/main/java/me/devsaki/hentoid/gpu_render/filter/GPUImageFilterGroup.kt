@@ -190,6 +190,7 @@ open class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilter>)
                 GLES20.glClearColor(0f, 0f, 0f, 0f)
             }
 
+            /*
             val targetDims = filter.outputDimensions
             if (targetDims != null &&
                 (targetDims.first != filter.getOutputWidth()
@@ -197,6 +198,7 @@ open class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilter>)
             ) {
                 onOutputSizeChangedAfter(targetDims.first, targetDims.second, i)
             }
+             */
 
             when (i) {
                 0 -> {

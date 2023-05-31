@@ -95,12 +95,7 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         // Does this thread own the OpenGL context?
         check(Thread.currentThread().name == mThreadOwner)
 
-        // Call the renderer draw routine (it seems that some filters do not
-        // work if this is only called once)
-        // TODO WTF
-        //renderer.onDrawFrame(gl10);
         renderer!!.onDrawFrame(gl10)
-        Timber.d("CONVERT")
         return convertToBitmap(outDimensions)
     }
 

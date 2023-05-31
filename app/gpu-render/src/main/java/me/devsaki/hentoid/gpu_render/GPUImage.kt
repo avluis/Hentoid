@@ -172,22 +172,30 @@ class GPUImage(val context: Context) {
         filters: List<GPUImageFilter>,
         bitmap: Bitmap
     ): Bitmap {
+        var tmpBmp = bitmap
         val renderer = GPUImageRenderer(GPUImageFilter())
-        renderer.setRotation(null, flipHorizontal = false, flipVertical = true)
-        val buffer = PixelBuffer(bitmap.width, bitmap.height)
+
         try {
-            buffer.setRenderer(renderer)
-            renderer.setImageBitmap(bitmap, false)
-            val chainFilter: GPUImageFilter = computeFilters(filters)
+            val buffer = PixelBuffer(tmpBmp.width, tmpBmp.height)
             try {
-                renderer.setFilter(chainFilter)
-                return buffer.getBitmap(chainFilter.outputDimensions)
+                filters.forEach { filter ->
+                    val outputDims: Pair<Int, Int> =
+                        if (filter.outputDimensions != null) filter.outputDimensions!!
+                        else Pair(tmpBmp.width, tmpBmp.height)
+                    buffer.setRenderer(renderer)
+                    buffer.changeDims(outputDims.first, outputDims.second)
+
+                    renderer.setImageBitmap(tmpBmp, true)
+                    renderer.setFilter(filter)
+
+                    tmpBmp = buffer.getBitmap()
+                }
+                return tmpBmp
             } finally {
-                Timber.d("CONVERT END")
-                chainFilter.destroy()
+                filters.forEach { filter -> filter.destroy() }
+                buffer.destroy()
             }
         } finally {
-            buffer.destroy()
             renderer.deleteImage()
         }
     }
