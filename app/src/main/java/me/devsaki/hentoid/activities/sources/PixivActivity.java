@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Completable;
@@ -130,6 +131,21 @@ public class PixivActivity extends BaseWebActivity {
         @SuppressWarnings("unused")
         public String getPixivCustomCss() {
             return getCustomCss();
+        }
+
+        @JavascriptInterface
+        @SuppressWarnings("unused")
+        public int isMarkable(String bookId) {
+
+            List<String> downloadedBooks = getAllSiteUrls();
+            List<String> mergedBooks = getAllMergedBooksUrls();
+
+            if (downloadedBooks.contains(bookId))
+                return 1;
+            else if (mergedBooks.contains(bookId))
+                return 2;
+            else
+                return 0;
         }
     }
 }
