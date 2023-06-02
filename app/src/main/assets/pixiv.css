@@ -1,0 +1,6 @@
+/* Custom style to hide ad space */
+
+/* element containing ad space */
+.banner-ad-footer-scale, .ad-frame-container, .ad-container {
+    display:none;
+}

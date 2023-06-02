@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities.sources;
 
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -49,6 +50,8 @@ public class PixivActivity extends BaseWebActivity {
         PixivWebClient client = new PixivWebClient(getStartSite(), GALLERY_FILTER, this);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
         client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
+        client.setJsStartupScripts("pixiv.js");
+        webView.addJavascriptInterface(new pixivJsInterface(), "pixivJsInterface");
 
         return client;
     }
@@ -119,6 +122,14 @@ public class PixivActivity extends BaseWebActivity {
                 );
             }
             return null;
+        }
+    }
+
+    public class pixivJsInterface {
+        @JavascriptInterface
+        @SuppressWarnings("unused")
+        public String getPixivCustomCss() {
+            return getCustomCss();
         }
     }
 }

@@ -1573,6 +1573,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 FileHelper.getAssetAsString(getAssets(), "nhentai_invisible_blacklist.css", sb);
             if (getStartSite().equals(Site.IMHENTAI))
                 FileHelper.getAssetAsString(getAssets(), "imhentai.css", sb);
+            if (getStartSite().equals(Site.PIXIV))
+                FileHelper.getAssetAsString(getAssets(), "pixiv.css", sb);
             customCss = sb.toString();
         }
         return customCss;
