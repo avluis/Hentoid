@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (document.URL.includes(".php")) {
         markBooksPhp()
-
     } else {
         markBooks();
     }
@@ -30,18 +29,11 @@ function markBooks() {
                     targetClassAttr = target.getAttribute("class");
                     if ((targetClassAttr == "thumb") || (targetClassAttr == "thumbnail-link")) {
                         var markTarget = target.closest("a[href]");
-                        var targetBookId = markTarget.getAttribute("href").replace("/en", '').replace("/a", "a").concat("/");
-                        var result = pixivJsInterface.isMarkable(targetBookId);
-                        if (result == 1) {
-                            markTarget.classList.add('watermarked');
-                        } else if (result == 2) {
-                            markTarget.classList.add("watermarked-merged");
-                        }
                     } else if ((targetClassAttr == "works-item-illust works-item grid no-padding")) {
                         var markTarget = target.firstChild;
-                        if (pixivJsInterface.isMarkable(markTarget.getAttribute("href"))) {
-                            markTarget.classList.add('watermarked');
-                        }
+                    }
+                    if (typeof (markTarget) != 'undefined') {
+                        markBook(markTarget);
                     }
                 }
             }
@@ -57,15 +49,27 @@ function markBooks() {
 }
 
 function markBooksPhp() {
-    var markTargets = document.querySelectorAll(".imgbox");
+    var targets = document.querySelectorAll(".imgbox");
 
-    for (let markTarget of markTargets) {
-        var targetBookId = markTarget.firstChild.getAttribute("href").replace("/en", '').replace("/a", "a").concat("/");
-        var result = pixivJsInterface.isMarkable(targetBookId);
-        if (result == 1) {
-            markTarget.classList.add('watermarked');
-        } else if (result == 2) {
-            markTarget.classList.add("watermarked-merged");
+    for (let target of targets) {
+        var markTarget = target.firstChild;
+        markBook(markTarget);
+    }
+}
+
+function markBook(markTarget) {
+    var targetBookId = markTarget.getAttribute("href").replace("/en", '').replace("/a", "a").concat("/");
+    var result = pixivJsInterface.isMarkable(targetBookId);
+    if (result == 1) {
+        markTarget.classList.add('watermarked');
+    } else if (result == 2) {
+        markTarget.classList.add("watermarked-merged");
+    } else {
+        var classList = markTarget.classList;
+        if (classList.contains("watermarked")) {
+            markTarget.classList.remove("watermarked");
+        } else if (classList.contains("watermarked-merged")) {
+            markTarget.classList.remove("watermarked-merged");
         }
     }
 }
