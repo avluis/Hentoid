@@ -15,7 +15,11 @@ import com.annimon.stream.function.Consumer
  * @param <T> type of value that will be debounced
  * @see android.os.Looper
 </T> */
-class Debouncer<T>(context: Context, private val delayMs: Long, private val callback: Consumer<T>) {
+internal class Debouncer<T>(
+    context: Context,
+    private val delayMs: Long,
+    private val callback: Consumer<T>
+) {
 
     private val handler = Handler(context.mainLooper)
 

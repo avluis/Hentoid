@@ -64,6 +64,7 @@ import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder;
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder;
 import me.devsaki.hentoid.customssiv.util.Debouncer;
 import me.devsaki.hentoid.customssiv.util.Helper;
+import me.devsaki.hentoid.customssiv.util.ResizeBitmapHelper;
 import timber.log.Timber;
 
 
@@ -1989,7 +1990,7 @@ public class CustomSubsamplingScaleImageView extends View {
         // Take any prior subsampling into consideration _before_ processing the tile
         Timber.v("Processing tile");
         float resizeScale = targetScale * loadedTile.sampleSize;
-        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(rs, loadedTile.bitmap, resizeScale);
+        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(getContext(), loadedTile.bitmap, resizeScale);
         loadedTile.bitmap = resizeResult.left;
 
         loadedTile.loading = false;
@@ -2034,7 +2035,7 @@ public class CustomSubsamplingScaleImageView extends View {
         singleImage.rawHeight = bitmap.getHeight();
 
         // TODO sharp mode - don't ask to resize when the image in memory already has the correct target scale
-        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(rs, bitmap, targetScale);
+        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(getContext(), bitmap, targetScale);
         bitmap = resizeResult.left;
 
         singleImage.loading = false;

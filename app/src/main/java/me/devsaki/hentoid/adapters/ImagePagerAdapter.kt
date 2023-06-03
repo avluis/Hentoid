@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.renderscript.RenderScript
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnTouchListener
@@ -64,9 +63,6 @@ class ImagePagerAdapter(context: Context) :
     // Direction user is curently reading the book with
     private var isScrollLTR = true
 
-    // Single instance of RenderScript
-    private var rs: RenderScript? = null
-
     // Cached prefs
     private var separatingBarsHeight = 0
 
@@ -76,7 +72,6 @@ class ImagePagerAdapter(context: Context) :
 
 
     init {
-        rs = RenderScript.create(context)
         refreshPrefs()
     }
 
@@ -195,10 +190,6 @@ class ImagePagerAdapter(context: Context) :
 
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT.value && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
-                // Needs ARGB_8888 to be able to resize images using RenderScript
-                if (displayParams.isSmoothRendering) ssiv.preferredBitmapConfig =
-                    Bitmap.Config.ARGB_8888
-
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
 
@@ -257,7 +248,7 @@ class ImagePagerAdapter(context: Context) :
     }
 
     fun destroy() {
-        rs?.destroy()
+        // Nothing right now
     }
 
     fun reset() {
@@ -387,7 +378,6 @@ class ImagePagerAdapter(context: Context) :
                 ssiv.setMinimumDpi(120)
                 ssiv.setDoubleTapZoomDpi(120)
                 if (maxBitmapWidth > 0) ssiv.setMaxTileSize(maxBitmapWidth, maxBitmapHeight)
-                if (isSmoothRendering) ssiv.setRenderScript(rs) else ssiv.setRenderScript(null)
                 ssiv.setImage(ImageSource.uri(uri))
             } else { // ImageView
                 val view = imgView as ImageView

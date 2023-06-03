@@ -62,6 +62,12 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         setRotation(Rotation.NORMAL, flipHorizontal = false, flipVertical = false)
     }
 
+    fun clear() {
+        glCubeBuffer.clear()
+        glTextureBuffer.clear()
+        glRgbBuffer?.clear()
+    }
+
     override fun onSurfaceCreated(unused: GL10?, config: EGLConfig?) {
         GLES20.glClearColor(backgroundRed, backgroundGreen, backgroundBlue, 1f)
         GLES20.glDisable(GLES20.GL_DEPTH_TEST)

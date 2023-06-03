@@ -3,7 +3,6 @@ package me.devsaki.hentoid.gpu_render
 import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
-import android.util.Log
 import timber.log.Timber
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -31,7 +30,7 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
     init {
         val version = IntArray(2)
         val attribList = intArrayOf(
-            EGL10.EGL_WIDTH, this.width, EGL10.EGL_HEIGHT, height, EGL10.EGL_NONE
+            EGL10.EGL_WIDTH, this.width, EGL10.EGL_HEIGHT, this.height, EGL10.EGL_NONE
         )
 
         // No error checking performed, minimum required code to elucidate logic
@@ -80,15 +79,6 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         renderer?.onSurfaceChanged(gl10, width, height)
     }
 
-    fun forceRender() {
-        // Do we have a renderer ?
-        check(renderer != null)
-        // Does this thread own the OpenGL context?
-        check(Thread.currentThread().name == mThreadOwner)
-
-        renderer!!.onDrawFrame(gl10)
-    }
-
     fun getBitmap(outDimensions: Pair<Int, Int>? = null): Bitmap {
         // Do we have a renderer ?
         check(renderer != null)
@@ -97,6 +87,21 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
 
         renderer!!.onDrawFrame(gl10)
         return convertToBitmap(outDimensions)
+    }
+
+    private fun convertToBitmap(outDimensions: Pair<Int, Int>?): Bitmap {
+        val outX = outDimensions?.first ?: width
+        val outY = outDimensions?.second ?: height
+        val bmp = Bitmap.createBitmap(outX, outY, Bitmap.Config.ARGB_8888)
+
+        val mPixelBuf = ByteBuffer.allocateDirect(outX * outY * 4)
+        mPixelBuf.order(ByteOrder.LITTLE_ENDIAN)
+        GLES20.glReadPixels(0, 0, outX, outY, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mPixelBuf)
+        mPixelBuf.rewind()
+        bmp.copyPixelsFromBuffer(mPixelBuf)
+
+        //NativeLib.adjustBitmap(bmp, outX, outY)
+        return bmp
     }
 
     fun destroy() {
@@ -141,7 +146,7 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
     }
 
     private fun listConfig() {
-        Log.i(TAG, "Config List {")
+        Timber.tag(TAG).i("Config List {")
         for (config in eglConfigs) {
             // Expand on this logic to dump other attributes
             val d: Int = getConfigAttrib(config, EGL10.EGL_DEPTH_SIZE)
@@ -150,32 +155,15 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
             val g: Int = getConfigAttrib(config, EGL10.EGL_GREEN_SIZE)
             val b: Int = getConfigAttrib(config, EGL10.EGL_BLUE_SIZE)
             val a: Int = getConfigAttrib(config, EGL10.EGL_ALPHA_SIZE)
-            Log.i(
-                TAG,
-                "    <d,s,r,g,b,a> = <$d,$s,$r,$g,$b,$a>"
-            )
+            Timber.tag(TAG)
+                .i("    <d,s,r,g,b,a> = <%d,%d,%d,%d,%d,%d>", d, s, r, g, b, a)
         }
-        Log.i(TAG, "}")
+        Timber.tag(TAG).i("}")
     }
 
     private fun getConfigAttrib(config: EGLConfig?, attribute: Int): Int {
         val value = IntArray(1)
         return if (egl10.eglGetConfigAttrib(eglDisplay, config, attribute, value)) value[0] else 0
-    }
-
-    private fun convertToBitmap(outDimensions: Pair<Int, Int>?): Bitmap {
-        val outX = outDimensions?.first ?: width
-        val outY = outDimensions?.second ?: height
-        val bmp = Bitmap.createBitmap(outX, outY, Bitmap.Config.ARGB_8888)
-
-        val mPixelBuf = ByteBuffer.allocateDirect(outX * outY * 4)
-        mPixelBuf.order(ByteOrder.LITTLE_ENDIAN)
-        GLES20.glReadPixels(0, 0, outX, outY, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mPixelBuf)
-        mPixelBuf.rewind()
-        bmp.copyPixelsFromBuffer(mPixelBuf)
-
-        //NativeLib.adjustBitmap(bmp, outX, outY)
-        return bmp
     }
 
     companion object {

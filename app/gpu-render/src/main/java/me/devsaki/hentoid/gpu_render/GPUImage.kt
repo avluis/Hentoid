@@ -37,6 +37,10 @@ class GPUImage(val context: Context) {
         renderer = GPUImageRenderer(filter)
     }
 
+    fun clear() {
+        renderer.clear()
+    }
+
     /**
      * Checks if OpenGL ES 2.0 is supported on the current device.
      *
@@ -174,7 +178,7 @@ class GPUImage(val context: Context) {
     ): Bitmap {
         var tmpBmp = bitmap
         val renderer = GPUImageRenderer(GPUImageFilter())
-
+        renderer.setRotation(null, flipHorizontal = false, flipVertical = true)
         try {
             val buffer = PixelBuffer(tmpBmp.width, tmpBmp.height)
             try {
