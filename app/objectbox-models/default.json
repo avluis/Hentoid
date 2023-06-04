@@ -220,7 +220,7 @@
     },
     {
       "id": "3:2849837771881495731",
-      "lastPropertyId": "17:4756936261641767706",
+      "lastPropertyId": "18:4597857558980349947",
       "name": "ImageFile",
       "properties": [
         {
@@ -309,6 +309,11 @@
           "id": "17:4756936261641767706",
           "name": "pageUrl",
           "type": 9
+        },
+        {
+          "id": "18:4597857558980349947",
+          "name": "isTransformed",
+          "type": 1
         }
       ],
       "relations": []

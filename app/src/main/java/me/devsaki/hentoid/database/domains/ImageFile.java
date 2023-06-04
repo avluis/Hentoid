@@ -42,6 +42,7 @@ public class ImageFile {
     private String mimeType;
     private long size = 0;
     private long imageHash = 0;
+    private boolean isTransformed = false;
 
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
     private String downloadParams = "";
@@ -90,6 +91,7 @@ public class ImageFile {
         this.size = img.size;
         this.imageHash = img.imageHash;
         this.downloadParams = img.downloadParams;
+        this.isTransformed = img.isTransformed;
 
         this.uniqueHash = img.uniqueHash;
         this.displayOrder = img.displayOrder;
@@ -295,6 +297,14 @@ public class ImageFile {
 
     public void setImageHash(long hash) {
         this.imageHash = hash;
+    }
+
+    public boolean isTransformed() {
+        return isTransformed;
+    }
+
+    public void setTransformed(boolean transformed) {
+        isTransformed = transformed;
     }
 
     public boolean isRead() {

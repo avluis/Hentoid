@@ -61,6 +61,14 @@ class LibraryTransformDialogFragment : DialogFragment() {
 
     // === VARIABLES
     private lateinit var contentIds: LongArray
+    private val content: Content? by lazy {
+        val dao = ObjectBoxDAO(requireContext())
+        try {
+            dao.selectContent(contentIds[contentIndex])
+        } finally {
+            dao.cleanup()
+        }
+    }
     private var contentIndex = 0
     private var pageIndex = 0
     private var maxPages = -1
@@ -82,9 +90,9 @@ class LibraryTransformDialogFragment : DialogFragment() {
         super.onCreate(savedInstanceState)
 
         requireNotNull(arguments) { "No arguments found" }
-        val contents = arguments?.getLongArray(KEY_CONTENTS)
-        require(!(null == contents || contents.isEmpty())) { "No content IDs" }
-        contentIds = contents!!
+        val contentIdArg = arguments?.getLongArray(KEY_CONTENTS)
+        require(!(null == contentIdArg || contentIdArg.isEmpty())) { "No content IDs" }
+        contentIds = contentIdArg!!
     }
 
     override fun onCreateView(
@@ -223,6 +231,19 @@ class LibraryTransformDialogFragment : DialogFragment() {
                             || (1 == transcodeMethod.index && (Settings.transcodeEncoderLossy == PictureEncoder.WEBP_LOSSY.value || Settings.transcodeEncoderLossless == PictureEncoder.WEBP_LOSSLESS.value))
                     )
             encoderWarningIcon.isVisible = encoderWarning.isVisible
+
+            // Check if content contains transformed pages already
+            content?.apply {
+                val transformedCount = imageList.count { i -> i.isTransformed }
+                if (transformedCount > 0) {
+                    binding.retransformWarning.text = resources.getString(
+                        R.string.retransform_warning,
+                        transformedCount
+                    )
+                    binding.retransformWarning.isVisible = true
+                    binding.retransformWarningIcon.isVisible = true
+                }
+            }
         }
     }
 
@@ -276,19 +297,14 @@ class LibraryTransformDialogFragment : DialogFragment() {
     }
 
     private fun getCurrentBitmap(): Pair<String, ByteArray>? {
-        val dao = ObjectBoxDAO(requireContext())
-        try {
-            val content = dao.selectContent(contentIds[contentIndex])
-            if (content != null) {
-                val pages = content.imageList.filter { i -> i.isReadable }
-                maxPages = pages.size
-                val page = pages[pageIndex]
-                FileHelper.getInputStream(requireContext(), Uri.parse(page.fileUri)).use {
-                    return Pair(page.name, it.readBytes())
-                }
+        content?.apply {
+            // Get bitmap for display
+            val pages = imageList.filter { i -> i.isReadable }
+            maxPages = pages.size
+            val page = pages[pageIndex]
+            FileHelper.getInputStream(requireContext(), Uri.parse(page.fileUri)).use {
+                return Pair(page.name, it.readBytes())
             }
-        } finally {
-            dao.cleanup()
         }
         return null
     }

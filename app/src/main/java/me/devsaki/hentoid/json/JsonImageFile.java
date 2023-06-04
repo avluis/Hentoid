@@ -24,6 +24,8 @@ class JsonImageFile {
     private String mimeType;
     private long pHash;
 
+    private boolean isTransformed;
+
     private int chapterOrder = -1;
 
     private JsonImageFile() {
@@ -41,6 +43,7 @@ class JsonImageFile {
         result.isRead = f.isRead();
         result.mimeType = f.getMimeType();
         result.pHash = f.getImageHash();
+        result.isTransformed = f.isTransformed();
         if (f.getLinkedChapter() != null)
             result.chapterOrder = f.getLinkedChapter().getOrder();
         return result;
@@ -55,6 +58,7 @@ class JsonImageFile {
         result.setRead(isRead);
         result.setMimeType(mimeType);
         result.setImageHash(pHash);
+        result.setTransformed(isTransformed);
 
         if (!chapters.isEmpty() && chapterOrder > -1) {
             Optional<Chapter> chapter = Stream.of(chapters).filter(c -> c.getOrder().equals(chapterOrder)).findFirst();

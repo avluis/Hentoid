@@ -289,7 +289,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     }
 
     private void progressDone() {
-        notificationManager.notify(new DeleteCompleteNotification(deleteMax, nbError > 0));
+        notificationManager.notifyLast(new DeleteCompleteNotification(deleteMax, nbError > 0));
         EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, deleteProgress, nbError, deleteMax));
     }
 }

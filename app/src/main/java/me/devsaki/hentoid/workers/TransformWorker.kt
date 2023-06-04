@@ -175,6 +175,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             // Update image properties
             img.fileUri = targetUri.toString()
             img.size = targetData.size.toLong()
+            img.isTransformed = true
             img.mimeType = targetMime
             nextOK()
         } else nextKO()
@@ -195,6 +196,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun notifyProcessEnd() {
-        notificationManager.notify(TransformCompleteNotification(nbOK, nbKO > 0))
+        notificationManager.notifyLast(TransformCompleteNotification(nbOK, nbKO > 0))
     }
 }
