@@ -2,7 +2,6 @@ package me.devsaki.hentoid.fragments.preferences
 
 import android.content.SharedPreferences
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
@@ -16,6 +15,9 @@ import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +33,6 @@ import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.retrofit.sources.PixivServer
-import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
@@ -41,6 +42,7 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.workers.UpdateCheckWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import kotlin.properties.Delegates
 
@@ -128,12 +130,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
 
-            Preferences.Key.VIEWER_RENDERING -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                    ToastHelper.toast(R.string.pref_viewer_rendering_no_android5)
-                true
-            }
-
             Preferences.Key.APP_LOCK -> {
                 requireContext().startLocalActivity<PinPreferenceActivity>()
                 true
@@ -170,8 +166,13 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     private fun onCheckUpdatePrefClick() {
         if (!UpdateDownloadWorker.isRunning(requireContext())) {
-            val intent = UpdateCheckService.makeIntent(requireContext(), true)
-            requireContext().startService(intent)
+            val workManager = WorkManager.getInstance(requireContext())
+            workManager.enqueueUniqueWork(
+                R.id.update_check_service.toString(),
+                ExistingWorkPolicy.KEEP,
+                OneTimeWorkRequestBuilder<UpdateCheckWorker>().build()
+            )
+            // TODO toasts
         }
     }
 

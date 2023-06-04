@@ -603,10 +603,6 @@
                 android:value=".activities.LibraryActivity" />
         </activity>
 
-        <!-- Services -->
-
-        <service android:name=".services.UpdateCheckService" />
-
         <!-- Receivers -->
 
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />

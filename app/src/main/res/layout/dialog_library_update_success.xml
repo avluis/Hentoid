@@ -26,20 +26,20 @@
         tools:ignore="ContentDescription" />
 
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
-        android:id="@+id/changelogReleaseItem"
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fadeScrollbars="false"
+        android:isScrollContainer="true"
+        android:nestedScrollingEnabled="false"
         android:paddingBottom="16dp"
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
-        android:nestedScrollingEnabled="false"
-        android:isScrollContainer="true"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/updateSuccessText"
-        tools:listitem="@layout/item_changelog"
-        app:maxHeight="@dimen/dialog_max_height"/>
+        app:maxHeight="@dimen/dialog_max_height"
+        tools:listitem="@layout/item_changelog" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

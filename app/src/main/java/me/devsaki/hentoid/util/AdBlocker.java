@@ -212,7 +212,7 @@ public class AdBlocker {
                 Timber.d(e, ">> I/O issue while retrieving %s", url);
             } catch (IllegalArgumentException iae) {
                 Timber.e(iae);
-                return true; // Avoid feeding malformed URLs to Chromium on older Androids (crash reported on Lollipop)
+                return true; // Avoid feeding malformed URLs to Chromium on older Androids
             }
             // Don't whitelist the site root as it will auto-whitelist every file hosted there
             if (!cleanUrl.equals(site.getUrl().toLowerCase())) addToJsUrlWhitelist(cleanUrl);

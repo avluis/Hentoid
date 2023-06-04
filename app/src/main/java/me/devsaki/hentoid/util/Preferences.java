@@ -2,7 +2,6 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -472,7 +471,7 @@ public final class Preferences {
     }
 
     private static boolean isSmoothRendering(int mode) {
-        return (mode == Constant.VIEWER_RENDERING_SMOOTH && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
+        return (mode == Constant.VIEWER_RENDERING_SMOOTH);
     }
 
     private static int getReaderRenderingMode() {

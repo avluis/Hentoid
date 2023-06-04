@@ -23,7 +23,7 @@ class IntentActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppStartup().initApp(this,
+        AppStartup.initApp(this,
             { f -> onMainProgress(f) },
             { f -> onSecondaryProgress(f) }
         ) { onInitComplete() }

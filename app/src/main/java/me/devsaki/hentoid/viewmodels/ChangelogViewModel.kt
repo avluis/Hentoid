@@ -2,7 +2,10 @@ package me.devsaki.hentoid.viewmodels
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.json.GithubRelease
 import me.devsaki.hentoid.retrofit.GithubServer
 
@@ -12,9 +15,15 @@ class ChangelogViewModel : ViewModel() {
 
     val errorValueLive = MutableLiveData<Throwable>()
 
-    private val disposable = GithubServer.api.releases
-        .observeOn(mainThread())
-        .subscribe(successValueLive::setValue, errorValueLive::setValue)
-
-    override fun onCleared() = disposable.dispose()
+    init {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    successValueLive.postValue(GithubServer.api.releases.execute().body())
+                } catch (e: Exception) {
+                    errorValueLive.postValue(e)
+                }
+            }
+        }
+    }
 }

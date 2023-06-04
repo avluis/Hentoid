@@ -342,7 +342,7 @@ public class LibraryActivity extends BaseActivity {
     public void onAppUpdated(AppUpdatedEvent event) {
         EventBus.getDefault().removeStickyEvent(event);
         // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getSupportFragmentManager());
+        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.Companion.invoke(this);
     }
 
     @Override

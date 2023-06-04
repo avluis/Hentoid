@@ -6,8 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.Build
-import android.renderscript.RenderScript
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnTouchListener
@@ -36,6 +34,7 @@ import me.devsaki.hentoid.customssiv.ImageSource
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
+import me.devsaki.hentoid.gpu_render.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageTransform
@@ -57,6 +56,7 @@ class ImagePagerAdapter(context: Context) :
     private var recyclerView: RecyclerView? = null
     private val initialAbsoluteScales: MutableMap<Int, Float> = HashMap()
     private val absoluteScales: MutableMap<Int, Float> = HashMap()
+    private val glEsRenderer = GPUImage(context)
 
     // To preload images before they appear on screen with CustomSubsamplingScaleImageView
     private var maxBitmapWidth = -1
@@ -64,9 +64,6 @@ class ImagePagerAdapter(context: Context) :
 
     // Direction user is curently reading the book with
     private var isScrollLTR = true
-
-    // Single instance of RenderScript
-    private var rs: RenderScript? = null
 
     // Cached prefs
     private var separatingBarsHeight = 0
@@ -77,7 +74,6 @@ class ImagePagerAdapter(context: Context) :
 
 
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) rs = RenderScript.create(context)
         refreshPrefs()
     }
 
@@ -196,14 +192,12 @@ class ImagePagerAdapter(context: Context) :
 
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT.value && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
-                // Needs ARGB_8888 to be able to resize images using RenderScript
-                if (displayParams.isSmoothRendering) ssiv.preferredBitmapConfig =
-                    Bitmap.Config.ARGB_8888
-
+                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer) else ssiv.setGlEsRenderer(null)
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
 
-                val scrollLTR = Preferences.Constant.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
+                val scrollLTR =
+                    Preferences.Constant.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
                 ssiv.setOffsetLeftSide(scrollLTR)
 
                 ssiv.setScaleListener { s: Double ->
@@ -218,7 +212,7 @@ class ImagePagerAdapter(context: Context) :
             imgView.layoutParams = layoutParams
             if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
                 imgView.setOnTouchListener(itemTouchListener)
-            
+
             var imageAvailable = true
             val img = getImageAt(position)
             if (img != null && img.fileUri.isNotEmpty()) setImage(img)
@@ -257,7 +251,7 @@ class ImagePagerAdapter(context: Context) :
     }
 
     fun destroy() {
-        rs?.destroy()
+        glEsRenderer.clear()
     }
 
     fun reset() {
@@ -387,7 +381,6 @@ class ImagePagerAdapter(context: Context) :
                 ssiv.setMinimumDpi(120)
                 ssiv.setDoubleTapZoomDpi(120)
                 if (maxBitmapWidth > 0) ssiv.setMaxTileSize(maxBitmapWidth, maxBitmapHeight)
-                if (isSmoothRendering) ssiv.setRenderScript(rs) else ssiv.setRenderScript(null)
                 ssiv.setImage(ImageSource.uri(uri))
             } else { // ImageView
                 val view = imgView as ImageView

@@ -32,7 +32,7 @@ android {
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 33
         versionCode 130 // is updated automatically by BitRise; only used when building locally
         versionName '1.18.0-dev'
@@ -48,9 +48,6 @@ android {
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         // Only include complete translations
         resConfigs 'en', 'ru', 'it', 'uk', 'hu', 'ko', 'ja', 'es'
-
-        renderscriptTargetApi 21
-        renderscriptSupportModeEnabled false
     }
     buildFeatures {
         viewBinding true
@@ -314,6 +311,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
 
 
+    implementation project(path: ':app:gpu-render')
     implementation project(path: ':app:customssiv')
 }
 
