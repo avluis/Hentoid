@@ -34,6 +34,7 @@ import me.devsaki.hentoid.customssiv.ImageSource
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
+import me.devsaki.hentoid.gpu_render.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageTransform
@@ -55,6 +56,7 @@ class ImagePagerAdapter(context: Context) :
     private var recyclerView: RecyclerView? = null
     private val initialAbsoluteScales: MutableMap<Int, Float> = HashMap()
     private val absoluteScales: MutableMap<Int, Float> = HashMap()
+    private val glEsRenderer = GPUImage(context)
 
     // To preload images before they appear on screen with CustomSubsamplingScaleImageView
     private var maxBitmapWidth = -1
@@ -190,6 +192,7 @@ class ImagePagerAdapter(context: Context) :
 
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT.value && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
+                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer) else ssiv.setGlEsRenderer(null)
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
 
@@ -248,7 +251,7 @@ class ImagePagerAdapter(context: Context) :
     }
 
     fun destroy() {
-        // Nothing right now
+        glEsRenderer.clear()
     }
 
     fun reset() {

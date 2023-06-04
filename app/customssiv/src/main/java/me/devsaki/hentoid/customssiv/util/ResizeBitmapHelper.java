@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.customssiv.util;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
@@ -23,19 +22,17 @@ public class ResizeBitmapHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    private static GPUImage gpuImage = null;
 
-
-    public static ImmutablePair<Bitmap, Float> resizeBitmap(final Context context, @NonNull final Bitmap src, float targetScale) {
+    public static ImmutablePair<Bitmap, Float> resizeBitmap(final GPUImage glEsRenderer, @NonNull final Bitmap src, float targetScale) {
         Helper.assertNonUiThread();
-        if (null == context) {
+        if (null == glEsRenderer) {
             ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
             Timber.d(">> resizing successively to scale %s", resizeParams.right);
             return new ImmutablePair<>(successiveResize(src, resizeParams.left), resizeParams.right);
         } else {
             if (targetScale < 0.75 || (targetScale > 1.0 && targetScale < 1.55)) {
                 // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
-                return new ImmutablePair<>(resizeGLES(context, src, targetScale, targetScale), targetScale);
+                return new ImmutablePair<>(resizeGLES(glEsRenderer, src, targetScale, targetScale), targetScale);
             } else {
                 Timber.d(">> No resize needed; keeping raw image");
                 return new ImmutablePair<>(src, 1f);
@@ -83,9 +80,7 @@ public class ResizeBitmapHelper {
         return output;
     }
 
-    static Bitmap resizeGLES(final Context context, final Bitmap src, float xScale, float yScale) {
-        if (null == gpuImage) gpuImage = new GPUImage(context); // TODO change that
-
+    static Bitmap resizeGLES(final GPUImage glEsRenderer, final Bitmap src, float xScale, float yScale) {
         // Calculate gaussian's radius
         float sigma = (1 / xScale) / (float) Math.PI;
         // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
@@ -111,7 +106,7 @@ public class ResizeBitmapHelper {
         filterList.add(new GPUImageGaussianBlurFilter(radius * 2));
         filterList.add(new GPUImageResizeFilter(dstWidth, dstHeight));
 
-        Bitmap out = gpuImage.getBitmapForMultipleFilters(filterList, src);
+        Bitmap out = glEsRenderer.getBitmapForMultipleFilters(filterList, src);
         Timber.v(">> bmp OUT %dx%d => %dx%d", srcWidth, srcHeight, out.getWidth(), out.getHeight());
         src.recycle();
 

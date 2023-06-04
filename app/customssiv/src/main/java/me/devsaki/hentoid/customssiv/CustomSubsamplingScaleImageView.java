@@ -65,6 +65,7 @@ import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder;
 import me.devsaki.hentoid.customssiv.util.Debouncer;
 import me.devsaki.hentoid.customssiv.util.Helper;
 import me.devsaki.hentoid.customssiv.util.ResizeBitmapHelper;
+import me.devsaki.hentoid.gpu_render.GPUImage;
 import timber.log.Timber;
 
 
@@ -396,8 +397,8 @@ public class CustomSubsamplingScaleImageView extends View {
     private final int screenHeight;
 
     private final CompositeDisposable loadDisposable = new CompositeDisposable();
-    // RenderScript instance to use to smoothen images; sharp mode will be used if not set
-    private RenderScript rs;
+    // GPUImage instance to use to smoothen images; sharp mode will be used if not set
+    private GPUImage glEsRenderer;
 
 
     public CustomSubsamplingScaleImageView(@NonNull Context context, @Nullable AttributeSet attr) {
@@ -1990,7 +1991,7 @@ public class CustomSubsamplingScaleImageView extends View {
         // Take any prior subsampling into consideration _before_ processing the tile
         Timber.v("Processing tile");
         float resizeScale = targetScale * loadedTile.sampleSize;
-        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(getContext(), loadedTile.bitmap, resizeScale);
+        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(glEsRenderer, loadedTile.bitmap, resizeScale);
         loadedTile.bitmap = resizeResult.left;
 
         loadedTile.loading = false;
@@ -2035,7 +2036,7 @@ public class CustomSubsamplingScaleImageView extends View {
         singleImage.rawHeight = bitmap.getHeight();
 
         // TODO sharp mode - don't ask to resize when the image in memory already has the correct target scale
-        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(getContext(), bitmap, targetScale);
+        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(glEsRenderer, bitmap, targetScale);
         bitmap = resizeResult.left;
 
         singleImage.loading = false;
@@ -3124,8 +3125,8 @@ public class CustomSubsamplingScaleImageView extends View {
         this.autoRotate = autoRotate;
     }
 
-    public final void setRenderScript(RenderScript rs) {
-        this.rs = rs;
+    public final void setGlEsRenderer(GPUImage glEsRenderer) {
+        this.glEsRenderer = glEsRenderer;
     }
 
     /**
