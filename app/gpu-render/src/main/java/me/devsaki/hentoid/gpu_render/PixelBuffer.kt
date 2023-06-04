@@ -23,7 +23,7 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
     private val eglContext: EGLContext
     private val gl10: GL10
     private lateinit var eglConfigs: Array<EGLConfig?>
-    private lateinit var eglSurface: EGLSurface
+    private var eglSurface: EGLSurface
 
     private var mThreadOwner: String? = null
 
@@ -92,15 +92,14 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
     private fun convertToBitmap(outDimensions: Pair<Int, Int>?): Bitmap {
         val outX = outDimensions?.first ?: width
         val outY = outDimensions?.second ?: height
-        val bmp = Bitmap.createBitmap(outX, outY, Bitmap.Config.ARGB_8888)
 
-        val mPixelBuf = ByteBuffer.allocateDirect(outX * outY * 4)
-        mPixelBuf.order(ByteOrder.LITTLE_ENDIAN)
+        val mPixelBuf = ByteBuffer.allocate(outX * outY * 4)
+        mPixelBuf.order(ByteOrder.nativeOrder())
         GLES20.glReadPixels(0, 0, outX, outY, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mPixelBuf)
         mPixelBuf.rewind()
-        bmp.copyPixelsFromBuffer(mPixelBuf)
 
-        //NativeLib.adjustBitmap(bmp, outX, outY)
+        val bmp = Bitmap.createBitmap(outX, outY, Bitmap.Config.ARGB_8888)
+        bmp.copyPixelsFromBuffer(mPixelBuf)
         return bmp
     }
 

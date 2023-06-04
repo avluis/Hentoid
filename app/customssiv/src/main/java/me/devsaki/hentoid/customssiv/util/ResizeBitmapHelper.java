@@ -95,19 +95,18 @@ public class ResizeBitmapHelper {
         int srcHeight = src.getHeight();
         // Must be multiple of 2
         int dstWidth = Math.round(srcWidth * xScale);
-        if (1 == dstWidth % 2) dstWidth += 1;
+        dstWidth += (dstWidth % 2);
         int dstHeight = Math.round(srcHeight * yScale);
-        if (1 == dstHeight % 2) dstHeight += 1;
+        dstHeight += (dstHeight % 2);
         src.setHasAlpha(false);
 
         Timber.v(">> bmp IN %dx%d DST %dx%d (scale %.2f)", srcWidth, srcHeight, dstWidth, dstHeight, xScale);
 
         List<GPUImageFilter> filterList = new ArrayList<>();
-        filterList.add(new GPUImageGaussianBlurFilter(radius * 2));
+        filterList.add(new GPUImageGaussianBlurFilter(radius));
         filterList.add(new GPUImageResizeFilter(dstWidth, dstHeight));
 
         Bitmap out = glEsRenderer.getBitmapForMultipleFilters(filterList, src);
-        Timber.v(">> bmp OUT %dx%d => %dx%d", srcWidth, srcHeight, out.getWidth(), out.getHeight());
         src.recycle();
 
         return out;
