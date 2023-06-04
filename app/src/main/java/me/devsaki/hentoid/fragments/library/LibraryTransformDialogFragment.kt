@@ -169,7 +169,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 refreshPreview()
             }
             encoderQuality.editText?.setOnTextChangedListener(lifecycleScope) { value ->
-                if (checkRange(encoderQuality, 60, 100)) {
+                if (checkRange(encoderQuality, 75, 100)) {
                     Settings.transcodeQuality = value.toInt()
                     refreshPreview()
                 }
