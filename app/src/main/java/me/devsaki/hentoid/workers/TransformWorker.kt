@@ -14,6 +14,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.notification.transform.TransformCompleteNotification
 import me.devsaki.hentoid.notification.transform.TransformProgressNotification
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
@@ -194,6 +195,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun notifyProcessEnd() {
-        notificationManager.notify(TransformProgressNotification(nbOK, nbKO))
+        notificationManager.notify(TransformCompleteNotification(nbOK, nbKO > 0))
     }
 }
