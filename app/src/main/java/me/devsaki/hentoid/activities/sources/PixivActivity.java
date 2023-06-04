@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities.sources;
 
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -8,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Completable;
@@ -49,6 +51,8 @@ public class PixivActivity extends BaseWebActivity {
         PixivWebClient client = new PixivWebClient(getStartSite(), GALLERY_FILTER, this);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
         client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
+        client.setJsStartupScripts("pixiv.js");
+        webView.addJavascriptInterface(new pixivJsInterface(), "pixivJsInterface");
 
         return client;
     }
@@ -119,6 +123,29 @@ public class PixivActivity extends BaseWebActivity {
                 );
             }
             return null;
+        }
+    }
+
+    public class pixivJsInterface {
+        @JavascriptInterface
+        @SuppressWarnings("unused")
+        public String getPixivCustomCss() {
+            return getCustomCss();
+        }
+
+        @JavascriptInterface
+        @SuppressWarnings("unused")
+        public int isMarkable(String bookId) {
+
+            List<String> downloadedBooks = getAllSiteUrls();
+            List<String> mergedBooks = getAllMergedBooksUrls();
+
+            if (downloadedBooks.contains(bookId))
+                return 1;
+            else if (mergedBooks.contains(bookId))
+                return 2;
+            else
+                return 0;
         }
     }
 }
