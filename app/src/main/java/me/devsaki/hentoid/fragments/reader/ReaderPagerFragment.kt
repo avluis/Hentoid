@@ -928,7 +928,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     override fun onBookPreferenceChanged(newPrefs: Map<String, String>) {
-        viewModel.updateContentPreferences(newPrefs)
+        viewModel.updateContentPreferences(newPrefs, absImageIndex)
         bookPreferences = newPrefs
     }
 

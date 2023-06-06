@@ -74,7 +74,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
         if (bundle != null) {
             val parser = ReaderActivityBundle(bundle)
             imageIndex = parser.imageIndex
-            require(-1 != imageIndex) { "Initialization failed" }
+            require(-1 != imageIndex) { "Initialization failed : invalid image index" }
             scale = parser.scale
         }
 

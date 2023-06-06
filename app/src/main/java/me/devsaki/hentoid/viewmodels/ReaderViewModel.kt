@@ -367,6 +367,22 @@ class ReaderViewModel(
         loadedContentId = theContent.id
     }
 
+    private fun adjustPageIndex(index: Int, imageFiles: List<ImageFile>): Int {
+        var result = index
+
+        // Correct offset with the thumb index
+        thumbIndex = -1
+        for (i in imageFiles.indices) if (!imageFiles[i].isReadable) {
+            thumbIndex = i
+            break
+        }
+        // Ignore if it doesn't intervene
+        if (thumbIndex == result) result += 1
+        else if (thumbIndex > result) thumbIndex = 0
+
+        return 0.coerceAtLeast(result - thumbIndex - 1)
+    }
+
     /**
      * Initialize the picture viewer using the given parameters
      * (used only once per book when it is loaded for the first time)
@@ -394,29 +410,11 @@ class ReaderViewModel(
             }
         }
 
-        // Correct offset with the thumb index
-        thumbIndex = -1
-        for (i in imageFiles.indices) if (!imageFiles[i].isReadable) {
-            thumbIndex = i
-            break
-        }
-        // Ignore if it doesn't intervene
-        if (thumbIndex == startingIndex) startingIndex += 1
-        else if (thumbIndex > startingIndex) thumbIndex = 0
-        setViewerStartingIndex(0.coerceAtLeast(startingIndex - thumbIndex - 1))
+        startingIndex = adjustPageIndex(startingIndex, imageFiles)
+        setViewerStartingIndex(startingIndex)
 
         // Init the read pages write cache
         readPageNumbers.clear()
-        val readPages = imageFiles.filter { obj -> obj.isRead }.filter { obj -> obj.isReadable }
-            .map { obj -> obj.order }.toList()
-
-        // Fix pre-v1.13 books where ImageFile.read has no value
-        if (readPages.isEmpty() && theContent.lastReadPageIndex > 0 && theContent.lastReadPageIndex < imageFiles.size) {
-            val lastReadPageNumber = imageFiles[theContent.lastReadPageIndex].order
-            readPageNumbers.addAll(IntRange(1, lastReadPageNumber).toList())
-        } else {
-            readPageNumbers.addAll(readPages)
-        }
 
         // Mark initial page as read
         if (startingIndex < imageFiles.size) markPageAsRead(imageFiles[startingIndex].order)
@@ -842,8 +840,9 @@ class ReaderViewModel(
         }
     }
 
-    private fun reloadContent(forceImageReload: Boolean = false) {
+    private fun reloadContent(forceImageReload: Boolean = false, viewerIndex: Int = -1) {
         loadContentFromId(contentIds[currentContentIndex], -1, forceImageReload)
+        if (viewerIndex > -1) setViewerStartingIndex(viewerIndex)
     }
 
     /**
@@ -895,7 +894,7 @@ class ReaderViewModel(
      *
      * @param newPrefs Preferences to replace the current Content's local preferences
      */
-    fun updateContentPreferences(newPrefs: Map<String, String>) {
+    fun updateContentPreferences(newPrefs: Map<String, String>, viewerIndex: Int) {
         viewModelScope.launch {
             try {
                 var theContent: Content?
@@ -906,7 +905,7 @@ class ReaderViewModel(
                         dao.insertContent(it)
                     }
                 }
-                reloadContent(true) // Must run on the main thread
+                reloadContent(true, viewerIndex) // Must run on the main thread
                 withContext(Dispatchers.IO) {
                     // Persist in JSON
                     theContent?.let {
@@ -1796,9 +1795,9 @@ class ReaderViewModel(
         dao.insertChapters(chapters)
 
         // Renumber all readable images
-        val orderedImages = chapters.mapNotNull { ch -> ch.imageFiles }
-            .flatMap { imgLst -> imgLst.toList() }
-            .filter { img -> img.isReadable }
+        val orderedImages =
+            chapters.mapNotNull { ch -> ch.imageFiles }.flatMap { imgLst -> imgLst.toList() }
+                .filter { img -> img.isReadable }
         require(orderedImages.isNotEmpty()) { "No images found" }
 
         // Keep existing formatting
@@ -1807,8 +1806,7 @@ class ReaderViewModel(
         orderedImages.forEachIndexed { index, img ->
             img.order = index + 1
             img.computeName(nbMaxDigits)
-            fileNames[img.fileUri] =
-                Pair(img.name + "." + getExtensionFromUri(img.fileUri), img)
+            fileNames[img.fileUri] = Pair(img.name + "." + getExtensionFromUri(img.fileUri), img)
         }
 
         // == Compute file swaps
@@ -1829,9 +1827,13 @@ class ReaderViewModel(
                 val newName = fileNames[doc.uri.toString()]
                 if (newName != null) {
                     val duplicate = contentFiles.firstOrNull { f -> f.name.equals(newName.first) }
-                    if (duplicate != null && duplicate.uri != doc.uri)
-                        swaps[duplicate.uri] = Triple(duplicate.uri, doc.uri, newName.second)
-                    else if (newName.first != doc.name) renames.add(Triple(doc, newName.first, newName.second))
+                    if (duplicate != null && duplicate.uri != doc.uri) swaps[duplicate.uri] =
+                        Triple(duplicate.uri, doc.uri, newName.second)
+                    else if (newName.first != doc.name) renames.add(
+                        Triple(
+                            doc, newName.first, newName.second
+                        )
+                    )
                 }
             }
         }
