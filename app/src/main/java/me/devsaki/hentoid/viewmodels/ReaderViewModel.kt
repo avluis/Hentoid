@@ -116,8 +116,8 @@ class ReaderViewModel(
     // Cache for image locations according to their order
     private val imageLocationCache: MutableMap<Int, String> = HashMap()
 
-    // Switch to interrupt extracting when leaving the activity
-    private val interruptArchiveExtract = AtomicBoolean(false)
+    // Kill switch to interrupt extracting when leaving the activity
+    private val archiveExtractKillSwitch = AtomicBoolean(false)
 
     // Page indexes that are being downloaded
     private val indexDlInProgress = Collections.synchronizedSet(HashSet<Int>())
@@ -125,8 +125,8 @@ class ReaderViewModel(
     // Page indexes that are being extracted
     private val indexExtractInProgress = Collections.synchronizedSet(HashSet<Int>())
 
-    // FIFO switches to interrupt downloads when browsing the book
-    private val downloadsQueue: Queue<AtomicBoolean> = ConcurrentLinkedQueue()
+    // FIFO kill switches to interrupt downloads when browsing the book
+    private val downloadKillSwitches: Queue<AtomicBoolean> = ConcurrentLinkedQueue()
 
 
     private var archiveExtractDisposable: Disposable? = null
@@ -497,7 +497,7 @@ class ReaderViewModel(
         )
         indexDlInProgress.clear()
         indexExtractInProgress.clear()
-        interruptArchiveExtract.set(true)
+        archiveExtractKillSwitch.set(true)
 
         // Don't do anything if the Content hasn't even been loaded
         if (-1L == loadedContentId) return
@@ -1053,14 +1053,14 @@ class ReaderViewModel(
             indexDlInProgress.add(index)
 
             // Adjust the current queue
-            while (downloadsQueue.size >= CONCURRENT_DOWNLOADS) {
-                val stopDownload = downloadsQueue.poll()
+            while (downloadKillSwitches.size >= CONCURRENT_DOWNLOADS) {
+                val stopDownload = downloadKillSwitches.poll()
                 stopDownload?.set(true)
                 Timber.d("Aborting a download")
             }
             // Schedule a new download
             val stopDownload = AtomicBoolean(false)
-            downloadsQueue.add(stopDownload)
+            downloadKillSwitches.add(stopDownload)
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
                     try {
@@ -1127,7 +1127,7 @@ class ReaderViewModel(
         Helper.assertNonUiThread()
         // Interrupt current extracting process, if any
         if (indexExtractInProgress.isNotEmpty()) {
-            interruptArchiveExtract.set(true)
+            archiveExtractKillSwitch.set(true)
             // Wait until extraction has actually stopped
             var remainingIterations = 15 // Timeout
             do {
@@ -1138,7 +1138,7 @@ class ReaderViewModel(
         indexExtractInProgress.addAll(indexesToLoad)
 
         // Reset interrupt state to make sure extraction runs
-        interruptArchiveExtract.set(false)
+        archiveExtractKillSwitch.set(false)
         val extractInstructions: MutableList<Pair<String, String>> = ArrayList()
         for (index in indexesToLoad) {
             if (index < 0 || index >= viewerImagesInternal.size) continue
@@ -1165,7 +1165,7 @@ class ReaderViewModel(
                 archiveFile.uri,
                 targetFolder,
                 extractInstructions,
-                interruptArchiveExtract,
+                archiveExtractKillSwitch,
                 emitter
             )
         }
@@ -1233,7 +1233,7 @@ class ReaderViewModel(
                         )
                     )
                     indexExtractInProgress.clear()
-                    interruptArchiveExtract.set(false)
+                    archiveExtractKillSwitch.set(false)
                     archiveExtractDisposable?.dispose()
                 }) {
                     Timber.d("Extracted %d files successfuly", extractInstructions.size)
@@ -1248,7 +1248,7 @@ class ReaderViewModel(
                         )
                     )
                     indexExtractInProgress.clear()
-                    interruptArchiveExtract.set(false)
+                    archiveExtractKillSwitch.set(false)
                     archiveExtractDisposable?.dispose()
                 }
     }
