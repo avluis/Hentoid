@@ -281,6 +281,16 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         super.onStop()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        fastAdapter.saveInstanceState(outState)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        fastAdapter.withSavedInstanceState(savedInstanceState)
+    }
+
     private fun updateListAdapter(isChapterEditMode: Boolean) {
         if (isChapterEditMode) {
             if (!expandableFastAdapter.hasObservers()) expandableFastAdapter.setHasStableIds(true)
