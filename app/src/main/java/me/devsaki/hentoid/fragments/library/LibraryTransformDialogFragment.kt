@@ -22,7 +22,6 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.annimon.stream.Stream
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
@@ -41,7 +40,6 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryTransformBinding
 import me.devsaki.hentoid.enums.PictureEncoder
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.file.FileHelper
@@ -61,6 +59,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
 
     // === VARIABLES
     private lateinit var contentIds: LongArray
+    private var parent: Parent? = null
     private val content: Content? by lazy {
         val dao = ObjectBoxDAO(requireContext())
         try {
@@ -93,6 +92,8 @@ class LibraryTransformDialogFragment : DialogFragment() {
         val contentIdArg = arguments?.getLongArray(KEY_CONTENTS)
         require(!(null == contentIdArg || contentIdArg.isEmpty())) { "No content IDs" }
         contentIds = contentIdArg!!
+
+        parent = parentFragment as Parent?
     }
 
     override fun onCreateView(
@@ -355,6 +356,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 .setInputData(myData)
                 .addTag(WORK_CLOSEABLE).build()
         )
+        parent?.leaveSelectionMode()
         dismissAllowingStateLoss()
     }
 
@@ -387,12 +389,14 @@ class LibraryTransformDialogFragment : DialogFragment() {
             val fragment = LibraryTransformDialogFragment()
             val args = Bundle()
             args.putLongArray(
-                KEY_CONTENTS, Helper.getPrimitiveArrayFromList(
-                    Stream.of(contentList).map { c -> c.id }.toList()
-                )
+                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
             )
             fragment.arguments = args
             fragment.show(parent.childFragmentManager, null)
         }
+    }
+
+    interface Parent {
+        fun leaveSelectionMode()
     }
 }

@@ -50,6 +50,7 @@
     <string name="create_generic">Create</string>
     <string name="edit_generic">Edit</string>
     <string name="remove_generic">Remove</string>
+    <string name="invalid_selection_generic">Invalid selection</string>
 
 
     <!-- Activities -->

@@ -138,6 +138,7 @@ public class LibraryContentFragment extends Fragment implements
         MergeDialogFragment.Parent,
         SplitDialogFragment.Parent,
         RatingDialogFragment.Parent,
+        LibraryTransformDialogFragment.Parent,
         PopupTextProvider,
         ItemTouchCallback,
         SimpleSwipeDrawerCallback.ItemSwipeCallback {
@@ -567,6 +568,10 @@ public class LibraryContentFragment extends Fragment implements
                 List<Content> contents = Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList();
                 if (contents.size() > 1000) {
                     Snackbar.make(recyclerView, R.string.transform_limit, LENGTH_LONG).show();
+                    return false;
+                }
+                if (0 == contents.size()) {
+                    Snackbar.make(recyclerView, R.string.invalid_selection_generic, LENGTH_LONG).show();
                     return false;
                 }
                 LibraryTransformDialogFragment.Companion.invoke(this, contents);
