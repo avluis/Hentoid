@@ -158,9 +158,11 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         } catch (ContentNotProcessedException cnre) {
             nbError++;
             trace(Log.WARN, "Error when trying to delete %s", content.getId());
+            dao.updateContentDeleteFlag(content.getId(), false);
         } catch (Exception e) {
             nbError++;
-            trace(Log.WARN, "Error when trying to delete %s : %s", content.getTitle(), e.getMessage());
+            trace(Log.WARN, "Error when trying to delete %s : %s - %s", content.getTitle(), e.getMessage(), Helper.getStackTraceString(e));
+            dao.updateContentDeleteFlag(content.getId(), false);
         }
     }
 
