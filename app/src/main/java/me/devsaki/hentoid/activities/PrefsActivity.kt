@@ -3,8 +3,14 @@ package me.devsaki.hentoid.activities
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.fragment.app.commit
+import androidx.lifecycle.Lifecycle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
+import me.devsaki.hentoid.util.ToastHelper
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 class PrefsActivity : BaseActivity() {
 
@@ -23,6 +29,13 @@ class PrefsActivity : BaseActivity() {
         supportFragmentManager.commit {
             replace(android.R.id.content, fragment)
         }
+
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
+    }
+
+    override fun onDestroy() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
+        super.onDestroy()
     }
 
     private fun isViewerPrefs(): Boolean {
@@ -60,5 +73,13 @@ class PrefsActivity : BaseActivity() {
         } else {
             super.onOptionsItemSelected(item)
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    override fun onCommunicationEvent(event: CommunicationEvent) {
+        if (event.recipient != CommunicationEvent.RC_PREFS || event.type != CommunicationEvent.EV_BROADCAST || null == event.message) return
+        // Make sure current activity is active (=eligible to display that toast)
+        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
+        ToastHelper.toast(event.message)
     }
 }

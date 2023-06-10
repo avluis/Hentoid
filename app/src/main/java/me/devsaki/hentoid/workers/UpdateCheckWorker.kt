@@ -6,6 +6,8 @@ import androidx.work.Data
 import androidx.work.WorkerParameters
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.events.CommunicationEvent
+import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.notification.update.UpdateAvailableNotification
@@ -33,10 +35,33 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
     @SuppressLint("TimberArgCount")
     override fun getToWork(input: Data) {
         try {
+            EventBus.getDefault().post(
+                CommunicationEvent(
+                    CommunicationEvent.EV_BROADCAST,
+                    CommunicationEvent.RC_PREFS,
+                    applicationContext.resources.getString(R.string.pref_check_updates_manual_checking)
+                )
+            )
             val updateInfoJson = UpdateServer.api.updateInfo.execute().body()
             if (updateInfoJson != null) onSuccess(updateInfoJson)
-            else Timber.w("Failed to get update info (null result)")
+            else {
+                EventBus.getDefault().post(
+                    CommunicationEvent(
+                        CommunicationEvent.EV_BROADCAST,
+                        CommunicationEvent.RC_PREFS,
+                        applicationContext.resources.getString(R.string.pref_check_updates_manual_no_connection)
+                    )
+                )
+                Timber.w("Failed to get update info (null result)")
+            }
         } catch (e: Exception) {
+            EventBus.getDefault().post(
+                CommunicationEvent(
+                    CommunicationEvent.EV_BROADCAST,
+                    CommunicationEvent.RC_PREFS,
+                    applicationContext.resources.getString(R.string.pref_check_updates_manual_no_connection)
+                )
+            )
             Timber.w(e, "Failed to get update info")
             notificationManager.cancel()
         }
@@ -48,6 +73,21 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
             val updateUrl: String = updateInfoJson.getUpdateUrl(BuildConfig.DEBUG)
             notificationManager.notify(UpdateAvailableNotification(updateUrl))
             newVersion = true
+            EventBus.getDefault().post(
+                CommunicationEvent(
+                    CommunicationEvent.EV_BROADCAST,
+                    CommunicationEvent.RC_PREFS,
+                    applicationContext.resources.getString(R.string.pref_check_updates_manual_new)
+                )
+            )
+        } else {
+            EventBus.getDefault().post(
+                CommunicationEvent(
+                    CommunicationEvent.EV_BROADCAST,
+                    CommunicationEvent.RC_PREFS,
+                    applicationContext.resources.getString(R.string.pref_check_updates_manual_no_new)
+                )
+            )
         }
 
         // Get the alerts relevant to current version code

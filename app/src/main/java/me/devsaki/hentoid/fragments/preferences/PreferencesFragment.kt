@@ -172,7 +172,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 ExistingWorkPolicy.KEEP,
                 OneTimeWorkRequestBuilder<UpdateCheckWorker>().build()
             )
-            // TODO toasts
+            // Toasts are handled at Activity level
         }
     }
 

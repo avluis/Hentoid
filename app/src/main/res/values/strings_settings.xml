@@ -173,6 +173,7 @@
     <string name="pref_check_updates_manual_title">Manual Update Check</string>
     <string name="pref_check_updates_manual_summary">Manually check for updates right now</string>
     <string name="pref_check_updates_manual_checking">Checking for updates…</string>
+    <string name="pref_check_updates_manual_new">New update found! - Install using the notification</string>
     <string name="pref_check_updates_manual_no_new">No update found - Already using the latest version</string>
     <string name="pref_check_updates_manual_no_connection">Could not check for updates. Check your connection or try again later</string>
     <string name="pref_check_updates_title">Automatic Updates</string>

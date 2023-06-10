@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.ContentView;
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Lifecycle;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -85,6 +86,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     public void onCommunicationEvent(CommunicationEvent event) {
         if (event.getRecipient() != CommunicationEvent.RC_ALL || event.getType() != CommunicationEvent.EV_BROADCAST || null == event.getMessage())
             return;
+        // Make sure current activity is active (=eligible to display that toast)
+        if (!getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) return;
         ToastHelper.toast(event.getMessage());
     }
 }
