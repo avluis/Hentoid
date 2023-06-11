@@ -620,6 +620,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     requireContext(),
                     requireActivity().supportFragmentManager,
                     it.contentId,
+                    absImageIndex,
                     isContentDynamic
                 )
             }
@@ -664,7 +665,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Handle click on one of the "Favourite" micro menu items
      */
     private fun onFavouriteMicroMenuClick(position: Int) {
-        if (0 == position) viewModel?.toggleContentFavourite { newState: Boolean ->
+        if (0 == position) viewModel?.toggleContentFavourite(absImageIndex) { newState: Boolean ->
             onBookFavouriteSuccess(newState)
         } else if (1 == position) viewModel?.toggleImageFavourite(absImageIndex) { newState: Boolean ->
             onPageFavouriteSuccess(newState)

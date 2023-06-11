@@ -658,16 +658,16 @@ class ReaderViewModel(
      *
      * @param successCallback Callback to be called on success
      */
-    fun toggleContentFavourite(successCallback: (Boolean) -> Unit) {
+    fun toggleContentFavourite(viewerIndex: Int, successCallback: (Boolean) -> Unit) {
         val theContent = getContent().value ?: return
         val newState = !theContent.isFavourite
 
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val c = doToggleContentFavourite(theContent)
-                    content.postValue(c)
+                    doToggleContentFavourite(theContent)
                 }
+                reloadContent(false, viewerIndex) // Must run on the main thread
                 successCallback.invoke(newState)
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -680,7 +680,7 @@ class ReaderViewModel(
      *
      * @param content content whose flag to toggle
      */
-    private fun doToggleContentFavourite(content: Content): Content {
+    private fun doToggleContentFavourite(content: Content) {
         Helper.assertNonUiThread()
         content.isFavourite = !content.isFavourite
 
@@ -689,7 +689,6 @@ class ReaderViewModel(
 
         // Persist new values in JSON
         ContentHelper.persistJson(getApplication<Application>().applicationContext, content)
-        return content
     }
 
     /**

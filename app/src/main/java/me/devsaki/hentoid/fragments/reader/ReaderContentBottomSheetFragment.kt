@@ -46,6 +46,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
     // VARS
     private var contentId = -1L
+    private var pageIndex = -1
     private var openOnTap = false
     private var currentRating = -1
     private val glideRequestOptions: RequestOptions
@@ -75,6 +76,8 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
         requireNotNull(arguments) { "No arguments found" }
         contentId = requireArguments().getLong(CONTENT_ID, -1)
         require(contentId > -1)
+        pageIndex = requireArguments().getInt(PAGE_INDEX, -1)
+        require(pageIndex > -1)
         openOnTap = requireArguments().getBoolean(OPEN_ON_TAP, false)
     }
 
@@ -183,18 +186,20 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun onFavouriteClick() {
-        viewModel.toggleContentFavourite { isFavourited: Boolean ->
+        viewModel.toggleContentFavourite(pageIndex) { isFavourited: Boolean ->
             this.updateFavouriteDisplay(isFavourited)
         }
     }
 
     companion object {
         const val CONTENT_ID = "content_id"
+        const val PAGE_INDEX = "page_index"
         const val OPEN_ON_TAP = "open_on_tap"
         fun invoke(
             context: Context,
             fragmentManager: FragmentManager,
             contentId: Long,
+            pageIndex: Int,
             openOnTap: Boolean
         ) {
             val fragment = ReaderContentBottomSheetFragment()
@@ -208,6 +213,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
             val args = Bundle()
             args.putLong(CONTENT_ID, contentId)
+            args.putInt(PAGE_INDEX, pageIndex)
             args.putBoolean(OPEN_ON_TAP, openOnTap)
             fragment.arguments = args
             fragment.show(fragmentManager, "metaEditBottomSheetFragment")
