@@ -1144,6 +1144,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         Timber.i("Content Site, URL : %s, %s", onlineContent.getSite().getCode(), onlineContent.getUrl());
         String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? onlineContent.getCoverImageUrl() : "";
+        // TODO manage DB calls concurrency to avoid getting read transaction conflicts
         Content contentDB = dao.selectContentBySourceAndUrl(onlineContent.getSite(), onlineContent.getUrl(), searchUrl);
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
