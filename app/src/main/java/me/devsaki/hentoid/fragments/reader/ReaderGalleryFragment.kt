@@ -283,12 +283,12 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        fastAdapter.saveInstanceState(outState)
+        fastAdapter.saveInstanceState(outState, "gallery")
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
-        fastAdapter.withSavedInstanceState(savedInstanceState)
+        fastAdapter.withSavedInstanceState(savedInstanceState, "gallery")
     }
 
     private fun updateListAdapter(isChapterEditMode: Boolean) {
