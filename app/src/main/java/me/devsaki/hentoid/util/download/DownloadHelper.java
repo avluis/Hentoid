@@ -211,8 +211,10 @@ public class DownloadHelper {
 
         final String finalUrl;
         if (!canonicalUrl.isEmpty() && !ogUrl.isEmpty() && !ogUrl.equals(canonicalUrl)) {
-            int canonicalDigits = Integer.parseInt(StringHelper.keepDigits(canonicalUrl));
-            int ogDigits = Integer.parseInt(StringHelper.keepDigits(ogUrl));
+            String canonicalDigitsStr = StringHelper.keepDigits(canonicalUrl);
+            int canonicalDigits = canonicalDigitsStr.isEmpty() ? 0 : Integer.parseInt(canonicalDigitsStr);
+            String ogDigitsStr = StringHelper.keepDigits(ogUrl);
+            int ogDigits = ogDigitsStr.isEmpty() ? 0 : Integer.parseInt(ogDigitsStr);
             finalUrl = (canonicalDigits > ogDigits) ? canonicalUrl : ogUrl;
         } else {
             if (!canonicalUrl.isEmpty()) finalUrl = canonicalUrl;
