@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -818,7 +819,10 @@ public class FileHelper {
     @TargetApi(29)
     private static OutputStream openNewDownloadOutputStreamQ(@NonNull final Context context, @NonNull final String fileName, @NonNull final String mimeType) throws IOException {
         ContentValues values = new ContentValues();
-        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+        // Make filename unique to avoid failures on certain devices when creating a file with the same name multiple times
+        final String fileExt = FileHelper.getExtension(fileName);
+        String fileNoExt = FileHelper.getFileNameWithoutExtension(fileName) + "_" + Helper.formatEpochToDate(Instant.now().toEpochMilli(), "yyyyMMdd-hhmm");
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileNoExt + "." + fileExt);
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
 
         ContentResolver resolver = context.getContentResolver();
