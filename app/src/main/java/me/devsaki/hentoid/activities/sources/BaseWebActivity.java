@@ -650,9 +650,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // Greys out the action button
         // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious, Pixiv)
         runOnUiThread(() -> {
-            binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon));
-            binding.actionButton.setVisibility(View.INVISIBLE);
-            binding.actionBtnBadge.setVisibility(View.INVISIBLE);
+            if (binding != null) {
+                binding.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon));
+                binding.actionButton.setVisibility(View.INVISIBLE);
+                binding.actionBtnBadge.setVisibility(View.INVISIBLE);
+            }
         });
     }
 
