@@ -192,9 +192,7 @@ class ImagePagerAdapter(context: Context) :
 
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT.value && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
-                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer) else ssiv.setGlEsRenderer(
-                    null
-                )
+                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer) else ssiv.setGlEsRenderer(null)
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
 
@@ -262,14 +260,12 @@ class ImagePagerAdapter(context: Context) :
     }
 
     private fun getDisplayParamsForPosition(position: Int): ReaderPagerFragment.DisplayParams {
-        getItem(position).content.target?.let {
-            val bookPreferences = it.bookPreferences
-            return ReaderPagerFragment.DisplayParams(
-                Preferences.getContentBrowseMode(bookPreferences),
-                Preferences.getContentDisplayMode(bookPreferences),
-                Preferences.isContentSmoothRendering(bookPreferences)
-            )
-        }
+        val bookPreferences = getItem(position).content.target.bookPreferences
+        return ReaderPagerFragment.DisplayParams(
+            Preferences.getContentBrowseMode(bookPreferences),
+            Preferences.getContentDisplayMode(bookPreferences),
+            Preferences.isContentSmoothRendering(bookPreferences)
+        )
     }
 
     fun getDimensionsAtPosition(position: Int): Point {
