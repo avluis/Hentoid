@@ -46,7 +46,8 @@ public class DoujinsContent extends BaseContentParser {
 
         if (contentInfo != null && !contentInfo.isEmpty()) {
             for (Element e : contentInfo) {
-                if (e.text().toLowerCase().contains("•")) { // e.g. March 16th, 2022 • 25 images
+                String txt = e.text().toLowerCase();
+                if (txt.contains("•") && !txt.contains("translated")) { // e.g. March 16th, 2022 • 25 images
                     String[] parts = e.text().split("•");
                     content.setUploadDate(Helper.parseDateToEpoch(parts[0], "MMMM d',' yyyy"));
                     break;
