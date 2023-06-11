@@ -440,11 +440,13 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 .toList()
             chapterSelector.index = 0
             chapterSelector.setOnIndexChangeListener { index ->
-                val imgs: List<ImageFile>? =
-                    chapters.first { ch -> ch.order == index + 1 }.imageFiles
-                if (!imgs.isNullOrEmpty()) {
-                    viewModel.setViewerStartingIndex(imgs[0].order - 1)
-                    moveToIndex(imgs[0].order - 1, true)
+                val chap = chapters.firstOrNull { ch -> ch.order == index + 1 }
+                if (chap != null) {
+                    val imgs: List<ImageFile>? = chap.imageFiles
+                    if (!imgs.isNullOrEmpty()) {
+                        viewModel.setViewerStartingIndex(imgs[0].order - 1)
+                        moveToIndex(imgs[0].order - 1, true)
+                    }
                 }
             }
             chapterSelector.visibility = View.VISIBLE
