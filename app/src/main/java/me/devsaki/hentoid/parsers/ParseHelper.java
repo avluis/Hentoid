@@ -555,7 +555,7 @@ public class ParseHelper {
      * @param e HTML element to extract the URL from
      * @return Image URL contained in the given HTML element
      */
-    public static String getImgSrc(Element e) {
+    public static String getImgSrc(@NonNull Element e) {
         String result = e.attr("data-src").trim();
         if (result.isEmpty()) result = e.attr("data-lazy-src").trim();
         if (result.isEmpty()) result = e.attr("data-lazysrc").trim();

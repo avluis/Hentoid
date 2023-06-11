@@ -51,8 +51,11 @@ public class HdPornComicsContent extends BaseContentParser {
         if (uploadDate != null && !uploadDate.isEmpty())
             content.setUploadDate(Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")); // e.g. 2021-08-08T20:53:49+00:00
 
-        String coverUrl = ParseHelper.getImgSrc(cover);
-        content.setCoverImageUrl(coverUrl);
+        String coverUrl = "";
+        if (cover != null) {
+            coverUrl = ParseHelper.getImgSrc(cover);
+            content.setCoverImageUrl(coverUrl);
+        }
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.HDPORNCOMICS);
