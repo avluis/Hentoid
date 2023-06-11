@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.core;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Process;
@@ -30,6 +32,7 @@ public class EmergencyRestartHandler implements
             // Restart the Activity
             Timber.i("Restart %s", myActivityClass.getSimpleName());
             Intent intent = new Intent(myContext, myActivityClass);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_NEW_TASK);
             myContext.startActivity(intent);
         }
 
