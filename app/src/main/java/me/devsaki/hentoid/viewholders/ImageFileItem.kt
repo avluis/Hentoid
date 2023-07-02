@@ -1,16 +1,23 @@
 package me.devsaki.hentoid.viewholders
 
 import android.graphics.Typeface
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
+import com.github.penfeizhou.animation.FrameAnimationDrawable
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IExpandable
 import com.mikepenz.fastadapter.IParentItem
@@ -85,7 +92,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
     class ViewHolder internal constructor(view: View) :
         FastAdapter.ViewHolder<ImageFileItem>(view) {
         private val pageNumberTxt: TextView
-        private val image: ImageView?
+        private val image: ImageView
         private val checkedIndicator: ImageView
         private val chapterOverlay: TextView
 
@@ -125,7 +132,8 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
                 if (item.chapter.order == Int.MAX_VALUE) chapterText = "" // Don't show temp values
                 chapterOverlay.text = chapterText
                 chapterOverlay.setBackgroundColor(
-                    chapterOverlay.resources.getColor(
+                    ContextCompat.getColor(
+                        chapterOverlay.context,
                         if (0 == item.chapter.order % 2) R.color.black_opacity_50 else R.color.white_opacity_25
                     )
                 )
@@ -133,9 +141,42 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
             } else chapterOverlay.visibility = View.GONE
 
             // Image
-            Glide.with(image!!)
+            Glide.with(image)
                 .load(Uri.parse(item.image.fileUri))
                 .signature(ObjectKey(item.image.uniqueHash()))
+                .addListener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: com.bumptech.glide.request.target.Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        model: Any?,
+                        target: com.bumptech.glide.request.target.Target<Drawable>,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        var handled = false
+                        // If animated, only load frame zero as a plain bitmap
+                        if (resource is FrameAnimationDrawable<*>) {
+                            target.onResourceReady(
+                                BitmapDrawable(
+                                    image.resources,
+                                    resource.frameSeqDecoder.getFrameBitmap(0)
+                                ), null
+                            )
+                            resource.setAutoPlay(false)
+                            resource.reset()
+                            handled = true
+                        }
+                        return handled
+                    }
+                })
                 .apply(item.glideRequestOptions)
                 .into(image)
         }
