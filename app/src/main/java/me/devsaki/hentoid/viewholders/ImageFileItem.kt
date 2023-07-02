@@ -170,8 +170,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
                                     resource.frameSeqDecoder.getFrameBitmap(0)
                                 ), null
                             )
-                            resource.setAutoPlay(false)
-                            resource.reset()
+                            resource.stop()
                             handled = true
                         }
                         return handled
@@ -196,8 +195,8 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
         }
 
         override fun unbindView(item: ImageFileItem) {
-            if (image != null && Helper.isValidContextForGlide(image)) Glide.with(image)
-                .clear(image)
+            if (Helper.isValidContextForGlide(image))
+                Glide.with(image).clear(image)
         }
 
         companion object {
