@@ -56,7 +56,11 @@ class ImagePagerAdapter(context: Context) :
     private var recyclerView: RecyclerView? = null
     private val initialAbsoluteScales: MutableMap<Int, Float> = HashMap()
     private val absoluteScales: MutableMap<Int, Float> = HashMap()
-    private val glEsRenderer = GPUImage(context)
+    private var isGlInit = false
+    private val glEsRenderer: GPUImage by lazy {
+        isGlInit = true
+        GPUImage(context)
+    }
 
     // To preload images before they appear on screen with CustomSubsamplingScaleImageView
     private var maxBitmapWidth = -1
@@ -192,7 +196,9 @@ class ImagePagerAdapter(context: Context) :
 
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT.value && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
-                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer) else ssiv.setGlEsRenderer(null)
+                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer) else ssiv.setGlEsRenderer(
+                    null
+                )
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
 
@@ -251,7 +257,7 @@ class ImagePagerAdapter(context: Context) :
     }
 
     fun destroy() {
-        glEsRenderer.clear()
+        if (isGlInit) glEsRenderer.clear()
     }
 
     fun reset() {
