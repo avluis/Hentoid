@@ -54,6 +54,11 @@
     <!-- Menu item description -->
     <string name="tools_latest_logs_summary">View the app\'s latest logs</string>
 
+    <!-- Menu item -->
+    <string name="tools_ram_usage_title">RAM usage</string>
+    <!-- Menu item description -->
+    <string name="tools_ram_usage_summary">Display current RAM usage</string>
+
 
     <!-- Metadata import -->
     <string name="tools_import_empty_books_intro">If no images folder is detected…</string>

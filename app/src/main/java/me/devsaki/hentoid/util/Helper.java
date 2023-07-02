@@ -4,6 +4,7 @@ import static android.content.Context.CLIPBOARD_SERVICE;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.drawable.InsetDrawable;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Menu;
@@ -608,5 +610,32 @@ public final class Helper {
             index++;
         }
         return -1;
+    }
+
+    public static Pair<Long, Long> getAppHeapBytes() {
+        long nativeHeapSize = Debug.getNativeHeapSize();
+        long nativeHeapFreeSize = Debug.getNativeHeapFreeSize();
+        long usedMemInBytes = nativeHeapSize - nativeHeapFreeSize;
+        return new Pair<>(usedMemInBytes, nativeHeapFreeSize);
+    }
+
+    public static Pair<Long, Long> getSystemHeapBytes(Context context) {
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE)).getMemoryInfo(memoryInfo);
+        long nativeHeapSize = memoryInfo.totalMem;
+        long nativeHeapFreeSize = memoryInfo.availMem;
+        long usedMemInBytes = nativeHeapSize - nativeHeapFreeSize;
+        return new Pair<>(usedMemInBytes, nativeHeapFreeSize);
+    }
+
+    public static long getAppTotalRamBytes() {
+        Debug.MemoryInfo memInfo = new Debug.MemoryInfo();
+        Debug.getMemoryInfo(memInfo);
+
+        long javaMem = Long.parseLong(memInfo.getMemoryStat("summary.java-heap")) * 1024;
+        long natiMem = Long.parseLong(memInfo.getMemoryStat("summary.native-heap")) * 1024;
+        long totalMem = Long.parseLong(memInfo.getMemoryStat("summary.total-pss")) * 1024;
+
+        return javaMem + natiMem;
     }
 }
