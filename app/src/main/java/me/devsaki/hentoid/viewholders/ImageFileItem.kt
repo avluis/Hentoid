@@ -22,10 +22,10 @@ import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.util.Helper
 
-class ImageFileItemK(private val image: ImageFile, private val showChapter: Boolean) :
-    AbstractItem<ImageFileItemK.ViewHolder>(),
-    IExpandable<ImageFileItemK.ViewHolder>,
-    INestedItem<ImageFileItemK.ViewHolder> {
+class ImageFileItem(private val image: ImageFile, private val showChapter: Boolean) :
+    AbstractItem<ImageFileItem.ViewHolder>(),
+    IExpandable<ImageFileItem.ViewHolder>,
+    INestedItem<ImageFileItem.ViewHolder> {
     private val chapter: Chapter
     private var isCurrent = false
     private val expanded = false
@@ -83,7 +83,7 @@ class ImageFileItemK(private val image: ImageFile, private val showChapter: Bool
     }
 
     class ViewHolder internal constructor(view: View) :
-        FastAdapter.ViewHolder<ImageFileItemK>(view) {
+        FastAdapter.ViewHolder<ImageFileItem>(view) {
         private val pageNumberTxt: TextView
         private val image: ImageView?
         private val checkedIndicator: ImageView
@@ -98,7 +98,7 @@ class ImageFileItemK(private val image: ImageFile, private val showChapter: Bool
             chapterOverlay = ViewCompat.requireViewById(view, R.id.chapter_overlay)
         }
 
-        override fun bindView(item: ImageFileItemK, payloads: List<Any>) {
+        override fun bindView(item: ImageFileItem, payloads: List<Any>) {
 
             // Payloads are set when the content stays the same but some properties alone change
             if (payloads.isNotEmpty()) {
@@ -140,7 +140,7 @@ class ImageFileItemK(private val image: ImageFile, private val showChapter: Bool
                 .into(image)
         }
 
-        private fun updateText(item: ImageFileItemK) {
+        private fun updateText(item: ImageFileItem) {
             val currentBegin = if (item.isCurrent) ">" else ""
             val currentEnd = if (item.isCurrent) "<" else ""
             val isFavourite = if (item.isFavourite()) HEART_SYMBOL else ""
@@ -154,7 +154,7 @@ class ImageFileItemK(private val image: ImageFile, private val showChapter: Bool
             if (item.isCurrent) pageNumberTxt.setTypeface(null, Typeface.BOLD)
         }
 
-        override fun unbindView(item: ImageFileItemK) {
+        override fun unbindView(item: ImageFileItem) {
             if (image != null && Helper.isValidContextForGlide(image)) Glide.with(image)
                 .clear(image)
         }

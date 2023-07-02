@@ -47,7 +47,7 @@ import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.viewholders.INestedItem
-import me.devsaki.hentoid.viewholders.ImageFileItemK
+import me.devsaki.hentoid.viewholders.ImageFileItem
 import me.devsaki.hentoid.viewholders.SubExpandableItem
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -87,7 +87,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private lateinit var confirmReorderMenu: MenuItem
     private lateinit var cancelReorderMenu: MenuItem
 
-    private val itemAdapter = ItemAdapter<ImageFileItemK>()
+    private val itemAdapter = ItemAdapter<ImageFileItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
     private val selectExtension = fastAdapter.getSelectExtension()
 
@@ -111,26 +111,26 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private var shuffledState = false
 
 
-    private val imageDiffCallback: DiffCallback<ImageFileItemK> =
-        object : DiffCallback<ImageFileItemK> {
+    private val imageDiffCallback: DiffCallback<ImageFileItem> =
+        object : DiffCallback<ImageFileItem> {
             override fun areItemsTheSame(
-                oldItem: ImageFileItemK,
-                newItem: ImageFileItemK
+                oldItem: ImageFileItem,
+                newItem: ImageFileItem
             ): Boolean {
                 return oldItem.identifier == newItem.identifier
             }
 
             override fun areContentsTheSame(
-                oldItem: ImageFileItemK,
-                newItem: ImageFileItemK
+                oldItem: ImageFileItem,
+                newItem: ImageFileItem
             ): Boolean {
                 return oldItem.isFavourite() == newItem.isFavourite() && oldItem.getChapterOrder() == newItem.getChapterOrder()
             }
 
             override fun getChangePayload(
-                oldItem: ImageFileItemK,
+                oldItem: ImageFileItem,
                 oldItemPosition: Int,
-                newItem: ImageFileItemK,
+                newItem: ImageFileItem,
                 newItemPosition: Int
             ): Any? {
                 val oldImage = oldItem.getImage()
@@ -348,8 +348,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                     multiSelect = true
                     selectOnLongClick = true
                     selectWithItemUpdate = true
-                    selectionListener = object : ISelectionListener<ImageFileItemK> {
-                        override fun onSelectionChanged(item: ImageFileItemK, selected: Boolean) {
+                    selectionListener = object : ISelectionListener<ImageFileItem> {
+                        override fun onSelectionChanged(item: ImageFileItem, selected: Boolean) {
                             onSelectionChanged2()
                         }
                     }
@@ -469,14 +469,14 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 val expandableItem =
                     SubExpandableItem(touchHelper!!, c.name, c).withDraggable(!isArchive)
                 expandableItem.identifier = c.id
-                val imgs: MutableList<ImageFileItemK> = ArrayList()
+                val imgs: MutableList<ImageFileItem> = ArrayList()
                 val chpImgs: List<ImageFile>? = c.imageFiles
                 if (chpImgs != null) {
                     for (img in chpImgs) {
                         // Reconstitute display order that has been lost because of @Transient property
                         img.displayOrder = displayOrder++
                         if (img.isReadable) {
-                            val holder = ImageFileItemK(img, false)
+                            val holder = ImageFileItem(img, false)
                             imgs.add(holder)
                         }
                     }
@@ -494,9 +494,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                     null
                 ).withDraggable(!isArchive)
                 expandableItem.identifier = Long.MAX_VALUE
-                val imgs: MutableList<ImageFileItemK> = ArrayList()
+                val imgs: MutableList<ImageFileItem> = ArrayList()
                 for (img in chapterlessImages) {
-                    val holder = ImageFileItemK(img, false)
+                    val holder = ImageFileItem(img, false)
                     imgs.add(holder)
                 }
                 expandableItem.subItems.addAll(imgs)
@@ -504,9 +504,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             }
             expandableItemAdapter.set(chapterItems)
         } else { // Classic gallery
-            var imgs: MutableList<ImageFileItemK> = ArrayList()
+            var imgs: MutableList<ImageFileItem> = ArrayList()
             for (img in images) {
-                val holder = ImageFileItemK(img, editMode == EditMode.ADD_CHAPTER)
+                val holder = ImageFileItem(img, editMode == EditMode.ADD_CHAPTER)
                 if (startIndex == img.displayOrder) holder.setCurrent(true)
                 imgs.add(holder)
             }
@@ -543,21 +543,21 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     @SuppressLint("NonConstantResourceId")
     private fun onSelectionMenuItemClicked(menuItem: MenuItem): Boolean {
-        val selectedItems: Set<ImageFileItemK> = selectExtension.selectedItems
+        val selectedItems: Set<ImageFileItem> = selectExtension.selectedItems
         when (menuItem.itemId) {
             R.id.action_delete -> if (selectedItems.isNotEmpty()) {
-                val selectedImages = selectedItems.map { obj: ImageFileItemK -> obj.getImage() }
+                val selectedImages = selectedItems.map { obj: ImageFileItem -> obj.getImage() }
                 askDeleteSelected(selectedImages)
             }
 
             R.id.action_set_group_cover -> if (selectedItems.isNotEmpty()) {
                 val selectedImages =
-                    selectedItems.firstNotNullOfOrNull { obj: ImageFileItemK -> obj.getImage() }
+                    selectedItems.firstNotNullOfOrNull { obj: ImageFileItem -> obj.getImage() }
                 if (selectedImages != null) askSetSelectedCover(selectedImages)
             }
 
             R.id.action_toggle_favorite_pages -> if (selectedItems.isNotEmpty()) {
-                val selectedImages = selectedItems.map { obj: ImageFileItemK -> obj.getImage() }
+                val selectedImages = selectedItems.map { obj: ImageFileItem -> obj.getImage() }
                 viewModel.toggleImageFavourite(selectedImages) { onFavouriteSuccess() }
             }
 
@@ -602,7 +602,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         }
     }
 
-    private fun onItemClick(item: ImageFileItemK): Boolean {
+    private fun onItemClick(item: ImageFileItem): Boolean {
         val img = item.getImage()
         if (editMode == EditMode.NONE) { // View image in gallery
             viewModel.setViewerStartingIndex(img.displayOrder)
@@ -631,7 +631,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     private fun onNestedItemClick(item: INestedItem<*>): Boolean {
         if (item.getLevel() > 0) {
-            val img = (item as ImageFileItemK).getImage()
+            val img = (item as ImageFileItem).getImage()
             viewModel.setViewerStartingIndex(img.displayOrder)
             if (0 == parentFragmentManager.backStackEntryCount) { // Gallery mode (Library -> gallery -> pager)
                 parentFragmentManager
@@ -667,7 +667,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
      * @return True if the current book has at least a favourite
      */
     private fun hasFavourite(): Boolean {
-        val images: List<ImageFileItemK> = itemAdapter.adapterItems
+        val images: List<ImageFileItem> = itemAdapter.adapterItems
         for (item in images) if (item.isFavourite()) return true
         return false
     }
