@@ -13,7 +13,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.DialogMetaGalleryBinding
-import me.devsaki.hentoid.viewholders.ImageFileItem
+import me.devsaki.hentoid.viewholders.ImageFileItemK
 
 /**
  * Dialog to pick a picture in a content gallery
@@ -23,7 +23,7 @@ class GalleyPickerDialogFragment : DialogFragment() {
     // UI
     private var _binding: DialogMetaGalleryBinding? = null
     private val binding get() = _binding!!
-    private val itemAdapter = ItemAdapter<ImageFileItem>()
+    private val itemAdapter = ItemAdapter<ImageFileItemK>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
 
     // === VARIABLES
@@ -60,11 +60,11 @@ class GalleyPickerDialogFragment : DialogFragment() {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        itemAdapter.set(loadImages().map { i -> ImageFileItem(i, false) })
+        itemAdapter.set(loadImages().map { i -> ImageFileItemK(i, false) })
 
         fastAdapter.onClickListener =
-            { _: View?, _: IAdapter<ImageFileItem>, i: ImageFileItem, _: Int ->
-                onItemClick(i.image.order)
+            { _: View?, _: IAdapter<ImageFileItemK>, i: ImageFileItemK, _: Int ->
+                onItemClick(i.getImage().order)
             }
 
         binding.recyclerView.adapter = fastAdapter
