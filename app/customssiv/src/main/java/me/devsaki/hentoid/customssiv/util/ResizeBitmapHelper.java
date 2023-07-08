@@ -85,7 +85,7 @@ public class ResizeBitmapHelper {
         // Calculate gaussian's radius
         float sigma = (1 / xScale) / (float) Math.PI;
         // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
-        float radius = 2.5f * sigma/* - 1.5f*/; // Works better that way
+        float radius = 3f * sigma/* - 1.5f*/; // Works better that way
         radius = Math.min(25, Math.max(0.0001f, radius));
         Timber.v(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius);
 
