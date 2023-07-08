@@ -25,6 +25,7 @@ import com.bumptech.glide.load.resource.UnitTransformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.example.gles_renderer.GPUImage
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.GlideApp
 import me.devsaki.hentoid.core.HentoidApp
@@ -34,7 +35,6 @@ import me.devsaki.hentoid.customssiv.ImageSource
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
-import me.devsaki.hentoid.gpu_render.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageTransform

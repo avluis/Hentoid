@@ -311,7 +311,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
 
 
-    implementation project(path: ':app:gpu-render')
+    implementation project(path: ':app:gles-renderer')
     implementation project(path: ':app:customssiv')
 }
 

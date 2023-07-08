@@ -4,15 +4,16 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
+import com.example.gles_renderer.GPUImage;
+import com.example.gles_renderer.filter.GPUImageFilter;
+import com.example.gles_renderer.filter.GPUImageGaussianBlurFilter;
+import com.example.gles_renderer.filter.GPUImageResizeFilter;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.gpu_render.GPUImage;
-import me.devsaki.hentoid.gpu_render.filter.GPUImageFilter;
-import me.devsaki.hentoid.gpu_render.filter.GPUImageGaussianBlurFilter;
-import me.devsaki.hentoid.gpu_render.filter.GPUImageResizeFilter;
 import timber.log.Timber;
 
 // Credits go to https://medium.com/@petrakeas/alias-free-resize-with-renderscript-5bf15a86ce3

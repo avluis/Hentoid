@@ -54,5 +54,5 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.12.0'
     implementation 'androidx.core:core-ktx:1.10.0'
 
-    implementation project(path: ':app:gpu-render')
+    implementation project(path: ':app:gles-renderer')
 }

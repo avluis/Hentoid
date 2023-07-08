@@ -35,6 +35,7 @@ import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 
 import com.annimon.stream.function.Consumer;
+import com.example.gles_renderer.GPUImage;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -64,7 +65,6 @@ import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder;
 import me.devsaki.hentoid.customssiv.util.Debouncer;
 import me.devsaki.hentoid.customssiv.util.Helper;
 import me.devsaki.hentoid.customssiv.util.ResizeBitmapHelper;
-import me.devsaki.hentoid.gpu_render.GPUImage;
 import timber.log.Timber;
 
 
