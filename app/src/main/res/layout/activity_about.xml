@@ -70,7 +70,6 @@
                 android:layout_height="@dimen/about_ic_icons_height"
                 android:cropToPadding="true"
                 android:src="@drawable/ic_social_discord"
-                app:layout_constraintBottom_toTopOf="@id/redditIcon"
                 app:layout_constraintStart_toEndOf="@id/appLogo"
                 app:layout_constraintTop_toBottomOf="@id/githubIcon"
                 tools:ignore="ContentDescription" />
@@ -86,28 +85,6 @@
                 app:layout_constraintStart_toEndOf="@id/discordIcon"
                 app:layout_constraintTop_toTopOf="@id/discordIcon" />
 
-            <ImageView
-                android:id="@+id/redditIcon"
-                android:layout_width="@dimen/about_ic_icons_width"
-                android:layout_height="@dimen/about_ic_icons_height"
-                android:cropToPadding="true"
-                android:src="@drawable/ic_social_reddit"
-                app:layout_constraintBottom_toTopOf="@id/changelogButton"
-                app:layout_constraintStart_toEndOf="@id/appLogo"
-                app:layout_constraintTop_toBottomOf="@id/discordIcon"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/redditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:text="@string/about_reddit"
-                android:textSize="@dimen/about_ic_icons_textSize"
-                app:layout_constraintBottom_toBottomOf="@id/redditIcon"
-                app:layout_constraintStart_toEndOf="@id/redditIcon"
-                app:layout_constraintTop_toTopOf="@id/redditIcon" />
-
             <TextView
                 android:id="@+id/changelogButton"
                 android:layout_width="0dp"
@@ -122,7 +99,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/appLogo"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/appLogo"
-                app:layout_constraintTop_toBottomOf="@id/redditIcon" />
+                app:layout_constraintTop_toBottomOf="@id/discordIcon" />
 
             <TextView
                 android:id="@+id/tv_version_name"

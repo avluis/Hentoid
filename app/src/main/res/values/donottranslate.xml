@@ -458,7 +458,6 @@
     <!-- Strings: Main: About Activity -->
     <string name="about_github" translatable="false"><u>GitHub</u></string>
     <string name="about_discord" translatable="false"><u>Discord</u></string>
-    <string name="about_reddit" translatable="false"><u>Reddit</u></string>
     <!-- Strings: Main: Duplicate detector -->
     <string name="duplicate_total_score" translatable="false">%.0f%%</string>
 
