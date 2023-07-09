@@ -561,6 +561,15 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 viewModel.toggleImageFavourite(selectedImages) { onFavouriteSuccess() }
             }
 
+            R.id.action_select_all -> {
+                // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
+                var count = 0
+                selectExtension.apply {
+                    while (selections.size < itemAdapter.adapterItemCount && ++count < 5)
+                        select(IntRange(0, itemAdapter.adapterItemCount - 1))
+                }
+            }
+
             else -> {
                 binding?.apply {
                     selectionToolbar.visibility = View.GONE
