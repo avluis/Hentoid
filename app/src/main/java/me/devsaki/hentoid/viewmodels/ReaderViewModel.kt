@@ -177,7 +177,10 @@ class ReaderViewModel(
     fun loadContentFromId(contentId: Long, pageNumber: Int, forceImageReload: Boolean = false) {
         if (contentId > 0) {
             val loadedContent = dao.selectContent(contentId)
-            if (loadedContent != null) loadContent(loadedContent, pageNumber, forceImageReload)
+            if (loadedContent != null) {
+                if (contentIds.isEmpty()) contentIds.add(contentId)
+                loadContent(loadedContent, pageNumber, forceImageReload)
+            }
         }
     }
 
