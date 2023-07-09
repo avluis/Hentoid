@@ -20,6 +20,7 @@ import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
 
+@Suppress("UNUSED_PARAMETER")
 object DatabaseMaintenance {
     /**
      * Clean up and upgrade database

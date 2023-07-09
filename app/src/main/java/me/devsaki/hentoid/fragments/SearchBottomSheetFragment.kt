@@ -25,7 +25,6 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.IncludeSearchBottomPanelBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.DebouncerK
 import me.devsaki.hentoid.util.LanguageHelper
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
@@ -56,7 +55,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
      * Strings submitted to this will be debounced to [.searchMasterData] after the given
      * delay.
      *
-     * @see Debouncer
+     * @see DebouncerK
      */
     private lateinit var searchMasterDataDebouncer: DebouncerK<String>
 

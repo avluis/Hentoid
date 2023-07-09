@@ -66,12 +66,15 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
 
     override val isAutoExpanding: Boolean
         get() = true
+    @Suppress("UNUSED_PARAMETER")
     override var isExpanded: Boolean
         get() = expanded
         set(value) {}
+    @Suppress("UNUSED_PARAMETER")
     override var parent: IParentItem<*>?
         get() = null
         set(value) {}
+    @Suppress("UNUSED_PARAMETER")
     override var subItems: MutableList<ISubItem<*>>
         get() = mutableListOf()
         set(value) { /* Nothing */ }

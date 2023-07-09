@@ -44,6 +44,7 @@ import java.io.IOException
 
 typealias BiConsumer<T, U> = (T, U) -> Unit
 
+@Suppress("UNUSED_PARAMETER")
 object AppStartup {
     private var isInitialized = false
 

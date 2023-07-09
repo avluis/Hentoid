@@ -196,6 +196,7 @@ object ImageHelper {
         }
     }
 
+    @Suppress("DEPRECATION")
     fun bitmapToWebp(bitmap: Bitmap): ByteArray {
         val output = ByteArrayOutputStream()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)

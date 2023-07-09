@@ -78,7 +78,7 @@ fun Bundle.string(default: String) = object : ReadWriteProperty<Any, String> {
         putString(property.name, value)
 }
 
-fun Bundle.size() = object : ReadWriteProperty<Any, Size?> {
+fun Bundle.sizeI() = object : ReadWriteProperty<Any, Size?> {
     override fun getValue(thisRef: Any, property: KProperty<*>) =
         getSize(property.name)
 

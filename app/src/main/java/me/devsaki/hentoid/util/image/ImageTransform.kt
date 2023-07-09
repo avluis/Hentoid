@@ -120,6 +120,7 @@ object ImageTransform {
         else result
     }
 
+    @Suppress("DEPRECATION")
     private fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArray {
         val output = ByteArrayOutputStream()
         when (encoder) {
