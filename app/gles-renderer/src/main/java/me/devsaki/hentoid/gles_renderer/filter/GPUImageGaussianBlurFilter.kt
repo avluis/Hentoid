@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.gpu_render.filter
+package me.devsaki.hentoid.gles_renderer.filter
 
 /**
  * A more generalized 9x9 Gaussian blur filter

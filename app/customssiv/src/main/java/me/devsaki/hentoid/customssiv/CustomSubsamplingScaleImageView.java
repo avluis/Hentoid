@@ -35,7 +35,7 @@ import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 
 import com.annimon.stream.function.Consumer;
-import com.example.gles_renderer.GPUImage;
+import me.devsaki.hentoid.gles_renderer.GPUImage;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 

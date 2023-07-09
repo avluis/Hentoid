@@ -4,10 +4,10 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
-import com.example.gles_renderer.GPUImage;
-import com.example.gles_renderer.filter.GPUImageFilter;
-import com.example.gles_renderer.filter.GPUImageGaussianBlurFilter;
-import com.example.gles_renderer.filter.GPUImageResizeFilter;
+import me.devsaki.hentoid.gles_renderer.GPUImage;
+import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilter;
+import me.devsaki.hentoid.gles_renderer.filter.GPUImageGaussianBlurFilter;
+import me.devsaki.hentoid.gles_renderer.filter.GPUImageResizeFilter;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 

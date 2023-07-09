@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.gpu_render.util
+package me.devsaki.hentoid.gles_renderer.util
 
 import android.graphics.Bitmap
 import android.opengl.GLES20
@@ -80,8 +80,7 @@ class OpenGlUtils {
         }
 
         fun loadTextureAsBitmap(data: IntBuffer, width: Int, height: Int, usedTexId: Int): Int {
-            val bitmap = Bitmap
-                .createBitmap(data.array(), width, height, Bitmap.Config.ARGB_8888)
+            val bitmap = Bitmap.createBitmap(data.array(), width, height, Bitmap.Config.ARGB_8888)
             return loadTexture(bitmap, usedTexId, true)
         }
 

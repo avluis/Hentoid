@@ -1,9 +1,9 @@
-package com.example.gles_renderer.filter
+package me.devsaki.hentoid.gles_renderer.filter
 
 import android.content.Context
 import android.graphics.PointF
 import android.opengl.GLES20
-import com.example.gles_renderer.util.OpenGlUtils
+import me.devsaki.hentoid.gles_renderer.util.OpenGlUtils
 import java.io.InputStream
 import java.nio.FloatBuffer
 import java.util.LinkedList

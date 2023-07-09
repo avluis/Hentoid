@@ -1,7 +1,9 @@
-package me.devsaki.hentoid.gpu_render
+package me.devsaki.hentoid.gles_renderer
 
 import android.graphics.Bitmap
-import android.opengl.GLES20
+import android.opengl.GLES20.GL_RGBA
+import android.opengl.GLES20.GL_UNSIGNED_BYTE
+import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import timber.log.Timber
 import java.nio.ByteBuffer
@@ -95,7 +97,15 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
 
         val mPixelBuf = ByteBuffer.allocate(outX * outY * 4)
         mPixelBuf.order(ByteOrder.nativeOrder())
-        GLES20.glReadPixels(0, 0, outX, outY, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mPixelBuf)
+        GLES30.glReadPixels(0, 0, outX, outY, GL_RGBA, GL_UNSIGNED_BYTE, mPixelBuf)
+        /*
+        val fence = GLES30.glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+        GLES30.glClientWaitSync(fence, 0, 0)
+
+        val length0 = IntArray(1)
+        val status0 = IntArray(1)
+        GLES30.glGetSynciv( fence, GLES30.GL_SYNC_STATUS, 1, length0, 0, status0, 0 );
+*/
         mPixelBuf.rewind()
 
         val bmp = Bitmap.createBitmap(outX, outY, Bitmap.Config.ARGB_8888)

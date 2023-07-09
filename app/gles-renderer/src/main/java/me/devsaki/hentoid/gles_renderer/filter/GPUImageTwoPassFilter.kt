@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.gpu_render.filter
+package me.devsaki.hentoid.gles_renderer.filter
 
 open class GPUImageTwoPassFilter(
     firstVertexShader: String, firstFragmentShader: String,

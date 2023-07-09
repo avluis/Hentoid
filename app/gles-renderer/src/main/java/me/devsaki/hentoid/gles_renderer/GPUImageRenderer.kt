@@ -1,14 +1,14 @@
-package com.example.gles_renderer
+package me.devsaki.hentoid.gles_renderer
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
-import com.example.gles_renderer.filter.GPUImageFilter
-import com.example.gles_renderer.util.OpenGlUtils
-import com.example.gles_renderer.util.Rotation
-import com.example.gles_renderer.util.TextureRotationUtil
-import com.example.gles_renderer.util.TextureRotationUtil.Companion.TEXTURE_NO_ROTATION
+import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilter
+import me.devsaki.hentoid.gles_renderer.util.OpenGlUtils
+import me.devsaki.hentoid.gles_renderer.util.Rotation
+import me.devsaki.hentoid.gles_renderer.util.TextureRotationUtil
+import me.devsaki.hentoid.gles_renderer.util.TextureRotationUtil.Companion.TEXTURE_NO_ROTATION
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
