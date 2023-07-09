@@ -1,4 +1,4 @@
-package com.example.gles_renderer.util
+package me.devsaki.hentoid.gles_renderer.util
 
 enum class Rotation {
     NORMAL, ROTATION_90, ROTATION_180, ROTATION_270;

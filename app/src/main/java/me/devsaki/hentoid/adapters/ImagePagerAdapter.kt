@@ -25,7 +25,7 @@ import com.bumptech.glide.load.resource.UnitTransformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.example.gles_renderer.GPUImage
+import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.GlideApp
 import me.devsaki.hentoid.core.HentoidApp

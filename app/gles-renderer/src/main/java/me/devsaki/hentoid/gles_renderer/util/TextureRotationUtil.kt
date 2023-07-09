@@ -1,4 +1,4 @@
-package com.example.gles_renderer.util
+package me.devsaki.hentoid.gles_renderer.util
 
 class TextureRotationUtil {
     companion object {

@@ -1,10 +1,9 @@
-package com.example.gles_renderer
+package me.devsaki.hentoid.gles_renderer
 
 import android.graphics.Bitmap
 import android.opengl.GLES20.GL_RGBA
 import android.opengl.GLES20.GL_UNSIGNED_BYTE
 import android.opengl.GLES30
-import android.opengl.GLES30.GL_SYNC_GPU_COMMANDS_COMPLETE
 import android.opengl.GLSurfaceView
 import timber.log.Timber
 import java.nio.ByteBuffer

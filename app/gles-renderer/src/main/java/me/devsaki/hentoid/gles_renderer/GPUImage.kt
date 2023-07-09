@@ -1,4 +1,4 @@
-package com.example.gles_renderer
+package me.devsaki.hentoid.gles_renderer
 
 import android.app.ActivityManager
 import android.content.Context
@@ -6,10 +6,9 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import android.view.WindowManager
-import com.example.gles_renderer.filter.GPUImageFilter
-import com.example.gles_renderer.filter.GPUImageFilterGroup
-import com.example.gles_renderer.util.Rotation
-import timber.log.Timber
+import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilter
+import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilterGroup
+import me.devsaki.hentoid.gles_renderer.util.Rotation
 
 class GPUImage(val context: Context) {
 
@@ -114,7 +113,7 @@ class GPUImage(val context: Context) {
      *
      * @return array with width and height of bitmap image
      */
-    fun getScaleSize(): IntArray? {
+    fun getScaleSize(): IntArray {
         return intArrayOf(scaleWidth, scaleHeight)
     }
 

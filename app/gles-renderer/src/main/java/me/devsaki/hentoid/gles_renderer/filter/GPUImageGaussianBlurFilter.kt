@@ -1,4 +1,4 @@
-package com.example.gles_renderer.filter
+package me.devsaki.hentoid.gles_renderer.filter
 
 /**
  * A more generalized 9x9 Gaussian blur filter
