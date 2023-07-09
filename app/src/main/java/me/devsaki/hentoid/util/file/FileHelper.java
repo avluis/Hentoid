@@ -345,7 +345,7 @@ public class FileHelper {
      * @return New InputStream opened on the given file
      * @throws IOException In case something horrible happens during I/O
      */
-    public static InputStream getInputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
+    public static InputStream getInputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException, IllegalArgumentException {
         return context.getContentResolver().openInputStream(fileUri);
     }
 

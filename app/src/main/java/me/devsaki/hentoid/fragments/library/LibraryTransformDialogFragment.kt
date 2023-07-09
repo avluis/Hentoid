@@ -47,6 +47,7 @@ import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.workers.TransformWorker
 import okio.use
+import timber.log.Timber
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.max
@@ -303,8 +304,12 @@ class LibraryTransformDialogFragment : DialogFragment() {
             val pages = imageList.filter { i -> i.isReadable }
             maxPages = pages.size
             val page = pages[pageIndex]
-            FileHelper.getInputStream(requireContext(), Uri.parse(page.fileUri)).use {
-                return Pair(page.name, it.readBytes())
+            try {
+                FileHelper.getInputStream(requireContext(), Uri.parse(page.fileUri)).use {
+                    return Pair(page.name, it.readBytes())
+                }
+            } catch (t: Throwable) {
+                Timber.w(t)
             }
         }
         return null
