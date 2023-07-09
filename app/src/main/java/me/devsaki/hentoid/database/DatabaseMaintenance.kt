@@ -66,12 +66,19 @@ object DatabaseMaintenance {
             db.flagContentsForDeletion(contentList, false)
             Timber.i("Unflag books : done")
 
-            // Unflag all books signaled as being deleted
+            // Unflag all books signaled as being processed
             Timber.i("Unmark books as being processed : start")
             contentList = DBHelper.safeFind(db.selectAllProcessedBooksQ())
             Timber.i("Unmark books as being processed : %s books detected", contentList.size)
             db.markContentsAsBeingProcessed(contentList, false)
             Timber.i("Unmark books as being processed : done")
+
+            // Remove empty QueueRecords from the queue (still not sure how they appear in the first place)
+            Timber.i("Removing orphan Queue records : start")
+            val orphanIds = db.selectOrphanQueueRecordIds()
+            Timber.i("Removing orphan Queue records : %s items detected", orphanIds.size)
+            db.deleteQueueRecords(orphanIds)
+            Timber.i("Removing orphan Queue records : done")
 
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
             Timber.i("Moving back isolated items to queue : start")

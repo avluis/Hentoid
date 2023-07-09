@@ -424,6 +424,11 @@ public class ObjectBoxDB {
         if (record != null) queueRecordBox.remove(record);
     }
 
+    void deleteQueueRecords(long[] ids) {
+        Box<QueueRecord> queueRecordBox = store.boxFor(QueueRecord.class);
+        queueRecordBox.remove(ids);
+    }
+
     Query<Content> selectVisibleContentQ() {
         ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle();
         bundle.setSortField(Preferences.Constant.ORDER_FIELD_NONE);
@@ -521,8 +526,10 @@ public class ObjectBoxDB {
         // Custom ordering depends on another "table"
         // => Implemented post-query build
         if (orderField == Preferences.Constant.ORDER_FIELD_CUSTOM) {
-            //query.sort(new Content.GroupItemOrderComparator(groupId)); // doesn't work with PagedList because it uses Query.find(final long offset, final long limit)
-            //query.backlink(GroupItem_.content).order(GroupItem_.order); // doesn't work yet (see https://github.com/objectbox/objectbox-java/issues/141)
+            /*
+            query.sort(new Content.GroupItemOrderComparator(groupId)); // doesn't work with PagedList because it uses Query.find(final long offset, final long limit)
+            query.backlink(GroupItem_.content).order(GroupItem_.order); // doesn't work yet (see https://github.com/objectbox/objectbox-java/issues/141)
+             */
             return;
         }
 
@@ -1709,22 +1716,6 @@ public class ObjectBoxDB {
     }
 
     Set<Long> selectStoredContentFavIds(boolean bookFavs, boolean groupFavs) {
-        /*
-        QueryCondition<Content> qc = Content_.status.oneOf(libraryStatus);
-        QueryCondition<Content> qcB = Content_.favourite.equal(true);
-        QueryCondition<Content> qcG = qcB;
-        if (groupFavs) {
-            long[] favGroupIds = store.boxFor(Group.class).query().equal(Group_.favourite, true).build().findIds();
-            qcG = Content_.groupItems.
-        }
-
-
-        if (bookFavs && groupFavs) qc = qc.and(qcB.or(qcG));
-        else if (bookFavs) qc = qc.and(qcB);
-        else if (groupFavs) qc = qc.and(qcG);
-
-        return store.boxFor(Content.class).query(qc).build();
-         */
         if (bookFavs && groupFavs) {
             Set<Long> qcBIds = Helper.getSetFromPrimitiveArray(DBHelper.safeFindIds(selectStoredContentFavBookBQ()));
             Set<Long> qcGIds = Helper.getSetFromPrimitiveArray(DBHelper.safeFindIds(selectStoredContentFavBookGQ()));
@@ -1746,11 +1737,6 @@ public class ObjectBoxDB {
     }
 
     private Query<Content> selectStoredContentFavBookGQ() {
-        /*
-        QueryBuilder<GroupItem> groupItemQb = store.boxFor(GroupItem.class).query();
-        QueryBuilder<Group> groupSubQb = groupItemQb.link(GroupItem_.group).equal(Group_.favourite, true);
-        long[] groupItemIds = groupItemQb.build().findIds();
-         */
         // Triple-linking =D
         QueryBuilder<Content> contentQb = store.boxFor(Content.class).query();
         QueryBuilder<GroupItem> groupItemSubQb = contentQb.link(Content_.groupItems);
@@ -1787,5 +1773,10 @@ public class ObjectBoxDB {
         QueryCondition<Content> contentCondition = Content_.jsonUri.endsWith(".json").and(Content_.downloadCompletionDate.greater(0));
         QueryBuilder<Content> allContentQ = store.boxFor(Content.class).query(contentCondition).filter(c -> Math.abs(c.getDownloadCompletionDate() - c.getDownloadDate()) > 10);
         return DBHelper.safeFindIds(allContentQ);
+    }
+
+    long[] selectOrphanQueueRecordIds() {
+        QueryCondition<QueueRecord> qrCondition = QueueRecord_.contentId.lessOrEqual(0).or(QueueRecord_.contentId.isNull());
+        return DBHelper.safeFindIds(store.boxFor(QueueRecord.class).query(qrCondition));
     }
 }
