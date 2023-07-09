@@ -27,14 +27,14 @@
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/queueDownloadPreparationProgressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:clickable="false"
             android:focusable="false"
-            android:progress="33"
+            android:progress="76"
             android:visibility="invisible"
             app:indicatorColor="@color/secondary_light"
-            app:indicatorSize="?android:attr/actionBarSize"
+            app:indicatorSize="56dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             tools:visibility="visible" />
