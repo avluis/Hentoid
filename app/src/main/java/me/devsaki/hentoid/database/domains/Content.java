@@ -760,7 +760,7 @@ public class Content implements Serializable {
             readProgress = 0;
             return;
         }
-        readProgress = getReadPagesCount() * 1f / denominator;
+        readProgress = computeReadPagesCount() * 1f / denominator;
     }
 
     public float getReadProgress() {
@@ -923,14 +923,16 @@ public class Content implements Serializable {
         return Stream.of(groupItems).filter(gi -> gi.group.getTarget().grouping.equals(grouping)).toList();
     }
 
-    public int getReadPagesCount() {
-        if (readPagesCount > -1) return readPagesCount;
-
+    public int computeReadPagesCount() {
         if (null == imageFiles) return 0;
         int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).count();
         if (0 == countReadPages && lastReadPageIndex > 0)
             return lastReadPageIndex; // pre-v1.13 content
         else return countReadPages; // post v1.13 content
+    }
+
+    public int getReadPagesCount() {
+        return (readPagesCount > -1) ? readPagesCount : computeReadPagesCount();
     }
 
     public void setReadPagesCount(int count) {
