@@ -489,7 +489,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvArtist.setText(ContentHelper.formatArtistForDisplay(tvArtist.getContext(), content));
         }
 
-
         private void attachSeries(@NonNull final Content content) {
             String text = ContentHelper.formatSeriesForDisplay(tvSeries.getContext(), content);
             if (text.isEmpty()) {

@@ -750,23 +750,6 @@ public class Content implements Serializable {
         size = getDownloadedPagesSize();
     }
 
-    public void computeReadProgress() {
-        if (null == getImageFiles()) {
-            readProgress = 0;
-            return;
-        }
-        long denominator = Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
-        if (0 == denominator) {
-            readProgress = 0;
-            return;
-        }
-        readProgress = computeReadPagesCount() * 1f / denominator;
-    }
-
-    public float getReadProgress() {
-        return readProgress;
-    }
-
     public Site getSite() {
         return site;
     }
@@ -937,6 +920,23 @@ public class Content implements Serializable {
 
     public void setReadPagesCount(int count) {
         readPagesCount = count;
+    }
+
+    public void computeReadProgress() {
+        if (null == getImageFiles()) {
+            readProgress = 0;
+            return;
+        }
+        long denominator = Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
+        if (0 == denominator) {
+            readProgress = 0;
+            return;
+        }
+        readProgress = computeReadPagesCount() * 1f / denominator;
+    }
+
+    public float getReadProgress() {
+        return readProgress;
     }
 
     @Nullable
