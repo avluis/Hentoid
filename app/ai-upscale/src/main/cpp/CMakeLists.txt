@@ -1,48 +1,46 @@
-# For more information about using CMake with Android Studio, read the
-# documentation: https://d.android.com/studio/projects/add-native-code.html
-
-# Sets the minimum version of CMake required to build the native library.
-
-cmake_minimum_required(VERSION 3.22.1)
-
-# Declares and names the project.
-
 project("ai_upscale")
 
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
+cmake_minimum_required(VERSION 3.4.1)
 
-add_library( # Sets the name of the library.
-        ai_upscale
+set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -s -Wall -g -ggdb -Wl,-rpath=./")
+set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wl,-rpath=./")
 
-        # Sets the library as a shared library.
-        SHARED
 
-        # Provides a relative path to your source file(s).
-        ai_upscale.cpp)
+set(ncnn_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/ncnn-android-vulkan-shared)
+add_library(ncnn SHARED IMPORTED)
+add_library(ai_upscale SHARED ai_upscale.cpp upscale_engine.cpp realcugan.cpp)
+include_directories(${ncnn_DIR}/${ANDROID_ABI}/include/ncnn)
+set_target_properties(ncnn PROPERTIES IMPORTED_LOCATION
+        ${ncnn_DIR}/${ANDROID_ABI}/lib/libncnn.so)
 
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
 
-find_library( # Sets the name of the path variable.
-        log-lib
+#include_directories(${CMAKE_CURRENT_BINARY_DIR})
+#option(USE_SYSTEM_WEBP "build with system libwebp" OFF)
+#if(NOT USE_SYSTEM_WEBP)
+    # build libwebp library
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libwebp/CMakeLists.txt")
+        message(FATAL_ERROR "The submodules were not downloaded! Please update submodules with \"git submodule update --init --recursive\" and try again.")
+    endif()
 
-        # Specifies the name of the NDK library that
-        # you want CMake to locate.
-        log)
+    option(WEBP_ENABLE_SIMD "" ON)
+    option(WEBP_BUILD_ANIM_UTILS "" OFF)
+    option(WEBP_BUILD_CWEBP "" OFF)
+    option(WEBP_BUILD_DWEBP "" OFF)
+    option(WEBP_BUILD_GIF2WEBP "" OFF)
+    option(WEBP_BUILD_IMG2WEBP "" OFF)
+    option(WEBP_BUILD_VWEBP "" OFF)
+    option(WEBP_BUILD_WEBPINFO "" OFF)
+    option(WEBP_BUILD_WEBPMUX "" OFF)
+    option(WEBP_BUILD_EXTRAS "" OFF)
+    option(WEBP_BUILD_WEBP_JS "" OFF)
+    option(WEBP_NEAR_LOSSLESS "" OFF)
+    option(WEBP_ENABLE_SWAP_16BIT_CSP "" OFF)
 
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
+    add_subdirectory(libwebp)
 
-target_link_libraries( # Specifies the target library.
-        ai_upscale
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libwebp/src)
+#endif()
 
-        # Links the target library to the log library
-        # included in the NDK.
-        ${log-lib})
+target_link_libraries(ai_upscale webp ncnn)
