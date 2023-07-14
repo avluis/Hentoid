@@ -750,23 +750,6 @@ public class Content implements Serializable {
         size = getDownloadedPagesSize();
     }
 
-    public void computeReadProgress() {
-        if (null == getImageFiles()) {
-            readProgress = 0;
-            return;
-        }
-        long denominator = Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
-        if (0 == denominator) {
-            readProgress = 0;
-            return;
-        }
-        readProgress = getReadPagesCount() * 1f / denominator;
-    }
-
-    public float getReadProgress() {
-        return readProgress;
-    }
-
     public Site getSite() {
         return site;
     }
@@ -923,9 +906,7 @@ public class Content implements Serializable {
         return Stream.of(groupItems).filter(gi -> gi.group.getTarget().grouping.equals(grouping)).toList();
     }
 
-    public int getReadPagesCount() {
-        if (readPagesCount > -1) return readPagesCount;
-
+    public int computeReadPagesCount() {
         if (null == imageFiles) return 0;
         int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).count();
         if (0 == countReadPages && lastReadPageIndex > 0)
@@ -933,8 +914,29 @@ public class Content implements Serializable {
         else return countReadPages; // post v1.13 content
     }
 
+    public int getReadPagesCount() {
+        return (readPagesCount > -1) ? readPagesCount : computeReadPagesCount();
+    }
+
     public void setReadPagesCount(int count) {
         readPagesCount = count;
+    }
+
+    public void computeReadProgress() {
+        if (null == getImageFiles()) {
+            readProgress = 0;
+            return;
+        }
+        long denominator = Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
+        if (0 == denominator) {
+            readProgress = 0;
+            return;
+        }
+        readProgress = computeReadPagesCount() * 1f / denominator;
+    }
+
+    public float getReadProgress() {
+        return readProgress;
     }
 
     @Nullable

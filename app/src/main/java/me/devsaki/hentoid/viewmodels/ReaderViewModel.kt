@@ -565,21 +565,23 @@ class ReaderViewModel(
             val theImages = savedContent.imageFiles ?: return
 
             // Update image read status with the cached read statuses
-            val previousReadPagesCount =
-                theImages.filter { obj -> obj.isRead }.count { obj -> obj.isReadable }
-            if (readPageNumbers.size > previousReadPagesCount) {
+            val previousReadPageNumbers = theImages.filter { obj -> obj.isRead && obj.isReadable }.map { obj -> obj.order }.toSet()
+            val reReadPagesNumbers = readPageNumbers.toMutableSet()
+            reReadPagesNumbers.retainAll(previousReadPageNumbers)
+            if (readPageNumbers.size > reReadPagesNumbers.size) {
                 for (img in theImages) if (readPageNumbers.contains(img.order)) img.isRead = true
                 savedContent.computeReadProgress()
             }
-            if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > previousReadPagesCount || savedContent.isCompleted != markAsCompleted) ContentHelper.updateContentReadStats(
-                getApplication(),
-                dao,
-                savedContent,
-                theImages,
-                indexToSet,
-                updateReads,
-                markAsCompleted
-            )
+            if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.isCompleted != markAsCompleted)
+                ContentHelper.updateContentReadStats(
+                    getApplication(),
+                    dao,
+                    savedContent,
+                    theImages,
+                    indexToSet,
+                    updateReads,
+                    markAsCompleted
+                )
         } finally {
             dao.cleanup()
         }
