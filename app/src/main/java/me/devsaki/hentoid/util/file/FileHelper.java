@@ -129,7 +129,7 @@ public class FileHelper {
      * @param uri     Uri to get the full path from
      * @return Full, human-readable access path from the given Uri
      */
-    public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri) {
+    private static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri) {
         if (uri.toString().isEmpty()) return "";
 
         String volumePath = getVolumePath(context, getVolumeIdFromUri(uri));

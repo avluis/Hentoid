@@ -1,15 +1,26 @@
 #include <jni.h>
 #include <string>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 #include "upscale_engine.h"
 
-extern "C" JNIEXPORT jstring JNICALL
-Java_me_devsaki_hentoid_ai_1upscale_NativeLib_stringFromJNI(
-        JNIEnv* env,
-        jobject /* this */) {
-    std::string hello = "Hello from C++";
+extern "C" JNIEXPORT jint JNICALL
+Java_me_devsaki_hentoid_ai_1upscale_NativeLib_upscale(
+        JNIEnv *env,
+        jobject /* this */,
+        jobject assetMgr,
+        jstring param,
+        jstring model,
+        jstring inPath,
+        jstring outPath) {
+    AAssetManager *mgr = AAssetManager_fromJava(env, assetMgr);
+    const char *paramC = env->GetStringUTFChars(param, nullptr);
+    const char *modelC = env->GetStringUTFChars(model, nullptr);
 
-    auto* engine = new UpscaleEngine();
-    UpscaleEngine::exec(0,"");
+    const char *inPathC = env->GetStringUTFChars(inPath, nullptr);
+    const char *outPathC = env->GetStringUTFChars(outPath, nullptr);
 
-    return env->NewStringUTF(hello.c_str());
+    auto *engine = new UpscaleEngine();
+    engine->useModelAssets(mgr, paramC, modelC);
+    return engine->exec(inPathC, outPathC);
 }

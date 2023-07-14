@@ -263,7 +263,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             binding2.importStep1Button.setOnClickListener { pickFolder() }
             pickFolder() // Ask right away, there's no reason why the user should click again
         } else {
-            binding2.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
+            binding2.importStep1Folder.text = FileHelper.getFullPathFromUri(
                 requireContext(), Uri.parse(Preferences.getStorageUri(location))
             )
             binding2.importStep1Folder.isVisible = true
@@ -385,7 +385,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     private fun updateOnSelectFolder() {
         binding2.apply {
-            importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
+            importStep1Folder.text = FileHelper.getFullPathFromUri(
                 requireContext(), Uri.parse(
                     Preferences.getStorageUri(location)
                 )

@@ -1,8 +1,9 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import android.content.res.AssetManager
 import android.graphics.BitmapFactory
-import android.graphics.Point
+import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -10,6 +11,7 @@ import com.bumptech.glide.Glide
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.ai_upscale.NativeLib
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -22,6 +24,7 @@ import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.util.notification.Notification
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
+
 
 class TransformWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.transform_service, null) {
@@ -155,9 +158,26 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         if (isManhwa) nbManhwa.incrementAndGet()
         params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9
 
-        val targetData = ImageTransform.transform(rawData, params)
-        if (targetData == rawData) return // Unchanged picture
+        val absSourcePath =
+            FileHelper.getFullPathFromUri(applicationContext, Uri.parse(img.fileUri))
+        val mgr: AssetManager = applicationContext.resources.assets
+        val upscale = NativeLib()
+        val res = upscale.upscale(
+            mgr,
+            "realsr/models-nose/up2x-no-denoise.param",
+            "realsr/models-nose/up2x-no-denoise.bin",
+            absSourcePath,
+            absSourcePath
+        )
+        if (res > -1) nextOK() else nextKO()
 
+        /*
+                val targetData = ImageTransform.transform(rawData, params)
+                if (targetData == rawData) return // Unchanged picture
+
+         */
+
+        /*
         BitmapFactory.decodeByteArray(targetData, 0, targetData.size, options)
         val targetDims = Point(options.outWidth, options.outHeight)
         val targetMime = ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
@@ -179,6 +199,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             img.mimeType = targetMime
             nextOK()
         } else nextKO()
+        */
     }
 
     private fun nextOK() {

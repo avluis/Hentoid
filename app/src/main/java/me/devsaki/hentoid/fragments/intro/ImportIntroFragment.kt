@@ -210,7 +210,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
     private fun updateOnSelectFolder() {
         mergedBinding.importStep1Button.visibility = View.INVISIBLE
-        mergedBinding.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
+        mergedBinding.importStep1Folder.text = FileHelper.getFullPathFromUri(
             requireContext(),
             Uri.parse(Preferences.getStorageUri(StorageLocation.PRIMARY_1))
         )

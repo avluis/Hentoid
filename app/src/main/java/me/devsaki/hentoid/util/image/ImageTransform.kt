@@ -32,7 +32,7 @@ object ImageTransform {
     val screenWidth: Int = HentoidApp.getInstance().resources.displayMetrics.widthPixels
     val screenHeight: Int = HentoidApp.getInstance().resources.displayMetrics.heightPixels
 
-    private const val MAX_WEBP_DIMENSION = 16383
+    private const val MAX_WEBP_DIMENSION = 16383 // As per WEBP specifications
 
     /**
      * Transform the given raw picture data using the given params

@@ -259,8 +259,8 @@ public class ImportHelper {
             otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
         else otherLocationUriStr = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
         if (!otherLocationUriStr.isEmpty()) {
-            String treeFullPath = FileHelper.getFullPathFromTreeUri(context, treeUri);
-            String otherLocationFullPath = FileHelper.getFullPathFromTreeUri(context, Uri.parse(otherLocationUriStr));
+            String treeFullPath = FileHelper.getFullPathFromUri(context, treeUri);
+            String otherLocationFullPath = FileHelper.getFullPathFromUri(context, Uri.parse(otherLocationUriStr));
             if (treeFullPath.startsWith(otherLocationFullPath)) {
                 Timber.e("Selected folder is inside the other primary location : %s", treeUri.toString());
                 return new ImmutablePair<>(ProcessFolderResult.KO_OTHER_PRIMARY, treeUri.toString());
@@ -274,8 +274,8 @@ public class ImportHelper {
         // Check if selected folder is separate from Hentoid's external location
         String extLocationStr = Preferences.getStorageUri(StorageLocation.EXTERNAL);
         if (!extLocationStr.isEmpty()) {
-            String treeFullPath = FileHelper.getFullPathFromTreeUri(context, treeUri);
-            String extFullPath = FileHelper.getFullPathFromTreeUri(context, Uri.parse(extLocationStr));
+            String treeFullPath = FileHelper.getFullPathFromUri(context, treeUri);
+            String extFullPath = FileHelper.getFullPathFromUri(context, Uri.parse(extLocationStr));
             if (treeFullPath.startsWith(extFullPath)) {
                 Timber.e("Selected folder is inside the external location : %s", treeUri.toString());
                 return new ImmutablePair<>(ProcessFolderResult.KO_PRIMARY_EXTERNAL, treeUri.toString());
@@ -351,10 +351,10 @@ public class ImportHelper {
         String primaryUri1 = Preferences.getStorageUri(StorageLocation.PRIMARY_1);
         String primaryUri2 = Preferences.getStorageUri(StorageLocation.PRIMARY_2);
         if (!primaryUri1.isEmpty())
-            primaryUri1 = FileHelper.getFullPathFromTreeUri(context, Uri.parse(primaryUri1));
+            primaryUri1 = FileHelper.getFullPathFromUri(context, Uri.parse(primaryUri1));
         if (!primaryUri2.isEmpty())
-            primaryUri2 = FileHelper.getFullPathFromTreeUri(context, Uri.parse(primaryUri2));
-        String selectedFullPath = FileHelper.getFullPathFromTreeUri(context, treeUri);
+            primaryUri2 = FileHelper.getFullPathFromUri(context, Uri.parse(primaryUri2));
+        String selectedFullPath = FileHelper.getFullPathFromUri(context, treeUri);
         if ((!primaryUri1.isEmpty() && selectedFullPath.startsWith(primaryUri1))
                 || (!primaryUri2.isEmpty() && selectedFullPath.startsWith(primaryUri2))
         ) {

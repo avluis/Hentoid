@@ -20,7 +20,7 @@ public:
 #if _WIN32
     int load(const std::wstring& parampath, const std::wstring& modelpath);
 #else
-    int load(const std::string& parampath, const std::string& modelpath);
+    int load(AAssetManager* assetMgr, const char *param, const char *model);
 #endif
 
     int process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const;

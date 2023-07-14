@@ -1,12 +1,17 @@
 package me.devsaki.hentoid.ai_upscale
 
+import android.content.res.AssetManager
+
 class NativeLib {
 
-    /**
-     * A native method that is implemented by the 'ai_upscale' native library,
-     * which is packaged with this application.
-     */
-    external fun stringFromJNI(): String
+    // TODO initialize and free the upscale engine from here to avoid init overhead during each call
+    // NB : AssetManager must be kept alive to avoid it being garbage-collected
+    external fun upscale(
+        assetMgr: AssetManager,
+        param : String,
+        model: String,
+        inPath: String,
+        outPath: String): Int
 
     companion object {
         // Used to load the 'ai_upscale' library on application startup.

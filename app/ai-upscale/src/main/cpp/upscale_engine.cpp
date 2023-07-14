@@ -104,6 +104,7 @@ static std::vector<int> parse_optarg_int_array(const char *optarg) {
 
 #include "filesystem_utils.h"
 #include "upscale_engine.h"
+#include "Utils.h"
 
 static void print_usage() {
     fprintf(stdout, "Usage: realcugan-ncnn -i infile -o outfile [options]...\n\n");
@@ -211,9 +212,11 @@ void *load(void *args) {
 #if _WIN32
         FILE* fp = _wfopen(imagepath.c_str(), L"rb");
 #else
+        LOGD("imagepath %s", imagepath.c_str());
         FILE *fp = fopen(imagepath.c_str(), "rb");
 #endif
         if (fp) {
+            LOGD("file OK");
             // read whole file
             unsigned char *filedata = 0;
             int length = 0;
@@ -256,6 +259,8 @@ void *load(void *args) {
                 }
 
                 free(filedata);
+            } else {
+                LOGD("file KO");
             }
         }
         if (pixeldata) {
@@ -417,6 +422,12 @@ UpscaleEngine::UpscaleEngine() = default;
 
 UpscaleEngine::~UpscaleEngine() = default;
 
+void UpscaleEngine::useModelAssets(AAssetManager *assetMgr, const char *param, const char *model) {
+    this->asset_manager = assetMgr;
+    this->param_path = param;
+    this->model_path = model;
+}
+
 int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
     /*
     path_t inputpath;
@@ -426,7 +437,7 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
     */
     std::vector<int> tilesize;
     //path_t model = PATHSTR("models-se");
-    path_t model = "models-nose";
+    path_t model = PATHSTR("models-nose");
     std::vector<int> gpuid;
     int jobs_load = 1;
     std::vector<int> jobs_proc;
@@ -465,8 +476,8 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
         return -1;
     }
 
-    for (int i = 0; i < (int) tilesize.size(); i++) {
-        if (tilesize[i] != 0 && tilesize[i] < 32) {
+    for (int i: tilesize) {
+        if (i != 0 && i < 32) {
             fprintf(stderr, "invalid tilesize argument\n");
             return -1;
         }
@@ -482,8 +493,8 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
         return -1;
     }
 
-    for (int i = 0; i < (int) jobs_proc.size(); i++) {
-        if (jobs_proc[i] < 1) {
+    for (int i: jobs_proc) {
+        if (i < 1) {
             fprintf(stderr, "invalid jobs_proc thread count argument\n");
             return -1;
         }
@@ -679,6 +690,9 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
 
         uint32_t heap_budget = ncnn::get_gpu_device(gpuid[i])->get_heap_budget();
 
+        LOGD("input %s", inputpath.c_str());
+        LOGD("output %s", outputpath.c_str());
+
         if (path_is_directory(inputpath) && path_is_directory(outputpath)) {
             // multiple gpu jobs share the same heap
             heap_budget /= jobs_proc_per_gpu[gpuid[i]];
@@ -735,7 +749,8 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
 
             realcugan[i] = new RealCUGAN(gpuid[i], tta_mode, num_threads);
 
-            realcugan[i]->load(paramfullpath, modelfullpath);
+            int loaded = realcugan[i]->load(asset_manager, param_path, model_path);
+            LOGD("loaded %d : %d", i, loaded);
 
             realcugan[i]->noise = noise;
             realcugan[i]->scale = scale;
@@ -778,7 +793,7 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
             }
 
             // save image
-            SaveThreadParams stp;
+            SaveThreadParams stp{};
             stp.verbose = verbose;
 
             std::vector<ncnn::Thread *> save_threads(jobs_save);
