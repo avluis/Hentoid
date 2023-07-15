@@ -129,11 +129,11 @@ static void print_usage() {
 class Task {
 public:
     int id;
-    int webp;
+//    int webp;
     int scale;
 
-    path_t inpath;
-    path_t outpath;
+//    path_t inpath;
+//    path_t outpath;
 
     ncnn::Mat inimage;
     ncnn::Mat outimage;
@@ -201,6 +201,16 @@ void *loadFromMemory(void *args) {
     JNIEnv *env = ltp->env;
     jobject bitmap = ltp->bitmap;
 
+    Task v;
+    v.id = 0; // Index of loaded file; hardcoded to 0 for now
+//        v.webp = webp;
+    v.scale = scale;
+//        v.inpath = imagepath;
+//        v.outpath = ltp->output_files[i];
+
+    v.inimage = ncnn::Mat::from_android_bitmap(env, bitmap, ncnn::Mat::PIXEL_RGBA);
+
+/*
     // Get bitmap info
     AndroidBitmapInfo info;
     LOGD("getinfo %i", AndroidBitmap_getInfo(env, bitmap, &info) == ANDROID_BITMAP_RESULT_SUCCESS);
@@ -224,118 +234,12 @@ void *loadFromMemory(void *args) {
     v.inimage = ncnn::Mat(info.width, info.height, bitmapData, (size_t) c, c);
 
     LOGD("inimage empty %i", v.inimage.empty());
-    path_t ext = get_file_extension(v.outpath);
-
-    toproc.put(v);
+//    path_t ext = get_file_extension(v.outpath);
 
     AndroidBitmap_unlockPixels(env, bitmap);
+    */
 
-    return 0;
-}
-
-void *load(void *args) {
-    const LoadThreadParams *ltp = (const LoadThreadParams *) args;
-    const int count = ltp->input_files.size();
-    const int scale = ltp->scale;
-
-#pragma omp parallel for schedule(static, 1) num_threads(ltp->jobs_load)
-    for (int i = 0; i < count; i++) {
-        const path_t &imagepath = ltp->input_files[i];
-
-        int webp = 0;
-
-        unsigned char *pixeldata = 0;
-        int w;
-        int h;
-        int c;
-
-#if _WIN32
-        FILE* fp = _wfopen(imagepath.c_str(), L"rb");
-#else
-        LOGD("imagepath %s", imagepath.c_str());
-        FILE *fp = fopen(imagepath.c_str(), "rb");
-#endif
-        if (fp) {
-            LOGD("file OK");
-            // read whole file
-            unsigned char *filedata = 0;
-            int length = 0;
-            {
-                fseek(fp, 0, SEEK_END);
-                length = ftell(fp);
-                rewind(fp);
-                filedata = (unsigned char *) malloc(length);
-                if (filedata) {
-                    fread(filedata, 1, length, fp);
-                }
-                fclose(fp);
-            }
-
-            if (filedata) {
-                pixeldata = webp_load(filedata, length, &w, &h, &c);
-                if (pixeldata) {
-                    webp = 1;
-                } else {
-                    // not webp, try jpg png etc.
-#if _WIN32
-                    pixeldata = wic_decode_image(imagepath.c_str(), &w, &h, &c);
-#else // _WIN32
-                    pixeldata = stbi_load_from_memory(filedata, length, &w, &h, &c, 0);
-                    if (pixeldata) {
-                        // stb_image auto channel
-                        if (c == 1) {
-                            // grayscale -> rgb
-                            stbi_image_free(pixeldata);
-                            pixeldata = stbi_load_from_memory(filedata, length, &w, &h, &c, 3);
-                            c = 3;
-                        } else if (c == 2) {
-                            // grayscale + alpha -> rgba
-                            stbi_image_free(pixeldata);
-                            pixeldata = stbi_load_from_memory(filedata, length, &w, &h, &c, 4);
-                            c = 4;
-                        }
-                    }
-#endif // _WIN32
-                }
-
-                free(filedata);
-            } else {
-                LOGD("file KO");
-            }
-        }
-        if (pixeldata) {
-            Task v;
-            v.id = i;
-            v.webp = webp;
-            v.scale = scale;
-            v.inpath = imagepath;
-            v.outpath = ltp->output_files[i];
-
-            v.inimage = ncnn::Mat(w, h, (void *) pixeldata, (size_t) c, c);
-
-            path_t ext = get_file_extension(v.outpath);
-            if (c == 4 &&
-                (ext == PATHSTR("jpg") || ext == PATHSTR("JPG") || ext == PATHSTR("jpeg") ||
-                 ext == PATHSTR("JPEG"))) {
-                path_t output_filename2 = ltp->output_files[i] + PATHSTR(".png");
-                v.outpath = output_filename2;
-#if _WIN32
-                fwprintf(stderr, L"image %ls has alpha channel ! %ls will output %ls\n", imagepath.c_str(), imagepath.c_str(), output_filename2.c_str());
-#else // _WIN32
-                fprintf(stderr, "image %s has alpha channel ! %s will output %s\n",
-                        imagepath.c_str(), imagepath.c_str(), output_filename2.c_str());
-#endif // _WIN32
-            }
-
-            toproc.put(v);
-        } else {
-#if _WIN32
-            fwprintf(stderr, L"decode image %ls failed\n", imagepath.c_str());
-#else // _WIN32
-            fprintf(stderr, "decode image %s failed\n", imagepath.c_str());
-#endif // _WIN32
-        }
-    }
+    toproc.put(v);
 
     return 0;
 }
@@ -358,6 +262,7 @@ void *proc(void *args) {
             break;
 
         const int scale = v.scale;
+        LOGD("PROCESS BEGIN; scale=%i", scale);
         if (scale == 1) {
             v.outimage = ncnn::Mat(v.inimage.w, v.inimage.h, (size_t) v.inimage.elemsize,
                                    (int) v.inimage.elemsize);
@@ -373,86 +278,118 @@ void *proc(void *args) {
 
         tosave.put(v);
     }
+    LOGD("PROCESS END");
 
     return 0;
 }
 
 class SaveThreadParams {
 public:
-    int verbose;
+    JNIEnv *env;
+    jobject out_bmp;
 };
 
 void *save(void *args) {
-    const SaveThreadParams *stp = (const SaveThreadParams *) args;
-    const int verbose = stp->verbose;
+    const auto *stp = (const SaveThreadParams *) args;
+    JNIEnv *env = stp->env;
+    jobject out_bmp = stp->out_bmp;
 
-    for (;;) {
-        Task v;
+    //for (;;) {
+    Task v;
 
-        tosave.get(v);
+    tosave.get(v);
 
-        if (v.id == -233)
-            break;
+    /* TODO
+    if (v.id == -233)
+        break;
+        */
 
-        fprintf(stderr, "save result...\n");
-        float begin = clock();
+    const int channels = v.inimage.elempack;
 
-        // free input pixel data
-        {
-            unsigned char *pixeldata = (unsigned char *) v.inimage.data;
-            if (v.webp == 1) {
-                free(pixeldata);
-            } else {
+    LOGD("save result (%i channels)...", channels);
+//        long begin = clock();
+
+    // free input pixel data
+    {
+        v.inimage.release();
+        /*
+        auto *pixeldata = (unsigned char *) v.inimage.data;
 #if _WIN32
-                free(pixeldata);
+        free(pixeldata);
 #else
-                stbi_image_free(pixeldata);
+        stbi_image_free(pixeldata);
 #endif
-            }
-        }
-
-        int success = 0;
-
-        path_t ext = get_file_extension(v.outpath);
-
-        if (ext == PATHSTR("webp") || ext == PATHSTR("WEBP")) {
-            success = webp_save(v.outpath.c_str(), v.outimage.w, v.outimage.h, v.outimage.elempack,
-                                (const unsigned char *) v.outimage.data);
-        } else if (ext == PATHSTR("png") || ext == PATHSTR("PNG")) {
-#if _WIN32
-            success = wic_encode_image(v.outpath.c_str(), v.outimage.w, v.outimage.h, v.outimage.elempack, v.outimage.data);
-#else
-            success = stbi_write_png(v.outpath.c_str(), v.outimage.w, v.outimage.h,
-                                     v.outimage.elempack, v.outimage.data, 0);
-#endif
-        } else if (ext == PATHSTR("jpg") || ext == PATHSTR("JPG") || ext == PATHSTR("jpeg") ||
-                   ext == PATHSTR("JPEG")) {
-#if _WIN32
-            success = wic_encode_jpeg_image(v.outpath.c_str(), v.outimage.w, v.outimage.h, v.outimage.elempack, v.outimage.data);
-#else
-            success = stbi_write_jpg(v.outpath.c_str(), v.outimage.w, v.outimage.h,
-                                     v.outimage.elempack, v.outimage.data, 100);
-#endif
-        }
-        if (success) {
-            float end = clock();
-            fprintf(stderr, "save result use time: %.3f\n", (end - begin) / CLOCKS_PER_SEC);
-
-            if (verbose) {
-#if _WIN32
-                fwprintf(stdout, L"%ls -> %ls done\n", v.inpath.c_str(), v.outpath.c_str());
-#else
-                fprintf(stdout, "%s -> %s done\n", v.inpath.c_str(), v.outpath.c_str());
-#endif
-            }
-        } else {
-#if _WIN32
-            fwprintf(stderr, L"encode image %ls failed\n", v.outpath.c_str());
-#else
-            fprintf(stderr, "encode image %s failed\n", v.outpath.c_str());
-#endif
-        }
+         */
     }
+
+    LOGD("inImage released");
+
+    /*
+    int result;
+    AndroidBitmapInfo srcInfo;
+
+    result = AndroidBitmap_getInfo(env, out_bmp, &srcInfo);
+    if (result != ANDROID_BITMAP_RESULT_SUCCESS) {
+        LOGE("load : success KO");
+        return nullptr;
+    }
+
+    int width = srcInfo.width;
+    int height = srcInfo.height;
+
+    LOGD("...into out BMP : %ix%i / %i", width, height, srcInfo.format);
+    LOGD("outimage %ix%i / %lu", v.outimage.w, v.outimage.h, v.outimage.elemsize);
+     */
+
+    v.outimage.to_android_bitmap(env, out_bmp, ncnn::Mat::PIXEL_RGBA);
+
+    LOGD("AA1");
+//        v.outimage.release();
+    out_bmp = nullptr;
+
+    /*
+    path_t ext = get_file_extension(v.outpath);
+
+    if (ext == PATHSTR("webp") || ext == PATHSTR("WEBP")) {
+        success = webp_save(v.outpath.c_str(), v.outimage.w, v.outimage.h, v.outimage.elempack,
+                            (const unsigned char *) v.outimage.data);
+    } else if (ext == PATHSTR("png") || ext == PATHSTR("PNG")) {
+#if _WIN32
+        success = wic_encode_image(v.outpath.c_str(), v.outimage.w, v.outimage.h, v.outimage.elempack, v.outimage.data);
+#else
+        success = stbi_write_png(v.outpath.c_str(), v.outimage.w, v.outimage.h,
+                                 v.outimage.elempack, v.outimage.data, 0);
+#endif
+    } else if (ext == PATHSTR("jpg") || ext == PATHSTR("JPG") || ext == PATHSTR("jpeg") ||
+               ext == PATHSTR("JPEG")) {
+#if _WIN32
+        success = wic_encode_jpeg_image(v.outpath.c_str(), v.outimage.w, v.outimage.h, v.outimage.elempack, v.outimage.data);
+#else
+        success = stbi_write_jpg(v.outpath.c_str(), v.outimage.w, v.outimage.h,
+                                 v.outimage.elempack, v.outimage.data, 100);
+#endif
+     }
+
+    if (success) {
+        long end = clock();
+        LOGE("save result use time: %.3f\n", (end - begin) * 1.0 / CLOCKS_PER_SEC);
+
+        if (verbose) {
+#if _WIN32
+            fwprintf(stdout, L"%ls -> %ls done\n", v.inpath.c_str(), v.outpath.c_str());
+#else
+            LOGD("%s -> %s done\n", v.inpath.c_str(), v.outpath.c_str());
+#endif
+        }
+    } else {
+#if _WIN32
+        fwprintf(stderr, L"encode image %ls failed\n", v.outpath.c_str());
+#else
+        LOGE("encode image %s failed\n", v.outpath.c_str());
+#endif
+    }
+                       */
+    //}
 
     return 0;
 }
@@ -468,7 +405,39 @@ void UpscaleEngine::useModelAssets(AAssetManager *assetMgr, const char *param, c
     this->model_path = model;
 }
 
-int UpscaleEngine::exec(JNIEnv *env, jobject bitmap, path_t outputpath) {
+int UpscaleEngine::exec(JNIEnv *env, jobject in_bmp, jobject out_bmp) {
+    // Forced values
+    int scale = 2;
+
+    // load image
+    ncnn::Mat inimage = ncnn::Mat::from_android_bitmap(env, in_bmp, ncnn::Mat::PIXEL_RGBA);
+
+    // Process
+    int targetW = inimage.w * scale;
+    int targetH = inimage.h * scale;
+    //ncnn::Mat outimage = ncnn::Mat(targetW, targetH, (size_t) inimage.elemsize,
+    //                               (int) inimage.elemsize);
+
+    LOGD("process %zu", inimage.elemsize);
+
+    auto *pixels = new unsigned char[targetW * targetH * 4 * inimage.elemsize]();
+    inimage.to_pixels_resize(pixels, ncnn::Mat::PIXEL_RGBA, targetW, targetH);
+    ncnn::Mat outimage = ncnn::Mat::from_pixels(pixels, ncnn::Mat::PIXEL_RGBA, targetW, targetH);
+
+    LOGD("out %ix%i", outimage.w, outimage.h);
+
+    // Save
+    inimage.release();
+    LOGD("inImage released");
+    outimage.to_android_bitmap(env, out_bmp, ncnn::Mat::PIXEL_RGBA);
+    LOGD("data copied");
+    outimage.release();
+    LOGD("outImage released");
+    LOGD("END");
+    return 0;
+}
+
+int UpscaleEngine::exec_target(JNIEnv *env, jobject in_bmp, jobject out_bmp) {
     /*
     path_t inputpath;
     path_t outputpath;
@@ -666,9 +635,6 @@ int UpscaleEngine::exec(JNIEnv *env, jobject bitmap, path_t outputpath) {
     }
 #endif
 
-    path_t paramfullpath = sanitize_filepath(parampath);
-    path_t modelfullpath = sanitize_filepath(modelpath);
-
 #if _WIN32
     CoInitializeEx(NULL, COINIT_MULTITHREADED);
 #endif
@@ -726,8 +692,6 @@ int UpscaleEngine::exec(JNIEnv *env, jobject bitmap, path_t outputpath) {
         }
 
         uint32_t heap_budget = ncnn::get_gpu_device(gpuid[i])->get_heap_budget();
-
-        LOGD("output %s", outputpath.c_str());
 
         /*
         if (path_is_directory(inputpath) && path_is_directory(outputpath)) {
@@ -802,7 +766,7 @@ int UpscaleEngine::exec(JNIEnv *env, jobject bitmap, path_t outputpath) {
             // load image
             LoadThreadParams ltp;
             ltp.env = env;
-            ltp.bitmap = bitmap;
+            ltp.bitmap = in_bmp;
             ltp.scale = scale;
             ltp.jobs_load = jobs_load;
 
@@ -815,6 +779,7 @@ int UpscaleEngine::exec(JNIEnv *env, jobject bitmap, path_t outputpath) {
                 ptp[i].realcugan = realcugan[i];
             }
 
+            LOGD("PROCESSING");
             std::vector<ncnn::Thread *> proc_threads(total_jobs_proc);
             {
                 int total_jobs_proc_id = 0;
@@ -832,8 +797,10 @@ int UpscaleEngine::exec(JNIEnv *env, jobject bitmap, path_t outputpath) {
             }
 
             // save image
+            LOGD("SAVING");
             SaveThreadParams stp{};
-            stp.verbose = verbose;
+            stp.out_bmp = out_bmp;
+            stp.env = env;
 
             std::vector<ncnn::Thread *> save_threads(jobs_save);
             for (int i = 0; i < jobs_save; i++) {
@@ -841,37 +808,46 @@ int UpscaleEngine::exec(JNIEnv *env, jobject bitmap, path_t outputpath) {
             }
 
             // end
+            LOGD("FINALIZING 1");
             load_thread.join();
 
+            LOGD("FINALIZING 2");
             Task end;
             end.id = -233;
 
             for (int i = 0; i < total_jobs_proc; i++) {
                 toproc.put(end);
             }
+            LOGD("FINALIZING 3");
 
             for (int i = 0; i < total_jobs_proc; i++) {
                 proc_threads[i]->join();
                 delete proc_threads[i];
             }
+            LOGD("FINALIZING 4");
 
             for (int i = 0; i < jobs_save; i++) {
                 tosave.put(end);
             }
+            LOGD("FINALIZING 5");
 
             for (int i = 0; i < jobs_save; i++) {
                 save_threads[i]->join();
                 delete save_threads[i];
             }
+            LOGD("FINALIZING 6");
         }
 
         for (int i = 0; i < use_gpu_count; i++) {
             delete realcugan[i];
         }
+        LOGD("FINALIZING 7");
         realcugan.clear();
     }
 
+    LOGD("FINALIZING 8");
     ncnn::destroy_gpu_instance();
+    LOGD("FINALIZED");
 
     return 0;
 }

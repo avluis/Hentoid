@@ -2,6 +2,7 @@ package me.devsaki.hentoid.ai_upscale
 
 import android.content.res.AssetManager
 import android.graphics.Bitmap
+import java.nio.ByteBuffer
 
 class NativeLib {
 
@@ -9,10 +10,12 @@ class NativeLib {
     // NB : AssetManager must be kept alive to avoid it being garbage-collected
     external fun upscale(
         assetMgr: AssetManager,
-        param : String,
+        param: String,
         model: String,
-        bitmap: Bitmap,
-        outPath: String): Int
+        inBmp: Bitmap,
+        outBmp: Bitmap,
+        progress: ByteBuffer
+    ): Int
 
     companion object {
         // Used to load the 'ai_upscale' library on application startup.

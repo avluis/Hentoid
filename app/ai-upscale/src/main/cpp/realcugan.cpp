@@ -209,12 +209,13 @@ int RealCUGAN::load(AAssetManager *assetMgr, const char *param, const char *mode
 }
 
 int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
-    LOGD("inimage %ix%i", inimage.w, inimage.h);
+    LOGD("inimage %ix%i /%i", inimage.w, inimage.h, inimage.elempack);
 
     bool syncgap_needed = tilesize < std::max(inimage.w, inimage.h);
-    LOGD("syncgap_needed %i", syncgap_needed);
+    LOGD("syncgap %i %i", syncgap_needed, syncgap);
 
     if (!vkdev) {
+        LOGD("CPU BEGIN");
         // cpu only
         if (syncgap_needed && syncgap) {
             if (syncgap == 1)
@@ -225,6 +226,8 @@ int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
                 return process_cpu_se_very_rough(inimage, outimage);
         } else
             return process_cpu(inimage, outimage);
+
+        LOGD("CPU END");
     }
 
     if (noise == -1 && scale == 1) {
@@ -233,16 +236,17 @@ int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
     }
 
     if (syncgap_needed && syncgap) {
-        LOGD("syncgap %d", syncgap);
+        LOGD("GPU BEGIN");
         if (syncgap == 1)
             return process_se(inimage, outimage);
         if (syncgap == 2)
             return process_se_rough(inimage, outimage);
         if (syncgap == 3)
             return process_se_very_rough(inimage, outimage);
+        LOGD("GPU END");
     }
 
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -264,8 +268,11 @@ int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
 
     const size_t in_out_tile_elemsize = opt.use_fp16_storage ? 2u : 4u;
 
+    LOGD("OPTIONS %i %i", opt.use_fp16_storage, opt.use_int8_storage);
+
     //#pragma omp parallel for num_threads(2)
     for (int yi = 0; yi < ytiles; yi++) {
+        LOGD("tiles %i/%i BEGIN", yi + 1, ytiles);
         const int tile_h_nopad = std::min((yi + 1) * TILE_SIZE_Y, h) - yi * TILE_SIZE_Y;
 
         int prepadding_bottom = prepadding;
@@ -697,10 +704,13 @@ int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
                 }
             }
         }
+        LOGD("tiles %i/%i END", yi + 1, ytiles);
     }
 
     vkdev->reclaim_blob_allocator(blob_vkallocator);
     vkdev->reclaim_staging_allocator(staging_vkallocator);
+
+    LOGD("CUGAN PROCESS END");
 
     return 0;
 }

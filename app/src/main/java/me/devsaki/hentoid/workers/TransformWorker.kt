@@ -2,8 +2,10 @@ package me.devsaki.hentoid.workers
 
 import android.content.Context
 import android.content.res.AssetManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
+import android.graphics.ColorSpace
+import android.os.Build
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -16,12 +18,15 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.notification.transform.TransformCompleteNotification
 import me.devsaki.hentoid.notification.transform.TransformProgressNotification
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.util.notification.Notification
+import timber.log.Timber
+import java.nio.ByteBuffer
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -128,7 +133,8 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         params.forceManhwa = false
         imgs.forEach {
             transformImage(it, contentFolder, params, nbManhwa, imgs.size)
-            if (isStopped) return
+            // TEMP if (isStopped) return
+            return
         }
     }
 
@@ -159,23 +165,48 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9
 
         /* TODO TEMP */
-        val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
+        val options2 = BitmapFactory.Options()
+        options2.inPreferredConfig = Bitmap.Config.ARGB_8888
+        // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
+        // which makes resizing buggy (generates a black picture)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) options2.inPreferredColorSpace =
+            ColorSpace.get(
+                ColorSpace.Named.SRGB
+            )
+        val bmpIn = BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options2)
+        val bmpOut = Bitmap.createBitmap(options.outWidth * 2, options.outHeight * 2, Bitmap.Config.ARGB_8888)
+        var res = 0
         try {
-            val absSourcePath =
-                FileHelper.getFullPathFromUri(applicationContext, Uri.parse(img.fileUri))
+            val progress = ByteBuffer.allocateDirect(1)
             val mgr: AssetManager = applicationContext.resources.assets
             val upscale = NativeLib()
-            val res = upscale.upscale(
+            res = upscale.upscale(
                 mgr,
                 "realsr/models-nose/up2x-no-denoise.param",
                 "realsr/models-nose/up2x-no-denoise.bin",
-                bmp,
-                absSourcePath
+                bmpIn,
+                bmpOut,
+                progress
             )
-            if (res > -1) nextOK() else nextKO()
+            Timber.i("KT 1")
         } finally {
-            bmp.recycle();
+            bmpIn.recycle()
         }
+        Timber.i("KT 2")
+        try {
+            if (res > -1) {
+                Timber.i("KT 3")
+                contentFolder.createFile(ImageHelper.MIME_IMAGE_PNG, "aaa.png")?.let {
+                    val targetData = ImageTransform.transcodeTo(bmpOut, PictureEncoder.PNG, 90)
+                    FileHelper.saveBinary(applicationContext, it.uri, targetData)
+                }
+                Timber.i("KT 4")
+                nextOK()
+            } else nextKO()
+        } finally {
+            bmpOut.recycle()
+        }
+        Timber.i("CYCLE DONE")
         /* TEMP */
 
         /*
