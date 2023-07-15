@@ -11,16 +11,15 @@ Java_me_devsaki_hentoid_ai_1upscale_NativeLib_upscale(
         jobject assetMgr,
         jstring param,
         jstring model,
-        jstring inPath,
+        jobject bitmap,
         jstring outPath) {
     AAssetManager *mgr = AAssetManager_fromJava(env, assetMgr);
     const char *paramC = env->GetStringUTFChars(param, nullptr);
     const char *modelC = env->GetStringUTFChars(model, nullptr);
 
-    const char *inPathC = env->GetStringUTFChars(inPath, nullptr);
     const char *outPathC = env->GetStringUTFChars(outPath, nullptr);
 
     auto *engine = new UpscaleEngine();
     engine->useModelAssets(mgr, paramC, modelC);
-    return engine->exec(inPathC, outPathC);
+    return engine->exec(env, bitmap, outPathC);
 }

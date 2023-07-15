@@ -158,18 +158,25 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         if (isManhwa) nbManhwa.incrementAndGet()
         params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9
 
-        val absSourcePath =
-            FileHelper.getFullPathFromUri(applicationContext, Uri.parse(img.fileUri))
-        val mgr: AssetManager = applicationContext.resources.assets
-        val upscale = NativeLib()
-        val res = upscale.upscale(
-            mgr,
-            "realsr/models-nose/up2x-no-denoise.param",
-            "realsr/models-nose/up2x-no-denoise.bin",
-            absSourcePath,
-            absSourcePath
-        )
-        if (res > -1) nextOK() else nextKO()
+        /* TODO TEMP */
+        val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
+        try {
+            val absSourcePath =
+                FileHelper.getFullPathFromUri(applicationContext, Uri.parse(img.fileUri))
+            val mgr: AssetManager = applicationContext.resources.assets
+            val upscale = NativeLib()
+            val res = upscale.upscale(
+                mgr,
+                "realsr/models-nose/up2x-no-denoise.param",
+                "realsr/models-nose/up2x-no-denoise.bin",
+                bmp,
+                absSourcePath
+            )
+            if (res > -1) nextOK() else nextKO()
+        } finally {
+            bmp.recycle();
+        }
+        /* TEMP */
 
         /*
                 val targetData = ImageTransform.transform(rawData, params)

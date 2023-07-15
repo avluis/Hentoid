@@ -185,6 +185,8 @@ TaskQueue tosave;
 
 class LoadThreadParams {
 public:
+    JNIEnv *env;
+    jobject bitmap;
     int scale;
     int jobs_load;
 
@@ -192,6 +194,44 @@ public:
     std::vector<path_t> input_files;
     std::vector<path_t> output_files;
 };
+
+void *loadFromMemory(void *args) {
+    const auto *ltp = (const LoadThreadParams *) args;
+    const int scale = ltp->scale;
+    JNIEnv *env = ltp->env;
+    jobject bitmap = ltp->bitmap;
+
+    // Get bitmap info
+    AndroidBitmapInfo info;
+    LOGD("getinfo %i", AndroidBitmap_getInfo(env, bitmap, &info) == ANDROID_BITMAP_RESULT_SUCCESS);
+    LOGD("format %i", info.format == ANDROID_BITMAP_FORMAT_RGBA_8888);
+    LOGD("stride %i", info.stride % 4 == 0);
+
+    // Copy bitmap pixels to the buffer memory
+    void *bitmapData = nullptr;
+    LOGD("lock pixels %i", AndroidBitmap_lockPixels(env, bitmap, &bitmapData) ==
+                           ANDROID_BITMAP_RESULT_SUCCESS);
+
+    Task v;
+    v.id = 0; // Index of loaded file; hardcoded to 0 for now
+//        v.webp = webp;
+    v.scale = scale;
+//        v.inpath = imagepath;
+//        v.outpath = ltp->output_files[i];
+    int c = 4; // RGBA
+
+    LOGD("info %ix%i", info.width, info.height);
+    v.inimage = ncnn::Mat(info.width, info.height, bitmapData, (size_t) c, c);
+
+    LOGD("inimage empty %i", v.inimage.empty());
+    path_t ext = get_file_extension(v.outpath);
+
+    toproc.put(v);
+
+    AndroidBitmap_unlockPixels(env, bitmap);
+
+    return 0;
+}
 
 void *load(void *args) {
     const LoadThreadParams *ltp = (const LoadThreadParams *) args;
@@ -428,7 +468,7 @@ void UpscaleEngine::useModelAssets(AAssetManager *assetMgr, const char *param, c
     this->model_path = model;
 }
 
-int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
+int UpscaleEngine::exec(JNIEnv *env, jobject bitmap, path_t outputpath) {
     /*
     path_t inputpath;
     path_t outputpath;
@@ -450,11 +490,6 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
     // Forced values
     int scale = 2;
     int noise = 0;
-
-    if (inputpath.empty() || outputpath.empty()) {
-        print_usage();
-        return -1;
-    }
 
     if (noise < -1 || noise > 3) {
         fprintf(stderr, "invalid noise argument\n");
@@ -500,6 +535,7 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
         }
     }
 
+    /*
     if (!path_is_directory(outputpath)) {
         // guess format from outputpath no matter what format argument specified
         path_t ext = get_file_extension(outputpath);
@@ -571,6 +607,7 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
             return -1;
         }
     }
+     */
 
     int prepadding = 0;
 
@@ -690,13 +727,14 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
 
         uint32_t heap_budget = ncnn::get_gpu_device(gpuid[i])->get_heap_budget();
 
-        LOGD("input %s", inputpath.c_str());
         LOGD("output %s", outputpath.c_str());
 
+        /*
         if (path_is_directory(inputpath) && path_is_directory(outputpath)) {
             // multiple gpu jobs share the same heap
             heap_budget /= jobs_proc_per_gpu[gpuid[i]];
         }
+         */
 
         // more fine-grained tilesize policy here
         if (model.find(PATHSTR("models-nose")) != path_t::npos ||
@@ -750,7 +788,7 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
             realcugan[i] = new RealCUGAN(gpuid[i], tta_mode, num_threads);
 
             int loaded = realcugan[i]->load(asset_manager, param_path, model_path);
-            LOGD("loaded %d : %d", i, loaded);
+            LOGD("Model loaded %d : %d", i, loaded);
 
             realcugan[i]->noise = noise;
             realcugan[i]->scale = scale;
@@ -763,12 +801,13 @@ int UpscaleEngine::exec(path_t inputpath, path_t outputpath) {
         {
             // load image
             LoadThreadParams ltp;
+            ltp.env = env;
+            ltp.bitmap = bitmap;
             ltp.scale = scale;
             ltp.jobs_load = jobs_load;
-            ltp.input_files = input_files;
-            ltp.output_files = output_files;
 
-            ncnn::Thread load_thread(load, (void *) &ltp);
+            //ncnn::Thread load_thread(load, (void *) &ltp);
+            ncnn::Thread load_thread(loadFromMemory, (void *) &ltp);
 
             // realcugan proc
             std::vector<ProcThreadParams> ptp(use_gpu_count);

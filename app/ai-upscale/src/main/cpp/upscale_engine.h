@@ -11,7 +11,7 @@ public:
 
     void useModelAssets(AAssetManager* assetMgr, const char* param, const char* model);
 
-    int exec(path_t inputpath, path_t outputpath);
+    int exec(JNIEnv *env, jobject bitmap, path_t outputpath);
 
 private:
     AAssetManager *asset_manager;

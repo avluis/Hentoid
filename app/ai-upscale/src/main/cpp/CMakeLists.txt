@@ -46,5 +46,11 @@ set_target_properties(ncnn PROPERTIES IMPORTED_LOCATION
 
 find_library(liblog log)
 find_library(android-lib android)
+find_library(libjnigraphics jnigraphics)
 
-target_link_libraries(ai_upscale webp ncnn ${android-lib} ${liblog})
+target_link_libraries(ai_upscale
+        webp
+        ncnn
+        ${android-lib}
+        ${libjnigraphics}
+        ${liblog})

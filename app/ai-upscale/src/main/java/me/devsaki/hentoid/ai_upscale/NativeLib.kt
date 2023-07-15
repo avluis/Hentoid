@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.ai_upscale
 
 import android.content.res.AssetManager
+import android.graphics.Bitmap
 
 class NativeLib {
 
@@ -10,7 +11,7 @@ class NativeLib {
         assetMgr: AssetManager,
         param : String,
         model: String,
-        inPath: String,
+        bitmap: Bitmap,
         outPath: String): Int
 
     companion object {
