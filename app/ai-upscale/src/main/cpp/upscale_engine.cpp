@@ -406,12 +406,179 @@ void UpscaleEngine::useModelAssets(AAssetManager *assetMgr, const char *param, c
 }
 
 int UpscaleEngine::exec(JNIEnv *env, jobject in_bmp, jobject out_bmp) {
-    // Forced values
+    std::vector<int> tilesize;
+    std::vector<int> gpuid;
+    int syncgap = 3;
+    int tta_mode = 0;
+    // Forced model values
+    path_t model = PATHSTR("models-nose");
     int scale = 2;
+    int noise = 0;
 
-    // load image
-    ncnn::Mat inimage = ncnn::Mat::from_android_bitmap(env, in_bmp, ncnn::Mat::PIXEL_RGBA);
+    int prepadding = 0;
 
+    if (model.find(PATHSTR("models-se")) != path_t::npos
+        || model.find(PATHSTR("models-nose")) != path_t::npos
+        || model.find(PATHSTR("models-pro")) != path_t::npos) {
+        if (scale == 2) {
+            prepadding = 18;
+        }
+        if (scale == 3) {
+            prepadding = 14;
+        }
+        if (scale == 4) {
+            prepadding = 19;
+        }
+    } else {
+        fprintf(stderr, "unknown model dir type\n");
+        return -1;
+    }
+
+    if (model.find(PATHSTR("models-nose")) != path_t::npos) {
+        // force syncgap off for nose models
+        syncgap = 0;
+    }
+
+    ncnn::create_gpu_instance();
+
+    if (gpuid.empty()) {
+        gpuid.push_back(ncnn::get_default_gpu_index());
+    }
+
+    const int use_gpu_count = (int) gpuid.size();
+    LOGD("GPU count : %i", use_gpu_count);
+
+    if (tilesize.empty()) {
+        tilesize.resize(use_gpu_count, 0);
+    }
+
+    int cpu_count = std::max(1, ncnn::get_cpu_count());
+
+    int gpu_count = ncnn::get_gpu_count();
+    for (int i = 0; i < use_gpu_count; i++) {
+        if (gpuid[i] < -1 || gpuid[i] >= gpu_count) {
+            fprintf(stderr, "invalid gpu device\n");
+
+            ncnn::destroy_gpu_instance();
+            return -1;
+        }
+    }
+
+    for (int i = 0; i < use_gpu_count; i++) {
+        if (tilesize[i] != 0)
+            continue;
+
+        if (gpuid[i] == -1) {
+            // cpu only
+            tilesize[i] = 400;
+            continue;
+        }
+
+        uint32_t heap_budget = ncnn::get_gpu_device(gpuid[i])->get_heap_budget();
+
+        // more fine-grained tilesize policy here
+        if (model.find(PATHSTR("models-nose")) != path_t::npos ||
+            model.find(PATHSTR("models-se")) != path_t::npos ||
+            model.find(PATHSTR("models-pro")) != path_t::npos) {
+            if (scale == 2) {
+                if (heap_budget > 1300)
+                    tilesize[i] = 400;
+                else if (heap_budget > 800)
+                    tilesize[i] = 300;
+                else if (heap_budget > 400)
+                    tilesize[i] = 200;
+                else if (heap_budget > 200)
+                    tilesize[i] = 100;
+                else
+                    tilesize[i] = 32;
+            }
+            if (scale == 3) {
+                if (heap_budget > 3300)
+                    tilesize[i] = 400;
+                else if (heap_budget > 1900)
+                    tilesize[i] = 300;
+                else if (heap_budget > 950)
+                    tilesize[i] = 200;
+                else if (heap_budget > 320)
+                    tilesize[i] = 100;
+                else
+                    tilesize[i] = 32;
+            }
+            if (scale == 4) {
+                if (heap_budget > 1690)
+                    tilesize[i] = 400;
+                else if (heap_budget > 980)
+                    tilesize[i] = 300;
+                else if (heap_budget > 530)
+                    tilesize[i] = 200;
+                else if (heap_budget > 240)
+                    tilesize[i] = 100;
+                else
+                    tilesize[i] = 32;
+            }
+        }
+    }
+
+    {
+        std::vector<RealCUGAN *> realcugan(use_gpu_count);
+
+        for (int i = 0; i < use_gpu_count; i++) {
+            realcugan[i] = new RealCUGAN(gpuid[i], tta_mode, 1);
+
+            int loaded = realcugan[i]->load(asset_manager, param_path, model_path);
+            LOGD("Model loaded %d : %d", i, loaded);
+
+            realcugan[i]->noise = noise;
+            realcugan[i]->scale = scale;
+            realcugan[i]->tilesize = tilesize[i];
+            realcugan[i]->prepadding = prepadding;
+            realcugan[i]->syncgap = syncgap;
+        }
+
+        // main routine
+        {
+            // load image
+            LOGD("LOADING");
+            ncnn::Mat inimage = ncnn::Mat::from_android_bitmap(env, in_bmp, ncnn::Mat::PIXEL_RGBA);
+
+            // realcugan proc
+            LOGD("PROCESSING");
+            int targetW = inimage.w * scale;
+            int targetH = inimage.h * scale;
+            for (int i = 0; i < use_gpu_count; i++) {
+                ncnn::Mat outimage = ncnn::Mat(targetW, targetH, (size_t) inimage.elemsize,
+                                               (int) inimage.elemsize);
+                realcugan[i]->process(inimage, outimage);
+                /*
+                auto *pixels = new unsigned char[targetW * targetH * 4 * inimage.elemsize]();
+                inimage.to_pixels_resize(pixels, ncnn::Mat::PIXEL_RGBA, targetW, targetH);
+                ncnn::Mat outimage = ncnn::Mat::from_pixels(pixels, ncnn::Mat::PIXEL_RGBA, targetW, targetH);
+                 */
+
+                // save image
+                LOGD("SAVING");
+                inimage.release();
+                LOGD("inImage released");
+                outimage.to_android_bitmap(env, out_bmp, ncnn::Mat::PIXEL_RGBA);
+                LOGD("data copied");
+                outimage.release();
+                LOGD("outImage released");
+            }
+        }
+
+        LOGD("FINALIZING 1");
+        for (int i = 0; i < use_gpu_count; i++) {
+            delete realcugan[i];
+        }
+        LOGD("FINALIZING 2");
+        realcugan.clear();
+    }
+
+    LOGD("FINALIZING 3");
+    ncnn::destroy_gpu_instance();
+    LOGD("FINALIZED");
+
+    /*
     // Process
     int targetW = inimage.w * scale;
     int targetH = inimage.h * scale;
@@ -434,6 +601,8 @@ int UpscaleEngine::exec(JNIEnv *env, jobject in_bmp, jobject out_bmp) {
     outimage.release();
     LOGD("outImage released");
     LOGD("END");
+     */
+
     return 0;
 }
 
@@ -445,7 +614,6 @@ int UpscaleEngine::exec_target(JNIEnv *env, jobject in_bmp, jobject out_bmp) {
     int scale = 2;
     */
     std::vector<int> tilesize;
-    //path_t model = PATHSTR("models-se");
     path_t model = PATHSTR("models-nose");
     std::vector<int> gpuid;
     int jobs_load = 1;
@@ -601,7 +769,7 @@ int UpscaleEngine::exec_target(JNIEnv *env, jobject in_bmp, jobject out_bmp) {
         // force syncgap off for nose models
         syncgap = 0;
     }
-
+/*
 #if _WIN32
     wchar_t parampath[256];
     wchar_t modelpath[256];
@@ -638,7 +806,7 @@ int UpscaleEngine::exec_target(JNIEnv *env, jobject in_bmp, jobject out_bmp) {
 #if _WIN32
     CoInitializeEx(NULL, COINIT_MULTITHREADED);
 #endif
-
+*/
     ncnn::create_gpu_instance();
 
     if (gpuid.empty()) {

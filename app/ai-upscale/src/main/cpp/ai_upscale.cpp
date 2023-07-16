@@ -15,7 +15,6 @@ Java_me_devsaki_hentoid_ai_1upscale_NativeLib_upscale(
         jobject out_bmp,
         jobject progress) {
     // TODO progress
-    /*
     AAssetManager *mgr = AAssetManager_fromJava(env, assetMgr);
     const char *paramC = env->GetStringUTFChars(param, nullptr);
     const char *modelC = env->GetStringUTFChars(model, nullptr);
@@ -23,6 +22,4 @@ Java_me_devsaki_hentoid_ai_1upscale_NativeLib_upscale(
     auto *engine = new UpscaleEngine();
     engine->useModelAssets(mgr, paramC, modelC);
     return engine->exec(env, in_bmp, out_bmp);
-     */
-    return UpscaleEngine::exec(env, in_bmp, out_bmp);
 }

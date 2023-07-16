@@ -11,7 +11,7 @@ public:
 
     void useModelAssets(AAssetManager* assetMgr, const char* param, const char* model);
 
-    static int exec(JNIEnv *env, jobject in_bmp, jobject out_bmp);
+    int exec(JNIEnv *env, jobject in_bmp, jobject out_bmp);
 
     int exec_target(JNIEnv *env, jobject in_bmp, jobject out_bmp);
 
