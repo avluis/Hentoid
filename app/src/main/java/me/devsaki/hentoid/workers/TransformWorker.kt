@@ -173,24 +173,34 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             ColorSpace.get(
                 ColorSpace.Named.SRGB
             )
-        val bmpIn = BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options2)
-        val bmpOut = Bitmap.createBitmap(options.outWidth * 2, options.outHeight * 2, Bitmap.Config.ARGB_8888)
+        //val bmpIn = BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options2)
+        val bmpOut = Bitmap.createBitmap(
+            options.outWidth * 2,
+            options.outHeight * 2,
+            Bitmap.Config.ARGB_8888
+        )
+        val cacheDir = FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return
+        val outputFile = cacheDir.absolutePath + "/upscale.png";
         var res = 0
         try {
             val progress = ByteBuffer.allocateDirect(1)
+            val dataIn = ByteBuffer.allocateDirect(rawData.size)
+            dataIn.put(rawData)
             val mgr: AssetManager = applicationContext.resources.assets
             val upscale = NativeLib()
             res = upscale.upscale(
                 mgr,
                 "realsr/models-nose/up2x-no-denoise.param",
                 "realsr/models-nose/up2x-no-denoise.bin",
-                bmpIn,
+                dataIn,
                 bmpOut,
+                outputFile,
                 progress
             )
             Timber.i("KT 1")
         } finally {
-            bmpIn.recycle()
+            // can't recycle a ByteBuffer
+            //bmpIn.recycle()
         }
         Timber.i("KT 2")
         try {

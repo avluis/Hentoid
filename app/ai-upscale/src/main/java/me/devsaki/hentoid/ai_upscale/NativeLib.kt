@@ -12,8 +12,9 @@ class NativeLib {
         assetMgr: AssetManager,
         param: String,
         model: String,
-        inBmp: Bitmap,
+        dataIn: ByteBuffer,
         outBmp: Bitmap,
+        outPath: String,
         progress: ByteBuffer
     ): Int
 

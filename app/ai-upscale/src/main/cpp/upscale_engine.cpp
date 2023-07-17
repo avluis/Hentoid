@@ -30,71 +30,6 @@
 
 #include "webp_image.h"
 
-#if _WIN32
-#include <wchar.h>
-static wchar_t* optarg = NULL;
-static int optind = 1;
-static wchar_t getopt(int argc, wchar_t* const argv[], const wchar_t* optstring)
-{
-    if (optind >= argc || argv[optind][0] != L'-')
-        return -1;
-
-    wchar_t opt = argv[optind][1];
-    const wchar_t* p = wcschr(optstring, opt);
-    if (p == NULL)
-        return L'?';
-
-    optarg = NULL;
-
-    if (p[1] == L':')
-    {
-        optind++;
-        if (optind >= argc)
-            return L'?';
-
-        optarg = argv[optind];
-    }
-
-    optind++;
-
-    return opt;
-}
-
-static std::vector<int> parse_optarg_int_array(const wchar_t* optarg)
-{
-    std::vector<int> array;
-    array.push_back(_wtoi(optarg));
-
-    const wchar_t* p = wcschr(optarg, L',');
-    while (p)
-    {
-        p++;
-        array.push_back(_wtoi(p));
-        p = wcschr(p, L',');
-    }
-
-    return array;
-}
-#else // _WIN32
-
-#include <unistd.h> // getopt()
-
-static std::vector<int> parse_optarg_int_array(const char *optarg) {
-    std::vector<int> array;
-    array.push_back(atoi(optarg));
-
-    const char *p = strchr(optarg, ',');
-    while (p) {
-        p++;
-        array.push_back(atoi(p));
-        p = strchr(p, ',');
-    }
-
-    return array;
-}
-
-#endif // _WIN32
-
 // ncnn
 #include "cpu.h"
 #include "gpu.h"
@@ -131,9 +66,6 @@ public:
     int id;
 //    int webp;
     int scale;
-
-//    path_t inpath;
-//    path_t outpath;
 
     ncnn::Mat inimage;
     ncnn::Mat outimage;
@@ -405,7 +337,7 @@ void UpscaleEngine::useModelAssets(AAssetManager *assetMgr, const char *param, c
     this->model_path = model;
 }
 
-int UpscaleEngine::exec(JNIEnv *env, jobject in_bmp, jobject out_bmp) {
+int UpscaleEngine::exec(JNIEnv *env, jobject file_data, jobject out_bmp, const char *out_path) {
     std::vector<int> tilesize;
     std::vector<int> gpuid;
     int syncgap = 3;
@@ -519,60 +451,113 @@ int UpscaleEngine::exec(JNIEnv *env, jobject in_bmp, jobject out_bmp) {
         }
     }
 
-    {
-        std::vector<RealCUGAN *> realcugan(use_gpu_count);
+    std::vector<RealCUGAN *> realcugan(use_gpu_count);
 
-        for (int i = 0; i < use_gpu_count; i++) {
-            realcugan[i] = new RealCUGAN(gpuid[i], tta_mode, 1);
+    for (int i = 0; i < use_gpu_count; i++) {
+        realcugan[i] = new RealCUGAN(gpuid[i], tta_mode, 1);
 
-            int loaded = realcugan[i]->load(asset_manager, param_path, model_path);
-            LOGD("Model loaded %d : %d", i, loaded);
+        int loaded = realcugan[i]->load(asset_manager, param_path, model_path);
+        LOGD("Model loaded %d : %d", i, loaded);
 
-            realcugan[i]->noise = noise;
-            realcugan[i]->scale = scale;
-            realcugan[i]->tilesize = tilesize[i];
-            realcugan[i]->prepadding = prepadding;
-            realcugan[i]->syncgap = syncgap;
-        }
+        realcugan[i]->noise = noise;
+        realcugan[i]->scale = scale;
+        realcugan[i]->tilesize = tilesize[i];
+        realcugan[i]->prepadding = prepadding;
+        realcugan[i]->syncgap = syncgap;
+    }
 
-        // main routine
-        {
-            // load image
-            LOGD("LOADING");
-            ncnn::Mat inimage = ncnn::Mat::from_android_bitmap(env, in_bmp, ncnn::Mat::PIXEL_RGBA);
+    // load image
+    LOGD("LOADING");
+    unsigned char *pixeldata = nullptr;
+    int webp = 0;
+    int w;
+    int h;
+    int c;
+    auto *filedata = (unsigned char *) env->GetDirectBufferAddress(file_data);
+    int length = (int) env->GetDirectBufferCapacity(file_data);
+    LOGD("LOADING 1 %i", length);
 
-            // realcugan proc
-            LOGD("PROCESSING");
-            int targetW = inimage.w * scale;
-            int targetH = inimage.h * scale;
-            for (int i = 0; i < use_gpu_count; i++) {
-                ncnn::Mat outimage = ncnn::Mat(targetW, targetH, (size_t) inimage.elemsize,
-                                               (int) inimage.elemsize);
-                realcugan[i]->process(inimage, outimage);
-                /*
-                auto *pixels = new unsigned char[targetW * targetH * 4 * inimage.elemsize]();
-                inimage.to_pixels_resize(pixels, ncnn::Mat::PIXEL_RGBA, targetW, targetH);
-                ncnn::Mat outimage = ncnn::Mat::from_pixels(pixels, ncnn::Mat::PIXEL_RGBA, targetW, targetH);
-                 */
-
-                // save image
-                LOGD("SAVING");
-                inimage.release();
-                LOGD("inImage released");
-                outimage.to_android_bitmap(env, out_bmp, ncnn::Mat::PIXEL_RGBA);
-                LOGD("data copied");
-                outimage.release();
-                LOGD("outImage released");
+    //ncnn::Mat inimage = ncnn::Mat::from_android_bitmap(env, in_bmp, ncnn::Mat::PIXEL_RGBA);
+    pixeldata = webp_load(filedata, length, &w, &h, &c);
+    if (pixeldata) {
+        webp = 1;
+    } else {
+        // not webp, try jpg png etc.
+#if _WIN32
+        pixeldata = wic_decode_image(imagepath.c_str(), &w, &h, &c);
+#else // _WIN32
+        LOGD("LOADING 2");
+        pixeldata = stbi_load_from_memory(filedata, length, &w, &h, &c, 0);
+        LOGD("LOADING 3 : c %i", c);
+        if (pixeldata) {
+            // stb_image auto channel
+            if (c == 1) {
+                LOGD("LOADING 4");
+                // grayscale -> rgb
+                stbi_image_free(pixeldata);
+                pixeldata = stbi_load_from_memory(filedata, length, &w, &h, &c, 3);
+                c = 3;
+            } else if (c == 2) {
+                LOGD("LOADING 5");
+                // grayscale + alpha -> rgba
+                stbi_image_free(pixeldata);
+                pixeldata = stbi_load_from_memory(filedata, length, &w, &h, &c, 4);
+                c = 4;
             }
         }
-
-        LOGD("FINALIZING 1");
-        for (int i = 0; i < use_gpu_count; i++) {
-            delete realcugan[i];
-        }
-        LOGD("FINALIZING 2");
-        realcugan.clear();
+#endif // _WIN32
     }
+    if (!pixeldata) {
+        LOGE("no pixel data");
+        return -1;
+    }
+    LOGD("LOADED - BUILDING MATRIX c=%i", c);
+
+    ncnn::Mat inimage = ncnn::Mat(w, h, (void *) pixeldata, (size_t) c, c);
+
+    // realcugan proc
+    LOGD("PROCESSING");
+    int targetW = inimage.w * scale;
+    int targetH = inimage.h * scale;
+    for (int i = 0; i < use_gpu_count; i++) {
+        ncnn::Mat outimage = ncnn::Mat(targetW, targetH, (size_t) inimage.elemsize,
+                                       (int) inimage.elemsize);
+        realcugan[i]->process(inimage, outimage);
+
+/*
+        auto *pixels = new unsigned char[inimage.w * inimage.h * 4 * inimage.elempack]();
+        inimage.to_pixels(pixels, ncnn::Mat::PIXEL_RGBA);
+        ncnn::Mat outimage = ncnn::Mat::from_pixels(pixels, ncnn::Mat::PIXEL_RGBA, inimage.w,
+                                                    inimage.h);
+                                                    */
+
+        // save image
+        LOGD("SAVING");
+        inimage.release();
+        LOGD("inImage released");
+
+        LOGD("target path %s", out_path);
+
+        int success = stbi_write_png(out_path, outimage.w, outimage.h, outimage.elempack,
+                                     outimage.data, 0);
+        LOGD("success %i", success);
+
+        // outimage.to_android_bitmap(env, out_bmp, ncnn::Mat::PIXEL_RGBA);
+
+
+        LOGD("data copied");
+        outimage.release();
+        LOGD("outImage released");
+    }
+
+
+    LOGD("FINALIZING 1");
+    for (int i = 0; i < use_gpu_count; i++) {
+        delete realcugan[i];
+    }
+    LOGD("FINALIZING 2");
+    realcugan.clear();
+
 
     LOGD("FINALIZING 3");
     ncnn::destroy_gpu_instance();
