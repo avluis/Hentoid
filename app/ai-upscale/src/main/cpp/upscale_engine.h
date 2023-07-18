@@ -9,11 +9,9 @@ public:
 
     ~UpscaleEngine();
 
-    void useModelAssets(AAssetManager* assetMgr, const char* param, const char* model);
+    void useModelAssets(AAssetManager *assetMgr, const char *param, const char *model);
 
-    int exec(JNIEnv *env, jobject file_data, jobject out_bmp, const char* out_path);
-
-    int exec_target(JNIEnv *env, jobject in_bmp, jobject out_bmp);
+    int exec(JNIEnv *env, jobject file_data, const char *out_path, jobject progress);
 
 private:
     AAssetManager *asset_manager;

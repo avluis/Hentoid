@@ -209,13 +209,9 @@ int RealCUGAN::load(AAssetManager *assetMgr, const char *param, const char *mode
 }
 
 int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
-    LOGD("inimage %ix%i /%i", inimage.w, inimage.h, inimage.elempack);
-
     bool syncgap_needed = tilesize < std::max(inimage.w, inimage.h);
-    LOGD("syncgap %i %i", syncgap_needed, syncgap);
 
     if (!vkdev) {
-        LOGD("CPU BEGIN");
         // cpu only
         if (syncgap_needed && syncgap) {
             if (syncgap == 1)
@@ -226,8 +222,6 @@ int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
                 return process_cpu_se_very_rough(inimage, outimage);
         } else
             return process_cpu(inimage, outimage);
-
-        LOGD("CPU END");
     }
 
     if (noise == -1 && scale == 1) {
@@ -236,14 +230,12 @@ int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
     }
 
     if (syncgap_needed && syncgap) {
-        LOGD("GPU BEGIN");
         if (syncgap == 1)
             return process_se(inimage, outimage);
         if (syncgap == 2)
             return process_se_rough(inimage, outimage);
         if (syncgap == 3)
             return process_se_very_rough(inimage, outimage);
-        LOGD("GPU END");
     }
 
     const auto *pixeldata = (const unsigned char *) inimage.data;
@@ -267,8 +259,6 @@ int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
     const int ytiles = (h + TILE_SIZE_Y - 1) / TILE_SIZE_Y;
 
     const size_t in_out_tile_elemsize = opt.use_fp16_storage ? 2u : 4u;
-
-    LOGD("CHANNELS %i", channels);
 
     //#pragma omp parallel for num_threads(2)
     for (int yi = 0; yi < ytiles; yi++) {
@@ -721,7 +711,7 @@ int RealCUGAN::process_cpu(const ncnn::Mat &inimage, ncnn::Mat &outimage) const 
         return 0;
     }
 
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -1297,7 +1287,7 @@ int RealCUGAN::process_cpu_se_very_rough(const ncnn::Mat &inimage, ncnn::Mat &ou
 int RealCUGAN::process_se_stage0(const ncnn::Mat &inimage, const std::vector<std::string> &names,
                                  const std::vector<std::string> &outnames, const ncnn::Option &opt,
                                  FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -1465,18 +1455,18 @@ int RealCUGAN::process_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile_gpu[ti]);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::VkMat feat;
-                        cache.load(yi, xi, ti, names[i], feat);
+                        cache.load(yi, xi, ti, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
-                    for (size_t i = 0; i < outnames.size(); i++) {
+                    for (const auto & outname : outnames) {
                         ncnn::VkMat feat;
-                        ex.extract(outnames[i].c_str(), feat, cmd);
+                        ex.extract(outname.c_str(), feat, cmd);
 
-                        cache.save(yi, xi, ti, outnames[i], feat);
+                        cache.save(yi, xi, ti, outname, feat);
                     }
                 }
             } else {
@@ -1536,18 +1526,18 @@ int RealCUGAN::process_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile_gpu);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::VkMat feat;
-                        cache.load(yi, xi, 0, names[i], feat);
+                        cache.load(yi, xi, 0, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
-                    for (size_t i = 0; i < outnames.size(); i++) {
+                    for (const auto & outname : outnames) {
                         ncnn::VkMat feat;
-                        ex.extract(outnames[i].c_str(), feat, cmd);
+                        ex.extract(outname.c_str(), feat, cmd);
 
-                        cache.save(yi, xi, 0, outnames[i], feat);
+                        cache.save(yi, xi, 0, outname, feat);
                     }
                 }
             }
@@ -1568,7 +1558,7 @@ int RealCUGAN::process_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 int RealCUGAN::process_se_stage2(const ncnn::Mat &inimage, const std::vector<std::string> &names,
                                  ncnn::Mat &outimage, const ncnn::Option &opt,
                                  FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -1736,11 +1726,11 @@ int RealCUGAN::process_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile_gpu[ti]);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::VkMat feat;
-                        cache.load(yi, xi, ti, names[i], feat);
+                        cache.load(yi, xi, ti, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
                     ex.extract("out0", out_tile_gpu[ti], cmd);
@@ -1896,11 +1886,11 @@ int RealCUGAN::process_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile_gpu);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::VkMat feat;
-                        cache.load(yi, xi, 0, names[i], feat);
+                        cache.load(yi, xi, 0, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
                     ex.extract("out0", out_tile_gpu, cmd);
@@ -2037,7 +2027,7 @@ int RealCUGAN::process_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
 int RealCUGAN::process_se_sync_gap(const ncnn::Mat &inimage, const std::vector<std::string> &names,
                                    const ncnn::Option &opt, FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -2159,7 +2149,7 @@ int RealCUGAN::process_se_very_rough_stage0(const ncnn::Mat &inimage,
                                             const std::vector<std::string> &names,
                                             const std::vector<std::string> &outnames,
                                             const ncnn::Option &opt, FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -2327,18 +2317,18 @@ int RealCUGAN::process_se_very_rough_stage0(const ncnn::Mat &inimage,
 
                     ex.input("in0", in_tile_gpu[ti]);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::VkMat feat;
-                        cache.load(yi, xi, ti, names[i], feat);
+                        cache.load(yi, xi, ti, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
-                    for (size_t i = 0; i < outnames.size(); i++) {
+                    for (const auto & outname : outnames) {
                         ncnn::VkMat feat;
-                        ex.extract(outnames[i].c_str(), feat, cmd);
+                        ex.extract(outname.c_str(), feat, cmd);
 
-                        cache.save(yi, xi, ti, outnames[i], feat);
+                        cache.save(yi, xi, ti, outname, feat);
                     }
                 }
             } else {
@@ -2398,18 +2388,18 @@ int RealCUGAN::process_se_very_rough_stage0(const ncnn::Mat &inimage,
 
                     ex.input("in0", in_tile_gpu);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::VkMat feat;
-                        cache.load(yi, xi, 0, names[i], feat);
+                        cache.load(yi, xi, 0, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
-                    for (size_t i = 0; i < outnames.size(); i++) {
+                    for (const auto & outname : outnames) {
                         ncnn::VkMat feat;
-                        ex.extract(outnames[i].c_str(), feat, cmd);
+                        ex.extract(outname.c_str(), feat, cmd);
 
-                        cache.save(yi, xi, 0, outnames[i], feat);
+                        cache.save(yi, xi, 0, outname, feat);
                     }
                 }
             }
@@ -2430,7 +2420,7 @@ int RealCUGAN::process_se_very_rough_stage0(const ncnn::Mat &inimage,
 int RealCUGAN::process_se_very_rough_sync_gap(const ncnn::Mat &inimage,
                                               const std::vector<std::string> &names,
                                               const ncnn::Option &opt, FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -2568,7 +2558,7 @@ int
 RealCUGAN::process_cpu_se_stage0(const ncnn::Mat &inimage, const std::vector<std::string> &names,
                                  const std::vector<std::string> &outnames,
                                  FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -2727,18 +2717,18 @@ RealCUGAN::process_cpu_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile[ti]);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::Mat feat;
-                        cache.load(yi, xi, ti, names[i], feat);
+                        cache.load(yi, xi, ti, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
-                    for (size_t i = 0; i < outnames.size(); i++) {
+                    for (const auto & outname : outnames) {
                         ncnn::Mat feat;
-                        ex.extract(outnames[i].c_str(), feat);
+                        ex.extract(outname.c_str(), feat);
 
-                        cache.save(yi, xi, ti, outnames[i], feat);
+                        cache.save(yi, xi, ti, outname, feat);
                     }
                 }
             } else {
@@ -2782,18 +2772,18 @@ RealCUGAN::process_cpu_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::Mat feat;
-                        cache.load(yi, xi, 0, names[i], feat);
+                        cache.load(yi, xi, 0, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
-                    for (size_t i = 0; i < outnames.size(); i++) {
+                    for (const auto & outname : outnames) {
                         ncnn::Mat feat;
-                        ex.extract(outnames[i].c_str(), feat);
+                        ex.extract(outname.c_str(), feat);
 
-                        cache.save(yi, xi, 0, outnames[i], feat);
+                        cache.save(yi, xi, 0, outname, feat);
                     }
                 }
             }
@@ -2806,7 +2796,7 @@ RealCUGAN::process_cpu_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 int
 RealCUGAN::process_cpu_se_stage2(const ncnn::Mat &inimage, const std::vector<std::string> &names,
                                  ncnn::Mat &outimage, FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -2965,11 +2955,11 @@ RealCUGAN::process_cpu_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile[ti]);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::Mat feat;
-                        cache.load(yi, xi, ti, names[i], feat);
+                        cache.load(yi, xi, ti, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
                     ex.extract("out0", out_tile[ti]);
@@ -3116,11 +3106,11 @@ RealCUGAN::process_cpu_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::Mat feat;
-                        cache.load(yi, xi, 0, names[i], feat);
+                        cache.load(yi, xi, 0, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
                     ex.extract("out0", out_tile);
@@ -3214,7 +3204,7 @@ RealCUGAN::process_cpu_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 int
 RealCUGAN::process_cpu_se_sync_gap(const ncnn::Mat &inimage, const std::vector<std::string> &names,
                                    FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -3303,7 +3293,7 @@ int RealCUGAN::process_cpu_se_very_rough_stage0(const ncnn::Mat &inimage,
                                                 const std::vector<std::string> &names,
                                                 const std::vector<std::string> &outnames,
                                                 FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;
@@ -3462,18 +3452,18 @@ int RealCUGAN::process_cpu_se_very_rough_stage0(const ncnn::Mat &inimage,
 
                     ex.input("in0", in_tile[ti]);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::Mat feat;
-                        cache.load(yi, xi, ti, names[i], feat);
+                        cache.load(yi, xi, ti, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
-                    for (size_t i = 0; i < outnames.size(); i++) {
+                    for (const auto & outname : outnames) {
                         ncnn::Mat feat;
-                        ex.extract(outnames[i].c_str(), feat);
+                        ex.extract(outname.c_str(), feat);
 
-                        cache.save(yi, xi, ti, outnames[i], feat);
+                        cache.save(yi, xi, ti, outname, feat);
                     }
                 }
             } else {
@@ -3517,18 +3507,18 @@ int RealCUGAN::process_cpu_se_very_rough_stage0(const ncnn::Mat &inimage,
 
                     ex.input("in0", in_tile);
 
-                    for (size_t i = 0; i < names.size(); i++) {
+                    for (const auto & name : names) {
                         ncnn::Mat feat;
-                        cache.load(yi, xi, 0, names[i], feat);
+                        cache.load(yi, xi, 0, name, feat);
 
-                        ex.input(names[i].c_str(), feat);
+                        ex.input(name.c_str(), feat);
                     }
 
-                    for (size_t i = 0; i < outnames.size(); i++) {
+                    for (const auto & outname : outnames) {
                         ncnn::Mat feat;
-                        ex.extract(outnames[i].c_str(), feat);
+                        ex.extract(outname.c_str(), feat);
 
-                        cache.save(yi, xi, 0, outnames[i], feat);
+                        cache.save(yi, xi, 0, outname, feat);
                     }
                 }
             }
@@ -3541,7 +3531,7 @@ int RealCUGAN::process_cpu_se_very_rough_stage0(const ncnn::Mat &inimage,
 int RealCUGAN::process_cpu_se_very_rough_sync_gap(const ncnn::Mat &inimage,
                                                   const std::vector<std::string> &names,
                                                   FeatureCache &cache) const {
-    const unsigned char *pixeldata = (const unsigned char *) inimage.data;
+    const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
     const int channels = inimage.elempack;

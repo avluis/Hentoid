@@ -18,7 +18,6 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.notification.transform.TransformCompleteNotification
 import me.devsaki.hentoid.notification.transform.TransformProgressNotification
 import me.devsaki.hentoid.util.file.FileHelper
@@ -173,15 +172,9 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             ColorSpace.get(
                 ColorSpace.Named.SRGB
             )
-        //val bmpIn = BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options2)
-        val bmpOut = Bitmap.createBitmap(
-            options.outWidth * 2,
-            options.outHeight * 2,
-            Bitmap.Config.ARGB_8888
-        )
         val cacheDir = FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return
         val outputFile = cacheDir.absolutePath + "/upscale.png";
-        var res = 0
+        val res: Int
         try {
             val progress = ByteBuffer.allocateDirect(1)
             val dataIn = ByteBuffer.allocateDirect(rawData.size)
@@ -193,30 +186,14 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 "realsr/models-nose/up2x-no-denoise.param",
                 "realsr/models-nose/up2x-no-denoise.bin",
                 dataIn,
-                bmpOut,
                 outputFile,
                 progress
             )
-            Timber.i("KT 1")
         } finally {
-            // can't recycle a ByteBuffer
-            //bmpIn.recycle()
+            // can't recycle ByteBuffer dataIn
         }
-        Timber.i("KT 2")
-        try {
-            if (res > -1) {
-                Timber.i("KT 3")
-                contentFolder.createFile(ImageHelper.MIME_IMAGE_PNG, "aaa.png")?.let {
-                    val targetData = ImageTransform.transcodeTo(bmpOut, PictureEncoder.PNG, 90)
-                    FileHelper.saveBinary(applicationContext, it.uri, targetData)
-                }
-                Timber.i("KT 4")
-                nextOK()
-            } else nextKO()
-        } finally {
-            bmpOut.recycle()
-        }
-        Timber.i("CYCLE DONE")
+        if (res > -1) nextOK() else nextKO()
+        Timber.i("KT DONE")
         /* TEMP */
 
         /*

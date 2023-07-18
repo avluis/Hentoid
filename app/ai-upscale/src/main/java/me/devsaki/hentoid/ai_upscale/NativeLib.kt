@@ -13,7 +13,6 @@ class NativeLib {
         param: String,
         model: String,
         dataIn: ByteBuffer,
-        outBmp: Bitmap,
         outPath: String,
         progress: ByteBuffer
     ): Int
