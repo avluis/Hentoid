@@ -208,7 +208,8 @@ int RealCUGAN::load(AAssetManager *assetMgr, const char *param, const char *mode
     return 0;
 }
 
-int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
+int
+RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage, unsigned char *progress) const {
     bool syncgap_needed = tilesize < std::max(inimage.w, inimage.h);
 
     if (!vkdev) {
@@ -656,7 +657,9 @@ int RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage) const {
                 cmd.reset();
             }
 
-            fprintf(stderr, "%.2f%%\n", (float) (yi * xtiles + xi) / (ytiles * xtiles) * 100);
+            float progressPc = (float) (yi * xtiles + xi) / (ytiles * xtiles) * 100;
+            LOGD("%.2f%%\n", progressPc);
+            progress[0] = (unsigned char) progressPc;
         }
 
         // download
@@ -1455,14 +1458,14 @@ int RealCUGAN::process_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile_gpu[ti]);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::VkMat feat;
                         cache.load(yi, xi, ti, name, feat);
 
                         ex.input(name.c_str(), feat);
                     }
 
-                    for (const auto & outname : outnames) {
+                    for (const auto &outname: outnames) {
                         ncnn::VkMat feat;
                         ex.extract(outname.c_str(), feat, cmd);
 
@@ -1526,14 +1529,14 @@ int RealCUGAN::process_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile_gpu);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::VkMat feat;
                         cache.load(yi, xi, 0, name, feat);
 
                         ex.input(name.c_str(), feat);
                     }
 
-                    for (const auto & outname : outnames) {
+                    for (const auto &outname: outnames) {
                         ncnn::VkMat feat;
                         ex.extract(outname.c_str(), feat, cmd);
 
@@ -1726,7 +1729,7 @@ int RealCUGAN::process_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile_gpu[ti]);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::VkMat feat;
                         cache.load(yi, xi, ti, name, feat);
 
@@ -1886,7 +1889,7 @@ int RealCUGAN::process_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile_gpu);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::VkMat feat;
                         cache.load(yi, xi, 0, name, feat);
 
@@ -2317,14 +2320,14 @@ int RealCUGAN::process_se_very_rough_stage0(const ncnn::Mat &inimage,
 
                     ex.input("in0", in_tile_gpu[ti]);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::VkMat feat;
                         cache.load(yi, xi, ti, name, feat);
 
                         ex.input(name.c_str(), feat);
                     }
 
-                    for (const auto & outname : outnames) {
+                    for (const auto &outname: outnames) {
                         ncnn::VkMat feat;
                         ex.extract(outname.c_str(), feat, cmd);
 
@@ -2388,14 +2391,14 @@ int RealCUGAN::process_se_very_rough_stage0(const ncnn::Mat &inimage,
 
                     ex.input("in0", in_tile_gpu);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::VkMat feat;
                         cache.load(yi, xi, 0, name, feat);
 
                         ex.input(name.c_str(), feat);
                     }
 
-                    for (const auto & outname : outnames) {
+                    for (const auto &outname: outnames) {
                         ncnn::VkMat feat;
                         ex.extract(outname.c_str(), feat, cmd);
 
@@ -2717,14 +2720,14 @@ RealCUGAN::process_cpu_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile[ti]);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::Mat feat;
                         cache.load(yi, xi, ti, name, feat);
 
                         ex.input(name.c_str(), feat);
                     }
 
-                    for (const auto & outname : outnames) {
+                    for (const auto &outname: outnames) {
                         ncnn::Mat feat;
                         ex.extract(outname.c_str(), feat);
 
@@ -2772,14 +2775,14 @@ RealCUGAN::process_cpu_se_stage0(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::Mat feat;
                         cache.load(yi, xi, 0, name, feat);
 
                         ex.input(name.c_str(), feat);
                     }
 
-                    for (const auto & outname : outnames) {
+                    for (const auto &outname: outnames) {
                         ncnn::Mat feat;
                         ex.extract(outname.c_str(), feat);
 
@@ -2955,7 +2958,7 @@ RealCUGAN::process_cpu_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile[ti]);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::Mat feat;
                         cache.load(yi, xi, ti, name, feat);
 
@@ -3106,7 +3109,7 @@ RealCUGAN::process_cpu_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
                     ex.input("in0", in_tile);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::Mat feat;
                         cache.load(yi, xi, 0, name, feat);
 
@@ -3452,14 +3455,14 @@ int RealCUGAN::process_cpu_se_very_rough_stage0(const ncnn::Mat &inimage,
 
                     ex.input("in0", in_tile[ti]);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::Mat feat;
                         cache.load(yi, xi, ti, name, feat);
 
                         ex.input(name.c_str(), feat);
                     }
 
-                    for (const auto & outname : outnames) {
+                    for (const auto &outname: outnames) {
                         ncnn::Mat feat;
                         ex.extract(outname.c_str(), feat);
 
@@ -3507,14 +3510,14 @@ int RealCUGAN::process_cpu_se_very_rough_stage0(const ncnn::Mat &inimage,
 
                     ex.input("in0", in_tile);
 
-                    for (const auto & name : names) {
+                    for (const auto &name: names) {
                         ncnn::Mat feat;
                         cache.load(yi, xi, 0, name, feat);
 
                         ex.input(name.c_str(), feat);
                     }
 
-                    for (const auto & outname : outnames) {
+                    for (const auto &outname: outnames) {
                         ncnn::Mat feat;
                         ex.extract(outname.c_str(), feat);
 

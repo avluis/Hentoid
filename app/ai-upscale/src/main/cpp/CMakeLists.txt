@@ -11,7 +11,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wl,-rpath=./")
 
 set(ncnn_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/ncnn-android-vulkan-shared)
 add_library(ncnn SHARED IMPORTED)
-add_library(ai_upscale SHARED ai_upscale.cpp upscale_engine.cpp realcugan.cpp)
+add_library(ai_upscale SHARED ai_upscaler.cpp upscale_engine.cpp realcugan.cpp)
 include_directories(${ncnn_DIR}/${ANDROID_ABI}/include/ncnn)
 set_target_properties(ncnn PROPERTIES IMPORTED_LOCATION
         ${ncnn_DIR}/${ANDROID_ABI}/lib/libncnn.so)

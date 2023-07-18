@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.ai_upscale.NativeLib
+import me.devsaki.hentoid.ai_upscale.AiUpscaler
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -180,11 +180,13 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             val dataIn = ByteBuffer.allocateDirect(rawData.size)
             dataIn.put(rawData)
             val mgr: AssetManager = applicationContext.resources.assets
-            val upscale = NativeLib()
-            res = upscale.upscale(
+            val upscale = AiUpscaler()
+            upscale.init(
                 mgr,
                 "realsr/models-nose/up2x-no-denoise.param",
-                "realsr/models-nose/up2x-no-denoise.bin",
+                "realsr/models-nose/up2x-no-denoise.bin"
+            )
+            res = upscale.upscale(
                 dataIn,
                 outputFile,
                 progress

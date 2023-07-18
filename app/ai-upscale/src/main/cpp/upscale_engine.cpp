@@ -45,24 +45,64 @@ UpscaleEngine::UpscaleEngine() = default;
 
 UpscaleEngine::~UpscaleEngine() = default;
 
-void UpscaleEngine::useModelAssets(AAssetManager *assetMgr, const char *param, const char *model) {
-    this->asset_manager = assetMgr;
-    this->param_path = param;
-    this->model_path = model;
+std::unique_ptr<UpscaleEngine>
+UpscaleEngine::create(AAssetManager *assetManager, const char *param, const char *model) {
+    LOGD("INIT...");
+    auto engine = std::make_unique<UpscaleEngine>();
+
+    ncnn::create_gpu_instance();
+    if (engine->gpuid.empty()) {
+        engine->gpuid.push_back(ncnn::get_default_gpu_index());
+    }
+
+    engine->use_gpu_count = (int) engine->gpuid.size();
+    LOGD("GPU count : %i", engine->use_gpu_count);
+
+    int gpu_count = ncnn::get_gpu_count();
+    for (int i = 0; i < engine->use_gpu_count; i++) {
+        if (engine->gpuid[i] < -1 || engine->gpuid[i] >= gpu_count) {
+            fprintf(stderr, "invalid gpu device\n");
+
+            ncnn::destroy_gpu_instance();
+            return nullptr;
+        }
+    }
+
+    engine->realcugan = std::vector<RealCUGAN *>(engine->use_gpu_count);
+
+    for (int i = 0; i < engine->use_gpu_count; i++) {
+        engine->realcugan[i] = new RealCUGAN(engine->gpuid[i], false, 1);
+
+        int loaded = engine->realcugan[i]->load(assetManager, param, model);
+        LOGD("Model loaded %d : %d", i, loaded);
+    }
+    LOGD("INIT END");
+
+    return engine;
+}
+
+void UpscaleEngine::clear() {
+    LOGD("CLEARING...");
+    for (int i = 0; i < use_gpu_count; i++) {
+        delete realcugan[i];
+    }
+    realcugan.clear();
+    ncnn::destroy_gpu_instance();
+    LOGD("CLEAR END");
 }
 
 int
 UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobject progress) {
     std::vector<int> tilesize;
-    std::vector<int> gpuid;
     int syncgap = 3;
-    int tta_mode = 0;
     // Forced model values
     path_t model = PATHSTR("models-nose");
     int scale = 2;
     int noise = 0;
 
-    int prepadding = 0;
+    int prepadding;
+
+    LOGD("UPSCALING...");
 
     if (model.find(PATHSTR("models-se")) != path_t::npos
         || model.find(PATHSTR("models-nose")) != path_t::npos
@@ -86,29 +126,9 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
         syncgap = 0;
     }
 
-    ncnn::create_gpu_instance();
-
-    if (gpuid.empty()) {
-        gpuid.push_back(ncnn::get_default_gpu_index());
-    }
-
-    const int use_gpu_count = (int) gpuid.size();
-    LOGD("GPU count : %i", use_gpu_count);
 
     if (tilesize.empty()) {
         tilesize.resize(use_gpu_count, 0);
-    }
-
-    int cpu_count = std::max(1, ncnn::get_cpu_count());
-
-    int gpu_count = ncnn::get_gpu_count();
-    for (int i = 0; i < use_gpu_count; i++) {
-        if (gpuid[i] < -1 || gpuid[i] >= gpu_count) {
-            fprintf(stderr, "invalid gpu device\n");
-
-            ncnn::destroy_gpu_instance();
-            return -1;
-        }
     }
 
     for (int i = 0; i < use_gpu_count; i++) {
@@ -166,14 +186,7 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
         }
     }
 
-    std::vector<RealCUGAN *> realcugan(use_gpu_count);
-
     for (int i = 0; i < use_gpu_count; i++) {
-        realcugan[i] = new RealCUGAN(gpuid[i], tta_mode, 1);
-
-        int loaded = realcugan[i]->load(asset_manager, param_path, model_path);
-        LOGD("Model loaded %d : %d", i, loaded);
-
         realcugan[i]->noise = noise;
         realcugan[i]->scale = scale;
         realcugan[i]->tilesize = tilesize[i];
@@ -183,7 +196,7 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
 
     // load image
     LOGD("LOADING");
-    unsigned char *pixeldata = nullptr;
+    unsigned char *pixeldata;
     int webp = 0;
     int w;
     int h;
@@ -232,40 +245,24 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
 
     // realcugan proc
     LOGD("PROCESSING");
-    int targetW = inimage.w * scale;
-    int targetH = inimage.h * scale;
+    auto *progress_c = (unsigned char *) env->GetDirectBufferAddress(progress);
     for (int i = 0; i < use_gpu_count; i++) {
-        ncnn::Mat outimage = ncnn::Mat(targetW, targetH, (size_t) inimage.elemsize,
+        ncnn::Mat outimage = ncnn::Mat(inimage.w * scale, inimage.h * scale,
+                                       (size_t) inimage.elemsize,
                                        (int) inimage.elemsize);
-        realcugan[i]->process(inimage, outimage);
+        realcugan[i]->process(inimage, outimage, progress_c);
 
         // save image
         LOGD("SAVING");
         inimage.release();
-        LOGD("inImage released");
-
         LOGD("target path %s", out_path);
-
         int success = stbi_write_png(out_path, outimage.w, outimage.h, outimage.elempack,
                                      outimage.data, 0);
         LOGD("success %i", success);
-
-        LOGD("data copied");
         outimage.release();
         LOGD("outImage released");
     }
-
-
-    LOGD("FINALIZING 1");
-    for (int i = 0; i < use_gpu_count; i++) {
-        delete realcugan[i];
-    }
-    LOGD("FINALIZING 2");
-    realcugan.clear();
-
-
-    LOGD("FINALIZING 3");
-    ncnn::destroy_gpu_instance();
+    progress_c[0] = 100;
     LOGD("FINALIZED");
 
     return 0;
