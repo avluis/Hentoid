@@ -12,6 +12,10 @@ import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.ai_upscale.AiUpscaler
 import me.devsaki.hentoid.database.CollectionDAO
@@ -20,6 +24,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.notification.transform.TransformCompleteNotification
 import me.devsaki.hentoid.notification.transform.TransformProgressNotification
+import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
@@ -174,7 +179,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             )
         val cacheDir = FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return
         val outputFile = cacheDir.absolutePath + "/upscale.png";
-        val res: Int
         try {
             val progress = ByteBuffer.allocateDirect(1)
             val dataIn = ByteBuffer.allocateDirect(rawData.size)
@@ -186,15 +190,33 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 "realsr/models-nose/up2x-no-denoise.param",
                 "realsr/models-nose/up2x-no-denoise.bin"
             )
-            res = upscale.upscale(
-                dataIn,
-                outputFile,
-                progress
-            )
+            CoroutineScope(Dispatchers.Default).launch {
+                val res = withContext(Dispatchers.Default) {
+                    upscale.upscale(
+                        dataIn,
+                        outputFile,
+                        progress
+                    )
+                }
+                if (res > -1)
+                    nextOK()
+                else {
+                    nextKO()
+                    progress.put(0, 100)
+                }
+            }
+            val intervalSeconds = 3
+            var iterations = 0
+            while (iterations < 180 / intervalSeconds) { // max 3 minutes
+                Helper.pause(intervalSeconds * 1000)
+                val p = progress.get(0)
+                Timber.i("progress : %s%%", p)
+                if (p >= 100) break
+                iterations++
+            }
         } finally {
             // can't recycle ByteBuffer dataIn
         }
-        if (res > -1) nextOK() else nextKO()
         Timber.i("KT DONE")
         /* TEMP */
 

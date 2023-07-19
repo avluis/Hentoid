@@ -8,6 +8,7 @@ class AiUpscaler {
     private var upscalerHandle = 0L
 
     init {
+        // Only called when actually used; multiple calls have no effect
         System.loadLibrary("ai_upscale")
     }
 
@@ -17,8 +18,6 @@ class AiUpscaler {
         model: String
     ): Long
 
-    // TODO initialize and free the upscale engine from here to avoid init overhead during each call
-    // NB : AssetManager must be kept alive to avoid it being garbage-collected
     private external fun upscale(
         engineHandle: Long,
         dataIn: ByteBuffer,
@@ -28,6 +27,7 @@ class AiUpscaler {
 
     private external fun clear(upscalerHandle: Long)
 
+    // NB : AssetManager must be kept alive to avoid it being garbage-collected
     fun init(
         assetMgr: AssetManager,
         param: String,
@@ -50,13 +50,4 @@ class AiUpscaler {
             upscalerHandle = 0L
         }
     }
-
-    /*
-    companion object {
-        // Used to load the 'ai_upscale' library on application startup.
-        init {
-            System.loadLibrary("ai_upscale")
-        }
-    }
-     */
 }
