@@ -1,11 +1,7 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
-import android.content.res.AssetManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ColorSpace
-import android.os.Build
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -70,9 +66,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         require(paramsStr != null)
         require(paramsStr.isNotEmpty())
 
-        val moshi = Moshi.Builder()
-            .addLast(KotlinJsonAdapterFactory())
-            .build()
+        val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
 
         val params = moshi.adapter(ImageTransform.Params::class.java).fromJson(paramsStr)
         require(params != null)
@@ -103,15 +97,13 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             FileHelper.getDocumentFromTreeUriString(applicationContext, content.storageUri)
         val images = content.imageList
         if (contentFolder != null) {
-            val imagesWithoutChapters = images
-                .filter { i -> null == i.linkedChapter }
-                .filter { i -> i.isReadable }
+            val imagesWithoutChapters =
+                images.filter { i -> null == i.linkedChapter }.filter { i -> i.isReadable }
             transformChapter(imagesWithoutChapters, contentFolder, params)
 
-            val chapteredImgs = images
-                .filterNot { i -> null == i.linkedChapter }
-                .filter { i -> i.isReadable }
-                .groupBy { i -> i.linkedChapter!!.id }
+            val chapteredImgs =
+                images.filterNot { i -> null == i.linkedChapter }.filter { i -> i.isReadable }
+                    .groupBy { i -> i.linkedChapter!!.id }
 
             chapteredImgs.forEach {
                 transformChapter(it.value, contentFolder, params)
@@ -129,17 +121,24 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun transformChapter(
-        imgs: List<ImageFile>,
-        contentFolder: DocumentFile,
-        params: ImageTransform.Params
+        imgs: List<ImageFile>, contentFolder: DocumentFile, params: ImageTransform.Params
     ) {
         val nbManhwa = AtomicInteger(0)
         params.forceManhwa = false
+
+        val upscale = AiUpscaler()
+        upscale.init(
+            applicationContext.resources.assets,
+            "realsr/models-nose/up2x-no-denoise.param",
+            "realsr/models-nose/up2x-no-denoise.bin"
+        )
+
         imgs.forEach {
-            transformImage(it, contentFolder, params, nbManhwa, imgs.size)
-            // TEMP if (isStopped) return
-            return
+            transformImage(it, contentFolder, params, nbManhwa, imgs.size, upscale)
+            if (isStopped) return
         }
+
+        upscale.cleanup()
     }
 
     @Suppress("ReplaceArrayEqualityOpWithArraysEquals")
@@ -148,7 +147,8 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         contentFolder: DocumentFile,
         params: ImageTransform.Params,
         nbManhwa: AtomicInteger,
-        nbPages: Int
+        nbPages: Int,
+        upscale: AiUpscaler?
     ) {
         val sourceFile = FileHelper.getDocumentFromTreeUriString(applicationContext, img.fileUri)
         if (null == sourceFile) {
@@ -169,56 +169,41 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9
 
         /* TODO TEMP */
-        val options2 = BitmapFactory.Options()
-        options2.inPreferredConfig = Bitmap.Config.ARGB_8888
-        // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
-        // which makes resizing buggy (generates a black picture)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) options2.inPreferredColorSpace =
-            ColorSpace.get(
-                ColorSpace.Named.SRGB
-            )
-        val cacheDir = FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return
-        val outputFile = cacheDir.absolutePath + "/upscale.png";
-        try {
-            val progress = ByteBuffer.allocateDirect(1)
-            val dataIn = ByteBuffer.allocateDirect(rawData.size)
-            dataIn.put(rawData)
-            val mgr: AssetManager = applicationContext.resources.assets
-            val upscale = AiUpscaler()
-            upscale.init(
-                mgr,
-                "realsr/models-nose/up2x-no-denoise.param",
-                "realsr/models-nose/up2x-no-denoise.bin"
-            )
-            CoroutineScope(Dispatchers.Default).launch {
-                val res = withContext(Dispatchers.Default) {
-                    upscale.upscale(
-                        dataIn,
-                        outputFile,
-                        progress
-                    )
+        upscale?.let {
+            val cacheDir =
+                FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return
+            val outputFile = cacheDir.absolutePath + "/upscale" + img.order + ".png";
+            try {
+                val progress = ByteBuffer.allocateDirect(1)
+                val dataIn = ByteBuffer.allocateDirect(rawData.size)
+                dataIn.put(rawData)
+                CoroutineScope(Dispatchers.Default).launch {
+                    val res = withContext(Dispatchers.Default) {
+                        it.upscale(
+                            dataIn, outputFile, progress
+                        )
+                    }
+                    if (res > -1) nextOK()
+                    else {
+                        nextKO()
+                        progress.put(0, 100)
+                    }
                 }
-                if (res > -1)
-                    nextOK()
-                else {
-                    nextKO()
-                    progress.put(0, 100)
+                val intervalSeconds = 3
+                var iterations = 0
+                while (iterations < 180 / intervalSeconds) { // max 3 minutes
+                    Helper.pause(intervalSeconds * 1000)
+                    val p = progress.get(0)
+                    // TODO use that to update notification progress to a finer degree
+                    Timber.i("progress : %s%%", p)
+                    if (p >= 100) break
+                    iterations++
                 }
+            } finally {
+                // can't recycle ByteBuffer dataIn
             }
-            val intervalSeconds = 3
-            var iterations = 0
-            while (iterations < 180 / intervalSeconds) { // max 3 minutes
-                Helper.pause(intervalSeconds * 1000)
-                val p = progress.get(0)
-                Timber.i("progress : %s%%", p)
-                if (p >= 100) break
-                iterations++
-            }
-        } finally {
-            // can't recycle ByteBuffer dataIn
-        }
-        Timber.i("KT DONE")
-        /* TEMP */
+            Timber.i("KT DONE")
+        }/* TEMP */
 
         /*
                 val targetData = ImageTransform.transform(rawData, params)

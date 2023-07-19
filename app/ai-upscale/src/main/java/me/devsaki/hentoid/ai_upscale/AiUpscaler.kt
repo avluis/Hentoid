@@ -7,6 +7,9 @@ class AiUpscaler {
 
     private var upscalerHandle = 0L
 
+    // AssetManager must be kept alive to avoid it being garbage-collected
+    private var assetManager: AssetManager? = null
+
     init {
         // Only called when actually used; multiple calls have no effect
         System.loadLibrary("ai_upscale")
@@ -27,12 +30,12 @@ class AiUpscaler {
 
     private external fun clear(upscalerHandle: Long)
 
-    // NB : AssetManager must be kept alive to avoid it being garbage-collected
     fun init(
         assetMgr: AssetManager,
         param: String,
         model: String
     ) {
+        assetManager = assetMgr
         upscalerHandle = initEngine(assetMgr, param, model)
     }
 
@@ -48,6 +51,7 @@ class AiUpscaler {
         if (upscalerHandle != 0L) {
             clear(upscalerHandle)
             upscalerHandle = 0L
+            assetManager = null
         }
     }
 }
