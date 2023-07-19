@@ -2,6 +2,8 @@ package me.devsaki.hentoid.workers
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.graphics.Point
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -26,6 +28,7 @@ import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.util.notification.Notification
 import timber.log.Timber
+import java.io.File
 import java.nio.ByteBuffer
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
@@ -35,6 +38,8 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.transform_service, null) {
 
     private val dao: CollectionDAO
+    private var upscaler: AiUpscaler? = null
+
     private var totalItems = 0
     private var nbOK = 0
     private var nbKO = 0
@@ -54,6 +59,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
     override fun onClear() {
         dao.cleanup()
+        upscaler?.cleanup()
 
         // Reset Glide cache as it gets confused by the resizing
         Glide.get(applicationContext).clearDiskCache()
@@ -70,6 +76,15 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
         val params = moshi.adapter(ImageTransform.Params::class.java).fromJson(paramsStr)
         require(params != null)
+
+        if (3 == params.resizeMethod) { // AI upscale
+            upscaler = AiUpscaler()
+            upscaler!!.init(
+                applicationContext.resources.assets,
+                "realsr/models-nose/up2x-no-denoise.param",
+                "realsr/models-nose/up2x-no-denoise.bin"
+            )
+        }
 
         transform(contentIds, params)
     }
@@ -126,19 +141,10 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val nbManhwa = AtomicInteger(0)
         params.forceManhwa = false
 
-        val upscale = AiUpscaler()
-        upscale.init(
-            applicationContext.resources.assets,
-            "realsr/models-nose/up2x-no-denoise.param",
-            "realsr/models-nose/up2x-no-denoise.bin"
-        )
-
         imgs.forEach {
-            transformImage(it, contentFolder, params, nbManhwa, imgs.size, upscale)
+            transformImage(it, contentFolder, params, nbManhwa, imgs.size)
             if (isStopped) return
         }
-
-        upscale.cleanup()
     }
 
     @Suppress("ReplaceArrayEqualityOpWithArraysEquals")
@@ -147,8 +153,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         contentFolder: DocumentFile,
         params: ImageTransform.Params,
         nbManhwa: AtomicInteger,
-        nbPages: Int,
-        upscale: AiUpscaler?
+        nbPages: Int
     ) {
         val sourceFile = FileHelper.getDocumentFromTreeUriString(applicationContext, img.fileUri)
         if (null == sourceFile) {
@@ -158,63 +163,68 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val rawData = FileHelper.getInputStream(applicationContext, sourceFile).use {
             return@use it.readBytes()
         }
-        val isLossless = ImageHelper.isImageLossless(rawData)
-        val sourceName = sourceFile.name ?: ""
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-        BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options)
-        val isManhwa = options.outHeight * 1.0 / options.outWidth > 3
+        val metadataOpts = BitmapFactory.Options()
+        metadataOpts.inJustDecodeBounds = true
 
-        if (isManhwa) nbManhwa.incrementAndGet()
-        params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9
-
-        /* TODO TEMP */
-        upscale?.let {
+        val targetData: ByteArray
+        if (upscaler != null) {
             val cacheDir =
                 FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return
-            val outputFile = cacheDir.absolutePath + "/upscale" + img.order + ".png";
-            try {
-                val progress = ByteBuffer.allocateDirect(1)
-                val dataIn = ByteBuffer.allocateDirect(rawData.size)
-                dataIn.put(rawData)
-                CoroutineScope(Dispatchers.Default).launch {
-                    val res = withContext(Dispatchers.Default) {
-                        it.upscale(
-                            dataIn, outputFile, progress
-                        )
+            val outputFile = File(cacheDir, "upscale.png")
+            val progress = ByteBuffer.allocateDirect(1)
+            val dataIn = ByteBuffer.allocateDirect(rawData.size)
+            dataIn.put(rawData)
+
+            upscaler?.let {
+                try {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val res = withContext(Dispatchers.Default) {
+                            it.upscale(
+                                dataIn, outputFile.absolutePath, progress
+                            )
+                        }
+                        // Fail => exit immediately
+                        if (res != 0) progress.put(0, 100)
                     }
-                    if (res > -1) nextOK()
-                    else {
-                        nextKO()
-                        progress.put(0, 100)
+
+                    // Poll while processing
+                    val intervalSeconds = 3
+                    var iterations = 0
+                    while (iterations < 180 / intervalSeconds) { // max 3 minutes
+                        Helper.pause(intervalSeconds * 1000)
+                        val p = progress.get(0)
+                        // TODO use that to update notification progress to a finer degree
+                        Timber.i("progress : %s%%", p)
+                        if (p >= 100) break
+                        iterations++
                     }
+                } finally {
+                    // can't recycle ByteBuffer dataIn
                 }
-                val intervalSeconds = 3
-                var iterations = 0
-                while (iterations < 180 / intervalSeconds) { // max 3 minutes
-                    Helper.pause(intervalSeconds * 1000)
-                    val p = progress.get(0)
-                    // TODO use that to update notification progress to a finer degree
-                    Timber.i("progress : %s%%", p)
-                    if (p >= 100) break
-                    iterations++
-                }
-            } finally {
-                // can't recycle ByteBuffer dataIn
             }
-            Timber.i("KT DONE")
-        }/* TEMP */
 
-        /*
-                val targetData = ImageTransform.transform(rawData, params)
-                if (targetData == rawData) return // Unchanged picture
+            FileHelper.getInputStream(applicationContext, outputFile.toUri()).use { input ->
+                targetData = input.readBytes()
+            }
+        } else { // regular resize
+            BitmapFactory.decodeByteArray(rawData, 0, rawData.size, metadataOpts)
+            val isManhwa = metadataOpts.outHeight * 1.0 / metadataOpts.outWidth > 3
 
-         */
+            if (isManhwa) nbManhwa.incrementAndGet()
+            params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9
 
-        /*
-        BitmapFactory.decodeByteArray(targetData, 0, targetData.size, options)
-        val targetDims = Point(options.outWidth, options.outHeight)
-        val targetMime = ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
+            targetData = ImageTransform.transform(rawData, params)
+        }
+        if (targetData == rawData) return // Unchanged picture
+
+        // Save transformed image data back to original image file
+        val isLossless = ImageHelper.isImageLossless(rawData)
+        val sourceName = sourceFile.name ?: ""
+
+        BitmapFactory.decodeByteArray(targetData, 0, targetData.size, metadataOpts)
+        val targetDims = Point(metadataOpts.outWidth, metadataOpts.outHeight)
+        val targetMime =
+            ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
         val targetName = img.name + "." + FileHelper.getExtensionFromMimeType(targetMime)
         val newFile = sourceName != targetName
 
@@ -233,7 +243,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             img.mimeType = targetMime
             nextOK()
         } else nextKO()
-        */
     }
 
     private fun nextOK() {

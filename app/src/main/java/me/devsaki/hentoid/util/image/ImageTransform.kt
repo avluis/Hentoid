@@ -52,6 +52,7 @@ object ImageTransform {
                 )
 
                 else -> resizePlainRatio(source, dims, params.resize3Ratio / 100f)
+                // 3 : AI rescale handled at Worker level
             }
         } else {
             BitmapFactory.decodeByteArray(source, 0, source.size)

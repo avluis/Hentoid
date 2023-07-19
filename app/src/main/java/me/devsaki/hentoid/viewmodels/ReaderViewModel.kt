@@ -565,7 +565,9 @@ class ReaderViewModel(
             val theImages = savedContent.imageFiles ?: return
 
             // Update image read status with the cached read statuses
-            val previousReadPageNumbers = theImages.filter { obj -> obj.isRead && obj.isReadable }.map { obj -> obj.order }.toSet()
+            val previousReadPageNumbers =
+                theImages.filter { obj -> obj.isRead && obj.isReadable }.map { obj -> obj.order }
+                    .toSet()
             val reReadPagesNumbers = readPageNumbers.toMutableSet()
             reReadPagesNumbers.retainAll(previousReadPageNumbers)
             if (readPageNumbers.size > reReadPagesNumbers.size) {
@@ -1859,15 +1861,17 @@ class ReaderViewModel(
             tasks.forEachIndexed { index, task ->
                 if (index < tasks.size - 1) {
                     FileHelper.getOutputStream(getApplication(), task.first).use { os ->
-                        FileHelper.getInputStream(getApplication(), task.second).use { input ->
-                            Helper.copy(input, os)
+                        os?.let {
+                            FileHelper.getInputStream(getApplication(), task.second).use { input ->
+                                Helper.copy(input, it)
+                            }
                         }
                     }
                     task.third.fileUri = task.first.toString()
                     swaps.remove(task.first)
                 } else { // Last task
                     FileHelper.getOutputStream(getApplication(), task.first).use { os ->
-                        os.write(firstFileContent)
+                        os?.write(firstFileContent)
                     }
                     task.third.fileUri = task.first.toString()
                 }

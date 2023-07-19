@@ -128,7 +128,7 @@ public class DownloadHelper {
                     out = FileHelper.getOutputStream(HentoidApp.getInstance(), targetFileUri);
                 }
 
-                if (len > 0) {
+                if (len > 0 && out != null) {
                     out.write(buffer, 0, len);
 
                     if (notifyProgress != null && 0 == iteration % notificationResolution)
