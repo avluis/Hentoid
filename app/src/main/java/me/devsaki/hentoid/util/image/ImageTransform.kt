@@ -37,7 +37,11 @@ object ImageTransform {
     /**
      * Transform the given raw picture data using the given params
      */
-    fun transform(source: ByteArray, params: Params): ByteArray {
+    fun transform(
+        source: ByteArray,
+        params: Params,
+        allowBogusAiRescale: Boolean = false
+    ): ByteArray {
         if (ImageHelper.isImageAnimated(source)) return source
 
         val options = BitmapFactory.Options()
@@ -51,8 +55,13 @@ object ImageTransform {
                     source, dims, params.resize2Height, params.resize2Width, params.forceManhwa
                 )
 
-                else -> resizePlainRatio(source, dims, params.resize3Ratio / 100f)
-                // 3 : AI rescale handled at Worker level
+                2 -> resizePlainRatio(source, dims, params.resize3Ratio / 100f)
+                3 -> { // AI rescale; handled ad Worker level
+                    val scale = if (allowBogusAiRescale) 2f else 1f
+                    resizePlainRatio(source, dims, scale, allowBogusAiRescale)
+                }
+
+                else -> resizePlainRatio(source, dims, 1f)
             }
         } else {
             BitmapFactory.decodeByteArray(source, 0, source.size)
@@ -92,10 +101,15 @@ object ImageTransform {
         return resizePlainRatio(source, dims, ratio)
     }
 
-    private fun resizePlainRatio(source: ByteArray, dims: Point, ratio: Float): Bitmap {
-        // TODO use smart upscaler
+    private fun resizePlainRatio(
+        source: ByteArray,
+        dims: Point,
+        ratio: Float,
+        allowUpscale: Boolean = false
+    ): Bitmap {
         val sourceBmp = BitmapFactory.decodeByteArray(source, 0, source.size)
-        return if (ratio > 0.99 /*&& ratio < 1.01*/) sourceBmp // Prevent upscaling
+        return if (ratio > 0.99 && ratio < 1.01) sourceBmp // Don't do anything
+        else if (ratio > 1.01 && !allowUpscale) sourceBmp // Prevent upscaling
         else {
             val rescaled = ImageHelper.sharpRescale(sourceBmp, ratio)
             if (rescaled != sourceBmp) sourceBmp.recycle()
@@ -110,6 +124,10 @@ object ImageTransform {
     }
 
     fun determineEncoder(isLossless: Boolean, dims: Point, params: Params): PictureEncoder {
+        // AI rescale always produces PNGs
+        if (3 == params.resizeMethod) return PictureEncoder.PNG
+
+        // Other cases
         val result = when (params.transcodeMethod) {
             0 -> params.transcoderAll
             else -> if (isLossless) params.transcoderLossless else params.transcoderLossy

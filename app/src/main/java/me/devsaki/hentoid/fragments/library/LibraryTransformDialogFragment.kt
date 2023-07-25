@@ -198,6 +198,9 @@ class LibraryTransformDialogFragment : DialogFragment() {
 
     private fun refreshControls(applyValues: Boolean = false) {
         binding.apply {
+            val isAiUpscale = (3 == Settings.resizeMethod) && Settings.isResizeEnabled
+
+            // Resize
             if (applyValues) resizeSwitch.isChecked = Settings.isResizeEnabled
 
             if (applyValues) resizeMethod.index = Settings.resizeMethod
@@ -217,16 +220,20 @@ class LibraryTransformDialogFragment : DialogFragment() {
             resizeMethod3Ratio.isVisible = (2 == resizeMethod.index && resizeMethod.isVisible)
             if (applyValues) resizeMethod3Ratio.editText?.setText(Settings.resizeMethod3Ratio.toString())
 
+            // Transcode
+            transcodeHeader.isVisible = !isAiUpscale
+            transcodeMethod.isVisible = !isAiUpscale
             if (applyValues) transcodeMethod.index = Settings.transcodeMethod
-            encoderAll.isVisible = (0 == transcodeMethod.index)
+            encoderAll.isVisible = (0 == transcodeMethod.index && !isAiUpscale)
             if (applyValues) encoderAll.value = Settings.transcodeEncoderAll.toString()
-            encoderLossless.isVisible = (1 == transcodeMethod.index)
+            encoderLossless.isVisible = (1 == transcodeMethod.index && !isAiUpscale)
             if (applyValues) encoderLossless.value = Settings.transcodeEncoderLossless.toString()
-            encoderLossy.isVisible = (1 == transcodeMethod.index)
+            encoderLossy.isVisible = (1 == transcodeMethod.index && !isAiUpscale)
             if (applyValues) encoderLossy.value = Settings.transcodeEncoderLossy.toString()
             encoderQuality.isVisible = (1 == transcodeMethod.index
                     || (0 == transcodeMethod.index
                     && (Settings.transcodeEncoderAll == PictureEncoder.JPEG.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value)))
+            if (isAiUpscale) encoderQuality.isVisible = false
             if (applyValues) encoderQuality.editText?.setText(Settings.transcodeQuality.toString())
             encoderWarning.isVisible = (
                     (0 == transcodeMethod.index && (Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSLESS.value))
@@ -269,7 +276,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
             val sourceName = picName + "." + FileHelper.getExtensionFromMimeType(sourceMime)
             val params = buildParams()
             val targetData = withContext(Dispatchers.IO) {
-                return@withContext ImageTransform.transform(rawData, params)
+                return@withContext ImageTransform.transform(rawData, params, true)
             }
             val unchanged = targetData == rawData
 
