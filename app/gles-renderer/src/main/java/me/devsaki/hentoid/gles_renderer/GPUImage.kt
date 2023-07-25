@@ -257,7 +257,7 @@ class GPUImage(val context: Context) {
     fun runOnGLThread(runnable: Runnable) {
         renderer.runOnDrawEnd(runnable)
     }
-
+/*
     private fun getOutputWidth(): Int {
         return if (renderer.getFrameWidth() != 0) {
             renderer.getFrameWidth()
@@ -283,6 +283,8 @@ class GPUImage(val context: Context) {
             display.height
         }
     }
+
+ */
     /*
         inner class LoadImageUriTask(gpuImage: GPUImage, private val uri: Uri) :
             LoadImageTask(gpuImage) {

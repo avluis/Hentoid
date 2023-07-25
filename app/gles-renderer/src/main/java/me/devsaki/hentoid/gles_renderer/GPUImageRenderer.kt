@@ -195,8 +195,6 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         val ratioWidth = imageWidthNew / outputWidth
         val ratioHeight = imageHeightNew / outputHeight
          */
-        val ratioWidth = 1f
-        val ratioHeight = 1f
         var cube = CUBE
         var textureCords: FloatArray =
             TextureRotationUtil.getRotation(rotation, flipHorizontal, flipVertical)
