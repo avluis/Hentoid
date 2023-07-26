@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -13,6 +14,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
@@ -141,25 +145,23 @@ class MetadataEditViewModel(
      * @param itemsPerPage Number of items per result "page"
      */
     fun setAttributeQuery(query: String, pageNum: Int, itemsPerPage: Int) {
-        filterDisposable.dispose()
-        filterDisposable = Single.fromCallable {
-            dao.selectAttributeMasterDataPaged(
-                attributeTypes.value!!,
-                query,
-                -1,
-                emptyList(),
-                ContentHelper.Location.ANY,
-                ContentHelper.Type.ANY,
-                true,
-                pageNum,
-                itemsPerPage,
-                Preferences.getSearchAttributesSortOrder()
-            )
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { value: AttributeQueryResult? ->
-                libraryAttributes.postValue(value)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val result = dao.selectAttributeMasterDataPaged(
+                    attributeTypes.value!!,
+                    query,
+                    -1,
+                    emptyList(),
+                    ContentHelper.Location.ANY,
+                    ContentHelper.Type.ANY,
+                    true,
+                    pageNum,
+                    itemsPerPage,
+                    Preferences.getSearchAttributesSortOrder()
+                )
+                libraryAttributes.postValue(result)
             }
+        }
     }
 
     /**
