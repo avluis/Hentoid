@@ -66,7 +66,7 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
             Preferences.setAppLockPin("");
         }
 
-        if (Preferences.getAppLockPin().isEmpty() || HentoidApp.isUnlocked()) {
+        if (Preferences.getAppLockPin().isEmpty() || HentoidApp.Companion.isUnlocked()) {
             goToNextActivity();
             return;
         }
@@ -85,7 +85,7 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
 
     @Override
     public void onPinSuccess() {
-        HentoidApp.setUnlocked(true);
+        HentoidApp.Companion.setUnlocked(true);
         goToNextActivity();
     }
 
@@ -106,7 +106,7 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
                 return;
             }
             Class<?> c = Content.getWebActivityClass(Site.searchByCode(siteCode));
-            targetIntent = new Intent(HentoidApp.getInstance(), c);
+            targetIntent = new Intent(HentoidApp.Companion.getInstance(), c);
             targetIntent.setAction(Intent.ACTION_VIEW);
         }
         startActivity(targetIntent);

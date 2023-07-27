@@ -20,7 +20,6 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.util.LocaleHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -151,7 +150,7 @@ public abstract class BaseWorker extends Worker {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo(logName);
         logInfo.setHeaderName(logName);
         logInfo.setEntries(logs);
-        LogHelper.Companion.writeLog(HentoidApp.getInstance(), logInfo);
+        LogHelper.Companion.writeLog(getApplicationContext(), logInfo);
     }
 
     abstract Notification getStartNotification();

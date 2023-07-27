@@ -95,7 +95,7 @@ public class HitomiParser extends BaseImageListParser {
         if (null == webview) {
             handler.post(() -> {
                 if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
-                HitomiBackgroundWebView hitomiWv = new HitomiBackgroundWebView(HentoidApp.getInstance(), Site.HITOMI);
+                HitomiBackgroundWebView hitomiWv = new HitomiBackgroundWebView(HentoidApp.Companion.getInstance(), Site.HITOMI);
                 Timber.d(">> loading url %s", pageUrl);
                 hitomiWv.loadUrl(pageUrl, () -> evaluateJs(hitomiWv, galleryInfo, imagesStr, done));
                 Timber.i(">> loading wv");
@@ -145,7 +145,7 @@ public class HitomiParser extends BaseImageListParser {
     // TODO optimize
     private String getJsPagesScript(@NonNull String galleryInfo) {
         StringBuilder sb = new StringBuilder();
-        FileHelper.getAssetAsString(HentoidApp.getInstance().getAssets(), "hitomi_pages.js", sb);
+        FileHelper.getAssetAsString(HentoidApp.Companion.getInstance().getAssets(), "hitomi_pages.js", sb);
         return sb.toString().replace("$galleryInfo", galleryInfo);
     }
 

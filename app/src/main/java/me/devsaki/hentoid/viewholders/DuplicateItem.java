@@ -80,7 +80,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     private boolean isBeingDeleted = false;
 
     static {
-        Context context = HentoidApp.getInstance();
+        Context context = HentoidApp.Companion.getInstance();
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);

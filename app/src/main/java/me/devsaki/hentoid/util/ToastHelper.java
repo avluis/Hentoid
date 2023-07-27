@@ -20,15 +20,15 @@ public class ToastHelper {
     }
 
     public static void toast(String message) {
-        toast(HentoidApp.getInstance(), message, Toast.LENGTH_SHORT);
+        toast(HentoidApp.Companion.getInstance(), message, Toast.LENGTH_SHORT);
     }
 
     public static void toast(@StringRes int resource) {
-        toast(HentoidApp.getInstance(), resource);
+        toast(HentoidApp.Companion.getInstance(), resource);
     }
 
     public static void toast(@StringRes int resource, Object... args) {
-        toast(HentoidApp.getInstance(), resource, args);
+        toast(HentoidApp.Companion.getInstance(), resource, args);
     }
 
     public static void toast(@NonNull Context context, @StringRes int resource, Object... args) {

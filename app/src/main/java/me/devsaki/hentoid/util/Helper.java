@@ -551,7 +551,7 @@ public final class Helper {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo("latest-crash");
         logInfo.setEntries(log);
         logInfo.setHeaderName("latest-crash");
-        LogHelper.Companion.writeLog(HentoidApp.getInstance(), logInfo);
+        LogHelper.Companion.writeLog(HentoidApp.Companion.getInstance(), logInfo);
     }
 
     public static String getStackTraceString(Throwable t) {

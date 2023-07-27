@@ -71,7 +71,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
 
     static {
-        Context context = HentoidApp.getInstance();
+        Context context = HentoidApp.Companion.getInstance();
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
