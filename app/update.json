@@ -2,7 +2,7 @@
   "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.18.1/hentoid1181-665.apk",
   "versionCode": "665",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/test1/v415.apk",
-  "versionCode.beta": "100",
+  "versionCode.beta": "999",
   "sourceAlerts":[
 	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"204" },
 	  {"sourceName":"LUSCIOUS", "status":"ORANGE", "fixedByBuild":"206" },
