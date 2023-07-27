@@ -7,7 +7,6 @@ import androidx.work.WorkerParameters
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.events.CommunicationEvent
-import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.notification.update.UpdateAvailableNotification
@@ -71,7 +70,7 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
         var newVersion = false
         if (BuildConfig.VERSION_CODE < updateInfoJson.getVersionCode(BuildConfig.DEBUG)) {
             val updateUrl: String = updateInfoJson.getUpdateUrl(BuildConfig.DEBUG)
-            notificationManager.notify(UpdateAvailableNotification(updateUrl))
+            notificationManager.notifyLast(UpdateAvailableNotification(updateUrl))
             newVersion = true
             EventBus.getDefault().post(
                 CommunicationEvent(
