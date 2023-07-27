@@ -1,7 +1,6 @@
 #ifndef INCLUDE_UPSCALE_ENGINE_H
 #define INCLUDE_UPSCALE_ENGINE_H
 
-#include "filesystem_utils.h"
 #include "realcugan.h"
 
 class UpscaleEngine {

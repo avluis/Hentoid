@@ -197,7 +197,6 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
     // load image
     LOGD("LOADING");
     unsigned char *pixeldata;
-    int webp = 0;
     int w;
     int h;
     int c;
@@ -208,7 +207,7 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
     //ncnn::Mat inimage = ncnn::Mat::from_android_bitmap(env, in_bmp, ncnn::Mat::PIXEL_RGBA);
     pixeldata = webp_load(filedata, length, &w, &h, &c);
     if (pixeldata) {
-        webp = 1;
+        // We have a WEBP file here; don't go further
     } else {
         // not webp, try jpg png etc.
 #if _WIN32
