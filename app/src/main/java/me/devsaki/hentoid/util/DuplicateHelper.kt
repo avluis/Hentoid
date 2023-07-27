@@ -79,7 +79,7 @@ class DuplicateHelper {
             return getHashEngine(COVER_WORK_RESOLUTION)
         }
 
-        fun getHashEngine(resolution: Int = COVER_WORK_RESOLUTION): ImagePHash {
+        private fun getHashEngine(resolution: Int = COVER_WORK_RESOLUTION): ImagePHash {
             return ImagePHash(resolution, 8)
         }
 
