@@ -17,6 +17,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.Transformation
@@ -25,9 +26,7 @@ import com.bumptech.glide.load.resource.UnitTransformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.GlideApp
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
@@ -35,6 +34,7 @@ import me.devsaki.hentoid.customssiv.ImageSource
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
+import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageTransform
@@ -395,7 +395,7 @@ class ImagePagerAdapter(context: Context) :
                 val smartRotate90 = if (autoRotate) SmartRotateTransformation(
                     90f, ImageTransform.screenWidth, ImageTransform.screenHeight
                 ) else UnitTransformation.get()
-                GlideApp.with(view).load(uri)
+                Glide.with(view).load(uri)
                     .optionalTransform(MultiTransformation(centerInside, smartRotate90))
                     .listener(this).into(view)
             }
