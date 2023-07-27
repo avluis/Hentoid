@@ -17,7 +17,7 @@ import java.io.InputStream
  * Startup class to enable Glide over OkHttp and limit Glide parallel threads
  */
 @GlideModule
-class CustomGlideModuleK : AppGlideModule() {
+class CustomGlideModule : AppGlideModule() {
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
         val client = OkHttpClientSingleton.getInstance()
         val factory = OkHttpUrlLoader.Factory(client)
