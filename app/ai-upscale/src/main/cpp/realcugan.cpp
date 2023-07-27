@@ -2030,10 +2030,10 @@ int RealCUGAN::process_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 
 int RealCUGAN::process_se_sync_gap(const ncnn::Mat &inimage, const std::vector<std::string> &names,
                                    const ncnn::Option &opt, FeatureCache &cache) const {
-    const auto *pixeldata = (const unsigned char *) inimage.data;
+    //const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
-    const int channels = inimage.elempack;
+    //const int channels = inimage.elempack;
 
     const int TILE_SIZE_X = tilesize;
     const int TILE_SIZE_Y = tilesize;
@@ -2423,10 +2423,10 @@ int RealCUGAN::process_se_very_rough_stage0(const ncnn::Mat &inimage,
 int RealCUGAN::process_se_very_rough_sync_gap(const ncnn::Mat &inimage,
                                               const std::vector<std::string> &names,
                                               const ncnn::Option &opt, FeatureCache &cache) const {
-    const auto *pixeldata = (const unsigned char *) inimage.data;
+    //const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
-    const int channels = inimage.elempack;
+    //const int channels = inimage.elempack;
 
     const int TILE_SIZE_X = 32;
     const int TILE_SIZE_Y = 32;
@@ -2569,7 +2569,7 @@ RealCUGAN::process_cpu_se_stage0(const ncnn::Mat &inimage, const std::vector<std
     const int TILE_SIZE_X = tilesize;
     const int TILE_SIZE_Y = tilesize;
 
-    ncnn::Option opt = net.opt;
+    //ncnn::Option opt = net.opt;
 
     // each tile 400x400
     const int xtiles = (w + TILE_SIZE_X - 1) / TILE_SIZE_X;
@@ -3207,15 +3207,15 @@ RealCUGAN::process_cpu_se_stage2(const ncnn::Mat &inimage, const std::vector<std
 int
 RealCUGAN::process_cpu_se_sync_gap(const ncnn::Mat &inimage, const std::vector<std::string> &names,
                                    FeatureCache &cache) const {
-    const auto *pixeldata = (const unsigned char *) inimage.data;
+    //const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
-    const int channels = inimage.elempack;
+    //const int channels = inimage.elempack;
 
     const int TILE_SIZE_X = tilesize;
     const int TILE_SIZE_Y = tilesize;
 
-    ncnn::Option opt = net.opt;
+    //ncnn::Option opt = net.opt;
 
     // each tile 400x400
     const int xtiles = (w + TILE_SIZE_X - 1) / TILE_SIZE_X;
@@ -3304,7 +3304,7 @@ int RealCUGAN::process_cpu_se_very_rough_stage0(const ncnn::Mat &inimage,
     const int TILE_SIZE_X = 32;
     const int TILE_SIZE_Y = 32;
 
-    ncnn::Option opt = net.opt;
+    //ncnn::Option opt = net.opt;
 
     // each tile 400x400
     const int xtiles = (w + TILE_SIZE_X - 1) / TILE_SIZE_X;
@@ -3534,15 +3534,15 @@ int RealCUGAN::process_cpu_se_very_rough_stage0(const ncnn::Mat &inimage,
 int RealCUGAN::process_cpu_se_very_rough_sync_gap(const ncnn::Mat &inimage,
                                                   const std::vector<std::string> &names,
                                                   FeatureCache &cache) const {
-    const auto *pixeldata = (const unsigned char *) inimage.data;
+    //const auto *pixeldata = (const unsigned char *) inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
-    const int channels = inimage.elempack;
+    //const int channels = inimage.elempack;
 
     const int TILE_SIZE_X = 32;
     const int TILE_SIZE_Y = 32;
 
-    ncnn::Option opt = net.opt;
+    //ncnn::Option opt = net.opt;
 
     // each tile 400x400
     const int xtiles = (w + TILE_SIZE_X - 1) / TILE_SIZE_X;
