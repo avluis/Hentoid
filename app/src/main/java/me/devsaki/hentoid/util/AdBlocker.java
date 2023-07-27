@@ -42,9 +42,9 @@ public class AdBlocker {
 
 
     static {
-        String[] appUrlBlacklist = HentoidApp.getInstance().getResources().getStringArray(R.array.blocked_domains);
+        String[] appUrlBlacklist = HentoidApp.Companion.getInstance().getResources().getStringArray(R.array.blocked_domains);
         universalUrlBlacklist.addAll(Arrays.asList(appUrlBlacklist));
-        String[] appUrlWhitelist = HentoidApp.getInstance().getResources().getStringArray(R.array.allowed_domains);
+        String[] appUrlWhitelist = HentoidApp.Companion.getInstance().getResources().getStringArray(R.array.allowed_domains);
         universalUrlWhitelist.addAll(Arrays.asList(appUrlWhitelist));
     }
 

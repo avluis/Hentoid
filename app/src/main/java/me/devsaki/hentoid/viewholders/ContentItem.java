@@ -95,9 +95,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
 
     static {
-        Context context = HentoidApp.getInstance();
+        Context context = HentoidApp.Companion.getInstance();
 
-        int screenWidthPx = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels - (2 * (int) context.getResources().getDimension(R.dimen.default_cardview_margin));
+        int screenWidthPx = context.getResources().getDisplayMetrics().widthPixels - (2 * (int) context.getResources().getDimension(R.dimen.default_cardview_margin));
         int gridHorizontalWidthPx = (int) context.getResources().getDimension(R.dimen.card_grid_width);
         int nbItems = (int) Math.floor(screenWidthPx * 1f / gridHorizontalWidthPx);
         int remainingSpacePx = screenWidthPx % gridHorizontalWidthPx;

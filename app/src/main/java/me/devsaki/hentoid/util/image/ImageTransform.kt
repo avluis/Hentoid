@@ -140,7 +140,7 @@ object ImageTransform {
     }
 
     @Suppress("DEPRECATION")
-    fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArray {
+    private fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArray {
         val output = ByteArrayOutputStream()
         when (encoder) {
             PictureEncoder.WEBP_LOSSY -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) bitmap.compress(

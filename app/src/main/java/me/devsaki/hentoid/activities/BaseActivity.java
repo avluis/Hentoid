@@ -52,31 +52,21 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         // If locked and PIN enabled, display the PIN
-        if (!HentoidApp.isUnlocked() && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
+        if (!HentoidApp.Companion.isUnlocked() && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
             // Evaluate if any set delay has passed; if so, the app gets locked
             int lockDelayCode = Preferences.getLockTimer();
-            int lockDelaySec;
-            switch (lockDelayCode) {
-                case Preferences.Constant.LOCK_TIMER_10S:
-                    lockDelaySec = 10;
-                    break;
-                case Preferences.Constant.LOCK_TIMER_30S:
-                    lockDelaySec = 30;
-                    break;
-                case Preferences.Constant.LOCK_TIMER_1M:
-                    lockDelaySec = 60;
-                    break;
-                case Preferences.Constant.LOCK_TIMER_2M:
-                    lockDelaySec = 120;
-                    break;
-                default:
-                    lockDelaySec = 0;
-            }
-            if ((Instant.now().toEpochMilli() - HentoidApp.getLockInstant()) / 1000 > lockDelaySec) {
+            int lockDelaySec = switch (lockDelayCode) {
+                case Preferences.Constant.LOCK_TIMER_10S -> 10;
+                case Preferences.Constant.LOCK_TIMER_30S -> 30;
+                case Preferences.Constant.LOCK_TIMER_1M -> 60;
+                case Preferences.Constant.LOCK_TIMER_2M -> 120;
+                default -> 0;
+            };
+            if ((Instant.now().toEpochMilli() - HentoidApp.Companion.getLockInstant()) / 1000 > lockDelaySec) {
                 Intent intent = new Intent(this, UnlockActivity.class);
                 startActivity(intent);
             } else {
-                HentoidApp.setUnlocked(true); // Auto-unlock when we're back to the app under the delay
+                HentoidApp.Companion.setUnlocked(true); // Auto-unlock when we're back to the app under the delay
             }
         }
         super.onRestart();

@@ -27,7 +27,7 @@ public class LanguageHelper {
     static Map<String, Pair<String, String>> languageCodes = new HashMap<>();
 
     static {
-        Context context = HentoidApp.getInstance();
+        Context context = HentoidApp.Companion.getInstance();
         try (InputStream is = context.getResources().openRawResource(R.raw.languages)) {
             String siteSettingsStr = FileHelper.readStreamAsString(is);
             JsonLangSettings langSettings = JsonHelper.jsonToObject(siteSettingsStr, JsonLangSettings.class);

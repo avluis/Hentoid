@@ -18,7 +18,7 @@ public class PlugEventsReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (!HentoidApp.isInForeground()) return;
+        if (!HentoidApp.Companion.isInForeground()) return;
         String action = intent.getAction();
         if (!isInitialStickyBroadcast()) {
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action) || Intent.ACTION_POWER_CONNECTED.equals(action)) {

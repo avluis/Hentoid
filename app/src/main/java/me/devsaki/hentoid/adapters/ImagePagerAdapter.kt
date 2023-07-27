@@ -27,7 +27,6 @@ import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
 import me.devsaki.hentoid.customssiv.ImageSource
@@ -42,7 +41,7 @@ import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import timber.log.Timber
 import kotlin.math.roundToInt
 
-class ImagePagerAdapter(context: Context) :
+class ImagePagerAdapter(val context: Context) :
     ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder>(IMAGE_DIFF_CALLBACK) {
 
     enum class ViewType(val value: Int) {
@@ -50,7 +49,7 @@ class ImagePagerAdapter(context: Context) :
     }
 
     private val pageMinHeight =
-        HentoidApp.getInstance().resources.getDimension(R.dimen.page_min_height).toInt()
+        context.resources.getDimension(R.dimen.page_min_height).toInt()
 
     private var itemTouchListener: OnTouchListener? = null
     private var recyclerView: RecyclerView? = null

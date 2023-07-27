@@ -131,13 +131,13 @@ public class ImportHelper {
         @NonNull
         @Override
         public Intent createIntent(@NonNull Context context, StorageLocation input) {
-            HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
+            HentoidApp.LifeCycleListener.Companion.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
             return getFolderPickerIntent(context, input);
         }
 
         @Override
         public ImmutablePair<Integer, Uri> parseResult(int resultCode, @Nullable Intent intent) {
-            HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
+            HentoidApp.LifeCycleListener.Companion.disable(); // Restores autolock on app going to background
             return parsePickerResult(resultCode, intent);
         }
     }
@@ -147,13 +147,13 @@ public class ImportHelper {
         @NonNull
         @Override
         public Intent createIntent(@NonNull Context context, Integer input) {
-            HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
+            HentoidApp.LifeCycleListener.Companion.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
             return getFilePickerIntent();
         }
 
         @Override
         public ImmutablePair<Integer, Uri> parseResult(int resultCode, @Nullable Intent intent) {
-            HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
+            HentoidApp.LifeCycleListener.Companion.disable(); // Restores autolock on app going to background
             return parsePickerResult(resultCode, intent);
         }
     }
@@ -205,7 +205,7 @@ public class ImportHelper {
         intent.setType("*/*");
         // http://stackoverflow.com/a/31334967/1615876
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-        HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
+        HentoidApp.LifeCycleListener.Companion.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
         return intent;
     }
 
