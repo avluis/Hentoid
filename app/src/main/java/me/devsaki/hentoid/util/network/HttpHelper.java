@@ -704,7 +704,7 @@ public class HttpHelper {
      */
     public static class UriParts {
         private String path;
-        private final String fileNameNoExt;
+        private String fileNameNoExt;
         private String extension;
         private String query;
         private final String fragment;
@@ -759,6 +759,10 @@ public class HttpHelper {
 
         public String getFileNameNoExt() {
             return fileNameNoExt;
+        }
+
+        public void setFileNameNoExt(String value) {
+            fileNameNoExt = value;
         }
 
         public String getExtension() {
