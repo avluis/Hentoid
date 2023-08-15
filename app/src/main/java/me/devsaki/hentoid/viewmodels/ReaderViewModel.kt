@@ -989,11 +989,11 @@ class ReaderViewModel(
                 1f * viewerIndex - quantity * increment / 3f,
                 0f,
                 (viewerImagesInternal.size - 1).toFloat()
-            ).toDouble()
+            )
         ).toInt()
-        for (i in 0 until quantity) if (picturesLeftToProcess.contains(initialIndex + increment * i)) indexesToLoad.add(
-            initialIndex + increment * i
-        )
+        for (i in 0 until quantity)
+            if (picturesLeftToProcess.contains(initialIndex + increment * i))
+                indexesToLoad.add(initialIndex + increment * i)
 
         // Only run extraction when there's at least 1/3rd of the extract range to fetch
         // (prevents calling extraction for one single picture at every page turn)
@@ -1029,7 +1029,7 @@ class ReaderViewModel(
 
     /**
      * Indicate if the picture at the given page index in the given list needs processing
-     * (i.e. downloading o extracting)
+     * (i.e. downloading or extracting)
      *
      * @param pageIndex Index to test
      * @param images    List of pictures to test against
@@ -1041,7 +1041,8 @@ class ReaderViewModel(
         if (pageIndex < 0 || images.size <= pageIndex) return false
         val img = images[pageIndex]
         return (img.status == StatusContent.ONLINE && img.fileUri.isEmpty()) // Image has to be downloaded
-                || img.isArchived // Image has to be extracted from an archive
+                || (img.isArchived && img.fileUri.isEmpty()) // Image has to be extracted from an archive
+        // NB : extraction status may also be tested by examining imageLocationCache
     }
 
     /**
@@ -1140,10 +1141,11 @@ class ReaderViewModel(
             } while (indexExtractInProgress.isNotEmpty() && remainingIterations-- > 0)
             if (indexExtractInProgress.isNotEmpty()) return
         }
-        indexExtractInProgress.addAll(indexesToLoad)
 
         // Reset interrupt state to make sure extraction runs
         archiveExtractKillSwitch.set(false)
+
+        // Build extraction instructions, ignoring already extracted items
         val extractInstructions: MutableList<Pair<String, String>> = ArrayList()
         for (index in indexesToLoad) {
             if (index < 0 || index >= viewerImagesInternal.size) continue
@@ -1158,7 +1160,10 @@ class ReaderViewModel(
                     ), "$loadedContentId.$index"
                 )
             )
+            indexExtractInProgress.add(index)
         }
+        if (extractInstructions.isEmpty()) return
+
         Timber.d(
             "Extracting %d files starting from index %s", extractInstructions.size, indexesToLoad[0]
         )
