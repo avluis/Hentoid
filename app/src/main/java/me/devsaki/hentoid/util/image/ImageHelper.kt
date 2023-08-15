@@ -83,7 +83,8 @@ object ImageHelper {
 
         // In Java, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
-        return if (0xFF.toByte() == binary[0] && 0xD8.toByte() == binary[1] && 0xFF.toByte() == binary[2]) MIME_IMAGE_JPEG else if (0x89.toByte() == binary[0] && 0x50.toByte() == binary[1] && 0x4E.toByte() == binary[2]) {
+        return if (0xFF.toByte() == binary[0] && 0xD8.toByte() == binary[1] && 0xFF.toByte() == binary[2]) MIME_IMAGE_JPEG
+        else if (0x89.toByte() == binary[0] && 0x50.toByte() == binary[1] && 0x4E.toByte() == binary[2]) {
             // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
             val acTlPos = FileHelper.findSequencePosition(
                 binary,
@@ -101,7 +102,10 @@ object ImageHelper {
                 if (idatPos > -1) return MIME_IMAGE_APNG
             }
             MIME_IMAGE_PNG
-        } else if (0x47.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2]) MIME_IMAGE_GIF else if (0x52.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2] && 0x46.toByte() == binary[3] && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]) MIME_IMAGE_WEBP else if (0x42.toByte() == binary[0] && 0x4D.toByte() == binary[1]) "image/bmp" else MIME_IMAGE_GENERIC
+        } else if (0x47.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2]) MIME_IMAGE_GIF
+        else if (0x52.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2] && 0x46.toByte() == binary[3] && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]) MIME_IMAGE_WEBP
+        else if (0x42.toByte() == binary[0] && 0x4D.toByte() == binary[1]) "image/bmp"
+        else MIME_IMAGE_GENERIC
     }
 
     /**
