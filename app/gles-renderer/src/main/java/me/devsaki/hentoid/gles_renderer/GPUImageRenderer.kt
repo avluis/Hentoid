@@ -90,19 +90,6 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         runAll(runOnDrawEnd)
     }
 
-    /**
-     * Sets the background color
-     *
-     * @param red   red color value
-     * @param green green color value
-     * @param blue  red color value
-     */
-    fun setBackgroundColor(red: Float, green: Float, blue: Float) {
-        backgroundRed = red
-        backgroundGreen = green
-        backgroundBlue = blue
-    }
-
     private fun runAll(queue: Queue<Runnable>) {
         synchronized(queue) {
             while (!queue.isEmpty()) {
@@ -112,14 +99,12 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
     }
 
     fun setFilter(filter: GPUImageFilter) {
-        //runOnDraw {
         val oldFilter = this.filter
         this.filter = filter
         oldFilter.destroy()
         this.filter.ifNeedInit()
         GLES20.glUseProgram(this.filter.getProgram())
         this.filter.onOutputSizeChanged(outputWidth, outputHeight)
-        //}
     }
 
     fun deleteImage() {
@@ -131,12 +116,7 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         glTextureId = NO_IMAGE
     }
 
-    fun setImageBitmap(bitmap: Bitmap) {
-        setImageBitmap(bitmap, true)
-    }
-
     fun setImageBitmap(bitmap: Bitmap, recycle: Boolean) {
-        //runOnDraw {
         // TODO optimize that
         var resizedBitmap: Bitmap? = null
         if (bitmap.width % 2 == 1) {
@@ -161,19 +141,6 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         )
         resizedBitmap?.recycle()
         adjustImageScaling()
-        //}
-    }
-
-    fun setScaleType(scaleType: GPUImage.ScaleType) {
-        this.scaleType = scaleType
-    }
-
-    fun getFrameWidth(): Int {
-        return outputWidth
-    }
-
-    fun getFrameHeight(): Int {
-        return outputHeight
     }
 
     private fun adjustImageScaling() {
@@ -225,17 +192,6 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         glTextureBuffer.put(textureCords).position(0)
     }
 
-    private fun addDistance(coordinate: Float, distance: Float): Float {
-        return if (coordinate == 0.0f) distance else 1 - distance
-    }
-
-    fun setRotationCamera(
-        rotation: Rotation?, flipHorizontal: Boolean,
-        flipVertical: Boolean
-    ) {
-        setRotation(rotation, flipVertical, flipHorizontal)
-    }
-
     fun setRotation(rotation: Rotation?) {
         this.rotation = rotation
         adjustImageScaling()
@@ -248,18 +204,6 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         this.flipHorizontal = flipHorizontal
         this.flipVertical = flipVertical
         setRotation(rotation)
-    }
-
-    fun getRotation(): Rotation? {
-        return rotation
-    }
-
-    fun isFlippedHorizontally(): Boolean {
-        return flipHorizontal
-    }
-
-    fun isFlippedVertically(): Boolean {
-        return flipVertical
     }
 
     fun runOnDraw(runnable: Runnable) {
