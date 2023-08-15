@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
-import android.view.WindowManager
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilter
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilterGroup
 import me.devsaki.hentoid.gles_renderer.util.Rotation
@@ -178,28 +177,26 @@ class GPUImage(val context: Context) {
         var tmpBmp = bitmap
         val renderer = GPUImageRenderer(GPUImageFilter())
         renderer.setRotation(null, flipHorizontal = false, flipVertical = true)
+        val buffer = PixelBuffer(tmpBmp.width, tmpBmp.height)
         try {
-            val buffer = PixelBuffer(tmpBmp.width, tmpBmp.height)
-            try {
-                filters.forEach { filter ->
-                    val outputDims: Pair<Int, Int> =
-                        if (filter.outputDimensions != null) filter.outputDimensions!!
-                        else Pair(tmpBmp.width, tmpBmp.height)
-                    buffer.setRenderer(renderer)
-                    buffer.changeDims(outputDims.first, outputDims.second)
-
+            filters.forEach { filter ->
+                val outputDims: Pair<Int, Int> =
+                    if (filter.outputDimensions != null) filter.outputDimensions!!
+                    else Pair(tmpBmp.width, tmpBmp.height)
+                buffer.setRenderer(renderer)
+                buffer.changeDims(outputDims.first, outputDims.second)
+                try {
                     renderer.setImageBitmap(tmpBmp, true)
                     renderer.setFilter(filter)
-
                     tmpBmp = buffer.getBitmap()
+                } finally {
+                    renderer.deleteImage()
                 }
-                return tmpBmp
-            } finally {
-                filters.forEach { filter -> filter.destroy() }
-                buffer.destroy()
             }
+            return tmpBmp
         } finally {
-            renderer.deleteImage()
+            filters.forEach { filter -> filter.destroy() }
+            buffer.destroy()
         }
     }
 
@@ -257,34 +254,34 @@ class GPUImage(val context: Context) {
     fun runOnGLThread(runnable: Runnable) {
         renderer.runOnDrawEnd(runnable)
     }
-/*
-    private fun getOutputWidth(): Int {
-        return if (renderer.getFrameWidth() != 0) {
-            renderer.getFrameWidth()
-        } else if (currentBitmap != null) {
-            currentBitmap!!.width
-        } else {
-            val windowManager =
-                context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            val display = windowManager.defaultDisplay
-            display.width
+    /*
+        private fun getOutputWidth(): Int {
+            return if (renderer.getFrameWidth() != 0) {
+                renderer.getFrameWidth()
+            } else if (currentBitmap != null) {
+                currentBitmap!!.width
+            } else {
+                val windowManager =
+                    context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val display = windowManager.defaultDisplay
+                display.width
+            }
         }
-    }
 
-    private fun getOutputHeight(): Int {
-        return if (renderer.getFrameHeight() != 0) {
-            renderer.getFrameHeight()
-        } else if (currentBitmap != null) {
-            currentBitmap!!.height
-        } else {
-            val windowManager =
-                context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            val display = windowManager.defaultDisplay
-            display.height
+        private fun getOutputHeight(): Int {
+            return if (renderer.getFrameHeight() != 0) {
+                renderer.getFrameHeight()
+            } else if (currentBitmap != null) {
+                currentBitmap!!.height
+            } else {
+                val windowManager =
+                    context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val display = windowManager.defaultDisplay
+                display.height
+            }
         }
-    }
 
- */
+     */
     /*
         inner class LoadImageUriTask(gpuImage: GPUImage, private val uri: Uri) :
             LoadImageTask(gpuImage) {

@@ -123,14 +123,12 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
     }
 
     fun deleteImage() {
-        runOnDraw {
-            GLES20.glDeleteTextures(
-                1, intArrayOf(
-                    glTextureId
-                ), 0
-            )
-            glTextureId = NO_IMAGE
-        }
+        GLES20.glDeleteTextures(
+            1, intArrayOf(
+                glTextureId
+            ), 0
+        )
+        glTextureId = NO_IMAGE
     }
 
     fun setImageBitmap(bitmap: Bitmap) {

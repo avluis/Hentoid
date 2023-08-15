@@ -56,15 +56,14 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         mThreadOwner = Thread.currentThread().name
     }
 
-    fun setRenderer(renderer: GLSurfaceView.Renderer) {
-        this.renderer = renderer
-
-        // Does this thread own the OpenGL context?
-        check(Thread.currentThread().name == mThreadOwner)
-
-        // Call the renderer initialization routines
-        renderer.onSurfaceCreated(gl10, eglConfig)
-        renderer.onSurfaceChanged(gl10, width, height)
+    fun destroy() {
+        renderer!!.onDrawFrame(gl10)
+        egl10.eglMakeCurrent(
+            eglDisplay, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT
+        )
+        egl10.eglDestroySurface(eglDisplay, eglSurface)
+        egl10.eglDestroyContext(eglDisplay, eglContext)
+        egl10.eglTerminate(eglDisplay)
     }
 
     fun changeDims(newWidth: Int, newHeight: Int) {
@@ -75,10 +74,22 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         val attribList = intArrayOf(
             EGL10.EGL_WIDTH, this.width, EGL10.EGL_HEIGHT, height, EGL10.EGL_NONE
         )
+        egl10.eglDestroySurface(eglDisplay, eglSurface)
         eglSurface = egl10.eglCreatePbufferSurface(eglDisplay, eglConfig, attribList)
         egl10.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)
 
         renderer?.onSurfaceChanged(gl10, width, height)
+    }
+
+    fun setRenderer(renderer: GLSurfaceView.Renderer) {
+        this.renderer = renderer
+
+        // Does this thread own the OpenGL context?
+        check(Thread.currentThread().name == mThreadOwner)
+
+        // Call the renderer initialization routines
+        renderer.onSurfaceCreated(gl10, eglConfig)
+        renderer.onSurfaceChanged(gl10, width, height)
     }
 
     fun getBitmap(outDimensions: Pair<Int, Int>? = null): Bitmap {
@@ -111,17 +122,6 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
         val bmp = Bitmap.createBitmap(outX, outY, Bitmap.Config.ARGB_8888)
         bmp.copyPixelsFromBuffer(mPixelBuf)
         return bmp
-    }
-
-    fun destroy() {
-        //renderer!!.onDrawFrame(gl10)
-        renderer!!.onDrawFrame(gl10)
-        egl10.eglMakeCurrent(
-            eglDisplay, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT
-        )
-        egl10.eglDestroySurface(eglDisplay, eglSurface)
-        egl10.eglDestroyContext(eglDisplay, eglContext)
-        egl10.eglTerminate(eglDisplay)
     }
 
     private fun chooseConfig(): EGLConfig {
