@@ -141,8 +141,8 @@ class QueueViewModel(
         dao.updateQueue(localQueue)
 
         // If the 1st item is involved, signal it being skipped
-        if (0 == newPosition || 0 == oldPosition) EventBus.getDefault()
-            .post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_SKIP))
+        if (0 == newPosition || 0 == oldPosition)
+            EventBus.getDefault().post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_SKIP))
     }
 
     /**
@@ -171,6 +171,10 @@ class QueueViewModel(
         }
     }
 
+    /**
+     * Translate given relative queue positions to absolute positions
+     * (useful when the queue is filtered by a query)
+     */
     private fun relativeToAbsolutePositions(relativePositions: List<Int>): List<Int> {
         val result: MutableList<Int> = ArrayList()
         val currentQueue = queue.value
