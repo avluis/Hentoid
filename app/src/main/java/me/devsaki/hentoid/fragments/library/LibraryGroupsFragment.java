@@ -235,6 +235,7 @@ public class LibraryGroupsFragment extends Fragment implements
         recyclerView.setLayoutManager(llm);
         new FastScrollerBuilder(recyclerView)
                 .setPopupTextProvider(this)
+                .useMd2Style()
                 .build();
 
         // Pager

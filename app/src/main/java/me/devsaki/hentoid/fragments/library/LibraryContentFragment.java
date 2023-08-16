@@ -397,6 +397,7 @@ public class LibraryContentFragment extends Fragment implements
         recyclerView.addOnScrollListener(scrollListener);
         new FastScrollerBuilder(recyclerView)
                 .setPopupTextProvider(this)
+                .useMd2Style()
                 .build();
 
         // Hide FAB when scrolling up
