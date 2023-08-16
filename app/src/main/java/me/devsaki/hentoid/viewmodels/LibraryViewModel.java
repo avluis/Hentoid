@@ -656,6 +656,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                         content, targetImageStatus, position, -1, null,
                                         ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                             } else {
+                                // TODO : unflag the content as "being deleted" (stop blink animation)
                                 errorCount.incrementAndGet();
                                 onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
                             }
