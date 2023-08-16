@@ -35,6 +35,8 @@ object ImageHelper {
     const val MIME_IMAGE_PNG = "image/png"
     const val MIME_IMAGE_APNG = "image/apng"
 
+    private val PNG_ACTL = "acTL".toByteArray(CHARSET_LATIN_1)
+    private val PNG_IDAT = "IDAT".toByteArray(CHARSET_LATIN_1)
 
     private var imageNamesFilter: FileHelper.NameFilter? = null
 
@@ -84,26 +86,26 @@ object ImageHelper {
         // In Java, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
         return if (0xFF.toByte() == binary[0] && 0xD8.toByte() == binary[1] && 0xFF.toByte() == binary[2]) MIME_IMAGE_JPEG
+        else if (0x52.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2] && 0x46.toByte() == binary[3] && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]) MIME_IMAGE_WEBP
         else if (0x89.toByte() == binary[0] && 0x50.toByte() == binary[1] && 0x4E.toByte() == binary[2]) {
             // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
             val acTlPos = FileHelper.findSequencePosition(
                 binary,
                 0,
-                "acTL".toByteArray(CHARSET_LATIN_1),
+                PNG_ACTL,
                 (binary.size * 0.2).toInt()
             )
             if (acTlPos > -1) {
                 val idatPos = FileHelper.findSequencePosition(
                     binary,
                     acTlPos,
-                    "IDAT".toByteArray(CHARSET_LATIN_1),
+                    PNG_IDAT,
                     (binary.size * 0.1).toInt()
                 ).toLong()
                 if (idatPos > -1) return MIME_IMAGE_APNG
             }
             MIME_IMAGE_PNG
         } else if (0x47.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2]) MIME_IMAGE_GIF
-        else if (0x52.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2] && 0x46.toByte() == binary[3] && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]) MIME_IMAGE_WEBP
         else if (0x42.toByte() == binary[0] && 0x4D.toByte() == binary[1]) "image/bmp"
         else MIME_IMAGE_GENERIC
     }
