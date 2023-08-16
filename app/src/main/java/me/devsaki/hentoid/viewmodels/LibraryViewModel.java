@@ -301,7 +301,22 @@ public class LibraryViewModel extends AndroidViewModel {
         groupSearchManager.setArtistGroupVisibility(Preferences.getArtistGroupVisibility());
 
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = groupSearchManager.getGroups();
+
+        // Don't count Content that has been sent back to the Queue to download extra content / to redownload from scratch
+        // => Additional filter to remove unwanted Content
+        LiveData<List<Group>> rawData = groupSearchManager.getGroups();
+        MediatorLiveData<List<Group>> mediator = new MediatorLiveData<>();
+        mediator.addSource(rawData, groups -> {
+            List<Group> newGroups = new ArrayList<>();
+            for (Group g : groups) {
+                List<GroupItem> items = Stream.of(g.getItems()).filter(this::isGroupItemDisplayable).toList();
+                g.setItems(items);
+                newGroups.add(g);
+            }
+            mediator.setValue(newGroups);
+        });
+        currentGroupsSource = mediator;
+
         groups.addSource(currentGroupsSource, groups::setValue);
 
         if (currentGroupsTotalSource != null)
@@ -311,6 +326,13 @@ public class LibraryViewModel extends AndroidViewModel {
 
         groupSearchBundle.postValue(groupSearchManager.toBundle());
         refreshAvailableGroupings();
+    }
+
+    private boolean isGroupItemDisplayable(GroupItem item) {
+        long contentId = item.getContentId();
+        Content c = dao.selectContent(contentId);
+        if (c != null) return ContentHelper.isInLibrary(c.getStatus());
+        return false;
     }
 
     public void refreshAvailableGroupings() {

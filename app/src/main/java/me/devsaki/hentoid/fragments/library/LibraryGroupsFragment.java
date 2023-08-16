@@ -69,6 +69,7 @@ import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
 import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
