@@ -1717,7 +1717,7 @@ public class LibraryContentFragment extends Fragment implements
 
     @NonNull
     @Override
-    public CharSequence getPopupText(int position) {
+    public CharSequence getPopupText(@NonNull View view, int position) {
         IAdapter<ContentItem> adapter = getItemAdapter();
         if (null == adapter) return "";
         Content c = adapter.getAdapterItem(position).getContent();

@@ -69,7 +69,6 @@ import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
 import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
-import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
@@ -818,7 +817,7 @@ public class LibraryGroupsFragment extends Fragment implements
 
     @NonNull
     @Override
-    public CharSequence getPopupText(int position) {
+    public CharSequence getPopupText(@NonNull View view, int position) {
         if (null == itemAdapter) return "";
         Group g = itemAdapter.getAdapterItem(position).getGroup();
         if (null == g) return "";
