@@ -27,6 +27,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
 import me.devsaki.hentoid.customssiv.ImageSource
@@ -40,6 +41,7 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import timber.log.Timber
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class ImagePagerAdapter(val context: Context) :
@@ -53,6 +55,7 @@ class ImagePagerAdapter(val context: Context) :
         context.resources.getDimension(R.dimen.page_min_height).toInt()
 
     private var itemTouchListener: OnTouchListener? = null
+    private var scaleListener: BiConsumer<Int, Float>? = null
     private var recyclerView: RecyclerView? = null
     private val initialAbsoluteScales: MutableMap<Int, Float> = HashMap()
     private val absoluteScales: MutableMap<Int, Float> = HashMap()
@@ -211,7 +214,7 @@ class ImagePagerAdapter(val context: Context) :
                 ssiv.setOffsetLeftSide(scrollLTR)
 
                 ssiv.setScaleListener { s: Double ->
-                    onAbsoluteScaleChanged(position, s)
+                    onAbsoluteScaleChanged(position, s.toFloat())
                 }
             }
             val layoutStyle =
@@ -262,6 +265,7 @@ class ImagePagerAdapter(val context: Context) :
 
     fun destroy() {
         if (isGlInit) glEsRenderer.clear()
+        scaleListener = null
     }
 
     fun reset() {
@@ -336,11 +340,19 @@ class ImagePagerAdapter(val context: Context) :
         }
     }
 
-    private fun onAbsoluteScaleChanged(position: Int, scale: Double) {
+    private fun onAbsoluteScaleChanged(position: Int, scale: Float) {
         Timber.d(">> position %d -> scale %s", position, scale)
-        if (!initialAbsoluteScales.containsKey(position)) initialAbsoluteScales[position] =
-            scale.toFloat()
-        absoluteScales[position] = scale.toFloat()
+        if (!initialAbsoluteScales.containsKey(position))
+            initialAbsoluteScales[position] = scale
+        if (!absoluteScales.containsKey(position)) absoluteScales[position] = scale
+        if (abs(scale - absoluteScales[position]!!) > 0.01) {
+            absoluteScales[position] = scale
+            scaleListener?.invoke(position, scale)
+        }
+    }
+
+    fun setOnScaleListener(scaleListener: BiConsumer<Int, Float>?) {
+        this.scaleListener = scaleListener
     }
 
     fun setMaxDimensions(maxWidth: Int, maxHeight: Int) {

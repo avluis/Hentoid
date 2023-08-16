@@ -322,7 +322,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                     artistScore.setText(res.getString(R.string.duplicate_artist_score, item.artistScore * 100));
                 else artistScore.setText(R.string.duplicate_artist_score_nodata);
 
-                totalScore.setText(res.getString(R.string.duplicate_total_score, item.totalScore * 100));
+                totalScore.setText(res.getString(R.string.percent_no_digits, item.totalScore * 100));
             } else { // Reference item
                 scores.setVisibility(View.GONE);
             }

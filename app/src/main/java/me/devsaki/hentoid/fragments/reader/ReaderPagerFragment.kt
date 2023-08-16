@@ -102,9 +102,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var adapter: ImagePagerAdapter
     private lateinit var llm: PrefetchLinearLayoutManager
     private lateinit var pageSnapWidget: PageSnapWidget
-    private val prefsListener = OnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
-        onSharedPreferenceChanged(key)
-    }
+    private val prefsListener =
+        OnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
+            onSharedPreferenceChanged(key)
+        }
     private var viewModel: ReaderViewModel? = null
     private var absImageIndex = -1 // Absolute (book scale) 0-based image index
 
@@ -140,6 +141,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var indexRefreshDebouncer: DebouncerK<Int>
     private lateinit var processPositionDebouncer: DebouncerK<Pair<Int, Int>>
     private lateinit var rescaleDebouncer: DebouncerK<Float>
+    private lateinit var adapterRescaleDebouncer: DebouncerK<Float>
+    private var firstZoom = true
 
     // Starting index management
     private var isComputingImageList = false
@@ -183,6 +186,16 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         rescaleDebouncer = DebouncerK(this.lifecycleScope, 100) { scale: Float ->
             adapter.multiplyScale(scale)
+            if (!firstZoom)
+                context?.let {
+                    ToastHelper.toast(it, R.string.percent_no_digits, scale * 100.0)
+                }
+            else firstZoom = false
+        }
+        adapterRescaleDebouncer = DebouncerK(this.lifecycleScope, 100) { scale: Float ->
+            context?.let {
+                ToastHelper.toast(it, R.string.percent_no_digits, scale * 100.0)
+            }
         }
         Preferences.registerPrefsChangedListener(prefsListener)
         Settings.registerPrefsChangedListener(prefsListener)
@@ -251,6 +264,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         slideshowSliderDebouncer.clear()
         processPositionDebouncer.clear()
         rescaleDebouncer.clear()
+        adapterRescaleDebouncer.clear()
         navigator.clear()
         binding?.recyclerView?.adapter = null
         binding = null
@@ -411,6 +425,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 )
             }
             recyclerView.requestFocus()
+            // Scale listener from the ImageView, incl. top to bottom browsing
             recyclerView.setOnScaleListener { scale ->
                 if (LinearLayoutManager.HORIZONTAL == llm.orientation) {
                     pageSnapWidget.let {
@@ -429,6 +444,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     return false
                 }
             })
+            // Scale listener from the SSIV
+            adapter.setOnScaleListener { position, scale ->
+                if (position == absImageIndex) adapterRescaleDebouncer.submit(scale)
+            }
 
             val tapZoneScale = if (Preferences.isReaderTapToTurn2x()) 2 else 1
             val onHorizontalZoneTapListener = OnZoneTapListener(
@@ -901,6 +920,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             }
 
             navigator.updatePageControls()
+            firstZoom = true
         }
     }
 

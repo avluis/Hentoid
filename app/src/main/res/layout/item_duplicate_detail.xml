@@ -258,7 +258,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:text="@string/duplicate_total_score"
+            android:text="@string/percent_no_digits"
             android:textColor="@color/medium_gray"
             android:textSize="@dimen/text_subtitle_1"
             android:textStyle="bold"
