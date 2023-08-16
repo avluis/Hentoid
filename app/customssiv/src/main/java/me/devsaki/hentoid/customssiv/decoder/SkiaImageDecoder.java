@@ -9,7 +9,6 @@ import android.graphics.ColorSpace;
 import android.net.Uri;
 import android.os.Build;
 
-import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import java.io.ByteArrayInputStream;
@@ -34,13 +33,7 @@ public class SkiaImageDecoder implements ImageDecoder {
 
     private final Bitmap.Config bitmapConfig;
 
-    @Keep
-    @SuppressWarnings("unused")
-    public SkiaImageDecoder() {
-        this.bitmapConfig = Bitmap.Config.RGB_565;
-    }
 
-    @SuppressWarnings({"WeakerAccess", "SameParameterValue"})
     public SkiaImageDecoder(@NonNull Bitmap.Config bitmapConfig) {
         this.bitmapConfig = bitmapConfig;
     }

@@ -73,13 +73,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
     private final Point imageDimensions = new Point(0, 0);
     private final AtomicBoolean lazyInited = new AtomicBoolean(false);
 
-    @Keep
-    @SuppressWarnings("unused")
-    public SkiaPooledImageRegionDecoder() {
-        this.bitmapConfig = Bitmap.Config.RGB_565;
-    }
 
-    @SuppressWarnings({"WeakerAccess", "SameParameterValue"})
     public SkiaPooledImageRegionDecoder(@NonNull Bitmap.Config bitmapConfig) {
         this.bitmapConfig = bitmapConfig;
     }

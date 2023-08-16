@@ -13,7 +13,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 
-import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
@@ -44,13 +43,7 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
 
     private final Bitmap.Config bitmapConfig;
 
-    @Keep
-    @SuppressWarnings("unused")
-    public SkiaImageRegionDecoder() {
-        this.bitmapConfig = Bitmap.Config.RGB_565;
-    }
 
-    @SuppressWarnings({"WeakerAccess", "SameParameterValue"})
     public SkiaImageRegionDecoder(@NonNull Bitmap.Config bitmapConfig) {
         this.bitmapConfig = bitmapConfig;
     }
