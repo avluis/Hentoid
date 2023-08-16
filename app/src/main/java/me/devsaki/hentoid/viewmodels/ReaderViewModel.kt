@@ -246,6 +246,18 @@ class ReaderViewModel(
     }
 
     /**
+     * Set the given page's index as the picture viewer's starting index
+     *
+     * @param imageId ID of the page to set
+     */
+    fun setViewerStartingIndexById(imageId: Long) {
+        val pic = viewerImagesInternal.find { img -> img.id == imageId }
+        pic?.let {
+            startingIndex.postValue(it.displayOrder)
+        }
+    }
+
+    /**
      * Process the given raw ImageFile entries to populate the viewer
      *
      * @param theContent Content to use

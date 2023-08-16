@@ -614,7 +614,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private fun onItemClick(item: ImageFileItem): Boolean {
         val img = item.getImage()
         if (editMode == EditMode.NONE) { // View image in gallery
-            viewModel.setViewerStartingIndex(img.displayOrder)
+            // Use "by ID" to avoid passing a wrong index due to page reordering/deleting without the UI objects being updated
+            viewModel.setViewerStartingIndexById(img.id)
             if (0 == parentFragmentManager.backStackEntryCount) { // Gallery mode (Library -> gallery -> pager)
                 parentFragmentManager
                     .beginTransaction()
@@ -641,7 +642,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private fun onNestedItemClick(item: INestedItem<*>): Boolean {
         if (item.getLevel() > 0) {
             val img = (item as ImageFileItem).getImage()
-            viewModel.setViewerStartingIndex(img.displayOrder)
+            // Use "by ID" to avoid passing a wrong index due to page reordering/deleting without the UI objects being updated
+            viewModel.setViewerStartingIndexById(img.id)
             if (0 == parentFragmentManager.backStackEntryCount) { // Gallery mode (Library -> gallery -> pager)
                 parentFragmentManager
                     .beginTransaction()
