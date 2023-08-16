@@ -56,7 +56,7 @@ object ImageTransform {
                 )
 
                 2 -> resizePlainRatio(source, dims, params.resize3Ratio / 100f)
-                3 -> { // AI rescale; handled ad Worker level
+                3 -> { // AI rescale; handled at Worker level
                     val scale = if (allowBogusAiRescale) 2f else 1f
                     resizePlainRatio(source, dims, scale, allowBogusAiRescale)
                 }
