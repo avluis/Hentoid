@@ -113,23 +113,23 @@ class LibraryTransformDialogFragment : DialogFragment() {
         super.onViewCreated(rootView, savedInstanceState)
 
         refreshControls(true)
-        refreshPreview()
+        refreshThumb()
 
         binding.apply {
             resizeSwitch.setOnCheckedChangeListener { _, isChecked ->
                 Settings.isResizeEnabled = isChecked
                 refreshControls()
-                refreshPreview()
+                refreshThumb()
             }
             resizeMethod.setOnIndexChangeListener { index ->
                 Settings.resizeMethod = index
                 refreshControls()
-                refreshPreview()
+                refreshThumb()
             }
             resizeMethod1Ratio.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(resizeMethod1Ratio, 100, 200)) {
                     Settings.resizeMethod1Ratio = value.toInt()
-                    refreshPreview()
+                    refreshThumb()
                 }
             }
             resizeMethod2MaxWidth.editText?.setOnTextChangedListener(lifecycleScope) { value ->
@@ -140,7 +140,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
                     )
                 ) {
                     Settings.resizeMethod2Width = value.toInt()
-                    refreshPreview()
+                    refreshThumb()
                 }
             }
             resizeMethod2MaxHeight.editText?.setOnTextChangedListener(lifecycleScope) { value ->
@@ -151,46 +151,52 @@ class LibraryTransformDialogFragment : DialogFragment() {
                     )
                 ) {
                     Settings.resizeMethod2Height = value.toInt()
-                    refreshPreview()
+                    refreshThumb()
                 }
             }
             resizeMethod3Ratio.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(resizeMethod3Ratio, 10, 100)) {
                     Settings.resizeMethod3Ratio = value.toInt()
-                    refreshPreview()
+                    refreshThumb()
                 }
             }
             transcodeMethod.setOnIndexChangeListener { index ->
                 Settings.transcodeMethod = index
                 refreshControls()
-                refreshPreview()
+                refreshThumb()
             }
             encoderAll.setOnValueChangeListener { value ->
                 Settings.transcodeEncoderAll = value.toInt()
                 refreshControls()
-                refreshPreview()
+                refreshThumb()
             }
             encoderLossless.setOnValueChangeListener { value ->
                 Settings.transcodeEncoderLossless = value.toInt()
-                refreshPreview()
+                refreshThumb()
             }
             encoderLossy.setOnValueChangeListener { value ->
                 Settings.transcodeEncoderLossy = value.toInt()
-                refreshPreview()
+                refreshThumb()
             }
             encoderQuality.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(encoderQuality, 75, 100)) {
                     Settings.transcodeQuality = value.toInt()
-                    refreshPreview()
+                    refreshThumb()
                 }
             }
             prevPageBtn.setOnClickListener {
                 if (pageIndex > 0) pageIndex--
-                refreshPreview()
+                refreshThumb()
             }
             nextPageBtn.setOnClickListener {
                 if (pageIndex < maxPages - 1) pageIndex++
-                refreshPreview()
+                refreshThumb()
+            }
+            thumb.setOnClickListener {
+                preview.isVisible = true
+            }
+            preview.setOnClickListener {
+                preview.isVisible = false
             }
             actionButton.setOnClickListener { onActionClick(buildParams()) }
         }
@@ -258,7 +264,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
 
     @Suppress("ReplaceArrayEqualityOpWithArraysEquals")
     @SuppressLint("SetTextI18n")
-    private fun refreshPreview() {
+    private fun refreshThumb() {
         val rawSourceBitmap = getCurrentBitmap() ?: return
         val rawData = rawSourceBitmap.second
         val picName = rawSourceBitmap.first
@@ -298,8 +304,8 @@ class LibraryTransformDialogFragment : DialogFragment() {
                         "${sourceDims.x} x ${sourceDims.y} ➤ ${targetDims.x} x ${targetDims.y}"
                     previewSize.text = "$sourceSize ➤ $targetSize"
                 }
-                // TODO zoom on tap
                 Glide.with(thumb).load(targetData).apply(glideRequestOptions).into(thumb)
+                Glide.with(preview).load(targetData).apply(glideRequestOptions).into(preview)
                 previewProgress.isVisible = false
             }
         }
