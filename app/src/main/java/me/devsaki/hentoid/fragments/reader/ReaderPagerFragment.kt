@@ -70,6 +70,7 @@ import me.devsaki.hentoid.util.DebouncerK
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Preferences.Constant.*
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
@@ -101,7 +102,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var adapter: ImagePagerAdapter
     private lateinit var llm: PrefetchLinearLayoutManager
     private lateinit var pageSnapWidget: PageSnapWidget
-    private val listener = OnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
+    private val prefsListener = OnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
         onSharedPreferenceChanged(key)
     }
     private var viewModel: ReaderViewModel? = null
@@ -183,7 +184,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         rescaleDebouncer = DebouncerK(this.lifecycleScope, 100) { scale: Float ->
             adapter.multiplyScale(scale)
         }
-        Preferences.registerPrefsChangedListener(listener)
+        Preferences.registerPrefsChangedListener(prefsListener)
+        Settings.registerPrefsChangedListener(prefsListener)
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -338,7 +340,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     override fun onDestroy() {
-        Preferences.unregisterPrefsChangedListener(listener)
+        Preferences.unregisterPrefsChangedListener(prefsListener)
+        Settings.unregisterPrefsChangedListener(prefsListener)
         if (this::adapter.isInitialized) {
             adapter.setRecyclerView(null)
             adapter.destroy()
@@ -920,7 +923,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             Preferences.Key.VIEWER_ZOOM_TRANSITIONS, Preferences.Key.VIEWER_SEPARATING_BARS, Preferences.Key.VIEWER_AUTO_ROTATE
             -> onUpdateImageDisplay(true)
 
-            Preferences.Key.VIEWER_IMAGE_DISPLAY, Preferences.Key.VIEWER_RENDERING
+            Preferences.Key.VIEWER_IMAGE_DISPLAY, Preferences.Key.VIEWER_RENDERING, Settings.Key.READER_COLOR_DEPTH
             -> onUpdateImageDisplay(false)
 
             Preferences.Key.VIEWER_SWIPE_TO_FLING -> onUpdateSwipeToFling()

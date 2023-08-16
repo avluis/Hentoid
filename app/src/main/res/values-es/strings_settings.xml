@@ -198,7 +198,7 @@
     <string name="pref_viewer_page_turn_volume">Botones de volumen</string>
     <string name="pref_viewer_ratio_completed_threshold">Marcar libro como leído luego de N% de páginas</string>
     <string name="pref_viewer_read_threshold">Marcar libro como leído luego de N páginas</string>
-    <string name="pref_viewer_rendering">Modo de renderización</string>
+    <string name="pref_viewer_rendering_mode">Modo de renderización</string>
     <string name="pref_viewer_rendering_no_android5">La renderización suavizada no está disponible en Android 5</string>
     <string name="pref_viewer_resume_last_left_summary_off">Siempre comenzar en la página 1 al reabrir un libro</string>
     <string name="pref_viewer_resume_last_left_summary_on">Resumir en la última página leída, excepto si se ha llegado al final del libro</string>

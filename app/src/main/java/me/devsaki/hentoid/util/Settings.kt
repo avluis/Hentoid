@@ -14,7 +14,10 @@ object Settings {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     }
 
-    // Fields
+    /**
+     * FIELDS
+     */
+    // TRANSFORM
     var isResizeEnabled: Boolean by BoolSetting("TRANSFORM_RESIZE_ENABLED", false)
     var resizeMethod: Int by IntSetting("TRANSFORM_RESIZE_METHOD", 0)
     var resizeMethod1Ratio: Int by IntSetting("TRANSFORM_RESIZE_1_RATIO", 120)
@@ -35,6 +38,9 @@ object Settings {
         PictureEncoder.JPEG.value
     )
     var transcodeQuality: Int by IntSetting("TRANSFORM_TRANSCODE_QUALITY", 90)
+
+    // READER
+    var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)
 
 
     // Public Helpers
@@ -86,5 +92,6 @@ object Settings {
         const val TRANSFORM_RESIZE_ENABLED = "TRANSFORM_RESIZE_ENABLED"
         const val TRANSFORM_RESIZE_METHOD = "TRANSFORM_RESIZE_METHOD"
         const val TRANSFORM_RESIZE_WIDTH = "TRANSFORM_RESIZE_WIDTH"
+        const val READER_COLOR_DEPTH = "viewer_color_depth"
     }
 }

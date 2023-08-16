@@ -35,6 +35,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.util.image.SmartRotateTransformation
@@ -69,6 +70,7 @@ class ImagePagerAdapter(val context: Context) :
     private var isScrollLTR = true
 
     // Cached prefs
+    private var colorDepth = Bitmap.Config.RGB_565
     private var separatingBarsHeight = 0
 
     private var longTapZoomEnabled = false
@@ -96,6 +98,9 @@ class ImagePagerAdapter(val context: Context) :
         val doubleTapZoomCapCode = Preferences.getReaderCapTapZoom()
         doubleTapZoomCap =
             if (Preferences.Constant.VIEWER_CAP_TAP_ZOOM_NONE == doubleTapZoomCapCode) -1f else doubleTapZoomCapCode.toFloat()
+
+        colorDepth =
+            if (0 == Settings.colorDepth) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
     }
 
     fun setRecyclerView(v: RecyclerView?) {
@@ -144,7 +149,7 @@ class ImagePagerAdapter(val context: Context) :
             val ssiv = rootView.findViewById<CustomSubsamplingScaleImageView>(R.id.ssiv)
             ssiv.setIgnoreTouchEvents(false)
             ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.HORIZONTAL)
-            ssiv.preferredBitmapConfig = Bitmap.Config.RGB_565
+            ssiv.preferredBitmapConfig = colorDepth
             ssiv.setDoubleTapZoomDuration(500)
             ssiv.setOnTouchListener(null)
 

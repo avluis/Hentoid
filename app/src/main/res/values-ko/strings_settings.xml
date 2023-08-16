@@ -193,7 +193,7 @@
     <string name="pref_viewer_maintain_horizontal_zoom">페이지가 넘어가도 화면 확대 유지</string>
     <string name="pref_viewer_separating_bars">페이지 구분선</string>
     <string name="pref_viewer_display_mode">화면 표시 모드</string>
-    <string name="pref_viewer_rendering">렌더링 모드</string>
+    <string name="pref_viewer_rendering_mode">렌더링 모드</string>
     <string name="pref_viewer_rendering_no_android5">부드러운 렌더링은 안드로이드 5.0에서 사용할 수 없습니다</string>
     <string name="pref_viewer_auto_rotate">그림 자동 회전</string>
     <string name="pref_viewer_auto_rotate_summary_off">자동으로 회전하지 않습니다</string>

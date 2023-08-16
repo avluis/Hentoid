@@ -184,7 +184,7 @@
     <string name="pref_viewer_maintain_horizontal_zoom">Зберігати значення зуму між сторінками</string>
     <string name="pref_viewer_separating_bars">Смуги, що розділяють у вертикальному режимі</string>
     <string name="pref_viewer_display_mode">Режим відображення для горизонтального перегляду</string>
-    <string name="pref_viewer_rendering">Режим відмальовування</string>
+    <string name="pref_viewer_rendering_mode">Режим відмальовування</string>
     <string name="pref_viewer_rendering_no_android5">Плавне відмальовування не доступно на Android 5</string>
     <string name="pref_viewer_auto_rotate">Автоматично повертати зображення</string>
     <string name="pref_viewer_auto_rotate_summary_off">Зображення не повертаються</string>

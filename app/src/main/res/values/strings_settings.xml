@@ -208,7 +208,9 @@
     <string name="pref_viewer_maintain_horizontal_zoom">Maintain zoom level between pages</string>
     <string name="pref_viewer_separating_bars">Separating bars in vertical mode</string>
     <string name="pref_viewer_display_mode">Display mode for horizontal viewing</string>
-    <string name="pref_viewer_rendering">Rendering mode</string>
+    <string name="pref_viewer_rendering">Rendering</string>
+    <string name="pref_viewer_rendering_mode">Rendering mode</string>
+    <string name="pref_viewer_color_depth">Color depth</string>
     <string name="pref_viewer_rendering_no_android5">Smooth rendering is not available on Android 5</string>
     <string name="pref_viewer_auto_rotate">Auto-rotate pictures</string>
     <string name="pref_viewer_auto_rotate_summary_off">Pictures are not rotated</string>
