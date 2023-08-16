@@ -1,6 +1,9 @@
+plugins {
+    id("com.google.devtools.ksp").version("1.8.0-1.0.9") // Or latest version of KSP
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
 apply plugin: 'org.sonarqube'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -21,21 +24,21 @@ aboutLibraries {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdk 33
     compileOptions {
         coreLibraryDesugaringEnabled true
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_17
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 23
         targetSdkVersion 33
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.18.1'
+        versionName '1.18.2'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -46,8 +49,8 @@ android {
         buildConfigField 'String', 'GITHUB_API_URL', '"https://api.github.com/repos/avluis/Hentoid/"'
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        // Only include complete translations
-        resConfigs 'en', 'ru', 'it', 'uk', 'hu', 'ko', 'ja', 'es'
+        resourceConfigurations += ['en', 'ru', 'it', 'uk', 'hu', 'ko', 'ja', 'es']
+// Only include complete translations
     }
     buildFeatures {
         viewBinding true
@@ -124,7 +127,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.3.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0-rc01'
-    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.paging:paging-runtime:2.1.2'
     implementation 'androidx.fragment:fragment-ktx:1.5.5'
@@ -132,7 +135,7 @@ dependencies {
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
-    implementation 'androidx.core:core-ktx:1.10.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
 
     def android_work_version = '2.8.1'
     implementation "androidx.work:work-runtime:$android_work_version"
@@ -143,7 +146,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
-    kapt("androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_version")
 
     // Desugaring (java.time is required for bucket4j)
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
@@ -155,14 +157,13 @@ dependencies {
     // Image loader: github.com/bumptech/glide
     def glide_version = '4.15.1'
     implementation "com.github.bumptech.glide:glide:$glide_version"
-    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
-    kapt "com.github.bumptech.glide:compiler:$glide_version"
+    ksp "com.github.bumptech.glide:ksp:$glide_version"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glide_version") {
         exclude group: 'glide-parent'
     }
 
     // Animated pics support (APNG, AWEBP and GIF) -> https://github.com/penfeizhou/APNG4Android
-    def APNG4Android_version = '2.25.0'
+    def APNG4Android_version = '2.26.0'
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
     implementation "com.github.penfeizhou.android.animation:gif:$APNG4Android_version"
     implementation "com.github.penfeizhou.android.animation:awebp:$APNG4Android_version"
@@ -195,13 +196,13 @@ dependencies {
     implementation 'com.github.skydoves:balloon:1.5.3'
 
     // Popup menus with icons
-    implementation 'com.github.skydoves:powermenu:2.2.3'
+    implementation 'com.github.skydoves:powermenu:2.2.4'
 
     // Micro menu
     implementation "com.github.skydoves:submarine:1.0.7"
 
     // Fast scroller
-    implementation 'me.zhanghai.android.fastscroll:library:1.2.0'
+    implementation 'me.zhanghai.android.fastscroll:library:1.3.0'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
@@ -222,7 +223,7 @@ dependencies {
     implementation "com.squareup.moshi:moshi:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
     implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
 
     // HTTP & HTTP/2 client: github.com/square/okhttp
     def okhttpVersion = "4.10.0"
@@ -311,6 +312,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
 
 
+    implementation project(path: ':app:ai-upscale')
     implementation project(path: ':app:gles-renderer')
     implementation project(path: ':app:customssiv')
 }

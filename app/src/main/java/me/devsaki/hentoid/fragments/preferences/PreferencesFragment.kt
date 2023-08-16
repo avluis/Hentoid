@@ -184,7 +184,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         val storageFolderPref: Preference? =
             findPreference(Preferences.Key.EXTERNAL_LIBRARY) as Preference?
         val uri = Uri.parse(Preferences.getExternalLibraryUri())
-        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri)
+        storageFolderPref?.summary = FileHelper.getFullPathFromUri(requireContext(), uri)
         // Enable/disable sub-prefs
         val deleteExternalLibrary: Preference? =
             findPreference(Preferences.Key.EXTERNAL_LIBRARY_DELETE) as Preference?

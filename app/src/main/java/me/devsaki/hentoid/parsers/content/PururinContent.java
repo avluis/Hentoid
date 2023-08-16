@@ -22,23 +22,23 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 public class PururinContent extends BaseContentParser {
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
-    @Selector(value = "div.title", defValue = "")
+    @Selector(value = "div.title h1", defValue = "")
     private List<String> title;
-    @Selector("table.table-gallery-info tr td")
+    @Selector("table.table-info tr td")
     private List<String> pages;
-    @Selector(value = "table.table-gallery-info a[href*='/tags/artist']")
+    @Selector(value = "table.table-info a[href*='/tags/artist']")
     private List<Element> artists;
-    @Selector(value = "table.table-gallery-info a[href*='/tags/circle']")
+    @Selector(value = "table.table-info a[href*='/tags/circle']")
     private List<Element> circles;
-    @Selector(value = "table.table-gallery-info a[href*='/tags/content']")
+    @Selector(value = "table.table-info a[href*='/tags/content']")
     private List<Element> tags;
-    @Selector(value = "table.table-gallery-info a[href*='/tags/parody']")
+    @Selector(value = "table.table-info a[href*='/tags/parody']")
     private List<Element> series;
-    @Selector(value = "table.table-gallery-info a[href*='/tags/character']")
+    @Selector(value = "table.table-info a[href*='/tags/character']")
     private List<Element> characters;
-    @Selector(value = "table.table-gallery-info a[href*='/tags/language']")
+    @Selector(value = "table.table-info a[href*='/tags/language']")
     private List<Element> languages;
-    @Selector(value = "table.table-gallery-info a[href*='/tags/category']")
+    @Selector(value = "table.table-info a[href*='/tags/category']")
     private List<Element> categories;
 
 

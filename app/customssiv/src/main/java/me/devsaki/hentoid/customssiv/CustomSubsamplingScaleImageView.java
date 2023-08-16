@@ -35,7 +35,6 @@ import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 
 import com.annimon.stream.function.Consumer;
-import me.devsaki.hentoid.gles_renderer.GPUImage;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -56,8 +55,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.customssiv.R.styleable;
-import me.devsaki.hentoid.customssiv.decoder.CompatDecoderFactory;
-import me.devsaki.hentoid.customssiv.decoder.DecoderFactory;
 import me.devsaki.hentoid.customssiv.decoder.ImageDecoder;
 import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder;
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder;
@@ -65,6 +62,7 @@ import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder;
 import me.devsaki.hentoid.customssiv.util.Debouncer;
 import me.devsaki.hentoid.customssiv.util.Helper;
 import me.devsaki.hentoid.customssiv.util.ResizeBitmapHelper;
+import me.devsaki.hentoid.gles_renderer.GPUImage;
 import timber.log.Timber;
 
 
@@ -316,8 +314,8 @@ public class CustomSubsamplingScaleImageView extends View {
     private final ReadWriteLock decoderLock = new ReentrantReadWriteLock(true);
     // Preference for bitmap color format
     private Bitmap.Config preferredBitmapConfig = Bitmap.Config.RGB_565;
-    private DecoderFactory<? extends ImageDecoder> bitmapDecoderFactory = new CompatDecoderFactory<>(SkiaImageDecoder.class, preferredBitmapConfig);
-    private DecoderFactory<? extends ImageRegionDecoder> regionDecoderFactory = new CompatDecoderFactory<>(SkiaImageRegionDecoder.class, preferredBitmapConfig);
+    private ImageDecoder bitmapDecoder = new SkiaImageDecoder(preferredBitmapConfig);
+    private ImageRegionDecoder regionDecoder = new SkiaImageRegionDecoder(preferredBitmapConfig);
 
     // Start of double-tap and long-tap zoom, in terms of screen (view) coordinates
     private PointF vCenterStart;
@@ -488,8 +486,8 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     public void setPreferredBitmapConfig(Bitmap.Config config) {
         preferredBitmapConfig = config;
-        bitmapDecoderFactory = new CompatDecoderFactory<>(SkiaImageDecoder.class, config);
-        regionDecoderFactory = new CompatDecoderFactory<>(SkiaImageRegionDecoder.class, config);
+        bitmapDecoder = new SkiaImageDecoder(preferredBitmapConfig);
+        regionDecoder = new SkiaImageRegionDecoder(preferredBitmapConfig);
     }
 
     /**
@@ -583,7 +581,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 }
                 if (previewSourceUri != null) {
                     loadDisposable.add(
-                            Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
+                            Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoder, uri))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(Schedulers.computation())
                                     .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
@@ -612,7 +610,7 @@ public class CustomSubsamplingScaleImageView extends View {
             if (imageSource.getTile() || sRegion != null) {
                 // Load the bitmap using tile decoding.
                 loadDisposable.add(
-                        Single.fromCallable(() -> initTiles(this, getContext(), regionDecoderFactory, uri))
+                        Single.fromCallable(() -> initTiles(this, getContext(), regionDecoder, uri))
                                 .subscribeOn(Schedulers.computation())
                                 .filter(res -> res[0] > -1) // Remove invalid results
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -624,7 +622,7 @@ public class CustomSubsamplingScaleImageView extends View {
             } else {
                 // Load the bitmap as a single image.
                 loadDisposable.add(
-                        Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
+                        Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoder, uri))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(Schedulers.computation())
                                 .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
@@ -1545,7 +1543,7 @@ public class CustomSubsamplingScaleImageView extends View {
             decoder = null;
 
             loadDisposable.add(
-                    Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
+                    Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoder, uri))
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
@@ -1594,7 +1592,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private void refreshSingle(boolean load) {
         if (!singleImage.loading && load) {
             loadDisposable.add(
-                    Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
+                    Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoder, uri))
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .map(b -> processBitmap(uri, getContext(), b, this, getVirtualScale()))
@@ -1906,12 +1904,11 @@ public class CustomSubsamplingScaleImageView extends View {
     private int[] initTiles(
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull Context context,
-            @NonNull DecoderFactory<? extends ImageRegionDecoder> decoderFactory,
+            @NonNull ImageRegionDecoder decoder,
             @NonNull Uri source) throws Exception {
         Helper.assertNonUiThread();
         String sourceUri = source.toString();
         view.debug("TilesInitTask.doInBackground");
-        decoder = decoderFactory.make();
         Point dimensions = decoder.init(context, source);
         int sWidthTile = dimensions.x;
         int sHeightTile = dimensions.y;
@@ -2017,10 +2014,10 @@ public class CustomSubsamplingScaleImageView extends View {
         invalidate();
     }
 
-    private Bitmap loadBitmap(@NonNull Context context, @NonNull DecoderFactory<? extends ImageDecoder> factory, @NonNull Uri uri) throws Exception {
+    private Bitmap loadBitmap(@NonNull Context context, @NonNull ImageDecoder decoder, @NonNull Uri uri) throws Exception {
         Helper.assertNonUiThread();
         singleImage.loading = true;
-        return factory.make().decode(context, uri);
+        return decoder.decode(context, uri);
     }
 
     private ProcessBitmapResult processBitmap(
@@ -2648,49 +2645,6 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private int px(int px) {
         return (int) (density * px);
-    }
-
-    /**
-     * Swap the default region decoder implementation for one of your own. You must do this before setting the image file or
-     * asset, and you cannot use a custom decoder when using layout XML to set an asset name. Your class must have a
-     * public default constructor.
-     *
-     * @param regionDecoderClass The {@link ImageRegionDecoder} implementation to use.
-     */
-    public final void setRegionDecoderClass(@NonNull Class<? extends ImageRegionDecoder> regionDecoderClass) {
-        this.regionDecoderFactory = new CompatDecoderFactory<>(regionDecoderClass, preferredBitmapConfig);
-    }
-
-    /**
-     * Swap the default region decoder implementation for one of your own. You must do this before setting the image file or
-     * asset, and you cannot use a custom decoder when using layout XML to set an asset name.
-     *
-     * @param regionDecoderFactory The {@link DecoderFactory} implementation that produces {@link ImageRegionDecoder}
-     *                             instances.
-     */
-    public final void setRegionDecoderFactory(@NonNull DecoderFactory<? extends ImageRegionDecoder> regionDecoderFactory) {
-        this.regionDecoderFactory = regionDecoderFactory;
-    }
-
-    /**
-     * Swap the default bitmap decoder implementation for one of your own. You must do this before setting the image file or
-     * asset, and you cannot use a custom decoder when using layout XML to set an asset name. Your class must have a
-     * public default constructor.
-     *
-     * @param bitmapDecoderClass The {@link ImageDecoder} implementation to use.
-     */
-    public final void setBitmapDecoderClass(@NonNull Class<? extends ImageDecoder> bitmapDecoderClass) {
-        this.bitmapDecoderFactory = new CompatDecoderFactory<>(bitmapDecoderClass, preferredBitmapConfig);
-    }
-
-    /**
-     * Swap the default bitmap decoder implementation for one of your own. You must do this before setting the image file or
-     * asset, and you cannot use a custom decoder when using layout XML to set an asset name.
-     *
-     * @param bitmapDecoderFactory The {@link DecoderFactory} implementation that produces {@link ImageDecoder} instances.
-     */
-    public final void setBitmapDecoderFactory(@NonNull DecoderFactory<? extends ImageDecoder> bitmapDecoderFactory) {
-        this.bitmapDecoderFactory = bitmapDecoderFactory;
     }
 
     /**

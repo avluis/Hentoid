@@ -301,7 +301,28 @@ public class LibraryViewModel extends AndroidViewModel {
         groupSearchManager.setArtistGroupVisibility(Preferences.getArtistGroupVisibility());
 
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = groupSearchManager.getGroups();
+
+        // Don't count Content that has been sent back to the Queue to download extra content / to redownload from scratch
+        // => Additional filter to remove unwanted Content
+        LiveData<List<Group>> rawData = groupSearchManager.getGroups();
+        MediatorLiveData<List<Group>> mediator = new MediatorLiveData<>();
+        mediator.addSource(rawData, groups -> {
+            List<Group> newGroups = new ArrayList<>();
+            ContentSearchManager.ContentSearchBundle searchParams = new ContentSearchManager.ContentSearchBundle();
+            for (Group g : groups) {
+                List<GroupItem> newItems = new ArrayList<>();
+                searchParams.setGroupId(g.id);
+                List<Long> groupContent = dao.searchBookIdsUniversal(searchParams);
+                for (int i = 0; i < groupContent.size(); i++) {
+                    newItems.add(new GroupItem(groupContent.get(i), g, i));
+                }
+                g.setItems(newItems);
+                newGroups.add(g);
+            }
+            mediator.setValue(newGroups);
+        });
+        currentGroupsSource = mediator;
+
         groups.addSource(currentGroupsSource, groups::setValue);
 
         if (currentGroupsTotalSource != null)
@@ -634,6 +655,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                         content, targetImageStatus, position, -1, null,
                                         ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                             } else {
+                                // TODO : unflag the content as "being deleted" (stop blink animation)
                                 errorCount.incrementAndGet();
                                 onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
                             }

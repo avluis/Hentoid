@@ -56,11 +56,11 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadReviveEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.sources.PixivIllustMetadata;
-import me.devsaki.hentoid.notification.userAction.UserActionNotification;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
+import me.devsaki.hentoid.notification.userAction.UserActionNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -181,7 +181,7 @@ public class ContentDownloadWorker extends BaseWorker {
      *
      * @return Pair containing
      * - Left : Result of the processing
-     * - Right : 1st book of the download queue; null if no book is available to download
+     * - Right : 1st book of the download queue
      */
     @SuppressLint({"TimberExceptionLogging", "TimberArgCount"})
     @NonNull
@@ -410,7 +410,7 @@ public class ContentDownloadWorker extends BaseWorker {
             content.getCover().setStatus(StatusContent.SAVED);
         dao.insertContent(content);
 
-        HentoidApp.trackDownloadEvent("Added");
+        HentoidApp.Companion.trackDownloadEvent("Added");
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
 
         // Wait until the end of purge if the content is being purged (e.g. redownload from scratch)
@@ -810,12 +810,12 @@ public class ContentDownloadWorker extends BaseWorker {
                     notificationManager.notify(new DownloadSuccessNotification(downloadCount));
 
                     // Tracking Event (Download Success)
-                    HentoidApp.trackDownloadEvent("Success");
+                    HentoidApp.Companion.trackDownloadEvent("Success");
                 } else {
                     notificationManager.notify(new DownloadErrorNotification(content));
 
                     // Tracking Event (Download Error)
-                    HentoidApp.trackDownloadEvent("Error");
+                    HentoidApp.Companion.trackDownloadEvent("Error");
                 }
 
                 // Signals current download as completed
@@ -828,7 +828,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 else Timber.w(context.getString(R.string.queue_json_failed));
 
                 // Tracking Event (Download Completed)
-                HentoidApp.trackDownloadEvent("Completed");
+                HentoidApp.Companion.trackDownloadEvent("Completed");
             } else {
                 Timber.w("completeDownload : Directory %s does not exist - JSON not saved", content.getStorageUri());
             }
@@ -963,7 +963,7 @@ public class ContentDownloadWorker extends BaseWorker {
             final String cfCookie = StringHelper.protect(HttpHelper.parseCookies(HttpHelper.getCookies(img.getUrl())).get(Consts.CLOUDFLARE_COOKIE));
             userActionNotificationManager.notify(new UserActionNotification(request.getSite(), cfCookie));
 
-            if (HentoidApp.isInForeground())
+            if (HentoidApp.Companion.isInForeground())
                 EventBus.getDefault().post(new DownloadReviveEvent(request.getSite(), cfCookie));
         }
     }
@@ -1137,7 +1137,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 downloadCanceled.set(true);
                 downloadInterrupted.set(true);
                 // Tracking Event (Download Canceled)
-                HentoidApp.trackDownloadEvent("Cancelled");
+                HentoidApp.Companion.trackDownloadEvent("Cancelled");
                 break;
             case DownloadCommandEvent.Type.EV_SKIP:
                 dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
@@ -1145,7 +1145,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 downloadSkipped.set(true);
                 downloadInterrupted.set(true);
                 // Tracking Event (Download Skipped)
-                HentoidApp.trackDownloadEvent("Skipped");
+                HentoidApp.Companion.trackDownloadEvent("Skipped");
                 break;
             case DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT:
             case DownloadCommandEvent.Type.EV_UNPAUSE:
@@ -1194,7 +1194,7 @@ public class ContentDownloadWorker extends BaseWorker {
         content.setDownloadDate(Instant.now().toEpochMilli()); // Needs a download date to appear the right location when sorted by download date
         dao.insertContent(content);
         dao.deleteQueue(content);
-        HentoidApp.trackDownloadEvent("Error");
+        HentoidApp.Companion.trackDownloadEvent("Error");
 
         Context context = getApplicationContext();
         if (ContentHelper.updateQueueJson(context, dao))

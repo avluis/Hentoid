@@ -198,7 +198,7 @@
     <string name="pref_viewer_page_turn_volume">Pulsante volume</string>
     <string name="pref_viewer_ratio_completed_threshold">Segna libro come completato dopo N% pagine</string>
     <string name="pref_viewer_read_threshold">Segna il libro come letto dopo N pagine</string>
-    <string name="pref_viewer_rendering">Modalit? di rendering</string>
+    <string name="pref_viewer_rendering_mode">Modalit? di rendering</string>
     <string name="pref_viewer_rendering_no_android5">Il rendering fluido non ? disponibile su Android 5</string>
     <string name="pref_viewer_resume_last_left_summary_off">La riapertura di un libro inizia sempre da pagina 1</string>
     <string name="pref_viewer_resume_last_left_summary_on">La riapertura di un libro riprende dall\'ultima pagina letta, tranne se ? stata raggiunta la fine del libro</string>

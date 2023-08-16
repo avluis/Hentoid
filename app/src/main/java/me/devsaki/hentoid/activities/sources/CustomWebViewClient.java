@@ -160,22 +160,22 @@ class CustomWebViewClient extends WebViewClient {
 
         CHECKMARK = ImageHelper.INSTANCE.bitmapToWebp(
                 ImageHelper.INSTANCE.tintBitmap(
-                        ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_checked),
-                        HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
+                        ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.Companion.getInstance(), R.drawable.ic_checked),
+                        HentoidApp.Companion.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
 
         MERGED_MARK = ImageHelper.INSTANCE.bitmapToWebp(
                 ImageHelper.INSTANCE.tintBitmap(
-                        ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_action_merge),
-                        HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
+                        ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.Companion.getInstance(), R.drawable.ic_action_merge),
+                        HentoidApp.Companion.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
 
         BLOCKED_MARK = ImageHelper.INSTANCE.bitmapToWebp(
                 ImageHelper.INSTANCE.tintBitmap(
-                        ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_forbidden),
-                        HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
+                        ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.Companion.getInstance(), R.drawable.ic_forbidden),
+                        HentoidApp.Companion.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
     }

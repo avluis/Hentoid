@@ -246,6 +246,18 @@ class ReaderViewModel(
     }
 
     /**
+     * Set the given page's index as the picture viewer's starting index
+     *
+     * @param imageId ID of the page to set
+     */
+    fun setViewerStartingIndexById(imageId: Long) {
+        val pic = viewerImagesInternal.find { img -> img.id == imageId }
+        pic?.let {
+            startingIndex.postValue(it.displayOrder)
+        }
+    }
+
+    /**
      * Process the given raw ImageFile entries to populate the viewer
      *
      * @param theContent Content to use
@@ -565,7 +577,9 @@ class ReaderViewModel(
             val theImages = savedContent.imageFiles ?: return
 
             // Update image read status with the cached read statuses
-            val previousReadPageNumbers = theImages.filter { obj -> obj.isRead && obj.isReadable }.map { obj -> obj.order }.toSet()
+            val previousReadPageNumbers =
+                theImages.filter { obj -> obj.isRead && obj.isReadable }.map { obj -> obj.order }
+                    .toSet()
             val reReadPagesNumbers = readPageNumbers.toMutableSet()
             reReadPagesNumbers.retainAll(previousReadPageNumbers)
             if (readPageNumbers.size > reReadPagesNumbers.size) {
@@ -987,11 +1001,11 @@ class ReaderViewModel(
                 1f * viewerIndex - quantity * increment / 3f,
                 0f,
                 (viewerImagesInternal.size - 1).toFloat()
-            ).toDouble()
+            )
         ).toInt()
-        for (i in 0 until quantity) if (picturesLeftToProcess.contains(initialIndex + increment * i)) indexesToLoad.add(
-            initialIndex + increment * i
-        )
+        for (i in 0 until quantity)
+            if (picturesLeftToProcess.contains(initialIndex + increment * i))
+                indexesToLoad.add(initialIndex + increment * i)
 
         // Only run extraction when there's at least 1/3rd of the extract range to fetch
         // (prevents calling extraction for one single picture at every page turn)
@@ -1027,7 +1041,7 @@ class ReaderViewModel(
 
     /**
      * Indicate if the picture at the given page index in the given list needs processing
-     * (i.e. downloading o extracting)
+     * (i.e. downloading or extracting)
      *
      * @param pageIndex Index to test
      * @param images    List of pictures to test against
@@ -1039,7 +1053,8 @@ class ReaderViewModel(
         if (pageIndex < 0 || images.size <= pageIndex) return false
         val img = images[pageIndex]
         return (img.status == StatusContent.ONLINE && img.fileUri.isEmpty()) // Image has to be downloaded
-                || img.isArchived // Image has to be extracted from an archive
+                || (img.isArchived && img.fileUri.isEmpty()) // Image has to be extracted from an archive
+        // NB : extraction status may also be tested by examining imageLocationCache
     }
 
     /**
@@ -1138,10 +1153,11 @@ class ReaderViewModel(
             } while (indexExtractInProgress.isNotEmpty() && remainingIterations-- > 0)
             if (indexExtractInProgress.isNotEmpty()) return
         }
-        indexExtractInProgress.addAll(indexesToLoad)
 
         // Reset interrupt state to make sure extraction runs
         archiveExtractKillSwitch.set(false)
+
+        // Build extraction instructions, ignoring already extracted items
         val extractInstructions: MutableList<Pair<String, String>> = ArrayList()
         for (index in indexesToLoad) {
             if (index < 0 || index >= viewerImagesInternal.size) continue
@@ -1156,7 +1172,10 @@ class ReaderViewModel(
                     ), "$loadedContentId.$index"
                 )
             )
+            indexExtractInProgress.add(index)
         }
+        if (extractInstructions.isEmpty()) return
+
         Timber.d(
             "Extracting %d files starting from index %s", extractInstructions.size, indexesToLoad[0]
         )
@@ -1859,15 +1878,17 @@ class ReaderViewModel(
             tasks.forEachIndexed { index, task ->
                 if (index < tasks.size - 1) {
                     FileHelper.getOutputStream(getApplication(), task.first).use { os ->
-                        FileHelper.getInputStream(getApplication(), task.second).use { input ->
-                            Helper.copy(input, os)
+                        os?.let {
+                            FileHelper.getInputStream(getApplication(), task.second).use { input ->
+                                Helper.copy(input, it)
+                            }
                         }
                     }
                     task.third.fileUri = task.first.toString()
                     swaps.remove(task.first)
                 } else { // Last task
                     FileHelper.getOutputStream(getApplication(), task.first).use { os ->
-                        os.write(firstFileContent)
+                        os?.write(firstFileContent)
                     }
                     task.third.fileUri = task.first.toString()
                 }

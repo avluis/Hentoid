@@ -276,7 +276,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
 
     private fun indexAmong(img: ImageFile?, imgs: List<ImageFile>?): Int {
         if (img != null && imgs != null) {
-            for (i in imgs.indices) if (imgs[i].uniqueHash() == img.uniqueHash()) return i
+            for (i in imgs.indices) if (imgs[i].id == img.id) return i
         }
         return -1
     }

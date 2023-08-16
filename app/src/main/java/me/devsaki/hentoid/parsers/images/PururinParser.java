@@ -5,30 +5,22 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
+import com.annimon.stream.Stream;
+
 import org.jsoup.nodes.Document;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
 /**
  * Handles parsing of content from pururin.to
  */
 public class PururinParser extends BaseImageListParser {
-
-    private static final String IMAGE_PATH = "//cdn.pururin.to/assets/images/data/";
-
-    public static class PururinInfo {
-        String image_extension;
-        String id;
-    }
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {
@@ -37,25 +29,24 @@ public class PururinParser extends BaseImageListParser {
         List<Pair<String, String>> headers = new ArrayList<>();
         ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
 
-        String url = content.getReaderUrl();
-        String protocol = HttpHelper.getHttpProtocol(url) + ":";
-
-        // The whole algorithm is in app.js
-        // 1- Get image extension from gallery data (JSON on HTML body)
-        // 2- Generate image URL from  imagePath constant, gallery ID, page number and extension
-
-        // 1- Get image extension from gallery data (JSON on HTML body)
-        Document doc = getOnlineDocument(url, headers, Site.PURURIN.useHentoidAgent(), Site.PURURIN.useWebviewAgent());
+        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.PURURIN.useHentoidAgent(), Site.PURURIN.useWebviewAgent());
         if (doc != null) {
-            String json = doc.select("gallery-read").attr("encoded");
-            PururinInfo info = JsonHelper.jsonToObject(new String(StringHelper.decode64(json)), PururinInfo.class);
+            // Get all thumb URLs and convert them to page URLs
+            List<String> imgSrc = Stream.of(doc.select(".gallery-preview img"))
+                    .map(ParseHelper::getImgSrc)
+                    .map(PururinParser::thumbToPage)
+                    .toList();
 
-            // 2- Get imagePath from app.js => it is constant anyway, and app.js is 3 MB long => put it there as a const
-            for (int i = 0; i < content.getQtyPages(); i++) {
-                result.add(protocol + IMAGE_PATH + info.id + File.separator + (i + 1) + "." + info.image_extension);
-            }
+            result.addAll(imgSrc);
         }
 
         return result;
+    }
+
+    private static String thumbToPage(String thumbUrl) {
+        HttpHelper.UriParts parts = new HttpHelper.UriParts(thumbUrl);
+        String name = parts.getFileNameNoExt();
+        parts.setFileNameNoExt(name.substring(0, name.length() - 1)); // Remove the trailing 't'
+        return parts.toUri();
     }
 }

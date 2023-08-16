@@ -17,6 +17,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.Transformation
@@ -25,24 +26,25 @@ import com.bumptech.glide.load.resource.UnitTransformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.GlideApp
-import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
 import me.devsaki.hentoid.customssiv.ImageSource
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
+import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import timber.log.Timber
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
-class ImagePagerAdapter(context: Context) :
+class ImagePagerAdapter(val context: Context) :
     ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder>(IMAGE_DIFF_CALLBACK) {
 
     enum class ViewType(val value: Int) {
@@ -50,9 +52,10 @@ class ImagePagerAdapter(context: Context) :
     }
 
     private val pageMinHeight =
-        HentoidApp.getInstance().resources.getDimension(R.dimen.page_min_height).toInt()
+        context.resources.getDimension(R.dimen.page_min_height).toInt()
 
     private var itemTouchListener: OnTouchListener? = null
+    private var scaleListener: BiConsumer<Int, Float>? = null
     private var recyclerView: RecyclerView? = null
     private val initialAbsoluteScales: MutableMap<Int, Float> = HashMap()
     private val absoluteScales: MutableMap<Int, Float> = HashMap()
@@ -70,6 +73,7 @@ class ImagePagerAdapter(context: Context) :
     private var isScrollLTR = true
 
     // Cached prefs
+    private var colorDepth = Bitmap.Config.RGB_565
     private var separatingBarsHeight = 0
 
     private var longTapZoomEnabled = false
@@ -97,6 +101,9 @@ class ImagePagerAdapter(context: Context) :
         val doubleTapZoomCapCode = Preferences.getReaderCapTapZoom()
         doubleTapZoomCap =
             if (Preferences.Constant.VIEWER_CAP_TAP_ZOOM_NONE == doubleTapZoomCapCode) -1f else doubleTapZoomCapCode.toFloat()
+
+        colorDepth =
+            if (0 == Settings.colorDepth) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
     }
 
     fun setRecyclerView(v: RecyclerView?) {
@@ -145,7 +152,7 @@ class ImagePagerAdapter(context: Context) :
             val ssiv = rootView.findViewById<CustomSubsamplingScaleImageView>(R.id.ssiv)
             ssiv.setIgnoreTouchEvents(false)
             ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.HORIZONTAL)
-            ssiv.preferredBitmapConfig = Bitmap.Config.RGB_565
+            ssiv.preferredBitmapConfig = colorDepth
             ssiv.setDoubleTapZoomDuration(500)
             ssiv.setOnTouchListener(null)
 
@@ -207,7 +214,7 @@ class ImagePagerAdapter(context: Context) :
                 ssiv.setOffsetLeftSide(scrollLTR)
 
                 ssiv.setScaleListener { s: Double ->
-                    onAbsoluteScaleChanged(position, s)
+                    onAbsoluteScaleChanged(position, s.toFloat())
                 }
             }
             val layoutStyle =
@@ -258,6 +265,7 @@ class ImagePagerAdapter(context: Context) :
 
     fun destroy() {
         if (isGlInit) glEsRenderer.clear()
+        scaleListener = null
     }
 
     fun reset() {
@@ -332,11 +340,19 @@ class ImagePagerAdapter(context: Context) :
         }
     }
 
-    private fun onAbsoluteScaleChanged(position: Int, scale: Double) {
+    private fun onAbsoluteScaleChanged(position: Int, scale: Float) {
         Timber.d(">> position %d -> scale %s", position, scale)
-        if (!initialAbsoluteScales.containsKey(position)) initialAbsoluteScales[position] =
-            scale.toFloat()
-        absoluteScales[position] = scale.toFloat()
+        if (!initialAbsoluteScales.containsKey(position))
+            initialAbsoluteScales[position] = scale
+        if (!absoluteScales.containsKey(position)) absoluteScales[position] = scale
+        if (abs(scale - absoluteScales[position]!!) > 0.01) {
+            absoluteScales[position] = scale
+            scaleListener?.invoke(position, scale)
+        }
+    }
+
+    fun setOnScaleListener(scaleListener: BiConsumer<Int, Float>?) {
+        this.scaleListener = scaleListener
     }
 
     fun setMaxDimensions(maxWidth: Int, maxHeight: Int) {
@@ -395,7 +411,7 @@ class ImagePagerAdapter(context: Context) :
                 val smartRotate90 = if (autoRotate) SmartRotateTransformation(
                     90f, ImageTransform.screenWidth, ImageTransform.screenHeight
                 ) else UnitTransformation.get()
-                GlideApp.with(view).load(uri)
+                Glide.with(view).load(uri)
                     .optionalTransform(MultiTransformation(centerInside, smartRotate90))
                     .listener(this).into(view)
             }

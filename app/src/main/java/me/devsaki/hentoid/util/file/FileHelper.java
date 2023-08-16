@@ -129,7 +129,7 @@ public class FileHelper {
      * @param uri     Uri to get the full path from
      * @return Full, human-readable access path from the given Uri
      */
-    public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri) {
+    private static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri) {
         if (uri.toString().isEmpty()) return "";
 
         String volumePath = getVolumePath(context, getVolumeIdFromUri(uri));
@@ -314,6 +314,7 @@ public class FileHelper {
      * @return New OutputStream opened on the given file
      * @throws IOException In case something horrible happens during I/O
      */
+    @Nullable
     public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
             String path = fileUri.getPath();
@@ -752,8 +753,10 @@ public class FileHelper {
         DocumentFile newFile = targetFolder.createFile(mimeType, newName);
         if (null == newFile || !newFile.exists()) return null;
         try (OutputStream output = FileHelper.getOutputStream(context, newFile)) {
-            try (InputStream input = FileHelper.getInputStream(context, sourceFileUri)) {
-                Helper.copy(input, output);
+            if (output != null) {
+                try (InputStream input = FileHelper.getInputStream(context, sourceFileUri)) {
+                    Helper.copy(input, output);
+                }
             }
         }
         return newFile.getUri();

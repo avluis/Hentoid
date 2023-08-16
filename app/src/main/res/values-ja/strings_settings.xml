@@ -198,7 +198,7 @@
     <string name="pref_viewer_page_turn_volume">音量ボタン</string>
     <string name="pref_viewer_ratio_completed_threshold">N％ページ後に本を完了としてマークする</string>
     <string name="pref_viewer_read_threshold">Nページ後に本を既読としてマークする</string>
-    <string name="pref_viewer_rendering">レンダリングモード</string>
+    <string name="pref_viewer_rendering_mode">レンダリングモード</string>
     <string name="pref_viewer_rendering_no_android5">スムーズなレンダリングはAndroid5では利用できません</string>
     <string name="pref_viewer_resume_last_left_summary_off">書籍の再開は常に1ページ目から始まります</string>
     <string name="pref_viewer_resume_last_left_summary_on">本の終わりに達した場合を除いて、本を再び開くことは最後に読んだページから再開します</string>

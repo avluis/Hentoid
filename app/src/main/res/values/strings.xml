@@ -921,6 +921,7 @@
     <string name="resize_method_1">Max % of screen dimensions</string>
     <string name="resize_method_2">Absolute max dimensions</string>
     <string name="resize_method_3">% of original image dimensions</string>
+    <string name="resize_method_4">AI upscale (Real-CUGAN 2x)</string>
     <string name="resize_method_1_prompt">% of screen dimensions</string>
     <string name="resize_method_2_prompt_max_height">Max height (mangas)</string>
     <string name="resize_method_2_prompt_max_width">Max width (manhwas, webtoons)</string>

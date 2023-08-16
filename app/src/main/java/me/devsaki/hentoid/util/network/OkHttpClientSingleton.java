@@ -69,7 +69,7 @@ public class OkHttpClientSingleton {
 
         return new OkHttpClient.Builder()
                 .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
-                .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE))
+                .cache(new Cache(HentoidApp.Companion.getInstance().getCacheDir(), CACHE_SIZE))
                 .build();
     }
 

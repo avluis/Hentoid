@@ -100,6 +100,9 @@
     <!-- Choice for "Rendering mode" setting -->
     <string name="pref_viewer_rendering_entries_1">Sharp rendering (default)</string>
     <string name="pref_viewer_rendering_entries_2">Smooth rendering</string>
+    <!-- Choice for "Color depth" setting -->
+    <string name="pref_viewer_color_depth_entries_1">16-bit (default)</string>
+    <string name="pref_viewer_color_depth_entries_2">32-bit</string>
     <!-- Choice for "Cap double & long tap zoom" setting -->
     <string name="pref_viewer_cap_tap_zoom_entries_1">No capping</string>
     <string name="pref_viewer_cap_tap_zoom_entries_2" tools:ignore="MissingTranslation">2x</string>

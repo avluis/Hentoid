@@ -64,7 +64,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
     private static final RequestOptions glideRequestOptions;
 
     static {
-        Context context = HentoidApp.getInstance();
+        Context context = HentoidApp.Companion.getInstance();
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);

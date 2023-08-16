@@ -235,6 +235,7 @@ public class LibraryGroupsFragment extends Fragment implements
         recyclerView.setLayoutManager(llm);
         new FastScrollerBuilder(recyclerView)
                 .setPopupTextProvider(this)
+                .useMd2Style()
                 .build();
 
         // Pager
@@ -817,7 +818,7 @@ public class LibraryGroupsFragment extends Fragment implements
 
     @NonNull
     @Override
-    public CharSequence getPopupText(int position) {
+    public CharSequence getPopupText(@NonNull View view, int position) {
         if (null == itemAdapter) return "";
         Group g = itemAdapter.getAdapterItem(position).getGroup();
         if (null == g) return "";

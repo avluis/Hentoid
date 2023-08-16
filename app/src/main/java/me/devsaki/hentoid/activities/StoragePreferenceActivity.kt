@@ -216,7 +216,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                 else -> number.text = " "
             }
             val uri = Uri.parse(uriStr)
-            path.text = FileHelper.getFullPathFromTreeUri(baseContext, uri)
+            path.text = FileHelper.getFullPathFromUri(baseContext, uri)
 
             val rootFolder = FileHelper.getDocumentFromTreeUriString(baseContext, uriStr)
             if (rootFolder != null) {

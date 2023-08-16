@@ -269,6 +269,8 @@
             android:layout_height="100dp"
             android:layout_marginTop="4dp"
             android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/preview_header"
             tools:ignore="ContentDescription"
@@ -360,6 +362,19 @@
             app:iconSize="24dp"
             app:iconTint="?colorSecondary"
             app:layout_constraintTop_toBottomOf="@id/thumb" />
+
+        <ImageView
+            android:id="@+id/preview"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

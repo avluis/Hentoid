@@ -125,10 +125,10 @@ public class DownloadHelper {
                         }
                     }
                     targetFileUri = createFile(targetFolderUri, targetFileName, mimeType);
-                    out = FileHelper.getOutputStream(HentoidApp.getInstance(), targetFileUri);
+                    out = FileHelper.getOutputStream(HentoidApp.Companion.getInstance(), targetFileUri);
                 }
 
-                if (len > 0) {
+                if (len > 0 && out != null) {
                     out.write(buffer, 0, len);
 
                     if (notifyProgress != null && 0 == iteration % notificationResolution)
@@ -141,7 +141,7 @@ public class DownloadHelper {
                 if (notifyProgress != null) notifyProgress.accept(100f);
                 if (out != null) out.flush();
                 if (targetFileUri != null) {
-                    long targetFileSize = FileHelper.fileSizeFromUri(HentoidApp.getInstance(), targetFileUri);
+                    long targetFileSize = FileHelper.fileSizeFromUri(HentoidApp.Companion.getInstance(), targetFileUri);
                     Timber.d("DOWNLOAD %d [%s] WRITTEN TO %s (%.2f KB)", resourceId, mimeType, targetFileUri.getPath(), targetFileSize / 1024.0);
                 }
                 return new ImmutablePair<>(targetFileUri, mimeType);
@@ -150,7 +150,7 @@ public class DownloadHelper {
             body.close();
         }
         // Remove the remaining file chunk if download has been interrupted
-        if (targetFileUri != null) FileHelper.removeFile(HentoidApp.getInstance(), targetFileUri);
+        if (targetFileUri != null) FileHelper.removeFile(HentoidApp.Companion.getInstance(), targetFileUri);
         throw new DownloadInterruptedException("Download interrupted");
     }
 
@@ -179,9 +179,9 @@ public class DownloadHelper {
                 throw new IOException("Could not create file " + targetFileNameFinal + " : " + targetFolderUri + " has no path");
             }
         } else {
-            DocumentFile targetFolder = FileHelper.getDocumentFromTreeUriString(HentoidApp.getInstance(), targetFolderUri.toString());
+            DocumentFile targetFolder = FileHelper.getDocumentFromTreeUriString(HentoidApp.Companion.getInstance(), targetFolderUri.toString());
             if (targetFolder != null) {
-                DocumentFile file = FileHelper.findOrCreateDocumentFile(HentoidApp.getInstance(), targetFolder, mimeType, targetFileNameFinal);
+                DocumentFile file = FileHelper.findOrCreateDocumentFile(HentoidApp.Companion.getInstance(), targetFolder, mimeType, targetFileNameFinal);
                 if (file != null) return file.getUri();
                 else
                     throw new IOException("Could not create file " + targetFileNameFinal + " : creation failed");
