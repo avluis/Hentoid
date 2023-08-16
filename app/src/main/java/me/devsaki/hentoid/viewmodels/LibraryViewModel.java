@@ -308,9 +308,15 @@ public class LibraryViewModel extends AndroidViewModel {
         MediatorLiveData<List<Group>> mediator = new MediatorLiveData<>();
         mediator.addSource(rawData, groups -> {
             List<Group> newGroups = new ArrayList<>();
+            ContentSearchManager.ContentSearchBundle searchParams = new ContentSearchManager.ContentSearchBundle();
             for (Group g : groups) {
-                List<GroupItem> items = Stream.of(g.getItems()).filter(this::isGroupItemDisplayable).toList();
-                g.setItems(items);
+                List<GroupItem> newItems = new ArrayList<>();
+                searchParams.setGroupId(g.id);
+                List<Long> groupContent = dao.searchBookIdsUniversal(searchParams);
+                for (int i = 0; i < groupContent.size(); i++) {
+                    newItems.add(new GroupItem(groupContent.get(i), g, i));
+                }
+                g.setItems(newItems);
                 newGroups.add(g);
             }
             mediator.setValue(newGroups);
@@ -326,13 +332,6 @@ public class LibraryViewModel extends AndroidViewModel {
 
         groupSearchBundle.postValue(groupSearchManager.toBundle());
         refreshAvailableGroupings();
-    }
-
-    private boolean isGroupItemDisplayable(GroupItem item) {
-        long contentId = item.getContentId();
-        Content c = dao.selectContent(contentId);
-        if (c != null) return ContentHelper.isInLibrary(c.getStatus());
-        return false;
     }
 
     public void refreshAvailableGroupings() {
