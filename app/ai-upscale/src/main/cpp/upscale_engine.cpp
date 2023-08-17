@@ -105,12 +105,6 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
         if (scale == 2) {
             prepadding = 18;
         }
-        if (scale == 3) {
-            prepadding = 14;
-        }
-        if (scale == 4) {
-            prepadding = 19;
-        }
     } else {
         fprintf(stderr, "unknown model dir type\n");
         return -1;
@@ -143,37 +137,11 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
             model.find(PATHSTR("models-se")) != path_t::npos ||
             model.find(PATHSTR("models-pro")) != path_t::npos) {
             if (scale == 2) {
-                if (heap_budget > 1300)
-                    tilesize[i] = 400;
-                else if (heap_budget > 800)
-                    tilesize[i] = 300;
-                else if (heap_budget > 400)
+                // Keep low tile size to avoid GPU panic on certain devices
+                // (see https://github.com/chaiNNer-org/chaiNNer/issues/913)
+                if (heap_budget > 400)
                     tilesize[i] = 200;
                 else if (heap_budget > 200)
-                    tilesize[i] = 100;
-                else
-                    tilesize[i] = 32;
-            }
-            if (scale == 3) {
-                if (heap_budget > 3300)
-                    tilesize[i] = 400;
-                else if (heap_budget > 1900)
-                    tilesize[i] = 300;
-                else if (heap_budget > 950)
-                    tilesize[i] = 200;
-                else if (heap_budget > 320)
-                    tilesize[i] = 100;
-                else
-                    tilesize[i] = 32;
-            }
-            if (scale == 4) {
-                if (heap_budget > 1690)
-                    tilesize[i] = 400;
-                else if (heap_budget > 980)
-                    tilesize[i] = 300;
-                else if (heap_budget > 530)
-                    tilesize[i] = 200;
-                else if (heap_budget > 240)
                     tilesize[i] = 100;
                 else
                     tilesize[i] = 32;
@@ -184,6 +152,7 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
     for (int i = 0; i < use_gpu_count; i++) {
         realcugan[i]->noise = noise;
         realcugan[i]->scale = scale;
+        LOGD("REALCUGAN PARAMS tilesize = %i", tilesize[i]);
         realcugan[i]->tilesize = tilesize[i];
         realcugan[i]->prepadding = prepadding;
         realcugan[i]->syncgap = syncgap;
