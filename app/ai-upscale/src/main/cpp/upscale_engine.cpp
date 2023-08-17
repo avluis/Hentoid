@@ -8,10 +8,6 @@
 #include <vector>
 #include <clocale>
 
-#if _WIN32
-// image decoder and encoder with wic
-#include "wic_image.h"
-#else // _WIN32
 // image decoder and encoder with stb
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_PSD
@@ -26,9 +22,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
 #include "stb_image_write.h"
-
-#endif // _WIN32
-
 #include "webp_image.h"
 
 // ncnn
@@ -93,7 +86,8 @@ void UpscaleEngine::clear() {
 }
 
 int
-UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobject progress, jobject kill_switch) {
+UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobject progress,
+                    jobject kill_switch) {
     std::vector<int> tilesize;
     int syncgap = 3;
     // Forced model values
@@ -196,7 +190,7 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
     }
 
     // load image
-    LOGD("LOADING");
+    LOGD("LOADING RAW IMAGE");
     unsigned char *pixeldata;
     int w;
     int h;
@@ -211,9 +205,6 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
         // We have a WEBP file here; don't go further
     } else {
         // not webp, try jpg png etc.
-#if _WIN32
-        pixeldata = wic_decode_image(imagepath.c_str(), &w, &h, &c);
-#else // _WIN32
         LOGD("LOADING 2");
         pixeldata = stbi_load_from_memory(filedata, length, &w, &h, &c, 0);
         LOGD("LOADING 3 : c %i", c);
@@ -233,13 +224,12 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
                 c = 4;
             }
         }
-#endif // _WIN32
     }
     if (!pixeldata) {
         LOGE("no pixel data");
         return -1;
     }
-    LOGD("LOADED - BUILDING MATRIX c=%i", c);
+    LOGD("RAW IMAGE LOADED - BUILDING MATRIX c=%i", c);
 
     ncnn::Mat inimage = ncnn::Mat(w, h, (void *) pixeldata, (size_t) c, c);
 
