@@ -142,6 +142,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var processPositionDebouncer: DebouncerK<Pair<Int, Int>>
     private lateinit var rescaleDebouncer: DebouncerK<Float>
     private lateinit var adapterRescaleDebouncer: DebouncerK<Float>
+    private lateinit var zoomLevelDebouncer: DebouncerK<Unit>
     private var firstZoom = true
 
     // Starting index management
@@ -186,16 +187,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         rescaleDebouncer = DebouncerK(this.lifecycleScope, 100) { scale: Float ->
             adapter.multiplyScale(scale)
-            if (!firstZoom)
-                context?.let {
-                    ToastHelper.toast(it, R.string.percent_no_digits, scale * 100.0)
-                }
+            if (!firstZoom) displayZoomLevel(scale)
             else firstZoom = false
         }
         adapterRescaleDebouncer = DebouncerK(this.lifecycleScope, 100) { scale: Float ->
-            context?.let {
-                ToastHelper.toast(it, R.string.percent_no_digits, scale * 100.0)
-            }
+            displayZoomLevel(scale)
+        }
+        zoomLevelDebouncer = DebouncerK(this.lifecycleScope, 500) {
+            hideZoomLevel()
         }
         Preferences.registerPrefsChangedListener(prefsListener)
         Settings.registerPrefsChangedListener(prefsListener)
@@ -265,6 +264,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         processPositionDebouncer.clear()
         rescaleDebouncer.clear()
         adapterRescaleDebouncer.clear()
+        zoomLevelDebouncer.clear()
         navigator.clear()
         binding?.recyclerView?.adapter = null
         binding = null
@@ -1506,6 +1506,18 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         isSlideshowActive = false
         scrollListener.enableScroll()
         ToastHelper.toast(R.string.slideshow_stop)
+    }
+
+    private fun displayZoomLevel(value: Float) {
+        binding?.apply {
+            viewerZoomText.text = resources.getString(R.string.percent_no_digits, value * 100.0)
+            viewerZoomText.isVisible = true
+        }
+        zoomLevelDebouncer.submit(Unit)
+    }
+
+    private fun hideZoomLevel() {
+        binding?.viewerZoomText?.isVisible = false
     }
 
     companion object {

@@ -109,6 +109,24 @@
         tools:text="28/255"
         tools:visibility="visible" />
 
+    <TextView
+        android:id="@+id/viewer_zoom_text"
+        style="@style/TextShadowLight"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:gravity="center"
+        android:padding="8dp"
+        android:textAlignment="center"
+        android:textColor="@color/white_opacity_25"
+        android:textSize="@dimen/caption"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="144%"
+        tools:visibility="visible" />
+
     <ProgressBar
         android:id="@+id/progress_bar"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
