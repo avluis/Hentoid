@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.18.1/hentoid1181-665.apk",
-  "versionCode": "665",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.18.2/hentoid1182-669.apk",
+  "versionCode": "669",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/test1/v415.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -24,7 +24,7 @@
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"500"},
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"565"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"611"},
-	  {"sourceName":"PURURIN", "status":"RED"},
+	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"669"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"GREY"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
