@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.viewholders
 
 import android.graphics.PorterDuff
+import android.graphics.Typeface
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -17,7 +18,8 @@ class DrawerItem(
     val label: String,
     val icon: Int,
     val activityClass: Class<out AppCompatActivity>,
-    uniqueId: Long
+    uniqueId: Long,
+    val italicFont: Boolean = false
 ) :
     AbstractItem<DrawerItem.ViewHolder>() {
 
@@ -52,6 +54,9 @@ class DrawerItem(
                 )
             } else alert.visibility = View.GONE
             title.text = String.format("%s%s", item.label, if (item.flagNew) " *" else "")
+
+            if (item.italicFont) title.setTypeface(null, Typeface.ITALIC)
+            else title.setTypeface(null, Typeface.NORMAL)
         }
 
         override fun unbindView(item: DrawerItem) {

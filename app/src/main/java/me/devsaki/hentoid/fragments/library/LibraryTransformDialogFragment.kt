@@ -27,6 +27,8 @@ import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.textfield.TextInputLayout
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
@@ -40,11 +42,13 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryTransformBinding
 import me.devsaki.hentoid.enums.PictureEncoder
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
+import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.workers.TransformWorker
 import okio.use
 import timber.log.Timber
@@ -73,6 +77,8 @@ class LibraryTransformDialogFragment : DialogFragment() {
     private var pageIndex = 0
     private var maxPages = -1
     private val glideRequestOptions: RequestOptions
+    private val itemAdapter = ItemAdapter<DrawerItem>()
+    private val fastAdapter = FastAdapter.with(itemAdapter)
 
     init {
         val context: Context = HentoidApp.getInstance()
@@ -241,24 +247,52 @@ class LibraryTransformDialogFragment : DialogFragment() {
                     && (Settings.transcodeEncoderAll == PictureEncoder.JPEG.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value)))
             if (isAiUpscale) encoderQuality.isVisible = false
             if (applyValues) encoderQuality.editText?.setText(Settings.transcodeQuality.toString())
-            encoderWarning.isVisible = (
+
+            // Warning list
+            warningsList.adapter = fastAdapter
+
+            val encoderWarning = (
                     (0 == transcodeMethod.index && (Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSLESS.value))
                             || (1 == transcodeMethod.index && (Settings.transcodeEncoderLossy == PictureEncoder.WEBP_LOSSY.value || Settings.transcodeEncoderLossless == PictureEncoder.WEBP_LOSSLESS.value))
                     )
-            encoderWarningIcon.isVisible = encoderWarning.isVisible
 
             // Check if content contains transformed pages already
+            var retransformWarning = false
             content?.apply {
-                val transformedCount = imageList.count { i -> i.isTransformed }
-                if (transformedCount > 0) {
-                    binding.retransformWarning.text = resources.getString(
-                        R.string.retransform_warning,
-                        transformedCount
-                    )
-                    binding.retransformWarning.isVisible = true
-                    binding.retransformWarningIcon.isVisible = true
-                }
+                retransformWarning = imageList.count { i -> i.isTransformed } > 0
             }
+
+            if (encoderWarning || retransformWarning || isAiUpscale) {
+                itemAdapter.clear()
+                if (encoderWarning) itemAdapter.add(
+                    DrawerItem(
+                        resources.getString(R.string.encoder_warning),
+                        R.drawable.ic_warning,
+                        Content.getWebActivityClass(Site.NONE),
+                        1,
+                        true
+                    )
+                )
+                if (retransformWarning) itemAdapter.add(
+                    DrawerItem(
+                        resources.getString(R.string.retransform_warning),
+                        R.drawable.ic_warning,
+                        Content.getWebActivityClass(Site.NONE),
+                        2,
+                        true
+                    )
+                )
+                if (isAiUpscale) itemAdapter.add(
+                    DrawerItem(
+                        resources.getString(R.string.ai_rescale_warning),
+                        R.drawable.ic_warning,
+                        Content.getWebActivityClass(Site.NONE),
+                        2,
+                        true
+                    )
+                )
+                warningsList.isVisible = true
+            } else warningsList.isVisible = false
         }
     }
 

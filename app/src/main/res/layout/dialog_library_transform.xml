@@ -14,44 +14,13 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/retransform_warning"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@color/white_opacity_25"
-            android:paddingStart="56dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
-            android:text="@string/retransform_warning"
-            android:textStyle="italic"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="visible" />
-
-        <ImageView
-            android:id="@+id/retransform_warning_icon"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:adjustViewBounds="true"
-            android:padding="8dp"
-            android:src="@drawable/ic_warning"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/retransform_warning"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/retransform_warning"
-            app:tint="@color/white_opacity_87"
-            tools:ignore="ContentDescription"
-            tools:visibility="visible" />
-
-        <TextView
             android:id="@+id/resize_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/transform_resizing"
             android:textSize="@dimen/text_header_6"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/retransform_warning" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/resize_switch"
@@ -205,35 +174,22 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            android:id="@+id/encoder_warning"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/warnings_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@color/white_opacity_25"
-            android:paddingStart="56dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
-            android:text="@string/encoder_warning"
-            android:textStyle="italic"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/encoder_quality"
-            tools:visibility="visible" />
-
-        <ImageView
-            android:id="@+id/encoder_warning_icon"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:adjustViewBounds="true"
+            android:clipToPadding="false"
+            android:fadeScrollbars="false"
             android:padding="8dp"
-            android:src="@drawable/ic_warning"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbars="vertical"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/encoder_warning"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/encoder_warning"
-            app:tint="@color/white_opacity_87"
-            tools:ignore="ContentDescription"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/encoder_quality"
+            app:maxHeight="120dp"
+            tools:layout_height="120dp"
+            tools:listitem="@layout/item_drawer"
             tools:visibility="visible" />
 
         <TextView
@@ -244,9 +200,8 @@
             android:text="@string/preview"
             android:textSize="@dimen/text_header_6"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/preview_progress"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/encoder_warning" />
+            app:layout_constraintTop_toBottomOf="@id/warnings_list" />
 
         <ProgressBar
             android:id="@+id/preview_progress"
