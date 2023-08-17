@@ -49,6 +49,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     private final boolean isDeleteAllQueueRecords;
     private final int deleteMax;
     private final boolean isDeleteGroupsOnly;
+    private final boolean isDownloadPrepurge;
 
     private int deleteProgress;
     private int nbError;
@@ -69,6 +70,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         queueIds = inputData.getQueueIds();
         isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords();
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly();
+        isDownloadPrepurge = inputData.isDownloadPrepurge();
 
         dao = new ObjectBoxDAO(context);
 
@@ -291,7 +293,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     }
 
     private void progressDone() {
-        notificationManager.notifyLast(new DeleteCompleteNotification(deleteMax, nbError > 0));
+        notificationManager.notifyLast(new DeleteCompleteNotification(deleteMax, nbError, isDownloadPrepurge));
         EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, deleteProgress, nbError, deleteMax));
     }
 }

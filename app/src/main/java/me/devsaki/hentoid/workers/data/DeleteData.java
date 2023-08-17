@@ -24,6 +24,7 @@ public class DeleteData {
     private static final String KEY_DELETE_GROUPS_ONLY = "deleteGroupsOnly";
     private static final String KEY_DELETE_ALL_CONTENT_EXCEPT_FAVS_B = "deleteAllContentExceptFavsB";
     private static final String KEY_DELETE_ALL_CONTENT_EXCEPT_FAVS_G = "deleteAllContentExceptFavsG";
+    private static final String KEY_DL_PREPURGE = "downloadPrepurge";
 
     private DeleteData() {
         throw new UnsupportedOperationException();
@@ -67,6 +68,10 @@ public class DeleteData {
 
         public void setDeleteAllContentExceptFavsGroups(boolean value) {
             builder.putBoolean(KEY_DELETE_ALL_CONTENT_EXCEPT_FAVS_G, value);
+        }
+
+        public void setDownloadPrepurge(boolean value) {
+            builder.putBoolean(KEY_DL_PREPURGE, value);
         }
 
         public Data getData() {
@@ -124,6 +129,10 @@ public class DeleteData {
 
         public boolean isDeleteAllContentExceptFavsGroups() {
             return data.getBoolean(KEY_DELETE_ALL_CONTENT_EXCEPT_FAVS_G, false);
+        }
+
+        public boolean isDownloadPrepurge() {
+            return data.getBoolean(KEY_DL_PREPURGE, false);
         }
     }
 }

@@ -791,7 +791,6 @@
         <item quantity="other"><x:g example="1" id="number">%d</x:g> sikeresen törölve</item>
     </plurals>
     <string name="notif_delete_fail">A törlés sikertelen</string>
-    <string name="notif_delete_fail_details">Legalább egy könyvet nem sikerült törölni</string>
 
 
 <string name="title_startup">Indítás</string>

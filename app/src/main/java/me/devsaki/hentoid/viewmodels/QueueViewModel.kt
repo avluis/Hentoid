@@ -244,6 +244,7 @@ class QueueViewModel(
     private fun purgeItem(content: Content) {
         val builder = DeleteData.Builder()
         builder.setContentPurgeIds(listOf(content.id))
+        builder.setDownloadPrepurge(true)
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
             R.id.delete_service_purge.toString(),

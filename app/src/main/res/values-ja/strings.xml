@@ -542,7 +542,6 @@
         <item quantity="other">%dが正常に削除されました</item>
     </plurals>
     <string name="notif_delete_fail">削除に失敗しました</string>
-    <string name="notif_delete_fail_details">少なくとも1冊の本を削除できませんでした</string>
     <string name="notif_delete_title">コンテンツの削除</string>
     <string name="notif_json_complete">更新が完了しました</string>
     <string name="notif_json_progress">JSONを更新中</string>

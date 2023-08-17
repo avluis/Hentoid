@@ -866,7 +866,6 @@
         <item quantity="many">Видалено: <x:g id="number" example="1">%d</x:g></item>
     </plurals>
     <string name="notif_delete_fail">Видалення не вдалося</string>
-    <string name="notif_delete_fail_details">Не вдалося видалити принаймні одну книгу</string>
 
     <!-- Startup -->
     <string name="title_startup">Запуск</string>

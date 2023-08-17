@@ -1515,7 +1515,7 @@ class ReaderViewModel(
                 withContext(Dispatchers.IO) {
                     contentList.forEach {
                         // Non-blocking performance bottleneck; run in a dedicated worker
-                        ContentHelper.purgeContent(getApplication(), it, false)
+                        ContentHelper.purgeContent(getApplication(), it, false, true)
                         dao.addContentToQueue(
                             it,
                             targetImageStatus,

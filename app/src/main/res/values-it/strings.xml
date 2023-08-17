@@ -543,7 +543,6 @@
         <item quantity="other">%d eliminato correttamente</item>
     </plurals>
     <string name="notif_delete_fail">Cancellazione fallita</string>
-    <string name="notif_delete_fail_details">Almeno un libro non ? stato cancellato</string>
     <string name="notif_delete_title">Eliminazione del contenuto</string>
     <string name="notif_json_complete">Aggiornamento completato</string>
     <string name="notif_json_progress">Aggiornamento JSON in corso</string>

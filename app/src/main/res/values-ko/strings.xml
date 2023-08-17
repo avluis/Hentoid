@@ -813,7 +813,6 @@
         <item quantity="other"><x:g example="1" id="number">%d</x:g>개가 성공적으로 삭제되었습니다</item>
     </plurals>
     <string name="notif_delete_fail">삭제 실패</string>
-    <string name="notif_delete_fail_details">하나 이상의 책을 삭제하지 못했습니다</string>
 <string name="notif_json_title">JSON 업데이트</string>
     <string name="notif_json_progress">JSON 업데이트 중</string>
     <string name="notif_json_complete">업데이트 완료</string>

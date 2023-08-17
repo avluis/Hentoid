@@ -650,7 +650,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Content content = c.get();
                                 // Non-blocking performance bottleneck; run in a dedicated worker
                                 if (reparseImages)
-                                    ContentHelper.purgeContent(getApplication(), content, false);
+                                    ContentHelper.purgeContent(getApplication(), content, false, true);
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position, -1, null,
                                         ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
@@ -777,7 +777,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Content dbContent = dao.selectContent(c.get().getId());
                                 if (null == dbContent) return;
                                 // Non-blocking performance bottleneck; scheduled in a dedicated worker
-                                ContentHelper.purgeContent(getApplication(), c.get(), true);
+                                ContentHelper.purgeContent(getApplication(), c.get(), true, true);
                                 dbContent.setDownloadMode(Content.DownloadMode.STREAM);
                                 List<ImageFile> imgs = dbContent.getImageFiles();
                                 if (imgs != null) {

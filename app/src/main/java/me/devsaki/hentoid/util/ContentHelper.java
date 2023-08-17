@@ -1852,10 +1852,15 @@ public final class ContentHelper {
         return StorageLocation.NONE;
     }
 
-    public static void purgeContent(@NonNull final Context context, @NonNull final Content content, boolean keepCover) {
+    public static void purgeContent(
+            @NonNull final Context context,
+            @NonNull final Content content,
+            boolean keepCover,
+            boolean isDownloadPrepurge) {
         DeleteData.Builder builder = new DeleteData.Builder();
         builder.setContentPurgeIds(Stream.of(content).map(Content::getId).toList());
         builder.setContentPurgeKeepCovers(keepCover);
+        builder.setDownloadPrepurge(isDownloadPrepurge);
 
         WorkManager workManager = WorkManager.getInstance(context);
         workManager.enqueueUniqueWork(
