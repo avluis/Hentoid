@@ -310,12 +310,10 @@ public class CustomSubsamplingScaleImageView extends View {
     private GestureDetector singleDetector;
 
     // Tile and image decoding
-    private ImageRegionDecoder decoder;
+    private ImageRegionDecoder regionDecoder;
     private final ReadWriteLock decoderLock = new ReentrantReadWriteLock(true);
     // Preference for bitmap color format
     private Bitmap.Config preferredBitmapConfig = Bitmap.Config.RGB_565;
-    private ImageDecoder bitmapDecoder = new SkiaImageDecoder(preferredBitmapConfig);
-    private ImageRegionDecoder regionDecoder = new SkiaImageRegionDecoder(preferredBitmapConfig);
 
     // Start of double-tap and long-tap zoom, in terms of screen (view) coordinates
     private PointF vCenterStart;
@@ -486,8 +484,6 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     public void setPreferredBitmapConfig(Bitmap.Config config) {
         preferredBitmapConfig = config;
-        bitmapDecoder = new SkiaImageDecoder(preferredBitmapConfig);
-        regionDecoder = new SkiaImageRegionDecoder(preferredBitmapConfig);
     }
 
     /**
@@ -581,7 +577,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 }
                 if (previewSourceUri != null) {
                     loadDisposable.add(
-                            Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoder, uri))
+                            Single.fromCallable(() -> loadBitmap(getContext(), uri))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(Schedulers.computation())
                                     .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
@@ -610,7 +606,7 @@ public class CustomSubsamplingScaleImageView extends View {
             if (imageSource.getTile() || sRegion != null) {
                 // Load the bitmap using tile decoding.
                 loadDisposable.add(
-                        Single.fromCallable(() -> initTiles(this, getContext(), regionDecoder, uri))
+                        Single.fromCallable(() -> initTiles(this, getContext(), uri))
                                 .subscribeOn(Schedulers.computation())
                                 .filter(res -> res[0] > -1) // Remove invalid results
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -622,7 +618,7 @@ public class CustomSubsamplingScaleImageView extends View {
             } else {
                 // Load the bitmap as a single image.
                 loadDisposable.add(
-                        Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoder, uri))
+                        Single.fromCallable(() -> loadBitmap(getContext(), uri))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(Schedulers.computation())
                                 .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
@@ -672,9 +668,9 @@ public class CustomSubsamplingScaleImageView extends View {
             uri = null;
             decoderLock.writeLock().lock();
             try {
-                if (decoder != null) {
-                    decoder.recycle();
-                    decoder = null;
+                if (regionDecoder != null) {
+                    regionDecoder.recycle();
+                    regionDecoder = null;
                 }
             } finally {
                 decoderLock.writeLock().unlock();
@@ -1230,7 +1226,7 @@ public class CustomSubsamplingScaleImageView extends View {
         }
 
         // When using tiles, on first render with no tile map ready, initialise it and kick off async base image loading.
-        if (tileMap == null && decoder != null) {
+        if (tileMap == null && regionDecoder != null) {
             initialiseBaseLayer(getMaxBitmapDimensions(canvas));
         }
 
@@ -1539,11 +1535,11 @@ public class CustomSubsamplingScaleImageView extends View {
         if (fullImageSampleSize == 1 && sRegion == null && sWidth() < maxTileDimensions.x && sHeight() < maxTileDimensions.y) {
             // Whole image is required at native resolution, and is smaller than the canvas max bitmap size.
             // Use BitmapDecoder for better image support.
-            if (decoder != null) decoder.recycle();
-            decoder = null;
+            if (regionDecoder != null) regionDecoder.recycle();
+            regionDecoder = null;
 
             loadDisposable.add(
-                    Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoder, uri))
+                    Single.fromCallable(() -> loadBitmap(getContext(), uri))
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
@@ -1562,7 +1558,7 @@ public class CustomSubsamplingScaleImageView extends View {
                         Observable.fromIterable(baseGrid)
                                 .flatMap(tile -> Observable.just(tile)
                                         .observeOn(Schedulers.io())
-                                        .map(tile2 -> loadTile(this, decoder, tile2))
+                                        .map(tile2 -> loadTile(this, regionDecoder, tile2))
                                         .observeOn(Schedulers.computation())
                                         .filter(tile3 -> tile3.bitmap != null && !tile3.bitmap.isRecycled())
                                         .map(tile4 -> processTile(tile4, targetScale))
@@ -1584,7 +1580,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private void refreshRequiredResource(boolean load) {
         int sampleSize = Math.min(fullImageSampleSize, calculateInSampleSize(scale));
 
-        if (decoder == null || tileMap == null) refreshSingle(load);
+        if (regionDecoder == null || tileMap == null) refreshSingle(load);
         else refreshRequiredTiles(load, sampleSize);
     }
 
@@ -1592,7 +1588,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private void refreshSingle(boolean load) {
         if (!singleImage.loading && load) {
             loadDisposable.add(
-                    Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoder, uri))
+                    Single.fromCallable(() -> loadBitmap(getContext(), uri))
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .map(b -> processBitmap(uri, getContext(), b, this, getVirtualScale()))
@@ -1628,7 +1624,7 @@ public class CustomSubsamplingScaleImageView extends View {
                         tile.visible = true;
                         if (!tile.loading && tile.bitmap == null && load) {
                             loadDisposable.add(
-                                    Single.fromCallable(() -> loadTile(this, decoder, tile))
+                                    Single.fromCallable(() -> loadTile(this, regionDecoder, tile))
                                             .subscribeOn(Schedulers.io())
                                             .observeOn(Schedulers.computation())
                                             .filter(res -> res.bitmap != null && !res.bitmap.isRecycled())
@@ -1904,12 +1900,12 @@ public class CustomSubsamplingScaleImageView extends View {
     private int[] initTiles(
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull Context context,
-            @NonNull ImageRegionDecoder decoder,
             @NonNull Uri source) throws Exception {
         Helper.assertNonUiThread();
         String sourceUri = source.toString();
         view.debug("TilesInitTask.doInBackground");
-        Point dimensions = decoder.init(context, source);
+        regionDecoder = new SkiaImageRegionDecoder(preferredBitmapConfig);
+        Point dimensions = regionDecoder.init(context, source);
         int sWidthTile = dimensions.x;
         int sHeightTile = dimensions.y;
         int exifOrientation = view.getExifOrientation(context, sourceUri);
@@ -2014,9 +2010,10 @@ public class CustomSubsamplingScaleImageView extends View {
         invalidate();
     }
 
-    private Bitmap loadBitmap(@NonNull Context context, @NonNull ImageDecoder decoder, @NonNull Uri uri) throws Exception {
+    private Bitmap loadBitmap(@NonNull Context context, @NonNull Uri uri) throws Exception {
         Helper.assertNonUiThread();
         singleImage.loading = true;
+        ImageDecoder decoder = new SkiaImageDecoder(preferredBitmapConfig);
         return decoder.decode(context, uri);
     }
 
