@@ -43,9 +43,11 @@ Java_me_devsaki_hentoid_ai_1upscale_AiUpscaler_upscale(
         jlong engine_handle,
         jobject data_in,
         jstring out_path,
-        jobject progress) {
+        jobject progress,
+        jobject kill_switch
+) {
     if (engine_handle == 0L) return -1;
     const char *out_pathC = env->GetStringUTFChars(out_path, nullptr);
 
-    return castToUpscaleEngine(engine_handle)->exec(env, data_in, out_pathC, progress);
+    return castToUpscaleEngine(engine_handle)->exec(env, data_in, out_pathC, progress, kill_switch);
 }

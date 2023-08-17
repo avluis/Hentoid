@@ -209,7 +209,11 @@ int RealCUGAN::load(AAssetManager *assetMgr, const char *param, const char *mode
 }
 
 int
-RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage, unsigned char *progress) const {
+RealCUGAN::process(
+        const ncnn::Mat &inimage,
+        ncnn::Mat &outimage,
+        unsigned char *progress,
+        unsigned char *kill_switch) const {
     bool syncgap_needed = tilesize < std::max(inimage.w, inimage.h);
 
     if (!vkdev) {
@@ -264,6 +268,11 @@ RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage, unsigned char 
     //#pragma omp parallel for num_threads(2)
     for (int yi = 0; yi < ytiles; yi++) {
         LOGD("tiles %i/%i BEGIN", yi + 1, ytiles);
+        if (1 == kill_switch[0]) {
+            LOGD("KILLED");
+            break;
+        }
+
         const int tile_h_nopad = std::min((yi + 1) * TILE_SIZE_Y, h) - yi * TILE_SIZE_Y;
 
         int prepadding_bottom = prepadding;
@@ -327,6 +336,11 @@ RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage, unsigned char 
         }
 
         for (int xi = 0; xi < xtiles; xi++) {
+            if (1 == kill_switch[0]) {
+                LOGD("KILLED");
+                break;
+            }
+
             const int tile_w_nopad = std::min((xi + 1) * TILE_SIZE_X, w) - xi * TILE_SIZE_X;
 
             int prepadding_right = prepadding;
@@ -660,6 +674,11 @@ RealCUGAN::process(const ncnn::Mat &inimage, ncnn::Mat &outimage, unsigned char 
             float progressPc = (float) (yi * xtiles + xi) / (ytiles * xtiles) * 100;
             LOGD("%.2f%%\n", progressPc);
             progress[0] = (unsigned char) progressPc;
+        }
+
+        if (1 == kill_switch[0]) {
+            LOGD("KILLED");
+            break;
         }
 
         // download

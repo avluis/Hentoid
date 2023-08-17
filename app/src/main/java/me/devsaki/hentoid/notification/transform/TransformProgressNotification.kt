@@ -1,8 +1,12 @@
 package me.devsaki.hentoid.notification.transform
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.receiver.TransformNotificationStopReceiver
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.notification.Notification
 import java.util.Locale
@@ -24,9 +28,23 @@ class TransformProgressNotification(
             .setContentInfo(progressPc)
             .setProgress(100, (progress * 100).toInt(), 0 == maxItems)
             .setColor(ThemeHelper.getColor(context, R.color.secondary_light))
+            .addAction(
+                R.drawable.ic_cancel,
+                context.getString(R.string.stop),
+                getStopIntent(context)
+            )
             .setLocalOnly(true)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .build()
+    }
+
+    private fun getStopIntent(context: Context): PendingIntent {
+        val intent = Intent(context, TransformNotificationStopReceiver::class.java)
+        val flags =
+            if (Build.VERSION.SDK_INT > 30)
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            else PendingIntent.FLAG_CANCEL_CURRENT
+        return PendingIntent.getBroadcast(context, 0, intent, flags)
     }
 }

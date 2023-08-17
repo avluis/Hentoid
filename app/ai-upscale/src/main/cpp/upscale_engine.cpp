@@ -93,7 +93,7 @@ void UpscaleEngine::clear() {
 }
 
 int
-UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobject progress) {
+UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobject progress, jobject kill_switch) {
     std::vector<int> tilesize;
     int syncgap = 3;
     // Forced model values
@@ -246,11 +246,12 @@ UpscaleEngine::exec(JNIEnv *env, jobject file_data, const char *out_path, jobjec
     // realcugan proc
     LOGD("PROCESSING");
     auto *progress_c = (unsigned char *) env->GetDirectBufferAddress(progress);
+    auto *kill_switch_c = (unsigned char *) env->GetDirectBufferAddress(kill_switch);
     for (int i = 0; i < use_gpu_count; i++) {
         ncnn::Mat outimage = ncnn::Mat(inimage.w * scale, inimage.h * scale,
                                        (size_t) inimage.elemsize,
                                        (int) inimage.elemsize);
-        realcugan[i]->process(inimage, outimage, progress_c);
+        realcugan[i]->process(inimage, outimage, progress_c, kill_switch_c);
 
         // save image
         LOGD("SAVING");

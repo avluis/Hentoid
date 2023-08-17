@@ -26,7 +26,8 @@ public:
 
 #endif
 
-    int process(const ncnn::Mat &inimage, ncnn::Mat &outimage, unsigned char *progress) const;
+    int process(const ncnn::Mat &inimage, ncnn::Mat &outimage, unsigned char *progress,
+                unsigned char *kill_switch) const;
 
     int process_cpu(const ncnn::Mat &inimage, ncnn::Mat &outimage) const;
 

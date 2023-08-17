@@ -613,6 +613,8 @@
 
         <receiver android:name=".receiver.DuplicateNotificationStopReceiver" />
 
+        <receiver android:name=".receiver.TransformNotificationStopReceiver" />
+
         <receiver android:name=".receiver.AppUpdateDownloadReceiver" />
 
         <!-- Providers -->

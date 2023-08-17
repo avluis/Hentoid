@@ -13,7 +13,7 @@ public:
 
     void clear();
 
-    int exec(JNIEnv *env, jobject file_data, const char *out_path, jobject progress);
+    int exec(JNIEnv *env, jobject file_data, const char *out_path, jobject progress, jobject kill_switch);
 
 private:
     std::vector<int> gpuid;

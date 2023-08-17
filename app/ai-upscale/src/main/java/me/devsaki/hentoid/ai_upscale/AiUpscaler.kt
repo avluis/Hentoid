@@ -25,7 +25,8 @@ class AiUpscaler {
         engineHandle: Long,
         dataIn: ByteBuffer,
         outPath: String,
-        progress: ByteBuffer
+        progress: ByteBuffer,
+        killSwitch: ByteBuffer
     ): Int
 
     private external fun clear(upscalerHandle: Long)
@@ -42,9 +43,10 @@ class AiUpscaler {
     fun upscale(
         dataIn: ByteBuffer,
         outPath: String,
-        progress: ByteBuffer
+        progress: ByteBuffer,
+        killSwitch : ByteBuffer
     ): Int {
-        return upscale(upscalerHandle, dataIn, outPath, progress)
+        return upscale(upscalerHandle, dataIn, outPath, progress, killSwitch)
     }
 
     fun cleanup() {

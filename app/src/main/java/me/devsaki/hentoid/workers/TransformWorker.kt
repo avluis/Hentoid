@@ -183,6 +183,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
             targetData = ImageTransform.transform(rawData, params)
         }
+        if (isStopped) return
         if (targetData == rawData) return // Unchanged picture
 
         // Save transformed image data back to original image file
@@ -224,15 +225,17 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return rawData
         val outputFile = File(cacheDir, "upscale.png")
         val progress = ByteBuffer.allocateDirect(1)
+        val killSwitch = ByteBuffer.allocateDirect(1)
         val dataIn = ByteBuffer.allocateDirect(rawData.size)
         dataIn.put(rawData)
 
         upscaler?.let {
             try {
+                killSwitch.put(0, 0)
                 CoroutineScope(Dispatchers.Default).launch {
                     val res = withContext(Dispatchers.Default) {
                         it.upscale(
-                            dataIn, outputFile.absolutePath, progress
+                            dataIn, outputFile.absolutePath, progress, killSwitch
                         )
                     }
                     // Fail => exit immediately
@@ -245,13 +248,18 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 while (iterations < 180 / intervalSeconds) { // max 3 minutes
                     Helper.pause(intervalSeconds * 1000)
 
+                    if (isStopped) {
+                        Timber.d("Kill order sent")
+                        killSwitch.put(0, 1)
+                        return rawData
+                    }
+
                     val p = progress.get(0)
-                    Timber.i("progress : %s%%", p)
                     globalProgress.setProgress(imgId, p / 100f)
                     notifyProcessProgress()
 
-                    if (p >= 100) break
                     iterations++
+                    if (p >= 100) break
                 }
             } finally {
                 // can't recycle ByteBuffer dataIn
