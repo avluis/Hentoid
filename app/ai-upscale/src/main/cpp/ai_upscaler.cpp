@@ -32,6 +32,7 @@ Java_me_devsaki_hentoid_ai_1upscale_AiUpscaler_clear(JNIEnv * /* env */,
                                                      jobject /* this */,
                                                      jlong engine_handle) {
     if (engine_handle == 0L) return;
+    castToUpscaleEngine(engine_handle)->clear();
     delete castToUpscaleEngine(engine_handle);
 }
 
