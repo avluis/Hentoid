@@ -1,4 +1,5 @@
 // realcugan implemented with ncnn library
+// Credits go to https://github.com/tumuyan/RealSR-NCNN-Android and https://github.com/nihui/realcugan-ncnn-vulkan
 // ./realcugan-ncnn -i input.png -o output.png  -m models-nose -s 2  -n 0
 
 #include <cstdio>
