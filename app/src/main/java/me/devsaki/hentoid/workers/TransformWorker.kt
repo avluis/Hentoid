@@ -23,6 +23,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.notification.transform.TransformCompleteNotification
 import me.devsaki.hentoid.notification.transform.TransformProgressNotification
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.ProgressHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
@@ -43,6 +44,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     private var totalItems = 0
     private var nbOK = 0
     private var nbKO = 0
+    private lateinit var globalProgress: ProgressHelper
 
     init {
         dao = ObjectBoxDAO(context)
@@ -50,7 +52,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
 
     override fun getStartNotification(): Notification {
-        return TransformProgressNotification(0, 0)
+        return TransformProgressNotification(0, 0, 0f)
     }
 
     override fun onInterrupt() {
@@ -98,6 +100,9 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             if (isStopped) return
         }
 
+        globalProgress = ProgressHelper(totalItems)
+        notifyProcessProgress()
+
         // Process images
         contentIds.forEach {
             val content = dao.selectContent(it)
@@ -131,7 +136,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             dao.insertContentCore(content)
         } else {
             nbKO += images.size
-            notifyProcessProgress()
         }
     }
 
@@ -163,49 +167,13 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val rawData = FileHelper.getInputStream(applicationContext, sourceFile).use {
             return@use it.readBytes()
         }
+        val imageId = img.fileUri
         val metadataOpts = BitmapFactory.Options()
         metadataOpts.inJustDecodeBounds = true
 
         val targetData: ByteArray
-        if (upscaler != null) {
-            val cacheDir =
-                FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return
-            val outputFile = File(cacheDir, "upscale.png")
-            val progress = ByteBuffer.allocateDirect(1)
-            val dataIn = ByteBuffer.allocateDirect(rawData.size)
-            dataIn.put(rawData)
-
-            upscaler?.let {
-                try {
-                    CoroutineScope(Dispatchers.Default).launch {
-                        val res = withContext(Dispatchers.Default) {
-                            it.upscale(
-                                dataIn, outputFile.absolutePath, progress
-                            )
-                        }
-                        // Fail => exit immediately
-                        if (res != 0) progress.put(0, 100)
-                    }
-
-                    // Poll while processing
-                    val intervalSeconds = 3
-                    var iterations = 0
-                    while (iterations < 180 / intervalSeconds) { // max 3 minutes
-                        Helper.pause(intervalSeconds * 1000)
-                        val p = progress.get(0)
-                        // TODO use that to update notification progress to a finer degree
-                        Timber.i("progress : %s%%", p)
-                        if (p >= 100) break
-                        iterations++
-                    }
-                } finally {
-                    // can't recycle ByteBuffer dataIn
-                }
-            }
-
-            FileHelper.getInputStream(applicationContext, outputFile.toUri()).use { input ->
-                targetData = input.readBytes()
-            }
+        if (upscaler != null) { // AI upscale
+            targetData = upscale(imageId, rawData)
         } else { // regular resize
             BitmapFactory.decodeByteArray(rawData, 0, rawData.size, metadataOpts)
             val isManhwa = metadataOpts.outHeight * 1.0 / metadataOpts.outWidth > 3
@@ -241,22 +209,76 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             img.size = targetData.size.toLong()
             img.isTransformed = true
             img.mimeType = targetMime
+
             nextOK()
-        } else nextKO()
+            globalProgress.setProgress(imageId, 1f)
+            notifyProcessProgress()
+        } else {
+            nextKO()
+            notifyProcessProgress()
+        }
+    }
+
+    private fun upscale(imgId: String, rawData: ByteArray): ByteArray {
+        val cacheDir =
+            FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return rawData
+        val outputFile = File(cacheDir, "upscale.png")
+        val progress = ByteBuffer.allocateDirect(1)
+        val dataIn = ByteBuffer.allocateDirect(rawData.size)
+        dataIn.put(rawData)
+
+        upscaler?.let {
+            try {
+                CoroutineScope(Dispatchers.Default).launch {
+                    val res = withContext(Dispatchers.Default) {
+                        it.upscale(
+                            dataIn, outputFile.absolutePath, progress
+                        )
+                    }
+                    // Fail => exit immediately
+                    if (res != 0) progress.put(0, 100)
+                }
+
+                // Poll while processing
+                val intervalSeconds = 3
+                var iterations = 0
+                while (iterations < 180 / intervalSeconds) { // max 3 minutes
+                    Helper.pause(intervalSeconds * 1000)
+
+                    val p = progress.get(0)
+                    Timber.i("progress : %s%%", p)
+                    globalProgress.setProgress(imgId, p / 100f)
+                    notifyProcessProgress()
+
+                    if (p >= 100) break
+                    iterations++
+                }
+            } finally {
+                // can't recycle ByteBuffer dataIn
+            }
+        }
+
+        FileHelper.getInputStream(applicationContext, outputFile.toUri()).use { input ->
+            return input.readBytes()
+        }
     }
 
     private fun nextOK() {
         nbOK++
-        notifyProcessProgress()
     }
 
     private fun nextKO() {
         nbKO++
-        notifyProcessProgress()
     }
 
     private fun notifyProcessProgress() {
-        notificationManager.notify(TransformProgressNotification(nbOK + nbKO, totalItems))
+        notificationManager.notify(
+            TransformProgressNotification(
+                nbOK + nbKO,
+                totalItems,
+                globalProgress.getGlobalProgress()
+            )
+        )
     }
 
     private fun notifyProcessEnd() {
