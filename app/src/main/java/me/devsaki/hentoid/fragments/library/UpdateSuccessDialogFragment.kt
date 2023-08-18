@@ -55,12 +55,17 @@ class UpdateSuccessDialogFragment : DialogFragment() {
 
     private fun getReleases() {
         lifecycleScope.launch {
+            var response: GithubRelease? = null
             withContext(Dispatchers.IO) {
                 try {
-                    onCheckSuccess(GithubServer.api.latestRelease.execute().body()!!)
+                    response = GithubServer.api.latestRelease.execute().body()
                 } catch (e: Exception) {
                     onCheckError(e)
                 }
+            }
+            response.let {
+                if (null == it) Timber.w("Error fetching GitHub latest release data (empty response)")
+                else onCheckSuccess(it)
             }
         }
     }
