@@ -554,12 +554,10 @@ public class ObjectBoxDAO implements CollectionDAO {
                     g.coverContent.setTarget(c);
                 }
             } else { // Reselect items; only take items from the library to avoid counting those who've been sent back to the Queue
-                ContentSearchManager.ContentSearchBundle searchParams = new ContentSearchManager.ContentSearchBundle();
-                searchParams.setGroupId(g.id);
-                List<Long> groupContent = searchBookIdsUniversal(searchParams);
+                long[] groupContent = db.selectContentIdsByGroup(g.id); // Specific query to get there fast
                 List<GroupItem> newItems = new ArrayList<>();
-                for (int i = 0; i < groupContent.size(); i++) {
-                    newItems.add(new GroupItem(groupContent.get(i), g, i));
+                for (int i = 0; i < groupContent.length; i++) {
+                    newItems.add(new GroupItem(groupContent[i], g, i));
                 }
                 g.setItems(newItems);
                 if (!newItems.isEmpty()) {

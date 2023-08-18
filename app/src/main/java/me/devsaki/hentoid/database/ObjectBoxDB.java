@@ -1769,6 +1769,12 @@ public class ObjectBoxDB {
         return allContent;
     }
 
+    long[] selectContentIdsByGroup(long groupId) {
+        QueryBuilder<Content> customContentQB = store.boxFor(Content.class).query().in(Content_.status, libraryStatus);
+        customContentQB.link(Content_.groupItems).link(GroupItem_.group).equal(Group_.id, groupId);
+        return DBHelper.safeFindIds(customContentQB);
+    }
+
     long[] selectContentIdsWithUpdatableJson() {
         QueryCondition<Content> contentCondition = Content_.jsonUri.endsWith(".json").and(Content_.downloadCompletionDate.greater(0));
         QueryBuilder<Content> allContentQ = store.boxFor(Content.class).query(contentCondition).filter(c -> Math.abs(c.getDownloadCompletionDate() - c.getDownloadDate()) > 10);
