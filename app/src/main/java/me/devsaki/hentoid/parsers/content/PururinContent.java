@@ -48,7 +48,9 @@ public class PururinContent extends BaseContentParser {
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
 
         content.setUrl(url);
-        content.setCoverImageUrl(HttpHelper.getHttpProtocol(url) + ":" + coverUrl);
+        if (!coverUrl.startsWith("http"))
+            coverUrl += HttpHelper.getHttpProtocol(url) + ":" + coverUrl;
+        content.setCoverImageUrl(coverUrl);
         content.setTitle(!title.isEmpty() ? StringHelper.removeNonPrintableChars(title.get(0)) : "");
 
         if (updateImages && pages != null) {
