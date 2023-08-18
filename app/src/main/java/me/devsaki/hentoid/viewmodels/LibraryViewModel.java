@@ -301,28 +301,7 @@ public class LibraryViewModel extends AndroidViewModel {
         groupSearchManager.setArtistGroupVisibility(Preferences.getArtistGroupVisibility());
 
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-
-        // Don't count Content that has been sent back to the Queue to download extra content / to redownload from scratch
-        // => Additional filter to remove unwanted Content
-        LiveData<List<Group>> rawData = groupSearchManager.getGroups();
-        MediatorLiveData<List<Group>> mediator = new MediatorLiveData<>();
-        mediator.addSource(rawData, groups -> {
-            List<Group> newGroups = new ArrayList<>();
-            ContentSearchManager.ContentSearchBundle searchParams = new ContentSearchManager.ContentSearchBundle();
-            for (Group g : groups) {
-                List<GroupItem> newItems = new ArrayList<>();
-                searchParams.setGroupId(g.id);
-                List<Long> groupContent = dao.searchBookIdsUniversal(searchParams);
-                for (int i = 0; i < groupContent.size(); i++) {
-                    newItems.add(new GroupItem(groupContent.get(i), g, i));
-                }
-                g.setItems(newItems);
-                newGroups.add(g);
-            }
-            mediator.setValue(newGroups);
-        });
-        currentGroupsSource = mediator;
-
+        currentGroupsSource = groupSearchManager.getGroups();
         groups.addSource(currentGroupsSource, groups::setValue);
 
         if (currentGroupsTotalSource != null)
@@ -339,7 +318,6 @@ public class LibraryViewModel extends AndroidViewModel {
         isDynamicGroupingAvailable.postValue(dao.countGroupsFor(Grouping.DYNAMIC) > 0);
     }
 
-
     /**
      * Toggle the completed filter
      */
@@ -350,7 +328,7 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
-     * Toggle the completed filter
+     * Toggle the "not completed" filter
      */
     public void toggleNotCompletedFilter() {
         contentSearchManager.setFilterBookNotCompleted(!contentSearchManager.isFilterBookNotCompleted());

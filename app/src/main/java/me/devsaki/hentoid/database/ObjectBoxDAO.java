@@ -460,6 +460,9 @@ public class ObjectBoxDAO implements CollectionDAO {
         LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc, subType, groupFavouritesOnly, filterRating));
         LiveData<List<Group>> workingData = livedata;
 
+
+        // === SPECIFIC DATA
+
         // Download date grouping : groups are empty as they are dynamically populated
         //   -> Manually add items inside each of them
         //   -> Manually set a cover for each of them
@@ -484,16 +487,19 @@ public class ObjectBoxDAO implements CollectionDAO {
             workingData = livedata2;
         }
 
-        // Custom grouping : "Ungrouped" special group is dynamically populated
+        // Custom "ungrouped" special group is dynamically populated
         // -> Manually add items
         if (grouping == Grouping.CUSTOM.getId()) {
             MediatorLiveData<List<Group>> livedata2 = new MediatorLiveData<>();
             livedata2.addSource(livedata, groups -> {
-                List<Group> enrichedWithItems = Stream.of(groups).map(this::enrichUngroupedWithItems).toList();
+                List<Group> enrichedWithItems = Stream.of(groups).map(this::enrichCustomGroups).toList();
                 livedata2.setValue(enrichedWithItems);
             });
             workingData = livedata2;
         }
+
+
+        // === ORDERING
 
         // Order by number of children (ObjectBox can't do that natively)
         if (Preferences.Constant.ORDER_FIELD_CHILDREN == orderField) {
@@ -538,13 +544,28 @@ public class ObjectBoxDAO implements CollectionDAO {
         return g;
     }
 
-    private Group enrichUngroupedWithItems(@NonNull final Group g) {
-        if (g.grouping.equals(Grouping.CUSTOM) && 1 == g.subtype) {
-            List<GroupItem> items = Stream.of(db.selectUngroupedContentIds()).map(id -> new GroupItem(id, g, -1)).toList();
-            g.setItems(items);
-            if (!items.isEmpty()) {
-                Content c = selectContent(items.get(0).getContentId());
-                g.coverContent.setTarget(c);
+    private Group enrichCustomGroups(@NonNull final Group g) {
+        if (g.grouping.equals(Grouping.CUSTOM)) {
+            if (g.isUngroupedGroup()) { // Populate Ungrouped custom group
+                List<GroupItem> items = Stream.of(db.selectUngroupedContentIds()).map(id -> new GroupItem(id, g, -1)).toList();
+                g.setItems(items);
+                if (!items.isEmpty()) {
+                    Content c = selectContent(items.get(0).getContentId());
+                    g.coverContent.setTarget(c);
+                }
+            } else { // Reselect items; only take items from the library to avoid counting those who've been sent back to the Queue
+                ContentSearchManager.ContentSearchBundle searchParams = new ContentSearchManager.ContentSearchBundle();
+                searchParams.setGroupId(g.id);
+                List<Long> groupContent = searchBookIdsUniversal(searchParams);
+                List<GroupItem> newItems = new ArrayList<>();
+                for (int i = 0; i < groupContent.size(); i++) {
+                    newItems.add(new GroupItem(groupContent.get(i), g, i));
+                }
+                g.setItems(newItems);
+                if (!newItems.isEmpty()) {
+                    Content c = selectContent(newItems.get(0).getContentId());
+                    g.coverContent.setTarget(c);
+                }
             }
         }
         return g;

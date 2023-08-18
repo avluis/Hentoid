@@ -90,6 +90,10 @@ public class Group {
         return this;
     }
 
+    public boolean isUngroupedGroup() {
+        return (Grouping.CUSTOM == grouping && 1 == subtype);
+    }
+
     public int getOrder() {
         return order;
     }
