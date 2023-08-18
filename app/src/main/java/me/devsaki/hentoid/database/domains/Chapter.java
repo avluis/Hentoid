@@ -13,6 +13,7 @@ import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
+import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
@@ -118,6 +119,10 @@ public class Chapter {
     @Nullable
     public ToMany<ImageFile> getImageFiles() {
         return imageFiles;
+    }
+
+    public List<ImageFile> getImageList() {
+        return (imageFiles != null && !DBHelper.isDetached(this)) ? imageFiles : Collections.emptyList();
     }
 
     public List<ImageFile> getReadableImageFiles() {

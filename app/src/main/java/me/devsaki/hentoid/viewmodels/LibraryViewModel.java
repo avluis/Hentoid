@@ -1226,7 +1226,7 @@ public class LibraryViewModel extends AndroidViewModel {
             throw new ContentNotProcessedException(content, "No images detected");
 
         int nbProcessedPics = 0;
-        int nbImages = (int) Stream.of(chapters).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
+        int nbImages = (int) Stream.of(chapters).flatMap(c -> Stream.of(c.getImageList())).filter(ImageFile::isReadable).count();
         for (Chapter chap : chapters) {
             Content splitContent = createContentFromChapter(content, chap);
 
