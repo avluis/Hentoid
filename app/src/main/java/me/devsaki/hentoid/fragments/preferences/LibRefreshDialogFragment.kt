@@ -23,6 +23,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsRefreshBinding
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
 import me.devsaki.hentoid.enums.StorageLocation
+import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.util.ImportHelper.ImportOptions
@@ -491,7 +492,16 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
                     PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
                         importStep4Check.visibility = View.VISIBLE
+
                         isServiceGracefulClose = true
+                        // Tell library screens to go back to top
+                        EventBus.getDefault().post(
+                            CommunicationEvent(
+                                CommunicationEvent.EV_SCROLL_TOP,
+                                CommunicationEvent.RC_ALL,
+                                ""
+                            )
+                        )
                         dismissAllowingStateLoss()
                     }
                 }

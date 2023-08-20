@@ -6,9 +6,11 @@ import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_SCROLL_TOP;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_EDIT_MODE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_ALL;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
@@ -65,6 +67,7 @@ import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
+import com.mikepenz.fastadapter.paged.ExperimentalPagedSupport;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
@@ -920,7 +923,7 @@ public class LibraryContentFragment extends Fragment implements
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActivityEvent(CommunicationEvent event) {
-        if (event.getRecipient() != RC_CONTENTS) return;
+        if (event.getRecipient() != RC_CONTENTS && event.getRecipient() != RC_ALL) return;
         switch (event.getType()) {
             case EV_UPDATE_TOOLBAR:
                 addCustomBackControl();
@@ -940,6 +943,10 @@ public class LibraryContentFragment extends Fragment implements
                 break;
             case EV_UPDATE_EDIT_MODE:
                 setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
+                break;
+            case EV_SCROLL_TOP:
+                topItemPosition = 0;
+                llm.scrollToPositionWithOffset(0, 0);
                 break;
             default:
                 // No default behaviour
@@ -1338,6 +1345,7 @@ public class LibraryContentFragment extends Fragment implements
      *
      * @param result Current library according to active filters
      */
+    @OptIn(markerClass = ExperimentalPagedSupport.class)
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">> Library changed ! Size=%s enabled=%s", result.size(), enabled);
         if (!enabled && !Preferences.getGroupingDisplay().equals(Grouping.FLAT)) return;

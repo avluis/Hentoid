@@ -12,6 +12,7 @@ public class CommunicationEvent {
     public static final int EV_DISABLE = 7;
     public static final int EV_BROADCAST = 8;
     public static final int EV_UPDATE_EDIT_MODE = 9;
+    public static final int EV_SCROLL_TOP = 10;
 
     public static final int RC_ALL = 0;
     public static final int RC_GROUPS = 1;

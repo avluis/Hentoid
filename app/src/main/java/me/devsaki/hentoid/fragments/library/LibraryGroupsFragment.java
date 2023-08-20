@@ -3,8 +3,10 @@ package me.devsaki.hentoid.fragments.library;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_SCROLL_TOP;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_ALL;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 
 import android.annotation.SuppressLint;
@@ -131,7 +133,7 @@ public class LibraryGroupsFragment extends Fragment implements
     private boolean enabled = false;
 
 
-    public static final DiffCallback<GroupDisplayItem> GROUPITEM_DIFF_CALLBACK = new DiffCallback<GroupDisplayItem>() {
+    public static final DiffCallback<GroupDisplayItem> GROUPITEM_DIFF_CALLBACK = new DiffCallback<>() {
         @Override
         public boolean areItemsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
             return oldItem.getIdentifier() == newItem.getIdentifier();
@@ -522,7 +524,7 @@ public class LibraryGroupsFragment extends Fragment implements
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActivityEvent(CommunicationEvent event) {
-        if (event.getRecipient() != RC_GROUPS) return;
+        if (event.getRecipient() != RC_GROUPS && event.getRecipient() != RC_ALL) return;
         switch (event.getType()) {
             case EV_UPDATE_TOOLBAR:
                 addCustomBackControl();
@@ -536,6 +538,9 @@ public class LibraryGroupsFragment extends Fragment implements
                 break;
             case EV_DISABLE:
                 onDisable();
+                break;
+            case EV_SCROLL_TOP:
+                llm.scrollToPositionWithOffset(0, 0);
                 break;
             default:
                 // No default behaviour
