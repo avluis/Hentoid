@@ -435,7 +435,6 @@
         <item quantity="many"><x:g id="count" example="5">%d</x:g> книг успішно заархівовані</item>
     </plurals>
     <string name="notif_archive_fail">Архівація не вдалася</string>
-    <string name="notif_archive_fail_details">Не вдалося архівувати принаймні одну книгу</string>
     <plurals name="archive_success">
         <item quantity="one"><x:g id="count" example="1">%d</x:g> книга заархівована в Завантаженнях</item>
         <item quantity="few"><x:g id="count" example="2">%d</x:g> книги заархівовані в Завантаженнях</item>

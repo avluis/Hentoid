@@ -455,6 +455,7 @@
     <string name="redownload_limit">Cannot redownload more than 1000 books at once</string>
     <string name="stream_limit">Cannot stream more than 1000 books at once</string>
     <string name="transform_limit">Cannot transform more than 1000 books at once</string>
+    <string name="archive_limit">Cannot archive more than 1000 books at once</string>
     <string name="new_group_name">Name of the new group\?</string>
     <string name="group_edit_name">Edit group name</string>
     <string name="book_edit_title">Edit book title</string>
@@ -478,7 +479,10 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> books archived successfully</item>
     </plurals>
     <string name="notif_archive_fail">Archival failed</string>
-    <string name="notif_archive_fail_details">At least one book failed to be archived</string>
+    <plurals name="notif_archive_fail_details">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> book failed to be archived</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> books failed to be archived</item>
+    </plurals>
     <plurals name="archive_success">
         <item quantity="one"><x:g example="1" id="count">%d</x:g> book archived in your Download folder</item>
         <item quantity="other"><x:g example="2" id="count">%d</x:g> books archived in your Download folder</item>
@@ -958,7 +962,8 @@
     <!-- Archive dialog -->
     <string name="target_folder">Target folder</string>
     <string name="archive_format">Archive format</string>
-    <string name="device_downloads_folder">Device\'s Downloads folder</string>
+    <string name="folder_device_downloads">Device\'s Downloads folder</string>
+    <string name="folder_other">Choose folder…</string>
     <string name="archive_overwrite">Overwrite existing archives</string>
     <string name="archive_delete_after_archiving">Delete books after successful archiving</string>
     <plurals name="create_archive">

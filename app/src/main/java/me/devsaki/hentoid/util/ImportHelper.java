@@ -385,7 +385,7 @@ public class ImportHelper {
      * @param treeUri  Uri to add credentials for
      * @param location Locations to keep credentials for
      */
-    private static void persistLocationCredentials(@NonNull final Context context,
+    public static void persistLocationCredentials(@NonNull final Context context,
                                                    @NonNull final Uri treeUri,
                                                    List<StorageLocation> location) {
         List<Uri> uri = Stream.of(location)

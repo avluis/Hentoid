@@ -534,7 +534,6 @@
         <item quantity="other">%d書籍が正常にアーカイブされました</item>
     </plurals>
     <string name="notif_archive_fail">アーカイブは失敗しました</string>
-    <string name="notif_archive_fail_details">少なくとも1つの本がアーカイブされなかった</string>
     <string name="notif_archive_title">コンテンツのアーカイブ</string>
     <string name="notif_delete_complete">削除が完了しました</string>
     <plurals name="notif_delete_complete_details">

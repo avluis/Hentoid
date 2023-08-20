@@ -29,8 +29,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -72,7 +70,6 @@ import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.WebkitPackageHelper;
@@ -830,59 +827,6 @@ public class LibraryViewModel extends AndroidViewModel {
 
         workObservers.add(new ImmutablePair<>(request.getId(), workInfoObserver));
         workManager.getWorkInfoByIdLiveData(request.getId()).observeForever(workInfoObserver);
-    }
-
-    public void archiveContents(@NonNull final List<Content> contentList, Consumer<
-            Content> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
-        Timber.d("Building file list for %s books", contentList.size());
-
-        compositeDisposable.add(
-                Observable.fromIterable(contentList)
-                        .observeOn(Schedulers.io())
-                        .map(this::doArchiveContent)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                onProgress::accept,
-                                onError::accept,
-                                onSuccess::run
-                        )
-        );
-    }
-
-    /**
-     * Archive the given Content into a ZIP file located into the device's 'Download' folder
-     *
-     * @param content Content to be archived
-     */
-    public Content doArchiveContent(@NonNull final Content content) throws IOException {
-        Helper.assertNonUiThread();
-        Timber.i(">> archive %s", content.getTitle());
-        DocumentFile bookFolder = FileHelper.getDocumentFromTreeUriString(getApplication(), content.getStorageUri());
-        if (null == bookFolder) return null;
-
-        List<DocumentFile> files = FileHelper.listFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive
-        if (!files.isEmpty()) {
-            // Build destination file
-            ImmutablePair<String, String> bookFolderName = ContentHelper.formatBookFolderName(content);
-            // First try creating the file with the new naming...
-            String destName = bookFolderName.left + ".zip";
-            OutputStream destFile = null;
-            try {
-                try {
-                    destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
-                } catch (
-                        IOException e) { // ...if it fails, try creating the file with the old sanitized naming
-                    destName = bookFolderName.right + ".zip";
-                    destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
-                }
-                Timber.d("Destination file: %s", destName);
-                ArchiveHelper.INSTANCE.zipFiles(getApplication(), files, destFile);
-            } finally {
-                if (destFile != null) destFile.close();
-            }
-            return content;
-        }
-        return null;
     }
 
     public void setGroupCoverContent(long groupId, @NonNull Content coverContent) {

@@ -270,24 +270,6 @@ object ArchiveHelper {
 
     // ================= ZIP FILE CREATION
     /**
-     * Archive the given files into the given output stream using the ZIP format
-     *
-     * @param context Context to be used
-     * @param files   List of the files to be archived
-     * @param out     Output stream to write to
-     * @throws IOException If something horrible happens during I/O
-     */
-    @Throws(IOException::class)
-    fun zipFiles(context: Context, files: List<DocumentFile>, out: OutputStream) {
-        Helper.assertNonUiThread()
-        ZipOutputStream(BufferedOutputStream(out)).use { zipOutputStream ->
-            val data = ByteArray(BUFFER)
-            for (file in files) addFile(context, file, zipOutputStream, data)
-            out.flush()
-        }
-    }
-
-    /**
      * Add the given file to the given ZipOutputStream
      *
      * @param context Context to be used
@@ -313,6 +295,32 @@ object ArchiveHelper {
                     stream.write(buffer, 0, count)
                 }
             }
+        }
+    }
+
+    /**
+     * Archive the given files into the given output stream using the ZIP format
+     *
+     * @param context Context to be used
+     * @param files   List of the files to be archived
+     * @param out     Output stream to write to
+     * @throws IOException If something horrible happens during I/O
+     */
+    @Throws(IOException::class)
+    fun zipFiles(
+        context: Context,
+        files: List<DocumentFile>,
+        out: OutputStream,
+        progress: ((Float) -> Unit)? = null
+    ) {
+        Helper.assertNonUiThread()
+        ZipOutputStream(BufferedOutputStream(out)).use { zipOutputStream ->
+            val data = ByteArray(BUFFER)
+            files.forEachIndexed { index, file ->
+                addFile(context, file, zipOutputStream, data)
+                progress?.invoke(index * 1f / files.size)
+            }
+            out.flush()
         }
     }
 

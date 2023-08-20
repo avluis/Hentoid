@@ -77,15 +77,12 @@ import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.fragments.library.LibraryArchiveDialogFragment;
 import me.devsaki.hentoid.fragments.library.LibraryBottomGroupsFragment;
 import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment;
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment;
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment;
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment;
-import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification;
-import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel;
-import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
-import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -1041,6 +1038,17 @@ public class LibraryActivity extends BaseActivity {
      * @param items Items to be archived if the answer is yes
      */
     public void askArchiveItems(@NonNull final List<Content> items, @NonNull final SelectExtension<?> selectExtension) {
+        if (items.size() > 1000) {
+            Snackbar.make(viewPager, R.string.archive_limit, LENGTH_LONG).show();
+            return;
+        }
+        if (0 == items.size()) {
+            Snackbar.make(viewPager, R.string.invalid_selection_generic, LENGTH_LONG).show();
+            return;
+        }
+        selectExtension.deselect(selectExtension.getSelections());
+        LibraryArchiveDialogFragment.Companion.invoke(this, items);
+        /*
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         String title = getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size(), items.size());
         builder.setMessage(title).setPositiveButton(R.string.yes, (dialog, which) -> {
@@ -1053,27 +1061,7 @@ public class LibraryActivity extends BaseActivity {
             archiveNotificationManager.notify(new ArchiveStartNotification());
             viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess, this::onContentArchiveError);
         }).setNegativeButton(R.string.no, (dialog, which) -> selectExtension.deselect(selectExtension.getSelections())).create().show();
-    }
-
-    private void onContentArchiveProgress(Content content) {
-        archiveProgress++;
-        archiveNotificationManager.notify(new ArchiveProgressNotification(content.getTitle(), archiveProgress, archiveMax));
-    }
-
-    /**
-     * Callback for the success of the "archive item" action
-     */
-    private void onContentArchiveSuccess() {
-        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, false));
-        Snackbar.make(viewPager, getResources().getQuantityString(R.plurals.archive_success, archiveProgress, archiveProgress), LENGTH_LONG).setAction(R.string.open_folder, v -> FileHelper.openFile(this, FileHelper.getDownloadsFolder())).show();
-    }
-
-    /**
-     * Callback for the success of the "archive item" action
-     */
-    private void onContentArchiveError(Throwable e) {
-        Timber.e(e);
-        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, true));
+         */
     }
 
     private void signalCurrentFragment(int eventType, @Nullable String message) {

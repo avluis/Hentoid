@@ -615,6 +615,8 @@
 
         <receiver android:name=".receiver.TransformNotificationStopReceiver" />
 
+        <receiver android:name=".receiver.ArchiveNotificationStopReceiver" />
+
         <receiver android:name=".receiver.AppUpdateDownloadReceiver" />
 
         <!-- Providers -->

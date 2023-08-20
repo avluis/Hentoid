@@ -419,7 +419,6 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g>개 작품이 성공적으로 보관되었습니다</item>
     </plurals>
     <string name="notif_archive_fail">보관 실패</string>
-    <string name="notif_archive_fail_details">하나 이상의 작품을 보관 실패했습니다</string>
     <plurals name="archive_success">
         <item quantity="one"><x:g example="1" id="count">%d</x:g>개 작품이 다운로드 폴더에 보관되었습니다</item>
         <item quantity="other"><x:g example="2" id="count">%d</x:g>개 작품이 다운로드 폴더에 보관되었습니다</item>

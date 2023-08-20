@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/dialog_width"
+    android:layout_height="match_parent"
+    android:layout_gravity="center|center_vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/container"
+        android:layout_width="@dimen/dialog_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|center_vertical"
+        android:clipToPadding="false"
+        android:padding="16dp">
+
+        <me.devsaki.hentoid.views.ListPickerView
+            android:id="@+id/target_folder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:entries="@array/target_folder_entries"
+            app:layout_constraintTop_toTopOf="parent"
+            app:title="@string/target_folder" />
+
+        <me.devsaki.hentoid.views.ListPickerView
+            android:id="@+id/target_format"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:entries="@array/archive_format_entries"
+            app:layout_constraintTop_toBottomOf="@id/target_folder"
+            app:title="@string/archive_format" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/overwrite_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:paddingStart="8dp"
+            android:text="@string/archive_overwrite"
+            app:layout_constraintTop_toBottomOf="@id/target_format"
+            tools:layout_editor_absoluteX="0dp" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/delete_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:text="@string/archive_delete_after_archiving"
+            app:layout_constraintTop_toBottomOf="@id/overwrite_switch"
+            tools:layout_editor_absoluteX="0dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/action"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="?android:attr/actionBarSize"
+            android:layout_marginTop="8dp"
+            android:text="@string/create_generic"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_body_1"
+            app:icon="@drawable/ic_archive"
+            app:iconSize="24dp"
+            app:iconTint="?colorSecondary"
+            app:layout_constraintTop_toBottomOf="@id/delete_switch" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

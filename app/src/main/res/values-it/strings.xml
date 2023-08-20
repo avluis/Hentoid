@@ -535,7 +535,6 @@
         <item quantity="other">%d libri archiviati correttamente</item>
     </plurals>
     <string name="notif_archive_fail">Archiviazione fallita</string>
-    <string name="notif_archive_fail_details">Almeno un libro non ? riuscito ad essere archiviato</string>
     <string name="notif_archive_title">Archiviazione dei contenuti</string>
     <string name="notif_delete_complete">Eliminazione completata</string>
     <plurals name="notif_delete_complete_details">

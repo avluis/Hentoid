@@ -24,6 +24,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.json.core.JsonSiteSettings
+import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel
 import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel
 import me.devsaki.hentoid.notification.startup.StartupNotificationChannel
@@ -172,6 +173,7 @@ object AppStartup {
         DeleteNotificationChannel.init(context)
         UpdateJsonNotificationChannel.init(context)
         TransformNotificationChannel.init(context)
+        ArchiveNotificationChannel.init(context)
         // Clears all previous notifications
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancelAll()

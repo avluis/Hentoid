@@ -9,12 +9,17 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.receiver.ArchiveNotificationSuccessReceiver
 import me.devsaki.hentoid.util.notification.Notification
 
-class ArchiveCompleteNotification(private val books: Int, private val isError: Boolean) :
+class ArchiveCompleteNotification(private val books: Int, private val nbErrors: Int) :
     Notification {
 
     override fun onCreateNotification(context: Context): android.app.Notification {
-        val title = if (isError) R.string.notif_archive_fail else R.string.notif_archive_complete
-        val contentTxt = if (isError) context.getString(R.string.notif_archive_fail_details)
+        val title =
+            if (nbErrors > 0) R.string.notif_archive_fail else R.string.notif_archive_complete
+        val contentTxt = if (nbErrors > 0) context.resources.getQuantityString(
+            R.plurals.notif_archive_fail_details,
+            nbErrors,
+            nbErrors
+        )
         else context.resources.getQuantityString(
             R.plurals.notif_archive_complete_details,
             books,

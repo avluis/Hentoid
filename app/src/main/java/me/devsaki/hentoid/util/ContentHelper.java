@@ -178,6 +178,10 @@ public final class ContentHelper {
         return Helper.getListFromPrimitiveArray(queueTabStatus).contains(status.getCode());
     }
 
+    public static boolean canBeArchived(@NonNull final Content content) {
+        return !(content.isArchive() || content.getDownloadMode() == Content.DownloadMode.STREAM || content.getStatus() == StatusContent.PLACEHOLDER);
+    }
+
     /**
      * Open the app's web browser to view the given Content's gallery page
      *

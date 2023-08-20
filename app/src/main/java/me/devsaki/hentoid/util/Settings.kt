@@ -39,6 +39,17 @@ object Settings {
     )
     var transcodeQuality: Int by IntSetting("TRANSFORM_TRANSCODE_QUALITY", 90)
 
+    // ARCHIVES
+    var archiveTargetFolder: String by StringSetting(
+        "ARCHIVE_TARGET_FOLDER",
+        Value.ARCHIVE_TARGET_FOLDER_DOWNLOADS
+    )
+    var latestTargetFolderUri: String by StringSetting("ARCHIVE_TARGET_FOLDER_LATEST", "")
+    var archiveTargetFormat: Int by IntSetting("ARCHIVE_TARGET_FORMAT", 0)
+    var isArchiveOverwrite: Boolean by BoolSetting("ARCHIVE_OVERWRITE", true)
+    var isArchiveDeleteOnSuccess: Boolean by BoolSetting("ARCHIVE_DELETE_ON_SUCCESS", false)
+
+
     // READER
     var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)
 
@@ -93,5 +104,9 @@ object Settings {
         const val TRANSFORM_RESIZE_METHOD = "TRANSFORM_RESIZE_METHOD"
         const val TRANSFORM_RESIZE_WIDTH = "TRANSFORM_RESIZE_WIDTH"
         const val READER_COLOR_DEPTH = "viewer_color_depth"
+    }
+
+    object Value {
+        const val ARCHIVE_TARGET_FOLDER_DOWNLOADS = "downloads"
     }
 }

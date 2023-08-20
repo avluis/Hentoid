@@ -399,7 +399,6 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> könyvek sikeresen archiválva</item>
     </plurals>
     <string name="notif_archive_fail">Archiválás sikertelen</string>
-    <string name="notif_archive_fail_details">Legalább egy könyv archiválása nem sikerült</string>
     <plurals name="archive_success">
         <item quantity="one"><x:g example="1" id="count">%d</x:g> könyv archiválásra került a Letöltési mappádba</item>
         <item quantity="other"><x:g example="2" id="count">%d</x:g> könyvek archiválásra kerültek a Letöltési mappádba</item>

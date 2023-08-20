@@ -446,7 +446,7 @@
 
     <!-- Archive dialog -->
     <string-array name="target_folder_entries" translatable="false">
-        <item>@string/device_downloads_folder</item>
+        <item>@string/folder_device_downloads</item>
         <item>@string/empty_string</item>
     </string-array>
     <string-array name="archive_format_entries" translatable="false">
