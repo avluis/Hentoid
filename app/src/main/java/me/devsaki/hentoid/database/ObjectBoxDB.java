@@ -590,17 +590,8 @@ public class ObjectBoxDB {
         boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE) && (sources != null) && !(sources.isEmpty());
         boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter ? 1 : 0);
 
-        QueryCondition<Content> qc = Content_.status.oneOf(libraryStatus);
+        QueryCondition<Content> qc = initContentQC(searchBundle, dynamicGroupContentIds, libraryStatus);
         if (hasSiteFilter) qc = qc.and(Content_.site.oneOf(getIdsFromAttributes(sources)));
-        if (searchBundle.getFilterBookFavourites()) qc = qc.and(Content_.favourite.equal(true));
-        else if (searchBundle.getFilterBookNonFavourites()) qc = qc.and(Content_.favourite.equal(false));
-
-        if (searchBundle.getFilterBookCompleted()) qc = qc.and(Content_.completed.equal(true));
-        else if (searchBundle.getFilterBookNotCompleted())
-            qc = qc.and(Content_.completed.equal(false));
-
-        if (searchBundle.getFilterRating() > -1)
-            qc = qc.and(Content_.rating.equal(searchBundle.getFilterRating()));
 
         if (hasTitleFilter)
             qc = qc.and(Content_.title.contains(searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE));
@@ -616,9 +607,6 @@ public class ObjectBoxDB {
                 }
             }
         }
-
-        if (searchBundle.getGroupId() > 0)
-            qc = applyContentGroupFilter(qc, searchBundle.getGroupId(), dynamicGroupContentIds);
 
         qc = applyContentLocationFilter(qc, searchBundle.getLocation());
         qc = applyContentTypeFilter(qc, searchBundle.getContentType());
@@ -658,7 +646,8 @@ public class ObjectBoxDB {
         QueryBuilder<Content> contentQuery = query.link(GroupItem_.content);
         if (hasSiteFilter) contentQuery.in(Content_.site, getIdsFromAttributes(sources));
         if (searchBundle.getFilterBookFavourites()) contentQuery.equal(Content_.favourite, true);
-        else if (searchBundle.getFilterBookNonFavourites()) contentQuery.equal(Content_.favourite, false);
+        else if (searchBundle.getFilterBookNonFavourites())
+            contentQuery.equal(Content_.favourite, false);
 
         if (searchBundle.getFilterBookCompleted()) contentQuery.equal(Content_.completed, true);
         else if (searchBundle.getFilterBookNotCompleted())
@@ -684,28 +673,12 @@ public class ObjectBoxDB {
     }
 
     private Query<Content> selectContentUniversalAttributesQ(ContentSearchManager.ContentSearchBundle searchBundle, long[] dynamicGroupContentIds, int[] statuses) {
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, statuses);
+        QueryCondition<Content> qc = initContentQC(searchBundle, dynamicGroupContentIds, statuses);
 
-        if (searchBundle.getFilterBookFavourites()) query.equal(Content_.favourite, true);
-        else if (searchBundle.getFilterBookNonFavourites()) query.equal(Content_.favourite, false);
-
-        if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
-        else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
-
-        if (searchBundle.getFilterRating() > -1)
-            query.equal(Content_.rating, searchBundle.getFilterRating());
-
+        QueryBuilder<Content> query = store.boxFor(Content.class).query(qc);
         if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
-        query.link(Content_.attributes).contains(Attribute_.name, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
-        if (searchBundle.getGroupId() > 0) {
-            if (0 == dynamicGroupContentIds.length) // Classic group
-                query.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
-            else { // Dynamic group
-                query.in(Content_.id, dynamicGroupContentIds);
-            }
-        }
+        query.link(Content_.attributes).contains(Attribute_.name, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
         return query.build();
     }
@@ -714,10 +687,26 @@ public class ObjectBoxDB {
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == searchBundle.getSortField())
             return store.boxFor(Content.class).query().build();
 
+        QueryCondition<Content> qc = initContentQC(searchBundle, dynamicGroupContentIds, statuses);
+
+        qc = qc.and(Content_.title.contains(searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .or(Content_.uniqueSiteId.equal(searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE))
+                .or(Content_.id.oneOf(additionalIds)));
+
+        QueryBuilder<Content> qb = store.boxFor(Content.class).query(qc);
+        if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(qb);
+
+        applySortOrder(qb, searchBundle.getSortField(), searchBundle.getSortDesc());
+
+        return qb.build();
+    }
+
+    private QueryCondition<Content> initContentQC(ContentSearchBundle searchBundle, long[] dynamicGroupContentIds, int[] statuses) {
         QueryCondition<Content> qc = Content_.status.oneOf(statuses);
 
         if (searchBundle.getFilterBookFavourites()) qc = qc.and(Content_.favourite.equal(true));
-        else if (searchBundle.getFilterBookNonFavourites()) qc = qc.and(Content_.favourite.equal(false));
+        else if (searchBundle.getFilterBookNonFavourites())
+            qc = qc.and(Content_.favourite.equal(false));
 
         if (searchBundle.getFilterBookCompleted()) qc = qc.and(Content_.completed.equal(true));
         else if (searchBundle.getFilterBookNotCompleted())
@@ -726,26 +715,10 @@ public class ObjectBoxDB {
         if (searchBundle.getFilterRating() > -1)
             qc = qc.and(Content_.rating.equal(searchBundle.getFilterRating()));
 
-        qc = qc.and(Content_.title.contains(searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE).or(Content_.uniqueSiteId.equal(searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE)).or(Content_.id.oneOf(additionalIds)));
+        if (searchBundle.getGroupId() > 0)
+            qc = applyContentGroupFilter(qc, searchBundle.getGroupId(), dynamicGroupContentIds);
 
-        if (searchBundle.getGroupId() > 0) {
-            if (0 == dynamicGroupContentIds.length) { // Classic group
-                Group group = store.boxFor(Group.class).get(searchBundle.getGroupId());
-                if (group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
-                    qc = applyContentDownloadDateFilter(qc, group.propertyMin, group.propertyMax);
-                else // Direct link to group
-                    qc = qc.and(Content_.id.oneOf(selectFilteredContent(searchBundle.getGroupId())));
-            } else { // Dynamic group
-                qc = qc.and(Content_.id.oneOf(dynamicGroupContentIds));
-            }
-        }
-
-        QueryBuilder<Content> query = store.boxFor(Content.class).query(qc);
-        if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
-
-        applySortOrder(query, searchBundle.getSortField(), searchBundle.getSortDesc());
-
-        return query.build();
+        return qc;
     }
 
     private long[] selectContentUniversalContentByGroupItem(ContentSearchBundle searchBundle, long[] dynamicGroupContentIds, long[] additionalIds) {
@@ -760,28 +733,29 @@ public class ObjectBoxDB {
         else query.order(GroupItem_.order);
 
         // Get linked content
-        QueryBuilder<Content> contentQuery = query.link(GroupItem_.content);
-        contentQuery.in(Content_.status, libraryStatus);
+        QueryBuilder<Content> qb = query.link(GroupItem_.content);
+        qb.in(Content_.status, libraryStatus);
 
-        if (searchBundle.getFilterBookFavourites()) contentQuery.equal(Content_.favourite, true);
-        else if (searchBundle.getFilterBookNonFavourites()) contentQuery.equal(Content_.favourite, false);
+        if (searchBundle.getFilterBookFavourites()) qb.equal(Content_.favourite, true);
+        else if (searchBundle.getFilterBookNonFavourites())
+            qb.equal(Content_.favourite, false);
 
-        if (searchBundle.getFilterBookCompleted()) contentQuery.equal(Content_.completed, true);
+        if (searchBundle.getFilterBookCompleted()) qb.equal(Content_.completed, true);
         else if (searchBundle.getFilterBookNotCompleted())
-            contentQuery.equal(Content_.completed, false);
+            qb.equal(Content_.completed, false);
 
         if (searchBundle.getFilterRating() > -1)
-            contentQuery.equal(Content_.rating, searchBundle.getFilterRating());
+            qb.equal(Content_.rating, searchBundle.getFilterRating());
 
 
-        contentQuery.contains(Content_.title, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        contentQuery.or().equal(Content_.uniqueSiteId, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        qb.contains(Content_.title, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        qb.or().equal(Content_.uniqueSiteId, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
         //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
-        contentQuery.or().in(Content_.id, additionalIds);
+        qb.or().in(Content_.id, additionalIds);
         if (searchBundle.getGroupId() > 0) {
             if (0 == dynamicGroupContentIds.length) // Classic group
-                contentQuery.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
-            else contentQuery.in(Content_.id, dynamicGroupContentIds); // Dynamic group
+                qb.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
+            else qb.in(Content_.id, dynamicGroupContentIds); // Dynamic group
         }
 
         return Helper.getPrimitiveArrayFromList(Stream.of(DBHelper.safeFind(query)).map(gi -> gi.content.getTargetId()).toList());
@@ -1048,7 +1022,7 @@ public class ObjectBoxDB {
             Group group = store.boxFor(Group.class).get(groupId);
             if (group != null && group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
                 return applyContentDownloadDateFilter(qc, group.propertyMin, group.propertyMax);
-            else if (group != null && group.grouping.equals(Grouping.CUSTOM) && 1 == group.subtype) // Books with no CUSTOM group attached
+            else if (group != null && group.isUngroupedGroup()) // Ungrouped = Books with no CUSTOM group attached
                 return qc.and(Content_.id.notOneOf(selectCustomGroupedContent()));
             else // Direct link to group
                 return qc.and(Content_.id.oneOf(selectFilteredContent(groupId)));
@@ -1759,7 +1733,7 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    long[] selectCustomGroupedContent() {
+    private long[] selectCustomGroupedContent() {
         QueryBuilder<Content> customContentQB = store.boxFor(Content.class).query();
         customContentQB.link(Content_.groupItems).link(GroupItem_.group).equal(Group_.grouping, Grouping.CUSTOM.getId()) // Custom group
                 .equal(Group_.subtype, 0); // Not the Ungrouped group (subtype 1)

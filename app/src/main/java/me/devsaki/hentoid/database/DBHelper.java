@@ -6,7 +6,6 @@ import java.util.List;
 import io.objectbox.internal.ReflectionCache;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
-import io.objectbox.relation.ToMany;
 
 public class DBHelper {
 
@@ -17,10 +16,8 @@ public class DBHelper {
     }
 
     static <T> List<T> safeFind(Query<T> q) {
-        try {
+        try (q) {
             return q.find();
-        } finally {
-            q.close();
         }
     }
 
@@ -31,10 +28,8 @@ public class DBHelper {
     }
 
     static <T> T safeFindFirst(Query<T> q) {
-        try {
+        try (q) {
             return q.findFirst();
-        } finally {
-            q.close();
         }
     }
 
@@ -45,10 +40,8 @@ public class DBHelper {
     }
 
     static <T> long[] safeFindIds(Query<T> q) {
-        try {
+        try (q) {
             return q.findIds();
-        } finally {
-            q.close();
         }
     }
 
@@ -59,10 +52,8 @@ public class DBHelper {
     }
 
     static <T> long safeCount(Query<T> q) {
-        try {
+        try (q) {
             return q.count();
-        } finally {
-            q.close();
         }
     }
 
@@ -73,10 +64,8 @@ public class DBHelper {
     }
 
     static <T> void safeRemove(Query<T> q) {
-        try {
+        try (q) {
             q.remove();
-        } finally {
-            q.close();
         }
     }
 
