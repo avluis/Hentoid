@@ -593,6 +593,7 @@ public class ObjectBoxDB {
         QueryCondition<Content> qc = Content_.status.oneOf(libraryStatus);
         if (hasSiteFilter) qc = qc.and(Content_.site.oneOf(getIdsFromAttributes(sources)));
         if (searchBundle.getFilterBookFavourites()) qc = qc.and(Content_.favourite.equal(true));
+        else if (searchBundle.getFilterBookNonFavourites()) qc = qc.and(Content_.favourite.equal(false));
 
         if (searchBundle.getFilterBookCompleted()) qc = qc.and(Content_.completed.equal(true));
         else if (searchBundle.getFilterBookNotCompleted())
@@ -657,6 +658,7 @@ public class ObjectBoxDB {
         QueryBuilder<Content> contentQuery = query.link(GroupItem_.content);
         if (hasSiteFilter) contentQuery.in(Content_.site, getIdsFromAttributes(sources));
         if (searchBundle.getFilterBookFavourites()) contentQuery.equal(Content_.favourite, true);
+        else if (searchBundle.getFilterBookNonFavourites()) contentQuery.equal(Content_.favourite, false);
 
         if (searchBundle.getFilterBookCompleted()) contentQuery.equal(Content_.completed, true);
         else if (searchBundle.getFilterBookNotCompleted())
@@ -686,6 +688,7 @@ public class ObjectBoxDB {
         query.in(Content_.status, statuses);
 
         if (searchBundle.getFilterBookFavourites()) query.equal(Content_.favourite, true);
+        else if (searchBundle.getFilterBookNonFavourites()) query.equal(Content_.favourite, false);
 
         if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
         else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
@@ -714,6 +717,7 @@ public class ObjectBoxDB {
         QueryCondition<Content> qc = Content_.status.oneOf(statuses);
 
         if (searchBundle.getFilterBookFavourites()) qc = qc.and(Content_.favourite.equal(true));
+        else if (searchBundle.getFilterBookNonFavourites()) qc = qc.and(Content_.favourite.equal(false));
 
         if (searchBundle.getFilterBookCompleted()) qc = qc.and(Content_.completed.equal(true));
         else if (searchBundle.getFilterBookNotCompleted())
@@ -760,6 +764,7 @@ public class ObjectBoxDB {
         contentQuery.in(Content_.status, libraryStatus);
 
         if (searchBundle.getFilterBookFavourites()) contentQuery.equal(Content_.favourite, true);
+        else if (searchBundle.getFilterBookNonFavourites()) contentQuery.equal(Content_.favourite, false);
 
         if (searchBundle.getFilterBookCompleted()) contentQuery.equal(Content_.completed, true);
         else if (searchBundle.getFilterBookNotCompleted())
@@ -1540,7 +1545,7 @@ public class ObjectBoxDB {
         }
     }
 
-    Query<Group> selectGroupsQ(int grouping, @Nullable String query, int orderField, boolean orderDesc, int subType, boolean groupFavouritesOnly, int filterRating) {
+    Query<Group> selectGroupsQ(int grouping, @Nullable String query, int orderField, boolean orderDesc, int subType, boolean groupFavouritesOnly, boolean groupNonFavouritesOnly, int filterRating) {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
         if (query != null)
             qb.contains(Group_.name, query, QueryBuilder.StringOrder.CASE_INSENSITIVE);
@@ -1557,6 +1562,7 @@ public class ObjectBoxDB {
         }
 
         if (groupFavouritesOnly) qb.equal(Group_.favourite, true);
+        else if (groupNonFavouritesOnly) qb.equal(Group_.favourite, false);
 
         if (filterRating > -1) qb.equal(Group_.rating, filterRating);
 

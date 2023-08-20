@@ -33,6 +33,10 @@ class GroupSearchManager(val dao: CollectionDAO) {
         values.filterFavourites = value
     }
 
+    fun setFilterNonFavourites(value: Boolean) {
+        values.filterNonFavourites = value
+    }
+
     fun setFilterRating(value: Int) {
         values.filterRating = value
     }
@@ -61,6 +65,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
         setQuery("")
         setArtistGroupVisibility(Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS)
         setFilterFavourites(false)
+        setFilterNonFavourites(false)
         setFilterRating(-1)
     }
 
@@ -72,6 +77,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
             values.sortDesc,
             values.artistGroupVisibility,
             values.filterFavourites,
+            values.filterNonFavourites,
             values.filterRating
         )
     }
@@ -84,6 +90,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
             values.sortDesc,
             Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS,
             false,
+            false,
             -1
         )
     }
@@ -91,6 +98,8 @@ class GroupSearchManager(val dao: CollectionDAO) {
     class GroupSearchBundle(val bundle: Bundle = Bundle()) {
 
         var filterFavourites by bundle.boolean(default = false)
+
+        var filterNonFavourites by bundle.boolean(default = false)
 
         var filterRating by bundle.int(default = -1)
 
@@ -108,6 +117,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
             return query.isNotEmpty()
                     || artistGroupVisibility != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
                     || filterFavourites
+                    || filterNonFavourites
                     || filterRating > -1
         }
     }

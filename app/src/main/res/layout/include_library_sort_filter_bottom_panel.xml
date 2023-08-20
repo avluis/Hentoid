@@ -109,6 +109,19 @@
         android:padding="8dp"
         android:src="@drawable/ic_fav_full"
         android:tooltipText="@string/library_filter_favourite_help"
+        app:layout_constraintEnd_toStartOf="@id/filter_non_favs_btn"
+        app:layout_constraintTop_toBottomOf="@id/filters_divider"
+        app:tint="@color/medium_gray"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
+
+    <ImageView
+        android:id="@+id/filter_non_favs_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_fav_empty"
+        android:tooltipText="@string/library_filter_favourite_help"
         app:layout_constraintEnd_toStartOf="@id/filter_completed_btn"
         app:layout_constraintTop_toBottomOf="@id/filters_divider"
         app:tint="@color/medium_gray"

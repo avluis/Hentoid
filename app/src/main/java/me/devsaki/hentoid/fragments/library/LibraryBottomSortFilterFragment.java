@@ -58,6 +58,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
     private boolean isUngroupedGroupDisplayed;
     private boolean isGroupsDisplayed;
     private boolean favouriteFilter;
+    private boolean nonFavouriteFilter;
     private boolean completedFilter;
     private boolean notCompletedFilter;
     private int ratingFilter = -1;
@@ -104,6 +105,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             if (isGroupsDisplayed) return;
             ContentSearchManager.ContentSearchBundle searchBundle = new ContentSearchManager.ContentSearchBundle(b);
             favouriteFilter = searchBundle.getFilterBookFavourites();
+            nonFavouriteFilter = searchBundle.getFilterBookNonFavourites();
             completedFilter = searchBundle.getFilterBookCompleted();
             notCompletedFilter = searchBundle.getFilterBookNotCompleted();
             ratingFilter = searchBundle.getFilterRating();
@@ -113,6 +115,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             if (!isGroupsDisplayed) return;
             GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
             favouriteFilter = searchBundle.getFilterFavourites();
+            nonFavouriteFilter = searchBundle.getFilterNonFavourites();
             ratingFilter = searchBundle.getFilterRating();
             updateFilters();
         });
@@ -194,6 +197,16 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
                         viewModel.setContentFavouriteFilter(favouriteFilter);
                 }
         );
+        binding.filterNonFavsBtn.setOnClickListener(
+                v -> {
+                    nonFavouriteFilter = !nonFavouriteFilter;
+                    updateFilters();
+                    if (isGroupsDisplayed)
+                        viewModel.setGroupNonFavouriteFilter(nonFavouriteFilter);
+                    else
+                        viewModel.setContentNonFavouriteFilter(nonFavouriteFilter);
+                }
+        );
         binding.filterCompletedBtn.setOnClickListener(
                 v -> {
                     completedFilter = !completedFilter;
@@ -240,6 +253,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
 
     private void updateFilters() {
         binding.filterFavsBtn.setColorFilter(favouriteFilter ? selectedColor : greyColor);
+        binding.filterNonFavsBtn.setColorFilter(nonFavouriteFilter ? selectedColor : greyColor);
 
         int completeFiltersVisibility = isGroupsDisplayed ? View.GONE : View.VISIBLE;
         binding.filterCompletedBtn.setVisibility(completeFiltersVisibility);

@@ -44,20 +44,16 @@ class ContentSearchManager(val dao: CollectionDAO) {
         values.filterBookFavourites = value
     }
 
+    fun setFilterBookNonFavourites(value: Boolean) {
+        values.filterBookNonFavourites = value
+    }
+
     fun setFilterBookCompleted(value: Boolean) {
         values.filterBookCompleted = value
     }
 
-    fun isFilterBookCompleted(): Boolean {
-        return values.filterBookCompleted
-    }
-
     fun setFilterBookNotCompleted(value: Boolean) {
         values.filterBookNotCompleted = value
-    }
-
-    fun isFilterBookNotCompleted(): Boolean {
-        return values.filterBookNotCompleted
     }
 
     fun setFilterRating(value: Int) {
@@ -110,6 +106,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
         clearSelectedSearchTags()
         setQuery("")
         setFilterBookFavourites(false)
+        setFilterBookNonFavourites(false)
         setFilterBookCompleted(false)
         setFilterBookNotCompleted(false)
         setFilterPageFavourites(false)
@@ -135,14 +132,6 @@ class ContentSearchManager(val dao: CollectionDAO) {
                 values
             )
         }
-    }
-
-    fun searchLibraryForIdRx(): Single<List<Long>> {
-        return Single.fromCallable {
-            searchContentIds(values, dao)
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
     }
 
     fun searchContentIds(): List<Long> {
@@ -177,6 +166,8 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
         var filterBookFavourites by bundle.boolean(default = false)
 
+        var filterBookNonFavourites by bundle.boolean(default = false)
+
         var filterBookCompleted by bundle.boolean(default = false)
 
         var filterBookNotCompleted by bundle.boolean(default = false)
@@ -205,6 +196,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
                     || location > 0
                     || contentType > 0
                     || filterBookFavourites
+                    || filterBookNonFavourites
                     || filterBookCompleted
                     || filterBookNotCompleted
                     || filterRating > -1

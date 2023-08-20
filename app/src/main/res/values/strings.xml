@@ -614,6 +614,7 @@
     <string name="sort_uplodad_date">Upload date</string>
     <string name="library_filters_title">Filters</string>
     <string name="library_filter_favourite_help">Toggle display of favourite books</string>
+    <string name="library_filter_nonfavourite_help">Toggle display of non-favourite books</string>
     <string name="filter_completed">Show completed books only</string>
     <string name="filter_not_completed">Show not completed books only</string>
     <string name="filter_rating">Filter by rating</string>

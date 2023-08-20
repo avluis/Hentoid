@@ -346,10 +346,27 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
+     * Toggle the books non-favourite filter
+     */
+    public void setContentNonFavouriteFilter(boolean value) {
+        contentSearchManager.setFilterBookNonFavourites(value);
+        newContentSearch.setValue(true);
+        doSearchContent();
+    }
+
+    /**
      * Toggle the groups favourite filter
      */
     public void setGroupFavouriteFilter(boolean value) {
         groupSearchManager.setFilterFavourites(value);
+        doSearchGroup();
+    }
+
+    /**
+     * Toggle the groups non-favourite filter
+     */
+    public void setGroupNonFavouriteFilter(boolean value) {
+        groupSearchManager.setFilterNonFavourites(value);
         doSearchGroup();
     }
 

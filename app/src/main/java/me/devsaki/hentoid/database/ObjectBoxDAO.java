@@ -432,12 +432,12 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public List<Group> selectGroups(int grouping) {
-        return DBHelper.safeFind(db.selectGroupsQ(grouping, null, 0, false, -1, false, -1));
+        return DBHelper.safeFind(db.selectGroupsQ(grouping, null, 0, false, -1, false, false, -1));
     }
 
     @Override
     public List<Group> selectGroups(int grouping, int subType) {
-        return DBHelper.safeFind(db.selectGroupsQ(grouping, null, 0, false, subType, false, -1));
+        return DBHelper.safeFind(db.selectGroupsQ(grouping, null, 0, false, subType, false, false, -1));
     }
 
     @Override
@@ -453,11 +453,12 @@ public class ObjectBoxDAO implements CollectionDAO {
             boolean orderDesc,
             int artistGroupVisibility,
             boolean groupFavouritesOnly,
+            boolean groupNonFavouritesOnly,
             int filterRating) {
         // Artist / group visibility filter is only relevant when the selected grouping is "By Artist"
         int subType = (grouping == Grouping.ARTIST.getId()) ? artistGroupVisibility : -1;
 
-        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc, subType, groupFavouritesOnly, filterRating));
+        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc, subType, groupFavouritesOnly, groupNonFavouritesOnly, filterRating));
         LiveData<List<Group>> workingData = livedata;
 
 
