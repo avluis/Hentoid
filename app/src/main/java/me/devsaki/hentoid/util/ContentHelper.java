@@ -563,7 +563,7 @@ public final class ContentHelper {
                     List<Pair<String, String>> extractInstructions = new ArrayList<>();
                     extractInstructions.add(new Pair<>(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, ""), newContentId + ""));
 
-                    Disposable unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(context, archive, targetFolder, extractInstructions, null).subscribeOn(Schedulers.io())
+                    Disposable unarchiveDisposable = ArchiveHelper.INSTANCE.extractArchiveEntriesRx(context, archive, targetFolder, extractInstructions, null).subscribeOn(Schedulers.io())
                             // Save the pic as low-res JPG
                             .observeOn(Schedulers.computation()).map(uri -> {
                                 File extractedFile = new File(uri.getPath()); // These are file URI's
@@ -1110,12 +1110,12 @@ public final class ContentHelper {
         // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
         List<ArchiveHelper.ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).toList();
         for (ArchiveHelper.ArchiveEntry f : fileList) {
-            String name = namePrefix + f.path;
-            String path = archiveFileUri + File.separator + f.path;
+            String name = namePrefix + f.getPath();
+            String path = archiveFileUri + File.separator + f.getPath();
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(path).setStatus(targetStatus).setFileUri(path).setSize(f.size);
+            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(path).setStatus(targetStatus).setFileUri(path).setSize(f.getSize());
             img.setMimeType(FileHelper.getMimeTypeFromFileName(name));
             result.add(img);
         }
@@ -1887,7 +1887,7 @@ public final class ContentHelper {
     private static class InnerNameNumberArchiveComparator implements Comparator<ArchiveHelper.ArchiveEntry> {
         @Override
         public int compare(@NonNull ArchiveHelper.ArchiveEntry o1, @NonNull ArchiveHelper.ArchiveEntry o2) {
-            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(o1.path, o2.path);
+            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(o1.getPath(), o2.getPath());
         }
     }
 }

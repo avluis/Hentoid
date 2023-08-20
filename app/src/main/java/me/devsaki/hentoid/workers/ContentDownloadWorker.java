@@ -1040,7 +1040,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 );
 
                 // == Extract all frames
-                ArchiveHelper.extractArchiveEntries(
+                ArchiveHelper.INSTANCE.extractArchiveEntries(
                         getApplicationContext(),
                         result.left,
                         ugoiraCacheFolder,

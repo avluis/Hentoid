@@ -891,7 +891,7 @@ public class Content implements Serializable {
     }
 
     public boolean isArchive() {
-        return ArchiveHelper.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed (not in any spec) !
+        return ArchiveHelper.INSTANCE.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed (not in any spec) !
     }
 
     public String getArchiveLocationUri() {

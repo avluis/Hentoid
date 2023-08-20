@@ -1174,7 +1174,7 @@ public class ObjectBoxDB {
             case ContentHelper.Type.ARCHIVE:
                 qc = qc.and(Content_.status.equal(StatusContent.EXTERNAL.getCode()));
                 QueryCondition<Content> combinedCondition = null;
-                for (String ext : ArchiveHelper.getSupportedExtensions()) {
+                for (String ext : ArchiveHelper.INSTANCE.getSupportedExtensions()) {
                     if (null == combinedCondition)
                         combinedCondition = Content_.storageUri.endsWith(ext, QueryBuilder.StringOrder.CASE_INSENSITIVE);
                     else

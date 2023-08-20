@@ -876,7 +876,7 @@ public class LibraryViewModel extends AndroidViewModel {
                     destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
                 }
                 Timber.d("Destination file: %s", destName);
-                ArchiveHelper.zipFiles(getApplication(), files, destFile);
+                ArchiveHelper.INSTANCE.zipFiles(getApplication(), files, destFile);
             } finally {
                 if (destFile != null) destFile.close();
             }

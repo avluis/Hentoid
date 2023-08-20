@@ -356,7 +356,7 @@ public class ImageFile {
 
     public boolean isArchived() {
         String lowerUri = url.toLowerCase();
-        for (String ext : ArchiveHelper.getSupportedExtensions()) {
+        for (String ext : ArchiveHelper.INSTANCE.getSupportedExtensions()) {
             if (lowerUri.contains("." + ext + File.separator)) return true;
         }
         return false;

@@ -813,7 +813,7 @@ public class ImportHelper {
             // Look for the interesting stuff
             for (DocumentFile file : files)
                 if (file.getName() != null) {
-                    if (ArchiveHelper.getArchiveNamesFilter().accept(file.getName()))
+                    if (ArchiveHelper.INSTANCE.getArchiveNamesFilter().accept(file.getName()))
                         archives.add(file);
                     else if (JsonHelper.getJsonNamesFilter().accept(file.getName()))
                         jsons.add(file);
@@ -865,13 +865,13 @@ public class ImportHelper {
 
         List<ArchiveHelper.ArchiveEntry> entries = Collections.emptyList();
         try {
-            entries = ArchiveHelper.getArchiveEntries(context, archive);
+            entries = ArchiveHelper.INSTANCE.getArchiveEntries(context, archive);
         } catch (Exception e) {
             Timber.w(e);
         }
 
         List<ArchiveHelper.ArchiveEntry> imageEntries = Stream.of(entries)
-                .filter(s -> ImageHelper.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(s.path)))
+                .filter(s -> ImageHelper.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(s.getPath())))
                 .toList();
 
         if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
