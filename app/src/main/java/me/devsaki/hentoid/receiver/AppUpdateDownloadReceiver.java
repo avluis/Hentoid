@@ -20,7 +20,7 @@ public class AppUpdateDownloadReceiver extends BroadcastReceiver {
         if (input != null) {
             UpdateDownloadData.Parser data = new UpdateDownloadData.Parser(input);
             String apkUrl = data.getUrl();
-            AppHelper.Companion.runUpdateDownloadWorker(context, apkUrl);
+            AppHelper.INSTANCE.runUpdateDownloadWorker(context, apkUrl);
         } else Timber.w("no data");
     }
 }

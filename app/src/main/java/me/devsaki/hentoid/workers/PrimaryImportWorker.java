@@ -279,7 +279,7 @@ public class PrimaryImportWorker extends BaseWorker {
             Thread.currentThread().interrupt();
         } finally {
             // Write log in root folder
-            DocumentFile logFile = LogHelper.Companion.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, location, log));
+            DocumentFile logFile = LogHelper.INSTANCE.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, location, log));
 
             if (!isStopped()) { // Should only be done when things have run properly
                 CollectionDAO dao = new ObjectBoxDAO(context);

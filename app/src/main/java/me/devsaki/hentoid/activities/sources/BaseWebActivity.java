@@ -1173,8 +1173,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     ResponseBody coverBody = onlineCover.body();
                     if (coverBody != null) {
                         InputStream bodyStream = coverBody.byteStream();
-                        Bitmap b = DuplicateHelper.Companion.getCoverBitmapFromStream(bodyStream);
-                        pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), b);
+                        Bitmap b = DuplicateHelper.INSTANCE.getCoverBitmapFromStream(bodyStream);
+                        pHash = DuplicateHelper.INSTANCE.calcPhash(DuplicateHelper.INSTANCE.getHashEngine(), b);
                     }
                 } catch (IOException e) {
                     Timber.w(e);

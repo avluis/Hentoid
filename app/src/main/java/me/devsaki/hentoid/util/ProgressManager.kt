@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.util
 
-class ProgressHelper(private val nbSteps: Int) {
+class ProgressManager(private val nbSteps: Int) {
     private val steps = HashMap<String, Float>()
 
     fun setProgress(step: String, progress: Float) {

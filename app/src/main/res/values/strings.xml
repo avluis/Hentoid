@@ -955,6 +955,17 @@
     <string name="previous_page">Previous page</string>
     <string name="next_page">Next page</string>
 
+    <!-- Archive dialog -->
+    <string name="target_folder">Target folder</string>
+    <string name="archive_format">Archive format</string>
+    <string name="device_downloads_folder">Device\'s Downloads folder</string>
+    <string name="archive_overwrite">Overwrite existing archives</string>
+    <string name="archive_delete_after_archiving">Delete books after successful archiving</string>
+    <plurals name="create_archive">
+        <item quantity="one">Create archive</item>
+        <item quantity="other">Create archives</item>
+    </plurals>
+
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>
     <string name="notif_delete_title">Content deletion</string>

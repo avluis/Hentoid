@@ -150,7 +150,7 @@ public abstract class BaseWorker extends Worker {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo(logName);
         logInfo.setHeaderName(logName);
         logInfo.setEntries(logs);
-        LogHelper.Companion.writeLog(getApplicationContext(), logInfo);
+        LogHelper.INSTANCE.writeLog(getApplicationContext(), logInfo);
     }
 
     abstract Notification getStartNotification();

@@ -101,7 +101,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
             // Run cover indexing in the background
             trace(Log.INFO, "Covers to index : %s", dao.countContentWithUnhashedCovers());
 
-            DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, stopped,
+            DuplicateHelper.INSTANCE.indexCovers(getApplicationContext(), dao, stopped,
                     this::indexContentInfo, this::notifyIndexProgress, this::indexError);
 
             trace(Log.INFO, "Indexing done");
@@ -188,7 +188,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 if (isStopped()) return;
                 DuplicateHelper.DuplicateCandidate candidate = library.get(j);
 
-                DuplicateEntry entry = DuplicateHelper.Companion.processContent(
+                DuplicateEntry entry = DuplicateHelper.INSTANCE.processContent(
                         reference, candidate,
                         useTitle, useCover, useSameArtist, useSameLanguage, ignoreChapters, sensitivity, cosine);
                 if (entry != null && processEntry(entry.getReferenceId(), entry.getDuplicateId(), matchedIds, reverseMatchedIds))

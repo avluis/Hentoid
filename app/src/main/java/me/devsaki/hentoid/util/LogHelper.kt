@@ -11,7 +11,9 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.time.Instant
 
-class LogHelper {
+object LogHelper {
+    private val LINE_SEPARATOR = System.getProperty("line.separator")
+
     /**
      * Represents a log entry
      */
@@ -161,105 +163,102 @@ class LogHelper {
         }
     }
 
-    companion object {
-        private val LINE_SEPARATOR = System.getProperty("line.separator")
 
-        /**
-         * Build the log text using the given LogInfo
-         *
-         * @param info LogInfo to build the log with
-         * @return Log text
-         */
-        private fun buildLog(info: LogInfo): String {
-            val logStr = StringBuilder()
-            logStr.append(info.logName).append(" log : begin").append(LINE_SEPARATOR)
-            logStr.append(
-                String.format(
-                    "Hentoid ver: %s (%s)",
-                    BuildConfig.VERSION_NAME,
-                    BuildConfig.VERSION_CODE
+    /**
+     * Build the log text using the given LogInfo
+     *
+     * @param info LogInfo to build the log with
+     * @return Log text
+     */
+    private fun buildLog(info: LogInfo): String {
+        val logStr = StringBuilder()
+        logStr.append(info.logName).append(" log : begin").append(LINE_SEPARATOR)
+        logStr.append(
+            String.format(
+                "Hentoid ver: %s (%s)",
+                BuildConfig.VERSION_NAME,
+                BuildConfig.VERSION_CODE
+            )
+        ).append(LINE_SEPARATOR)
+        logStr.append(String.format("API: %s", Build.VERSION.SDK_INT)).append(LINE_SEPARATOR)
+        logStr.append(String.format("Device: %s", Build.MODEL)).append(LINE_SEPARATOR)
+        if (info.entries.isEmpty()) logStr.append("No activity to report - ")
+            .append(info.noDataMessage).append(LINE_SEPARATOR) else {
+            // Log beginning, end and duration
+            // Unfortunately, Comparator.comparing is API24...
+            val beginning = info.entries.minWith { a: LogEntry, b: LogEntry ->
+                a.timestamp.compareTo(
+                    b.timestamp
                 )
-            ).append(LINE_SEPARATOR)
-            logStr.append(String.format("API: %s", Build.VERSION.SDK_INT)).append(LINE_SEPARATOR)
-            logStr.append(String.format("Device: %s", Build.MODEL)).append(LINE_SEPARATOR)
-            if (info.entries.isEmpty()) logStr.append("No activity to report - ")
-                .append(info.noDataMessage).append(LINE_SEPARATOR) else {
-                // Log beginning, end and duration
-                // Unfortunately, Comparator.comparing is API24...
-                val beginning = info.entries.minWith { a: LogEntry, b: LogEntry ->
-                    a.timestamp.compareTo(
-                        b.timestamp
-                    )
-                }.timestamp
-                val end = info.entries.maxWith { a: LogEntry, b: LogEntry ->
-                    a.timestamp.compareTo(
-                        b.timestamp
-                    )
-                }.timestamp
-                val durationMs = end.toEpochMilli() - beginning.toEpochMilli()
-                logStr.append("Start : ").append(beginning).append(LINE_SEPARATOR)
-                logStr.append("End : ").append(end).append(" (")
-                    .append(Helper.formatDuration(durationMs)).append(")").append(LINE_SEPARATOR)
-                logStr.append("-----").append(LINE_SEPARATOR)
+            }.timestamp
+            val end = info.entries.maxWith { a: LogEntry, b: LogEntry ->
+                a.timestamp.compareTo(
+                    b.timestamp
+                )
+            }.timestamp
+            val durationMs = end.toEpochMilli() - beginning.toEpochMilli()
+            logStr.append("Start : ").append(beginning).append(LINE_SEPARATOR)
+            logStr.append("End : ").append(end).append(" (")
+                .append(Helper.formatDuration(durationMs)).append(")").append(LINE_SEPARATOR)
+            logStr.append("-----").append(LINE_SEPARATOR)
 
-                // Log header
-                if (info.header.isNotEmpty()) logStr.append(info.header).append(LINE_SEPARATOR)
-                // Log entries in chapter order, with errors first
-                val logChapters = info.entries.groupBy { obj: LogEntry -> obj.chapter }
-                for (chapter in logChapters.values) {
-                    val logChapterWithErrorsFirst = chapter.sortedBy { l: LogEntry -> !l.isError }
-                    for (entry in logChapterWithErrorsFirst) logStr.append(entry.message)
-                        .append(LINE_SEPARATOR)
-                }
+            // Log header
+            if (info.header.isNotEmpty()) logStr.append(info.header).append(LINE_SEPARATOR)
+            // Log entries in chapter order, with errors first
+            val logChapters = info.entries.groupBy { obj: LogEntry -> obj.chapter }
+            for (chapter in logChapters.values) {
+                val logChapterWithErrorsFirst = chapter.sortedBy { l: LogEntry -> !l.isError }
+                for (entry in logChapterWithErrorsFirst) logStr.append(entry.message)
+                    .append(LINE_SEPARATOR)
             }
-            logStr.append(info.logName).append(" log : end")
-            return logStr.toString()
         }
+        logStr.append(info.logName).append(" log : end")
+        return logStr.toString()
+    }
 
-        /**
-         * Write the given log to the app's default storage location
-         *
-         * @param context Context to use
-         * @param logInfo Log to write
-         * @return DocumentFile of the created log file; null if it couldn't be created
-         */
-        fun writeLog(context: Context, logInfo: LogInfo): DocumentFile? {
-            try {
-                // Create the log
-                var logFileName = logInfo.getFileName()
-                if (!logFileName.endsWith("_log")) logFileName += "_log"
-                logFileName += ".txt"
-                val log = buildLog(logInfo)
+    /**
+     * Write the given log to the app's default storage location
+     *
+     * @param context Context to use
+     * @param logInfo Log to write
+     * @return DocumentFile of the created log file; null if it couldn't be created
+     */
+    fun writeLog(context: Context, logInfo: LogInfo): DocumentFile? {
+        try {
+            // Create the log
+            var logFileName = logInfo.getFileName()
+            if (!logFileName.endsWith("_log")) logFileName += "_log"
+            logFileName += ".txt"
+            val log = buildLog(logInfo)
 
-                // Save the log; use primary folder by default
-                val folder = FileHelper.getDocumentFromTreeUriString(
-                    context, Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+            // Save the log; use primary folder by default
+            val folder = FileHelper.getDocumentFromTreeUriString(
+                context, Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+            )
+            if (folder != null) {
+                val logDocumentFile = FileHelper.findOrCreateDocumentFile(
+                    context, folder, "text/plain", logFileName
                 )
-                if (folder != null) {
-                    val logDocumentFile = FileHelper.findOrCreateDocumentFile(
-                        context, folder, "text/plain", logFileName
-                    )
-                    if (logDocumentFile != null) FileHelper.saveBinary(
-                        context,
-                        logDocumentFile.uri,
-                        log.toByteArray()
-                    )
-                    return logDocumentFile
-                } else { // If it fails, use device's "download" folder (panic mode)
-                    FileHelper.openNewDownloadOutputStream(
-                        HentoidApp.getInstance(),
-                        logFileName,
-                        "text/plain"
-                    ).use { newDownload ->
-                        ByteArrayInputStream(log.toByteArray()).use { input ->
-                            Helper.copy(input, newDownload)
-                        }
+                if (logDocumentFile != null) FileHelper.saveBinary(
+                    context,
+                    logDocumentFile.uri,
+                    log.toByteArray()
+                )
+                return logDocumentFile
+            } else { // If it fails, use device's "download" folder (panic mode)
+                FileHelper.openNewDownloadOutputStream(
+                    HentoidApp.getInstance(),
+                    logFileName,
+                    "text/plain"
+                ).use { newDownload ->
+                    ByteArrayInputStream(log.toByteArray()).use { input ->
+                        Helper.copy(input, newDownload)
                     }
                 }
-            } catch (e: Exception) {
-                Timber.e(e)
             }
-            return null
+        } catch (e: Exception) {
+            Timber.e(e)
         }
+        return null
     }
 }

@@ -197,7 +197,7 @@ public class ExternalImportWorker extends BaseWorker {
             eventComplete(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO, null);
 
             // Write log in root folder
-            logFile = LogHelper.Companion.writeLog(context, buildLogInfo(log));
+            logFile = LogHelper.INSTANCE.writeLog(context, buildLogInfo(log));
         } catch (IOException e) {
             Timber.w(e);
         } finally {

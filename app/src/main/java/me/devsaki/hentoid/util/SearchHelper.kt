@@ -8,7 +8,7 @@ import com.annimon.stream.Stream
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.domains.Attribute
 
-class SearchHelper {
+object SearchHelper {
 
     data class AttributeQueryResult(
         val attributes: List<Attribute>,

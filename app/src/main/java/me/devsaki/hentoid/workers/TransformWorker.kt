@@ -23,7 +23,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.notification.transform.TransformCompleteNotification
 import me.devsaki.hentoid.notification.transform.TransformProgressNotification
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.ProgressHelper
+import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
@@ -44,7 +44,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     private var totalItems = 0
     private var nbOK = 0
     private var nbKO = 0
-    private lateinit var globalProgress: ProgressHelper
+    private lateinit var globalProgress: ProgressManager
 
     init {
         dao = ObjectBoxDAO(context)
@@ -100,7 +100,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             if (isStopped) return
         }
 
-        globalProgress = ProgressHelper(totalItems)
+        globalProgress = ProgressManager(totalItems)
         notifyProcessProgress()
 
         // Process images
