@@ -869,6 +869,13 @@ public class LibraryActivity extends BaseActivity {
 
         enableFragment(0);
         setEditMode(false);
+
+        // Reset any active Content filter
+        viewModel.setContentFavouriteFilter(false);
+        viewModel.setContentRatingFilter(-1);
+        viewModel.setCompletedFilter(false);
+        viewModel.setNotCompletedFilter(false);
+
         viewModel.searchGroup();
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));

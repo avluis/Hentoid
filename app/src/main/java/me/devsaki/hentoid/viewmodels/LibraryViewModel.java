@@ -321,8 +321,8 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Toggle the completed filter
      */
-    public void toggleCompletedFilter() {
-        contentSearchManager.setFilterBookCompleted(!contentSearchManager.isFilterBookCompleted());
+    public void setCompletedFilter(boolean value) {
+        contentSearchManager.setFilterBookCompleted(value);
         newContentSearch.setValue(true);
         doSearchContent();
     }
@@ -330,8 +330,8 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Toggle the "not completed" filter
      */
-    public void toggleNotCompletedFilter() {
-        contentSearchManager.setFilterBookNotCompleted(!contentSearchManager.isFilterBookNotCompleted());
+    public void setNotCompletedFilter(boolean value) {
+        contentSearchManager.setFilterBookNotCompleted(value);
         newContentSearch.setValue(true);
         doSearchContent();
     }

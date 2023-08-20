@@ -198,14 +198,14 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
                 v -> {
                     completedFilter = !completedFilter;
                     updateFilters();
-                    viewModel.toggleCompletedFilter();
+                    viewModel.setCompletedFilter(completedFilter);
                 }
         );
         binding.filterNotCompletedBtn.setOnClickListener(
                 v -> {
                     notCompletedFilter = !notCompletedFilter;
                     updateFilters();
-                    viewModel.toggleNotCompletedFilter();
+                    viewModel.setNotCompletedFilter(notCompletedFilter);
                 }
         );
 
@@ -309,7 +309,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
     }
 
     /**
-     * Callback for any selection change (item added to or removed from selection)
+     * Callback for any selection change (i.e. another sort field has been selected)
      */
     private void onSelectionChanged() {
         Optional<TextItem<Integer>> item = Stream.of(selectExtension.getSelectedItems()).findFirst();
