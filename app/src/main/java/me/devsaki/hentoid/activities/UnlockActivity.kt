@@ -45,7 +45,6 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
         goToNextActivity()
     }
 
-    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         // We don't want the back button to remove the unlock screen displayed upon app restore
         moveTaskToBack(true)

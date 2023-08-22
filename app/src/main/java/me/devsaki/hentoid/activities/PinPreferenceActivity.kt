@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities
 
-import android.R
 import android.os.Bundle
 import me.devsaki.hentoid.fragments.pin.ActivatedPinPreferenceFragment
 import me.devsaki.hentoid.fragments.pin.DeactivatedPinPreferenceFragment
@@ -16,7 +15,7 @@ class PinPreferenceActivity : BaseActivity() {
                 if (isLockOn) ActivatedPinPreferenceFragment() else DeactivatedPinPreferenceFragment()
             supportFragmentManager
                 .beginTransaction()
-                .add(R.id.content, fragment)
+                .add(android.R.id.content, fragment)
                 .commit()
         }
     }
