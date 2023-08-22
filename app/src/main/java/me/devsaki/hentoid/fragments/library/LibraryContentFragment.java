@@ -692,7 +692,7 @@ public class LibraryContentFragment extends Fragment implements
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         selectExtension.deselect(selectExtension.getSelections());
         List<Long> bookIds = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getId).toList();
-        ChangeGroupDialogFragment.invoke(this, Helper.getPrimitiveArrayFromList(bookIds));
+        ChangeGroupDialogFragment.Companion.invoke(this, Helper.getPrimitiveArrayFromList(bookIds));
     }
 
     /**
