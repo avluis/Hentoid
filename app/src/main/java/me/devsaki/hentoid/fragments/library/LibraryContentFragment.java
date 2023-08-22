@@ -1384,10 +1384,10 @@ public class LibraryContentFragment extends Fragment implements
 
             if (!result.isEmpty()) {
                 Snackbar snackbar = Snackbar.make(recyclerView, R.string.launchcode_present, BaseTransientBottomBar.LENGTH_LONG);
-                snackbar.setAction(R.string.menu_search, v -> SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes));
+                snackbar.setAction(R.string.menu_search, v -> SearchContentIdDialogFragment.Companion.invoke(requireContext(), getParentFragmentManager(), query, siteCodes));
                 snackbar.show();
             } else
-                SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
+                SearchContentIdDialogFragment.Companion.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
         }
 
         // If the update is the result of a new search, get back on top of the list
