@@ -122,7 +122,12 @@ public class DownloadHelper {
                     if (mimeType.isEmpty()) {
                         mimeType = ImageHelper.INSTANCE.getMimeTypeFromPictureBinary(buffer);
                         if (mimeType.isEmpty() || mimeType.endsWith("/*")) {
-                            String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%s)", url, sizeStr);
+                            String contentType = StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE));
+                            if (contentType.contains("text/")) {
+                                String message = String.format(Locale.ENGLISH, "Message received from %s : %s", url, body.string());
+                                throw new UnsupportedContentException(message);
+                            }
+                            String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%s; content-type=%s)", url, sizeStr, contentType);
                             throw new UnsupportedContentException(message);
                         }
                     }
