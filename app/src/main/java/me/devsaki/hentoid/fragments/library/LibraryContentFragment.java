@@ -1483,7 +1483,7 @@ public class LibraryContentFragment extends Fragment implements
      * @param content Content whose "rating" button has been clicked on
      */
     private void onBookRatingClick(@NonNull Content content) {
-        RatingDialogFragment.invoke(this, new long[]{content.getId()}, content.getRating());
+        RatingDialogFragment.Companion.invoke(this, new long[]{content.getId()}, content.getRating());
     }
 
     private void redownloadFromScratch(@NonNull final List<Content> contentList) {

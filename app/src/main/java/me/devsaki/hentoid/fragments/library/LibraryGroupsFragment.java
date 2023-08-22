@@ -353,7 +353,7 @@ public class LibraryGroupsFragment extends Fragment implements
      * @param group Group whose "rating" button has been clicked on
      */
     private void onGroupRatingClick(@NonNull Group group) {
-        RatingDialogFragment.invoke(this, new long[]{group.getId()}, group.getRating());
+        RatingDialogFragment.Companion.invoke(this, new long[]{group.getId()}, group.getRating());
     }
 
     /**
