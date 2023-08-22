@@ -18,7 +18,7 @@ import me.devsaki.hentoid.viewholders.ImageFileItem
 /**
  * Dialog to pick a picture in a content gallery
  */
-class GalleyPickerDialogFragment : DialogFragment() {
+class GalleryPickerDialogFragment : DialogFragment() {
 
     // UI
     private var _binding: DialogMetaGalleryBinding? = null
@@ -96,7 +96,7 @@ class GalleyPickerDialogFragment : DialogFragment() {
         const val KEY_IMGS = "image_ids"
 
         fun invoke(fragmentManager: FragmentManager, images: List<ImageFile>) {
-            val fragment = GalleyPickerDialogFragment()
+            val fragment = GalleryPickerDialogFragment()
 
             val args = Bundle()
             args.putLongArray(KEY_IMGS, images.map { i -> i.id }.toLongArray())

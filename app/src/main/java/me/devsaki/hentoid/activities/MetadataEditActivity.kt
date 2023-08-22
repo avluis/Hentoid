@@ -42,7 +42,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.ActivityMetaEditBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.metadata.AttributeTypePickerDialogFragment
-import me.devsaki.hentoid.fragments.metadata.GalleyPickerDialogFragment
+import me.devsaki.hentoid.fragments.metadata.GalleryPickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.fragments.metadata.MetaRenameDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
@@ -54,7 +54,7 @@ import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 
 
-class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
+class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
     AttributeTypePickerDialogFragment.Parent, MetaRenameDialogFragment.Parent {
 
     // == Communication
@@ -333,7 +333,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                             if (imgs != null) {
                                 b2.titleNew.visibility = View.GONE
                                 b2.tagsFab.visibility = View.GONE
-                                GalleyPickerDialogFragment.invoke(supportFragmentManager, imgs)
+                                GalleryPickerDialogFragment.invoke(supportFragmentManager, imgs)
                             }
                         }
                     }
