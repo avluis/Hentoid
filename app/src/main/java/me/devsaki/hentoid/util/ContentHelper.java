@@ -214,7 +214,7 @@ public final class ContentHelper {
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
         bundle.setUrl(content.getGalleryUrl());
         intent.putExtras(bundle.getBundle());
-        if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
+        if (wrapPin) intent = UnlockActivity.Companion.wrapIntent(context, intent);
         context.startActivity(intent);
     }
 
