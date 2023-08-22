@@ -80,6 +80,7 @@ public class DownloadHelper {
             Consumer<Float> notifyProgress) throws
             IOException, UnsupportedContentException, DownloadInterruptedException, IllegalStateException {
         Helper.assertNonUiThread();
+        Context context = HentoidApp.Companion.getInstance();
         String url = HttpHelper.fixUrl(rawUrl, site.getUrl());
 
         if (interruptDownload.get())
@@ -99,10 +100,11 @@ public class DownloadHelper {
 
         long size = body.contentLength();
         if (size < 1) size = 1;
+        String sizeStr = FileHelper.formatHumanReadableSize(size, context.getResources());
 
         String mimeType = StringHelper.protect(forceMimeType);
 
-        Timber.d("WRITING DOWNLOAD %d TO %s/%s (size %.2f KB)", resourceId, targetFolderUri.getPath(), targetFileName, size / 1024.0);
+        Timber.d("WRITING DOWNLOAD %d TO %s/%s (size %s)", resourceId, targetFolderUri.getPath(), targetFileName, sizeStr);
         byte[] buffer = new byte[DL_IO_BUFFER_SIZE_B];
         final int notificationResolution = 250 * 1024 / DL_IO_BUFFER_SIZE_B; // Notify every 250 KB
 
@@ -120,12 +122,12 @@ public class DownloadHelper {
                     if (mimeType.isEmpty()) {
                         mimeType = ImageHelper.INSTANCE.getMimeTypeFromPictureBinary(buffer);
                         if (mimeType.isEmpty() || mimeType.endsWith("/*")) {
-                            String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", url, size / 1024.0);
+                            String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%s)", url, sizeStr);
                             throw new UnsupportedContentException(message);
                         }
                     }
                     targetFileUri = createFile(targetFolderUri, targetFileName, mimeType);
-                    out = FileHelper.getOutputStream(HentoidApp.Companion.getInstance(), targetFileUri);
+                    out = FileHelper.getOutputStream(context, targetFileUri);
                 }
 
                 if (len > 0 && out != null) {
@@ -141,8 +143,8 @@ public class DownloadHelper {
                 if (notifyProgress != null) notifyProgress.accept(100f);
                 if (out != null) out.flush();
                 if (targetFileUri != null) {
-                    long targetFileSize = FileHelper.fileSizeFromUri(HentoidApp.Companion.getInstance(), targetFileUri);
-                    Timber.d("DOWNLOAD %d [%s] WRITTEN TO %s (%.2f KB)", resourceId, mimeType, targetFileUri.getPath(), targetFileSize / 1024.0);
+                    long targetFileSize = FileHelper.fileSizeFromUri(context, targetFileUri);
+                    Timber.d("DOWNLOAD %d [%s] WRITTEN TO %s (%s)", resourceId, mimeType, targetFileUri.getPath(), FileHelper.formatHumanReadableSize(targetFileSize, context.getResources()));
                 }
                 return new ImmutablePair<>(targetFileUri, mimeType);
             }
@@ -150,7 +152,8 @@ public class DownloadHelper {
             body.close();
         }
         // Remove the remaining file chunk if download has been interrupted
-        if (targetFileUri != null) FileHelper.removeFile(HentoidApp.Companion.getInstance(), targetFileUri);
+        if (targetFileUri != null)
+            FileHelper.removeFile(context, targetFileUri);
         throw new DownloadInterruptedException("Download interrupted");
     }
 
