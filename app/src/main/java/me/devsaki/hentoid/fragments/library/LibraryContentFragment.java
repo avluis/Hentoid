@@ -556,7 +556,7 @@ public class LibraryContentFragment extends Fragment implements
                 askSetGroupCover();
                 break;
             case R.id.action_merge:
-                MergeDialogFragment.invoke(this, Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList(), false);
+                MergeDialogFragment.Companion.invoke(this, Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList(), false);
                 keepToolbar = true;
                 break;
             case R.id.action_split:
@@ -564,7 +564,7 @@ public class LibraryContentFragment extends Fragment implements
                 if (selectedContent.isPresent()) {
                     Content c = selectedContent.get().getContent();
                     if (c != null)
-                        SplitDialogFragment.invoke(this, c);
+                        SplitDialogFragment.Companion.invoke(this, c);
                 }
                 keepToolbar = true;
                 break;
@@ -1573,9 +1573,10 @@ public class LibraryContentFragment extends Fragment implements
         requireContext().startActivity(intent);
     }
 
-    public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle, boolean deleteAfterMerging) {
+    @Override
+    public void mergeContents(@NonNull List<? extends Content> contentList, @NonNull String newTitle, boolean deleteAfterMerging) {
         leaveSelectionMode();
-        viewModel.mergeContents(contentList, newTitle, deleteAfterMerging, this::onMergeSuccess);
+        viewModel.mergeContents((List<Content>) contentList, newTitle, deleteAfterMerging, this::onMergeSuccess);
         ProgressDialogFragment.Companion.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), R.plurals.page);
     }
 
@@ -1584,9 +1585,10 @@ public class LibraryContentFragment extends Fragment implements
         refreshIfNeeded();
     }
 
-    public void splitContent(@NonNull Content content, @NonNull List<Chapter> chapters) {
+    @Override
+    public void splitContent(@NonNull Content content, @NonNull List<? extends Chapter> chapters) {
         leaveSelectionMode();
-        viewModel.splitContent(content, chapters, this::onSplitSuccess);
+        viewModel.splitContent(content, (List<Chapter>) chapters, this::onSplitSuccess);
         ProgressDialogFragment.Companion.invoke(getParentFragmentManager(), getResources().getString(R.string.split_progress), R.plurals.page);
     }
 

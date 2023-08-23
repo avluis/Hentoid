@@ -287,7 +287,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
     }
 
     override fun mergeContents(
-        contentList: MutableList<Content>,
+        contentList: List<Content>,
         newTitle: String,
         deleteAfterMerging: Boolean
     ) {
