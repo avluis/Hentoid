@@ -6,87 +6,105 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.CompoundButton
-import android.widget.Spinner
-import androidx.appcompat.widget.Toolbar
-import androidx.core.view.ViewCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.databinding.FragmentPinPreferenceOnBinding
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 
 class ActivatedPinPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
-    ResetPinDialogFragment.Parent, AdapterView.OnItemSelectedListener {
+    ResetPinDialogFragment.Parent {
 
-    private lateinit var offSwitch: MaterialSwitch
-    private lateinit var lockDelaySpinner: Spinner
+    private var initalLockType: Int = 0
+
+    private var binding: FragmentPinPreferenceOnBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val rootView: View = inflater.inflate(R.layout.fragment_pin_preference_on, container, false)
-        val toolbar = ViewCompat.requireViewById<Toolbar>(rootView, R.id.toolbar)
-        toolbar.setNavigationOnClickListener { requireActivity().finish() }
-        offSwitch = ViewCompat.requireViewById(rootView, R.id.switch_off)
-        offSwitch.setOnClickListener { onOffClick() }
-        val lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore()
-        val lockOnAppRestored =
-            ViewCompat.requireViewById<MaterialSwitch>(rootView, R.id.switch_lock_on_restore)
-        lockOnAppRestored.isChecked = lockOnAppRestoredEnabled
-        lockOnAppRestored.setOnCheckedChangeListener { _: CompoundButton?, v: Boolean ->
-            onLockOnAppRestoreClick(v)
+        binding = FragmentPinPreferenceOnBinding.inflate(inflater, container, false)
+        binding?.apply {
+            toolbar.setNavigationOnClickListener { requireActivity().finish() }
+            initalLockType = Settings.lockType
+            lockType.index = initalLockType
+            lockType.setOnIndexChangeListener { i -> onLockTypeChanged(i) }
+
+            val lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore()
+            switchLockOnRestore.isChecked = lockOnAppRestoredEnabled
+            switchLockOnRestore.setOnCheckedChangeListener { _: CompoundButton?, v: Boolean ->
+                onLockOnAppRestoreClick(v)
+            }
+            lockTimer.isVisible = lockOnAppRestoredEnabled
+            lockTimer.setSelection(Preferences.getLockTimer())
+            lockTimer.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    Preferences.setLockTimer(position)
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    // Nothing to do
+                }
+            }
+            textResetPin.setOnClickListener { onResetClick() }
         }
-        val lockTimer = Preferences.getLockTimer()
-        lockDelaySpinner = ViewCompat.requireViewById(rootView, R.id.lock_timer)
-        lockDelaySpinner.visibility = if (lockOnAppRestoredEnabled) View.VISIBLE else View.GONE
-        lockDelaySpinner.setSelection(lockTimer)
-        lockDelaySpinner.onItemSelectedListener = this
-        val resetButton = ViewCompat.requireViewById<View>(rootView, R.id.text_reset_pin)
-        resetButton.setOnClickListener { onResetClick() }
-        return rootView
+        return binding!!.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 
     override fun onPinDeactivateSuccess() {
-        Snackbar.make(offSwitch, R.string.app_lock_disabled, BaseTransientBottomBar.LENGTH_SHORT)
-            .show()
-        parentFragmentManager
-            .beginTransaction()
-            .replace(android.R.id.content, DeactivatedPinPreferenceFragment())
-            .commit()
+        binding?.apply {
+            Snackbar.make(
+                root,
+                R.string.app_lock_disabled,
+                BaseTransientBottomBar.LENGTH_SHORT
+            )
+                .show()
+            parentFragmentManager
+                .beginTransaction()
+                .replace(android.R.id.content, DeactivatedPinPreferenceFragment())
+                .commit()
+        }
     }
 
     override fun onPinDeactivateCancel() {
-        offSwitch.isChecked = true
+        binding?.lockType?.index = initalLockType
     }
 
     override fun onPinResetSuccess() {
-        Snackbar.make(offSwitch, R.string.pin_reset_success, BaseTransientBottomBar.LENGTH_SHORT)
-            .show()
+        binding?.apply {
+            Snackbar.make(root, R.string.pin_reset_success, BaseTransientBottomBar.LENGTH_SHORT)
+                .show()
+        }
     }
 
-    private fun onOffClick() {
-        val fragment = DeactivatePinDialogFragment()
-        fragment.show(childFragmentManager, null)
+    private fun onLockTypeChanged(index: Int) {
+        if (0 == index) DeactivatePinDialogFragment().show(childFragmentManager, null)
+        else if (index != initalLockType) {
+            // TODO : PIN & Biometrics
+        }
     }
 
     private fun onLockOnAppRestoreClick(newValue: Boolean) {
         Preferences.setLockOnAppRestore(newValue)
-        lockDelaySpinner.visibility = if (newValue) View.VISIBLE else View.GONE
+        binding?.lockTimer?.isVisible = newValue
     }
 
     private fun onResetClick() {
         val fragment = ResetPinDialogFragment()
         fragment.show(childFragmentManager, null)
-    }
-
-    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        Preferences.setLockTimer(position)
-    }
-
-    override fun onNothingSelected(parent: AdapterView<*>?) {
-        // Do nothing
     }
 }

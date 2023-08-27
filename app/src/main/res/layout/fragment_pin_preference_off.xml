@@ -15,20 +15,14 @@
         app:navigationIcon="@drawable/ic_close"
         app:title="@string/title_activity_app_lock" />
 
-    <com.google.android.material.materialswitch.MaterialSwitch
-        android:id="@+id/switch_on"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:background="@color/item_highlight"
-        android:checked="false"
-        android:paddingStart="72dp"
-        android:paddingEnd="16dp"
-        android:text="@string/off"
-        android:textSize="@dimen/text_body_1"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+    <me.devsaki.hentoid.views.ListPickerView
+        android:id="@+id/lock_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:rounded="false"
+        app:entries="@array/lock_type_entries"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:title="@string/lock_type" />
 
     <ImageView
         android:id="@+id/image_info"
@@ -38,7 +32,7 @@
         android:layout_marginTop="16dp"
         android:src="@drawable/ic_info"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/switch_on"
+        app:layout_constraintTop_toBottomOf="@id/lock_type"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -51,6 +45,6 @@
         android:text="@string/pin_explanation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/image_info"
-        app:layout_constraintTop_toBottomOf="@id/switch_on" />
+        app:layout_constraintTop_toBottomOf="@id/lock_type" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

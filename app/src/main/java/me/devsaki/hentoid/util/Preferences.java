@@ -54,6 +54,10 @@ public final class Preferences {
             sharedPreferences.edit().putBoolean(Key.VIEWER_SWIPE_TO_FLING, flingFactor > 0).apply();
             sharedPreferences.edit().remove(Key.VIEWER_FLING_FACTOR).apply();
         }
+        // PIN activation -> Lock type (v1.18.4)
+        if (sharedPreferences.contains(Key.APP_LOCK)) {
+            if (!getAppLockPin().isEmpty()) Settings.INSTANCE.setLockType(1);
+        }
     }
 
     public static void registerPrefsChangedListener(SharedPreferences.OnSharedPreferenceChangeListener listener) {
@@ -74,6 +78,7 @@ public final class Preferences {
         result.remove(Key.EXTERNAL_LIBRARY_URI);
         result.remove(Key.LAST_KNOWN_APP_VERSION_CODE);
         result.remove(Key.REFRESH_JSON_1_DONE);
+        result.remove(Settings.Key.LOCK_TYPE);
 
         return result;
     }

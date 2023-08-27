@@ -454,6 +454,13 @@
         <item>CBZ</item>
     </string-array>
 
+    <!-- Lock dialog -->
+    <string-array name="lock_type_entries" translatable="false">
+        <item>@string/off</item>
+        <item>@string/lock_type_pin</item>
+        <item>@string/lock_type_biometric</item>
+    </string-array>
+
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>
     <string name="error" translatable="false">Error</string>

@@ -17,6 +17,9 @@ object Settings {
     /**
      * FIELDS
      */
+    // LOCK
+    var lockType: Int by IntSetting(Key.LOCK_TYPE, 0)
+
     // TRANSFORM
     var isResizeEnabled: Boolean by BoolSetting("TRANSFORM_RESIZE_ENABLED", false)
     var resizeMethod: Int by IntSetting("TRANSFORM_RESIZE_METHOD", 0)
@@ -104,6 +107,7 @@ object Settings {
         const val TRANSFORM_RESIZE_METHOD = "TRANSFORM_RESIZE_METHOD"
         const val TRANSFORM_RESIZE_WIDTH = "TRANSFORM_RESIZE_WIDTH"
         const val READER_COLOR_DEPTH = "viewer_color_depth"
+        const val LOCK_TYPE = "LOCK_TYPE"
     }
 
     object Value {
