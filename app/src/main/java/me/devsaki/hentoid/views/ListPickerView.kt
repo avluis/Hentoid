@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import me.devsaki.hentoid.R
@@ -61,9 +62,11 @@ class ListPickerView : ConstraintLayout {
             if (rawEntries != null) entries = rawEntries.map { cs -> cs.toString() }
             val rawValues = arr.getTextArray(R.styleable.ListPickerView_values)
             if (rawValues != null) values = rawValues.map { cs -> cs.toString() }
+            val rounded = arr.getBoolean(R.styleable.ListPickerView_values, true)
 
             binding.let {
                 it.root.clipToOutline = true
+                if (rounded) it.root.background = ContextCompat.getDrawable(context, R.drawable.bg_rounded_rect)
                 it.title.isVisible = title.isNotEmpty()
                 if (title.isNotEmpty()) it.title.text = title
 
