@@ -18,6 +18,7 @@ import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.util.LocaleHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.Settings;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 
@@ -52,7 +53,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         // If locked and PIN enabled, display the PIN
-        if (!HentoidApp.Companion.isUnlocked() && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
+        if (!HentoidApp.Companion.isUnlocked() && Settings.INSTANCE.getLockType() > 0 && Preferences.isLockOnAppRestore()) {
             // Evaluate if any set delay has passed; if so, the app gets locked
             int lockDelayCode = Preferences.getLockTimer();
             int lockDelaySec = switch (lockDelayCode) {

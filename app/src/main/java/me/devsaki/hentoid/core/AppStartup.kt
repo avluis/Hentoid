@@ -44,6 +44,7 @@ import timber.log.Timber
 import java.io.IOException
 
 typealias BiConsumer<T, U> = (T, U) -> Unit
+typealias Consumer<T> = (T) -> Unit
 
 @Suppress("UNUSED_PARAMETER")
 object AppStartup {

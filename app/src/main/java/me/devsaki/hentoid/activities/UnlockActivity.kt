@@ -5,14 +5,18 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.appcompat.app.AppCompatActivity
+import dev.skomlach.biometric.compat.BiometricAuthRequest
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.BiometricsHelper
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.core.HentoidApp.Companion.isUnlocked
 import me.devsaki.hentoid.core.HentoidApp.Companion.setUnlocked
+import me.devsaki.hentoid.core.startBiometric
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.pin.UnlockPinDialogFragment
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 
 /**
@@ -26,21 +30,31 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
         if (Preferences.getAppLockPin().length != 4) {
             Preferences.setAppLockPin("")
         }
-        if (Preferences.getAppLockPin().isEmpty() || isUnlocked()) {
+        if (0 == Settings.lockType || isUnlocked()) {
             goToNextActivity()
             return
         }
         if (savedInstanceState == null) {
-            UnlockPinDialogFragment.invoke(supportFragmentManager)
+            if (1 == Settings.lockType) UnlockPinDialogFragment.invoke(supportFragmentManager)
+            else if (2 == Settings.lockType) {
+                val bestBM = BiometricsHelper.detectBestBiometric()
+                if (bestBM != null) {
+                    startBiometric(
+                        BiometricAuthRequest(bestBM.api, bestBM.type),
+                        { b -> if (b) onUnlockSuccess() }
+                    )
+                }
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        UnlockPinDialogFragment.invoke(supportFragmentManager)
+        if (1 == Settings.lockType) UnlockPinDialogFragment.invoke(supportFragmentManager)
+        else if (2 == Settings.lockType) UnlockPinDialogFragment.invoke(supportFragmentManager)
     }
 
-    override fun onPinSuccess() {
+    override fun onUnlockSuccess() {
         setUnlocked(true)
         goToNextActivity()
     }
@@ -84,25 +98,6 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
             val intent = Intent(context, UnlockActivity::class.java)
             intent.action = Intent.ACTION_VIEW
             intent.putExtra(EXTRA_INTENT, destinationIntent)
-            return intent
-        }
-
-        /**
-         * Creates an intent that launches this activity before launching the given site's
-         * wrapped web activity intent
-         *
-         *
-         * NB : Specific implementation mandatory to create shortcuts because shortcut intents bundles
-         * are `PersistableBundle`s that cannot only store basic values (no Intent objects)
-         *
-         * @param context used for creating the return intent
-         * @param site    Site whose web activity to launch after the PIN is unlocked
-         * @return intent that launches this activity which leads to the `site`'s web activity
-         */
-        fun wrapIntent(context: Context, site: Site): Intent {
-            val intent = Intent(context, UnlockActivity::class.java)
-            intent.action = Intent.ACTION_VIEW
-            intent.putExtra(EXTRA_SITE_CODE, site.code)
             return intent
         }
     }

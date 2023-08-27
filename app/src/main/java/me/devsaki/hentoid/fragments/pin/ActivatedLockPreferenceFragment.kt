@@ -15,7 +15,7 @@ import me.devsaki.hentoid.databinding.FragmentPinPreferenceOnBinding
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 
-class ActivatedPinPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
+class ActivatedLockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     ResetPinDialogFragment.Parent {
 
     private var initalLockType: Int = 0
@@ -75,7 +75,7 @@ class ActivatedPinPreferenceFragment : Fragment(), DeactivatePinDialogFragment.P
                 .show()
             parentFragmentManager
                 .beginTransaction()
-                .replace(android.R.id.content, DeactivatedPinPreferenceFragment())
+                .replace(android.R.id.content, DeactivatedLockPreferenceFragment())
                 .commit()
         }
     }

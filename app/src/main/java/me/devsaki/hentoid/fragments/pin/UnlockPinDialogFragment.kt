@@ -31,7 +31,7 @@ class UnlockPinDialogFragment : PinDialogFragment() {
     override fun onPinAccept(pin: String) {
         if (Preferences.getAppLockPin() == pin) {
             dismiss()
-            parent?.onPinSuccess()
+            parent?.onUnlockSuccess()
         } else {
             vibrate()
             clearPin()
@@ -39,6 +39,6 @@ class UnlockPinDialogFragment : PinDialogFragment() {
     }
 
     interface Parent {
-        fun onPinSuccess()
+        fun onUnlockSuccess()
     }
 }

@@ -19,6 +19,7 @@ import me.devsaki.hentoid.activities.SplashActivity
 import me.devsaki.hentoid.receiver.WebViewUpdateCycleReceiver
 import me.devsaki.hentoid.timber.CrashlyticsTree
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.init
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -158,8 +159,7 @@ class HentoidApp : Application() {
     class LifeCycleListener : DefaultLifecycleObserver, LifecycleObserver {
         override fun onStop(owner: LifecycleOwner) {
             Timber.d("App moving to background")
-            if (enabled && isUnlocked && Preferences.getAppLockPin()
-                    .isNotEmpty() && Preferences.isLockOnAppRestore()
+            if (enabled && isUnlocked && Settings.lockType > 0 && Preferences.isLockOnAppRestore()
             ) {
                 setUnlocked(false)
                 setLockInstant(Instant.now().toEpochMilli())
