@@ -36,7 +36,7 @@ class DeactivatedPinPreferenceFragment : Fragment(), ActivatePinDialogFragment.P
         setUnlocked(true) // Now that PIN lock is enabled, the app needs to be marked as currently unlocked to avoid showing an unnecessary PIN dialog at next navigation action
         parentFragmentManager
             .beginTransaction()
-            .replace(R.id.content, ActivatedPinPreferenceFragment())
+            .replace(android.R.id.content, ActivatedPinPreferenceFragment())
             .commit()
     }
 

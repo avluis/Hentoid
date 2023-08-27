@@ -54,7 +54,7 @@ class ActivatedPinPreferenceFragment : Fragment(), DeactivatePinDialogFragment.P
             .show()
         parentFragmentManager
             .beginTransaction()
-            .replace(R.id.content, DeactivatedPinPreferenceFragment())
+            .replace(android.R.id.content, DeactivatedPinPreferenceFragment())
             .commit()
     }
 
