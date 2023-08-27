@@ -197,11 +197,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/preview"
             android:textSize="@dimen/text_header_6"
             android:textStyle="bold"
+            android:text="@string/preview"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/warnings_list" />
+            app:layout_constraintTop_toBottomOf="@id/warnings_list"
+            tools:ignore="ContentDescription" />
 
         <ProgressBar
             android:id="@+id/preview_progress"
@@ -220,15 +221,15 @@
 
         <ImageView
             android:id="@+id/thumb"
-            android:layout_width="75dp"
-            android:layout_height="100dp"
+            android:layout_width="81dp"
+            android:layout_height="108dp"
             android:layout_marginTop="4dp"
             android:adjustViewBounds="true"
             android:clickable="true"
+            android:contentDescription="@string/preview"
             android:focusable="true"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/preview_header"
-            tools:ignore="ContentDescription"
             tools:src="@drawable/ic_hentoid_trans"
             tools:tint="@color/light_gray" />
 
@@ -272,10 +273,11 @@
 
         <ImageButton
             android:id="@+id/prev_page_btn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="@color/transparent"
             android:clickable="true"
+            android:contentDescription="@string/previous_page"
             android:focusable="true"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_action_previous_item"
@@ -289,11 +291,12 @@
 
         <ImageButton
             android:id="@+id/next_page_btn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:background="@color/transparent"
             android:clickable="true"
+            android:contentDescription="@string/next_page"
             android:focusable="true"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_action_next_item"
