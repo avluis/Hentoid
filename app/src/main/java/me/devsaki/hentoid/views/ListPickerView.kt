@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -66,7 +65,6 @@ class ListPickerView : ConstraintLayout {
 
             binding.let {
                 it.root.clipToOutline = true
-                if (rounded) it.root.background = ContextCompat.getDrawable(context, R.drawable.bg_rounded_rect)
                 it.title.isVisible = title.isNotEmpty()
                 if (title.isNotEmpty()) it.title.text = title
 
