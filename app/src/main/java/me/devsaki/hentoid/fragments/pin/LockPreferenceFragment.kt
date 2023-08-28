@@ -19,7 +19,7 @@ import me.devsaki.hentoid.databinding.FragmentPinPreferenceOnBinding
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 
-class ActivatedLockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
+class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     ResetPinDialogFragment.Parent, ActivatePinDialogFragment.Parent {
 
     private var initalLockType: Int = 0
@@ -106,7 +106,7 @@ class ActivatedLockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.
             HentoidApp.setUnlocked(true) // Now that PIN lock is enabled, the app needs to be marked as currently unlocked to avoid showing an unnecessary PIN dialog at next navigation action
             parentFragmentManager
                 .beginTransaction()
-                .replace(android.R.id.content, ActivatedLockPreferenceFragment())
+                .replace(android.R.id.content, LockPreferenceFragment())
                 .commit()
         }
     }
