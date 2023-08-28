@@ -10,13 +10,17 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import dev.skomlach.biometric.compat.BiometricAuthRequest
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.BiometricsHelper
+import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.core.startBiometric
 import me.devsaki.hentoid.databinding.FragmentPinPreferenceOnBinding
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 
 class ActivatedLockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
-    ResetPinDialogFragment.Parent {
+    ResetPinDialogFragment.Parent, ActivatePinDialogFragment.Parent {
 
     private var initalLockType: Int = 0
 
@@ -29,18 +33,12 @@ class ActivatedLockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.
     ): View {
         binding = FragmentPinPreferenceOnBinding.inflate(inflater, container, false)
         binding?.apply {
+            refresh()
             toolbar.setNavigationOnClickListener { requireActivity().finish() }
-            initalLockType = Settings.lockType
-            lockType.index = initalLockType
             lockType.setOnIndexChangeListener { i -> onLockTypeChanged(i) }
-
-            val lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore()
-            switchLockOnRestore.isChecked = lockOnAppRestoredEnabled
             switchLockOnRestore.setOnCheckedChangeListener { _: CompoundButton?, v: Boolean ->
                 onLockOnAppRestoreClick(v)
             }
-            lockTimer.isVisible = lockOnAppRestoredEnabled
-            lockTimer.setSelection(Preferences.getLockTimer())
             lockTimer.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
                     parent: AdapterView<*>?,
@@ -65,23 +63,32 @@ class ActivatedLockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.
         binding = null
     }
 
+    private fun refresh() {
+        val lockTypeVal = Settings.lockType
+        binding?.apply {
+            switchLockOnRestore.isVisible = (lockTypeVal > 0)
+            textResetPin.isVisible = (1 == lockTypeVal)
+            lockType.index = lockTypeVal
+            val lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore()
+            switchLockOnRestore.isChecked = lockOnAppRestoredEnabled
+            lockTimer.isVisible = lockOnAppRestoredEnabled
+            lockTimer.setSelection(Preferences.getLockTimer())
+        }
+    }
+
     override fun onPinDeactivateSuccess() {
         binding?.apply {
+            refresh()
             Snackbar.make(
                 root,
                 R.string.app_lock_disabled,
                 BaseTransientBottomBar.LENGTH_SHORT
-            )
-                .show()
-            parentFragmentManager
-                .beginTransaction()
-                .replace(android.R.id.content, DeactivatedLockPreferenceFragment())
-                .commit()
+            ).show()
         }
     }
 
     override fun onPinDeactivateCancel() {
-        binding?.lockType?.index = initalLockType
+        refresh()
     }
 
     override fun onPinResetSuccess() {
@@ -91,10 +98,59 @@ class ActivatedLockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.
         }
     }
 
+    override fun onPinActivateSuccess() {
+        binding?.apply {
+            refresh()
+            Snackbar.make(root, R.string.app_lock_enable, BaseTransientBottomBar.LENGTH_SHORT)
+                .show()
+            HentoidApp.setUnlocked(true) // Now that PIN lock is enabled, the app needs to be marked as currently unlocked to avoid showing an unnecessary PIN dialog at next navigation action
+            parentFragmentManager
+                .beginTransaction()
+                .replace(android.R.id.content, ActivatedLockPreferenceFragment())
+                .commit()
+        }
+    }
+
+    override fun onPinActivateCancel() {
+        refresh()
+    }
+
+    private fun onBiometricsResult(result: Boolean) {
+        if (result) {
+            Settings.lockType = 2
+            Preferences.setAppLockPin("")
+        }
+        refresh()
+    }
+
     private fun onLockTypeChanged(index: Int) {
-        if (0 == index) DeactivatePinDialogFragment().show(childFragmentManager, null)
-        else if (index != initalLockType) {
-            // TODO : PIN & Biometrics
+        if (0 == index) {
+            if (1 == initalLockType) DeactivatePinDialogFragment().show(childFragmentManager, null)
+            else {
+                Settings.lockType = 0
+                onPinDeactivateSuccess()
+            }
+        } else if (index != initalLockType) {
+            if (1 == index) { // PIN
+                ActivatePinDialogFragment().show(childFragmentManager, null)
+            } else { // Biometrics
+                val bestBM = BiometricsHelper.detectBestBiometric()
+                if (bestBM != null) {
+                    activity?.startBiometric(
+                        BiometricAuthRequest(bestBM.api, bestBM.type),
+                        this::onBiometricsResult
+                    )
+                } else {
+                    binding?.lockType?.index = 0 // Off
+                    binding?.apply {
+                        Snackbar.make(
+                            root,
+                            R.string.app_lock_biometrics_fail,
+                            BaseTransientBottomBar.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 
 class DeactivatePinDialogFragment : PinDialogFragment() {
     private var parent: Parent? = null
@@ -21,6 +22,7 @@ class DeactivatePinDialogFragment : PinDialogFragment() {
 
     override fun onPinAccept(pin: String) {
         if (Preferences.getAppLockPin() == pin) {
+            Settings.lockType = 0
             Preferences.setAppLockPin("")
             dismiss()
             parent?.onPinDeactivateSuccess()

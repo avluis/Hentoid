@@ -20,7 +20,6 @@ import me.devsaki.hentoid.receiver.WebViewUpdateCycleReceiver
 import me.devsaki.hentoid.timber.CrashlyticsTree
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.Settings.init
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import timber.log.Timber
@@ -49,8 +48,8 @@ class HentoidApp : Application() {
 
         // Prefs
         Preferences.init(this)
+        Settings.init(this)
         Preferences.performHousekeeping()
-        init(this)
 
         // Init version number
         if (0 == Preferences.getLastKnownAppVersionCode()) Preferences.setLastKnownAppVersionCode(
