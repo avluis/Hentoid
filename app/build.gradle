@@ -86,6 +86,9 @@ android {
             // Fix issue with RxJava 2.x (https://github.com/ReactiveX/RxJava/issues/4445)
             excludes += ['META-INF/rxjava.properties']
         }
+        jniLibs {
+            useLegacyPackaging true
+        }
     }
     testOptions {
         unitTests.includeAndroidResources = true
