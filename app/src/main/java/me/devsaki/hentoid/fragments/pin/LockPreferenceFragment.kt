@@ -137,7 +137,7 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
                 val bestBM = BiometricsHelper.detectBestBiometric()
                 if (bestBM != null) {
                     activity?.startBiometric(
-                        BiometricAuthRequest(bestBM.api, bestBM.type),
+                        BiometricAuthRequest(bestBM.api, bestBM.type), true,
                         this::onBiometricsResult
                     )
                 } else {

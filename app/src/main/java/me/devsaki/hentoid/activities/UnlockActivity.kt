@@ -40,7 +40,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
                 val bestBM = BiometricsHelper.detectBestBiometric()
                 if (bestBM != null) {
                     startBiometric(
-                        BiometricAuthRequest(bestBM.api, bestBM.type),
+                        BiometricAuthRequest(bestBM.api, bestBM.type), false,
                         { b -> if (b) onUnlockSuccess() }
                     )
                 }

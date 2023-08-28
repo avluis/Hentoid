@@ -15,7 +15,6 @@ import dev.skomlach.biometric.compat.BiometricPromptCompat
 import dev.skomlach.biometric.compat.BiometricType
 import dev.skomlach.biometric.compat.utils.logging.BiometricLoggerImpl
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.ToastHelper
 
 fun <T : Fragment> T.withArguments(bundleBlock: Bundle.() -> Unit): T {
     arguments = Bundle().apply(bundleBlock)
@@ -24,8 +23,9 @@ fun <T : Fragment> T.withArguments(bundleBlock: Bundle.() -> Unit): T {
 
 fun FragmentActivity.startBiometric(
     biometricAuthRequest: BiometricAuthRequest,
+    lock: Boolean,
     resultHandler: Consumer<Boolean>,
-    silentAuth: Boolean = false
+    silentAuth: Boolean = false,
 ) {
     if (!BiometricManagerCompat.isBiometricReadyForUsage(biometricAuthRequest)) {
         if (!BiometricManagerCompat.isHardwareDetected(biometricAuthRequest))
@@ -59,14 +59,12 @@ fun FragmentActivity.startBiometric(
         biometricAuthRequest,
         this
     )
-        .setTitle("Biometric for Fragment: BlaBlablabla Some very long text BlaBlablabla and more text and more and more and more")
-        .setSubtitle("Biometric Subtitle: BlaBlablabla Some very long text BlaBlablabla and more text and more and more and more")
-        .setDescription("Biometric Description: BlaBlablabla Some very long text BlaBlablabla and more text and more and more and more")
+        .setTitle(R.string.biometric_dialog_title)
+        .setSubtitle(if (lock) R.string.biometric_dialog_subtitle_lock else R.string.biometric_dialog_subtitle_unlock)
+//        .setDescription("Biometric Description: BlaBlablabla Some very long text BlaBlablabla and more text and more and more and more")
 //        .setNegativeButtonText("Cancel: BlaBlablabla Some very long text BlaBlablabla and more text and more and more and more")
         .also {
-            if (silentAuth) {
-                it.enableSilentAuth()
-            }
+            if (silentAuth) it.enableSilentAuth()
         }
         .build()
 
@@ -74,13 +72,13 @@ fun FragmentActivity.startBiometric(
     biometricPromptCompat.authenticate(object : BiometricPromptCompat.AuthenticationCallback() {
         override fun onSucceeded(confirmed: Set<AuthenticationResult>) {
             super.onSucceeded(confirmed)
-            ToastHelper.toast("Success")
+//            ToastHelper.toast("Success")
             resultHandler.invoke(true)
         }
 
         override fun onCanceled() {
             BiometricLoggerImpl.e("CheckBiometric.onCanceled()")
-            ToastHelper.toast("Canceled")
+//            ToastHelper.toast("Canceled")
             resultHandler.invoke(false)
         }
 
@@ -94,12 +92,12 @@ fun FragmentActivity.startBiometric(
 
         override fun onUIOpened() {
             BiometricLoggerImpl.e("CheckBiometric.onUIOpened()")
-            ToastHelper.toast("onUIOpened")
+            //ToastHelper.toast("onUIOpened")
         }
 
         override fun onUIClosed() {
             BiometricLoggerImpl.e("CheckBiometric.onUIClosed()")
-            ToastHelper.toast("onUIClosed")
+            //ToastHelper.toast("onUIClosed")
         }
     })
 }
