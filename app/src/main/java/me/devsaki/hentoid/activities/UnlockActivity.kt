@@ -41,7 +41,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
                 if (bestBM != null) {
                     startBiometric(
                         BiometricAuthRequest(bestBM.api, bestBM.type), false,
-                        { b -> if (b) onUnlockSuccess() }
+                        { b -> if (b) onUnlockSuccess() else finish() }
                     )
                 }
             }
@@ -51,7 +51,6 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
     override fun onResume() {
         super.onResume()
         if (1 == Settings.lockType) UnlockPinDialogFragment.invoke(supportFragmentManager)
-        else if (2 == Settings.lockType) UnlockPinDialogFragment.invoke(supportFragmentManager)
     }
 
     override fun onUnlockSuccess() {

@@ -675,8 +675,8 @@
     <string name="lock_type_biometric">Biometric</string>
     <string name="app_lock_biometrics_fail">Couldn\'t find any fitting biometric system</string>
     <string name="biometric_dialog_title">Biometric lock</string>
-    <string name="biometric_dialog_subtitle_lock">Confirm biometric lock</string>
-    <string name="biometric_dialog_subtitle_unlock">Unlock biometric lock</string>
+    <string name="biometric_dialog_subtitle_lock">Confirm before locking</string>
+    <string name="biometric_dialog_subtitle_unlock">Unlock with biometrics</string>
 
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
