@@ -17,7 +17,7 @@ import me.devsaki.hentoid.notification.update.UpdateInstallNotification;
 import me.devsaki.hentoid.notification.update.UpdateProgressNotification;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.workers.data.UpdateDownloadData;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -40,7 +40,7 @@ public class UpdateDownloadWorker extends BaseWorker {
     }
 
     @Override
-    Notification getStartNotification() {
+    BaseNotification getStartNotification() {
         return new UpdateProgressNotification();
     }
 

@@ -4,15 +4,15 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.notification.Notification
-import java.util.*
+import me.devsaki.hentoid.util.notification.BaseNotification
+import java.util.Locale
 
 class DeleteProgressNotification(
     private val title: String,
     private val progress: Int,
     private val max: Int,
     private val isPurge: Boolean
-) : Notification {
+) : BaseNotification() {
 
     private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
 

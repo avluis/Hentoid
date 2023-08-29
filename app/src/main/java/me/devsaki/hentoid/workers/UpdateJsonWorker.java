@@ -21,7 +21,7 @@ import me.devsaki.hentoid.notification.updateJson.UpdateJsonProgressNotification
 import me.devsaki.hentoid.notification.updateJson.UpdateJsonStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.GroupHelper;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.workers.data.UpdateJsonData;
 import timber.log.Timber;
 
@@ -49,7 +49,7 @@ public class UpdateJsonWorker extends BaseWorker {
     }
 
     @Override
-    Notification getStartNotification() {
+    BaseNotification getStartNotification() {
         return new UpdateJsonStartNotification();
     }
 

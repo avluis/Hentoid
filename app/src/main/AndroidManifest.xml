@@ -606,15 +606,17 @@
 
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
+        <receiver android:name=".receiver.DownloadNotificationPauseReceiver" />
+
+        <receiver android:name=".receiver.DownloadNotificationCancelReceiver" />
+
         <receiver android:name=".receiver.ArchiveNotificationSuccessReceiver" />
 
-        <receiver android:name=".receiver.DownloadNotificationPauseReceiver" />
+        <receiver android:name=".receiver.ArchiveNotificationStopReceiver" />
 
         <receiver android:name=".receiver.DuplicateNotificationStopReceiver" />
 
         <receiver android:name=".receiver.TransformNotificationStopReceiver" />
-
-        <receiver android:name=".receiver.ArchiveNotificationStopReceiver" />
 
         <receiver android:name=".receiver.AppUpdateDownloadReceiver" />
 

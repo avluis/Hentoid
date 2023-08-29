@@ -7,10 +7,10 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.receiver.AppUpdateDownloadReceiver
-import me.devsaki.hentoid.util.notification.Notification
+import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.workers.data.UpdateDownloadData
 
-class UpdateFailedNotification(private val downloadUrl: String) : Notification {
+class UpdateFailedNotification(private val downloadUrl: String) : BaseNotification() {
 
     override fun onCreateNotification(context: Context): android.app.Notification {
         val intent = Intent(context, AppUpdateDownloadReceiver::class.java)

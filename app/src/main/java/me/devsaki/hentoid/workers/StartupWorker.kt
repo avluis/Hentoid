@@ -10,7 +10,7 @@ import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.database.DatabaseMaintenance
 import me.devsaki.hentoid.notification.startup.StartupCompleteNotification
 import me.devsaki.hentoid.notification.startup.StartupProgressNotification
-import me.devsaki.hentoid.util.notification.Notification
+import me.devsaki.hentoid.util.notification.BaseNotification
 import timber.log.Timber
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
@@ -21,7 +21,7 @@ class StartupWorker(context: Context, parameters: WorkerParameters) :
     private val killSwitch = AtomicBoolean(false)
 
 
-    override fun getStartNotification(): Notification {
+    override fun getStartNotification(): BaseNotification {
         return StartupProgressNotification("Startup progress", 0, 0)
     }
 

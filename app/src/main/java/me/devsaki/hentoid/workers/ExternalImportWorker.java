@@ -46,7 +46,7 @@ import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import timber.log.Timber;
 
 
@@ -68,7 +68,7 @@ public class ExternalImportWorker extends BaseWorker {
     }
 
     @Override
-    Notification getStartNotification() {
+    BaseNotification getStartNotification() {
         return new ImportStartNotification();
     }
 

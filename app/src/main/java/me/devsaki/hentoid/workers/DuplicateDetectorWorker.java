@@ -33,7 +33,7 @@ import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
 import me.devsaki.hentoid.workers.data.DuplicateData;
@@ -72,7 +72,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
     }
 
     @Override
-    Notification getStartNotification() {
+    BaseNotification getStartNotification() {
         return new DuplicateStartNotification();
     }
 

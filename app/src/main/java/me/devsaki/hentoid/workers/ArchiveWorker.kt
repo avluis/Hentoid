@@ -17,7 +17,7 @@ import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.ArchiveHelper
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.notification.Notification
+import me.devsaki.hentoid.util.notification.BaseNotification
 import timber.log.Timber
 import java.io.IOException
 import java.io.OutputStream
@@ -46,7 +46,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
     }
 
 
-    override fun getStartNotification(): Notification {
+    override fun getStartNotification(): BaseNotification {
         return ArchiveProgressNotification("", 0, 0, 0f)
     }
 

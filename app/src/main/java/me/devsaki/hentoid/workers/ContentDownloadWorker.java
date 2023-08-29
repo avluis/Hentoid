@@ -87,7 +87,7 @@ import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.NetworkHelper;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
 
@@ -130,7 +130,7 @@ public class ContentDownloadWorker extends BaseWorker {
     }
 
     @Override
-    Notification getStartNotification() {
+    BaseNotification getStartNotification() {
         String message = getApplicationContext().getResources().getString(R.string.starting_download);
         return new DownloadProgressNotification(message, 0, 0, 0, 0, 0);
     }

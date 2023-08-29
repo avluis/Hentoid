@@ -23,7 +23,7 @@ import java.util.List;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.util.LocaleHelper;
 import me.devsaki.hentoid.util.LogHelper;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
 
@@ -153,7 +153,7 @@ public abstract class BaseWorker extends Worker {
         LogHelper.INSTANCE.writeLog(getApplicationContext(), logInfo);
     }
 
-    abstract Notification getStartNotification();
+    abstract BaseNotification getStartNotification();
 
     abstract void onInterrupt();
 

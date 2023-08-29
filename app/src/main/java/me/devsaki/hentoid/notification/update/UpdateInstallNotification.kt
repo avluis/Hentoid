@@ -8,11 +8,14 @@ import android.os.Build
 import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.notification.Notification
+import me.devsaki.hentoid.util.notification.BaseNotification
 
-private val APK_MIMETYPE = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk")
+class UpdateInstallNotification(private val apkUri: Uri) : BaseNotification() {
 
-class UpdateInstallNotification(private val apkUri: Uri) : Notification {
+    companion object {
+        private val APK_MIMETYPE = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk")
+    }
+
 
     override fun onCreateNotification(context: Context): android.app.Notification =
         NotificationCompat.Builder(context, UpdateNotificationChannel.ID)

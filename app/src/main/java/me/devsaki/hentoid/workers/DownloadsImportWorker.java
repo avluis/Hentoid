@@ -34,7 +34,7 @@ import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.network.CloudflareHelper;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.workers.data.DownloadsImportData;
 import timber.log.Timber;
 
@@ -66,7 +66,7 @@ public class DownloadsImportWorker extends BaseWorker {
     }
 
     @Override
-    Notification getStartNotification() {
+    BaseNotification getStartNotification() {
         return new ImportStartNotification();
     }
 

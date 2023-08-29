@@ -12,14 +12,14 @@ import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.notification.update.UpdateAvailableNotification
 import me.devsaki.hentoid.notification.update.UpdateCheckNotification
 import me.devsaki.hentoid.retrofit.UpdateServer
-import me.devsaki.hentoid.util.notification.Notification
+import me.devsaki.hentoid.util.notification.BaseNotification
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 
 class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.update_check_service, null) {
 
-    override fun getStartNotification(): Notification {
+    override fun getStartNotification(): BaseNotification {
         return UpdateCheckNotification()
     }
 

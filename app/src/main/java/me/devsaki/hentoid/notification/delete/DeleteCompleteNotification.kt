@@ -3,14 +3,14 @@ package me.devsaki.hentoid.notification.delete
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.notification.Notification
+import me.devsaki.hentoid.util.notification.BaseNotification
 
 class DeleteCompleteNotification(
     private val books: Int,
     private val nbError: Int,
     private val isDownloadPrepurge: Boolean
 ) :
-    Notification {
+    BaseNotification() {
     override fun onCreateNotification(context: Context): android.app.Notification {
         val title = if (nbError > 0) {
             if (isDownloadPrepurge) R.string.notif_delete_prepurge_fail

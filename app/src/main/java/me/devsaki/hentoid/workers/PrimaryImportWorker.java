@@ -62,7 +62,7 @@ import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.workers.data.PrimaryImportData;
 import timber.log.Timber;
 
@@ -98,7 +98,7 @@ public class PrimaryImportWorker extends BaseWorker {
     }
 
     @Override
-    Notification getStartNotification() {
+    BaseNotification getStartNotification() {
         return new ImportStartNotification();
     }
 

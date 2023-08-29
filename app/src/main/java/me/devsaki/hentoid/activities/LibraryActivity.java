@@ -94,7 +94,6 @@ import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.file.PermissionHelper;
-import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.ContentSearchManager;
@@ -173,12 +172,6 @@ public class LibraryActivity extends BaseActivity {
     private ViewPager2 viewPager;
     private FragmentStateAdapter pagerAdapter;
 
-
-    // === NOTIFICATIONS
-    // Notification for book archival
-    private NotificationManager archiveNotificationManager;
-    private int archiveProgress;
-    private int archiveMax;
 
     // ======== DATA SYNC
     private final List<SearchRecord> searchRecords = new ArrayList<>();
@@ -346,7 +339,6 @@ public class LibraryActivity extends BaseActivity {
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
-        if (archiveNotificationManager != null) archiveNotificationManager.cancel();
 
         // Empty all handlers to avoid leaks
         if (toolbar != null) toolbar.setOnMenuItemClickListener(null);

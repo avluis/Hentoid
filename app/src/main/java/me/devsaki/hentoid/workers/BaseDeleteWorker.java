@@ -31,7 +31,7 @@ import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.FileNotProcessedException;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.data.DeleteData;
 
@@ -93,7 +93,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     }
 
     @Override
-    Notification getStartNotification() {
+    BaseNotification getStartNotification() {
         return new DeleteStartNotification(deleteMax, (deleteMax == contentPurgeIds.length));
     }
 

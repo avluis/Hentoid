@@ -54,7 +54,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.workers.data.MetadataImportData;
 import timber.log.Timber;
 
@@ -87,7 +87,8 @@ public class MetadataImportWorker extends BaseWorker {
     }
 
     @Override
-    Notification getStartNotification() {
+    BaseNotification
+    getStartNotification() {
         return new ImportStartNotification();
     }
 
