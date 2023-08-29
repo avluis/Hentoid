@@ -26,7 +26,7 @@ import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
-import me.devsaki.hentoid.workers.DuplicateDetectorWorker.STEP_DUPLICATES
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker.Companion.STEP_DUPLICATES
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe

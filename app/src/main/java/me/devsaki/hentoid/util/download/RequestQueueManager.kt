@@ -3,11 +3,11 @@ package me.devsaki.hentoid.util.download
 import android.app.ActivityManager
 import android.content.Context
 import android.net.Uri
-import com.annimon.stream.function.BiConsumer
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton
@@ -215,13 +215,13 @@ class RequestQueueManager private constructor(
 
     private fun onRequestSuccess(request: RequestOrder, resultFileUri: Uri) {
         onRequestCompleted(request)
-        onSuccess.accept(request, resultFileUri)
+        onSuccess.invoke(request, resultFileUri)
     }
 
     private fun onRequestError(request: RequestOrder, err: RequestOrder.NetworkError) {
         onRequestCompleted(request)
         // Don't propagate interruptions
-        if (err.type != RequestOrder.NetworkErrorType.INTERRUPTED) onError.accept(request, err)
+        if (err.type != RequestOrder.NetworkErrorType.INTERRUPTED) onError.invoke(request, err)
         else Timber.d("Downloader : Interruption detected for %s : %s", request.url, err.message)
     }
 

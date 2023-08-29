@@ -15,6 +15,6 @@ public class DownloadNotificationCancelReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE));
+        EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_CANCEL));
     }
 }

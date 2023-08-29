@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.annimon.stream.Stream
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -266,9 +265,8 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             R.id.action_merge -> {
                 MergeDialogFragment.invoke(
                     this,
-                    Stream.of(itemAdapter.adapterItems)
-                        .map<Content> { obj: DuplicateItem -> obj.content }
-                        .toList(), true
+                    itemAdapter.adapterItems.mapNotNull { di -> di.content },
+                    true
                 )
             }
         }

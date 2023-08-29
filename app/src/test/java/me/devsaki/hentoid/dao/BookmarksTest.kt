@@ -1,8 +1,6 @@
 package me.devsaki.hentoid.dao
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.annimon.stream.Optional
-import com.annimon.stream.Stream
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.SiteBookmark
@@ -51,14 +49,34 @@ class BookmarksTest : AbstractObjectBoxTest() {
         val existingUrl3 = Site.ASMHENTAI.url + "/stuff2"
         val existingUrl4 = Site.ASMHENTAI.url + "/stuff2/"
 
-        var currentBookmark: Optional<SiteBookmark> = Stream.of(bookmarks).filter { b: SiteBookmark -> SiteBookmark.urlsAreSame(b.url, existingUrl1) }.findFirst()
-        Assert.assertTrue(currentBookmark.isPresent)
-        currentBookmark = Stream.of(bookmarks).filter { b: SiteBookmark -> SiteBookmark.urlsAreSame(b.url, existingUrl2) }.findFirst()
-        Assert.assertTrue(currentBookmark.isPresent)
-        currentBookmark = Stream.of(bookmarks).filter { b: SiteBookmark -> SiteBookmark.urlsAreSame(b.url, existingUrl3) }.findFirst()
-        Assert.assertTrue(currentBookmark.isPresent)
-        currentBookmark = Stream.of(bookmarks).filter { b: SiteBookmark -> SiteBookmark.urlsAreSame(b.url, existingUrl4) }.findFirst()
-        Assert.assertTrue(currentBookmark.isPresent)
+        var currentBookmark: SiteBookmark? = bookmarks.firstOrNull { b: SiteBookmark ->
+            SiteBookmark.urlsAreSame(
+                b.url,
+                existingUrl1
+            )
+        }
+        Assert.assertTrue(currentBookmark != null)
+        currentBookmark = bookmarks.firstOrNull { b: SiteBookmark ->
+            SiteBookmark.urlsAreSame(
+                b.url,
+                existingUrl2
+            )
+        }
+        Assert.assertTrue(currentBookmark != null)
+        currentBookmark = bookmarks.firstOrNull { b: SiteBookmark ->
+            SiteBookmark.urlsAreSame(
+                b.url,
+                existingUrl3
+            )
+        }
+        Assert.assertTrue(currentBookmark != null)
+        currentBookmark = bookmarks.firstOrNull { b: SiteBookmark ->
+            SiteBookmark.urlsAreSame(
+                b.url,
+                existingUrl4
+            )
+        }
+        Assert.assertTrue(currentBookmark != null)
         println(">> test create END")
     }
 

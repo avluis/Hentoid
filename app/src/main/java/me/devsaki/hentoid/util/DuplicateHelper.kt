@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.util.Consumer
-import com.annimon.stream.function.BiConsumer
+import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
@@ -98,14 +98,14 @@ object DuplicateHelper {
             try {
                 info.accept(c)
                 indexContent(context, dao, c, hashEngine)
-                progress.accept(index + 1, nbContent)
+                progress.invoke(index + 1, nbContent)
             } catch (t: Throwable) {
                 // Don't break the loop
                 error.accept(t)
             }
             if (stopped.get()) break
         }
-        progress.accept(nbContent, nbContent)
+        progress.invoke(nbContent, nbContent)
     }
 
     private fun indexContent(

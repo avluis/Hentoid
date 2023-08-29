@@ -5,7 +5,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.*
+import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.workers.ContentDownloadWorker
 
 object ContentQueueManager {

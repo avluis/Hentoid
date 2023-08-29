@@ -3,8 +3,8 @@ package me.devsaki.hentoid.widget
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewConfiguration
-import com.annimon.stream.function.Consumer
 import kotlinx.coroutines.CoroutineScope
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.util.DebouncerK
 import me.devsaki.hentoid.util.Preferences
 
@@ -27,7 +27,7 @@ class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
     init {
         simpleTapDebouncer =
             DebouncerK(scope, longPressTimeout.toLong()) { consumer: Consumer<Boolean> ->
-                consumer.accept(false)
+                consumer.invoke(false)
             }
     }
 
@@ -94,12 +94,12 @@ class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
                 simpleTapDebouncer.submit(listener)
                 event.eventTime + longPressTimeout
             } else {
-                listener.accept(false)
+                listener.invoke(false)
                 event.eventTime + COOLDOWN
             }
         } else if (event.eventTime >= nextNotifyTime) { // Long down
             simpleTapDebouncer.clear()
-            listener.accept(true)
+            listener.invoke(true)
             nextNotifyTime = event.eventTime + if (isTurboEnabled()) TURBO_COOLDOWN else COOLDOWN
         }
         return true

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.Resources
 import android.text.TextUtils
 import androidx.annotation.StringRes
-import com.annimon.stream.Stream
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.domains.Attribute
 
@@ -66,9 +65,8 @@ object SearchHelper {
         }
 
         fun toString(context: Context): String {
-            val labelElts: MutableList<String?> = Stream.of(attributes).map { a: Attribute ->
-                formatAttribute(a, context.resources)
-            }.toList()
+            val labelElts: MutableList<String> =
+                attributes.map { a -> formatAttribute(a, context.resources) }.toMutableList()
             if (location != ContentHelper.Location.ANY) labelElts.add(
                 "loc:" + context.resources.getString(formatLocation(location)).lowercase()
             )
