@@ -1,8 +1,12 @@
 package me.devsaki.hentoid.fragments.pin
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
+import android.os.CombinedVibration
+import android.os.VibrationEffect
 import android.os.Vibrator
+import android.os.VibratorManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -70,9 +74,24 @@ abstract class PinDialogFragment : DialogFragment() {
         binding?.textHeader?.setText(resId)
     }
 
+    @Suppress("DEPRECATION")
     fun vibrate() {
-        val vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
-        vibrator?.vibrate(300)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            val vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
+            vibrator?.vibrate(300)
+        } else {
+            (requireContext().getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).apply {
+                if (defaultVibrator.areAllPrimitivesSupported(VibrationEffect.Composition.PRIMITIVE_CLICK)) {
+                    vibrate(
+                        CombinedVibration.createParallel(
+                            VibrationEffect.startComposition()
+                                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK)
+                                .compose()
+                        )
+                    )
+                }
+            }
+        }
     }
 
     private fun onKeyClick(s: String) {

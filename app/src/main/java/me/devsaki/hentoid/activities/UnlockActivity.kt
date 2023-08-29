@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.appcompat.app.AppCompatActivity
@@ -58,15 +59,21 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
         goToNextActivity()
     }
 
+    @Deprecated("Deprecated in Java", ReplaceWith("moveTaskToBack(true)"))
     override fun onBackPressed() {
         // We don't want the back button to remove the unlock screen displayed upon app restore
         moveTaskToBack(true)
     }
 
+    @Suppress("DEPRECATION")
     private fun goToNextActivity() {
-        val parcelableExtra = intent.getParcelableExtra<Parcelable>(EXTRA_INTENT)
+        val parcelableExtra: Intent? = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+            intent.getParcelableExtra<Parcelable>(EXTRA_INTENT) as Intent
+        else
+            intent.getParcelableExtra(EXTRA_INTENT, Intent::class.java)
+
         val targetIntent: Intent
-        if (parcelableExtra != null) targetIntent = parcelableExtra as Intent else {
+        if (parcelableExtra != null) targetIntent = parcelableExtra else {
             val siteCode = intent.getIntExtra(EXTRA_SITE_CODE, Site.NONE.code)
             if (siteCode == Site.NONE.code) {
                 finish()
