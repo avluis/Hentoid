@@ -7,23 +7,26 @@ import android.content.Intent
 import android.os.Build
 
 abstract class BaseNotification {
+    companion object {
+        private val pendingIntentActivityFlags: Int = if (Build.VERSION.SDK_INT > 30)
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        else PendingIntent.FLAG_UPDATE_CURRENT
+
+        private val pendingIntentActionFlags: Int = if (Build.VERSION.SDK_INT > 30)
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        else PendingIntent.FLAG_CANCEL_CURRENT
+    }
+
     abstract fun onCreateNotification(context: Context): Notification
 
     fun getPendingIntentForAction(context: Context, clazz: Class<out Any>): PendingIntent {
-        return getPendingIntent(context, Intent(context, clazz))
+        val targetIntent = Intent(context, clazz)
+        return PendingIntent.getBroadcast(context, 0, targetIntent, pendingIntentActionFlags)
     }
 
     fun getPendingIntentForActivity(context: Context, clazz: Class<out Any>): PendingIntent {
         val targetIntent = Intent(context, clazz)
         targetIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        return getPendingIntent(context, targetIntent)
-    }
-
-    private fun getPendingIntent(context: Context, targetIntent: Intent): PendingIntent {
-        val flags =
-            if (Build.VERSION.SDK_INT > 30)
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            else PendingIntent.FLAG_UPDATE_CURRENT
-        return PendingIntent.getActivity(context, 0, targetIntent, flags)
+        return PendingIntent.getActivity(context, 0, targetIntent, pendingIntentActivityFlags)
     }
 }
