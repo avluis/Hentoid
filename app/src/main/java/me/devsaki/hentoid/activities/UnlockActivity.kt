@@ -6,7 +6,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import dev.skomlach.biometric.compat.BiometricAuthRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiometricsHelper
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
@@ -16,6 +20,7 @@ import me.devsaki.hentoid.core.startBiometric
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.pin.UnlockPinDialogFragment
+import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
@@ -42,7 +47,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
                 if (bestBM != null) {
                     startBiometric(
                         BiometricAuthRequest(bestBM.api, bestBM.type), false,
-                        { b -> if (b) onUnlockSuccess() else finish() }
+                        this::onBiometricCallback
                     )
                 }
             }
@@ -57,6 +62,19 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
     override fun onUnlockSuccess() {
         setUnlocked(true)
         goToNextActivity()
+    }
+
+    private fun onBiometricCallback(success: Boolean) {
+        if (success) onUnlockSuccess()
+        else {
+            // Close the app on another thread as this one is still used by the biometrics UI
+            lifecycleScope.launch {
+                withContext(Dispatchers.Default) {
+                    Helper.pause(500)
+                    finishAndRemoveTask()
+                }
+            }
+        }
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("moveTaskToBack(true)"))
