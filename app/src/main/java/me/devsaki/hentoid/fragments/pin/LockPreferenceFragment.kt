@@ -22,7 +22,7 @@ import me.devsaki.hentoid.util.Settings
 class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     ResetPinDialogFragment.Parent, ActivatePinDialogFragment.Parent {
 
-    private var initalLockType: Int = 0
+    private var initialLockType: Int = 0
 
     private var binding: FragmentPinPreferenceOnBinding? = null
 
@@ -32,6 +32,9 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentPinPreferenceOnBinding.inflate(inflater, container, false)
+
+        initialLockType = Settings.lockType
+
         binding?.apply {
             refresh()
             toolbar.setNavigationOnClickListener { requireActivity().finish() }
@@ -125,12 +128,12 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
 
     private fun onLockTypeChanged(index: Int) {
         if (0 == index) {
-            if (1 == initalLockType) DeactivatePinDialogFragment().show(childFragmentManager, null)
+            if (1 == initialLockType) DeactivatePinDialogFragment().show(childFragmentManager, null)
             else {
                 Settings.lockType = 0
                 onPinDeactivateSuccess()
             }
-        } else if (index != initalLockType) {
+        } else if (index != initialLockType) {
             if (1 == index) { // PIN
                 ActivatePinDialogFragment().show(childFragmentManager, null)
             } else { // Biometrics
