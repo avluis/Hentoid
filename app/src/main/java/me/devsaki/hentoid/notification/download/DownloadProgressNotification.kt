@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.QueueActivity
+import me.devsaki.hentoid.receiver.DownloadNotificationCancelReceiver
 import me.devsaki.hentoid.receiver.DownloadNotificationPauseReceiver
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.notification.BaseNotification
@@ -59,6 +60,6 @@ class DownloadProgressNotification(
     }
 
     private fun getCancelIntent(context: Context): PendingIntent {
-        return getPendingIntentForAction(context, DownloadNotificationPauseReceiver::class.java)
+        return getPendingIntentForAction(context, DownloadNotificationCancelReceiver::class.java)
     }
 }
