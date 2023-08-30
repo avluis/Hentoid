@@ -1673,8 +1673,9 @@ public final class ContentHelper {
      * @throws IOException If something happens during the download attempt
      */
     public static boolean testDownloadPicture(@NonNull Site site, @NonNull ImageFile img, List<Pair<String, String>> requestHeaders) throws IOException {
-
-        Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        String url = img.getUrl();
+        if (!url.startsWith("http")) url = HttpHelper.fixUrl(url, site.getUrl());
+        Response response = HttpHelper.getOnlineResourceFast(url, requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         if (response.code() >= 300) throw new IOException("Network error " + response.code());
 
         ResponseBody body = response.body();
