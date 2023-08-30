@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.core.BiConsumer
+import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton
@@ -183,7 +184,7 @@ class RequestQueueManager private constructor(
             if (!it.active) return
             if (insert) synchronized(activeRequests) { activeRequests.add(order) }
             DownloadRateLimiter.take()
-            it.executeRequest(order)
+            it.executeRequest(HentoidApp.getInstance(), order)
             synchronized(waitingRequestQueue) {
                 Timber.d(
                     "Requests queue ::: request executed for host %s - current total (%d active + %d waiting)",

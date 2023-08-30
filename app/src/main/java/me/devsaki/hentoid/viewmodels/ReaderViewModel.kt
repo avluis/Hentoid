@@ -1349,6 +1349,7 @@ class ReaderViewModel(
                             Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
                         )
                         result = DownloadHelper.downloadToFile(
+                            getApplication(),
                             content.site,
                             imgUrl,
                             pageIndex,
@@ -1426,6 +1427,7 @@ class ReaderViewModel(
         // Download the picture
         try {
             return DownloadHelper.downloadToFile(
+                getApplication(),
                 content.site,
                 img.url,
                 pageIndex,
@@ -1444,6 +1446,7 @@ class ReaderViewModel(
         // Trying with backup URL
         img.url = pages.right.get()
         return DownloadHelper.downloadToFile(
+            getApplication(),
             content.site,
             img.url,
             pageIndex,

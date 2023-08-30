@@ -1238,6 +1238,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             try {
                 // == Download archive
                 val result = DownloadHelper.downloadToFile(
+                    applicationContext,
                     site,
                     img.url,
                     img.order,

@@ -83,7 +83,7 @@ object ImageHelper {
     fun getMimeTypeFromPictureBinary(binary: ByteArray): String {
         if (binary.size < 12) return ""
 
-        // In Java, byte type is signed !
+        // In Java and Kotlin, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
         return if (0xFF.toByte() == binary[0] && 0xD8.toByte() == binary[1] && 0xFF.toByte() == binary[2]) MIME_IMAGE_JPEG
         else if (0x52.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2] && 0x46.toByte() == binary[3] && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]) MIME_IMAGE_WEBP

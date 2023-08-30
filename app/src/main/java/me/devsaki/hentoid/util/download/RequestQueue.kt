@@ -1,11 +1,13 @@
 package me.devsaki.hentoid.util.download
 
+import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.annimon.stream.Optional
 import com.annimon.stream.function.BiConsumer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
@@ -43,7 +45,7 @@ class RequestQueue(
         active = false
     }
 
-    suspend fun executeRequest(requestOrder: RequestOrder) {
+    suspend fun executeRequest(context : Context, requestOrder: RequestOrder) {
         if (!active) {
             Timber.d("Can't execute a request while request queue is inactive!")
             return
@@ -53,6 +55,7 @@ class RequestQueue(
         try {
             val res = withContext(Dispatchers.IO) {
                 downloadPic(
+                    context,
                     requestOrder.site,
                     requestOrder.url,
                     requestOrder.headers,
@@ -129,6 +132,7 @@ class RequestQueue(
      * The return value is empty if the download fails
      */
     private fun downloadPic(
+        context: Context,
         site: Site,
         url: String,
         headers: Map<String, String>,
@@ -149,6 +153,7 @@ class RequestQueue(
 
         // Initiate download
         val result = DownloadHelper.downloadToFile(
+            context,
             site,
             url,
             pageIndex,

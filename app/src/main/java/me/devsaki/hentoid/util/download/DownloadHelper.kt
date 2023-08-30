@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.util.Pair
 import me.devsaki.hentoid.core.Consumer
-import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Helper
@@ -19,15 +18,13 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import me.devsaki.hentoid.util.image.ImageHelper.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.network.HttpHelper
-import okhttp3.Response
 import org.jsoup.nodes.Document
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
-import java.nio.charset.StandardCharsets
-import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.text.Charsets.UTF_8
 
 object DownloadHelper {
 
@@ -59,6 +56,7 @@ object DownloadHelper {
         IllegalStateException::class
     )
     fun downloadToFile(
+        context: Context,
         site: Site,
         rawUrl: String,
         resourceId: Int,
@@ -71,7 +69,6 @@ object DownloadHelper {
         notifyProgress: Consumer<Float>?
     ): Pair<Uri, String> {
         Helper.assertNonUiThread()
-        val context: Context = getInstance()
         val url = HttpHelper.fixUrl(rawUrl, site.url)
         if (interruptDownload.get()) throw DownloadInterruptedException("Download interrupted")
         Timber.d("DOWNLOADING %d %s", resourceId, url)
@@ -123,10 +120,13 @@ object DownloadHelper {
                     // First iteration
                     if (0 == iteration++) {
                         // Read mime-type on the fly if not forced
-                        if (mimeType.isEmpty())
-                            mimeType = getMimeTypeFromStream(buffer, response, url, sizeStr)
+                        if (mimeType.isEmpty()) {
+                            val contentType = response.header(HttpHelper.HEADER_CONTENT_TYPE) ?: ""
+                            mimeType = getMimeTypeFromStream(buffer, len, contentType, url, sizeStr)
+                        }
                         // Create target file and output stream
-                        targetFileUri = createFile(targetFolderUri, targetFileName, mimeType)
+                        targetFileUri =
+                            createFile(context, targetFolderUri, targetFileName, mimeType)
                         out = FileHelper.getOutputStream(context, targetFileUri!!)
                     }
                     if (len > 0 && out != null) {
@@ -171,37 +171,29 @@ object DownloadHelper {
     @Throws(UnsupportedContentException::class)
     private fun getMimeTypeFromStream(
         buffer: ByteArray,
-        response: Response,
+        bufLength: Int,
+        contentType: String,
         url: String,
         size: String,
     ): String {
         val result = getMimeTypeFromPictureBinary(buffer)
         if (result.isEmpty() || result.endsWith("/*")) {
-            val contentType =
-                StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE))
             if (contentType.contains("text/")) {
-                val message = String.format(
-                    Locale.ENGLISH,
-                    "Message received from %s : %s",
-                    url,
-                    buffer.toString(StandardCharsets.UTF_8).trim()
-                )
-                throw UnsupportedContentException(message)
+                val message = buffer.copyOfRange(0, bufLength).toString(UTF_8).trim()
+                throw UnsupportedContentException("Message received from $url : $message")
             }
-            val message = String.format(
-                Locale.ENGLISH,
-                "Invalid mime-type received from %s (size=%s; content-type=%s)",
-                url,
-                size,
-                contentType
-            )
-            throw UnsupportedContentException(message)
+            throw UnsupportedContentException("Invalid mime-type received from $url (size=$size; content-type=$contentType)")
         }
         return result
     }
 
     @Throws(IOException::class)
-    private fun createFile(targetFolderUri: Uri, targetFileName: String, mimeType: String): Uri? {
+    private fun createFile(
+        context: Context,
+        targetFolderUri: Uri,
+        targetFileName: String,
+        mimeType: String
+    ): Uri? {
         var targetFileNameFinal =
             targetFileName + "." + FileHelper.getExtensionFromMimeType(mimeType)
         // Keep the extension if the target file name is provided with one
@@ -227,12 +219,14 @@ object DownloadHelper {
                 throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri has no path")
             }
         } else {
-            val targetFolder = FileHelper.getDocumentFromTreeUriString(
-                getInstance(), targetFolderUri.toString()
-            )
+            val targetFolder =
+                FileHelper.getDocumentFromTreeUriString(context, targetFolderUri.toString())
             if (targetFolder != null) {
                 val file = FileHelper.findOrCreateDocumentFile(
-                    getInstance(), targetFolder, mimeType, targetFileNameFinal
+                    context,
+                    targetFolder,
+                    mimeType,
+                    targetFileNameFinal
                 )
                 file?.uri
                     ?: throw IOException("Could not create file $targetFileNameFinal : creation failed")
