@@ -47,9 +47,7 @@ object DownloadHelper {
      * @return Pair containing
      * - Left : Uri of downloaded file
      * - Right : Detected mime-type of the downloaded resource
-     * @throws IOException,UnsupportedContentException,DownloadInterruptedException if anything goes wrong
      */
-    // TODO update doc
     @Throws(
         IOException::class,
         UnsupportedContentException::class,
@@ -97,7 +95,6 @@ object DownloadHelper {
         var size = body.contentLength()
         if (size < 1) size = 1
         val sizeStr = FileHelper.formatHumanReadableSize(size, context.resources)
-        var mimeType = StringHelper.protect(forceMimeType)
         Timber.d(
             "WRITING DOWNLOAD %d TO %s/%s (size %s)",
             resourceId,
@@ -105,6 +102,7 @@ object DownloadHelper {
             targetFileName,
             sizeStr
         )
+        var mimeType = forceMimeType ?: ""
         val buffer = ByteArray(DL_IO_BUFFER_SIZE_B)
         val notificationResolution = 250 * 1024 / DL_IO_BUFFER_SIZE_B // Notify every 250 KB
         var len: Int
@@ -137,15 +135,13 @@ object DownloadHelper {
                         take(len.toLong())
                     }
                 }
+                // End of download
                 if (!interruptDownload.get()) {
                     notifyProgress?.invoke(100f)
-                    if (out != null) out!!.flush()
+                    out?.flush()
                     if (targetFileUri != null) {
                         val targetFileSize =
-                            FileHelper.fileSizeFromUri(
-                                context,
-                                targetFileUri!!
-                            )
+                            FileHelper.fileSizeFromUri(context, targetFileUri!!)
                         Timber.d(
                             "DOWNLOAD %d [%s] WRITTEN TO %s (%s)",
                             resourceId,
@@ -162,10 +158,7 @@ object DownloadHelper {
             }
         }
         // Remove the remaining file chunk if download has been interrupted
-        if (targetFileUri != null) FileHelper.removeFile(
-            context,
-            targetFileUri!!
-        )
+        if (targetFileUri != null) FileHelper.removeFile(context, targetFileUri!!)
         throw DownloadInterruptedException("Download interrupted")
     }
 
