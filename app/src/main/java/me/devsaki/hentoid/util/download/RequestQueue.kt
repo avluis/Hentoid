@@ -7,7 +7,6 @@ import com.annimon.stream.Optional
 import com.annimon.stream.function.BiConsumer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
@@ -160,10 +159,9 @@ class RequestQueue(
             HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url),
             targetFolder.uri,
             targetFileNameNoExt,
-            null,
-            false,
             killSwitch,
-            null
+            null,
+            false
         )
 
         val targetFileUri = result.first

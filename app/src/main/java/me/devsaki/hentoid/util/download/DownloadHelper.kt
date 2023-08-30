@@ -40,8 +40,9 @@ object DownloadHelper {
      * @param requestHeaders    HTTP request headers to use
      * @param targetFolderUri   Uri of the folder where to save the downloaded resource
      * @param targetFileName    Name of the file to save the downloaded resource
-     * @param forceMimeType     Forced mime-type of the downloaded resource (null for auto-set)
      * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
+     * @param forceMimeType     Forced mime-type of the downloaded resource (null for auto-set)
+     * @param failFast          True for a shorter read timeout; false for a regular, patient download
      * @param notifyProgress    Consumer called with the download progress %
      * @return Pair containing
      * - Left : Uri of downloaded file
@@ -63,10 +64,10 @@ object DownloadHelper {
         requestHeaders: List<Pair<String, String>>?,
         targetFolderUri: Uri,
         targetFileName: String,
-        forceMimeType: String?,
-        failFast: Boolean,
         interruptDownload: AtomicBoolean,
-        notifyProgress: Consumer<Float>?
+        forceMimeType: String? = null,
+        failFast: Boolean = true,
+        notifyProgress: Consumer<Float>? = null
     ): Pair<Uri, String> {
         Helper.assertNonUiThread()
         val url = HttpHelper.fixUrl(rawUrl, site.url)

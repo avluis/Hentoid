@@ -1356,8 +1356,6 @@ class ReaderViewModel(
                             headers,
                             Uri.fromFile(targetFolder),
                             targetFileName,
-                            null,
-                            true,
                             stopDownload
                         ) { f: Float ->
                             notifyDownloadProgress(f, pageIndex)
@@ -1434,8 +1432,6 @@ class ReaderViewModel(
                 requestHeaders,
                 Uri.fromFile(targetFolder),
                 targetFileName,
-                null,
-                true,
                 interruptDownload
             ) { f: Float ->
                 notifyDownloadProgress(f, pageIndex)
@@ -1453,8 +1449,6 @@ class ReaderViewModel(
             requestHeaders,
             Uri.fromFile(targetFolder),
             targetFileName,
-            null,
-            true,
             interruptDownload
         ) { f: Float ->
             notifyDownloadProgress(f, pageIndex)

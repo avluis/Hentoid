@@ -1250,10 +1250,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     ),
                     Uri.fromFile(ugoiraCacheFolder),
                     targetFileName,
-                    ArchiveHelper.ZIP_MIME_TYPE,
-                    true,
                     downloadInterrupted,
-                    null
+                    ArchiveHelper.ZIP_MIME_TYPE
                 )
 
                 // == Extract all frames
