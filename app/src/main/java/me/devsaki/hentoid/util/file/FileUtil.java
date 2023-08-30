@@ -1,11 +1,8 @@
 package me.devsaki.hentoid.util.file;
 
-import static org.apache.commons.io.FileUtils.ONE_EB_BI;
 import static org.apache.commons.io.FileUtils.ONE_GB_BI;
 import static org.apache.commons.io.FileUtils.ONE_KB_BI;
 import static org.apache.commons.io.FileUtils.ONE_MB_BI;
-import static org.apache.commons.io.FileUtils.ONE_PB_BI;
-import static org.apache.commons.io.FileUtils.ONE_TB_BI;
 
 import android.content.res.Resources;
 
@@ -30,6 +27,9 @@ class FileUtil {
     private FileUtil() {
         throw new IllegalStateException("Utility class");
     }
+
+    static final DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getInstance(Locale.getDefault());
+    static final char decimalSeparator = decimalFormat.getDecimalFormatSymbols().getDecimalSeparator();
 
     /**
      * Method ensures file creation from stream.
@@ -147,9 +147,8 @@ class FileUtil {
             displaySize = size + " " + res.getString(R.string.u_byte);
         }
 
-        final DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getInstance(locale);
         return displaySize.replaceFirst("[" +
-                        decimalFormat.getDecimalFormatSymbols().getDecimalSeparator() +
+                        decimalSeparator +
                         "]" +
                         new String(new char[places]).replace('\0', '0') +
                         " "
@@ -161,7 +160,7 @@ class FileUtil {
      *
      * @param size   the number of bytes
      * @param places rounded decimal places
-     * @return a human-readable display value (includes units - EB, PB, TB, GB, MB, KB or bytes)
+     * @return a human-readable display value (includes units - GB, MB, KB or bytes)
      * @see <a href="https://issues.apache.org/jira/browse/IO-226">IO-226 - should the rounding be changed?</a>
      */
     public static String byteCountToDisplayRoundedSize(final Long size, final int places, final Resources res) {
