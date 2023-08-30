@@ -237,7 +237,8 @@ class QueueViewModel(
         workManager.enqueueUniqueWork(
             R.id.delete_service_delete.toString(),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()
+            OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data)
+                .build()
         )
     }
 
@@ -265,7 +266,9 @@ class QueueViewModel(
         workManager.enqueueUniqueWork(
             R.id.delete_service_delete.toString(),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()
+            OneTimeWorkRequest.Builder(DeleteWorker::class.java)
+                .setInputData(builder.data)
+                .build()
         )
     }
 
