@@ -145,7 +145,7 @@ public class HttpHelper {
     }
 
     public static Response getOnlineResourceDownloader(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) throws IOException {
-        return getOnlineResourceFast(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent, true);
+        return getOnlineResourceDownloader(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent, true);
     }
 
     public static Response getOnlineResourceDownloader(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent, boolean followRedirects) throws IOException {
