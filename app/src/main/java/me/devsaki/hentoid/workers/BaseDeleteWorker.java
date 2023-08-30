@@ -175,7 +175,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         // Purge them
         for (long id : ids) {
             Content c = dao.selectContent(id);
-            if (c != null) purgeContentFiles(c, keepCovers);
+            if (c != null) purgeContentFiles(c, !keepCovers);
             dao.updateContentDeleteFlag(id, false);
             if (isStopped()) break;
         }
@@ -183,13 +183,14 @@ public abstract class BaseDeleteWorker extends BaseWorker {
 
     /**
      * Purge files from the given content
+     * TODO progression feedback
      *
      * @param content Content to be purged
      */
-    private void purgeContentFiles(@NonNull final Content content, boolean keepCovers) {
+    private void purgeContentFiles(@NonNull final Content content, boolean removeCover) {
         progressItem(content, true);
         try {
-            ContentHelper.purgeFiles(getApplicationContext(), content, false, keepCovers);
+            ContentHelper.purgeFiles(getApplicationContext(), content, false, removeCover);
             trace(Log.INFO, "Purged item: %s.", content.getTitle());
         } catch (Exception e) {
             nbError++;

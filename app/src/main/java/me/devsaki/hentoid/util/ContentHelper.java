@@ -1374,19 +1374,21 @@ public final class ContentHelper {
      * <p>
      * Caution : exec time is long
      *
-     * @param context    Context to use
-     * @param content    Content to remove files from
-     * @param removeJson True to remove the Hentoid JSON file; false to keep it
-     * @param keepCover  True to keep the cover picture; false to remove it
+     * @param context     Context to use
+     * @param content     Content to remove files from
+     * @param removeJson  True to remove the Hentoid JSON file; false to keep it
+     * @param removeCover True to remove the cover picture; false to keep it
      */
-    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content, boolean removeJson, boolean keepCover) {
+    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content, boolean removeJson, boolean removeCover) {
         DocumentFile bookFolder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
-            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, displayName -> !keepCover || !displayName.startsWith(Consts.THUMB_FILE_NAME));
-            if (!files.isEmpty())
-                for (DocumentFile file : files)
-                    if (removeJson || !HttpHelper.getExtensionFromUri(file.getUri().toString()).toLowerCase().endsWith("json"))
-                        file.delete();
+            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, displayName -> true);
+            for (DocumentFile file : files) {
+                String name = StringHelper.protect(file.getName()).toLowerCase();
+                if (!removeJson && name.endsWith("json")) continue;
+                if (!removeCover && name.startsWith(Consts.THUMB_FILE_NAME)) continue;
+                file.delete();
+            }
         }
     }
 
