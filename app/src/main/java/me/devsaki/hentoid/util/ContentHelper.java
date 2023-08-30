@@ -1752,7 +1752,7 @@ public final class ContentHelper {
                 }
             }
         } else { // Primary folder for non-external content; using download strategy
-            StorageLocation location = DownloadHelper.selectDownloadLocation(context);
+            StorageLocation location = DownloadHelper.INSTANCE.selectDownloadLocation(context);
             targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, location, true);
         }
         if (null == targetFolder || !targetFolder.exists())

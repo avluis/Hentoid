@@ -69,7 +69,7 @@ public class ToonilyParser extends BaseImageListParser {
         String reason = "";
         Document doc = getOnlineDocument(onlineContent.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
         if (doc != null) {
-            String canonicalUrl = DownloadHelper.getCanonicalUrl(doc);
+            String canonicalUrl = DownloadHelper.INSTANCE.getCanonicalUrl(doc);
             // Retrieve the chapters page chunk
             doc = HttpHelper.postOnlineDocument(
                     canonicalUrl + "ajax/chapters/",

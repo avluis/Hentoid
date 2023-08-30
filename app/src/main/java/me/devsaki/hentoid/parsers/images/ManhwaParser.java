@@ -72,7 +72,7 @@ public class ManhwaParser extends BaseImageListParser {
         String reason = "";
         Document doc = getOnlineDocument(onlineContent.getGalleryUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
         if (doc != null) {
-            String canonicalUrl = DownloadHelper.getCanonicalUrl(doc);
+            String canonicalUrl = DownloadHelper.INSTANCE.getCanonicalUrl(doc);
             // Retrieve the chapters page chunk
             doc = HttpHelper.postOnlineDocument(
                     canonicalUrl + "ajax/chapters/",

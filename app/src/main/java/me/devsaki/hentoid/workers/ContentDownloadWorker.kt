@@ -1258,7 +1258,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 // == Extract all frames
                 extractArchiveEntries(
                     applicationContext,
-                    result.left,
+                    result.first,
                     ugoiraCacheFolder,
                     null,  // Extract everything; keep original names
                     downloadInterrupted,

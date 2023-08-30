@@ -53,7 +53,6 @@ import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.widget.ContentSearchManager
-import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.commons.lang3.tuple.ImmutableTriple
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -1320,7 +1319,7 @@ class ReaderViewModel(
                     headers.add(
                         Pair(HttpHelper.HEADER_REFERER_KEY, content.readerUrl)
                     ) // Useful for Hitomi and Toonily
-                    val result: ImmutablePair<Uri, String>
+                    val result: Pair<Uri, String>
                     if (img.needsPageParsing()) {
                         val pageUrl = HttpHelper.fixUrl(img.pageUrl, content.site.url)
                         // Get cookies from the app jar
@@ -1363,8 +1362,8 @@ class ReaderViewModel(
                             notifyDownloadProgress(f, pageIndex)
                         }
                     }
-                    targetFile = File(result.left.path!!)
-                    mimeType = result.right
+                    targetFile = File(result.first.path!!)
+                    mimeType = result.second
                 } else { // Image is already there
                     targetFile = existing[0]
                     Timber.d(
@@ -1418,7 +1417,7 @@ class ReaderViewModel(
         targetFolder: File,
         targetFileName: String,
         interruptDownload: AtomicBoolean
-    ): ImmutablePair<Uri, String> {
+    ): Pair<Uri, String> {
         val site = content.site
         val pageUrl = HttpHelper.fixUrl(img.pageUrl, site.url)
         val parser = ContentParserFactory.getInstance().getImageListParser(content.site)

@@ -149,7 +149,7 @@ class RequestQueue(
         ) // Required to pass through cloudflare filtering on some sites
 
         // Initiate download
-        val result: ImmutablePair<Uri, String> = DownloadHelper.downloadToFile(
+        val result = DownloadHelper.downloadToFile(
             site,
             url,
             pageIndex,
@@ -162,8 +162,8 @@ class RequestQueue(
             null
         )
 
-        val targetFileUri = result.left
-        val mimeType = result.right
+        val targetFileUri = result.first
+        val mimeType = result.second
 
         return Optional.of(
             ImmutableTriple(
