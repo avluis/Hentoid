@@ -32,8 +32,18 @@ object ImageHelper {
     const val MIME_IMAGE_WEBP = "image/webp"
     const val MIME_IMAGE_JPEG = "image/jpeg"
     const val MIME_IMAGE_GIF = "image/gif"
+    private const val MIME_IMAGE_BMP = "image/bmp"
     const val MIME_IMAGE_PNG = "image/png"
-    const val MIME_IMAGE_APNG = "image/apng"
+    private const val MIME_IMAGE_APNG = "image/apng"
+
+    // In Java and Kotlin, byte type is signed !
+    // => Converting all raw values to byte to be sure they are evaluated as expected
+    private val JPEG_SIGNATURE = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte())
+    private val WEBP_SIGNATURE =
+        byteArrayOf(0x52.toByte(), 0x49.toByte(), 0x46.toByte(), 0x46.toByte())
+    private val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte())
+    private val GIF_SIGNATURE = byteArrayOf(0x47.toByte(), 0x49.toByte(), 0x46.toByte())
+    private val BMP_SIGNATURE = byteArrayOf(0x42.toByte(), 0x4D.toByte())
 
     private val PNG_ACTL = "acTL".toByteArray(CHARSET_LATIN_1)
     private val PNG_IDAT = "IDAT".toByteArray(CHARSET_LATIN_1)
@@ -74,6 +84,12 @@ object ImageHelper {
         return imageNamesFilter
     }
 
+    private fun compareByteArrays(reference: ByteArray, data: ByteArray): Boolean {
+        if (data.size < reference.size) return false
+        reference.forEachIndexed { index, byte -> if (byte != data[index]) return false }
+        return true
+    }
+
     /**
      * Determine the MIME-type of the given binary data if it's a picture
      *
@@ -83,11 +99,14 @@ object ImageHelper {
     fun getMimeTypeFromPictureBinary(binary: ByteArray): String {
         if (binary.size < 12) return ""
 
-        // In Java and Kotlin, byte type is signed !
-        // => Converting all raw values to byte to be sure they are evaluated as expected
-        return if (0xFF.toByte() == binary[0] && 0xD8.toByte() == binary[1] && 0xFF.toByte() == binary[2]) MIME_IMAGE_JPEG
-        else if (0x52.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2] && 0x46.toByte() == binary[3] && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]) MIME_IMAGE_WEBP
-        else if (0x89.toByte() == binary[0] && 0x50.toByte() == binary[1] && 0x4E.toByte() == binary[2]) {
+        return if (compareByteArrays(JPEG_SIGNATURE, binary)) MIME_IMAGE_JPEG
+        // WEBP : byte comparison is non-contiguous
+        else if (compareByteArrays(
+                WEBP_SIGNATURE,
+                binary
+            ) && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]
+        ) MIME_IMAGE_WEBP
+        else if (compareByteArrays(PNG_SIGNATURE, binary)) {
             // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
             val acTlPos = FileHelper.findSequencePosition(
                 binary,
@@ -105,8 +124,8 @@ object ImageHelper {
                 if (idatPos > -1) return MIME_IMAGE_APNG
             }
             MIME_IMAGE_PNG
-        } else if (0x47.toByte() == binary[0] && 0x49.toByte() == binary[1] && 0x46.toByte() == binary[2]) MIME_IMAGE_GIF
-        else if (0x42.toByte() == binary[0] && 0x4D.toByte() == binary[1]) "image/bmp"
+        } else if (compareByteArrays(GIF_SIGNATURE, binary)) MIME_IMAGE_GIF
+        else if (compareByteArrays(BMP_SIGNATURE, binary)) MIME_IMAGE_BMP
         else MIME_IMAGE_GENERIC
     }
 
