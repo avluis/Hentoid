@@ -29,7 +29,11 @@ import kotlin.math.ceil
 /**
  * Worker responsible for deleting content in the background
  */
-abstract class BaseDeleteWorker(context: Context, @IdRes serviceId: Int, parameters: WorkerParameters) :
+abstract class BaseDeleteWorker(
+    context: Context,
+    @IdRes serviceId: Int,
+    parameters: WorkerParameters
+) :
     BaseWorker(context, parameters, serviceId, "delete") {
 
     private var contentIds: LongArray
@@ -152,6 +156,7 @@ abstract class BaseDeleteWorker(context: Context, @IdRes serviceId: Int, paramet
         }
     }
 
+    // TODO use ProgressManager to display proper progress for purge
     private fun purgeContentList(ids: LongArray, keepCovers: Boolean) {
         // Flag the content as "being deleted" (triggers blink animation; lock operations)
         for (id in ids) dao.updateContentDeleteFlag(id, true)
@@ -167,7 +172,6 @@ abstract class BaseDeleteWorker(context: Context, @IdRes serviceId: Int, paramet
 
     /**
      * Purge files from the given content
-     * TODO progression feedback
      *
      * @param content Content to be purged
      */
