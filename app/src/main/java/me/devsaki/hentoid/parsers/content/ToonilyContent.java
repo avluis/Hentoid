@@ -58,7 +58,8 @@ public class ToonilyContent extends BaseContentParser {
     }
 
     public Content updateSingleChapter(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
-        String title = StringHelper.removeNonPrintableChars(chapterTitle.text());
+        String title = NO_TITLE;
+        if (chapterTitle != null) title = StringHelper.removeNonPrintableChars(chapterTitle.text());
         content.setTitle(title);
         String[] urlParts = url.split("/");
         if (urlParts.length > 1)
@@ -66,7 +67,7 @@ public class ToonilyContent extends BaseContentParser {
         else
             content.setUniqueSiteId(urlParts[0]);
 
-        if (updateImages) {
+        if (updateImages && chapterImgs != null) {
             List<String> imgUrls = Stream.of(chapterImgs).map(ParseHelper::getImgSrc).filterNot(String::isEmpty).distinct().toList();
             String coverUrl = "";
             if (!imgUrls.isEmpty()) coverUrl = imgUrls.get(0);
