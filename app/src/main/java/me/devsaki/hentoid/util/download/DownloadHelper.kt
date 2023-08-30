@@ -19,18 +19,20 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import me.devsaki.hentoid.util.image.ImageHelper.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.network.HttpHelper
+import okhttp3.Response
 import org.jsoup.nodes.Document
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
+import java.nio.charset.StandardCharsets
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 object DownloadHelper {
 
-    private const val DL_IO_BUFFER_SIZE_B =
-        50 * 1024 // NB : Actual size of read bytes may be smaller
+    // NB : Actual size of read bytes may be smaller
+    private const val DL_IO_BUFFER_SIZE_B = 50 * 1024
 
     /**
      * Download the given resource to the given disk location
@@ -117,40 +119,15 @@ object DownloadHelper {
                 while (stream.read(buffer).also { len = it } > -1) {
                     if (interruptDownload.get()) break
                     processed += len.toLong()
-                    // Read mime-type on the fly if not forced
+
+                    // First iteration
                     if (0 == iteration++) {
-                        if (mimeType.isEmpty()) {
-                            mimeType =
-                                getMimeTypeFromPictureBinary(
-                                    buffer
-                                )
-                            if (mimeType.isEmpty() || mimeType.endsWith("/*")) {
-                                val contentType =
-                                    StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE))
-                                if (contentType.contains("text/")) {
-                                    val message = String.format(
-                                        Locale.ENGLISH,
-                                        "Message received from %s : %s",
-                                        url,
-                                        bdy.string()
-                                    )
-                                    throw UnsupportedContentException(message)
-                                }
-                                val message = String.format(
-                                    Locale.ENGLISH,
-                                    "Invalid mime-type received from %s (size=%s; content-type=%s)",
-                                    url,
-                                    sizeStr,
-                                    contentType
-                                )
-                                throw UnsupportedContentException(message)
-                            }
-                        }
+                        // Read mime-type on the fly if not forced
+                        if (mimeType.isEmpty())
+                            mimeType = getMimeTypeFromStream(buffer, response, url, sizeStr)
+                        // Create target file and output stream
                         targetFileUri = createFile(targetFolderUri, targetFileName, mimeType)
-                        out = FileHelper.getOutputStream(
-                            context,
-                            targetFileUri!!
-                        )
+                        out = FileHelper.getOutputStream(context, targetFileUri!!)
                     }
                     if (len > 0 && out != null) {
                         out!!.write(buffer, 0, len)
@@ -189,6 +166,38 @@ object DownloadHelper {
             targetFileUri!!
         )
         throw DownloadInterruptedException("Download interrupted")
+    }
+
+    @Throws(UnsupportedContentException::class)
+    private fun getMimeTypeFromStream(
+        buffer: ByteArray,
+        response: Response,
+        url: String,
+        size: String,
+    ): String {
+        val result = getMimeTypeFromPictureBinary(buffer)
+        if (result.isEmpty() || result.endsWith("/*")) {
+            val contentType =
+                StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE))
+            if (contentType.contains("text/")) {
+                val message = String.format(
+                    Locale.ENGLISH,
+                    "Message received from %s : %s",
+                    url,
+                    buffer.toString(StandardCharsets.UTF_8).trim()
+                )
+                throw UnsupportedContentException(message)
+            }
+            val message = String.format(
+                Locale.ENGLISH,
+                "Invalid mime-type received from %s (size=%s; content-type=%s)",
+                url,
+                size,
+                contentType
+            )
+            throw UnsupportedContentException(message)
+        }
+        return result
     }
 
     @Throws(IOException::class)

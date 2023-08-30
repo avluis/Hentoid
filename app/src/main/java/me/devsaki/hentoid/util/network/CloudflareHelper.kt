@@ -17,9 +17,11 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
-const val RELOAD_LIMIT = 3
-
 class CloudflareHelper {
+
+    companion object {
+        private const val RELOAD_LIMIT = 3
+    }
 
     private var webView: CloudflareWebView? = null
     private val stopped = AtomicBoolean(false)
@@ -70,7 +72,7 @@ class CloudflareHelper {
         do {
             val cfcookie =
                 HttpHelper.parseCookies(HttpHelper.getCookies(revivedSite.url))[CLOUDFLARE_COOKIE]
-            if (cfcookie != null && cfcookie.isNotEmpty() && cfcookie != oldCookieInternal) {
+            if (!cfcookie.isNullOrEmpty() && cfcookie != oldCookieInternal) {
                 Timber.d("CF-COOKIE : refreshed !")
                 passed = true
             } else {

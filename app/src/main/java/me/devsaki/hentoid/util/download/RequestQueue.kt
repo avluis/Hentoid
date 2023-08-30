@@ -13,7 +13,6 @@ import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.HttpHelper
-import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.commons.lang3.tuple.ImmutableTriple
 import timber.log.Timber
 import java.io.FileNotFoundException
