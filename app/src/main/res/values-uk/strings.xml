@@ -915,7 +915,4 @@
     <string name="u_kilobyte">КБ</string>
     <string name="u_megabyte">МБ</string>
     <string name="u_gigabyte">ГБ</string>
-    <string name="u_terabyte">ТБ</string>
-    <string name="u_petabyte">ПБ</string>
-    <string name="u_exabyte">ЕБ</string>
 </resources>

@@ -830,7 +830,4 @@
     <string name="u_kilobyte" tools:ignore="MissingTranslation">KB</string>
     <string name="u_megabyte" tools:ignore="MissingTranslation">MB</string>
     <string name="u_gigabyte" tools:ignore="MissingTranslation">GB</string>
-    <string name="u_terabyte" tools:ignore="MissingTranslation">TB</string>
-    <string name="u_petabyte" tools:ignore="MissingTranslation">PB</string>
-    <string name="u_exabyte" tools:ignore="MissingTranslation">EB</string>
 </resources>

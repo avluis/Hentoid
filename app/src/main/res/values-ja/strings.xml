@@ -847,12 +847,9 @@
     <string name="transform_transcoding">トランスコーディング</string>
     <string name="transform_unsupported">変換はサポートされていません</string>
     <string name="u_byte">バイト</string>
-    <string name="u_exabyte">EB</string>
     <string name="u_gigabyte">ギガバイト</string>
     <string name="u_kilobyte">キロバイト</string>
     <string name="u_megabyte">メガバイト</string>
-    <string name="u_petabyte">PB</string>
-    <string name="u_terabyte">テラバイト</string>
     <string name="unbookmark_current">現在のページのブックマークを削除する</string>
     <string name="unsupported_site">エラー - サイトはサポートされていません</string>
     <string name="update_available">アップデートが利用可能です！</string>

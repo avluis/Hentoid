@@ -848,12 +848,9 @@
     <string name="transform_transcoding">Transcoding</string>
     <string name="transform_unsupported">Trasformazione non supportata</string>
     <string name="u_byte">bytes</string>
-    <string name="u_exabyte">EB</string>
     <string name="u_gigabyte">GB</string>
     <string name="u_kilobyte">KB</string>
     <string name="u_megabyte">MB</string>
-    <string name="u_petabyte">PB</string>
-    <string name="u_terabyte">TB</string>
     <string name="unbookmark_current">Rimuovi segnalibro da questa pagina</string>
     <string name="unsupported_site">Errore - Il sito non ? supportato</string>
     <string name="update_available">Disponibile un aggiornamento!</string>

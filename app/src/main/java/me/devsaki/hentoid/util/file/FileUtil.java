@@ -137,13 +137,7 @@ class FileUtil {
         final String formatPattern = "%." + places + "f";
 
         String displaySize;
-        if (size.divide(ONE_EB_BI).compareTo(BigInteger.ZERO) > 0) {
-            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_EB_BI.doubleValue()) + " " + res.getString(R.string.u_exabyte);
-        } else if (size.divide(ONE_PB_BI).compareTo(BigInteger.ZERO) > 0) {
-            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_PB_BI.doubleValue()) + " " + res.getString(R.string.u_petabyte);
-        } else if (size.divide(ONE_TB_BI).compareTo(BigInteger.ZERO) > 0) {
-            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_TB_BI.doubleValue()) + " " + res.getString(R.string.u_terabyte);
-        } else if (size.divide(ONE_GB_BI).compareTo(BigInteger.ZERO) > 0) {
+        if (size.divide(ONE_GB_BI).compareTo(BigInteger.ZERO) > 0) {
             displaySize = String.format(locale, formatPattern, sizeInLong / ONE_GB_BI.doubleValue()) + " " + res.getString(R.string.u_gigabyte);
         } else if (size.divide(ONE_MB_BI).compareTo(BigInteger.ZERO) > 0) {
             displaySize = String.format(locale, formatPattern, sizeInLong / ONE_MB_BI.doubleValue()) + " " + res.getString(R.string.u_megabyte);
