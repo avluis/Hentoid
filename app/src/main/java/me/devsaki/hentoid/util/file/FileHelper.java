@@ -748,18 +748,30 @@ public class FileHelper {
     @Nullable
     public static Uri copyFile(@NonNull final Context context, @NonNull final Uri sourceFileUri, @NonNull final Uri targetFolderUri, @NonNull String mimeType, @NonNull String newName) throws IOException {
         if (!fileExists(context, sourceFileUri)) return null;
-        DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
-        if (null == targetFolder || !targetFolder.exists()) return null;
-        DocumentFile newFile = targetFolder.createFile(mimeType, newName);
-        if (null == newFile || !newFile.exists()) return null;
-        try (OutputStream output = FileHelper.getOutputStream(context, newFile)) {
+
+        Uri targetFileUri;
+        if (ContentResolver.SCHEME_FILE.equals(targetFolderUri.getScheme())) {
+            File targetFolder = legacyFileFromUri(targetFolderUri);
+            if (null == targetFolder || !targetFolder.exists()) return null;
+            File targetFile = new File(targetFolder, newName);
+            if (!targetFile.exists() && !targetFile.createNewFile()) return null;
+            targetFileUri = Uri.fromFile(targetFile);
+        } else {
+            DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
+            if (null == targetFolder || !targetFolder.exists()) return null;
+            DocumentFile targetFile = targetFolder.createFile(mimeType, newName);
+            if (null == targetFile || !targetFile.exists()) return null;
+            targetFileUri = targetFile.getUri();
+        }
+
+        try (OutputStream output = FileHelper.getOutputStream(context, targetFileUri)) {
             if (output != null) {
                 try (InputStream input = FileHelper.getInputStream(context, sourceFileUri)) {
                     Helper.copy(input, output);
                 }
             }
         }
-        return newFile.getUri();
+        return targetFileUri;
     }
 
     /**
@@ -1130,6 +1142,15 @@ public class FileHelper {
             DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
             return (doc != null);
         }
+    }
+
+    @Nullable
+    public static File legacyFileFromUri(@NonNull final Uri fileUri) {
+        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
+            String path = fileUri.getPath();
+            if (path != null) return new File(path);
+        }
+        return null;
     }
 
     /**

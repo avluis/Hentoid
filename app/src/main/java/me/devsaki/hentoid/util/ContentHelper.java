@@ -767,17 +767,14 @@ public final class ContentHelper {
     private static String formatBookFolderName(@NonNull final Content content, @NonNull final String title, @NonNull final String author) {
         String result = "";
         switch (Preferences.getFolderNameFormat()) {
-            case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_ID:
-                result += title;
-                break;
-            case Preferences.Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID:
-                result += author + " - " + title;
-                break;
-            case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_AUTH_ID:
-                result += title + " - " + author;
-                break;
-            default:
+            case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_ID -> result += title;
+            case Preferences.Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID ->
+                    result += author + " - " + title;
+            case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_AUTH_ID ->
+                    result += title + " - " + author;
+            default -> {
                 // Nothing to do
+            }
         }
         result += " - ";
 
@@ -1369,10 +1366,17 @@ public final class ContentHelper {
     }
 
     /**
-     * Remove all files (including JSON and cover thumb) from the given Content's folder
-     * The folder itself is left empty
-     * <p>
-     * Caution : exec time is long
+     * Remove all files from the given Content's folder.
+     * The folder itself is left empty except if JSON and cover are to be kept.
+     * <p/>
+     * NB : "Thanks to" Android SAF, it is faster to :
+     * 1/ copy kept files to temp storage,
+     * 2/ delete the whole folder and its entire content
+     * 3/ re-create it
+     * 4/ copy back kept files into it
+     * ...rather than to delete all image files one by one.
+     * <p/>
+     * => code is way more complex but exec time is way faster
      *
      * @param context     Context to use
      * @param content     Content to remove files from
@@ -1382,12 +1386,62 @@ public final class ContentHelper {
     public static void purgeFiles(@NonNull final Context context, @NonNull final Content content, boolean removeJson, boolean removeCover) {
         DocumentFile bookFolder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
-            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, displayName -> true);
-            for (DocumentFile file : files) {
-                String name = StringHelper.protect(file.getName()).toLowerCase();
-                if (!removeJson && name.endsWith("json")) continue;
-                if (!removeCover && name.startsWith(Consts.THUMB_FILE_NAME)) continue;
-                file.delete();
+            // Identify files to keep
+            FileHelper.NameFilter namesToKeep = displayName -> {
+                String name = displayName.toLowerCase();
+                return (!removeJson && name.endsWith("json")) || (!removeCover && name.startsWith(Consts.THUMB_FILE_NAME));
+            };
+            List<DocumentFile> filesToKeep = FileHelper.listFiles(context, bookFolder, namesToKeep);
+
+            // If any, copy them to temp storage
+            List<File> tempFiles = new ArrayList<>();
+            File tempFolder = null;
+            if (!filesToKeep.isEmpty()) {
+                tempFolder = FileHelper.getOrCreateCacheFolder(context, "tmp" + content.getId());
+                for (DocumentFile file : filesToKeep) {
+                    try {
+                        Uri uri = FileHelper.copyFile(context, file.getUri(), Uri.fromFile(tempFolder), StringHelper.protect(file.getType()), StringHelper.protect(file.getName()));
+                        if (uri != null) {
+                            File tmpFile = FileHelper.legacyFileFromUri(uri);
+                            if (tmpFile != null) tempFiles.add(tmpFile);
+                        }
+                    } catch (IOException e) {
+                        Timber.w(e);
+                    }
+                }
+            }
+
+            try {
+                // Delete the whole initial folder
+                bookFolder.delete();
+
+                // Re-create an empty folder with the same name
+                DocumentFile siteFolder = ContentHelper.getOrCreateSiteDownloadDir(context, getLocation(content), content.getSite());
+                if (siteFolder != null) {
+                    String name = bookFolder.getName();
+                    if (name != null) bookFolder = siteFolder.createDirectory(name);
+                    else
+                        bookFolder = getOrCreateContentDownloadDir(context, content, getLocation(content), false);
+                }
+
+                if (bookFolder != null) {
+                    content.setStorageUri(bookFolder.getUri().toString());
+                    // Copy back the files to the new folder
+                    for (File file : tempFiles) {
+                        try {
+                            String name = file.getName().toLowerCase();
+                            String mimeType = FileHelper.getMimeTypeFromFileName(name);
+                            Uri newUri = FileHelper.copyFile(context, Uri.fromFile(file), bookFolder.getUri(), mimeType, file.getName());
+                            if (newUri != null && name.endsWith("json"))
+                                content.setJsonUri(newUri.toString());
+                        } catch (IOException e) {
+                            Timber.w(e);
+                        }
+                    }
+                }
+            } finally {
+                // Delete temp files
+                if (tempFolder != null) tempFolder.delete();
             }
         }
     }
@@ -1431,20 +1485,14 @@ public final class ContentHelper {
      * @return Resource ID representing the given rating
      */
     public static @DrawableRes int getRatingResourceId(int rating) {
-        switch (rating) {
-            case 1:
-                return R.drawable.ic_star_1;
-            case 2:
-                return R.drawable.ic_star_2;
-            case 3:
-                return R.drawable.ic_star_3;
-            case 4:
-                return R.drawable.ic_star_4;
-            case 5:
-                return R.drawable.ic_star_5;
-            default:
-                return R.drawable.ic_star_none;
-        }
+        return switch (rating) {
+            case 1 -> R.drawable.ic_star_1;
+            case 2 -> R.drawable.ic_star_2;
+            case 3 -> R.drawable.ic_star_3;
+            case 4 -> R.drawable.ic_star_4;
+            case 5 -> R.drawable.ic_star_5;
+            default -> R.drawable.ic_star_none;
+        };
     }
 
     /**
@@ -1545,7 +1593,7 @@ public final class ContentHelper {
     public static ImmutablePair<Content, Float> findDuplicate(@NonNull final Context context, @NonNull final Content content, boolean useTitle, boolean useArtist, boolean useLanguage, boolean useCover, long pHash, @NonNull final CollectionDAO dao) {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
-        Optional<String> longestWord = Stream.of(words).sorted((o1, o2) -> Integer.compare(o1.length(), o2.length())).findLast();
+        Optional<String> longestWord = Stream.of(words).sorted(Comparator.comparingInt(String::length)).findLast();
         if (longestWord.isEmpty() || longestWord.get().length() < 2)
             return null; // Too many resources consumed if the longest word is 1 character long
 

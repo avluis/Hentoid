@@ -24,6 +24,7 @@ import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import me.devsaki.hentoid.workers.data.DeleteData
 import org.greenrobot.eventbus.EventBus
+import timber.log.Timber
 import kotlin.math.ceil
 
 /**
@@ -156,7 +157,6 @@ abstract class BaseDeleteWorker(
         }
     }
 
-    // TODO use ProgressManager to display proper progress for purge
     private fun purgeContentList(ids: LongArray, keepCovers: Boolean) {
         // Flag the content as "being deleted" (triggers blink animation; lock operations)
         for (id in ids) dao.updateContentDeleteFlag(id, true)
@@ -179,9 +179,12 @@ abstract class BaseDeleteWorker(
         progressItem(content, true)
         try {
             ContentHelper.purgeFiles(applicationContext, content, false, removeCover)
+            // Update content folder and JSON Uri's after purging
+            dao.insertContentCore(content)
             trace(Log.INFO, "Purged item: %s.", content.title)
         } catch (e: Exception) {
             nbError++
+            Timber.w(e)
             trace(Log.WARN, "Error when trying to purge %s : %s", content.title, e.message)
         }
     }
