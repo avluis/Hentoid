@@ -966,11 +966,9 @@ class ReaderViewModel(
         if (viewerImagesInternal.size <= viewerIndex) return
         val theContent = getContent().value ?: return
         val isArchive = theContent.isArchive
-        val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1).filter { i ->
-            isPictureNeedsProcessing(
-                i, viewerImagesInternal
-            )
-        }.toSet()
+        val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
+            .filter { i -> isPictureNeedsProcessing(i, viewerImagesInternal) }
+            .toSet()
         if (picturesLeftToProcess.isEmpty()) return
 
         // Identify pages to be loaded
@@ -1025,14 +1023,18 @@ class ReaderViewModel(
      * @param images    List of pictures to test against
      * @return True if the picture at the given index needs processing; false if not
      */
-    private fun isPictureNeedsProcessing(
-        pageIndex: Int, images: List<ImageFile>
-    ): Boolean {
+    private fun isPictureNeedsProcessing(pageIndex: Int, images: List<ImageFile>): Boolean {
         if (pageIndex < 0 || images.size <= pageIndex) return false
         val img = images[pageIndex]
         return (img.status == StatusContent.ONLINE && img.fileUri.isEmpty()) // Image has to be downloaded
-                || (img.isArchived && img.fileUri.isEmpty()) // Image has to be extracted from an archive
-        // NB : extraction status may also be tested by examining imageLocationCache
+                || (img.isArchived && (img.fileUri.isEmpty() || isArchiveUri(img.fileUri))) // Image has to be extracted from an archive
+    }
+
+    private fun isArchiveUri(uri: String): Boolean {
+        ArchiveHelper.getSupportedExtensions().forEach {
+            if (uri.contains(".$it" + File.separator)) return true
+        }
+        return false
     }
 
     /**

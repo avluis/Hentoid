@@ -524,7 +524,7 @@ object ArchiveHelper {
                 val targetFile: File
                 if (null == existing) {
                     targetFile = fileCreator.invoke(targetFileName)
-                    if (!targetFile.createNewFile()) throw IOException("Could not create file " + targetFile.path)
+                    targetFile.createNewFile()
                 } else {
                     targetFile = FileHelper.legacyFileFromUri(existing)!!
                 }

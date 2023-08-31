@@ -72,8 +72,7 @@ public class UpdateDownloadWorker extends BaseWorker {
         Timber.w(context.getResources().getString(R.string.starting_download));
 
         File file = new File(context.getExternalCacheDir(), "hentoid.apk");
-        if (!file.createNewFile())
-            Timber.w("Could not create file %s", file.getPath());
+        file.createNewFile();
 
         Response response = HttpHelper.getOnlineResource(apkUrl, null, false, false, false);
         Timber.d("DOWNLOADING APK - RESPONSE %s", response.code());

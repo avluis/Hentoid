@@ -390,8 +390,7 @@ class CustomWebViewClient extends WebViewClient {
         File cacheDir = context.getCacheDir();
         // Using a random file name rather than the original name to avoid errors caused by path length
         File file = new File(cacheDir.getAbsolutePath() + File.separator + Helper.getRandomInt(10000) + "." + getExtensionFromUri(url));
-        if (!file.createNewFile())
-            throw new IOException("Could not create file " + file.getPath());
+        file.createNewFile();
 
         Uri torrentFileUri = Uri.fromFile(file);
         FileHelper.saveBinary(context, torrentFileUri, body.bytes());
