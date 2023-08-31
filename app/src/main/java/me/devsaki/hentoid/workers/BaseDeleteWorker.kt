@@ -332,3 +332,9 @@ abstract class BaseDeleteWorker(
         )
     }
 }
+
+class DeleteWorker(context: Context, parameters: WorkerParameters) :
+    BaseDeleteWorker(context, R.id.delete_service_delete, parameters)
+
+class PurgeWorker(context: Context, parameters: WorkerParameters) :
+    BaseDeleteWorker(context, R.id.delete_service_purge, parameters)
