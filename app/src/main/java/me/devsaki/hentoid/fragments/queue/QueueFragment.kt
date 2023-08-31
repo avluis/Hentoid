@@ -553,7 +553,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS -> {
                 motiveMsg = R.string.paused_dl_folder_credentials
                 PermissionHelper.requestExternalStorageReadWritePermission(
-                    getActivity(), PermissionHelper.RQST_STORAGE_PERMISSION
+                    requireActivity(), PermissionHelper.RQST_STORAGE_PERMISSION
                 )
             }
 

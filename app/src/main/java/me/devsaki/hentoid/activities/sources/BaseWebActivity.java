@@ -468,7 +468,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // Make sure permissions are set at resume time; if not, warn the user
     private void checkPermissions() {
         if (Preferences.isBrowserMode()) return;
-        if (!PermissionHelper.requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
+        if (!PermissionHelper.INSTANCE.requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
             ToastHelper.toast(R.string.web_storage_permission_denied);
     }
 

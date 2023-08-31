@@ -444,13 +444,13 @@ public class LibraryActivity extends BaseActivity {
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.GONE);
             alertFixBtn.setVisibility(View.GONE);
-        } else if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) { // Warn about permissions being lost
+        } else if (!PermissionHelper.INSTANCE.checkExternalStorageReadWritePermission(this)) { // Warn about permissions being lost
             alertTxt.setText(R.string.alert_permissions_lost);
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.VISIBLE);
             alertFixBtn.setOnClickListener(v -> fixPermissions());
             alertFixBtn.setVisibility(View.VISIBLE);
-        } else if (!PermissionHelper.checkNotificationPermission(this)) { // Warn about notiftications not being enabled
+        } else if (!PermissionHelper.INSTANCE.checkNotificationPermission(this)) { // Warn about notiftications not being enabled
             alertTxt.setText(R.string.alert_notifications);
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.VISIBLE);
@@ -800,12 +800,12 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void fixPermissions() {
-        if (PermissionHelper.requestExternalStorageReadWritePermission(this, PermissionHelper.RQST_STORAGE_PERMISSION))
+        if (PermissionHelper.INSTANCE.requestExternalStorageReadWritePermission(this, PermissionHelper.RQST_STORAGE_PERMISSION))
             updateAlertBanner();
     }
 
     private void fixNotifications() {
-        if (PermissionHelper.requestNotificationPermission(this, PermissionHelper.RQST_NOTIFICATION_PERMISSION))
+        if (PermissionHelper.INSTANCE.requestNotificationPermission(this, PermissionHelper.RQST_NOTIFICATION_PERMISSION))
             updateAlertBanner();
     }
 
@@ -1040,20 +1040,6 @@ public class LibraryActivity extends BaseActivity {
         }
         selectExtension.deselect(selectExtension.getSelections());
         LibraryArchiveDialogFragment.Companion.invoke(this, items);
-        /*
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        String title = getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size(), items.size());
-        builder.setMessage(title).setPositiveButton(R.string.yes, (dialog, which) -> {
-            selectExtension.deselect(selectExtension.getSelections());
-            ArchiveNotificationChannel.init(this);
-            archiveNotificationManager = new NotificationManager(this, R.id.archive_processing);
-            archiveNotificationManager.cancel();
-            archiveProgress = 0;
-            archiveMax = items.size();
-            archiveNotificationManager.notify(new ArchiveStartNotification());
-            viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess, this::onContentArchiveError);
-        }).setNegativeButton(R.string.no, (dialog, which) -> selectExtension.deselect(selectExtension.getSelections())).create().show();
-         */
     }
 
     private void signalCurrentFragment(int eventType, @Nullable String message) {
