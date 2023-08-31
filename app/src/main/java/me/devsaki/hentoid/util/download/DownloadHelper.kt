@@ -14,6 +14,7 @@ import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.take
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
+import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import me.devsaki.hentoid.util.image.ImageHelper.getMimeTypeFromPictureBinary
@@ -31,18 +32,69 @@ object DownloadHelper {
     // NB : Actual size of read bytes may be smaller
     private const val DL_IO_BUFFER_SIZE_B = 50 * 1024
 
+    @Throws(
+        IOException::class,
+        UnsupportedContentException::class,
+        DownloadInterruptedException::class,
+        IllegalStateException::class
+    )
+    fun downloadToFileCached(
+        context: Context,
+        site: Site,
+        rawUrl: String,
+        requestHeaders: List<Pair<String, String>>?,
+        interruptDownload: AtomicBoolean,
+        forceMimeType: String? = null,
+        failFast: Boolean = true,
+        resourceId: Int,
+        notifyProgress: Consumer<Float>? = null
+    ): Pair<Uri, String> {
+        return downloadToFile(
+            context, site, rawUrl, requestHeaders,
+            fileCreator = { _, _, url -> DiskCache.createFile(url) },
+            interruptDownload, forceMimeType, failFast, resourceId, notifyProgress
+        )
+    }
+
+    @Throws(
+        IOException::class,
+        UnsupportedContentException::class,
+        DownloadInterruptedException::class,
+        IllegalStateException::class
+    )
+    fun downloadToFile(
+        context: Context,
+        site: Site,
+        rawUrl: String,
+        requestHeaders: List<Pair<String, String>>?,
+        targetFolderUri: Uri,
+        targetFileName: String,
+        interruptDownload: AtomicBoolean,
+        forceMimeType: String? = null,
+        failFast: Boolean = true,
+        resourceId: Int,
+        notifyProgress: Consumer<Float>? = null
+    ): Pair<Uri, String> {
+        return downloadToFile(
+            context, site, rawUrl, requestHeaders,
+            fileCreator = { ctx, mimeType, _ ->
+                createFile(ctx, targetFolderUri, targetFileName, mimeType)
+            },
+            interruptDownload, forceMimeType, failFast, resourceId, notifyProgress
+        )
+    }
+
     /**
      * Download the given resource to the given disk location
      *
      * @param site              Site to use params for
      * @param rawUrl            URL to download from
-     * @param resourceId        ID of the corresponding resource (for logging purposes only)
      * @param requestHeaders    HTTP request headers to use
-     * @param targetFolderUri   Uri of the folder where to save the downloaded resource
-     * @param targetFileName    Name of the file to save the downloaded resource
+     * @param fileCreator       Method to use to create the file where to download
      * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
      * @param forceMimeType     Forced mime-type of the downloaded resource (null for auto-set)
      * @param failFast          True for a shorter read timeout; false for a regular, patient download
+     * @param resourceId        ID of the corresponding resource (for logging purposes only)
      * @param notifyProgress    Consumer called with the download progress %
      * @return Pair containing
      * - Left : Uri of downloaded file
@@ -54,17 +106,16 @@ object DownloadHelper {
         DownloadInterruptedException::class,
         IllegalStateException::class
     )
-    fun downloadToFile(
+    private fun downloadToFile(
         context: Context,
         site: Site,
         rawUrl: String,
-        resourceId: Int,
         requestHeaders: List<Pair<String, String>>?,
-        targetFolderUri: Uri,
-        targetFileName: String,
+        fileCreator: (Context, String, String) -> Uri,
         interruptDownload: AtomicBoolean,
         forceMimeType: String? = null,
         failFast: Boolean = true,
+        resourceId: Int,
         notifyProgress: Consumer<Float>? = null
     ): Pair<Uri, String> {
         Helper.assertNonUiThread()
@@ -96,10 +147,8 @@ object DownloadHelper {
         if (size < 1) size = 1
         val sizeStr = FileHelper.formatHumanReadableSize(size, context.resources)
         Timber.d(
-            "WRITING DOWNLOAD %d TO %s/%s (size %s)",
+            "STARTING DOWNLOAD FOR %d (size %s)",
             resourceId,
-            targetFolderUri.path,
-            targetFileName,
             sizeStr
         )
         var mimeType = forceMimeType ?: ""
@@ -124,8 +173,13 @@ object DownloadHelper {
                             mimeType = getMimeTypeFromStream(buffer, len, contentType, url, sizeStr)
                         }
                         // Create target file and output stream
-                        targetFileUri =
-                            createFile(context, targetFolderUri, targetFileName, mimeType)
+                        targetFileUri = fileCreator(context, mimeType, url)
+                        Timber.d(
+                            "WRITING DOWNLOAD %d TO %s (size %s)",
+                            resourceId,
+                            targetFileUri!!.path,
+                            sizeStr
+                        )
                         out = FileHelper.getOutputStream(context, targetFileUri!!)
                     }
                     if (len > 0 && out != null) {
@@ -187,7 +241,7 @@ object DownloadHelper {
         targetFolderUri: Uri,
         targetFileName: String,
         mimeType: String
-    ): Uri? {
+    ): Uri {
         var targetFileNameFinal =
             targetFileName + "." + FileHelper.getExtensionFromMimeType(mimeType)
         // Keep the extension if the target file name is provided with one

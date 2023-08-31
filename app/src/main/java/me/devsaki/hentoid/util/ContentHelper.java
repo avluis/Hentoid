@@ -1370,7 +1370,7 @@ public final class ContentHelper {
      * The folder itself is left empty except if JSON and cover are to be kept.
      * <p/>
      * NB : "Thanks to" Android SAF, it is faster to :
-     * 1/ copy kept files to temp storage,
+     * 1/ copy kept files to temp storage
      * 2/ delete the whole folder and its entire content
      * 3/ re-create it
      * 4/ copy back kept files into it

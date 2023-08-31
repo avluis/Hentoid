@@ -155,13 +155,13 @@ class RequestQueue(
             context,
             site,
             url,
-            pageIndex,
             HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url),
             targetFolder.uri,
             targetFileNameNoExt,
             killSwitch,
             null,
-            false
+            false,
+            pageIndex
         )
 
         val targetFileUri = result.first

@@ -1241,7 +1241,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     applicationContext,
                     site,
                     img.url,
-                    img.order,
                     HttpHelper.webkitRequestHeadersToOkHttpHeaders(
                         getRequestHeaders(
                             img.url,
@@ -1251,7 +1250,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     Uri.fromFile(ugoiraCacheFolder),
                     targetFileName,
                     downloadInterrupted,
-                    ArchiveHelper.ZIP_MIME_TYPE
+                    ArchiveHelper.ZIP_MIME_TYPE,
+                    resourceId = img.order
                 )
 
                 // == Extract all frames

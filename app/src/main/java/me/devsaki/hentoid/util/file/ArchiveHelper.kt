@@ -1,9 +1,7 @@
 package me.devsaki.hentoid.util.file
 
-import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import androidx.core.util.Pair
 import androidx.documentfile.provider.DocumentFile
 import io.reactivex.Observable
@@ -14,8 +12,6 @@ import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
 import net.sf.sevenzipjbinding.IArchiveExtractCallback
 import net.sf.sevenzipjbinding.IArchiveOpenCallback
-import net.sf.sevenzipjbinding.IInStream
-import net.sf.sevenzipjbinding.ISeekableStream
 import net.sf.sevenzipjbinding.ISequentialOutStream
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
@@ -23,9 +19,7 @@ import net.sf.sevenzipjbinding.SevenZipException
 import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
-import java.io.EOFException
 import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.util.concurrent.atomic.AtomicBoolean
@@ -136,7 +130,7 @@ object ArchiveHelper {
     ): List<ArchiveEntry> {
         Helper.assertNonUiThread()
         val callback = ArchiveOpenCallback()
-        val result: MutableList<ArchiveEntry> = ArrayList()
+        val result = ArrayList<ArchiveEntry>()
         try {
             DocumentFileRandomInStream(context, uri).use { stream ->
                 SevenZip.openInArchive(format, stream, callback).use { inArchive ->
@@ -145,7 +139,7 @@ object ArchiveHelper {
                         result.add(
                             ArchiveEntry(
                                 inArchive.getStringProperty(i, PropID.PATH),
-                                inArchive.getStringProperty(i, PropID.SIZE).toInt().toLong()
+                                inArchive.getStringProperty(i, PropID.SIZE).toLong()
                             )
                         )
                     }
@@ -189,21 +183,56 @@ object ArchiveHelper {
         }
     }
 
-    /**
-     * Extract the given entries from the given archive file
-     *
-     * @param context          Context to be used
-     * @param uri              Uri of the archive file to extract from
-     * @param targetFolder     Target folder to create the archives into
-     * @param entriesToExtract List of entries to extract (left = relative paths to the archive root / right = names of the target files - set to blank to keep original name); null to extract everything
-     * @param emitter          Optional emitter to be used when the method is used with RxJava
-     * @throws IOException If something horrible happens during I/O
-     */
+    @Throws(IOException::class)
+    fun extractArchiveEntriesCached(
+        context: Context,
+        uri: Uri,
+        entriesToExtract: List<Pair<String, String>>?,
+        interrupt: AtomicBoolean?,
+        emitter: ObservableEmitter<Uri>?
+    ) {
+        return extractArchiveEntries(
+            context, uri,
+            fileCreator = { targetFileName -> File(DiskCache.createFile(targetFileName).path!!) },
+            fileFinder = { targetFileName -> DiskCache.getFile(targetFileName) },
+            entriesToExtract, interrupt, emitter
+        )
+    }
+
     @Throws(IOException::class)
     fun extractArchiveEntries(
         context: Context,
         uri: Uri,
         targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+        entriesToExtract: List<Pair<String, String>>?,
+        interrupt: AtomicBoolean?,
+        emitter: ObservableEmitter<Uri>?
+    ) {
+        return extractArchiveEntries(
+            context, uri,
+            fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
+            fileFinder = { targetFileName -> findFile(targetFolder, targetFileName) },
+            entriesToExtract, interrupt, emitter
+        )
+    }
+
+    /**
+     * Extract the given entries from the given archive file
+     *
+     * @param context          Context to be used
+     * @param uri              Uri of the archive file to extract from
+     * @param fileCreator      Method to call to create a new file to extract to
+     * @param fileFinder       Method to call to find a file in the extraction location
+     * @param entriesToExtract List of entries to extract (left = relative paths to the archive root / right = names of the target files - set to blank to keep original name); null to extract everything
+     * @param emitter          Optional emitter to be used when the method is used with RxJava
+     * @throws IOException If something horrible happens during I/O
+     */
+    @Throws(IOException::class)
+    private fun extractArchiveEntries(
+        context: Context,
+        uri: Uri,
+        fileCreator: (String) -> File,
+        fileFinder: (String) -> Uri?,
         entriesToExtract: List<Pair<String, String>>?,
         interrupt: AtomicBoolean?,
         emitter: ObservableEmitter<Uri>?
@@ -254,7 +283,13 @@ object ArchiveHelper {
                         }
                     }
                     val callback =
-                        ArchiveExtractCallback(targetFolder, fileNames, interrupt, emitter)
+                        ArchiveExtractCallback(
+                            fileCreator,
+                            fileFinder,
+                            fileNames,
+                            interrupt,
+                            emitter
+                        )
                     val indexes =
                         Helper.getPrimitiveArrayFromSet(fileNames.keys)
                     inArchive.extract(indexes, false, callback)
@@ -265,8 +300,6 @@ object ArchiveHelper {
             throw IOException(e)
         }
     }
-
-    // ================= ZIP FILE CREATION
 
     // ================= ZIP FILE CREATION
     /**
@@ -336,18 +369,6 @@ object ArchiveHelper {
         return index.toString() + CACHE_SEPARATOR + fileName
     }
 
-    /**
-     * Extracts the original file name from the filename of the cached file
-     *
-     * @param path Path of the cached file
-     * @return Original filename of the given cached file
-     */
-    fun extractFileNameFromCacheName(path: String): String? {
-        val result = FileHelper.getFileNameWithoutExtension(path)
-        val folderSeparatorIndex = result.lastIndexOf(CACHE_SEPARATOR)
-        return if (-1 == folderSeparatorIndex) result else result.substring(folderSeparatorIndex + 1)
-    }
-
     // This is a dumb struct class, nothing more
     // Describes an entry inside an archive
     data class ArchiveEntry(val path: String, val size: Long)
@@ -362,9 +383,9 @@ object ArchiveHelper {
         }
     }
 
+    /*
     // https://stackoverflow.com/a/28805474/8374722; https://stackoverflow.com/questions/28897329/documentfile-randomaccessfile
-    class DocumentFileRandomInStream(context: Context, val uri: Uri) :
-        IInStream {
+    class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
         private lateinit var contentResolver: ContentResolver
         private var pfdInput: ParcelFileDescriptor? = null
         private var stream: FileInputStream? = null
@@ -388,26 +409,24 @@ object ArchiveHelper {
             stream?.close()
             pfdInput?.close()
             pfdInput = contentResolver.openFileDescriptor(uri, "r")
-            if (pfdInput != null) stream = FileInputStream(pfdInput!!.fileDescriptor)
+            pfdInput?.let {
+                stream = FileInputStream(it.fileDescriptor)
+            }
         }
 
         @Throws(SevenZipException::class)
         override fun seek(offset: Long, seekOrigin: Int): Long {
             var seekDelta: Long = 0
             when (seekOrigin) {
-                ISeekableStream.SEEK_CUR -> seekDelta =
-                    offset
-
-                ISeekableStream.SEEK_SET -> seekDelta =
-                    offset - position
-
-                ISeekableStream.SEEK_END -> seekDelta =
-                    streamSize + offset - position
+                ISeekableStream.SEEK_CUR -> seekDelta = offset
+                ISeekableStream.SEEK_SET -> seekDelta = offset - position
+                ISeekableStream.SEEK_END -> seekDelta = streamSize + offset - position
             }
             if (position + seekDelta > streamSize) position = streamSize
             if (seekDelta != 0L) {
                 try {
                     if (seekDelta < 0) {
+                        // "skip" can only go forward, so we have to start over
                         openUri()
                         skipNBytes(position + seekDelta)
                     } else {
@@ -418,6 +437,7 @@ object ArchiveHelper {
                 }
             }
             position += seekDelta
+            Timber.d("position : $position")
             return position
         }
 
@@ -432,13 +452,9 @@ object ArchiveHelper {
                     // adjust number to skip
                     n -= ns
                     // read until requested number skipped or EOS reached
-                    while (n > 0 && stream!!.read() != -1) {
-                        n--
-                    }
+                    while (n > 0 && stream!!.read() != -1) n--
                     // if not enough skipped, then EOFE
-                    if (n != 0L) {
-                        throw EOFException()
-                    }
+                    if (n != 0L) throw EOFException()
                 } else if (ns != n) { // skipped negative or too many bytes
                     throw IOException("Unable to skip exactly")
                 }
@@ -449,7 +465,7 @@ object ArchiveHelper {
         override fun read(bytes: ByteArray): Int {
             return try {
                 var result = stream!!.read(bytes)
-                position += result.toLong()
+                position += result
                 if (result != bytes.size) Timber.w("diff %s expected; %s read", bytes.size, result)
                 if (result < 0) result = 0
                 result
@@ -460,13 +476,26 @@ object ArchiveHelper {
 
         @Throws(IOException::class)
         override fun close() {
-            stream!!.close()
-            pfdInput!!.close()
+            stream?.close()
+            pfdInput?.close()
         }
+    }
+    */
+
+    private fun findFile(targetFolder: File, targetName: String): Uri? {
+        val files = targetFolder.listFiles { _, name: String ->
+            name.equals(
+                targetName,
+                ignoreCase = true
+            )
+        }
+        return if (null == files || files.isEmpty()) null
+        else Uri.fromFile(files[0])
     }
 
     private class ArchiveExtractCallback(
-        private val targetFolder: File,
+        private val fileCreator: (String) -> File,
+        private val fileFinder: (String) -> Uri?,
         private val fileNames: Map<Int, String>,
         private val interrupt: AtomicBoolean?,
         private val emitter: ObservableEmitter<Uri>?
@@ -486,29 +515,18 @@ object ArchiveHelper {
             this.extractAskMode = extractAskMode
             val fileName = fileNames[index] ?: return null
             val targetFileName = formatCacheFileName(index, fileName)
-            val existing = targetFolder.listFiles { _: File?, name: String ->
-                name.equals(
-                    targetFileName,
-                    ignoreCase = true
-                )
-            }
+            val existing = fileFinder.invoke(targetFileName)
             return try {
-                if (existing != null) {
-                    val targetFile: File
-                    if (existing.isEmpty()) {
-                        targetFile =
-                            File(targetFolder.absolutePath + File.separator + targetFileName)
-                        if (!targetFile.createNewFile()) throw IOException("Could not create file " + targetFile.path)
-                    } else {
-                        targetFile = existing[0]
-                    }
-                    //if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
-                    uri = Uri.fromFile(targetFile)
-                    stream = SequentialOutStream(FileHelper.getOutputStream(targetFile))
-                    stream!!
+                val targetFile: File
+                if (null == existing) {
+                    targetFile = fileCreator.invoke(targetFileName)
+                    if (!targetFile.createNewFile()) throw IOException("Could not create file " + targetFile.path)
                 } else {
-                    throw SevenZipException("An I/O error occurred while listing files")
+                    targetFile = FileHelper.legacyFileFromUri(existing)!!
                 }
+                uri = Uri.fromFile(targetFile)
+                stream = SequentialOutStream(FileHelper.getOutputStream(targetFile))
+                stream
             } catch (e: IOException) {
                 throw SevenZipException(e)
             }
@@ -530,20 +548,17 @@ object ArchiveHelper {
                 extractAskMode,
                 extractOperationResult
             )
-            stream = try {
-                if (stream != null) stream!!.close()
-                null
-            } catch (e: IOException) {
-                throw SevenZipException(e)
-            }
+            stream?.close()
             if (extractOperationResult != ExtractOperationResult.OK) {
                 throw SevenZipException(extractOperationResult.toString())
             } else {
-                if (emitter != null && uri != null) emitter.onNext(uri!!)
+                uri?.let {
+                    emitter?.onNext(it)
+                }
             }
             if (extractAskMode != null && extractAskMode == ExtractAskMode.EXTRACT) {
                 nbProcessed++
-                if (nbProcessed == fileNames.size && emitter != null) emitter.onComplete()
+                if (nbProcessed == fileNames.size) emitter?.onComplete()
             }
         }
 
@@ -556,8 +571,7 @@ object ArchiveHelper {
         }
     }
 
-    private class SequentialOutStream(private val out: OutputStream) :
-        ISequentialOutStream {
+    private class SequentialOutStream(private val out: OutputStream) : ISequentialOutStream {
         @Throws(SevenZipException::class)
         override fun write(data: ByteArray): Int {
             if (data.isEmpty()) {

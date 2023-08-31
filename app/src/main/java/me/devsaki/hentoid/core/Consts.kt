@@ -16,7 +16,6 @@ const val RENAMING_RULES_JSON_FILE_NAME = "rules.json"
 
 const val THUMB_FILE_NAME = "thumb"
 const val EXT_THUMB_FILE_PREFIX = "ext-thumb-"
-const val PICTURE_CACHE_FOLDER = "pictures"
 const val UGOIRA_CACHE_FOLDER = "ugoira"
 
 const val SEED_CONTENT = "content"
@@ -29,6 +28,7 @@ const val CLOUDFLARE_COOKIE = "cf_clearance"
 
 const val URL_GITHUB = "https://github.com/AVnetWS/Hentoid"
 const val URL_GITHUB_WIKI = "https://github.com/AVnetWS/Hentoid/wiki"
-const val URL_GITHUB_WIKI_TRANSFER = "https://github.com/avluis/Hentoid/wiki/Transferring-your-collection-between-devices"
+const val URL_GITHUB_WIKI_TRANSFER =
+    "https://github.com/avluis/Hentoid/wiki/Transferring-your-collection-between-devices"
 const val URL_GITHUB_WIKI_STORAGE = "https://github.com/avluis/Hentoid/wiki/Storage-management"
 const val URL_DISCORD = "https://discord.gg/QEZ3qk9"

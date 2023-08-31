@@ -36,6 +36,7 @@ import me.devsaki.hentoid.receiver.PlugEventsReceiver
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.workers.StartupWorker
 import me.devsaki.hentoid.workers.UpdateCheckWorker
@@ -129,9 +130,9 @@ object AppStartup {
 
     fun getPostLaunchTasks(): List<BiConsumer<Context, (Float) -> Unit>> {
         return listOf(
+            this::initDiskCache,
             this::searchForUpdates,
             this::sendFirebaseStats,
-            this::clearPictureCache,
             this::createBookmarksJson,
             this::createPlugReceiver
         )
@@ -165,7 +166,7 @@ object AppStartup {
     }
 
     private fun initUtils(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Init notifications : start")
+        Timber.i("Init utils : start")
         // Init notification channels
         StartupNotificationChannel.init(context)
         UpdateNotificationChannel.init(context)
@@ -178,7 +179,7 @@ object AppStartup {
         // Clears all previous notifications
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancelAll()
-        Timber.i("Init notifications : done")
+        Timber.i("Init utils : done")
     }
 
     private fun processAppUpdate(context: Context, emitter: (Float) -> Unit) {
@@ -232,13 +233,6 @@ object AppStartup {
         Timber.i("Send Firebase stats : done")
     }
 
-    // Clear archive picture cache (useful when user kills the app while in background with the viewer open)
-    private fun clearPictureCache(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Clear picture cache : start")
-        FileHelper.emptyCacheFolder(context, PICTURE_CACHE_FOLDER)
-        Timber.i("Clear picture cache : done")
-    }
-
     // Creates the JSON file for bookmarks if it doesn't exist
     private fun createBookmarksJson(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Create bookmarks JSON : start")
@@ -271,5 +265,11 @@ object AppStartup {
         filter.addAction(Intent.ACTION_HEADSET_PLUG)
         context.registerReceiver(rcv, filter)
         Timber.i("Create plug receiver : done")
+    }
+
+    private fun initDiskCache(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Init disk cache : start")
+        DiskCache.init(context)
+        Timber.i("Init disk cache : done")
     }
 }
