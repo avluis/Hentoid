@@ -1,7 +1,9 @@
 package me.devsaki.hentoid.util.file
 
+import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.core.util.Pair
 import androidx.documentfile.provider.DocumentFile
 import io.reactivex.Observable
@@ -12,6 +14,8 @@ import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
 import net.sf.sevenzipjbinding.IArchiveExtractCallback
 import net.sf.sevenzipjbinding.IArchiveOpenCallback
+import net.sf.sevenzipjbinding.IInStream
+import net.sf.sevenzipjbinding.ISeekableStream
 import net.sf.sevenzipjbinding.ISequentialOutStream
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
@@ -19,7 +23,9 @@ import net.sf.sevenzipjbinding.SevenZipException
 import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
+import java.io.EOFException
 import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.util.concurrent.atomic.AtomicBoolean
@@ -374,16 +380,15 @@ object ArchiveHelper {
     data class ArchiveEntry(val path: String, val size: Long)
 
     private class ArchiveOpenCallback : IArchiveOpenCallback {
-        override fun setTotal(files: Long, bytes: Long) {
+        override fun setTotal(files: Long?, bytes: Long?) {
             Timber.v("Archive open, total work: $files files, $bytes bytes")
         }
 
-        override fun setCompleted(files: Long, bytes: Long) {
+        override fun setCompleted(files: Long?, bytes: Long?) {
             Timber.v("Archive open, completed: $files files, $bytes bytes")
         }
     }
 
-    /*
     // https://stackoverflow.com/a/28805474/8374722; https://stackoverflow.com/questions/28897329/documentfile-randomaccessfile
     class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
         private lateinit var contentResolver: ContentResolver
@@ -480,7 +485,6 @@ object ArchiveHelper {
             pfdInput?.close()
         }
     }
-    */
 
     private fun findFile(targetFolder: File, targetName: String): Uri? {
         val files = targetFolder.listFiles { _, name: String ->
