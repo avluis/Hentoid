@@ -1412,6 +1412,7 @@ class ReaderViewModel(
                     if (c.right.isEmpty) throw EmptyResultException()
                     dao.addContentToQueue(
                         c.right.get(),
+                        null,
                         StatusContent.SAVED,
                         ContentHelper.QueuePosition.TOP,
                         -1,
@@ -1456,6 +1457,7 @@ class ReaderViewModel(
                         ContentHelper.purgeContent(getApplication(), it, false, true)
                         dao.addContentToQueue(
                             it,
+                            null,
                             targetImageStatus,
                             ContentHelper.QueuePosition.TOP,
                             -1,

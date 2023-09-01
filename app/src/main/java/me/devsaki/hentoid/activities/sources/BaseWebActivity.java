@@ -1082,6 +1082,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         dao.addContentToQueue(
                 currentContent,
                 null,
+                null,
                 position,
                 (isReplaceDuplicate) ? duplicateId : -1,
                 replacementTitle,

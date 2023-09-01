@@ -166,6 +166,7 @@ public class DownloadsImportWorker extends BaseWorker {
                 dao.addContentToQueue(
                         c,
                         null,
+                        null,
                         queuePosition,
                         -1,
                         null,

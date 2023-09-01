@@ -797,9 +797,16 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectExternalMemoryUsagePerSource();
     }
 
-    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, long replacedContentId, @Nullable String replacementTitle, boolean isQueueActive) {
+    public void addContentToQueue(
+            @NonNull final Content content,
+            StatusContent sourceImageStatus,
+            StatusContent targetImageStatus,
+            int position,
+            long replacedContentId,
+            @Nullable String replacementTitle,
+            boolean isQueueActive) {
         if (targetImageStatus != null)
-            db.updateImageContentStatus(content.getId(), null, targetImageStatus);
+            db.updateImageContentStatus(content.getId(), sourceImageStatus, targetImageStatus);
 
         content.setStatus(StatusContent.PAUSED);
         content.setIsBeingProcessed(false); // Remove any UI animation

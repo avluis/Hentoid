@@ -239,7 +239,14 @@ public interface CollectionDAO {
 
     LiveData<List<QueueRecord>> selectQueueLive(String query);
 
-    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, @ContentHelper.QueuePosition int position, long replacedContentId, @Nullable String replacementTitle, boolean isQueueActive);
+    void addContentToQueue(
+            @NonNull final Content content,
+            StatusContent sourceImageStatus,
+            StatusContent targetImageStatus,
+            @ContentHelper.QueuePosition int position,
+            long replacedContentId,
+            @Nullable String replacementTitle,
+            boolean isQueueActive);
 
     void updateQueue(@NonNull List<QueueRecord> queue);
 

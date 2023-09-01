@@ -630,6 +630,7 @@ public class LibraryViewModel extends AndroidViewModel {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) dao.updateContentDeleteFlag(c.getId(), true);
 
+        StatusContent sourceImageStatus = reparseImages ? null : StatusContent.ERROR;
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
         AtomicInteger errorCount = new AtomicInteger(0);
 
@@ -644,7 +645,8 @@ public class LibraryViewModel extends AndroidViewModel {
                                 if (reparseImages)
                                     ContentHelper.purgeContent(getApplication(), content, false, true);
                                 dao.addContentToQueue(
-                                        content, targetImageStatus, position, -1, null,
+                                        content, sourceImageStatus, targetImageStatus, position,
+                                        -1, null,
                                         ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                             } else {
                                 // TODO : unflag the content as "being deleted" (stop blink animation)
@@ -702,7 +704,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (c.isPresent()) {
                                 c.get().setDownloadMode(Content.DownloadMode.DOWNLOAD);
                                 dao.addContentToQueue(
-                                        c.get(), StatusContent.SAVED, position, -1, null,
+                                        c.get(), null, StatusContent.SAVED, position, -1, null,
                                         ContentQueueManager.INSTANCE.isQueueActive(getApplication()));
                             } else {
                                 nbErrors.incrementAndGet();

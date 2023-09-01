@@ -291,7 +291,8 @@ class QueueViewModel(
         onSuccess: (Int) -> Unit,
         onError: (Throwable) -> Unit
     ) {
-        val targetImageStatus = if (reparseImages) StatusContent.ERROR else null
+        val sourceImageStatus = if (reparseImages) null else StatusContent.ERROR
+        val targetImageStatus = if (reparseImages) StatusContent.ERROR else StatusContent.SAVED
         val errorCount = AtomicInteger(0)
         val okCount = AtomicInteger(0)
 
@@ -307,7 +308,8 @@ class QueueViewModel(
                         if (reparseImages) purgeItem(content)
                         okCount.incrementAndGet()
                         dao.addContentToQueue(
-                            content, targetImageStatus, position, -1, content.replacementTitle,
+                            content, sourceImageStatus, targetImageStatus, position,
+                            -1, content.replacementTitle,
                             ContentQueueManager.isQueueActive(getApplication())
                         )
                     } else {
