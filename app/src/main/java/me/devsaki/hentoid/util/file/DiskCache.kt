@@ -18,7 +18,7 @@ import java.time.Instant
  */
 object DiskCache {
     private const val FOLDER_NAME = "disk_cache"
-    private const val SIZE_LIMIT_DEBUG = 5 * 1024 * 1024 // 50MB
+    private const val SIZE_LIMIT_DEBUG = 50 * 1024 * 1024 // 50MB
     private const val SIZE_LIMIT_PRODUCTION = 50 * 1024 * 1024 // 50MB
     private val SIZE_LIMIT = if (BuildConfig.DEBUG) SIZE_LIMIT_DEBUG else SIZE_LIMIT_PRODUCTION
 

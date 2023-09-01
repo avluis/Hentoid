@@ -519,8 +519,13 @@ object ArchiveHelper {
                 throw SevenZipException(INTERRUPTION_MSG)
             }
             this.extractAskMode = extractAskMode
-            val fileName = fileNames[index] ?: return null
-            if (identifiers.isNotEmpty()) identifier = identifiers[index] ?: return null
+            if (!fileNames.containsKey(index)) return null
+
+            val fileName: String
+            if (identifiers.isNotEmpty()) {
+                identifier = identifiers[index] ?: return null
+                fileName = identifier
+            } else fileName = fileNames[index] ?: ""
 
             val existing = fileFinder.invoke(fileName)
             Timber.v("Extract archive, get stream: $index to: $extractAskMode as $fileName")

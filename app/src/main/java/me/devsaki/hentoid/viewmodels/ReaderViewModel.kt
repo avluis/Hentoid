@@ -995,8 +995,8 @@ class ReaderViewModel(
     private fun isPictureNeedsProcessing(pageIndex: Int, images: List<ImageFile>): Boolean {
         if (pageIndex < 0 || images.size <= pageIndex) return false
         val img = images[pageIndex]
-        return (img.status == StatusContent.ONLINE && img.fileUri.isEmpty()) // Image has to be downloaded
-                || (img.isArchived && (img.fileUri.isEmpty() || isArchiveUri(img.fileUri))) // Image has to be extracted from an archive
+        return (img.status == StatusContent.ONLINE/* && img.fileUri.isEmpty()*/) // Image has to be downloaded
+                || (img.isArchived/* && (img.fileUri.isEmpty() || isArchiveUri(img.fileUri))*/) // Image has to be extracted from an archive
     }
 
     private fun isArchiveUri(uri: String): Boolean {
@@ -1101,20 +1101,28 @@ class ReaderViewModel(
 
         // Build extraction instructions, ignoring already extracted items
         val extractInstructions: MutableList<Pair<String, String>> = ArrayList()
+        var hasExistingUris = false
         for (index in indexesToLoad) {
             if (index < 0 || index >= viewerImagesInternal.size) continue
             val img = viewerImagesInternal[index]
             val c = img.content.target
+            val identifier = "img" + img.id
 
-            if (DiskCache.getFile(img.url) != null) continue
-            extractInstructions.add(
-                Pair(
-                    img.url.replace(c.storageUri + File.separator, ""),
-                    img.id.toString()
+            val existingUri = DiskCache.getFile(identifier)
+            if (existingUri != null) {
+                updateImgWithExtractedUri(img, index, existingUri, false)
+                hasExistingUris = true
+            } else {
+                extractInstructions.add(
+                    Pair(
+                        img.url.replace(c.storageUri + File.separator, ""),
+                        identifier
+                    )
                 )
-            )
-            indexExtractInProgress.add(index)
+                indexExtractInProgress.add(index)
+            }
         }
+        if (hasExistingUris) viewerImages.postValue(ArrayList(viewerImagesInternal))
         if (extractInstructions.isEmpty()) return
 
         Timber.d(
@@ -1174,7 +1182,7 @@ class ReaderViewModel(
         var idx: Int? = null
         var img: ImageFile? = null
         for ((index, image) in viewerImagesInternal.withIndex()) {
-            if (image.id.toString() == identifier) {
+            if ("img" + image.id == identifier) {
                 idx = index
                 img = image
                 break
@@ -1183,28 +1191,35 @@ class ReaderViewModel(
 
         if (img != null && idx != null) {
             indexExtractInProgress.remove(idx)
-
-            // Instanciate a new ImageFile not to modify the one used by the UI
-            val extractedPic = ImageFile(img)
-            extractedPic.fileUri = uri.toString()
-            extractedPic.mimeType = ImageHelper.getMimeTypeFromUri(
-                getApplication<Application>().applicationContext, uri
+            // Instanciate a new list to trigger an actual Adapter UI refresh every 4 iterations
+            updateImgWithExtractedUri(
+                img,
+                idx,
+                uri,
+                0 == nbProcessed.get() % 4 || nbProcessed.get() == maxElements
             )
-            synchronized(viewerImagesInternal) {
-                viewerImagesInternal.removeAt(idx)
-                viewerImagesInternal.add(idx, extractedPic)
-                Timber.v(
-                    "Extracting : replacing index %d - order %d -> %s (%s)",
-                    idx,
-                    extractedPic.order,
-                    extractedPic.fileUri,
-                    extractedPic.mimeType
-                )
+        }
+    }
 
-                // Instanciate a new list to trigger an actual Adapter UI refresh every 4 iterations
-                if (0 == nbProcessed.get() % 4 || nbProcessed.get() == maxElements)
-                    viewerImages.postValue(ArrayList(viewerImagesInternal))
-            }
+    private fun updateImgWithExtractedUri(img: ImageFile, idx: Int, uri: Uri, refresh: Boolean) {
+        // Instanciate a new ImageFile not to modify the one used by the UI
+        val extractedPic = ImageFile(img)
+        extractedPic.fileUri = uri.toString()
+        extractedPic.mimeType = ImageHelper.getMimeTypeFromUri(
+            getApplication<Application>().applicationContext, uri
+        )
+        synchronized(viewerImagesInternal) {
+            viewerImagesInternal.removeAt(idx)
+            viewerImagesInternal.add(idx, extractedPic)
+            Timber.v(
+                "Extracting : replacing index %d - order %d -> %s (%s)",
+                idx,
+                extractedPic.order,
+                extractedPic.fileUri,
+                extractedPic.mimeType
+            )
+
+            if (refresh) viewerImages.postValue(ArrayList(viewerImagesInternal))
         }
     }
 
