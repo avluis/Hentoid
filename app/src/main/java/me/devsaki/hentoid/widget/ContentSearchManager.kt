@@ -4,9 +4,6 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.parseSearchUri
 import me.devsaki.hentoid.database.CollectionDAO
@@ -208,7 +205,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
                 val result = ContentSearchBundle()
 
                 result.apply {
-                    groupId = -1; // Not applicable
+                    groupId = -1 // Not applicable
                     attributes = SearchActivityBundle.buildSearchUri(data).toString()
                     location = data.location
                     contentType = data.contentType

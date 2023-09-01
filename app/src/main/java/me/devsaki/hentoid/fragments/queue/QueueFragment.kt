@@ -37,7 +37,6 @@ import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDrawerDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.powermenu.PowerMenuItem
-import io.reactivex.disposables.CompositeDisposable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.QueueActivity
@@ -146,8 +145,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     // False when the refresh is passive (i.e. not from a direct user action)
     private var newSearch = false
 
-    private val compositeDisposable = CompositeDisposable()
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -180,7 +177,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     override fun onDestroy() {
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
-        compositeDisposable.clear()
         super.onDestroy()
     }
 

@@ -29,7 +29,6 @@ import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.listeners.ClickEventHook
 import com.mikepenz.fastadapter.select.getSelectExtension
 import com.mikepenz.fastadapter.swipe.SimpleSwipeDrawerCallback
-import io.reactivex.disposables.CompositeDisposable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.database.domains.Content
@@ -96,8 +95,6 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     // Used to ignore native calls to onQueryTextChange
     private var invalidateNextQueryTextChange = false
 
-    private val compositeDisposable = CompositeDisposable()
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -129,7 +126,6 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
 
     override fun onDestroy() {
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
-        compositeDisposable.clear()
         super.onDestroy()
     }
 
@@ -303,7 +299,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                         invalidateNextQueryTextChange = false
                     } else if (s.isEmpty()) {
                         searchClearDebouncer.submit(0)
-                    } else searchClearDebouncer.clear();
+                    } else searchClearDebouncer.clear()
                     return true
                 }
             })

@@ -8,12 +8,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import io.reactivex.Completable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposables
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,11 +34,6 @@ class MetadataEditViewModel(
     private val dao: CollectionDAO
 ) : AndroidViewModel(application) {
 
-    // Disposables (to cleanup Rx calls and avoid memory leaks)
-    private val compositeDisposable = CompositeDisposable()
-    private var filterDisposable = Disposables.empty()
-    private var leaveDisposable = Disposables.empty()
-
     // LIVEDATAS
     private val contentList = MutableLiveData<List<Content>>()
     private val attributeTypes = MutableLiveData<List<AttributeType>>()
@@ -60,9 +49,7 @@ class MetadataEditViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        filterDisposable.dispose()
         dao.cleanup()
-        compositeDisposable.clear()
     }
 
 
@@ -117,15 +104,18 @@ class MetadataEditViewModel(
         val imageFiles = content.imageFiles ?: return
 
         val img = imageFiles.find { it.order == order }
-        if (img != null)
-            compositeDisposable.add(
-                Single.fromCallable { ContentHelper.setContentCover(content, imageFiles, img) }
-                    .subscribeOn(Schedulers.io())
-                    .subscribe({
+        if (img != null) {
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    try {
+                        ContentHelper.setContentCover(content, imageFiles, img)
                         contentList.postValue(mutableListOf(content))
+                    } catch (t: Throwable) {
+                        Timber.e(t)
                     }
-                    ) { t: Throwable? -> Timber.e(t) }
-            )
+                }
+            }
+        }
     }
 
     /**
@@ -257,12 +247,15 @@ class MetadataEditViewModel(
     }
 
     fun saveContent() {
-        leaveDisposable = Completable.fromRunnable { doSaveContent() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { leaveDisposable.dispose() }
-            ) { t: Throwable? -> Timber.e(t) }
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    doSaveContent()
+                } catch (t: Throwable) {
+                    Timber.e(t)
+                }
+            }
+        }
     }
 
     private fun doSaveContent() {
@@ -314,12 +307,15 @@ class MetadataEditViewModel(
     }
 
     fun renameAttribute(newName: String, id: Long, createRule: Boolean) {
-        leaveDisposable = Completable.fromRunnable { doRenameAttribute(newName, id, createRule) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { leaveDisposable.dispose() }
-            ) { t: Throwable? -> Timber.e(t) }
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    doRenameAttribute(newName, id, createRule)
+                } catch (t: Throwable) {
+                    Timber.e(t)
+                }
+            }
+        }
     }
 
     private fun doRenameAttribute(newName: String, id: Long, createRule: Boolean) {
