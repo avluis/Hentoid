@@ -952,7 +952,7 @@ class ReaderViewModel(
         // Identify pages to be loaded
         val indexesToLoad: MutableList<Int> = ArrayList()
         val increment = if (direction >= 0) 1 else -1
-        val quantity = if (isArchive) EXTRACT_RANGE else CONCURRENT_DOWNLOADS
+        val quantity = if (isArchive) EXTRACT_RANGE else DOWNLOAD_RANGE
         // pageIndex at 1/3rd of the range to extract/download -> determine its bound
         val initialIndex = floor(
             Helper.coerceIn(
@@ -1011,6 +1011,7 @@ class ReaderViewModel(
 
     /**
      * Download the pictures at the given indexes to the given folder
+     * NB : loading happens in the background but is sequential
      *
      * @param indexesToLoad DB indexes of the pictures to download
      */
@@ -1020,7 +1021,7 @@ class ReaderViewModel(
             indexDlInProgress.add(index)
 
             // Adjust the current queue
-            while (downloadKillSwitches.size >= CONCURRENT_DOWNLOADS) {
+            while (downloadKillSwitches.size >= DOWNLOAD_RANGE) {
                 val stopDownload = downloadKillSwitches.poll()
                 stopDownload?.set(true)
                 Timber.d("Aborting a download")
@@ -1905,8 +1906,7 @@ class ReaderViewModel(
     }
 
     companion object {
-        // Number of concurrent image downloads
-        const val CONCURRENT_DOWNLOADS = 3
+        const val DOWNLOAD_RANGE = 6 // Sequential download; not concurrent
         const val EXTRACT_RANGE = 35
 
         private var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
