@@ -84,9 +84,9 @@ object ImageHelper {
         return imageNamesFilter
     }
 
-    private fun compareByteArrays(reference: ByteArray, data: ByteArray): Boolean {
-        if (data.size < reference.size) return false
-        reference.forEachIndexed { index, byte -> if (byte != data[index]) return false }
+    fun ByteArray.startsWith(data: ByteArray): Boolean {
+        if (this.size < data.size) return false
+        data.forEachIndexed { index, byte -> if (byte != this[index]) return false }
         return true
     }
 
@@ -99,14 +99,11 @@ object ImageHelper {
     fun getMimeTypeFromPictureBinary(binary: ByteArray): String {
         if (binary.size < 12) return ""
 
-        return if (compareByteArrays(JPEG_SIGNATURE, binary)) MIME_IMAGE_JPEG
+        return if (binary.startsWith(JPEG_SIGNATURE)) MIME_IMAGE_JPEG
         // WEBP : byte comparison is non-contiguous
-        else if (compareByteArrays(
-                WEBP_SIGNATURE,
-                binary
-            ) && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]
+        else if (binary.startsWith(WEBP_SIGNATURE) && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]
         ) MIME_IMAGE_WEBP
-        else if (compareByteArrays(PNG_SIGNATURE, binary)) {
+        else if (binary.startsWith(PNG_SIGNATURE)) {
             // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
             val acTlPos = FileHelper.findSequencePosition(
                 binary,
@@ -124,8 +121,8 @@ object ImageHelper {
                 if (idatPos > -1) return MIME_IMAGE_APNG
             }
             MIME_IMAGE_PNG
-        } else if (compareByteArrays(GIF_SIGNATURE, binary)) MIME_IMAGE_GIF
-        else if (compareByteArrays(BMP_SIGNATURE, binary)) MIME_IMAGE_BMP
+        } else if (binary.startsWith(GIF_SIGNATURE)) MIME_IMAGE_GIF
+        else if (binary.startsWith(BMP_SIGNATURE)) MIME_IMAGE_BMP
         else MIME_IMAGE_GENERIC
     }
 

@@ -9,6 +9,7 @@ import androidx.documentfile.provider.DocumentFile
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.image.ImageHelper.startsWith
 import net.sf.sevenzipjbinding.ArchiveFormat
 import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
@@ -49,6 +50,30 @@ object ArchiveHelper {
     private const val CACHE_SEPARATOR = "£"
 
     private const val INTERRUPTION_MSG = "Extract archive INTERRUPTED"
+
+    // In Java and Kotlin, byte type is signed !
+    // => Converting all raw values to byte to be sure they are evaluated as expected
+    private val ZIP_SIGNATURE = byteArrayOf(0x50.toByte(), 0x4B.toByte(), 0x03.toByte())
+    private val SEVEN_ZIP_SIGNATURE = byteArrayOf(
+        0x37.toByte(),
+        0x7A.toByte(),
+        0xBC.toByte(),
+        0xAF.toByte(),
+        0x27.toByte(),
+        0x1C.toByte()
+    )
+    private val RAR5_SIGNATURE = byteArrayOf(
+        0x52.toByte(),
+        0x61.toByte(),
+        0x72.toByte(),
+        0x21.toByte(),
+        0x1A.toByte(),
+        0x07.toByte(),
+        0x01.toByte(),
+        0x00.toByte()
+    )
+    private val RAR_SIGNATURE =
+        byteArrayOf(0x52.toByte(), 0x61.toByte(), 0x72.toByte(), 0x21.toByte())
 
     private const val BUFFER = 32 * 1024
 
@@ -98,10 +123,10 @@ object ArchiveHelper {
 
         // In Java, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
-        return if (0x50.toByte() == binary[0] && 0x4B.toByte() == binary[1] && 0x03.toByte() == binary[2]) ArchiveFormat.ZIP
-        else if (0x37.toByte() == binary[0] && 0x7A.toByte() == binary[1] && 0xBC.toByte() == binary[2] && 0xAF.toByte() == binary[3] && 0x27.toByte() == binary[4] && 0x1C.toByte() == binary[5]) ArchiveFormat.SEVEN_ZIP
-        else if (0x52.toByte() == binary[0] && 0x61.toByte() == binary[1] && 0x72.toByte() == binary[2] && 0x21.toByte() == binary[3] && 0x1A.toByte() == binary[4] && 0x07.toByte() == binary[5] && 0x01.toByte() == binary[6] && 0x00.toByte() == binary[7]) ArchiveFormat.RAR5
-        else if (0x52.toByte() == binary[0] && 0x61.toByte() == binary[1] && 0x72.toByte() == binary[2] && 0x21.toByte() == binary[3]) ArchiveFormat.RAR
+        return if (binary.startsWith(ZIP_SIGNATURE)) ArchiveFormat.ZIP
+        else if (binary.startsWith(SEVEN_ZIP_SIGNATURE)) ArchiveFormat.SEVEN_ZIP
+        else if (binary.startsWith(RAR5_SIGNATURE)) ArchiveFormat.RAR5
+        else if (binary.startsWith(RAR_SIGNATURE)) ArchiveFormat.RAR
         else null
     }
 
@@ -511,7 +536,6 @@ object ArchiveHelper {
 
         @Throws(SevenZipException::class)
         override fun getStream(index: Int, extractAskMode: ExtractAskMode): ISequentialOutStream? {
-            Timber.v("Extract archive, get stream: $index to: $extractAskMode")
             if (interrupt != null && interrupt.get()) {
                 Timber.v(INTERRUPTION_MSG)
                 throw SevenZipException(INTERRUPTION_MSG)
@@ -520,6 +544,7 @@ object ArchiveHelper {
             val fileName = fileNames[index] ?: return null
             val targetFileName = formatCacheFileName(index, fileName)
             val existing = fileFinder.invoke(targetFileName)
+            Timber.v("Extract archive, get stream: $index to: $extractAskMode as $targetFileName")
             return try {
                 val targetFile: File
                 if (null == existing) {
