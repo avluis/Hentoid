@@ -43,6 +43,7 @@ import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.DiskCache;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
@@ -110,9 +111,7 @@ public class ExternalImportWorker extends BaseWorker {
     /**
      * Import books from external folder
      */
-    private void startImport(
-            @NonNull final Context context
-    ) {
+    private void startImport(@NonNull final Context context) {
         int booksOK = 0;                        // Number of books imported
         int booksKO = 0;                        // Number of folders found with no valid book inside
         List<LogHelper.LogEntry> log = new ArrayList<>();
@@ -195,6 +194,8 @@ public class ExternalImportWorker extends BaseWorker {
             }
             trace(Log.INFO, 2, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", detectedContent.size() + "");
             eventComplete(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO, null);
+            // Clear disk cache as import may reuse previous image IDs
+            DiskCache.INSTANCE.init(getApplicationContext());
 
             // Write log in root folder
             logFile = LogHelper.INSTANCE.writeLog(context, buildLogInfo(log));

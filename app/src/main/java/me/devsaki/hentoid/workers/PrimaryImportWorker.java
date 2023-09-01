@@ -59,6 +59,7 @@ import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
+import me.devsaki.hentoid.util.file.DiskCache;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
@@ -255,6 +256,8 @@ public class PrimaryImportWorker extends BaseWorker {
             }
             trace(Log.INFO, STEP_3_BOOKS, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
             eventComplete(STEP_3_BOOKS, bookFolders.size(), booksOK, booksKO, null);
+            // Clear disk cache as import may reuse previous image IDs
+            DiskCache.INSTANCE.init(getApplicationContext());
 
             // 4th pass : Import queue, bookmarks and renaming rules JSON
             dao = new ObjectBoxDAO(context);
