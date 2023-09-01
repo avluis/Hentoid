@@ -47,8 +47,6 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ReaderActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
@@ -519,6 +517,7 @@ public final class ContentHelper {
      * @return ID of the newly added Content
      */
     public static long addContent(@NonNull final Context context, @NonNull final CollectionDAO dao, @NonNull final Content content) {
+        Helper.assertNonUiThread();
         long newContentId = dao.insertContent(content);
         content.setId(newContentId);
 
@@ -566,42 +565,37 @@ public final class ContentHelper {
                     File targetFolder = context.getFilesDir();
                     List<Pair<String, String>> extractInstructions = new ArrayList<>();
                     extractInstructions.add(new Pair<>(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, ""), newContentId + ""));
+                    List<Uri> results = ArchiveHelper.INSTANCE.extractArchiveEntriesSimple(context, archive.getUri(), targetFolder, extractInstructions);
+                    if (!results.isEmpty()) {
+                        Uri uri = results.get(0);
 
-                    Disposable unarchiveDisposable = ArchiveHelper.INSTANCE.extractArchiveEntriesRx(context, archive, targetFolder, extractInstructions, null).subscribeOn(Schedulers.io())
-                            // Save the pic as low-res JPG
-                            .observeOn(Schedulers.computation()).map(uri -> {
-                                File extractedFile = new File(uri.getPath()); // These are file URI's
-                                try (InputStream is = FileHelper.getInputStream(context, uri)) {
-                                    Bitmap b = BitmapFactory.decodeStream(is);
-                                    String targetFileName = Consts.EXT_THUMB_FILE_PREFIX + extractedFile.getName();
-                                    // Reuse existing file if exists
-                                    File finalFile;
-                                    File[] existingFiles = targetFolder.listFiles((file, s) -> s.equals(targetFileName));
-                                    if (existingFiles != null && existingFiles.length > 0) {
-                                        finalFile = existingFiles[0];
-                                    } else { // Create new file
-                                        finalFile = new File(targetFolder, targetFileName);
-                                    }
-                                    try (OutputStream os = FileHelper.getOutputStream(finalFile)) {
-                                        Bitmap resizedBitmap = ImageHelper.INSTANCE.getScaledDownBitmap(b, context.getResources().getDimensionPixelSize(R.dimen.card_grid_width), false);
-                                        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os);
-                                        resizedBitmap.recycle();
-                                    }
-                                    return Uri.fromFile(finalFile);
-                                } finally {
-                                    if (!extractedFile.delete())
-                                        Timber.w("Failed deleting file %s", extractedFile.getAbsolutePath());
-                                }
-                            })
-                            // Add it as the book's cover
-                            .subscribe(uri -> {
-                                Timber.i(">> Set cover for %s", content.getTitle());
-                                content.getCover().setFileUri(uri.toString());
-                                dao.replaceImageList(newContentId, content.getImageFiles());
-                            }, Timber::e);
-
-                    // Not ideal, but better than attaching it to the calling service that may not have enough longevity
-                    new Helper.LifecycleRxCleaner(unarchiveDisposable).publish();
+                        // Save the pic as low-res JPG
+                        File extractedFile = new File(uri.getPath()); // These are file URI's
+                        try (InputStream is = FileHelper.getInputStream(context, uri)) {
+                            Bitmap b = BitmapFactory.decodeStream(is);
+                            String targetFileName = Consts.EXT_THUMB_FILE_PREFIX + extractedFile.getName();
+                            // Reuse existing file if exists
+                            File finalFile;
+                            File[] existingFiles = targetFolder.listFiles((file, s) -> s.equals(targetFileName));
+                            if (existingFiles != null && existingFiles.length > 0) {
+                                finalFile = existingFiles[0];
+                            } else { // Create new file
+                                finalFile = new File(targetFolder, targetFileName);
+                            }
+                            try (OutputStream os = FileHelper.getOutputStream(finalFile)) {
+                                Bitmap resizedBitmap = ImageHelper.INSTANCE.getScaledDownBitmap(b, context.getResources().getDimensionPixelSize(R.dimen.card_grid_width), false);
+                                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os);
+                                resizedBitmap.recycle();
+                            }
+                            uri = Uri.fromFile(finalFile);
+                        } finally {
+                            if (!extractedFile.delete())
+                                Timber.w("Failed deleting file %s", extractedFile.getAbsolutePath());
+                        }
+                        Timber.i(">> Set cover for %s", content.getTitle());
+                        content.getCover().setFileUri(uri.toString());
+                        dao.replaceImageList(newContentId, content.getImageFiles());
+                    }
                 } catch (IOException e) {
                     Timber.w(e);
                 }

@@ -1260,8 +1260,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     result.first,
                     ugoiraCacheFolder,
                     null,  // Extract everything; keep original names
-                    downloadInterrupted,
-                    null
+                    downloadInterrupted
                 )
 
                 // == Build the GIF using download params and extracted pics

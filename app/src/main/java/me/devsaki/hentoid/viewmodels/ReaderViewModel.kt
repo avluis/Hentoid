@@ -14,11 +14,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.annimon.stream.Optional
 import com.bumptech.glide.Glide
-import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -125,16 +120,12 @@ class ReaderViewModel(
     private val downloadKillSwitches: Queue<AtomicBoolean> = ConcurrentLinkedQueue()
 
 
-    private var archiveExtractDisposable: Disposable? = null
-
-
     init {
         showFavouritesOnly.postValue(false)
         shuffled.postValue(false)
     }
 
     override fun onCleared() {
-        archiveExtractDisposable?.dispose()
         dao.cleanup()
         super.onCleared()
     }
@@ -329,28 +320,6 @@ class ReaderViewModel(
      */
     fun onActivityLeave() {
         // Nothing
-    }
-
-    /**
-     * Map the given file Uri to its corresponding ImageFile in the given list, using their display name
-     *
-     * @param contentId  ID of the current Content
-     * @param imageFiles List of ImageFiles to map the given Uri to
-     * @param uri        File Uri to map to one of the elements of the given list
-     * @return Matched ImageFile with the valued Uri if found; empty ImageFile if not found
-     */
-    private fun mapUriToImageFile(
-        contentId: Long, imageFiles: List<ImageFile>, uri: Uri
-    ): Optional<Pair<Int, ImageFile>> {
-        uri.path ?: return Optional.empty()
-
-        // Feed the Uri's of unzipped files back into the corresponding images for viewing
-        for ((index, img) in imageFiles.withIndex()) {
-            if (FileHelper.getFileNameWithoutExtension(uri.path!!).endsWith("$contentId.$index")) {
-                return Optional.of(Pair(index, img))
-            }
-        }
-        return Optional.empty()
     }
 
     /**
@@ -1140,9 +1109,8 @@ class ReaderViewModel(
             if (DiskCache.getFile(img.url) != null) continue
             extractInstructions.add(
                 Pair(
-                    img.url.replace(
-                        c.storageUri + File.separator, ""
-                    ), "$loadedContentId.$index"
+                    img.url.replace(c.storageUri + File.separator, ""),
+                    img.id.toString()
                 )
             )
             indexExtractInProgress.add(index)
@@ -1154,96 +1122,109 @@ class ReaderViewModel(
         )
 
         val nbProcessed = AtomicInteger()
-        val observable = Observable.create { emitter: ObservableEmitter<Uri> ->
+
+        try {
             ArchiveHelper.extractArchiveEntriesCached(
                 getApplication(),
                 archiveFile.uri,
                 extractInstructions,
                 archiveExtractKillSwitch,
-                emitter
+                { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
+                { onExtractionComplete(nbProcessed, indexesToLoad.size) }
             )
+        } catch (e: Exception) {
+            EventBus.getDefault().post(
+                ProcessEvent(
+                    ProcessEvent.EventType.COMPLETE,
+                    R.id.viewer_load,
+                    0,
+                    nbProcessed.get(),
+                    0,
+                    indexesToLoad.size
+                )
+            )
+            indexExtractInProgress.clear()
+            archiveExtractKillSwitch.set(false)
+        }
+    }
+
+    private fun onResourceExtracted(
+        identifier: String,
+        uri: Uri,
+        nbProcessed: AtomicInteger,
+        maxElements: Int
+    ) {
+
+        val c = getContent().value
+        if (c != null && c.isFolderExists) cacheJson(
+            getApplication<Application>().applicationContext, c
+        )
+
+        nbProcessed.getAndIncrement()
+        EventBus.getDefault().post(
+            ProcessEvent(
+                ProcessEvent.EventType.PROGRESS,
+                R.id.viewer_load,
+                0,
+                nbProcessed.get(),
+                0,
+                maxElements
+            )
+        )
+        var idx: Int? = null
+        var img: ImageFile? = null
+        for ((index, image) in viewerImagesInternal.withIndex()) {
+            if (image.id.toString() == identifier) {
+                idx = index
+                img = image
+                break
+            }
         }
 
-        archiveExtractDisposable =
-            observable.subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-                // Called this way to properly run on io thread
-                .doOnComplete {
-                    val c = getContent().value
-                    if (c != null && c.isFolderExists) cacheJson(
-                        getApplication<Application>().applicationContext, c
-                    )
-                }.observeOn(AndroidSchedulers.mainThread()).subscribe({ uri: Uri ->
-                    nbProcessed.getAndIncrement()
-                    EventBus.getDefault().post(
-                        ProcessEvent(
-                            ProcessEvent.EventType.PROGRESS,
-                            R.id.viewer_load,
-                            0,
-                            nbProcessed.get(),
-                            0,
-                            indexesToLoad.size
-                        )
-                    )
-                    val img = mapUriToImageFile(
-                        loadedContentId, viewerImagesInternal, uri
-                    )
-                    if (img.isPresent) {
-                        indexExtractInProgress.remove(img.get().first)
+        if (img != null && idx != null) {
+            indexExtractInProgress.remove(idx)
 
-                        // Instanciate a new ImageFile not to modify the one used by the UI
-                        val extractedPic = ImageFile(img.get().second)
-                        extractedPic.fileUri = uri.toString()
-                        extractedPic.mimeType = ImageHelper.getMimeTypeFromUri(
-                            getApplication<Application>().applicationContext, uri
-                        )
-                        synchronized(viewerImagesInternal) {
-                            viewerImagesInternal.removeAt(img.get().first.toInt())
-                            viewerImagesInternal.add(img.get().first, extractedPic)
-                            Timber.v(
-                                "Extracting : replacing index %d - order %d -> %s (%s)",
-                                img.get().first,
-                                extractedPic.order,
-                                extractedPic.fileUri,
-                                extractedPic.mimeType
-                            )
+            // Instanciate a new ImageFile not to modify the one used by the UI
+            val extractedPic = ImageFile(img)
+            extractedPic.fileUri = uri.toString()
+            extractedPic.mimeType = ImageHelper.getMimeTypeFromUri(
+                getApplication<Application>().applicationContext, uri
+            )
+            synchronized(viewerImagesInternal) {
+                viewerImagesInternal.removeAt(idx)
+                viewerImagesInternal.add(idx, extractedPic)
+                Timber.v(
+                    "Extracting : replacing index %d - order %d -> %s (%s)",
+                    idx,
+                    extractedPic.order,
+                    extractedPic.fileUri,
+                    extractedPic.mimeType
+                )
 
-                            // Instanciate a new list to trigger an actual Adapter UI refresh every 4 iterations
-                            if (0 == nbProcessed.get() % 4 || nbProcessed.get() == extractInstructions.size) viewerImages.postValue(
-                                ArrayList(viewerImagesInternal)
-                            )
-                        }
-                    }
-                }, { t: Throwable? ->
-                    Timber.e(t)
-                    EventBus.getDefault().post(
-                        ProcessEvent(
-                            ProcessEvent.EventType.COMPLETE,
-                            R.id.viewer_load,
-                            0,
-                            nbProcessed.get(),
-                            0,
-                            indexesToLoad.size
-                        )
-                    )
-                    indexExtractInProgress.clear()
-                    archiveExtractKillSwitch.set(false)
-                    archiveExtractDisposable?.dispose()
-                }) {
-                    Timber.d("Extracted %d files successfuly", extractInstructions.size)
-                    EventBus.getDefault().post(
-                        ProcessEvent(
-                            ProcessEvent.EventType.COMPLETE,
-                            R.id.viewer_load,
-                            0,
-                            nbProcessed.get(),
-                            0,
-                            indexesToLoad.size
-                        )
-                    )
-                    indexExtractInProgress.clear()
-                    archiveExtractKillSwitch.set(false)
-                    archiveExtractDisposable?.dispose()
-                }
+                // Instanciate a new list to trigger an actual Adapter UI refresh every 4 iterations
+                if (0 == nbProcessed.get() % 4 || nbProcessed.get() == maxElements)
+                    viewerImages.postValue(ArrayList(viewerImagesInternal))
+            }
+        }
+    }
+
+    private fun onExtractionComplete(
+        nbProcessed: AtomicInteger,
+        maxElements: Int
+    ) {
+        Timber.d("Extracted %d files successfuly", maxElements)
+        EventBus.getDefault().post(
+            ProcessEvent(
+                ProcessEvent.EventType.COMPLETE,
+                R.id.viewer_load,
+                0,
+                nbProcessed.get(),
+                0,
+                maxElements
+            )
+        )
+        indexExtractInProgress.clear()
+        archiveExtractKillSwitch.set(false)
     }
 
     /**

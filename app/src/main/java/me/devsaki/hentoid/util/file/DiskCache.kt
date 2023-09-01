@@ -78,7 +78,7 @@ object DiskCache {
 
     fun createFile(key: String): Uri {
         Helper.assertNonUiThread()
-        val targetFile = File(folder, key.hashCode().toString())
+        val targetFile = File(folder, Helper.hash64(key.encodeToByteArray()).toString())
         if (!targetFile.exists() && !targetFile.createNewFile()) throw IOException("Couldn't create file for key $key in cache folder $FOLDER_NAME")
         val result = Uri.fromFile(targetFile)
         synchronized(entries) {

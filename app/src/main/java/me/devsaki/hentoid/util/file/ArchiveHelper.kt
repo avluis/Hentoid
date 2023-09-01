@@ -6,8 +6,6 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.core.util.Pair
 import androidx.documentfile.provider.DocumentFile
-import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.image.ImageHelper.startsWith
 import net.sf.sevenzipjbinding.ArchiveFormat
@@ -47,7 +45,6 @@ object ArchiveHelper {
                 FileHelper.getExtension(displayName)
             )
         }
-    private const val CACHE_SEPARATOR = "£"
 
     private const val INTERRUPTION_MSG = "Extract archive INTERRUPTED"
 
@@ -182,51 +179,20 @@ object ArchiveHelper {
         return result
     }
 
-    /**
-     * Extract the given entries from the given archive file
-     * This is the variant to be used with RxJava
-     *
-     * @param context          Context to be used
-     * @param file             Archive file to extract from
-     * @param targetFolder     Target folder to create the archives into
-     * @param entriesToExtract List of entries to extract (left = relative paths to the archive root / right = names of the target files - set to blank to keep original name); null to extract everything
-     * @return Observable that follows the extraction of each entry
-     * @throws IOException If something horrible happens during I/O
-     */
-    @Throws(IOException::class)
-    fun extractArchiveEntriesRx(
-        context: Context,
-        file: DocumentFile,
-        targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-        entriesToExtract: List<Pair<String, String>>?,
-        interrupt: AtomicBoolean?
-    ): Observable<Uri?>? {
-        Helper.assertNonUiThread()
-        return if (entriesToExtract != null && entriesToExtract.isEmpty()) Observable.empty() else Observable.create { emitter: ObservableEmitter<Uri>? ->
-            extractArchiveEntries(
-                context,
-                file.uri,
-                targetFolder,
-                entriesToExtract,
-                interrupt,
-                emitter
-            )
-        }
-    }
-
     @Throws(IOException::class)
     fun extractArchiveEntriesCached(
         context: Context,
         uri: Uri,
         entriesToExtract: List<Pair<String, String>>?,
         interrupt: AtomicBoolean?,
-        emitter: ObservableEmitter<Uri>?
+        onExtract: ((String, Uri) -> Unit)? = null,
+        onComplete: (() -> Unit)? = null
     ) {
         return extractArchiveEntries(
             context, uri,
             fileCreator = { targetFileName -> File(DiskCache.createFile(targetFileName).path!!) },
             fileFinder = { targetFileName -> DiskCache.getFile(targetFileName) },
-            entriesToExtract, interrupt, emitter
+            entriesToExtract, interrupt, onExtract, onComplete
         )
     }
 
@@ -237,14 +203,40 @@ object ArchiveHelper {
         targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
         entriesToExtract: List<Pair<String, String>>?,
         interrupt: AtomicBoolean?,
-        emitter: ObservableEmitter<Uri>?
+        onExtract: ((String, Uri) -> Unit)? = null,
+        onComplete: (() -> Unit)? = null
     ) {
         return extractArchiveEntries(
             context, uri,
             fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
             fileFinder = { targetFileName -> findFile(targetFolder, targetFileName) },
-            entriesToExtract, interrupt, emitter
+            entriesToExtract, interrupt, onExtract, onComplete
         )
+    }
+
+    @Throws(IOException::class)
+    fun extractArchiveEntriesSimple(
+        context: Context,
+        uri: Uri,
+        targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+        entriesToExtract: List<Pair<String, String>>
+    ): List<Uri> {
+        val result = ArrayList<Uri>()
+        val callback: (String, Uri) -> Unit = { _, fileUri -> result.add(fileUri) }
+        extractArchiveEntries(
+            context, uri,
+            fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
+            fileFinder = { targetFileName -> findFile(targetFolder, targetFileName) },
+            entriesToExtract, null,
+            callback, null
+        )
+        // Hard cap to 4 seconds
+        val delay = 250
+        var nbPauses = 0
+        while (result.size < entriesToExtract.size && nbPauses++ < 4000 / delay) {
+            Helper.pause(delay)
+        }
+        return result
     }
 
     /**
@@ -254,8 +246,9 @@ object ArchiveHelper {
      * @param uri              Uri of the archive file to extract from
      * @param fileCreator      Method to call to create a new file to extract to
      * @param fileFinder       Method to call to find a file in the extraction location
-     * @param entriesToExtract List of entries to extract (left = relative paths to the archive root / right = names of the target files - set to blank to keep original name); null to extract everything
-     * @param emitter          Optional emitter to be used when the method is used with RxJava
+     * @param entriesToExtract List of entries to extract; null to extract everything
+     *      left = relative paths to the archive root
+     *      right = internal identifier of the resource to extract (for remapping purposes)
      * @throws IOException If something horrible happens during I/O
      */
     @Throws(IOException::class)
@@ -266,7 +259,8 @@ object ArchiveHelper {
         fileFinder: (String) -> Uri?,
         entriesToExtract: List<Pair<String, String>>?,
         interrupt: AtomicBoolean?,
-        emitter: ObservableEmitter<Uri>?
+        onExtract: ((String, Uri) -> Unit)?,
+        onComplete: (() -> Unit)?
     ) {
         Helper.assertNonUiThread()
         var format: ArchiveFormat?
@@ -277,6 +271,7 @@ object ArchiveHelper {
         }
         if (null == format) return
         val fileNames: MutableMap<Int, String> = HashMap()
+        val identifiers: MutableMap<Int, String> = HashMap()
 
         // TODO handle the case where the extracted elements would saturate disk space
         try {
@@ -284,33 +279,21 @@ object ArchiveHelper {
                 SevenZip.openInArchive(format, stream).use { inArchive ->
                     val itemCount = inArchive.numberOfItems
                     for (archiveIndex in 0 until itemCount) {
-                        var fileName =
-                            inArchive.getStringProperty(archiveIndex, PropID.PATH)
+                        val fileName = inArchive.getStringProperty(archiveIndex, PropID.PATH)
+                        // Selective extraction
                         if (entriesToExtract != null) {
                             for (entry in entriesToExtract) {
                                 if (entry.first.equals(fileName, ignoreCase = true)) {
                                     // TL;DR - We don't care about folders
                                     // If we were coding an all-purpose extractor we would have to create folders
                                     // But Hentoid just wants to extract a bunch of files in one single place !
-                                    if (entry.second.isEmpty()) {
-                                        val lastSeparator =
-                                            fileName.lastIndexOf(File.separator)
-                                        if (lastSeparator > -1) fileName =
-                                            fileName.substring(lastSeparator + 1)
-                                    } else {
-                                        fileName =
-                                            entry.second + "." + FileHelper.getExtension(
-                                                fileName
-                                            )
-                                    }
-                                    fileNames[archiveIndex] = fileName
+                                    fileNames[archiveIndex] = fileName.replace(File.separator, "_")
+                                    identifiers[archiveIndex] = entry.second
                                     break
                                 }
                             }
                         } else {
-                            val lastSeparator = fileName.lastIndexOf(File.separator)
-                            if (lastSeparator > -1) fileName = fileName.substring(lastSeparator + 1)
-                            fileNames[archiveIndex] = fileName
+                            fileNames[archiveIndex] = fileName.replace(File.separator, "_")
                         }
                     }
                     val callback =
@@ -318,8 +301,10 @@ object ArchiveHelper {
                             fileCreator,
                             fileFinder,
                             fileNames,
+                            identifiers,
                             interrupt,
-                            emitter
+                            onExtract,
+                            onComplete
                         )
                     val indexes =
                         Helper.getPrimitiveArrayFromSet(fileNames.keys)
@@ -386,18 +371,6 @@ object ArchiveHelper {
             }
             out.flush()
         }
-    }
-
-    /**
-     * Format the output file name to facilitate "flat" unarchival in one single folder
-     * NB : We do not want to overwrite files with the same name if they are located in different folders within the archive
-     *
-     * @param index    Index of the archived file
-     * @param fileName Name of the archived file (name only, without the path)
-     * @return Output file name of the given archived file
-     */
-    fun formatCacheFileName(index: Int, fileName: String): String {
-        return index.toString() + CACHE_SEPARATOR + fileName
     }
 
     // This is a dumb struct class, nothing more
@@ -526,12 +499,17 @@ object ArchiveHelper {
         private val fileCreator: (String) -> File,
         private val fileFinder: (String) -> Uri?,
         private val fileNames: Map<Int, String>,
+        private val identifiers: Map<Int, String>,
         private val interrupt: AtomicBoolean?,
-        private val emitter: ObservableEmitter<Uri>?
+        private val onExtract: ((String, Uri) -> Unit)?,
+        private val onComplete: (() -> Unit)?
     ) : IArchiveExtractCallback {
         private var nbProcessed = 0
         private var extractAskMode: ExtractAskMode? = null
         private var stream: SequentialOutStream? = null
+
+        // Out parameters
+        private var identifier = ""
         private var uri: Uri? = null
 
         @Throws(SevenZipException::class)
@@ -542,13 +520,14 @@ object ArchiveHelper {
             }
             this.extractAskMode = extractAskMode
             val fileName = fileNames[index] ?: return null
-            val targetFileName = formatCacheFileName(index, fileName)
-            val existing = fileFinder.invoke(targetFileName)
-            Timber.v("Extract archive, get stream: $index to: $extractAskMode as $targetFileName")
+            if (identifiers.isNotEmpty()) identifier = identifiers[index] ?: return null
+
+            val existing = fileFinder.invoke(fileName)
+            Timber.v("Extract archive, get stream: $index to: $extractAskMode as $fileName")
             return try {
                 val targetFile: File
                 if (null == existing) {
-                    targetFile = fileCreator.invoke(targetFileName)
+                    targetFile = fileCreator.invoke(fileName)
                     targetFile.createNewFile()
                 } else {
                     targetFile = FileHelper.legacyFileFromUri(existing)!!
@@ -582,12 +561,12 @@ object ArchiveHelper {
                 throw SevenZipException(extractOperationResult.toString())
             } else {
                 uri?.let {
-                    emitter?.onNext(it)
+                    onExtract?.invoke(identifier, it)
                 }
             }
             if (extractAskMode != null && extractAskMode == ExtractAskMode.EXTRACT) {
                 nbProcessed++
-                if (nbProcessed == fileNames.size) emitter?.onComplete()
+                if (nbProcessed == fileNames.size) onComplete?.invoke()
             }
         }
 
