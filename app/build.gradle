@@ -304,7 +304,7 @@ dependencies {
     implementation 'info.debatty:java-string-similarity:2.0.0'
 
     // Biometrics
-    implementation 'dev.skomlach:biometric:2.2.3'
+    implementation 'dev.skomlach:biometric:2.2.5'
 
 
     /**
