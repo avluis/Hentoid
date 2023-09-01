@@ -1265,15 +1265,12 @@ class ReaderViewModel(
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
         // Already downloaded
-        if (img.fileUri.isNotEmpty()) return Optional.of(
-            ImmutableTriple(
-                pageIndex, img.fileUri, img.mimeType
-            )
-        )
+        if (img.fileUri.isNotEmpty() && DiskCache.getFile(formatCacheKey(img)) != null)
+            return Optional.of(ImmutableTriple(pageIndex, img.fileUri, img.mimeType))
 
         // Initiate download
         try {
-            var mimeType = ImageHelper.MIME_IMAGE_GENERIC
+            val mimeType: String
             val targetFile: File
 
             // Prepare request headers
@@ -1314,6 +1311,7 @@ class ReaderViewModel(
                     imgUrl,
                     headers,
                     stopDownload,
+                    formatCacheKey(img),
                     resourceId = pageIndex
                 ) { f: Float ->
                     notifyDownloadProgress(f, pageIndex)
@@ -1375,6 +1373,7 @@ class ReaderViewModel(
                 img.url,
                 requestHeaders,
                 interruptDownload,
+                formatCacheKey(img),
                 resourceId = pageIndex
             ) { f: Float ->
                 notifyDownloadProgress(f, pageIndex)
@@ -1390,6 +1389,7 @@ class ReaderViewModel(
             img.url,
             requestHeaders,
             interruptDownload,
+            formatCacheKey(img),
             resourceId = pageIndex
         ) { f: Float ->
             notifyDownloadProgress(f, pageIndex)

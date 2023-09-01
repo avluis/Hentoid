@@ -44,6 +44,7 @@ object DownloadHelper {
         rawUrl: String,
         requestHeaders: List<Pair<String, String>>?,
         interruptDownload: AtomicBoolean,
+        cacheKey : String,
         forceMimeType: String? = null,
         failFast: Boolean = true,
         resourceId: Int,
@@ -51,7 +52,7 @@ object DownloadHelper {
     ): Pair<Uri, String> {
         return downloadToFile(
             context, site, rawUrl, requestHeaders,
-            fileCreator = { _, _, url -> DiskCache.createFile(url) },
+            fileCreator = { _, _ -> DiskCache.createFile(cacheKey) },
             interruptDownload, forceMimeType, failFast, resourceId, notifyProgress
         )
     }
@@ -77,7 +78,7 @@ object DownloadHelper {
     ): Pair<Uri, String> {
         return downloadToFile(
             context, site, rawUrl, requestHeaders,
-            fileCreator = { ctx, mimeType, _ ->
+            fileCreator = { ctx, mimeType ->
                 createFile(ctx, targetFolderUri, targetFileName, mimeType)
             },
             interruptDownload, forceMimeType, failFast, resourceId, notifyProgress
@@ -111,7 +112,7 @@ object DownloadHelper {
         site: Site,
         rawUrl: String,
         requestHeaders: List<Pair<String, String>>?,
-        fileCreator: (Context, String, String) -> Uri,
+        fileCreator: (Context, String) -> Uri,
         interruptDownload: AtomicBoolean,
         forceMimeType: String? = null,
         failFast: Boolean = true,
@@ -173,7 +174,7 @@ object DownloadHelper {
                             mimeType = getMimeTypeFromStream(buffer, len, contentType, url, sizeStr)
                         }
                         // Create target file and output stream
-                        targetFileUri = fileCreator(context, mimeType, url)
+                        targetFileUri = fileCreator(context, mimeType)
                         Timber.d(
                             "WRITING DOWNLOAD %d TO %s (size %s)",
                             resourceId,
