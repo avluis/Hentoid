@@ -94,7 +94,7 @@ object DiskCache {
     fun getFile(key: String): Uri? {
         synchronized(entries) {
             val entry = entries[key] ?: return null
-            // Change timestamp of existing entry
+            // Change timestamp of existing entry as it has just been asked for
             entries[key] = Pair(Instant.now().toEpochMilli(), entry.second)
             return entry.second
         }

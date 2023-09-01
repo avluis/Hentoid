@@ -252,7 +252,9 @@ class ReaderViewModel(
      * @param newImages  Images to process
      */
     private fun loadImages(
-        theContent: Content, pageNumber: Int, newImages: MutableList<ImageFile>
+        theContent: Content,
+        pageNumber: Int,
+        newImages: MutableList<ImageFile>
     ) {
         databaseImages.postValue(newImages)
 
@@ -274,7 +276,7 @@ class ReaderViewModel(
             // Copy location properties of the new list on the current list
             for (i in newImages.indices) {
                 val newImg = newImages[i]
-                val cacheUri = DiskCache.getFile(newImg.url)
+                val cacheUri = DiskCache.getFile(formatCacheKey(newImg))
                 if (cacheUri != null) newImg.fileUri = cacheUri.toString()
             }
             processImages(theContent, pageNumber, newImages)
@@ -288,7 +290,8 @@ class ReaderViewModel(
      * @param newImages  Images to process
      */
     private fun processStorageImages(
-        theContent: Content, newImages: MutableList<ImageFile>
+        theContent: Content,
+        newImages: MutableList<ImageFile>
     ) {
         require(!theContent.isArchive) { "Content must not be an archive" }
         val missingUris = newImages.any { img: ImageFile -> img.fileUri.isEmpty() }
@@ -307,6 +310,16 @@ class ReaderViewModel(
                     // Match files for viewer display; no need to persist that
                     ContentHelper.matchFilesToImageList(pictureFiles, newImageFiles)
                 }
+            } else { // Try to get some from the cache
+                newImageFiles.forEach {
+                    val existingUri = DiskCache.getFile(formatCacheKey(it))
+                    if (existingUri != null) {
+                        it.fileUri = existingUri.toString()
+                        it.mimeType = ImageHelper.getMimeTypeFromUri(
+                            getApplication<Application>().applicationContext, existingUri
+                        )
+                    }
+                }
             }
         }
 
@@ -319,7 +332,7 @@ class ReaderViewModel(
      * Callback to run when the activity is on the verge of being destroyed
      */
     fun onActivityLeave() {
-        // Nothing
+        // Nothing for now
     }
 
     /**
@@ -850,11 +863,7 @@ class ReaderViewModel(
         currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.id)
         forceImgReload = forceImageReload
         databaseImages.addSource(currentImageSource!!) { imgs ->
-            loadImages(
-                theContent,
-                pageNumber,
-                imgs,
-            )
+            loadImages(theContent, pageNumber, imgs)
         }
     }
 
@@ -995,15 +1004,9 @@ class ReaderViewModel(
     private fun isPictureNeedsProcessing(pageIndex: Int, images: List<ImageFile>): Boolean {
         if (pageIndex < 0 || images.size <= pageIndex) return false
         val img = images[pageIndex]
-        return (img.status == StatusContent.ONLINE/* && img.fileUri.isEmpty()*/) // Image has to be downloaded
-                || (img.isArchived/* && (img.fileUri.isEmpty() || isArchiveUri(img.fileUri))*/) // Image has to be extracted from an archive
-    }
-
-    private fun isArchiveUri(uri: String): Boolean {
-        ArchiveHelper.getSupportedExtensions().forEach {
-            if (uri.contains(".$it" + File.separator)) return true
-        }
-        return false
+        return ((img.status == StatusContent.ONLINE || // Image has to be downloaded
+                img.isArchived) && // Image has to be extracted from an archive
+                null == DiskCache.getFile(formatCacheKey(img))) // It hasn't been cached
     }
 
     /**
@@ -1106,7 +1109,7 @@ class ReaderViewModel(
             if (index < 0 || index >= viewerImagesInternal.size) continue
             val img = viewerImagesInternal[index]
             val c = img.content.target
-            val identifier = "img" + img.id
+            val identifier = formatCacheKey(img)
 
             val existingUri = DiskCache.getFile(identifier)
             if (existingUri != null) {
@@ -1182,7 +1185,7 @@ class ReaderViewModel(
         var idx: Int? = null
         var img: ImageFile? = null
         for ((index, image) in viewerImagesInternal.withIndex()) {
-            if ("img" + image.id == identifier) {
+            if (formatCacheKey(image) == identifier) {
                 idx = index
                 img = image
                 break
@@ -1270,65 +1273,55 @@ class ReaderViewModel(
 
         // Initiate download
         try {
-            val existingUri = DiskCache.getFile(img.url)
             var mimeType = ImageHelper.MIME_IMAGE_GENERIC
             val targetFile: File
-            // No cached image -> fetch online
-            if (null == existingUri) {
-                // Prepare request headers
-                val headers: MutableList<Pair<String, String>> = ArrayList()
-                headers.add(
-                    Pair(HttpHelper.HEADER_REFERER_KEY, content.readerUrl)
-                ) // Useful for Hitomi and Toonily
-                val result: Pair<Uri, String>
-                if (img.needsPageParsing()) {
-                    val pageUrl = HttpHelper.fixUrl(img.pageUrl, content.site.url)
-                    // Get cookies from the app jar
-                    var cookieStr = HttpHelper.getCookies(pageUrl)
-                    // If nothing found, peek from the site
-                    if (cookieStr.isEmpty()) cookieStr = HttpHelper.peekCookies(pageUrl)
-                    if (cookieStr.isNotEmpty()) headers.add(
-                        Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
-                    )
-                    result = downloadPictureFromPage(
-                        content,
-                        img,
-                        pageIndex,
-                        headers,
-                        stopDownload
-                    )
-                } else {
-                    val imgUrl = HttpHelper.fixUrl(img.url, content.site.url)
-                    // Get cookies from the app jar
-                    var cookieStr = HttpHelper.getCookies(imgUrl)
-                    // If nothing found, peek from the site
-                    if (cookieStr.isEmpty()) cookieStr =
-                        HttpHelper.peekCookies(content.galleryUrl)
-                    if (cookieStr.isNotEmpty()) headers.add(
-                        Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
-                    )
-                    result = DownloadHelper.downloadToFileCached(
-                        getApplication(),
-                        content.site,
-                        imgUrl,
-                        headers,
-                        stopDownload,
-                        resourceId = pageIndex
-                    ) { f: Float ->
-                        notifyDownloadProgress(f, pageIndex)
-                    }
-                }
-                targetFile = File(result.first.path!!)
-                mimeType = result.second
-            } else { // Image is already there
-                targetFile = File(existingUri.path!!)
-                Timber.d(
-                    "PIC %d FOUND AT %s (%.2f KB)",
-                    pageIndex,
-                    targetFile.absolutePath,
-                    targetFile.length() / 1024.0
+
+            // Prepare request headers
+            val headers: MutableList<Pair<String, String>> = ArrayList()
+            headers.add(
+                Pair(HttpHelper.HEADER_REFERER_KEY, content.readerUrl)
+            ) // Useful for Hitomi and Toonily
+            val result: Pair<Uri, String>
+            if (img.needsPageParsing()) {
+                val pageUrl = HttpHelper.fixUrl(img.pageUrl, content.site.url)
+                // Get cookies from the app jar
+                var cookieStr = HttpHelper.getCookies(pageUrl)
+                // If nothing found, peek from the site
+                if (cookieStr.isEmpty()) cookieStr = HttpHelper.peekCookies(pageUrl)
+                if (cookieStr.isNotEmpty()) headers.add(
+                    Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
                 )
+                result = downloadPictureFromPage(
+                    content,
+                    img,
+                    pageIndex,
+                    headers,
+                    stopDownload
+                )
+            } else {
+                val imgUrl = HttpHelper.fixUrl(img.url, content.site.url)
+                // Get cookies from the app jar
+                var cookieStr = HttpHelper.getCookies(imgUrl)
+                // If nothing found, peek from the site
+                if (cookieStr.isEmpty()) cookieStr =
+                    HttpHelper.peekCookies(content.galleryUrl)
+                if (cookieStr.isNotEmpty()) headers.add(
+                    Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
+                )
+                result = DownloadHelper.downloadToFileCached(
+                    getApplication(),
+                    content.site,
+                    imgUrl,
+                    headers,
+                    stopDownload,
+                    resourceId = pageIndex
+                ) { f: Float ->
+                    notifyDownloadProgress(f, pageIndex)
+                }
             }
+            targetFile = File(result.first.path!!)
+            mimeType = result.second
+
             return Optional.of(
                 ImmutableTriple(
                     pageIndex, Uri.fromFile(targetFile).toString(), mimeType
@@ -1905,6 +1898,10 @@ class ReaderViewModel(
             }
         }
         return result.toList()
+    }
+
+    private fun formatCacheKey(img: ImageFile): String {
+        return "img" + img.id
     }
 
     companion object {
