@@ -18,9 +18,6 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.skydoves.powermenu.PowerMenuItem
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.database.domains.Content
@@ -46,7 +43,8 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
+import java.util.Timer
+import kotlin.concurrent.timer
 import kotlin.math.roundToInt
 
 
@@ -62,7 +60,7 @@ class QueueActivity : BaseActivity() {
 
     // == Vars
     private var cloudflareHelper: CloudflareHelper? = null
-    private var reviveDisposable: Disposable? = null
+    private var reviveTimer: Timer? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -124,7 +122,7 @@ class QueueActivity : BaseActivity() {
         super.onDestroy()
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
         cloudflareHelper?.clear()
-        reviveDisposable?.dispose()
+        reviveTimer?.cancel()
         binding = null
     }
 
@@ -325,14 +323,12 @@ class QueueActivity : BaseActivity() {
             changeReviveUIVisibility(true)
 
             // Start progress UI
-            reviveDisposable = Observable.timer(1500, TimeUnit.MILLISECONDS)
-                .repeat()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { _ ->
-                    val currentProgress: Int = it.downloadReviveProgress.progress
-                    if (currentProgress > 0) it.downloadReviveProgress.progress =
-                        currentProgress - 1
-                }
+            reviveTimer?.cancel()
+            reviveTimer = timer("revive-timer", false, 1500, 1500) {
+                val currentProgress: Int = it.downloadReviveProgress.progress
+                if (currentProgress > 0) it.downloadReviveProgress.progress =
+                    currentProgress - 1
+            }
 
             // Try passing CF
             if (null == cloudflareHelper) cloudflareHelper = CloudflareHelper()
@@ -346,7 +342,7 @@ class QueueActivity : BaseActivity() {
 
     private fun clearReviveDownload() {
         changeReviveUIVisibility(false)
-        reviveDisposable?.dispose()
+        reviveTimer?.cancel()
         cloudflareHelper?.clear()
     }
 }

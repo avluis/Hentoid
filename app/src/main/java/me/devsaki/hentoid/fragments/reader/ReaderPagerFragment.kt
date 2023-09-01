@@ -47,10 +47,6 @@ import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import com.skydoves.submarine.SubmarineItem
 import com.skydoves.submarine.SubmarineView
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
@@ -90,7 +86,8 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.time.Instant
-import java.util.concurrent.TimeUnit
+import java.util.Timer
+import kotlin.concurrent.timer
 
 class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     ReaderBrowseModeDialogFragment.Parent, ReaderPrefsDialogFragment.Parent,
@@ -115,7 +112,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     // Slideshow
-    private var slideshowTimer: Disposable? = null
+    private var slideshowTimer: Timer? = null
     private var isSlideshowActive = false
     private var slideshowPeriodMs: Long = -1
     private var latestSlideshowTick: Long = -1
@@ -348,7 +345,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override fun onStop() {
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
         viewModel?.onLeaveBook(absImageIndex)
-        if (slideshowTimer != null) slideshowTimer!!.dispose()
+        slideshowTimer?.cancel()
         (requireActivity() as ReaderActivity).unregisterKeyListener()
         super.onStop()
     }
@@ -1470,15 +1467,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             llm.startSmoothScroll(smoothScroller)
         } else {
             slideshowPeriodMs = (factor * 1000).toLong()
-            slideshowTimer = if (-1L == initialDelayMs) {
-                Observable.interval(slideshowPeriodMs, TimeUnit.MILLISECONDS)
-                    .subscribeOn(Schedulers.computation()).repeat()
-                    .observeOn(AndroidSchedulers.mainThread()).subscribe { onSlideshowTick() }
-            } else {
-                Observable.interval(initialDelayMs, slideshowPeriodMs, TimeUnit.MILLISECONDS)
-                    .subscribeOn(Schedulers.computation()).repeat()
-                    .observeOn(AndroidSchedulers.mainThread()).subscribe { onSlideshowTick() }
-            }
+            val initialDelayFinal = if (initialDelayMs > -1) initialDelayMs else slideshowPeriodMs
+            slideshowTimer =
+                timer("slideshow-timer", false, initialDelayFinal, slideshowPeriodMs) {
+                    onSlideshowTick()
+                }
             latestSlideshowTick = Instant.now().toEpochMilli()
         }
         isSlideshowActive = true
@@ -1491,7 +1484,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun stopSlideshow() {
         if (slideshowTimer != null) {
-            slideshowTimer!!.dispose()
+            slideshowTimer?.cancel()
             slideshowTimer = null
         } else {
             // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally

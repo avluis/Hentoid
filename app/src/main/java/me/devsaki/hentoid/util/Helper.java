@@ -13,7 +13,6 @@ import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Debug;
-import android.os.Handler;
 import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,10 +26,6 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.util.Pair;
 import androidx.core.view.MenuCompat;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.lifecycle.DefaultLifecycleObserver;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.Slider;
@@ -61,7 +56,6 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import io.reactivex.disposables.Disposable;
 import io.whitfin.siphash.SipHasher;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
@@ -347,28 +341,6 @@ public final class Helper {
             out.write(buf, 0, len);
         }
         out.flush();
-    }
-
-    /**
-     * Cleans the given Disposable as soon as the attached Lifecycle is destroyed
-     */
-    public static class LifecycleRxCleaner implements DefaultLifecycleObserver, LifecycleObserver {
-
-        private final Disposable disposable;
-
-        public LifecycleRxCleaner(Disposable disposable) {
-            this.disposable = disposable;
-        }
-
-        @Override
-        public void onDestroy(@NonNull LifecycleOwner owner) {
-            disposable.dispose();
-        }
-
-        public void publish() {
-            Handler autoCleanHandler = new Handler(Looper.getMainLooper());
-            autoCleanHandler.post(() -> ProcessLifecycleOwner.get().getLifecycle().addObserver(this));
-        }
     }
 
     /**
