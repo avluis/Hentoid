@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.util.notification
 
 import android.content.Context
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+import android.os.Build
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.ForegroundInfo
 import me.devsaki.hentoid.util.file.PermissionHelper
@@ -27,7 +29,15 @@ class NotificationManager(val context: Context, private val notificationId: Int)
     }
 
     fun buildForegroundInfo(notification: BaseNotification): ForegroundInfo {
-        return ForegroundInfo(notificationId, notification.onCreateNotification(context))
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                notificationId,
+                notification.onCreateNotification(context),
+                FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else {
+            ForegroundInfo(notificationId, notification.onCreateNotification(context))
+        }
     }
 
     fun cancel() {

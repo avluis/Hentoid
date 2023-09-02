@@ -315,10 +315,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         if (progress < max) {
             setForegroundAsync(
                 notificationManager.buildForegroundInfo(
-                    DuplicateProgressNotification(
-                        progress,
-                        max
-                    )
+                    DuplicateProgressNotification(progress, max)
                 )
             )
             EventBus.getDefault().post(
@@ -334,9 +331,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         } else {
             setForegroundAsync(
                 notificationManager.buildForegroundInfo(
-                    DuplicateCompleteNotification(
-                        0
-                    )
+                    DuplicateCompleteNotification(0)
                 )
             )
             EventBus.getDefault().postSticky(
