@@ -105,7 +105,8 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         }
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(sp: SharedPreferences?, key: String?) {
+        if (null == key) return
         when (key) {
             Preferences.Key.COLOR_THEME -> onPrefColorThemeChanged()
             Preferences.Key.DL_THREADS_QUANTITY_LISTS,

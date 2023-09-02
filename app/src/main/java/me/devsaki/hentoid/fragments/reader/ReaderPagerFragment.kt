@@ -3,7 +3,6 @@ package me.devsaki.hentoid.fragments.reader
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
-import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.graphics.Bitmap
 import android.graphics.Point
@@ -100,9 +99,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var llm: PrefetchLinearLayoutManager
     private lateinit var pageSnapWidget: PageSnapWidget
     private val prefsListener =
-        OnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
-            onSharedPreferenceChanged(key)
-        }
+        OnSharedPreferenceChangeListener { _, key -> onSharedPreferenceChanged(key) }
     private var viewModel: ReaderViewModel? = null
     private var absImageIndex = -1 // Absolute (book scale) 0-based image index
 
@@ -933,7 +930,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      *
      * @param key   Key that has been changed
      */
-    private fun onSharedPreferenceChanged(key: String) {
+    private fun onSharedPreferenceChanged(key: String?) {
+        if (null == key) return
         when (key) {
             Preferences.Key.VIEWER_BROWSE_MODE, Preferences.Key.VIEWER_HOLD_TO_ZOOM, Preferences.Key.VIEWER_CONTINUOUS -> onBrowseModeChange()
             Preferences.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()

@@ -230,7 +230,8 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     /**
      * Callback for any change in Preferences
      */
-    private fun onSharedPreferenceChanged(key: String) {
+    private fun onSharedPreferenceChanged(key: String?) {
+        if (null == key) return
         if (Preferences.Key.ACTIVE_SITES == key) updateItems()
     }
 }

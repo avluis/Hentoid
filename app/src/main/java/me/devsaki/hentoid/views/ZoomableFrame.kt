@@ -88,8 +88,9 @@ class ZoomableFrame : FrameLayout {
      * Fling listener used to delegate events to the recycler view.
      */
     inner class FlingListener : SimpleOnGestureListener() {
+
         override fun onFling(
-            e1: MotionEvent,
+            e1: MotionEvent?,
             e2: MotionEvent,
             velocityX: Float,
             velocityY: Float
