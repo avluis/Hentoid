@@ -101,6 +101,10 @@ android {
 }
 
 dependencies {
+    implementation project(path: ':app:ai-upscale')
+    implementation project(path: ':app:gles-renderer')
+    implementation project(path: ':app:customssiv')
+
     def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
     def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
 
@@ -311,16 +315,11 @@ dependencies {
      * ANALYTICS
      */
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:31.5.0')
+    implementation platform('com.google.firebase:firebase-bom:32.2.3')
 
     // Crashlytics
     implementation 'com.google.firebase:firebase-crashlytics'
     implementation 'com.google.firebase:firebase-analytics'
-
-
-    implementation project(path: ':app:ai-upscale')
-    implementation project(path: ':app:gles-renderer')
-    implementation project(path: ':app:customssiv')
 }
 
 sonarqube {
