@@ -21,6 +21,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
+
         android:id="@+id/logs_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
