@@ -1,0 +1,329 @@
+package me.devsaki.hentoid.fragments.library
+
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
+import android.widget.FrameLayout
+import android.widget.ImageView
+import androidx.annotation.ColorInt
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.ISelectionListener
+import com.mikepenz.fastadapter.adapters.ItemAdapter
+import com.mikepenz.fastadapter.select.SelectExtension
+import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.LibraryActivity
+import me.devsaki.hentoid.activities.bundles.LibraryBottomSortFilterBundle
+import me.devsaki.hentoid.databinding.IncludeLibrarySortFilterBottomPanelBinding
+import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.viewholders.TextItem
+import me.devsaki.hentoid.viewmodels.LibraryViewModel
+import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
+import me.devsaki.hentoid.widget.GroupSearchManager.GroupSearchBundle
+
+class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
+    private lateinit var viewModel: LibraryViewModel
+
+    // UI
+    private var binding: IncludeLibrarySortFilterBottomPanelBinding? = null
+    private val stars = arrayOfNulls<ImageView>(6)
+
+    // RecyclerView controls
+    private val itemAdapter = ItemAdapter<TextItem<Int>>()
+    private val fastAdapter = FastAdapter.with(itemAdapter)
+    private var selectExtension: SelectExtension<TextItem<Int>>? = null
+
+    // Variables
+    private var isUngroupedGroupDisplayed = false
+    private var isGroupsDisplayed = false
+    private var favouriteFilter = false
+    private var nonFavouriteFilter = false
+    private var completedFilter = false
+    private var notCompletedFilter = false
+    private var ratingFilter = -1
+
+    @ColorInt
+    private var greyColor = 0
+
+    @ColorInt
+    private var selectedColor = 0
+
+
+    companion object {
+        @Synchronized
+        fun invoke(
+            context: Context,
+            fragmentManager: FragmentManager,
+            isGroupsDisplayed: Boolean,
+            isUngroupedGroupDisplayed: Boolean
+        ) {
+            // Don't re-create it if already shown
+            for (fragment in fragmentManager.fragments) if (fragment is LibraryBottomSortFilterFragment) return
+            val builder = LibraryBottomSortFilterBundle()
+            builder.isGroupsDisplayed = isGroupsDisplayed
+            builder.isUngroupedGroupDisplayed = isUngroupedGroupDisplayed
+            val libraryBottomSheetFragment = LibraryBottomSortFilterFragment()
+            libraryBottomSheetFragment.arguments = builder.bundle
+            ThemeHelper.setStyle(
+                context,
+                libraryBottomSheetFragment,
+                DialogFragment.STYLE_NORMAL,
+                R.style.Theme_Light_BottomSheetDialog
+            )
+            libraryBottomSheetFragment.show(fragmentManager, "libraryBottomSheetFragment")
+        }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val bundle = arguments
+        if (bundle != null) {
+            val parser = LibraryBottomSortFilterBundle(bundle)
+            isGroupsDisplayed = parser.isGroupsDisplayed
+            isUngroupedGroupDisplayed = parser.isUngroupedGroupDisplayed
+        }
+        val vmFactory = ViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
+        viewModel.contentSearchManagerBundle.observe(this) { b: Bundle? ->
+            if (isGroupsDisplayed) return@observe
+            val searchBundle = ContentSearchBundle(b!!)
+            favouriteFilter = searchBundle.filterBookFavourites
+            nonFavouriteFilter = searchBundle.filterBookNonFavourites
+            completedFilter = searchBundle.filterBookCompleted
+            notCompletedFilter = searchBundle.filterBookNotCompleted
+            ratingFilter = searchBundle.filterRating
+            updateFilters()
+        }
+        viewModel.groupSearchManagerBundle.observe(this) { b: Bundle? ->
+            if (!isGroupsDisplayed) return@observe
+            val searchBundle = GroupSearchBundle(b!!)
+            favouriteFilter = searchBundle.filterFavourites
+            nonFavouriteFilter = searchBundle.filterNonFavourites
+            ratingFilter = searchBundle.filterRating
+            updateFilters()
+        }
+        greyColor = ContextCompat.getColor(context, R.color.medium_gray)
+        selectedColor = ThemeHelper.getColor(context, R.color.secondary_light)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = IncludeLibrarySortFilterBottomPanelBinding.inflate(inflater, container, false)
+        return binding!!.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // Hack to show the bottom sheet in expanded state by default (https://stackoverflow.com/a/45706484/8374722)
+        view.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                view.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                val dialog = dialog as BottomSheetDialog?
+                if (dialog != null) {
+                    val bottomSheet =
+                        dialog.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
+                    if (bottomSheet != null) {
+                        val behavior = BottomSheetBehavior.from(bottomSheet)
+                        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                        behavior.skipCollapsed = true
+                    }
+                }
+            }
+        })
+
+        // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
+        selectExtension = fastAdapter.requireOrCreateExtension()
+        selectExtension?.apply {
+            isSelectable = true
+            multiSelect = false
+            selectOnLongClick = false
+            selectWithItemUpdate = true
+            allowDeselection = false
+            selectionListener =
+                object : ISelectionListener<TextItem<Int>> {
+                    override fun onSelectionChanged(item: TextItem<Int>, selected: Boolean) {
+                        if (selected) onSelectionChanged()
+                    }
+                }
+        }
+
+        binding?.apply {
+            list.adapter = fastAdapter
+            itemAdapter.set(getSortFields())
+            updateSortDirection()
+            sortRandom.setOnClickListener {
+                viewModel.shuffleContent()
+                viewModel.searchContent()
+            }
+            sortAscDesc.addOnButtonCheckedListener { _, i, b ->
+                if (!b) return@addOnButtonCheckedListener
+                if (isGroupsDisplayed) {
+                    Preferences.setGroupSortDesc(i == R.id.sort_descending)
+                    viewModel.searchGroup()
+                } else {
+                    Preferences.setContentSortDesc(i == R.id.sort_descending)
+                    viewModel.searchContent()
+                }
+            }
+            filterFavsBtn.setOnClickListener {
+                favouriteFilter = !favouriteFilter
+                updateFilters()
+                if (isGroupsDisplayed) viewModel.setGroupFavouriteFilter(favouriteFilter)
+                else viewModel.setContentFavouriteFilter(favouriteFilter)
+            }
+            filterNonFavsBtn.setOnClickListener {
+                nonFavouriteFilter = !nonFavouriteFilter
+                updateFilters()
+                if (isGroupsDisplayed) viewModel.setGroupNonFavouriteFilter(nonFavouriteFilter)
+                else viewModel.setContentNonFavouriteFilter(nonFavouriteFilter)
+            }
+            filterCompletedBtn.setOnClickListener {
+                completedFilter = !completedFilter
+                updateFilters()
+                viewModel.setCompletedFilter(completedFilter)
+            }
+            filterNotCompletedBtn.setOnClickListener {
+                notCompletedFilter = !notCompletedFilter
+                updateFilters()
+                viewModel.setNotCompletedFilter(notCompletedFilter)
+            }
+            stars[0] = filterRatingNone
+            stars[1] = filterRating1
+            stars[2] = filterRating2
+            stars[3] = filterRating3
+            stars[4] = filterRating4
+            stars[5] = filterRating5
+            for (i in 0..5) {
+                stars[i]!!.setOnClickListener { setRating(i, false) }
+            }
+        }
+    }
+
+    private fun updateSortDirection() {
+        val isRandom =
+            (if (isGroupsDisplayed) Preferences.getGroupSortField() else Preferences.getContentSortField()) == Preferences.Constant.ORDER_FIELD_RANDOM
+        binding?.apply {
+            if (isRandom) {
+                sortAscending.visibility = View.GONE
+                sortDescending.visibility = View.GONE
+                sortRandom.visibility = View.VISIBLE
+                sortRandom.isChecked = true
+            } else {
+                sortRandom.visibility = View.GONE
+                sortAscending.visibility = View.VISIBLE
+                sortDescending.visibility = View.VISIBLE
+                val currentPrefSortDesc =
+                    if (isGroupsDisplayed) Preferences.isGroupSortDesc() else Preferences.isContentSortDesc()
+                sortAscDesc.check(if (currentPrefSortDesc) R.id.sort_descending else R.id.sort_ascending)
+            }
+        }
+    }
+
+    private fun updateFilters() {
+        binding?.apply {
+            filterFavsBtn.setColorFilter(if (favouriteFilter) selectedColor else greyColor)
+            filterNonFavsBtn.setColorFilter(if (nonFavouriteFilter) selectedColor else greyColor)
+            val completeFiltersVisibility = if (isGroupsDisplayed) View.GONE else View.VISIBLE
+            filterCompletedBtn.visibility = completeFiltersVisibility
+            filterNotCompletedBtn.visibility = completeFiltersVisibility
+            filterCompletedBtn.setColorFilter(if (completedFilter) selectedColor else greyColor)
+            filterNotCompletedBtn.setColorFilter(if (notCompletedFilter) selectedColor else greyColor)
+        }
+        setRating(ratingFilter, true)
+    }
+
+    private fun getSortFields(): List<TextItem<Int>> {
+        val result: MutableList<TextItem<Int>> = ArrayList()
+        if (isGroupsDisplayed) {
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_TITLE))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CHILDREN))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM))
+        } else {
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_TITLE))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_ARTIST))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_NB_PAGES))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_UPLOAD_DATE))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_DATE))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READS))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_SIZE))
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_PROGRESS))
+            if (Preferences.getGroupingDisplay()
+                    .canReorderBooks() && !isUngroupedGroupDisplayed
+            ) result.add(
+                createFromFieldCode(
+                    Preferences.Constant.ORDER_FIELD_CUSTOM
+                )
+            )
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_RANDOM))
+        }
+        return result
+    }
+
+    private fun createFromFieldCode(sortFieldCode: Int): TextItem<Int> {
+        val currentPrefFieldCode =
+            if (isGroupsDisplayed) Preferences.getGroupSortField() else Preferences.getContentSortField()
+        return TextItem(
+            resources.getString(LibraryActivity.getNameFromFieldCode(sortFieldCode)),
+            sortFieldCode,
+            true,
+            currentPrefFieldCode == sortFieldCode
+        )
+    }
+
+    private fun setRating(rating: Int, init: Boolean) {
+        // Tap current rating -> clear
+        val clear = !init && rating == ratingFilter
+        for (i in 5 downTo 0) {
+            val activated = i <= rating && !clear
+            if (i > 0) stars[i]!!.setImageResource(if (activated) R.drawable.ic_star_full else R.drawable.ic_star_empty)
+            var color = if (activated) selectedColor else greyColor
+            // Don't colour the 1st icon if we're choosing at least 1 star
+            if (activated && rating > 0 && 0 == i) color = greyColor
+            stars[i]!!.setColorFilter(color)
+        }
+        ratingFilter = if (clear) -1 else rating
+        if (!init) {
+            if (isGroupsDisplayed) viewModel.setGroupRatingFilter(ratingFilter)
+            else viewModel.setContentRatingFilter(ratingFilter)
+        }
+    }
+
+    /**
+     * Callback for any selection change (i.e. another sort field has been selected)
+     */
+    private fun onSelectionChanged() {
+        val item = selectExtension!!.selectedItems.firstOrNull() ?: return
+        val code = item.getTag()
+        if (code != null) {
+            if (isGroupsDisplayed) {
+                Preferences.setGroupSortField(code)
+                viewModel.searchGroup()
+            } else {
+                Preferences.setContentSortField(code)
+                viewModel.searchContent()
+            }
+        }
+        updateSortDirection()
+    }
+}
