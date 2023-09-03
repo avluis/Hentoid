@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewConfiguration
 import kotlinx.coroutines.CoroutineScope
 import me.devsaki.hentoid.core.Consumer
-import me.devsaki.hentoid.util.DebouncerK
+import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
 
 class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
@@ -21,12 +21,12 @@ class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
 
     // Internal variables
     private var nextNotifyTime = Long.MAX_VALUE
-    private val simpleTapDebouncer: DebouncerK<Consumer<Boolean>>
+    private val simpleTapDebouncer: Debouncer<Consumer<Boolean>>
     private val longPressTimeout = ViewConfiguration.getLongPressTimeout()
 
     init {
         simpleTapDebouncer =
-            DebouncerK(scope, longPressTimeout.toLong()) { consumer: Consumer<Boolean> ->
+            Debouncer(scope, longPressTimeout.toLong()) { consumer: Consumer<Boolean> ->
                 consumer.invoke(false)
             }
     }

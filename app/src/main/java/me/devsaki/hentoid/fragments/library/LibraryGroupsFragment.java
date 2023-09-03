@@ -226,10 +226,10 @@ public class LibraryGroupsFragment extends Fragment implements
      * @param rootView Root view of the library screen
      */
     private void initUI(@NonNull View rootView) {
-        emptyText = requireViewById(rootView, R.id.library_empty_txt);
+        emptyText = requireViewById(rootView, R.id.empty_txt);
 
         // RecyclerView
-        recyclerView = requireViewById(rootView, R.id.library_list);
+        recyclerView = requireViewById(rootView, R.id.recycler_view);
         if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
             llm = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
         else

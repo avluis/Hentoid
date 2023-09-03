@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.widget
 
-import android.content.Context
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CoroutineScope
 import me.devsaki.hentoid.util.Debouncer
 
 class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit) :
@@ -28,8 +28,8 @@ class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit
     private var onEndOutOfBoundScroll: Runnable? = null
 
 
-    fun setDeltaYListener(context: Context, deltaYListener: (Int) -> Unit) {
-        deltaEventDebouncer = Debouncer(context, 75) { i: Int ->
+    fun setDeltaYListener(scope: CoroutineScope, deltaYListener: (Int) -> Unit) {
+        deltaEventDebouncer = Debouncer(scope, 75) { i: Int ->
             deltaYListener.invoke(i - mInitialOffsetY)
             mInitialOffsetY = -1
         }

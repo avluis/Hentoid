@@ -11,7 +11,7 @@ import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.annimon.stream.function.BiConsumer
-import me.devsaki.hentoid.util.DebouncerK
+import me.devsaki.hentoid.util.Debouncer
 
 /**
  * WebView implementation which allows setting arbitrary thresholds long clicks
@@ -23,7 +23,7 @@ open class VariableLongClickWebView : WebView {
 
     private var onLongClickListener: BiConsumer<Int, Int>? = null
 
-    private lateinit var longTapDebouncer: DebouncerK<Point>
+    private lateinit var longTapDebouncer: Debouncer<Point>
 
     constructor(context: Context) : super(context) {
         init(longClickThreshold.toLong())
@@ -43,7 +43,7 @@ open class VariableLongClickWebView : WebView {
 
     private fun init(longTapDebouncerThreshold: Long) {
         longTapDebouncer =
-            DebouncerK(findViewTreeLifecycleOwner()!!.lifecycleScope, longTapDebouncerThreshold)
+            Debouncer(findViewTreeLifecycleOwner()!!.lifecycleScope, longTapDebouncerThreshold)
             { point: Point -> onLongClickListener?.accept(point.x, point.y) }
     }
 

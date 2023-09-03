@@ -26,7 +26,7 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.IncludeSearchBottomPanelBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.DebouncerK
+import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.LanguageHelper
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import me.devsaki.hentoid.util.StringHelper
@@ -45,7 +45,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
     // UI
     private var _binding: IncludeSearchBottomPanelBinding? = null
     private val binding get() = _binding!!
-    private lateinit var searchMasterDataDebouncer: DebouncerK<String>
+    private lateinit var searchMasterDataDebouncer: Debouncer<String>
 
     // Container where all suggested attributes are loaded
     private lateinit var attributeAdapter: AvailableAttributeAdapter
@@ -89,7 +89,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             viewModel =
                 ViewModelProvider(requireActivity(), vmFactory)[MetadataEditViewModel::class.java]
         }
-        searchMasterDataDebouncer = DebouncerK(this.lifecycleScope, 1000) { filter: String ->
+        searchMasterDataDebouncer = Debouncer(this.lifecycleScope, 1000) { filter: String ->
             this.searchMasterData(filter)
         }
     }

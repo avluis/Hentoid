@@ -33,11 +33,11 @@ class SearchContentIdDialogFragment : DialogFragment() {
             context: Context,
             fragmentManager: FragmentManager,
             id: String,
-            siteCodes: ArrayList<Int>?
+            siteCodes: List<Int>
         ) {
             val args = Bundle()
             args.putString(ID, id)
-            args.putIntegerArrayList(FOUND_SITES, siteCodes)
+            args.putIntegerArrayList(FOUND_SITES, ArrayList(siteCodes))
             val fragment = SearchContentIdDialogFragment()
             ThemeHelper.setStyle(
                 context,

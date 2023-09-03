@@ -61,7 +61,7 @@ import me.devsaki.hentoid.fragments.reader.ReaderDeleteDialogFragment.Companion.
 import me.devsaki.hentoid.fragments.reader.ReaderImageBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderNavigation.Pager
 import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.invoke
-import me.devsaki.hentoid.util.DebouncerK
+import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Preferences.Constant.*
@@ -132,11 +132,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     // True if current content is favourited
     private var isContentFavourite = false
 
-    private lateinit var indexRefreshDebouncer: DebouncerK<Int>
-    private lateinit var processPositionDebouncer: DebouncerK<Pair<Int, Int>>
-    private lateinit var rescaleDebouncer: DebouncerK<Float>
-    private lateinit var adapterRescaleDebouncer: DebouncerK<Float>
-    private lateinit var zoomLevelDebouncer: DebouncerK<Unit>
+    private lateinit var indexRefreshDebouncer: Debouncer<Int>
+    private lateinit var processPositionDebouncer: Debouncer<Pair<Int, Int>>
+    private lateinit var rescaleDebouncer: Debouncer<Float>
+    private lateinit var adapterRescaleDebouncer: Debouncer<Float>
+    private lateinit var zoomLevelDebouncer: Debouncer<Unit>
     private var firstZoom = true
 
     // Starting index management
@@ -157,7 +157,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var navigator: ReaderNavigation
 
     // Debouncer for the slideshow slider
-    private lateinit var slideshowSliderDebouncer: DebouncerK<Int>
+    private lateinit var slideshowSliderDebouncer: Debouncer<Int>
 
     // Pager implementation
     override val currentImg: ImageFile?
@@ -170,24 +170,24 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        indexRefreshDebouncer = DebouncerK(this.lifecycleScope, 75) { startingIndex: Int ->
+        indexRefreshDebouncer = Debouncer(this.lifecycleScope, 75) { startingIndex: Int ->
             applyStartingIndexInternal(startingIndex)
         }
-        slideshowSliderDebouncer = DebouncerK(this.lifecycleScope, 2500) { sliderIndex: Int ->
+        slideshowSliderDebouncer = Debouncer(this.lifecycleScope, 2500) { sliderIndex: Int ->
             onSlideShowSliderChosen(sliderIndex)
         }
-        processPositionDebouncer = DebouncerK(this.lifecycleScope, 75) { pair: Pair<Int, Int> ->
+        processPositionDebouncer = Debouncer(this.lifecycleScope, 75) { pair: Pair<Int, Int> ->
             onPageChanged(pair.left, pair.right)
         }
-        rescaleDebouncer = DebouncerK(this.lifecycleScope, 100) { scale: Float ->
+        rescaleDebouncer = Debouncer(this.lifecycleScope, 100) { scale: Float ->
             adapter.multiplyScale(scale)
             if (!firstZoom) displayZoomLevel(scale)
             else firstZoom = false
         }
-        adapterRescaleDebouncer = DebouncerK(this.lifecycleScope, 100) { scale: Float ->
+        adapterRescaleDebouncer = Debouncer(this.lifecycleScope, 100) { scale: Float ->
             displayZoomLevel(scale)
         }
-        zoomLevelDebouncer = DebouncerK(this.lifecycleScope, 500) {
+        zoomLevelDebouncer = Debouncer(this.lifecycleScope, 500) {
             hideZoomLevel()
         }
         Preferences.registerPrefsChangedListener(prefsListener)

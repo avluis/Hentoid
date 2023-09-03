@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.DebouncerK
+import me.devsaki.hentoid.util.Debouncer
 
 /**
  * Dialog to assign a rating
@@ -39,7 +39,7 @@ class RatingDialogFragment : DialogFragment() {
     private var parent: Parent? = null
     private var initialRating = 0
     private var itemIds: LongArray? = null
-    private var closeDebouncer: DebouncerK<Int>? = null
+    private var closeDebouncer: Debouncer<Int>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +79,7 @@ class RatingDialogFragment : DialogFragment() {
             )
         }
         setRating(initialRating, false)
-        closeDebouncer = DebouncerK(
+        closeDebouncer = Debouncer(
             lifecycleScope, 150
         ) { i: Int ->
             parent!!.rateItems(itemIds!!, i)

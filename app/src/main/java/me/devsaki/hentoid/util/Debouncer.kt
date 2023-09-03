@@ -1,31 +1,29 @@
 package me.devsaki.hentoid.util
 
-import android.content.Context
-import android.os.Handler
-
-import com.annimon.stream.function.Consumer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
- * Utility class for debouncing values to consumer functions
- *
- *
- * This is backed by a Handler that uses the current thread's looper. Behavior is undefined for
- * threads without a looper.
- *
- * @param <T> type of value that will be debounced
- * @see android.os.Looper
-</T> */
-@Deprecated("use DebouncerK when calling from Kotlin")
-class Debouncer<T>(context: Context, private val delayMs: Long, private val callback: Consumer<T>) {
-
-    private val handler = Handler(context.mainLooper)
+ * Utility class for debouncing values to consumer functions (Kotlin variant that doesn't use Context)
+ */
+class Debouncer<T>(
+    private val scope: CoroutineScope,
+    private val delayMs: Long,
+    private val callback: (T) -> Unit
+) {
+    private var taskJob: Job? = null
 
     fun clear() {
-        handler.removeCallbacksAndMessages(null)
+        taskJob?.cancel()
     }
 
     fun submit(t: T) {
         clear()
-        handler.postDelayed({ callback.accept(t) }, delayMs)
+        taskJob = scope.launch {
+            delay(delayMs)
+            callback.invoke(t)
+        }
     }
 }

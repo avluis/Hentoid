@@ -81,10 +81,10 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     private var contentHashToDisplayFirst: Long = 0
 
     // Used to start processing when the recyclerView has finished updating
-    private lateinit var listRefreshDebouncer: DebouncerK<Int>
+    private lateinit var listRefreshDebouncer: Debouncer<Int>
 
     // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
-    private lateinit var searchClearDebouncer: DebouncerK<Int>
+    private lateinit var searchClearDebouncer: Debouncer<Int>
 
     // Indicate if the fragment is currently canceling all items
     private var isDeletingAll = false
@@ -101,10 +101,10 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         check(requireActivity() is QueueActivity) { "Parent activity has to be a QueueActivity" }
         activity = WeakReference(requireActivity() as QueueActivity)
 
-        listRefreshDebouncer = DebouncerK(lifecycleScope, 75)
+        listRefreshDebouncer = Debouncer(lifecycleScope, 75)
         { topItemPosition: Int -> this.onRecyclerUpdated(topItemPosition) }
 
-        searchClearDebouncer = DebouncerK(lifecycleScope, 1500)
+        searchClearDebouncer = Debouncer(lifecycleScope, 1500)
         {
             query = ""
             viewModel.searchErrorContentUniversal(query)

@@ -58,7 +58,7 @@ import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.InputDialog
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.DebouncerK
+import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.LocaleHelper
 import me.devsaki.hentoid.util.Preferences
@@ -169,7 +169,7 @@ class LibraryActivity : BaseActivity() {
     private var groupSearchBundle: Bundle? = null
 
     // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
-    private lateinit var searchClearDebouncer: DebouncerK<Int>
+    private lateinit var searchClearDebouncer: Debouncer<Int>
 
 
     // === PUBLIC ACCESSORS (to be used by fragments)
@@ -213,7 +213,7 @@ class LibraryActivity : BaseActivity() {
         activityBinding = ActivityLibraryBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
-        searchClearDebouncer = DebouncerK(this.lifecycleScope, 1500) { clearSearch() }
+        searchClearDebouncer = Debouncer(this.lifecycleScope, 1500) { clearSearch() }
 
         activityBinding?.drawerLayout?.let {
             it.addDrawerListener(object : ActionBarDrawerToggle(
@@ -1181,11 +1181,11 @@ class LibraryActivity : BaseActivity() {
         saveSearchAsGroup()
     }
 
-    private fun snack(res: Int) {
+    fun snack(res: Int) {
         snack(resources.getString(res))
     }
 
-    private fun snack(msg: String) {
+    fun snack(msg: String) {
         binding?.libraryPager?.let {
             Snackbar.make(it, msg, BaseTransientBottomBar.LENGTH_LONG).show()
         }
