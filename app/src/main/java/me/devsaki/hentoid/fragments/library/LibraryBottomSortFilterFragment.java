@@ -293,7 +293,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
     private TextItem<Integer> createFromFieldCode(int sortFieldCode) {
         int currentPrefFieldCode = isGroupsDisplayed ? Preferences.getGroupSortField() : Preferences.getContentSortField();
         return new TextItem<>(
-                getResources().getString(LibraryActivity.getNameFromFieldCode(sortFieldCode)),
+                getResources().getString(LibraryActivity.Companion.getNameFromFieldCode(sortFieldCode)),
                 sortFieldCode,
                 true,
                 currentPrefFieldCode == sortFieldCode);

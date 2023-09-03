@@ -25,7 +25,9 @@
         app:menu="@menu/library_selection_menu"
         app:navigationIcon="@drawable/ic_arrow_back" />
 
-    <include layout="@layout/include_library_search_subbar" />
+    <include
+        android:id="@+id/search_subbar"
+        layout="@layout/include_library_search_subbar" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/library_pager"
@@ -34,6 +36,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/advanced_search_background" />
 
-    <include layout="@layout/include_library_alert_banner" />
+    <include
+        android:id="@+id/alert_banner"
+        layout="@layout/include_library_alert_banner" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,7 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include layout="@layout/fragment_library" />
+    <include
+        android:id="@+id/fragment"
+        layout="@layout/fragment_library" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_navigation_drawer"

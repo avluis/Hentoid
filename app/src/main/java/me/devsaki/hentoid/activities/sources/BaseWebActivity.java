@@ -1441,7 +1441,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     void showTooltip(@StringRes int resource, boolean always) {
-        TooltipHelper.showTooltip(this, resource, ArrowOrientation.BOTTOM, binding.bottomNavigation, this, always);
+        TooltipHelper.INSTANCE.showTooltip(this, resource, ArrowOrientation.BOTTOM, binding.bottomNavigation, this, always);
     }
 
     @Override

@@ -151,6 +151,6 @@ public class LibraryPager {
     }
 
     public void showTooltip(@NonNull final LifecycleOwner lifecycleOwner) {
-        TooltipHelper.showTooltip(pageCarousel.getContext(), R.string.help_page_slider, ArrowOrientation.BOTTOM, pageCarousel, lifecycleOwner);
+        TooltipHelper.INSTANCE.showTooltip(pageCarousel.getContext(), R.string.help_page_slider, ArrowOrientation.BOTTOM, pageCarousel, lifecycleOwner);
     }
 }
