@@ -4,7 +4,7 @@ apply plugin: 'org.jetbrains.kotlin.android'
 
 
 android {
-    compileSdk 33
+    compileSdk 34
     compileOptions {
         targetCompatibility JavaVersion.VERSION_17
         sourceCompatibility JavaVersion.VERSION_17
@@ -15,7 +15,7 @@ android {
 
     defaultConfig {
         minSdkVersion 23
-        targetSdkVersion 33
+        targetSdkVersion 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
