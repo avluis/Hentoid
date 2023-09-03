@@ -61,7 +61,6 @@ class ListPickerView : ConstraintLayout {
             if (rawEntries != null) entries = rawEntries.map { cs -> cs.toString() }
             val rawValues = arr.getTextArray(R.styleable.ListPickerView_values)
             if (rawValues != null) values = rawValues.map { cs -> cs.toString() }
-            val rounded = arr.getBoolean(R.styleable.ListPickerView_values, true)
 
             binding.let {
                 it.root.clipToOutline = true

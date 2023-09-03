@@ -374,7 +374,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         ) {
             binding.progressBar.setMax(event.total);
             binding.progressBar.setProgress(event.done);
-            binding.progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.secondary_light)));
+            binding.progressBar.setProgressTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.secondary_light)));
             binding.progressBar.setVisibility(View.VISIBLE);
         }
     }
@@ -585,7 +585,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             Helper.setMargins(binding.quickDlFeedback,
                     x - binding.quickDlFeedback.getWidth() / 2,
                     y - (binding.quickDlFeedback.getHeight() / 2) + binding.topBar.getBottom(), 0, 0);
-            binding.quickDlFeedback.setIndicatorColor(getResources().getColor(R.color.medium_gray));
+            binding.quickDlFeedback.setIndicatorColor(ContextCompat.getColor(this, R.color.medium_gray));
             binding.quickDlFeedback.setVisibility(View.VISIBLE);
 
             // Run on a new thread to avoid crashes
@@ -1363,7 +1363,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (binding != null) {
             binding.progressBar.setProgress(binding.progressBar.getMax());
             binding.progressBar.setVisibility(View.VISIBLE);
-            binding.progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.green)));
+            binding.progressBar.setProgressTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.green)));
         }
 
         if (null == currentContent || additionalImages.isEmpty()) return;
