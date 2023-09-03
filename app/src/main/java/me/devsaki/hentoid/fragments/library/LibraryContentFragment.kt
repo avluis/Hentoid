@@ -372,12 +372,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         if (pager.isVisible()) pager.showTooltip(viewLifecycleOwner)
     }
 
-    fun onEnable() {
+    private fun onEnable() {
         enabled = true
         callback?.isEnabled = true
     }
 
-    fun onDisable() {
+    private fun onDisable() {
         enabled = false
         callback?.isEnabled = false
     }
