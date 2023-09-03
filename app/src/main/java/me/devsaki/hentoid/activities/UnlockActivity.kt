@@ -102,7 +102,11 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
             targetIntent.action = Intent.ACTION_VIEW
         }
         startActivity(targetIntent)
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        if (Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.fade_in, R.anim.fade_out)
+        } else {
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        }
         finish()
     }
 

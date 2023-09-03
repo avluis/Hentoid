@@ -1,8 +1,10 @@
 package me.devsaki.hentoid.fragments.library
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -137,15 +139,22 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
         requireContext().startActivity(viewer)
     }
 
+    @Suppress("DEPRECATION")
     private fun launchActivity(activityClass: Class<*>) {
         val intent = Intent(activity.get(), activityClass)
         ContextCompat.startActivity(requireContext(), intent, null)
-        activity.get()?.overridePendingTransition(0, 0)
-        activity.get()?.closeNavigationDrawer()
+        activity.get()?.apply {
+            if (Build.VERSION.SDK_INT >= 34) {
+                overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
+            } else {
+                overridePendingTransition(0, 0)
+            }
+            closeNavigationDrawer()
+        }
     }
 
     private fun showFlagAboutItem() {
-        binding!!.drawerAboutBtnBadge.visibility = View.VISIBLE
+        binding?.drawerAboutBtnBadge?.visibility = View.VISIBLE
     }
 
     private fun onTotalQueueChanged(totalQueue: Int) {

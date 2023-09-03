@@ -104,6 +104,7 @@ class IntroActivity : AppIntro2() {
     }
 
     // Validation of the final step of the wizard
+    @Suppress("DEPRECATION")
     override fun onDonePressed(currentFragment: Fragment?) {
         autoEndHandler!!.removeCallbacksAndMessages(null)
         Preferences.setIsFirstRun(false)
@@ -115,7 +116,11 @@ class IntroActivity : AppIntro2() {
         intent.flags = (Intent.FLAG_ACTIVITY_CLEAR_TOP
                 or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(intent)
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        if (Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.fade_in, R.anim.fade_out)
+        } else {
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        }
         finish()
     }
 }

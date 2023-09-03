@@ -12,6 +12,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.drawable.Animatable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -788,7 +789,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // it can interfere with Double-Back (press back twice) to exit
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
-        overridePendingTransition(0, 0);
+        if (Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0);
+        } else {
+            overridePendingTransition(0, 0);
+        }
         finish();
     }
 
@@ -1106,7 +1111,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         startActivity(intent);
-        overridePendingTransition(0, 0);
+        if (Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0);
+        } else {
+            overridePendingTransition(0, 0);
+        }
     }
 
     @Override

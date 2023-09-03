@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
@@ -62,9 +63,14 @@ class SplashActivity : BaseActivity() {
      *
      * @param intent Intent to launch through a new activity
      */
+    @Suppress("DEPRECATION")
     private fun goToActivity(intent: Intent) {
         startActivity(intent)
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        if (Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.fade_in, R.anim.fade_out)
+        } else {
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        }
         finish()
     }
 
