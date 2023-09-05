@@ -47,10 +47,12 @@ object ImageHelper {
     private val BMP_SIGNATURE = byteArrayOf(0x42.toByte(), 0x4D.toByte())
 
     private val GIF_NETSCAPE = "NETSCAPE".toByteArray(CHARSET_LATIN_1)
-    private val WEBP_ANIM = "ANIM".toByteArray(CHARSET_LATIN_1)
 
     private val PNG_ACTL = "acTL".toByteArray(CHARSET_LATIN_1)
     private val PNG_IDAT = "IDAT".toByteArray(CHARSET_LATIN_1)
+
+    private val WEBP_VP8L = "VP8L".toByteArray(CHARSET_LATIN_1)
+    private val WEBP_ANIM = "ANIM".toByteArray(CHARSET_LATIN_1)
 
     private var imageNamesFilter: FileHelper.NameFilter? = null
 
@@ -177,7 +179,7 @@ object ImageHelper {
             MIME_IMAGE_WEBP -> FileHelper.findSequencePosition(
                 data,
                 0,
-                "VP8L".toByteArray(CHARSET_LATIN_1),
+                WEBP_VP8L,
                 16
             ) > -1
 
