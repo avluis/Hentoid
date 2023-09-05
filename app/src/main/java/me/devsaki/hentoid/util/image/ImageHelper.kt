@@ -23,6 +23,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import kotlin.math.abs
+import kotlin.math.min
 import kotlin.math.pow
 
 object ImageHelper {
@@ -44,6 +45,9 @@ object ImageHelper {
     private val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte())
     private val GIF_SIGNATURE = byteArrayOf(0x47.toByte(), 0x49.toByte(), 0x46.toByte())
     private val BMP_SIGNATURE = byteArrayOf(0x42.toByte(), 0x4D.toByte())
+
+    private val GIF_NETSCAPE = "NETSCAPE".toByteArray(CHARSET_LATIN_1)
+    private val WEBP_ANIM = "ANIM".toByteArray(CHARSET_LATIN_1)
 
     private val PNG_ACTL = "acTL".toByteArray(CHARSET_LATIN_1)
     private val PNG_IDAT = "IDAT".toByteArray(CHARSET_LATIN_1)
@@ -134,23 +138,27 @@ object ImageHelper {
      * @return True if the format is animated and supported by the app
      */
     fun isImageAnimated(data: ByteArray): Boolean {
-        return if (data.size < 400) false else when (getMimeTypeFromPictureBinary(data)) {
-            MIME_IMAGE_APNG -> true
-            MIME_IMAGE_GIF -> FileHelper.findSequencePosition(
-                data,
-                0,
-                "NETSCAPE".toByteArray(CHARSET_LATIN_1),
-                400
-            ) > -1
+        return if (data.size < 400) false
+        else {
+            val limit = min(data.size, 1000)
+            when (getMimeTypeFromPictureBinary(data)) {
+                MIME_IMAGE_APNG -> true
+                MIME_IMAGE_GIF -> FileHelper.findSequencePosition(
+                    data,
+                    0,
+                    GIF_NETSCAPE,
+                    limit
+                ) > -1
 
-            MIME_IMAGE_WEBP -> FileHelper.findSequencePosition(
-                data,
-                0,
-                "ANIM".toByteArray(CHARSET_LATIN_1),
-                400
-            ) > -1
+                MIME_IMAGE_WEBP -> FileHelper.findSequencePosition(
+                    data,
+                    0,
+                    WEBP_ANIM,
+                    limit
+                ) > -1
 
-            else -> false
+                else -> false
+            }
         }
     }
 
