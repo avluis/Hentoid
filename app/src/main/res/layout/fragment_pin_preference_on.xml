@@ -19,15 +19,16 @@
         android:id="@+id/lock_type"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rounded="false"
         app:entries="@array/lock_type_entries"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:rounded="false"
         app:title="@string/lock_type" />
 
     <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/switch_lock_on_restore"
         android:layout_width="0dp"
         android:layout_height="56dp"
+        android:layout_marginTop="1dp"
         android:background="@color/item_highlight"
         android:checked="false"
         android:paddingStart="4dp"
@@ -43,6 +44,7 @@
         android:id="@+id/lock_timer"
         android:layout_width="0dp"
         android:layout_height="56dp"
+        android:layout_marginTop="1dp"
         android:background="@color/item_highlight"
         android:entries="@array/pref_lock_timer_entries"
         android:paddingStart="4dp"
@@ -59,6 +61,7 @@
         android:id="@+id/text_reset_pin"
         android:layout_width="0dp"
         android:layout_height="48dp"
+        android:layout_marginTop="1dp"
         android:background="?selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingStart="4dp"
