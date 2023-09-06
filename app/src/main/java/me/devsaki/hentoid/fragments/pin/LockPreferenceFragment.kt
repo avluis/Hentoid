@@ -8,12 +8,11 @@ import android.widget.AdapterView
 import android.widget.CompoundButton
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import com.google.android.material.snackbar.BaseTransientBottomBar
-import com.google.android.material.snackbar.Snackbar
 import dev.skomlach.biometric.compat.BiometricAuthRequest
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiometricsHelper
 import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.core.startBiometric
 import me.devsaki.hentoid.databinding.FragmentPinPreferenceOnBinding
 import me.devsaki.hentoid.util.Preferences
@@ -80,14 +79,8 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     }
 
     override fun onPinDeactivateSuccess() {
-        binding?.apply {
-            refresh()
-            Snackbar.make(
-                root,
-                R.string.app_lock_disabled,
-                BaseTransientBottomBar.LENGTH_SHORT
-            ).show()
-        }
+        refresh()
+        snack(R.string.app_lock_disabled)
     }
 
     override fun onPinDeactivateCancel() {
@@ -95,30 +88,24 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     }
 
     override fun onPinResetSuccess() {
-        binding?.apply {
-            Snackbar.make(root, R.string.pin_reset_success, BaseTransientBottomBar.LENGTH_SHORT)
-                .show()
-        }
+        snack(R.string.pin_reset_success)
     }
 
     override fun onPinActivateSuccess() {
-        binding?.apply {
-            refresh()
-            Snackbar.make(root, R.string.app_lock_enable, BaseTransientBottomBar.LENGTH_SHORT)
-                .show()
-            HentoidApp.setUnlocked(true) // Now that PIN lock is enabled, the app needs to be marked as currently unlocked to avoid showing an unnecessary PIN dialog at next navigation action
-            parentFragmentManager
-                .beginTransaction()
-                .replace(android.R.id.content, LockPreferenceFragment())
-                .commit()
-        }
+        refresh()
+        snack(R.string.app_lock_enable)
+        HentoidApp.setUnlocked(true) // Now that PIN lock is enabled, the app needs to be marked as currently unlocked to avoid showing an unnecessary PIN dialog at next navigation action
+        parentFragmentManager
+            .beginTransaction()
+            .replace(android.R.id.content, LockPreferenceFragment())
+            .commit()
     }
 
     override fun onPinActivateCancel() {
         refresh()
     }
 
-    private fun onBiometricsResult(result: Boolean) {
+    private fun onBiometricsActivateSuccess(result: Boolean) {
         if (result) {
             Settings.lockType = 2
             Preferences.setAppLockPin("")
@@ -126,12 +113,25 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
         refresh()
     }
 
+    private fun onBiometricsDeactivateSuccess(result: Boolean) {
+        if (result) {
+            Settings.lockType = 0
+            snack(R.string.app_lock_disabled)
+        }
+        refresh()
+    }
+
     private fun onLockTypeChanged(index: Int) {
         if (0 == index) {
             if (1 == initialLockType) DeactivatePinDialogFragment().show(childFragmentManager, null)
-            else {
-                Settings.lockType = 0
-                onPinDeactivateSuccess()
+            else if (2 == initialLockType) {
+                val bestBM = BiometricsHelper.detectBestBiometric()
+                if (bestBM != null) {
+                    activity?.startBiometric(
+                        BiometricAuthRequest(bestBM.api, bestBM.type), true,
+                        this::onBiometricsDeactivateSuccess
+                    )
+                }
             }
         } else if (index != initialLockType) {
             if (1 == index) { // PIN
@@ -141,17 +141,11 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
                 if (bestBM != null) {
                     activity?.startBiometric(
                         BiometricAuthRequest(bestBM.api, bestBM.type), true,
-                        this::onBiometricsResult
+                        this::onBiometricsActivateSuccess
                     )
                 } else {
                     binding?.lockType?.index = 0 // Off
-                    binding?.apply {
-                        Snackbar.make(
-                            root,
-                            R.string.app_lock_biometrics_fail,
-                            BaseTransientBottomBar.LENGTH_LONG
-                        ).show()
-                    }
+                    snack(R.string.app_lock_biometrics_fail, true)
                 }
             }
         }
