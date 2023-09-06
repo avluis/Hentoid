@@ -1085,8 +1085,11 @@ public class LibraryViewModel extends AndroidViewModel {
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> onSuccess.run(),
-                                Timber::e
+                                v -> {
+                                    // Nothing; LiveData takes care of everything there
+                                },
+                                Timber::e,
+                                onSuccess::run
                         )
         );
     }
