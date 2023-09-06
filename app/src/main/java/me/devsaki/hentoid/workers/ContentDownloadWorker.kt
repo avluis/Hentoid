@@ -1297,24 +1297,23 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     applicationContext,
                     ugoiraCacheFolder,
                     frames
-                )
+                ) ?: throw IOException("Couldn't assemble ugoira file")
 
                 // Save it to the book folder
                 val finalImgUri = FileHelper.copyFile(
                     applicationContext,
-                    ugoiraGifFile!!,
+                    ugoiraGifFile,
                     dir.uri,
                     ImageHelper.MIME_IMAGE_GIF,
                     img.name + ".gif"
+                ) ?: throw IOException("Couldn't copy result ugoira file")
+
+                img.mimeType = ImageHelper.MIME_IMAGE_GIF
+                img.size = FileHelper.fileSizeFromUri(
+                    applicationContext,
+                    ugoiraGifFile
                 )
-                if (finalImgUri != null) {
-                    img.mimeType = ImageHelper.MIME_IMAGE_GIF
-                    img.size = FileHelper.fileSizeFromUri(
-                        applicationContext,
-                        ugoiraGifFile
-                    )
-                    updateImageProperties(img, true, finalImgUri.toString())
-                } else throw IOException("Couldn't copy result ugoira file")
+                updateImageProperties(img, true, finalImgUri.toString())
             } catch (e: Exception) {
                 Timber.w(e)
                 isError = true

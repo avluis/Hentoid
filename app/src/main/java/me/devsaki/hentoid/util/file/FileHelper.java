@@ -736,6 +736,7 @@ public class FileHelper {
 
     /**
      * Copy the given file to the target location, giving the copy the given name
+     * If a file with the same target name already exists, it is overwritten
      *
      * @param context         Context to use
      * @param sourceFileUri   Uri of the source file to copy
@@ -759,7 +760,7 @@ public class FileHelper {
         } else {
             DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
             if (null == targetFolder || !targetFolder.exists()) return null;
-            DocumentFile targetFile = targetFolder.createFile(mimeType, newName);
+            DocumentFile targetFile = findOrCreateDocumentFile(context, targetFolder, mimeType, newName);
             if (null == targetFile || !targetFile.exists()) return null;
             targetFileUri = targetFile.getUri();
         }

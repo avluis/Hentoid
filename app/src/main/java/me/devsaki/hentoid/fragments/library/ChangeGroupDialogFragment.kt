@@ -149,8 +149,12 @@ class ChangeGroupDialogFragment : DialogFragment() {
             if (existingSpin.index > -1) {
                 viewModel.moveContentsToCustomGroup(
                     bookIds, customGroups!![existingSpin.index]
-                ) { getParent()?.onChangeGroupSuccess() }
-                dismissAllowingStateLoss()
+                )
+                {
+                    getParent()?.onChangeGroupSuccess()
+                    dismissAllowingStateLoss()
+                }
+
             } else {
                 ToastHelper.toast(R.string.group_not_selected)
             }
@@ -158,8 +162,10 @@ class ChangeGroupDialogFragment : DialogFragment() {
             viewModel.moveContentsToCustomGroup(
                 bookIds,
                 null
-            ) { getParent()?.onChangeGroupSuccess() }
-            dismissAllowingStateLoss()
+            ) {
+                getParent()?.onChangeGroupSuccess()
+                dismissAllowingStateLoss()
+            }
         } else newNameTxt.editText?.let { edit -> // New group
             val newNameStr = edit.text.toString().trim { it <= ' ' }
             if (newNameStr.isNotEmpty()) {
@@ -168,8 +174,11 @@ class ChangeGroupDialogFragment : DialogFragment() {
                 if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
                     viewModel.moveContentsToNewCustomGroup(
                         bookIds, newNameStr
-                    ) { getParent()?.onChangeGroupSuccess() }
-                    dismissAllowingStateLoss()
+                    )
+                    {
+                        getParent()?.onChangeGroupSuccess()
+                        dismissAllowingStateLoss()
+                    }
                 } else {
                     ToastHelper.toast(R.string.group_name_exists)
                 }
