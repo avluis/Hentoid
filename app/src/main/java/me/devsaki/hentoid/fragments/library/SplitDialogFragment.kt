@@ -100,11 +100,8 @@ class SplitDialogFragment : DialogFragment(), ItemTouchCallback {
 
             val helper = FastAdapterPreClickSelectHelper(it)
             fastAdapter.onPreClickListener =
-                { v: View?, adapter: IAdapter<TextItem<Chapter>>?, item: TextItem<Chapter>, position: Int? ->
+                { v: View?, adapter: IAdapter<TextItem<Chapter>>, item: TextItem<Chapter>, position: Int ->
                     helper.onPreClickListener(
-                        v,
-                        adapter,
-                        item,
                         position
                     )
                 }
@@ -112,7 +109,7 @@ class SplitDialogFragment : DialogFragment(), ItemTouchCallback {
                 { v: View?, a: IAdapter<TextItem<Chapter>>?, i: TextItem<Chapter>, p: Int? ->
                     // Warning : specific code for drag selection
                     mDragSelectTouchListener!!.startDragSelection(p!!)
-                    helper.onPreLongClickListener(v, a, i, p)
+                    helper.onPreLongClickListener(p)
                 }
         }
 

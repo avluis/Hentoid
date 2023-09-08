@@ -664,11 +664,11 @@ class LibraryGroupsFragment : Fragment(),
             val helper = FastAdapterPreClickSelectHelper(this)
             fastAdapter!!.onPreClickListener =
                 { v, adapter, item, position ->
-                    helper.onPreClickListener(v, adapter, item, position)
+                    helper.onPreClickListener(position)
                 }
             fastAdapter!!.onPreLongClickListener =
                 { v, adapter, item, position ->
-                    helper.onPreLongClickListener(v, adapter, item, position)
+                    helper.onPreLongClickListener(position)
                 }
         }
 

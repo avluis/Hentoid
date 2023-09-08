@@ -116,15 +116,15 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     public void onDestroy() {
         parent = null;
         disposable = Completable.fromRunnable(() -> {
-                    Context context = bookmarkCurrentBtn.getContext();
-                    CollectionDAO dao = new ObjectBoxDAO(context);
-                    try {
-                        Helper.updateBookmarksJson(context, dao);
-                    } finally {
-                        dao.cleanup();
-                    }
-                }
-        ).subscribeOn(Schedulers.io())
+                            Context context = bookmarkCurrentBtn.getContext();
+                            CollectionDAO dao = new ObjectBoxDAO(context);
+                            try {
+                                Helper.updateBookmarksJson(context, dao);
+                            } finally {
+                                dao.cleanup();
+                            }
+                        }
+                ).subscribeOn(Schedulers.io())
                 .subscribe(() -> {
                     if (disposable != null) disposable.dispose();
                 });
@@ -157,8 +157,8 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
 
             FastAdapterPreClickSelectHelper<TextItem<SiteBookmark>> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
-            fastAdapter.setOnPreClickListener(helper::onPreClickListener);
-            fastAdapter.setOnPreLongClickListener(helper::onPreLongClickListener);
+            fastAdapter.setOnPreClickListener((v, adapter, item, position) -> helper.onPreClickListener(position));
+            fastAdapter.setOnPreLongClickListener((v, adapter, item, position) -> helper.onPreLongClickListener(position));
         }
 
         recyclerView = requireViewById(rootView, R.id.bookmarks_list);

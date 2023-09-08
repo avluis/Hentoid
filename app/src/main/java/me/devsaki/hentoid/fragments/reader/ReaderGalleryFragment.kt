@@ -358,9 +358,6 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 fastAdapter.onPreClickListener =
                     { v, adapter, item, position ->
                         helper.onPreClickListener(
-                            v,
-                            adapter,
-                            item,
                             position
                         )
                     }
@@ -368,7 +365,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                     { v, a, i, p ->
                         // Warning : specific code for drag selection
                         mDragSelectTouchListener?.startDragSelection(p)
-                        helper.onPreLongClickListener(v, a, i, p)
+                        helper.onPreLongClickListener(p)
                     }
 
                 // Item click listener
