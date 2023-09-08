@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="_default">デフォルト</string>
     <string name="about_app_version">Hentoid v%1$s (%2$d)</string>
     <string name="about_chrome_unavailable">WebViewは利用できません</string>
@@ -11,6 +11,7 @@
     <string name="add_external">外部の場所を追加</string>
     <string name="add_primary_1">プライマリ ロケーション １ を追加</string>
     <string name="add_primary_2">プライマリ ロケーション ２ を追加</string>
+    <string name="ai_rescale_warning">AIで画像をアップスケールすると、GPUを集中的に使用します。全ての処理には数分かかる場合があります。</string>
     <string name="alert_black">このサイトは現在実際には利用できません。 アプリはそれについては何の関係もありません。 後でもう一度やり直してください。</string>
     <string name="alert_browser_mode">ブラウザモードが有効: ストレージへのアクセスなし</string>
     <string name="alert_fix_available">アプリの最新バージョンで修正が利用可能です。 更新してください。</string>
@@ -23,11 +24,16 @@
     <string name="alert_unwanted_tags">この本はでタグ付けされています%s</string>
     <string name="alert_wip">Hentoid開発チームは修正に取り組んでいます。 新しいバージョンの準備ができると、アプリから通知されます。</string>
     <string name="app_intro">ようこそ</string>
+    <string name="app_lock_biometrics_fail">適合する生体認証システムが見つかりませんでした</string>
     <string name="app_lock_disabled">アプリのロックを無効にする</string>
     <string name="app_lock_enable">アプリのロックを有効にする</string>
     <string name="app_lock_pin">PINを入力してください</string>
     <string name="app_settings">アプリの設定</string>
     <string name="apply_final">選択肢を適用する</string>
+    <string name="archive_delete_after_archiving">アーカイブが成功した後に本を削除する</string>
+    <string name="archive_format">アーカイブの形式</string>
+    <string name="archive_limit">一度に1000冊を超える本をアーカイブすることは出来ません</string>
+    <string name="archive_overwrite">既存のアーカイブを上書きする</string>
     <string name="archive_progress">本のアーカイブ</string>
     <string name="archive_progress_subtitle">終わり：%s</string>
     <plurals name="archive_success">
@@ -47,9 +53,13 @@
         <item quantity="one">選択したアイテムを削除しますか\？</item>
         <item quantity="other">選択したアイテム%dを削除しますか\？</item>
     </plurals>
+    <string name="biometric_dialog_subtitle_lock">ロックする前に確認してください</string>
+    <string name="biometric_dialog_subtitle_unlock">生体認証によるロック解除</string>
+    <string name="biometric_dialog_title">生体認証ロック</string>
     <string name="blocked_tag">書籍にブロックされたタグがあります (%s)\nダウンロードがキャンセルされました</string>
     <string name="blocked_tag_queued">書籍にブロックされたタグがあります (%s)\nエラーとしてnQueued</string>
     <plurals name="book">
+        <item quantity="one">本</item>
         <item quantity="other">本</item>
     </plurals>
     <string name="book_edit_title">本のタイトルを編集</string>
@@ -113,6 +123,10 @@
     <string name="contents_detected">Hentoidは、この場所にある既存のライブラリを認識しました。\ nこのライブラリをインポートしますか？</string>
     <string name="copy_download_folder_fail">ダウンロードフォルダに書き込めませんでした</string>
     <string name="copy_download_folder_success">ダウンロードフォルダにコピー</string>
+    <plurals name="create_archive">
+        <item quantity="one">アーカイブを作成</item>
+        <item quantity="other">アーカイブを作成</item>
+    </plurals>
     <string name="create_generic">作成</string>
     <string name="delete_limit">一度に1000冊を超える書籍は削除できません</string>
     <string name="delete_progress">本の削除</string>
@@ -274,6 +288,8 @@
     <string name="filter_not_completed">未完成の本のみを表示</string>
     <string name="filter_rating">評価によるフィルタリング</string>
     <string name="fix_permissions">修正</string>
+    <string name="folder_device_downloads">デバイスのダウンロードフォルダー</string>
+    <string name="folder_other">フォルダーを選択してください…</string>
     <string name="folder_undefined">エラー - 未定義のフォルダーを含む</string>
     <string name="freeze">フリーズトグル</string>
     <string name="gallery_add_remove_chapters">追加＆amp; チャプターを削除する</string>
@@ -288,7 +304,7 @@
     <string name="generic_progress">%1$d/%2$d%3$s</string>
     <string name="get_latest">最新バージョンを入手する (%1$s)</string>
     <string name="goto_app_prefs">アプリの設定</string>
-    <string name="goto_page">ページに移動...</string>
+    <string name="goto_page">ページに移動…</string>
     <string name="group_30">過去30日間</string>
     <string name="group_60">過去60日間</string>
     <string name="group_7">過去7日間</string>
@@ -411,6 +427,7 @@
     <string name="importing_library">ライブラリのインポート</string>
     <string name="importing_metadata">メタデータのインポート…</string>
     <string name="information_help">情報</string>
+    <string name="invalid_selection_generic">無効な選択</string>
     <string name="invert_queue">キューを反転</string>
     <plurals name="item">
         <item quantity="one">アイテム</item>
@@ -441,6 +458,7 @@
     <string name="lang_zh">中国語</string>
     <string name="launchcode_present">あなたはすでにこの本を持っています。 他のソースを検索\？</string>
     <string name="library_filter_favourite_help">お気に入りの本の表示を切り替えます</string>
+    <string name="library_filter_nonfavourite_help">お気に入り以外の本の表示を切り替える</string>
     <string name="library_filters_title">フィルター</string>
     <string name="library_imports_title">ライブラリのインポート</string>
     <string name="library_metrics_storage">%.0fメガバイト</string>
@@ -448,6 +466,9 @@
     <string name="loading_archive">読み込み中：%1$d/%2$d</string>
     <string name="loading_image">画像の読み込み：%d%%</string>
     <string name="location_storage">%1$s（%2$d%%）空き</string>
+    <string name="lock_type">ロックタイプ</string>
+    <string name="lock_type_biometric">生体認証</string>
+    <string name="lock_type_pin">PIN</string>
     <string name="log_api29_migration">Hentoidv1.11からのライブラリの移行</string>
     <string name="log_cleanup">プライマリライブラリのクリーンアップ</string>
     <string name="log_import">プライマリライブラリのインポート/更新</string>
@@ -534,6 +555,10 @@
         <item quantity="other">%d書籍が正常にアーカイブされました</item>
     </plurals>
     <string name="notif_archive_fail">アーカイブは失敗しました</string>
+    <plurals name="notif_archive_fail_details">
+        <item quantity="one">%d冊のアーカイブに失敗しました</item>
+        <item quantity="other">%d冊の本のアーカイブに失敗しました</item>
+    </plurals>
     <string name="notif_archive_title">コンテンツのアーカイブ</string>
     <string name="notif_delete_complete">削除が完了しました</string>
     <plurals name="notif_delete_complete_details">
@@ -541,6 +566,12 @@
         <item quantity="other">%dが正常に削除されました</item>
     </plurals>
     <string name="notif_delete_fail">削除に失敗しました</string>
+    <plurals name="notif_delete_fail_details">
+        <item quantity="one">%d冊の本が失敗しました</item>
+        <item quantity="other">%d冊の本が失敗しました</item>
+    </plurals>
+    <string name="notif_delete_prepurge_complete">再ダウンロード/ストリームの事前パージが完了しました</string>
+    <string name="notif_delete_prepurge_fail">再ダウンロード/ストリームの事前パージに失敗しました</string>
     <string name="notif_delete_title">コンテンツの削除</string>
     <string name="notif_json_complete">更新が完了しました</string>
     <string name="notif_json_progress">JSONを更新中</string>
@@ -703,9 +734,11 @@
     <string name="resize_method_2_prompt_max_width">横幅の最大（漫画、ウェブトゥーン）</string>
     <string name="resize_method_3">元の画像サイズ %</string>
     <string name="resize_method_3_prompt">元のサイズ %</string>
+    <string name="resize_method_4">AI アップスケール 2x</string>
     <string name="restart_needed">「Hentoidが再起動された後、変更が適用されます」</string>
     <string name="resume">再開する</string>
     <string name="resume_closed">あなたが\を去った場所から読むことを再開しますか？</string>
+    <string name="retransform_warning">%dページは既に変換されています。 複数回変換すると、品質が低下する可能性があります。\n元の画像を再ダウンロードし、一度変換することをお勧めします。</string>
     <string name="revive_missing_webview">WebViewは利用できません。今すぐダウンロードを復活させることはできません</string>
     <string name="revive_updating_webview">WebViewは現在更新中ですが、ダウンロードを復活させることはできません</string>
     <string name="revive_wait">ダウンロードが再開するまでの間、この画面でお待ち下さい</string>
@@ -807,6 +840,7 @@
     <string name="tap_to_download">タップしてダウンロード</string>
     <string name="tap_to_install">タップしてインストール</string>
     <string name="tap_to_retry">タップして再試行します</string>
+    <string name="target_folder">対象フォルダー</string>
     <string name="task_done">タスクが完了しました-ログの詳細を参照してください</string>
     <string name="theme_dark">ダーク</string>
     <string name="theme_deep_red">ディープレッド</string>

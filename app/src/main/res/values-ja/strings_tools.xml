@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="tools_cache_app">アプリのキャッシュをクリア</string>
     <string name="tools_cache_app_success">アプリのキャッシュが正常にクリアされました</string>
     <string name="tools_cache_browser">ブラウザのキャッシュをクリア</string>
@@ -23,6 +23,8 @@
     <string name="tools_import_settings_title">インポートの設定</string>
     <string name="tools_latest_logs_summary">アプリの最新ログを見る</string>
     <string name="tools_latest_logs_title">アプリのログ</string>
+    <string name="tools_ram_usage_summary">現在のRAMの使用量を表示する</string>
+    <string name="tools_ram_usage_title">RAMの使用量</string>
     <string name="tools_renaming_rules_summary">属性の名前変更規則を管理する</string>
     <string name="tools_renaming_rules_title">属性の名前変更規則</string>
     <string name="tools_screen_cache">キャッシュの管理</string>

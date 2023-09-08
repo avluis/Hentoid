@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="doh_warning">一部のWebサイトは、DNSoverHTTPSではうまく機能しません。 ナビゲーション中に問題が発生した場合は、外部DNSアプリを使用してください（空白のページ、応答しないログインフォームなど）</string>
     <string name="download_eh_hires_title">高解像度の写真をダウンロード</string>
     <string name="download_retries_active_title">再試行がアクティブ化されました</string>
@@ -82,6 +82,7 @@
     <string name="pref_cat_search">高度な検索</string>
     <string name="pref_cat_theme">アプリのテーマ</string>
     <string name="pref_check_updates_manual_checking">更新の確認中…</string>
+    <string name="pref_check_updates_manual_new">新しい更新が見つかりました！ - 通知を使用してインストールする</string>
     <string name="pref_check_updates_manual_no_connection">更新を確認できませんでした。 接続を確認するか、後で再試行してください</string>
     <string name="pref_check_updates_manual_no_new">更新が見つかりませんでした-すでに最新バージョンを使用しています</string>
     <string name="pref_check_updates_manual_summary">今すぐ手動で更新を確認</string>
@@ -176,6 +177,7 @@
     <string name="pref_viewer_chaptered_navigation_summary_off">次へ/前へボタンで次/前の本に移動します</string>
     <string name="pref_viewer_chaptered_navigation_summary_on">「次へ」/「前へ」ボタンは、現在の書籍内の次/前の章に移動します</string>
     <string name="pref_viewer_chaptered_navigation_title">章付きナビゲーション</string>
+    <string name="pref_viewer_color_depth">色深度</string>
     <string name="pref_viewer_continuous_summary_off">最後のページで次のページを使用しても効果はありません</string>
     <string name="pref_viewer_continuous_summary_on">最後のページで次のページを使用すると、次の本が読み込まれます</string>
     <string name="pref_viewer_continuous_title">連続読書</string>
@@ -198,6 +200,7 @@
     <string name="pref_viewer_page_turn_volume">音量ボタン</string>
     <string name="pref_viewer_ratio_completed_threshold">N％ページ後に本を完了としてマークする</string>
     <string name="pref_viewer_read_threshold">Nページ後に本を既読としてマークする</string>
+    <string name="pref_viewer_rendering">レンダリング</string>
     <string name="pref_viewer_rendering_mode">レンダリングモード</string>
     <string name="pref_viewer_rendering_no_android5">スムーズなレンダリングはAndroid5では利用できません</string>
     <string name="pref_viewer_resume_last_left_summary_off">書籍の再開は常に1ページ目から始まります</string>

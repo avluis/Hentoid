@@ -23,6 +23,8 @@
     <string name="tools_import_settings_title">Importa impostazioni</string>
     <string name="tools_latest_logs_summary">Visualizza gli ultimi log dell\'app</string>
     <string name="tools_latest_logs_title">Logs dell\'app</string>
+    <string name="tools_ram_usage_summary">Mostra attuale utilizzo RAM</string>
+    <string name="tools_ram_usage_title">Utilizzo RAM</string>
     <string name="tools_renaming_rules_summary">Gestisci attributi regole della rinominazione</string>
     <string name="tools_renaming_rules_title">Attribuisci regole alla rinominazione</string>
     <string name="tools_screen_cache">Gestione della cache</string>
