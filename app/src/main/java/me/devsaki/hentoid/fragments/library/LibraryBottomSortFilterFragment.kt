@@ -95,7 +95,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
         }
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
-        viewModel.contentSearchManagerBundle.observe(this) { b: Bundle? ->
+        viewModel.contentSearchBundle.observe(this) { b: Bundle? ->
             if (isGroupsDisplayed) return@observe
             val searchBundle = ContentSearchBundle(b!!)
             favouriteFilter = searchBundle.filterBookFavourites
@@ -105,7 +105,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             ratingFilter = searchBundle.filterRating
             updateFilters()
         }
-        viewModel.groupSearchManagerBundle.observe(this) { b: Bundle? ->
+        viewModel.groupSearchBundle.observe(this) { b: Bundle? ->
             if (!isGroupsDisplayed) return@observe
             val searchBundle = GroupSearchBundle(b!!)
             favouriteFilter = searchBundle.filterFavourites

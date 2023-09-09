@@ -271,7 +271,7 @@ class LibraryActivity : BaseActivity() {
         viewModel =
             ViewModelProvider(this@LibraryActivity, vmFactory)[LibraryViewModel::class.java]
 
-        viewModel.contentSearchManagerBundle.observe(this)
+        viewModel.contentSearchBundle.observe(this)
         { b: Bundle? -> contentSearchBundle = b }
 
         viewModel.group.observe(this) { g: Group? ->
@@ -279,7 +279,7 @@ class LibraryActivity : BaseActivity() {
             updateToolbar()
         }
 
-        viewModel.groupSearchManagerBundle.observe(this) { b: Bundle? ->
+        viewModel.groupSearchBundle.observe(this) { b: Bundle? ->
             groupSearchBundle = b
             val searchBundle = GroupSearchBundle(b!!)
             onGroupingChanged(searchBundle.groupingId)
@@ -926,7 +926,7 @@ class LibraryActivity : BaseActivity() {
         }
     }
 
-    fun showBooksInGroup(group: Group?) {
+    fun showBooksInGroup(group: Group) {
         enableFragment(1)
         viewModel.setGroup(group, true)
         binding?.libraryPager?.currentItem = 1
@@ -1044,8 +1044,8 @@ class LibraryActivity : BaseActivity() {
      * @param contents Items to be deleted if the answer is yes
      */
     fun askDeleteItems(
-        contents: List<Content?>,
-        groups: List<Group?>,
+        contents: List<Content>,
+        groups: List<Group>,
         onSuccess: Runnable?,
         selectExtension: SelectExtension<*>
     ) {

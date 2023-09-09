@@ -8,7 +8,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.fastadapter.FastAdapter
-import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.drag.ItemTouchCallback
@@ -100,15 +99,13 @@ class SplitDialogFragment : DialogFragment(), ItemTouchCallback {
 
             val helper = FastAdapterPreClickSelectHelper(it)
             fastAdapter.onPreClickListener =
-                { v: View?, adapter: IAdapter<TextItem<Chapter>>, item: TextItem<Chapter>, position: Int ->
-                    helper.onPreClickListener(
-                        position
-                    )
+                { _, _, _, position: Int ->
+                    helper.onPreClickListener(position)
                 }
             fastAdapter.onPreLongClickListener =
-                { v: View?, a: IAdapter<TextItem<Chapter>>?, i: TextItem<Chapter>, p: Int? ->
+                { _, _, _, p: Int ->
                     // Warning : specific code for drag selection
-                    mDragSelectTouchListener!!.startDragSelection(p!!)
+                    mDragSelectTouchListener!!.startDragSelection(p)
                     helper.onPreLongClickListener(p)
                 }
         }
@@ -202,8 +199,7 @@ class SplitDialogFragment : DialogFragment(), ItemTouchCallback {
 
     private fun onActionClick() {
         content?.let { c ->
-            val chapters =
-                selectExtension.selectedItems.map { obj: TextItem<Chapter> -> obj.getTag() }
+            val chapters = selectExtension.selectedItems.mapNotNull { ti -> ti.getTag() }
             if (chapters.isNotEmpty()) {
                 parent?.splitContent(c, chapters)
                 dismiss()
@@ -241,7 +237,7 @@ class SplitDialogFragment : DialogFragment(), ItemTouchCallback {
     }
 
     interface Parent {
-        fun splitContent(content: Content, chapters: List<Chapter?>)
+        fun splitContent(content: Content, chapters: List<Chapter>)
         fun readBook(content: Content, forceShowGallery: Boolean)
         fun leaveSelectionMode()
     }

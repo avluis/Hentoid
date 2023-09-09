@@ -36,8 +36,8 @@ class ChangeGroupDialogFragment : DialogFragment() {
         }
     }
 
-    private var bookIds: LongArray? = null
-    private var customGroups: List<Group>? = null
+    private lateinit var bookIds: LongArray
+    private lateinit var customGroups: List<Group>
 
     private lateinit var existingRadio: RadioButton
     private lateinit var existingSpin: ListPickerView
@@ -56,61 +56,58 @@ class ChangeGroupDialogFragment : DialogFragment() {
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
-        if (arguments != null) {
-            bookIds = requireArguments().getLongArray(BOOK_IDS)
-            existingRadio = rootView.findViewById(R.id.change_group_existing_radio)
-            existingSpin = rootView.findViewById(R.id.change_group_existing_list)
-            newRadio = rootView.findViewById(R.id.change_group_new_radio)
-            newNameTxt = rootView.findViewById(R.id.change_group_new_name)
-            detachRadio = rootView.findViewById(R.id.remove_group_radio)
+        check(arguments != null)
 
-            // Get existing custom groups
-            val dao: CollectionDAO = ObjectBoxDAO(requireContext())
-            try {
-                customGroups = dao.selectGroups(
-                    Grouping.CUSTOM.id,
-                    0
-                ).toList()
+        bookIds = requireArguments().getLongArray(BOOK_IDS)!!
+        existingRadio = rootView.findViewById(R.id.change_group_existing_radio)
+        existingSpin = rootView.findViewById(R.id.change_group_existing_list)
+        newRadio = rootView.findViewById(R.id.change_group_new_radio)
+        newNameTxt = rootView.findViewById(R.id.change_group_new_name)
+        detachRadio = rootView.findViewById(R.id.remove_group_radio)
 
-                // Don't select the "Ungrouped" group there
-                if (customGroups!!.isNotEmpty()) { // "Existing group" by default
-                    existingRadio.isChecked = true
-                    existingSpin.visibility = View.VISIBLE
-                    existingSpin.entries = customGroups!!.map { g -> g.name }
+        // Get existing custom groups
+        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        try {
+            customGroups = dao.selectGroups(Grouping.CUSTOM.id, 0).toList()
 
-                    // If there's only one content selected, indicate its group
-                    if (1 == bookIds!!.size) {
-                        val gi = dao.selectGroupItems(bookIds!![0], Grouping.CUSTOM)
-                        if (gi.isNotEmpty()) for (i in customGroups!!.indices) {
-                            if (gi[0].group.targetId == customGroups!![i].id) {
-                                existingSpin.index = i
-                                break
-                            }
-                        } else  // If no group attached, no need to detach from it (!)
-                            detachRadio.visibility = View.GONE
-                    }
-                } else { // If none of them exist, "new group" is suggested by default
-                    existingRadio.visibility = View.GONE
-                    newRadio.isChecked = true
-                    newNameTxt.visibility = View.VISIBLE
+            // Don't select the "Ungrouped" group there
+            if (customGroups.isNotEmpty()) { // "Existing group" by default
+                existingRadio.isChecked = true
+                existingSpin.visibility = View.VISIBLE
+                existingSpin.entries = customGroups.map { g -> g.name }
+
+                // If there's only one content selected, indicate its group
+                if (1 == bookIds.size) {
+                    val gi = dao.selectGroupItems(bookIds[0], Grouping.CUSTOM)
+                    if (gi.isNotEmpty()) for (i in customGroups.indices) {
+                        if (gi[0].group.targetId == customGroups[i].id) {
+                            existingSpin.index = i
+                            break
+                        }
+                    } else  // If no group attached, no need to detach from it (!)
+                        detachRadio.visibility = View.GONE
                 }
-
-                // Radio logic
-                existingRadio.setOnCheckedChangeListener { _: CompoundButton?, b: Boolean ->
-                    onExistingRadioSelect(b)
-                }
-                newRadio.setOnCheckedChangeListener { _: CompoundButton?, b: Boolean ->
-                    onNewRadioSelect(b)
-                }
-                detachRadio.setOnCheckedChangeListener { _: CompoundButton?, b: Boolean ->
-                    onDetachRadioSelect(b)
-                }
-
-                // Item click listener
-                rootView.findViewById<View>(R.id.action_button).setOnClickListener { onOkClick() }
-            } finally {
-                dao.cleanup()
+            } else { // If none of them exist, "new group" is suggested by default
+                existingRadio.visibility = View.GONE
+                newRadio.isChecked = true
+                newNameTxt.visibility = View.VISIBLE
             }
+
+            // Radio logic
+            existingRadio.setOnCheckedChangeListener { _: CompoundButton?, b: Boolean ->
+                onExistingRadioSelect(b)
+            }
+            newRadio.setOnCheckedChangeListener { _: CompoundButton?, b: Boolean ->
+                onNewRadioSelect(b)
+            }
+            detachRadio.setOnCheckedChangeListener { _: CompoundButton?, b: Boolean ->
+                onDetachRadioSelect(b)
+            }
+
+            // Item click listener
+            rootView.findViewById<View>(R.id.action_button).setOnClickListener { onOkClick() }
+        } finally {
+            dao.cleanup()
         }
     }
 
@@ -147,10 +144,7 @@ class ChangeGroupDialogFragment : DialogFragment() {
             ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
         if (existingRadio.isChecked) {
             if (existingSpin.index > -1) {
-                viewModel.moveContentsToCustomGroup(
-                    bookIds, customGroups!![existingSpin.index]
-                )
-                {
+                viewModel.moveContentsToCustomGroup(bookIds, customGroups[existingSpin.index]) {
                     getParent()?.onChangeGroupSuccess()
                     dismissAllowingStateLoss()
                 }
@@ -159,10 +153,7 @@ class ChangeGroupDialogFragment : DialogFragment() {
                 ToastHelper.toast(R.string.group_not_selected)
             }
         } else if (detachRadio.isChecked) {
-            viewModel.moveContentsToCustomGroup(
-                bookIds,
-                null
-            ) {
+            viewModel.moveContentsToCustomGroup(bookIds, null) {
                 getParent()?.onChangeGroupSuccess()
                 dismissAllowingStateLoss()
             }
@@ -170,7 +161,7 @@ class ChangeGroupDialogFragment : DialogFragment() {
             val newNameStr = edit.text.toString().trim { it <= ' ' }
             if (newNameStr.isNotEmpty()) {
                 val groupMatchingName =
-                    customGroups!!.filter { g -> g.name.equals(newNameStr, ignoreCase = true) }
+                    customGroups.filter { g -> g.name.equals(newNameStr, ignoreCase = true) }
                 if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
                     viewModel.moveContentsToNewCustomGroup(
                         bookIds, newNameStr

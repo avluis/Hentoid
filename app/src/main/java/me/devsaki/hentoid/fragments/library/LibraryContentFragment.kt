@@ -215,10 +215,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private var llm: LinearLayoutManager? = null
 
     // Scroll listener for the top FAB
-    private val scrollListener = ScrollPositionListener { i: Int ->
-        onScrollPositionChange(i)
-        Unit
-    }
+    private val scrollListener = ScrollPositionListener { i -> onScrollPositionChange(i) }
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private var itemAdapter: ItemAdapter<ContentItem>? = null
@@ -351,22 +348,15 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.newContentSearch.observe(viewLifecycleOwner) { b: Boolean -> onNewSearch(b) }
+        viewModel.newContentSearch.observe(viewLifecycleOwner) { b -> onNewSearch(b) }
 
-        viewModel.libraryPaged.observe(viewLifecycleOwner) { result: PagedList<Content> ->
-            onLibraryChanged(result)
-        }
+        viewModel.libraryPaged.observe(viewLifecycleOwner) { result -> onLibraryChanged(result) }
 
-        viewModel.totalContent.observe(viewLifecycleOwner) { count: Int ->
-            onTotalContentChanged(count)
-        }
+        viewModel.totalContent.observe(viewLifecycleOwner) { count -> onTotalContentChanged(count) }
 
-        viewModel.group.observe(viewLifecycleOwner) { group: Group ->
-            onGroupChanged(group)
-        }
+        viewModel.group.observe(viewLifecycleOwner) { group -> onGroupChanged(group) }
 
-        viewModel.contentSearchManagerBundle.observe(viewLifecycleOwner)
-        { b: Bundle? -> contentSearchBundle = b }
+        viewModel.contentSearchBundle.observe(viewLifecycleOwner) { b -> contentSearchBundle = b }
 
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(viewLifecycleOwner)
@@ -411,7 +401,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         binding?.topFab?.apply {
             scrollListener.setDeltaYListener(lifecycleScope) { i: Int ->
                 isVisible = (Preferences.isTopFabEnabled() && i > 0)
-                Unit
             }
 
             // Top FAB
@@ -1095,7 +1084,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      *
      * @param isEndless True if endless mode has to be set; false if paged mode has to be set
      */
-    @kotlin.OptIn(ExperimentalPagedSupport::class)
+    @OptIn(ExperimentalPagedSupport::class)
     private fun setPagingMethod(isEndless: Boolean, isEditMode: Boolean) {
         // Editing will always be done in Endless mode
         viewModel.setContentPagingMethod(isEndless && !isEditMode)
@@ -1387,7 +1376,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      *
      * @param result Current library according to active filters
      */
-    @kotlin.OptIn(ExperimentalPagedSupport::class)
+    @OptIn(ExperimentalPagedSupport::class)
     private fun onLibraryChanged(result: PagedList<Content>) {
         Timber.i(">> Library changed ! Size=%s enabled=%s", result.size, enabled)
         if (!enabled && Preferences.getGroupingDisplay() != Grouping.FLAT) return
@@ -1607,10 +1596,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         binding?.recyclerView?.let {
             viewModel.downloadContent(
                 contentList, addMode,
-                { nbSuccess: Int? ->
+                { nbSuccess: Int ->
                     val message = resources.getQuantityString(
                         R.plurals.add_to_queue,
-                        nbSuccess!!, nbSuccess, contentList.size
+                        nbSuccess, nbSuccess, contentList.size
                     )
                     val snackbar =
                         Snackbar.make(it, message, BaseTransientBottomBar.LENGTH_LONG)
@@ -1693,11 +1682,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         refreshIfNeeded()
     }
 
-    override fun splitContent(content: Content, chapters: List<Chapter?>) {
+    override fun splitContent(content: Content, chapters: List<Chapter>) {
         leaveSelectionMode()
-        viewModel.splitContent(
-            content, chapters
-        ) { onSplitSuccess() }
+        viewModel.splitContent(content, chapters) { onSplitSuccess() }
         invoke(parentFragmentManager, resources.getString(R.string.split_progress), R.plurals.page)
     }
 

@@ -196,7 +196,8 @@ class LibraryGroupsFragment : Fragment(),
         firstLibraryLoad = true
         viewModel.groups.observe(viewLifecycleOwner) { result: List<Group> -> onGroupsChanged(result) }
 
-        viewModel.totalGroup.observe(viewLifecycleOwner) { count: Int -> onTotalGroupsChanged(count) }
+        viewModel.getTotalGroup()
+            .observe(viewLifecycleOwner) { count: Int -> onTotalGroupsChanged(count) }
 
         viewModel.libraryPaged.observe(viewLifecycleOwner) { result: PagedList<Content> ->
             onLibraryChanged(result)
@@ -557,7 +558,7 @@ class LibraryGroupsFragment : Fragment(),
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         val g = selectedItems.firstNotNullOfOrNull { gi -> gi.group }
         if (g != null) {
-            viewModel.renameGroup(g, newName, { stringIntRes: Int ->
+            viewModel.renameGroup(g, newName, { stringIntRes ->
                 ToastHelper.toast(stringIntRes)
                 editSelectedItemName()
             }) { selectExtension!!.selectOnLongClick = true }
