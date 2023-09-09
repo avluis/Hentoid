@@ -44,6 +44,7 @@ import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
@@ -368,7 +369,7 @@ class LibraryGroupsFragment : Fragment(),
                 val diff = selectedContent.size - contentToDelete.size
                 // Remove undeletable books from the list
                 if (diff > 0) {
-                    activity.get()!!.snack(
+                    snack(
                         resources.getQuantityString(R.plurals.external_not_removed, diff, diff)
                     )
                     selectedContent = contentToDelete.toMutableList()
@@ -788,8 +789,8 @@ class LibraryGroupsFragment : Fragment(),
     private fun onSubmitSearch(query: String) {
         if (query.startsWith("http")) { // Quick-open a page
             when (Site.searchByUrl(query)) {
-                null -> activity.get()!!.snack(R.string.malformed_url)
-                Site.NONE -> activity.get()!!.snack(R.string.unsupported_site)
+                null -> snack(R.string.malformed_url)
+                Site.NONE -> snack(R.string.unsupported_site)
                 else -> ContentHelper.launchBrowserFor(requireContext(), query)
             }
         } else {

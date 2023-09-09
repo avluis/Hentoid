@@ -38,6 +38,7 @@ import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -193,7 +194,7 @@ class LibraryActivity : BaseActivity() {
         advSearchCriteria[getCurrentFragmentIndex()] = criteria
     }
 
-    fun clearAdvancedSearchCriteria() {
+    private fun clearAdvancedSearchCriteria() {
         advSearchCriteria[getCurrentFragmentIndex()] = AdvancedSearchCriteria()
     }
 
@@ -211,7 +212,8 @@ class LibraryActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         activityBinding = ActivityLibraryBinding.inflate(layoutInflater)
-        setContentView(binding?.root)
+        binding = activityBinding?.fragment
+        setContentView(activityBinding?.root)
 
         searchClearDebouncer = Debouncer(this.lifecycleScope, 1500) { clearSearch() }
 
@@ -393,7 +395,7 @@ class LibraryActivity : BaseActivity() {
      */
     private fun initUI() {
         // Search bar
-        binding?.searchSubbar?.apply {
+        binding?.advancedSearch?.apply {
             // Link to advanced search
             advancedSearchBtn.setOnClickListener { onAdvancedSearchButtonClick() }
 
@@ -508,7 +510,7 @@ class LibraryActivity : BaseActivity() {
                 imeOptions = EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING
                 setIconifiedByDefault(true)
                 queryHint = getString(R.string.library_search_hint)
-                searchSubbar.searchClearBtn.setOnClickListener {
+                advancedSearch.searchClearBtn.setOnClickListener {
                     invalidateNextQueryTextChange = true
                     setQuery("", false)
                     isIconified = true
@@ -541,7 +543,7 @@ class LibraryActivity : BaseActivity() {
         setQuery("")
         getAdvSearchCriteria().query = ""
         signalCurrentFragment(CommunicationEvent.EV_SEARCH, getQuery())
-        binding?.searchSubbar?.apply {
+        binding?.advancedSearch?.apply {
             searchClearBtn.visibility = View.GONE
             searchSaveBtn.visibility = View.GONE
         }
@@ -621,8 +623,8 @@ class LibraryActivity : BaseActivity() {
         showSaveSearch: Boolean?,
         showSearchHistory: Boolean
     ) {
-        binding?.searchSubbar?.apply {
-            advancedSearchBackground.visibility = View.VISIBLE
+        binding?.advancedSearch?.apply {
+            background.visibility = View.VISIBLE
             advancedSearchBtn.isVisible = (showAdvancedSearch && !isGroupDisplayed())
             if (showClear != null) searchClearBtn.isVisible = showClear
             if (showSaveSearch != null) searchSaveBtn.isVisible =
@@ -687,15 +689,15 @@ class LibraryActivity : BaseActivity() {
                         R.color.white_opacity_87
                     )
                 )
-                showAsDropDown(binding?.searchSubbar?.advancedSearchBackground)
+                showAsDropDown(binding?.advancedSearch?.background)
             }
         } else if (!showSearchHistory) searchHistory?.dismiss()
 
     }
 
     fun hideSearchSubBar() {
-        binding?.searchSubbar?.apply {
-            advancedSearchBackground.visibility = View.GONE
+        binding?.advancedSearch?.apply {
+            background.visibility = View.GONE
             advancedSearchBtn.visibility = View.GONE
             searchClearBtn.visibility = View.GONE
             searchSaveBtn.visibility = View.GONE
@@ -723,7 +725,7 @@ class LibraryActivity : BaseActivity() {
         return false
     }
 
-    fun expandSearchMenu() {
+    private fun expandSearchMenu() {
         searchMenu?.apply {
             if (isActionViewExpanded) {
                 preventShowSearchHistoryNextExpand = true
@@ -901,7 +903,7 @@ class LibraryActivity : BaseActivity() {
         activityBinding?.drawerLayout?.closeDrawer(GravityCompat.START)
     }
 
-    fun openNavigationDrawer() {
+    private fun openNavigationDrawer() {
         activityBinding?.drawerLayout?.openDrawer(GravityCompat.START)
     }
 
@@ -1166,10 +1168,10 @@ class LibraryActivity : BaseActivity() {
             this,
             R.string.group_new_name_dynamic,
             criteria.toString(this),
-            { s: String? ->
+            { s: String ->
                 viewModel.newGroup(
                     Grouping.DYNAMIC,
-                    s!!, SearchActivityBundle.buildSearchUri(criteria, null).toString()
+                    s, SearchActivityBundle.buildSearchUri(criteria, null).toString()
                 ) { onNewSearchGroupNameExists() }
             },
             null
@@ -1179,16 +1181,6 @@ class LibraryActivity : BaseActivity() {
     private fun onNewSearchGroupNameExists() {
         ToastHelper.toast(R.string.group_name_exists)
         saveSearchAsGroup()
-    }
-
-    fun snack(res: Int) {
-        snack(resources.getString(res))
-    }
-
-    fun snack(msg: String) {
-        binding?.libraryPager?.let {
-            Snackbar.make(it, msg, BaseTransientBottomBar.LENGTH_LONG).show()
-        }
     }
 
     /**

@@ -37,7 +37,7 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.RandomSeedSingleton
+import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
@@ -1019,7 +1019,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun shuffleContent() {
-        RandomSeedSingleton.getInstance().renewSeed(SEED_CONTENT)
+        RandomSeed.renewSeed(SEED_CONTENT)
         dao.shuffleContent()
     }
 

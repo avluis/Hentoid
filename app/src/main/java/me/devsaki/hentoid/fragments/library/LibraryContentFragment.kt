@@ -61,6 +61,7 @@ import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.parseSearchUri
 import me.devsaki.hentoid.core.Consumer
+import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
@@ -414,6 +415,23 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
         }
 
+        // Swipe to shuffle
+        binding?.swipeContainer?.apply {
+            setOnRefreshListener {
+                if (this.isRefreshing && Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_RANDOM) {
+                    viewModel.shuffleContent()
+                    viewModel.searchContent()
+                }
+                isRefreshing = false
+            }
+            setColorSchemeResources(
+                android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light
+            )
+        }
+
         // Pager
         pager.initUI(rootView)
         setPagingMethod(Preferences.getEndlessScroll(), false)
@@ -473,7 +491,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     private fun cancelEdit() {
-        activity.get()!!.setEditMode(false)
+        activity.get()?.setEditMode(false)
     }
 
     private fun confirmEdit() {
@@ -483,8 +501,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
         Preferences.setContentSortDesc(false)
         viewModel.saveContentPositions(itemAdapter!!.adapterItems.mapNotNull { ci -> ci.content }) { refreshIfNeeded() }
-        group!!.hasCustomBookOrder = true
-        activity.get()!!.setEditMode(false)
+        group?.hasCustomBookOrder = true
+        activity.get()?.setEditMode(false)
     }
 
     private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
@@ -554,11 +572,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             R.id.action_transform -> {
                 val contents = selectExtension!!.selectedItems.mapNotNull { ci -> ci.content }
                 if (contents.size > 1000) {
-                    activity.get()!!.snack(R.string.transform_limit)
+                    snack(R.string.transform_limit)
                     return false
                 }
                 if (contents.isEmpty()) {
-                    activity.get()!!.snack(R.string.invalid_selection_generic)
+                    snack(R.string.invalid_selection_generic)
                     return false
                 }
                 invoke(this, contents)
@@ -723,7 +741,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
         }
         if (contents.size > 1000) {
-            activity.get()!!.snack(R.string.redownload_limit)
+            snack(R.string.redownload_limit)
             return
         }
         binding?.recyclerView?.let {
@@ -733,12 +751,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 this
             ) { position: Int, _ ->
                 if (0 == position) redownloadFromScratch(contents)
-                else viewModel.redownloadContent(
-                    contents,
-                    true,
-                    false,
-                    0,
-                    { nbSuccess: Int? ->
+                else viewModel.redownloadContent(contents,
+                    reparseContent = true,
+                    reparseImages = false,
+                    position = 0,
+                    onSuccess = { nbSuccess: Int? ->
                         val message = resources.getQuantityString(
                             R.plurals.add_to_queue,
                             contents.size,
@@ -756,7 +773,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     }
                 ) { t: Throwable? ->
                     Timber.w(t)
-                    activity.get()!!.snack(R.string.redownloaded_error)
+                    snack(R.string.redownloaded_error)
                 }
                 leaveSelectionMode()
             }
@@ -812,7 +829,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
     private fun onDownloadError(t: Throwable) {
         Timber.w(t)
-        activity.get()!!.snack(t.message ?: "")
+        snack(t.message ?: "")
     }
 
     /**
@@ -831,7 +848,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
         }
         if (contents.size > 1000) {
-            activity.get()!!.snack(R.string.stream_limit)
+            snack(R.string.stream_limit)
             return
         }
         var message = resources.getQuantityString(R.plurals.stream_confirm, contents.size)
@@ -864,7 +881,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
     private fun onStreamError(t: Throwable) {
         Timber.w(t)
-        activity.get()!!.snack(t.message ?: "")
+        snack(t.message ?: "")
     }
 
     /**
@@ -1037,8 +1054,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun onSubmitSearch(query: String) {
         if (query.startsWith("http")) { // Quick-open a page
             when (Site.searchByUrl(query)) {
-                null -> activity.get()!!.snack(R.string.malformed_url)
-                Site.NONE -> activity.get()!!.snack(R.string.unsupported_site)
+                null -> snack(R.string.malformed_url)
+                Site.NONE -> snack(R.string.unsupported_site)
                 else -> ContentHelper.launchBrowserFor(requireContext(), query)
             }
         } else {
@@ -1376,7 +1393,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun onLibraryChanged(result: PagedList<Content>) {
         Timber.i(">> Library changed ! Size=%s enabled=%s", result.size, enabled)
         if (!enabled && Preferences.getGroupingDisplay() != Grouping.FLAT) return
-        activity.get()!!.updateTitle(result.size.toLong(), totalContentCount.toLong())
+        activity.get()?.updateTitle(result.size.toLong(), totalContentCount.toLong())
+
+        // Reshuffle on swipe is only enabled when sort order is random
+        binding?.swipeContainer?.isEnabled =
+            (Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_RANDOM)
 
         // Update background text
         @StringRes var backgroundText = -1
@@ -1541,7 +1562,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun redownloadFromScratch(contentList: List<Content>) {
         if (Preferences.getQueueNewDownloadPosition() == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.recyclerView?.let {
-                AddQueueMenu.show(activity.get()!!, it, this) { position: Int, _: PowerMenuItem? ->
+                AddQueueMenu.show(requireActivity(), it, this) { position: Int, _: PowerMenuItem? ->
                     redownloadFromScratch(
                         contentList,
                         if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
@@ -1554,8 +1575,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun redownloadFromScratch(contentList: List<Content>, addMode: Int) {
         topItemPosition = getTopItemPosition()
         binding?.recyclerView?.let {
-            viewModel.redownloadContent(contentList, true, true, addMode,
-                { nbSuccess: Int? ->
+            viewModel.redownloadContent(contentList,
+                reparseContent = true,
+                reparseImages = true,
+                position = addMode,
+                onSuccess = { nbSuccess: Int? ->
                     val message = resources.getQuantityString(
                         R.plurals.add_to_queue,
                         contentList.size,
@@ -1568,7 +1592,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 }
             ) { t: Throwable? ->
                 Timber.w(t)
-                activity.get()!!.snack(R.string.redownloaded_error)
+                snack(R.string.redownloaded_error)
             }
         }
     }

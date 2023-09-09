@@ -32,7 +32,7 @@ import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.RandomSeedSingleton
+import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.download.DownloadHelper
@@ -409,7 +409,7 @@ class ReaderViewModel(
         val shuffledVal = getShuffled().value
         var isShuffled = null != shuffledVal && shuffledVal
         isShuffled = !isShuffled
-        if (isShuffled) RandomSeedSingleton.getInstance().renewSeed(SEED_PAGES)
+        if (isShuffled) RandomSeed.renewSeed(SEED_PAGES)
         shuffled.postValue(isShuffled)
         val imgs = databaseImages.value
         imgs?.let { sortAndSetViewerImages(it, isShuffled) }
@@ -424,7 +424,7 @@ class ReaderViewModel(
     private fun sortAndSetViewerImages(images: List<ImageFile>, shuffle: Boolean) {
         var imgs = images.toList()
         imgs = if (shuffle) {
-            imgs.shuffled(Random(RandomSeedSingleton.getInstance().getSeed(SEED_PAGES)))
+            imgs.shuffled(Random(RandomSeed.getSeed(SEED_PAGES)))
         } else {
             // Sort images according to their Order; don't keep the cover thumb
             imgs.sortedBy { obj -> obj.order }

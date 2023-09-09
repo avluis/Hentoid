@@ -26,18 +26,29 @@
         app:navigationIcon="@drawable/ic_arrow_back" />
 
     <include
-        android:id="@+id/search_subbar"
-        layout="@layout/include_library_search_subbar" />
+        android:id="@+id/advanced_search"
+        layout="@layout/include_library_search_subbar"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/library_toolbar"
+        tools:visibility="visible" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/library_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/advanced_search_background" />
+        app:layout_constraintTop_toBottomOf="@id/advanced_search" />
 
     <include
         android:id="@+id/alert_banner"
-        layout="@layout/include_library_alert_banner" />
+        layout="@layout/include_library_alert_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/advanced_search"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

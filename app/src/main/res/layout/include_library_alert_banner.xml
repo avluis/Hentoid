@@ -1,24 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
-
-    <TextView
-        android:id="@+id/library_alert_txt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?colorSecondary"
-        android:minHeight="24dp"
-        android:paddingStart="40dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="64dp"
-        android:paddingBottom="8dp"
-        android:text="@string/alert_permissions_lost"
-        android:textColor="?colorOnSecondary"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/advanced_search_background"
-        tools:visibility="visible" />
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?colorSecondary"
+    android:minHeight="24dp"
+    android:textColor="?colorOnSecondary">
 
     <ImageView
         android:id="@+id/library_alert_icon"
@@ -27,12 +15,22 @@
         android:layout_marginStart="8dp"
         android:src="@drawable/ic_warning"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/library_alert_txt"
-        app:layout_constraintStart_toStartOf="@id/library_alert_txt"
-        app:layout_constraintTop_toTopOf="@id/library_alert_txt"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/white_opacity_66"
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/library_alert_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="@string/alert_permissions_lost"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/library_alert_icon"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/library_alert_fix_btn"
@@ -40,12 +38,13 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:background="?colorSecondary"
+        android:padding="8dp"
         android:text="@string/fix_permissions"
+        android:textColor="?colorOnSecondary"
         android:textStyle="bold"
         android:visibility="gone"
-        android:textColor="?colorOnSecondary"
-        app:layout_constraintBottom_toBottomOf="@id/library_alert_txt"
-        app:layout_constraintEnd_toEndOf="@id/library_alert_txt"
-        app:layout_constraintTop_toTopOf="@id/library_alert_txt"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
-</merge>
+</androidx.constraintlayout.widget.ConstraintLayout>

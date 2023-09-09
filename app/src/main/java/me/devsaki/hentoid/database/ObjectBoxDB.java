@@ -72,7 +72,7 @@ import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.RandomSeed;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle;
@@ -792,7 +792,7 @@ public class ObjectBoxDB {
         shuffleStore.removeAll();
         // Populate with a new list
         List<Long> allBooksIds = Helper.getListFromPrimitiveArray(DBHelper.safeFindIds(selectStoredContentQ(false, -1, false)));
-        Collections.shuffle(allBooksIds, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
+        Collections.shuffle(allBooksIds, new Random(RandomSeed.INSTANCE.getSeed(Consts.SEED_CONTENT)));
         shuffleStore.put(Stream.of(allBooksIds).map(ShuffleRecord::new).toList());
     }
 
