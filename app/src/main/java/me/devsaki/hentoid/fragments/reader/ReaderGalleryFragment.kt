@@ -356,13 +356,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 }
                 val helper = FastAdapterPreClickSelectHelper(selectExtension)
                 fastAdapter.onPreClickListener =
-                    { v, adapter, item, position ->
-                        helper.onPreClickListener(
-                            position
-                        )
-                    }
+                    { _, _, _, position -> helper.onPreClickListener(position) }
                 fastAdapter.onPreLongClickListener =
-                    { v, a, i, p ->
+                    { _, _, _, p ->
                         // Warning : specific code for drag selection
                         mDragSelectTouchListener?.startDragSelection(p)
                         helper.onPreLongClickListener(p)

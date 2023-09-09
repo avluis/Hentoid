@@ -152,16 +152,10 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         }
         val helper = FastAdapterPreClickSelectHelper(selectExtension)
         fastAdapter.onPreClickListener =
-            { v: View?, adapter: IAdapter<ContentItem>, item: ContentItem, position: Int ->
-                helper.onPreClickListener(
-                    position
-                )
-            }
+            { _, _, _, position: Int -> helper.onPreClickListener(position) }
         fastAdapter.onPreLongClickListener =
-            { v: View?, adapter: IAdapter<ContentItem>, item: ContentItem, position: Int ->
-                helper.onPreLongClickListener(
-                    position
-                )
+            { _, _, _, position: Int ->
+                helper.onPreLongClickListener(position)
             }
 
         binding.queueList.adapter = fastAdapter
