@@ -1234,13 +1234,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 }
             val helper = FastAdapterPreClickSelectHelper(this)
             fastAdapter!!.onPreClickListener =
-                { v, adapter, item, position ->
-                    helper.onPreClickListener(position)
-                }
+                { _, _, _, position -> helper.onPreClickListener(position) }
             fastAdapter!!.onPreLongClickListener =
-                { v, adapter, item, position ->
-                    helper.onPreLongClickListener(position)
-                }
+                { _, _, _, position -> helper.onPreLongClickListener(position) }
         }
 
         // Drag, drop & swiping

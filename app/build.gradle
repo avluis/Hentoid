@@ -149,11 +149,12 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
     // For ViewModel to work
-    def android_lifecycle_version = '2.6.1'
+    def android_lifecycle_version = '2.6.2'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-extensions:$android_lifecycle_version"
 
     // Desugaring (java.time is required for bucket4j)
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
