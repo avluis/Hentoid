@@ -3,6 +3,8 @@ package me.devsaki.hentoid.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.widget.Toolbar
@@ -325,9 +327,13 @@ class QueueActivity : BaseActivity() {
             // Start progress UI
             reviveTimer?.cancel()
             reviveTimer = timer("revive-timer", false, 1500, 1500) {
-                val currentProgress: Int = it.downloadReviveProgress.progress
-                if (currentProgress > 0) it.downloadReviveProgress.progress =
-                    currentProgress - 1
+                // Timer task is not on the UI thread
+                val handler = Handler(Looper.getMainLooper())
+                handler.post {
+                    val currentProgress: Int = it.downloadReviveProgress.progress
+                    if (currentProgress > 0) it.downloadReviveProgress.progress =
+                        currentProgress - 1
+                }
             }
 
             // Try passing CF

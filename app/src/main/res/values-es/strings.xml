@@ -11,6 +11,7 @@
     <string name="add_external">Añadir ubicación externa</string>
     <string name="add_primary_1">Añadir ubicación primaria</string>
     <string name="add_primary_2">Añadir ubicación principal 2</string>
+    <string name="ai_rescale_warning">Reescalar imágenes con IA consumirá tu GPU. El proceso puede tomar varios minutos.</string>
     <string name="alert_black">Este sitio no está disponible actualmente. La aplicación no tiene nada que hacer al respecto.Vuelve a intentarlo más tarde.</string>
     <string name="alert_browser_mode">Modo navegador activo: sin acceso a almacenamiento</string>
     <string name="alert_fix_available">Hay una solución disponible en la última versión de la aplicación. Actualiza.</string>
@@ -23,11 +24,16 @@
     <string name="alert_unwanted_tags">Este libro tiene la etiqueta de %s</string>
     <string name="alert_wip">El equipo de desarrollo de Hentoid está trabajando en una solución. La aplicación te notificará cuando haya una nueva versión.</string>
     <string name="app_intro">Bienvenido</string>
+    <string name="app_lock_biometrics_fail">No se encontró ningún sistema biométrico adecuado</string>
     <string name="app_lock_disabled">Bloqueo de Aplicación Deshabilitado</string>
     <string name="app_lock_enable">Bloqueo de Aplicación Habilitado</string>
     <string name="app_lock_pin">Ingresar PIN</string>
     <string name="app_settings">Configuración de la aplicación </string>
     <string name="apply_final">Aplicar opciones</string>
+    <string name="archive_delete_after_archiving">Borrar libros después de archivar</string>
+    <string name="archive_format">Formato de archivo</string>
+    <string name="archive_limit">No se pueden archivar más de 1000 libros a la vez</string>
+    <string name="archive_overwrite">Sobrescribir archivos existentes</string>
     <string name="archive_progress">Archivando libros</string>
     <string name="archive_progress_subtitle">Completado: %s</string>
     <plurals name="archive_success">
@@ -47,6 +53,9 @@
         <item quantity="one">¿Eliminar el elemento seleccionado? </item>
         <item quantity="other">¿Eliminar los %d elementos seleccionados? </item>
     </plurals>
+    <string name="biometric_dialog_subtitle_lock">Confirmar antes de bloquear</string>
+    <string name="biometric_dialog_subtitle_unlock">Desbloquear con datos biométricos</string>
+    <string name="biometric_dialog_title">Bloqueo biométrico</string>
     <string name="blocked_tag">El libro tiene una etiqueta bloqueada (%s)\nDescarga cancelada</string>
     <string name="blocked_tag_queued">El libro tiene una etiqueta bloqueada (%s)\nPuesto en la cola de descargas como error</string>
     <plurals name="book">
@@ -114,6 +123,10 @@
     <string name="contents_detected">Hentoid encontró una biblioteca existente en esta ubicación.\n¿Desea importar esta biblioteca?</string>
     <string name="copy_download_folder_fail">No se pudo escribir en la carpeta Descargas</string>
     <string name="copy_download_folder_success">Copiado a la carpeta Descargas</string>
+    <plurals name="create_archive">
+        <item quantity="one">Crear archivo</item>
+        <item quantity="other">Crear archivos</item>
+    </plurals>
     <string name="create_generic">Crear</string>
     <string name="delete_limit">No se pueden eliminar más de 1000 libros a la vez</string>
     <string name="delete_progress">Borrando libros</string>
@@ -275,6 +288,8 @@
     <string name="filter_not_completed">Mostrar solo no completados</string>
     <string name="filter_rating">Filtrar por valoración</string>
     <string name="fix_permissions">Reparar</string>
+    <string name="folder_device_downloads">Carpeta de Descargas del dispositivo</string>
+    <string name="folder_other">Seleccionar carpeta…</string>
     <string name="folder_undefined">Error - carpeta contenedora no definida</string>
     <string name="freeze">Cambiar a congelar</string>
     <string name="gallery_add_remove_chapters">Agregar y eliminar capítulos</string>
@@ -412,6 +427,7 @@
     <string name="importing_library">Importando Biblioteca</string>
     <string name="importing_metadata">Importando metadatos…</string>
     <string name="information_help">Información</string>
+    <string name="invalid_selection_generic">Selección no válida</string>
     <string name="invert_queue">Invertir cola de descarga</string>
     <plurals name="item">
         <item quantity="one">elemento</item>
@@ -442,6 +458,7 @@
     <string name="lang_zh">chino</string>
     <string name="launchcode_present">Ya has leído este libro. </string>
     <string name="library_filter_favourite_help">Mostrar solo favoritos</string>
+    <string name="library_filter_nonfavourite_help">Mostrar libros no favoritos</string>
     <string name="library_filters_title">Filtros</string>
     <string name="library_imports_title">Importación de la biblioteca</string>
     <string name="library_metrics_storage">%.0f MB</string>
@@ -449,6 +466,9 @@
     <string name="loading_archive">Cargando: %1$d/%2$d</string>
     <string name="loading_image">Cargando imagen: %d%%</string>
     <string name="location_storage">%1$s (%2$d%%) libre</string>
+    <string name="lock_type">Tipo de bloqueo</string>
+    <string name="lock_type_biometric">Biométrico</string>
+    <string name="lock_type_pin">PIN</string>
     <string name="log_api29_migration">Migración de biblioteca desde Hentoid v1.11</string>
     <string name="log_cleanup">Limpieza de biblioteca principal</string>
     <string name="log_import">Importar/actualizar biblioteca principal</string>
@@ -531,10 +551,14 @@
     <string name="none">Ninguno</string>
     <string name="notif_archive_complete">Archivo completado</string>
     <plurals name="notif_archive_complete_details">
-        <item quantity="one">%dlibro archivado con éxito</item>
+        <item quantity="one">%d libro archivado con éxito</item>
         <item quantity="other">%d libros archivados con éxito</item>
     </plurals>
     <string name="notif_archive_fail">Archivo fallido</string>
+    <plurals name="notif_archive_fail_details">
+        <item quantity="one">%d del libro no se pudo archivar</item>
+        <item quantity="other">%d los libros falló en archivarse</item>
+    </plurals>
     <string name="notif_archive_title">Archivo de contenido</string>
     <string name="notif_delete_complete">Eliminación completada</string>
     <plurals name="notif_delete_complete_details">
@@ -542,6 +566,12 @@
         <item quantity="other">%d eliminado con éxito</item>
     </plurals>
     <string name="notif_delete_fail">Eliminación fallida</string>
+    <plurals name="notif_delete_fail_details">
+        <item quantity="one">%d del libro falló</item>
+        <item quantity="other">%d de los libros falló</item>
+    </plurals>
+    <string name="notif_delete_prepurge_complete">Volver a descargar/Transmitir previo a la purga completado</string>
+    <string name="notif_delete_prepurge_fail">Volver a descargar/Transmitir previo a la purga falló</string>
     <string name="notif_delete_title">Eliminación de contenido</string>
     <string name="notif_json_complete">Actualización completa</string>
     <string name="notif_json_progress">Actualización de JSON en progreso</string>
@@ -704,9 +734,11 @@
     <string name="resize_method_2_prompt_max_width">Ancho máximo (manhwas, webtoons)</string>
     <string name="resize_method_3">% del tamaño original de la imagen</string>
     <string name="resize_method_3_prompt">% del tamaño original</string>
+    <string name="resize_method_4">Escala con IA x2</string>
     <string name="restart_needed">\"Los cambios se aplicarán luego de que Hentoid se reinicie\"</string>
     <string name="resume">Continuar </string>
     <string name="resume_closed">¿Resumir lectura?</string>
+    <string name="retransform_warning">%d de las páginas ya han sido transformadas. Hacerlo varias veces puede suponer una notable pérdida de calidad.\nAconsejamos que vuelvas a descargar las imágenes originales y las transformes una sola vez.</string>
     <string name="revive_missing_webview">WebView no disponible, no se pueden recuperar las descargas ahora</string>
     <string name="revive_updating_webview">La WebView se está actualizando, no se pueden recuperar las descargas aún</string>
     <string name="revive_wait">Permanece en esta pantalla mientras se recupera tu descarga</string>
@@ -808,6 +840,7 @@
     <string name="tap_to_download">Toca para descargar</string>
     <string name="tap_to_install">Toca para instalar</string>
     <string name="tap_to_retry">Toca para volver a intentar</string>
+    <string name="target_folder">Carpeta de destino</string>
     <string name="task_done">Tarea completada - consulta los detalles en el registro</string>
     <string name="theme_dark">Oscuro</string>
     <string name="theme_deep_red">Rojo intenso</string>

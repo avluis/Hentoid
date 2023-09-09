@@ -10,6 +10,8 @@ import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -87,6 +89,7 @@ import timber.log.Timber
 import java.time.Instant
 import java.util.Timer
 import kotlin.concurrent.timer
+
 
 class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     ReaderBrowseModeDialogFragment.Parent, ReaderPrefsDialogFragment.Parent,
@@ -1468,7 +1471,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             val initialDelayFinal = if (initialDelayMs > -1) initialDelayMs else slideshowPeriodMs
             slideshowTimer =
                 timer("slideshow-timer", false, initialDelayFinal, slideshowPeriodMs) {
-                    onSlideshowTick()
+                    // Timer task is not on the UI thread
+                    val handler = Handler(Looper.getMainLooper())
+                    handler.post { onSlideshowTick() }
                 }
             latestSlideshowTick = Instant.now().toEpochMilli()
         }

@@ -7,7 +7,8 @@ import me.devsaki.hentoid.workers.PrimaryImportWorker;
  *
  * @deprecated Replaced by {@link PrimaryImportWorker} methods; class is kept for retrocompatibilty
  */
-@SuppressWarnings("DeprecatedIsStillUsed") // Shouldn't be used for new devs but still used to ensure retrocompatiblity with old files
+@SuppressWarnings("DeprecatedIsStillUsed")
+// Shouldn't be used for new devs but still used to ensure retrocompatiblity with old files
 @Deprecated
 public class URLBuilder {
 
@@ -16,11 +17,13 @@ public class URLBuilder {
 
     public String getId() {
         int idxStart = url.lastIndexOf('/');
-        String id = url.substring(idxStart);
-        String category = url.replace(id, "");
-        category = category.substring(category.lastIndexOf('/'));
-
-        return category + id;
+        if (idxStart > -1) {
+            String id = url.substring(idxStart);
+            String category = url.replace(id, "");
+            category = category.substring(category.lastIndexOf('/'));
+            return category + id;
+        }
+        return "";
     }
 
     public String getUrl() {

@@ -82,6 +82,7 @@
     <string name="pref_cat_search">Ricerca avanzata</string>
     <string name="pref_cat_theme">Tema dell\'app</string>
     <string name="pref_check_updates_manual_checking">Verifica aggiornamenti?</string>
+    <string name="pref_check_updates_manual_new">Nuovo aggiornamento trovato! - Installalo dalla notifica</string>
     <string name="pref_check_updates_manual_no_connection">Impossibile controllare gli aggiornamenti. Controlla la tua connessione o riprova pi? tardi.</string>
     <string name="pref_check_updates_manual_no_new">Nessun aggiornamento trovato - Stai gi? utilizzando l\'ultima versione</string>
     <string name="pref_check_updates_manual_summary">Controlla manualmente gli aggiornamenti ora.</string>
@@ -176,6 +177,7 @@
     <string name="pref_viewer_chaptered_navigation_summary_off">Il pulsante prossimo / precedente va al prossimo/precedente libro</string>
     <string name="pref_viewer_chaptered_navigation_summary_on">Il pulsante prossimo / precedente va al prossimo/precedente capitolo del libro attuale</string>
     <string name="pref_viewer_chaptered_navigation_title">Navigazione a capitoli</string>
+    <string name="pref_viewer_color_depth">Profondità di colore</string>
     <string name="pref_viewer_continuous_summary_off">L\'uso della pagina successiva nell\'ultima pagina non ha effetto</string>
     <string name="pref_viewer_continuous_summary_on">L\'utilizzo della pagina successiva nell\'ultima pagina carica il libro successivo</string>
     <string name="pref_viewer_continuous_title">Lettura continua</string>
@@ -198,6 +200,7 @@
     <string name="pref_viewer_page_turn_volume">Pulsante volume</string>
     <string name="pref_viewer_ratio_completed_threshold">Segna libro come completato dopo N% pagine</string>
     <string name="pref_viewer_read_threshold">Segna il libro come letto dopo N pagine</string>
+    <string name="pref_viewer_rendering">Rendering</string>
     <string name="pref_viewer_rendering_mode">Modalit? di rendering</string>
     <string name="pref_viewer_rendering_no_android5">Il rendering fluido non ? disponibile su Android 5</string>
     <string name="pref_viewer_resume_last_left_summary_off">La riapertura di un libro inizia sempre da pagina 1</string>

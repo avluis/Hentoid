@@ -153,9 +153,11 @@ public class HitomiParser extends BaseImageListParser {
     private void updateContentInfo(@NonNull Content content, @NonNull String galleryInfoStr) throws Exception {
         int firstBrace = galleryInfoStr.indexOf("{");
         int lastBrace = galleryInfoStr.lastIndexOf("}");
-        String galleryJson = galleryInfoStr.substring(firstBrace, lastBrace + 1);
-        HitomiGalleryInfo galleryInfo = JsonHelper.jsonToObject(galleryJson, HitomiGalleryInfo.class);
-        galleryInfo.updateContent(content);
+        if (firstBrace > -1 && lastBrace > -1) {
+            String galleryJson = galleryInfoStr.substring(firstBrace, lastBrace + 1);
+            HitomiGalleryInfo galleryInfo = JsonHelper.jsonToObject(galleryJson, HitomiGalleryInfo.class);
+            galleryInfo.updateContent(content);
+        } else throw new EmptyResultException("Couldn't find gallery information");
     }
 
     @Override

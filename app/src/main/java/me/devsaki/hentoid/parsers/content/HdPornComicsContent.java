@@ -62,7 +62,7 @@ public class HdPornComicsContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.HDPORNCOMICS);
         content.putAttributes(attributes);
 
-        if (updateImages) {
+        if (updateImages && pages != null) {
             List<String> imgs = HdPornComicsParser.parseImages(pages);
             content.setImageFiles(ParseHelper.urlsToImageFiles(imgs, coverUrl, StatusContent.SAVED));
             content.setQtyPages(imgs.size() - 1);  // Don't count the cover
