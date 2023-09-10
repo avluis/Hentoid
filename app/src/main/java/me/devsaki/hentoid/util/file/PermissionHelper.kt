@@ -1,9 +1,11 @@
 package me.devsaki.hentoid.util.file
 
-import android.Manifest
+import android.Manifest.permission.POST_NOTIFICATIONS
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
 import android.content.Context
-import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -13,36 +15,28 @@ object PermissionHelper {
     const val RQST_NOTIFICATION_PERMISSION = 4
 
 
+    private fun checkPermission(context: Context, code: String): Boolean {
+        return ContextCompat.checkSelfPermission(context, code) == PERMISSION_GRANTED
+    }
+
     fun requestExternalStorageReadPermission(
         activity: Activity,
         permissionRequestCode: Int
     ): Boolean {
-        return if (ContextCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            true
-        } else {
+        return if (checkPermission(activity, READ_EXTERNAL_STORAGE)) true
+        else {
             ActivityCompat.requestPermissions(
-                activity, arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ), permissionRequestCode
+                activity, arrayOf(READ_EXTERNAL_STORAGE),
+                permissionRequestCode
             )
             false
         }
     }
 
     fun checkExternalStorageReadWritePermission(activity: Activity): Boolean {
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                || (ContextCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_GRANTED))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return true
+        return checkPermission(activity, READ_EXTERNAL_STORAGE) &&
+                checkPermission(activity, WRITE_EXTERNAL_STORAGE)
     }
 
     fun requestExternalStorageReadWritePermission(
@@ -52,8 +46,8 @@ object PermissionHelper {
         return if (checkExternalStorageReadWritePermission(activity) || Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) true else {
             ActivityCompat.requestPermissions(
                 activity, arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    READ_EXTERNAL_STORAGE,
+                    WRITE_EXTERNAL_STORAGE
                 ), permissionRequestCode
             )
             false
@@ -62,10 +56,7 @@ object PermissionHelper {
 
     fun checkNotificationPermission(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
+            checkPermission(context, POST_NOTIFICATIONS)
         } else true
     }
 
@@ -74,7 +65,7 @@ object PermissionHelper {
             if (checkNotificationPermission(activity)) true else {
                 ActivityCompat.requestPermissions(
                     activity,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    arrayOf(POST_NOTIFICATIONS),
                     permissionRequestCode
                 )
                 false

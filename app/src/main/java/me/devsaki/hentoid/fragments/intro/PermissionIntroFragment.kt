@@ -2,13 +2,11 @@ package me.devsaki.hentoid.fragments.intro
 
 import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.appintro.SlidePolicy
@@ -18,6 +16,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IntroSlide02Binding
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.file.PermissionHelper
 
 class PermissionIntroFragment :
     Fragment(R.layout.intro_slide_02), SlidePolicy {
@@ -46,12 +45,7 @@ class PermissionIntroFragment :
     override val isPolicyRespected: Boolean
         get() {
             if (R.id.mode_browser == binding.modeSelect.checkedButtonId) return true
-            val permissionCode =
-                ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
-            return (permissionCode == PackageManager.PERMISSION_GRANTED)
+            return PermissionHelper.checkExternalStorageReadWritePermission(requireActivity())
         }
 
     override fun onAttach(context: Context) {
@@ -86,17 +80,9 @@ class PermissionIntroFragment :
     }
 
     override fun onUserIllegallyRequestedNextPage() {
-        when (PackageManager.PERMISSION_GRANTED) {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) -> {
-                parentActivity.nextStep()
-            }
-
-            else -> {
-                requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            }
-        }
+        if (PermissionHelper.checkExternalStorageReadWritePermission(requireActivity()))
+            parentActivity.nextStep()
+        else
+            requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
 }
