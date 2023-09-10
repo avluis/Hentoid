@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="1dp"
+    android:background="@drawable/bg_book_card"
+    android:clickable="true"
+    android:focusable="true"
+    android:longClickable="true">
+
+    <ImageView
+        android:id="@+id/ivCover"
+        android:layout_width="45dp"
+        android:layout_height="60dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:focusable="false"
+        android:clickable="false"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_hentoid_trans"
+        tools:tint="@color/light_gray" />
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:ellipsize="middle"
+        android:maxLines="2"
+        android:textColor="@color/card_title_light"
+        android:textSize="@dimen/text_subtitle_2"
+        android:textStyle="bold"
+        android:focusable="false"
+        android:clickable="false"
+        app:layout_constraintEnd_toStartOf="@id/ivReorder"
+        app:layout_constraintStart_toEndOf="@id/ivCover"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/book_title" />
+
+    <TextView
+        android:id="@+id/tvPages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/card_tags_light"
+        android:textSize="@dimen/caption"
+        android:textStyle="bold"
+        android:focusable="false"
+        android:clickable="false"
+        app:layout_constraintStart_toStartOf="@id/tvTitle"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        tools:text="@string/book_pages_library" />
+
+    <ImageView
+        android:id="@+id/ivReorder"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="24dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:contentDescription="@string/drag_help"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_reorder"
+        android:tooltipText="@string/drag_help"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?colorSecondary"
+        tools:targetApi="o" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

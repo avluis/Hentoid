@@ -251,7 +251,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             ivCover.setVisibility(View.VISIBLE);
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")) {
-                GlideUrl glideUrl = ContentHelper.bindOnlineCover(content, thumbLocation);
+                GlideUrl glideUrl = ContentHelper.bindOnlineCover(thumbLocation, content);
                 if (glideUrl != null) {
                     Glide.with(ivCover)
                             .load(glideUrl)

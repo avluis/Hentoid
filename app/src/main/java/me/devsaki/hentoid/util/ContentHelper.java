@@ -1541,27 +1541,29 @@ public final class ContentHelper {
      * Transform the given online URL into a working GlideUrl using the given Content's cookies
      * (useful when viewing queue screen before any image has been downloaded)
      *
-     * @param content  Content to use for cookies / referer
      * @param imageUrl URL of the online picture to transform
+     * @param content  Content to use for cookies / referer
      * @return Working GlideUrl pointing to the given image URL, using the correct cookies / referer
      */
     @Nullable
-    public static GlideUrl bindOnlineCover(@NonNull final Content content, @NonNull final String imageUrl) {
+    public static GlideUrl bindOnlineCover(@NonNull final String imageUrl, @Nullable final Content content) {
         if (WebkitPackageHelper.getWebViewAvailable()) {
             String cookieStr = null;
             String referer = null;
+            LazyHeaders.Builder builder = new LazyHeaders.Builder();
 
             // Quickly skip JSON deserialization if there are no cookies in downloadParams
-            String downloadParamsStr = content.getDownloadParams();
-            if (downloadParamsStr != null && downloadParamsStr.contains(HttpHelper.HEADER_COOKIE_KEY)) {
-                Map<String, String> downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr);
-                cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                referer = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+            if (content != null) {
+                String downloadParamsStr = content.getDownloadParams();
+                if (downloadParamsStr != null && downloadParamsStr.contains(HttpHelper.HEADER_COOKIE_KEY)) {
+                    Map<String, String> downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr);
+                    cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                    referer = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                }
+                if (null == cookieStr) cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
+                if (null == referer) referer = content.getGalleryUrl();
+                builder = builder.addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr).addHeader(HttpHelper.HEADER_REFERER_KEY, referer).addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
             }
-            if (null == cookieStr) cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
-            if (null == referer) referer = content.getGalleryUrl();
-
-            LazyHeaders.Builder builder = new LazyHeaders.Builder().addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr).addHeader(HttpHelper.HEADER_REFERER_KEY, referer).addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
 
             return new GlideUrl(imageUrl, builder.build()); // From URL
         }

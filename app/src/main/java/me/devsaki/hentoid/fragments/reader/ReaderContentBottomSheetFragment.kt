@@ -133,7 +133,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
         } else {
             binding.ivCover.visibility = View.VISIBLE
             if (thumbLocation.startsWith("http")) {
-                val glideUrl = ContentHelper.bindOnlineCover(content, thumbLocation)
+                val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, content)
                 if (glideUrl != null) {
                     Glide.with(binding.ivCover)
                         .load(glideUrl)

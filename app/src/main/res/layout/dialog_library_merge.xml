@@ -20,7 +20,7 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toTopOf="parent"
         app:maxHeight="350dp"
-        tools:listitem="@layout/item_drawer_edit" />
+        tools:listitem="@layout/item_library_merge_split" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/title_new"

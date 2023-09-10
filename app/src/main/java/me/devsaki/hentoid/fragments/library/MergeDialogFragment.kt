@@ -21,8 +21,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryMergeBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
-import me.devsaki.hentoid.viewholders.TextItem
 
 class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
 
@@ -51,8 +51,8 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
     private var binding: DialogLibraryMergeBinding? = null
     private var newTitleTxt: EditText? = null
 
-    private val itemAdapter = ItemAdapter<TextItem<Content>>()
-    private val fastAdapter: FastAdapter<TextItem<Content>> = FastAdapter.with(itemAdapter)
+    private val itemAdapter = ItemAdapter<ContentItem>()
+    private val fastAdapter: FastAdapter<ContentItem> = FastAdapter.with(itemAdapter)
     private var touchHelper: ItemTouchHelper? = null
 
     // === VARIABLES
@@ -100,15 +100,8 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
         val contentList = loadContentList()
         if (contentList.isEmpty()) return
         val isExternal = contentList[0].status == StatusContent.EXTERNAL
-        itemAdapter.set(contentList.map { s: Content ->
-            TextItem(
-                s.title,
-                s,
-                true,
-                false,
-                false,
-                touchHelper
-            )
+        itemAdapter.set(contentList.map { c ->
+            ContentItem(c, touchHelper, ContentItem.ViewType.MERGE)
         })
 
         // Activate drag & drop
@@ -116,17 +109,15 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
         dragCallback.notifyAllDrops = true
         touchHelper = ItemTouchHelper(dragCallback)
         binding?.apply {
-            touchHelper!!.attachToRecyclerView(list)
+            touchHelper?.attachToRecyclerView(list)
             fastAdapter.addEventHook(
-                TextItem.DragHandlerTouchEvent { position: Int ->
+                ContentItem.DragHandlerTouchEvent { position ->
                     val vh = list.findViewHolderForAdapterPosition(position)
                     if (vh != null) touchHelper!!.startDrag(vh)
                 }
             )
             list.adapter = fastAdapter
-            initialTitle = contentList[0].title
-            newTitleTxt = titleNew.editText
-            if (newTitleTxt != null) newTitleTxt!!.setText(initialTitle)
+            titleNew.editText?.setText(contentList[0].title)
             if (isExternal) {
                 mergeDeleteSwitch.isEnabled = Preferences.isDeleteExternalLibrary()
                 mergeDeleteSwitch.isChecked = Preferences.isDeleteExternalLibrary() && deleteDefault
@@ -150,7 +141,7 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
     }
 
     private fun onActionClick() {
-        val contents = itemAdapter.adapterItems.mapNotNull { ti: TextItem<Content> -> ti.getTag() }
+        val contents = itemAdapter.adapterItems.mapNotNull { ci -> ci.content }
         val newTitleStr = if (null == newTitleTxt) "" else newTitleTxt!!.text.toString()
         binding?.let {
             parent?.mergeContents(contents, newTitleStr, it.mergeDeleteSwitch.isChecked)
@@ -172,7 +163,7 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
         }
         // Update new title if unedited
         if (0 == newPosition && newTitleTxt!!.text.toString() == initialTitle) {
-            initialTitle = itemAdapter.getAdapterItem(0).text
+            initialTitle = itemAdapter.getAdapterItem(0).title
             newTitleTxt!!.setText(initialTitle)
         }
     }

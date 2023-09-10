@@ -243,9 +243,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         viewModel.getShowFavouritesOnly().observe(viewLifecycleOwner) { showFavouriteOnly ->
             onShowFavouriteChanged(showFavouriteOnly)
         }
-        viewModel.getShuffled().observe(
-            viewLifecycleOwner
-        ) { shuffled: Boolean ->
+        viewModel.getShuffled().observe(viewLifecycleOwner) { shuffled: Boolean ->
             onShuffledChanged(shuffled)
         }
     }
@@ -366,6 +364,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
                 // Item click listener
                 fastAdapter.onClickListener = { _, _, i, _ -> onItemClick(i) }
+
+                // Dynamic column size
                 val glm = recyclerView.layoutManager as GridLayoutManager?
                 if (glm != null) {
                     val spanCount = Preferences.getReaderGalleryColumns()
@@ -402,11 +402,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                             isSelected: Boolean,
                             calledFromOnStart: Boolean
                         ) {
-                            if (isSelected) selectExtension.select(
-                                IntRange(start, end)
-                            ) else selectExtension.deselect(
-                                IntRange(start, end).toMutableList()
-                            )
+                            if (isSelected) selectExtension.select(IntRange(start, end))
+                            else selectExtension.deselect(IntRange(start, end).toMutableList())
                         }
                     }).withMode(DragSelectionProcessor.Mode.Simple)
 

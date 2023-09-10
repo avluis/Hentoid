@@ -49,7 +49,7 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/split_help"
         app:maxHeight="@dimen/dialog_max_height"
-        tools:listitem="@layout/item_drawer_edit" />
+        tools:listitem="@layout/item_library_merge_split" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/nochapter_view"

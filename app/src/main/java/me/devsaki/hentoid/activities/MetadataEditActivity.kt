@@ -208,7 +208,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
             } else {
                 it.ivCover.visibility = View.VISIBLE
                 if (thumbLocation.startsWith("http")) {
-                    val glideUrl = ContentHelper.bindOnlineCover(contents[0], thumbLocation)
+                    val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, contents[0])
                     if (glideUrl != null) {
                         Glide.with(it.ivCover)
                             .load(glideUrl)

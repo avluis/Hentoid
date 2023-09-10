@@ -11,8 +11,8 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnLongClickListener
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -29,14 +29,18 @@ import com.bumptech.glide.request.RequestOptions
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
+import com.mikepenz.fastadapter.listeners.TouchEventHook
 import com.mikepenz.fastadapter.swipe.IDrawerSwipeableViewHolder
 import com.mikepenz.fastadapter.swipe.ISwipeable
+import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.adjustAlpha
+import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.getSelectablePressedBackground
 import com.mikepenz.fastadapter.utils.DragDropUtil.bindDragHandle
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.core.requireById
+import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.enums.Site
@@ -50,6 +54,7 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.image.ImageHelper.tintBitmap
 import me.devsaki.hentoid.views.CircularProgressView
+import timber.log.Timber
 import java.util.Locale
 import kotlin.math.floor
 
@@ -57,14 +62,15 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     IExtendedDraggable<ContentItem.ViewHolder>, ISwipeable {
 
     enum class ViewType {
-        LIBRARY, LIBRARY_GRID, LIBRARY_EDIT, QUEUE, ERRORS
+        LIBRARY, LIBRARY_GRID, LIBRARY_EDIT, QUEUE, ERRORS, MERGE, SPLIT
     }
 
     val content: Content?
     val queueRecord: QueueRecord?
+    val chapter: Chapter?
 
     private val viewType: ViewType
-    private val isSearchActive: Boolean
+    private val showDragHandle: Boolean
     private val isEmpty: Boolean
     private val isFirst: Boolean
     private var deleteAction: Consumer<ContentItem>? = null
@@ -77,7 +83,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     constructor(viewType: ViewType) {
         content = null
         queueRecord = null
-        isSearchActive = false
+        chapter = null
+        showDragHandle = false
         isFirst = false
         this.viewType = viewType
         touchHelper = null
@@ -88,22 +95,23 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
     // Constructor for library and error item
     constructor(
-        content: Content?,
+        content: Content,
         touchHelper: ItemTouchHelper?,
         viewType: ViewType,
-        deleteAction: Consumer<ContentItem>?
+        deleteAction: Consumer<ContentItem>? = null
     ) {
         this.content = content
         queueRecord = null
-        isSearchActive = false
+        chapter = null
+        showDragHandle = (viewType == ViewType.MERGE)
         isFirst = false
+        isEmpty = false
         this.viewType = viewType
         this.touchHelper = touchHelper
         this.deleteAction = deleteAction
-        isEmpty = null == content
         isSwipeable =
-            content != null && !content.isBeingProcessed && (content.status != StatusContent.EXTERNAL || Preferences.isDeleteExternalLibrary())
-        identifier = content?.uniqueHash() ?: Helper.generateIdForPlaceholder()
+            !content.isBeingProcessed && (content.status != StatusContent.EXTERNAL || Preferences.isDeleteExternalLibrary()) && viewType != ViewType.MERGE
+        identifier = content.uniqueHash()
     }
 
     // Constructor for queued item
@@ -116,8 +124,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     ) {
         content = record.content.target
         queueRecord = record
+        chapter = null
         viewType = ViewType.QUEUE
-        this.isSearchActive = isSearchActive
+        this.showDragHandle = isSearchActive
         this.touchHelper = touchHelper
         this.deleteAction = deleteAction
         this.isFirst = isFirst
@@ -126,16 +135,38 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         identifier = content?.uniqueHash() ?: Helper.generateIdForPlaceholder()
     }
 
+    // Constructor for split
+    constructor(chap: Chapter) {
+        chapter = chap
+        content = null
+        queueRecord = null
+        viewType = ViewType.SPLIT
+        touchHelper = null
+        showDragHandle = false
+        isFirst = false
+        isSwipeable = false
+        isEmpty = false
+        identifier = chapter.uniqueHash()
+    }
+
     override fun getViewHolder(v: View): ViewHolder {
         return ViewHolder(v, viewType)
     }
 
     override val layoutRes: Int
-        get() = if (ViewType.LIBRARY == viewType) R.layout.item_library_content else if (ViewType.LIBRARY_GRID == viewType) R.layout.item_library_content_grid else R.layout.item_queue
+        get() = when (viewType) {
+            ViewType.LIBRARY -> R.layout.item_library_content
+            ViewType.LIBRARY_GRID -> R.layout.item_library_content_grid
+            ViewType.MERGE -> R.layout.item_library_merge_split
+            ViewType.SPLIT -> R.layout.item_library_merge_split
+            else -> R.layout.item_queue
+        }
+
     override val type: Int
         get() = R.id.content
+
     override val isDraggable: Boolean
-        get() = ViewType.QUEUE == viewType || ViewType.LIBRARY_EDIT == viewType
+        get() = ViewType.QUEUE == viewType || ViewType.LIBRARY_EDIT == viewType || ViewType.MERGE == viewType
 
     override fun isDirectionSupported(direction: Int): Boolean {
         return ItemTouchHelper.LEFT == direction
@@ -144,6 +175,14 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     override fun getDragView(viewHolder: ViewHolder): View? {
         return viewHolder.ivReorder
     }
+
+    val title: String
+        get() =
+            if (content != null) content.title
+            else if (queueRecord != null) queueRecord.content.target.title
+            else if (chapter != null) chapter.name
+            else ""
+
 
     fun updateProgress(vh: RecyclerView.ViewHolder, isPausedEvent: Boolean, isIndividual: Boolean) {
         val isQueueReady = isQueueActive(vh.itemView.context) && !isQueuePaused && !isPausedEvent
@@ -198,82 +237,53 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private val baseLayout: View = view.requireById(R.id.item)
         private val tvTitle: TextView = view.requireById(R.id.tvTitle)
         private val ivCover: ImageView = view.requireById(R.id.ivCover)
-        private val ivFlag: ImageView = view.requireById(R.id.ivFlag)
-        private val ivSite: ImageView = view.requireById(R.id.queue_site_button)
+        private val ivFlag: ImageView? = view.findViewById(R.id.ivFlag)
+        private val ivSite: ImageView? = view.findViewById(R.id.queue_site_button)
         private val tvArtist: TextView? = view.findViewById(R.id.tvArtist)
         private val ivPages: ImageView? = view.findViewById(R.id.ivPages)
         private val tvPages: TextView? = view.findViewById(R.id.tvPages)
         private val ivError: ImageView? = view.findViewById(R.id.ivError)
         private val ivOnline: ImageView? = view.findViewById(R.id.ivOnline)
-        override val swipeableView: View = view.findViewById(R.id.item_card)
+        override val swipeableView: View = view.findViewById(R.id.item_card) ?: baseLayout
         private val deleteButton: View? = view.findViewById(R.id.delete_btn)
 
         // Specific to library content
-        private var ivNew: View? = null
-        private var tvTags: TextView? = null
-        private var tvSeries: TextView? = null
-        private var ivFavourite: ImageView? = null
-        private var ivRating: ImageView? = null
-        private var ivExternal: ImageView? = null
-        private var readingProgress: CircularProgressView? = null
-        private var ivCompleted: ImageView? = null
-        private var ivChapters: ImageView? = null
-        private var tvChapters: TextView? = null
-        private var ivStorage: ImageView? = null
-        private var tvStorage: TextView? = null
+        private var ivNew: View? = view.findViewById(R.id.lineNew)
+        private var tvTags: TextView? = view.findViewById(R.id.tvTags)
+        private var tvSeries: TextView? = view.findViewById(R.id.tvSeries)
+        private var ivFavourite: ImageView? = view.findViewById(R.id.ivFavourite)
+        private var ivRating: ImageView? = view.findViewById(R.id.iv_rating)
+        private var ivExternal: ImageView? = view.findViewById(R.id.ivExternal)
+        private var readingProgress: CircularProgressView? =
+            view.findViewById(R.id.reading_progress)
+        private var ivCompleted: ImageView? = view.findViewById(R.id.ivCompleted)
+        private var ivChapters: ImageView? = view.findViewById(R.id.ivChapters)
+        private var tvChapters: TextView? = view.findViewById(R.id.tvChapters)
+        private var ivStorage: ImageView? = view.findViewById(R.id.ivStorage)
+        private var tvStorage: TextView? = view.findViewById(R.id.tvStorage)
 
         // Specific to Queued content
-        private var progressBar: ProgressBar? = null
-        var topButton: View? = null
-        var bottomButton: View? = null
-        var ivReorder: View? = null
-        var downloadButton: View? = null
+        private var progressBar: ProgressBar? = view.findViewById(R.id.pbDownload)
+        var topButton: View? = view.findViewById(R.id.queueTopBtn)
+        var bottomButton: View? = view.findViewById(R.id.queueBottomBtn)
+        var ivReorder: View? = view.findViewById(R.id.ivReorder)
+        var downloadButton: View? = view.findViewById(R.id.ivRedownload)
+
         private var deleteActionRunnable: Runnable? = null
 
         // Extra info to display in stacktraces
         private var debugStr = "[no data]"
 
         init {
-            // Swipe elements
-            when (viewType) {
-                ViewType.LIBRARY -> {
-                    ivNew = itemView.findViewById(R.id.lineNew)
-                    ivFavourite = itemView.findViewById(R.id.ivFavourite)
-                    ivRating = itemView.findViewById(R.id.iv_rating)
-                    ivExternal = itemView.findViewById(R.id.ivExternal)
-                    tvSeries = itemView.requireById(R.id.tvSeries)
-                    tvTags = itemView.requireById(R.id.tvTags)
-                    ivChapters = itemView.findViewById(R.id.ivChapters)
-                    tvChapters = itemView.findViewById(R.id.tvChapters)
-                    ivStorage = itemView.findViewById(R.id.ivStorage)
-                    tvStorage = itemView.findViewById(R.id.tvStorage)
-                    ivCompleted = itemView.requireById(R.id.ivCompleted)
-                    readingProgress = itemView.requireById(R.id.reading_progress)
-                }
-
-                ViewType.LIBRARY_GRID -> {
-                    ivNew = itemView.findViewById(R.id.lineNew)
-                    ivFavourite = itemView.findViewById(R.id.ivFavourite)
-                    ivRating = itemView.findViewById(R.id.iv_rating)
-                    ivExternal = itemView.findViewById(R.id.ivExternal)
-                }
-
-                ViewType.QUEUE, ViewType.LIBRARY_EDIT -> {
-                    if (viewType == ViewType.QUEUE) progressBar =
-                        itemView.findViewById(R.id.pbDownload)
-                    topButton = itemView.findViewById(R.id.queueTopBtn)
-                    bottomButton = itemView.findViewById(R.id.queueBottomBtn)
-                    ivReorder = itemView.findViewById(R.id.ivReorder)
-                }
-
-                ViewType.ERRORS -> {
-                    downloadButton = itemView.findViewById(R.id.ivRedownload)
-                }
+            if (viewType == ViewType.SPLIT) {
+                val color = ThemeHelper.getColor(view.context, R.color.secondary_light)
+                view.background =
+                    getSelectablePressedBackground(view.context, adjustAlpha(color, 100), 50, true)
             }
         }
 
         override fun bindView(item: ContentItem, payloads: List<Any>) {
-            if (item.isEmpty || null == item.content) {
+            if (item.isEmpty) {
                 debugStr = "empty item"
                 return  // Ignore placeholders from PagedList
             }
@@ -283,50 +293,59 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 val bundle = payloads[0] as Bundle
                 val bundleParser = ContentItemBundle(bundle)
                 var boolValue = bundleParser.isBeingDeleted
-                if (boolValue != null) item.content.setIsBeingProcessed(boolValue)
+                if (boolValue != null) item.content?.setIsBeingProcessed(boolValue)
                 boolValue = bundleParser.isFavourite
-                if (boolValue != null) item.content.isFavourite = boolValue
+                if (boolValue != null) item.content?.isFavourite = boolValue
                 var intValue = bundleParser.rating
-                if (intValue != null) item.content.rating = intValue
+                if (intValue != null) item.content?.rating = intValue
                 boolValue = bundleParser.isCompleted
-                if (boolValue != null) item.content.isCompleted = boolValue
+                if (boolValue != null) item.content?.isCompleted = boolValue
                 val longValue = bundleParser.reads
-                if (longValue != null) item.content.reads = longValue
+                if (longValue != null) item.content?.reads = longValue
                 intValue = bundleParser.readPagesCount
-                if (intValue != null) item.content.readPagesCount = intValue
+                if (intValue != null) item.content?.readPagesCount = intValue
                 var stringValue = bundleParser.coverUri
-                if (stringValue != null) item.content.cover.fileUri = stringValue
+                if (stringValue != null) item.content?.cover?.fileUri = stringValue
                 stringValue = bundleParser.title
-                if (stringValue != null) item.content.title = stringValue
+                if (stringValue != null) item.content?.title = stringValue
                 intValue = bundleParser.downloadMode
-                if (intValue != null) item.content.downloadMode = intValue
+                if (intValue != null) item.content?.downloadMode = intValue
                 boolValue = bundleParser.frozen
-                if (boolValue != null) item.queueRecord!!.isFrozen = boolValue
+                if (boolValue != null) item.queueRecord?.isFrozen = boolValue
             }
             debugStr =
-                "objectBox ID=" + item.content.id + "; site ID=" + item.content.uniqueSiteId + "; hashCode=" + item.content.hashCode()
+                "objectBox ID=" + item.content?.id + "; site ID=" + item.content?.uniqueSiteId + "; hashCode=" + item.content.hashCode()
             item.deleteAction?.apply {
                 deleteActionRunnable = Runnable { invoke(item) }
             }
 
-            // Important to trigger the ViewHolder's global onClick/onLongClick events
-            swipeableView.setOnClickListener { v: View -> if (v.parent is View) (v.parent as View).performClick() }
-            swipeableView.setOnLongClickListener { v: View ->
-                if (v.parent is View) return@setOnLongClickListener (v.parent as View).performLongClick()
-                false
+            // Important to trigger the ViewHolder's global onClick/onLongClick events for swipable layouts
+            if (item.isSwipeable) {
+                swipeableView.setOnClickListener { v: View -> if (v.parent is View) (v.parent as View).performClick() }
+                swipeableView.setOnLongClickListener { v: View ->
+                    if (v.parent is View) return@setOnLongClickListener (v.parent as View).performLongClick()
+                    false
+                }
             }
+
             updateLayoutVisibility(item)
-            attachCover(item.content)
-            attachFlag(item.content)
-            attachTitle(item.content, item.queueRecord)
-            if (ivCompleted != null) attachCompleted(item.content)
-            if (readingProgress != null) attachReadingProgress(item.content)
-            if (tvArtist != null) attachArtist(item.content)
-            if (tvSeries != null) attachSeries(item.content)
-            if (tvPages != null) attachMetrics(item.content, item.viewType)
-            if (tvTags != null) attachTags(item.content)
+            attachCover(item.content, item.chapter)
+            attachTitle(item.content, item.queueRecord, item.chapter)
+            if (tvPages != null) attachMetrics(item.content, item.chapter, item.viewType)
+            item.content?.let {
+                attachFlag(it)
+                attachCompleted(it)
+                attachReadingProgress(it)
+                attachArtist(it)
+                attachSeries(it)
+                attachTags(it)
+            }
             attachButtons(item)
-            if (progressBar != null) item.updateProgress(this, false, true)
+            if (progressBar != null) item.updateProgress(
+                this,
+                isPausedEvent = false,
+                isIndividual = true
+            )
             @Suppress("UNCHECKED_CAST")
             if (ivReorder != null) bindDragHandle(
                 this,
@@ -349,13 +368,22 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 BlinkAnimation(500, 250)
             ) else baseLayout.clearAnimation()
 
+            if (item.isSelected) {
+                Timber.i("SELECTED " + item.title)
+            }
+
             // Unread indicator
             ivNew?.apply {
                 visibility = if (0L == item.content!!.reads) View.VISIBLE else View.GONE
             }
         }
 
-        private fun attachCover(content: Content) {
+        private fun attachCover(content: Content?, chapter: Chapter?) {
+            if (content != null) attachContentCover(content)
+            else if (chapter != null) attachChapterCover(chapter)
+        }
+
+        private fun attachContentCover(content: Content) {
             val thumbLocation = content.cover.usableUri
             if (thumbLocation.isEmpty()) {
                 ivCover.visibility = View.INVISIBLE
@@ -364,7 +392,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             ivCover.visibility = View.VISIBLE
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")) {
-                val glideUrl = ContentHelper.bindOnlineCover(content, thumbLocation)
+                val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, content)
                 if (glideUrl != null) {
                     Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions).into(ivCover)
                 }
@@ -373,22 +401,47 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     .into(ivCover)
         }
 
-        private fun attachFlag(content: Content) {
-            @DrawableRes val resId = ContentHelper.getFlagResourceId(ivFlag.context, content)
-            if (resId != 0) {
-                ivFlag.setImageResource(resId)
-                ivFlag.visibility = View.VISIBLE
+        private fun attachChapterCover(chapter: Chapter) {
+            val thumbLocation = chapter.imageList.firstOrNull()?.usableUri
+            if (thumbLocation != null) {
+                ivCover.visibility = View.VISIBLE
+                val glideRequest = Glide.with(ivCover)
+
+                val builder = if (thumbLocation.startsWith("http"))
+                    glideRequest.load(ContentHelper.bindOnlineCover(thumbLocation, null))
+                else glideRequest.load(Uri.parse(thumbLocation))
+
+                builder.apply(glideRequestOptions).into(ivCover)
             } else {
-                ivFlag.visibility = View.GONE
+                ivCover.visibility = View.INVISIBLE
             }
         }
 
-        private fun attachTitle(content: Content, queueRecord: QueueRecord?) {
-            val title: CharSequence = if (content.title == null) {
-                tvTitle.context.getText(R.string.work_untitled)
-            } else {
-                content.replacementTitle.ifEmpty { content.title }
+        private fun attachFlag(content: Content) {
+            ivFlag?.apply {
+                @DrawableRes val resId = ContentHelper.getFlagResourceId(context, content)
+                visibility = if (resId != 0) {
+                    setImageResource(resId)
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
             }
+        }
+
+        private fun attachTitle(
+            content: Content?,
+            queueRecord: QueueRecord?,
+            chapter: Chapter?
+        ) {
+            var title = tvTitle.context.getText(R.string.work_untitled)
+            if (content != null) {
+                title = if (content.title.isNullOrEmpty()) content.replacementTitle
+                else content.title
+            } else if (chapter != null) {
+                title = chapter.name
+            }
+
             tvTitle.text = title
             var colorId: Int = R.color.card_title_light
             if (queueRecord != null && queueRecord.isFrozen) colorId = R.color.frozen_blue
@@ -400,14 +453,16 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         }
 
         private fun attachReadingProgress(content: Content) {
-            val imgs = content.imageList
-            if (!content.isCompleted) {
-                readingProgress?.visibility = View.VISIBLE
-                readingProgress?.setTotalColor(R.color.transparent)
-                readingProgress?.setTotal(imgs.count { imf -> imf.isReadable }.toLong())
-                readingProgress?.setProgress1(content.readPagesCount.toFloat())
-            } else {
-                readingProgress?.visibility = View.INVISIBLE
+            readingProgress?.apply {
+                val imgs = content.imageList
+                if (!content.isCompleted) {
+                    visibility = View.VISIBLE
+                    setTotalColor(R.color.transparent)
+                    setTotal(imgs.count { imf -> imf.isReadable }.toLong())
+                    setProgress1(content.readPagesCount.toFloat())
+                } else {
+                    visibility = View.INVISIBLE
+                }
             }
         }
 
@@ -429,14 +484,18 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachMetrics(content: Content, viewType: ViewType) {
-            tvPages?.visibility = if (0 == content.qtyPages) View.INVISIBLE else View.VISIBLE
+        private fun attachMetrics(content: Content?, chapter: Chapter?, viewType: ViewType) {
+            var qtyPages = 0
+            if (content != null) qtyPages = content.qtyPages
+            else if (chapter != null) qtyPages = chapter.readableImageFiles.size
+
+            tvPages?.visibility = if (0 == qtyPages) View.INVISIBLE else View.VISIBLE
             val context = tvPages!!.context
             val template: String
-            if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS || viewType == ViewType.LIBRARY_EDIT) {
-                val nbPages = content.qtyPages.toString() + ""
+            if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS || viewType == ViewType.LIBRARY_EDIT || viewType == ViewType.MERGE || viewType == ViewType.SPLIT) {
+                val nbPages = "$qtyPages"
                 template = if (viewType == ViewType.ERRORS) {
-                    val nbMissingPages = content.qtyPages - content.nbDownloadedPages
+                    val nbMissingPages = qtyPages - content!!.nbDownloadedPages
                     if (nbMissingPages > 0) {
                         val missingStr = " " + context.resources.getQuantityString(
                             R.plurals.work_pages_missing,
@@ -448,6 +507,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 } else context.resources.getString(R.string.work_pages_queue, nbPages, "")
                 tvPages.text = template
             } else { // Library
+                check(content != null)
                 val isPlaceholder = content.status == StatusContent.PLACEHOLDER
                 val phVisibility = if (isPlaceholder) View.GONE else View.VISIBLE
                 tvPages.let { tv ->
@@ -483,8 +543,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         }
 
         private fun attachTags(content: Content) {
-            val tagTxt = ContentHelper.formatTagsForDisplay(content)
             tvTags?.apply {
+                val tagTxt = ContentHelper.formatTagsForDisplay(content)
                 if (tagTxt.isEmpty()) {
                     visibility = View.GONE
                 } else {
@@ -496,30 +556,37 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         }
 
         private fun attachButtons(item: ContentItem) {
+            // Universal
+            ivReorder?.visibility = if (item.showDragHandle) View.VISIBLE else View.INVISIBLE
+
+            // Content-only
             val content = item.content ?: return
 
             // Source icon
-            val site = content.site
-            if (site != null && site != Site.NONE) {
-                val img = site.ico
-                ivSite.setImageResource(img)
-                ivSite.visibility = View.VISIBLE
-            } else {
-                ivSite.visibility = View.GONE
+            ivSite?.apply {
+                val site = content.site
+                visibility = if (site != null && site != Site.NONE) {
+                    val img = site.ico
+                    setImageResource(img)
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
             }
-            if (deleteButton != null) {
-                deleteButton.setOnClickListener(View.OnClickListener { deleteActionRunnable?.run() })
-                deleteButton.setOnLongClickListener(OnLongClickListener {
+
+            deleteButton?.apply {
+                setOnClickListener { deleteActionRunnable?.run() }
+                setOnLongClickListener {
                     deleteActionRunnable?.run()
                     true
-                })
+                }
             }
+
             val isStreamed = content.downloadMode == Content.DownloadMode.STREAM
-            if (ivOnline != null) ivOnline.visibility = if (isStreamed) View.VISIBLE else View.GONE
+            ivOnline?.isVisible = isStreamed
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 topButton?.visibility = View.VISIBLE
                 bottomButton?.visibility = View.VISIBLE
-                ivReorder?.visibility = if (item.isSearchActive) View.INVISIBLE else View.VISIBLE
             } else if (ViewType.ERRORS == item.viewType) {
                 downloadButton?.visibility = View.VISIBLE
                 ivError?.visibility = View.VISIBLE
@@ -560,7 +627,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             get() = ivFavourite
         val ratingButton: View?
             get() = ivRating
-        val siteButton: View
+        val siteButton: View?
             get() = ivSite
         val errorButton: View?
             get() = ivError
@@ -592,6 +659,26 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
         override fun toString(): String {
             return super.toString() + " " + debugStr
+        }
+    }
+
+    class DragHandlerTouchEvent(private val action: Consumer<Int>) : TouchEventHook<ContentItem>() {
+        override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+            return if (viewHolder is ViewHolder) viewHolder.ivReorder else null
+        }
+
+        override fun onTouch(
+            v: View,
+            event: MotionEvent,
+            position: Int,
+            fastAdapter: FastAdapter<ContentItem>,
+            item: ContentItem
+        ): Boolean {
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                action.invoke(position)
+                return true
+            }
+            return false
         }
     }
 

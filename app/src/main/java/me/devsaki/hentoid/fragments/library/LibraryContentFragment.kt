@@ -1126,7 +1126,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) ContentItem.ViewType.LIBRARY else ContentItem.ViewType.LIBRARY_GRID
             pagedItemAdapter = PagedModelAdapter(
                 asyncDifferConfig,
-                { ContentItem(viewType) }) { c: Content? ->
+                { ContentItem(viewType) }) { c: Content ->
                 ContentItem(c, touchHelper, viewType) { item -> onDeleteSwipedBook(item) }
             }
             fastAdapter = FastAdapter.with(pagedItemAdapter!!)
