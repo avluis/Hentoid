@@ -25,11 +25,11 @@ fun <T : Fragment> T.withArguments(bundleBlock: Bundle.() -> Unit): T {
     return this
 }
 
-fun <T : Fragment> T.snack(@StringRes resId: Int, long: Boolean = false) {
+fun <T : Fragment> T.snack(@StringRes resId: Int, long: Boolean = true) {
     snack(resources.getString(resId), long)
 }
 
-fun <T : Fragment> T.snack(msg: String, long: Boolean = false) {
+fun <T : Fragment> T.snack(msg: String, long: Boolean = true) {
     this.view?.let {
         Snackbar.make(it, msg, if (long) LENGTH_LONG else LENGTH_SHORT).show()
     }

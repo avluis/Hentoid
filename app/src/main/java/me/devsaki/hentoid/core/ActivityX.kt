@@ -6,19 +6,19 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 
 fun <T : AppCompatActivity> T.snack(@StringRes resId: Int) {
-    snack(resources.getString(resId), false)
-}
-
-fun <T : AppCompatActivity> T.longSnack(@StringRes resId: Int) {
     snack(resources.getString(resId), true)
 }
 
-fun <T : AppCompatActivity> T.snack(msg: String) {
-    snack(msg, false)
+fun <T : AppCompatActivity> T.shortSnack(@StringRes resId: Int) {
+    snack(resources.getString(resId), false)
 }
 
-fun <T : AppCompatActivity> T.longSnack(msg: String) {
+fun <T : AppCompatActivity> T.snack(msg: String) {
     snack(msg, true)
+}
+
+fun <T : AppCompatActivity> T.shortSnack(msg: String) {
+    snack(msg, false)
 }
 
 private fun <T : AppCompatActivity> T.snack(msg: String, long: Boolean = false) {

@@ -383,7 +383,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.siteButton
                 } else super.onBind(viewHolder)
             }
@@ -402,7 +402,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.errorButton
                 } else super.onBind(viewHolder)
             }
@@ -421,7 +421,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.downloadButton
                 } else super.onBind(viewHolder)
             }
@@ -444,7 +444,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         // Update displayed books
         val contentItems = result.map { c ->
             ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS)
-            { item: ContentItem -> onDeleteSwipedBook(item) }
+            { item -> onDeleteSwipedBook(item) }
         }.distinct()
         set(itemAdapter, contentItems)
         Handler(Looper.getMainLooper()).postDelayed({ differEndCallback() }, 150)
@@ -702,7 +702,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     private fun redownloadSelected() {
         selectExtension.let {
             activity.get()?.redownloadContent(
-                it.selectedItems.mapNotNull { obj: ContentItem -> obj.content },
+                it.selectedItems.mapNotNull { obj -> obj.content },
                 reparseContent = false,
                 reparseImages = false
             )
@@ -710,7 +710,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     }
 
     private fun redownloadAll() {
-        val contents = itemAdapter.adapterItems.mapNotNull { obj: ContentItem -> obj.content }
+        val contents = itemAdapter.adapterItems.mapNotNull { obj -> obj.content }
         if (contents.isNotEmpty())
             activity.get()?.redownloadContent(
                 contents,

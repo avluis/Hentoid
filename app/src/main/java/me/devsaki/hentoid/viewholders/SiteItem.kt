@@ -51,7 +51,8 @@ class SiteItem : AbstractItem<SiteItem.ViewHolder>, IExtendedDraggable<SiteItem.
         return ViewHolder(v)
     }
 
-    class ViewHolder(view: View) : FastAdapter.ViewHolder<SiteItem>(view), IDraggableViewHolder {
+    class ViewHolder internal constructor(view: View) : FastAdapter.ViewHolder<SiteItem>(view),
+        IDraggableViewHolder {
         private val rootView: View = view
         val dragHandle: ImageView = view.findViewById(R.id.drawer_item_handle)
         private val icon: ImageView = view.findViewById(R.id.drawer_item_icon)
@@ -60,6 +61,7 @@ class SiteItem : AbstractItem<SiteItem.ViewHolder>, IExtendedDraggable<SiteItem.
 
         override fun bindView(item: SiteItem, payloads: List<Any>) {
             dragHandle.visibility = if (item.showHandle) View.VISIBLE else View.GONE
+            @Suppress("UNCHECKED_CAST")
             if (item.showHandle) bindDragHandle(
                 this,
                 item as IExtendedDraggable<RecyclerView.ViewHolder>

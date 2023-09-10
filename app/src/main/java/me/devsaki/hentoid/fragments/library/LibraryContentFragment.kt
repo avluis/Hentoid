@@ -130,7 +130,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         val CONTENT_ITEM_DIFF_CALLBACK: DiffCallback<ContentItem> =
             object : DiffCallback<ContentItem> {
-                override fun areItemsTheSame(oldItem: ContentItem, newItem: ContentItem): Boolean {
+                override fun areItemsTheSame(
+                    oldItem: ContentItem,
+                    newItem: ContentItem
+                ): Boolean {
                     return oldItem.identifier == newItem.identifier
                 }
 
@@ -141,8 +144,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     var result = oldItem.content == newItem.content
                     if (oldItem.queueRecord != null && newItem.queueRecord != null) {
                         result =
-                            result and (oldItem.queueRecord!!.isFrozen == newItem.queueRecord!!
-                                .isFrozen)
+                            result and (oldItem.queueRecord.isFrozen == newItem.queueRecord.isFrozen)
                     }
                     return result
                 }
@@ -181,8 +183,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     if (oldContent.downloadMode != newContent.downloadMode) {
                         diffBundleBuilder.downloadMode = newContent.downloadMode
                     }
-                    if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord!!.isFrozen != newItem.queueRecord!!.isFrozen) {
-                        diffBundleBuilder.frozen = newItem.queueRecord!!.isFrozen
+                    if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord.isFrozen != newItem.queueRecord.isFrozen) {
+                        diffBundleBuilder.frozen = newItem.queueRecord.isFrozen
                     }
                     return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
                 }
@@ -1120,14 +1122,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         // Adapter initialization
         if (isEndless && !isEditMode) {
-            @ContentItem.ViewType val viewType: Int =
+            val viewType =
                 if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) ContentItem.ViewType.LIBRARY else ContentItem.ViewType.LIBRARY_GRID
             pagedItemAdapter = PagedModelAdapter(
                 asyncDifferConfig,
                 { ContentItem(viewType) }) { c: Content? ->
-                ContentItem(c, touchHelper, viewType) { item: ContentItem ->
-                    onDeleteSwipedBook(item)
-                }
+                ContentItem(c, touchHelper, viewType) { item -> onDeleteSwipedBook(item) }
             }
             fastAdapter = FastAdapter.with(pagedItemAdapter!!)
             val item = ContentItem(viewType)
@@ -1154,11 +1154,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 fastAdapter: FastAdapter<ContentItem>,
                 item: ContentItem
             ) {
-                if (item.content != null) onBookFavouriteClick(item.content!!)
+                if (item.content != null) onBookFavouriteClick(item.content)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.favouriteButton
                 } else super.onBind(viewHolder)
             }
@@ -1172,11 +1172,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 fastAdapter: FastAdapter<ContentItem>,
                 item: ContentItem
             ) {
-                if (item.content != null) onBookRatingClick(item.content!!)
+                if (item.content != null) onBookRatingClick(item.content)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.ratingButton
                 } else super.onBind(viewHolder)
             }
@@ -1190,11 +1190,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 fastAdapter: FastAdapter<ContentItem>,
                 item: ContentItem
             ) {
-                if (item.content != null) onBookSourceClick(item.content!!)
+                if (item.content != null) onBookSourceClick(item.content)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.siteButton
                 } else super.onBind(viewHolder)
             }
@@ -1212,7 +1212,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.topButton
                 } else super.onBind(viewHolder)
             }
@@ -1230,7 +1230,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.bottomButton
                 } else super.onBind(viewHolder)
             }
@@ -1329,14 +1329,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val minIndex = bounds.getLeft()
         val maxIndex = bounds.getRight()
         // Paged mode won't be used in edit mode
-        @ContentItem.ViewType val viewType: Int =
+        val viewType =
             if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) ContentItem.ViewType.LIBRARY
             else ContentItem.ViewType.LIBRARY_GRID // Paged mode won't be used in edit mode
         val contentItems =
             iLibrary.subList(minIndex, maxIndex).filterNotNull().map { c ->
-                ContentItem(c, null, viewType) { item: ContentItem ->
-                    onDeleteSwipedBook(item)
-                }
+                ContentItem(c, null, viewType) { item -> onDeleteSwipedBook(item) }
             }.distinct()
 
         itemAdapter?.let {
@@ -1352,7 +1350,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             contentItems = emptyList()
         } else {
             // Grid won't be used in edit mode
-            @ContentItem.ViewType val viewType: Int =
+            val viewType =
                 if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()
                     || activity.get()!!.isEditMode()
                 )
@@ -1361,9 +1359,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             contentItems = iLibrary.subList(0, iLibrary.size).filterNotNull()
                 .map { c ->
-                    ContentItem(c, touchHelper, viewType) { item: ContentItem ->
-                        onDeleteSwipedBook(item)
-                    }
+                    ContentItem(c, touchHelper, viewType) { item -> onDeleteSwipedBook(item) }
                 }
                 .distinct()
         }
@@ -1503,8 +1499,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      */
     private fun onItemClick(item: ContentItem): Boolean {
         if (selectExtension!!.selectOnLongClick) {
-            if (item.content != null && !item.content!!.isBeingProcessed) {
-                readBook(item.content!!, false)
+            if (item.content != null && !item.content.isBeingProcessed) {
+                readBook(item.content, false)
             }
             return true
         }

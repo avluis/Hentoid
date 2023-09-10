@@ -404,7 +404,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.siteButton
                 } else super.onBind(viewHolder)
             }
@@ -421,7 +421,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.topButton
                 } else super.onBind(viewHolder)
             }
@@ -438,7 +438,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ContentItem.ContentViewHolder) {
+                return if (viewHolder is ContentItem.ViewHolder) {
                     viewHolder.bottomButton
                 } else super.onBind(viewHolder)
             }
@@ -709,9 +709,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
         // Update displayed books
         val contentItems = result.mapIndexed { i, c ->
-            ContentItem(c, query.isNotEmpty(), touchHelper, 0 == i) { item: ContentItem ->
-                onCancelSwipedBook(item)
-            }
+            ContentItem(c, query.isNotEmpty(), touchHelper, 0 == i)
+            { item -> onCancelSwipedBook(item) }
         }.distinct()
 
         if (newSearch) itemAdapter.setNewList(contentItems, false)
@@ -1011,7 +1010,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         var keepToolbar = false
         when (menuItem.itemId) {
             R.id.action_select_queue_cancel -> {
-                val selectedContent = selectedItems.mapNotNull { obj: ContentItem -> obj.content }
+                val selectedContent = selectedItems.mapNotNull { obj -> obj.content }
                 if (selectedContent.isNotEmpty()) askDeleteSelected(selectedContent)
             }
 
@@ -1178,7 +1177,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 // Visually reset the progress of selected items
                 selectedItems.forEach {
                     if (it.content != null)
-                        updateProgress(it.content!!, 0, 0, 1, 0, 0, true)
+                        updateProgress(it.content, 0, 0, 1, 0, 0, true)
                 }
 
                 selectExtension.apply {
