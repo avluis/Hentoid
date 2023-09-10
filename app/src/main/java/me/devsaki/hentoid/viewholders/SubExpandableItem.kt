@@ -50,7 +50,7 @@ class SubExpandableItem<T>(
     override var onItemClickListener: ClickListener<SubExpandableItem<T>>? =
         { v: View?, adapter: IAdapter<SubExpandableItem<T>>, item: SubExpandableItem<T>, position: Int ->
             if (item.subItems.isNotEmpty()) {
-                v?.findViewById<View>(R.id.material_drawer_icon)?.let {
+                v?.findViewById<View>(R.id.expand_handle)?.let {
                     if (!item.isExpanded) {
                         ViewCompat.animate(it).rotation(180f).start()
                     } else {
@@ -167,7 +167,7 @@ class SubExpandableItem<T>(
     class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         var name: TextView = view.findViewById(R.id.material_drawer_name)
         var description: TextView = view.findViewById(R.id.material_drawer_description)
-        var icon: ImageView = view.findViewById(R.id.material_drawer_icon)
+        var icon: ImageView = view.findViewById(R.id.expand_handle)
         var dragHandle: ImageView = view.findViewById(R.id.ivReorder)
     }
 

@@ -8,7 +8,7 @@
     tools:targetApi="o">
 
     <ImageView
-        android:id="@+id/material_drawer_icon"
+        android:id="@+id/expand_handle"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:padding="8dp"
@@ -29,7 +29,7 @@
         android:textDirection="anyRtl"
         android:textSize="@dimen/text_body_2"
         app:layout_constraintEnd_toStartOf="@id/ivReorder"
-        app:layout_constraintStart_toEndOf="@id/material_drawer_icon"
+        app:layout_constraintStart_toEndOf="@id/expand_handle"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Some drawer text" />
 
@@ -44,7 +44,7 @@
         android:textDirection="anyRtl"
         android:textSize="@dimen/caption"
         app:layout_constraintEnd_toStartOf="@id/ivReorder"
-        app:layout_constraintStart_toEndOf="@id/material_drawer_icon"
+        app:layout_constraintStart_toEndOf="@id/expand_handle"
         app:layout_constraintTop_toBottomOf="@id/material_drawer_name"
         tools:text="Some drawer text" />
 
