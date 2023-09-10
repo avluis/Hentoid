@@ -7,8 +7,8 @@ import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.webkit.WebView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.inputmethod.EditorInfoCompat
-import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.annimon.stream.function.BiConsumer
 import me.devsaki.hentoid.util.Debouncer
@@ -26,11 +26,11 @@ open class VariableLongClickWebView : WebView {
     private lateinit var longTapDebouncer: Debouncer<Point>
 
     constructor(context: Context) : super(context) {
-        init(longClickThreshold.toLong())
+        init(longClickThreshold.toLong(), context as AppCompatActivity)
     }
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        init(longClickThreshold.toLong())
+        init(longClickThreshold.toLong(), context as AppCompatActivity)
     }
 
     constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : super(
@@ -38,12 +38,12 @@ open class VariableLongClickWebView : WebView {
         attrs,
         defStyle
     ) {
-        init(longClickThreshold.toLong())
+        init(longClickThreshold.toLong(), context as AppCompatActivity)
     }
 
-    private fun init(longTapDebouncerThreshold: Long) {
+    private fun init(longTapDebouncerThreshold: Long, activity: AppCompatActivity) {
         longTapDebouncer =
-            Debouncer(findViewTreeLifecycleOwner()!!.lifecycleScope, longTapDebouncerThreshold)
+            Debouncer(activity.lifecycleScope, longTapDebouncerThreshold)
             { point: Point -> onLongClickListener?.accept(point.x, point.y) }
     }
 
@@ -53,7 +53,7 @@ open class VariableLongClickWebView : WebView {
 
     fun setLongClickThreshold(threshold: Int) {
         longClickThreshold = threshold
-        init(threshold.toLong())
+        init(threshold.toLong(), context as AppCompatActivity)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {

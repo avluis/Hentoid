@@ -153,6 +153,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$android_lifecycle_version"
 
     // Desugaring (java.time is required for bucket4j)
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
