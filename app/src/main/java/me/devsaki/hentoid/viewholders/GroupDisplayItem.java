@@ -154,7 +154,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
         private String coverUri = "";
 
-        GroupViewHolder(View view, @ContentItem.ViewType int viewType) {
+        GroupViewHolder(View view, @ViewType int viewType) {
             super(view);
             baseLayout = requireViewById(view, R.id.item);
             title = requireViewById(view, R.id.tvTitle);
