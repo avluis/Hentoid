@@ -457,7 +457,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             var displayOrder = 0
             for (c in chapters) {
                 val expandableItem =
-                    SubExpandableItem(touchHelper!!, c.name, c).withDraggable(!isArchive)
+                    SubExpandableItem(touchHelper!!, c.name, c)
+                        .withDraggable(!isArchive)
+                        .withCover(c.readableImageFiles.firstOrNull())
                 expandableItem.identifier = c.id
                 val imgs: MutableList<ImageFileItem> = ArrayList()
                 val chpImgs: List<ImageFile>? = c.imageFiles

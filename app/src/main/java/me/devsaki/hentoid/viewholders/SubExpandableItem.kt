@@ -1,6 +1,12 @@
 package me.devsaki.hentoid.viewholders
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
@@ -9,6 +15,10 @@ import androidx.annotation.StringRes
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.Transformation
+import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.request.RequestOptions
 import com.mikepenz.fastadapter.*
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.expandable.items.AbstractExpandableItem
@@ -16,6 +26,12 @@ import com.mikepenz.fastadapter.listeners.TouchEventHook
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils
 import com.mikepenz.fastadapter.ui.utils.StringHolder
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.core.requireById
+import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.image.ImageHelper
 
 /**
  * Inspired by mikepenz
@@ -36,6 +52,7 @@ class SubExpandableItem<T>(
 
     var header: String? = null
     var description: StringHolder? = null
+    var cover: ImageFile? = null
     private var draggable: Boolean = false
 
     private var mOnClickListener: ClickListener<SubExpandableItem<T>>? = null
@@ -107,6 +124,11 @@ class SubExpandableItem<T>(
         return this
     }
 
+    fun withCover(imageFile: ImageFile?): SubExpandableItem<T> {
+        this.cover = imageFile
+        return this
+    }
+
     fun withDraggable(value: Boolean): SubExpandableItem<T> {
         this.draggable = value
         return this
@@ -129,10 +151,13 @@ class SubExpandableItem<T>(
             holder.view,
             FastAdapterUIUtils.getSelectableBackground(ctx, Color.RED, true)
         )
-        //set the text for the name
+
+        // Texts
         holder.name.text = name
-        //set the text for the description or hide
         StringHolder.applyToOrHide(description, holder.description)
+
+        // Cover
+        attachCover(holder.cover)
 
         holder.dragHandle.visibility = if (draggable) View.VISIBLE else View.GONE
 
@@ -146,6 +171,28 @@ class SubExpandableItem<T>(
             holder.icon.rotation = 0f
         } else {
             holder.icon.rotation = 180f
+        }
+    }
+
+    private fun attachCover(ivCover: ImageView) {
+        cover?.apply {
+            val thumbLocation = usableUri
+            if (thumbLocation.isEmpty()) {
+                ivCover.visibility = View.INVISIBLE
+                return
+            }
+            ivCover.visibility = View.VISIBLE
+            // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
+            if (thumbLocation.startsWith("http")) {
+                val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, null)
+                if (glideUrl != null) {
+                    Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions)
+                        .into(ivCover)
+                }
+            } else  // From stored picture
+                Glide.with(ivCover).load(Uri.parse(thumbLocation))
+                    .apply(glideRequestOptions)
+                    .into(ivCover)
         }
     }
 
@@ -165,10 +212,11 @@ class SubExpandableItem<T>(
      * our ViewHolder
      */
     class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        var name: TextView = view.findViewById(R.id.material_drawer_name)
-        var description: TextView = view.findViewById(R.id.material_drawer_description)
-        var icon: ImageView = view.findViewById(R.id.expand_handle)
-        var dragHandle: ImageView = view.findViewById(R.id.ivReorder)
+        val name: TextView = view.requireById(R.id.material_drawer_name)
+        val description: TextView = view.requireById(R.id.material_drawer_description)
+        val icon: ImageView = view.requireById(R.id.expand_handle)
+        val dragHandle: ImageView = view.requireById(R.id.ivReorder)
+        val cover: ImageView = view.requireById(R.id.ivCover)
     }
 
     override val isDraggable: Boolean
@@ -204,5 +252,19 @@ class SubExpandableItem<T>(
 
     override fun getLevel(): Int {
         return 0
+    }
+
+    companion object {
+        private val glideRequestOptions: RequestOptions
+
+        init {
+            val context: Context = HentoidApp.getInstance()
+            val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
+            val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
+            val d: Drawable =
+                BitmapDrawable(context.resources, ImageHelper.tintBitmap(bmp, tintColor))
+            val centerInside: Transformation<Bitmap> = CenterInside()
+            glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
+        }
     }
 }

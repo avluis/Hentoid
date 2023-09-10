@@ -18,10 +18,25 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
+    <ImageView
+        android:id="@+id/ivCover"
+        android:layout_width="36dp"
+        android:layout_height="48dp"
+        android:adjustViewBounds="true"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/expand_handle"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_hentoid_trans"
+        tools:tint="@color/light_gray" />
+
     <TextView
         android:id="@+id/material_drawer_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
         android:fontFamily="sans-serif-medium"
         android:gravity="center_vertical|start"
         android:lines="1"
@@ -29,7 +44,7 @@
         android:textDirection="anyRtl"
         android:textSize="@dimen/text_body_2"
         app:layout_constraintEnd_toStartOf="@id/ivReorder"
-        app:layout_constraintStart_toEndOf="@id/expand_handle"
+        app:layout_constraintStart_toEndOf="@id/ivCover"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Some drawer text" />
 
@@ -37,6 +52,7 @@
         android:id="@+id/material_drawer_description"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
         android:fontFamily="sans-serif"
         android:gravity="center_vertical|start"
         android:lines="1"
@@ -44,7 +60,7 @@
         android:textDirection="anyRtl"
         android:textSize="@dimen/caption"
         app:layout_constraintEnd_toStartOf="@id/ivReorder"
-        app:layout_constraintStart_toEndOf="@id/expand_handle"
+        app:layout_constraintStart_toEndOf="@id/ivCover"
         app:layout_constraintTop_toBottomOf="@id/material_drawer_name"
         tools:text="Some drawer text" />
 
