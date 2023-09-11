@@ -818,6 +818,8 @@
     <string name="viewer_reparse_book">Reparse book</string>
     <string name="menu_edit_chapters">Edit chapters</string>
     <string name="gallery_title">Gallery</string>
+    <string name="gallery_title_edit">Chapters editor</string>
+    <string name="gallery_title_add">Chapters creator</string>
     <string name="gallery_chapter_prefix">Chapter</string>
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>

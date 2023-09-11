@@ -11,6 +11,7 @@ import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup
 import androidx.core.view.WindowCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -587,8 +588,13 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         confirmReorderMenu.isVisible = isReorderingChapters
         cancelReorderMenu.isVisible = isReorderingChapters
         binding?.apply {
-            if (chapterSelector.index > -1) chapterSelector.visibility =
-                if (editMode == EditMode.NONE) View.VISIBLE else View.GONE
+            if (chapterSelector.index > -1) chapterSelector.isVisible = editMode == EditMode.NONE
+            val titleRes = when (editMode) {
+                EditMode.NONE -> R.string.gallery_title
+                EditMode.EDIT_CHAPTERS -> R.string.gallery_title_edit
+                EditMode.ADD_CHAPTER -> R.string.gallery_title_add
+            }
+            toolbar.title = resources.getString(titleRes)
         }
     }
 
