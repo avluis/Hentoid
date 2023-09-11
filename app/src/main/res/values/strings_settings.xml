@@ -57,6 +57,7 @@
     <string name="pref_external_library_detach_title">Detach external library</string>
     <string name="pref_external_library_detach_summary">Don\'t include the external library into Hentoid anymore</string>
     <string name="pref_cat_eh">E-hentai / ExHentai</string>
+    <string name="pref_cat_ksk">Ksk.moe</string>
     <string name="pref_cat_advanced">Advanced</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
@@ -151,6 +152,7 @@
     <string name="download_eh_hires_title">Download hi-res pictures</string>
     <string name="pref_dl_eh_hires_on">Download hi-res pictures when available\nCAUTION:Enabling this option will consume your E-hentai/Exhentai image view limit much faster</string>
     <string name="pref_dl_eh_hires_off">Download pictures that are displayed on the website</string>
+    <string name="pref_dl_ksk_hires_on">Download hi-res pictures when available</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">Download speed limit</string>

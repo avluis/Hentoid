@@ -17,6 +17,9 @@ object Settings {
     /**
      * FIELDS
      */
+    // DOWNLOADER
+    var isKskDownloadOriginal: Boolean by BoolSetting("pref_dl_ksk_hires", false)
+
     // LOCK
     var lockType: Int by IntSetting(Key.LOCK_TYPE, 0)
 

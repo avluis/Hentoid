@@ -16,6 +16,7 @@ import me.devsaki.hentoid.parsers.content.Hentai2ReadContent;
 import me.devsaki.hentoid.parsers.content.HentaifoxContent;
 import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.ImhentaiContent;
+import me.devsaki.hentoid.parsers.content.KskContent;
 import me.devsaki.hentoid.parsers.content.LusciousContent;
 import me.devsaki.hentoid.parsers.content.Manhwa18Content;
 import me.devsaki.hentoid.parsers.content.ManhwaContent;
@@ -43,6 +44,7 @@ import me.devsaki.hentoid.parsers.images.HentaifoxParser;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.parsers.images.ImhentaiParser;
+import me.devsaki.hentoid.parsers.images.KskParser;
 import me.devsaki.hentoid.parsers.images.LusciousParser;
 import me.devsaki.hentoid.parsers.images.Manhwa18Parser;
 import me.devsaki.hentoid.parsers.images.ManhwaParser;
@@ -70,61 +72,35 @@ public class ContentParserFactory {
 
 
     public Class<? extends ContentParser> getContentParserClass(Site site) {
-        switch (site) {
-            case NHENTAI:
-                return NhentaiContent.class;
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                return ASMHentaiContent.class;
-            case HITOMI:
-                return HitomiContent.class;
-            case TSUMINO:
-                return TsuminoContent.class;
-            case PURURIN:
-                return PururinContent.class;
-            case MUSES:
-                return MusesContent.class;
-            case DOUJINS:
-                return DoujinsContent.class;
-            case PORNCOMIX:
-                return PorncomixContent.class;
-            case HBROWSE:
-                return HbrowseContent.class;
-            case HENTAI2READ:
-                return Hentai2ReadContent.class;
-            case HENTAIFOX:
-                return HentaifoxContent.class;
-            case MRM:
-                return MrmContent.class;
-            case MANHWA:
-                return ManhwaContent.class;
-            case IMHENTAI:
-                return ImhentaiContent.class;
-            case EHENTAI:
-                return EhentaiContent.class;
-            case EXHENTAI:
-                return ExhentaiContent.class;
-            case LUSCIOUS:
-                return LusciousContent.class;
-            case TOONILY:
-                return ToonilyContent.class;
-            case ALLPORNCOMIC:
-                return AllPornComicContent.class;
-            case PIXIV:
-                return PixivContent.class;
-            case MANHWA18:
-                return Manhwa18Content.class;
-            case MULTPORN:
-                return MultpornContent.class;
-            case SIMPLY:
-                return SimplyContent.class;
-            case HDPORNCOMICS:
-                return HdPornComicsContent.class;
-            case EDOUJIN:
-                return EdoujinContent.class;
-            default:
-                return DummyContent.class;
-        }
+        return switch (site) {
+            case NHENTAI -> NhentaiContent.class;
+            case ASMHENTAI, ASMHENTAI_COMICS -> ASMHentaiContent.class;
+            case HITOMI -> HitomiContent.class;
+            case TSUMINO -> TsuminoContent.class;
+            case PURURIN -> PururinContent.class;
+            case MUSES -> MusesContent.class;
+            case DOUJINS -> DoujinsContent.class;
+            case PORNCOMIX -> PorncomixContent.class;
+            case HBROWSE -> HbrowseContent.class;
+            case HENTAI2READ -> Hentai2ReadContent.class;
+            case HENTAIFOX -> HentaifoxContent.class;
+            case MRM -> MrmContent.class;
+            case MANHWA -> ManhwaContent.class;
+            case IMHENTAI -> ImhentaiContent.class;
+            case EHENTAI -> EhentaiContent.class;
+            case EXHENTAI -> ExhentaiContent.class;
+            case LUSCIOUS -> LusciousContent.class;
+            case TOONILY -> ToonilyContent.class;
+            case ALLPORNCOMIC -> AllPornComicContent.class;
+            case PIXIV -> PixivContent.class;
+            case MANHWA18 -> Manhwa18Content.class;
+            case MULTPORN -> MultpornContent.class;
+            case SIMPLY -> SimplyContent.class;
+            case HDPORNCOMICS -> HdPornComicsContent.class;
+            case EDOUJIN -> EdoujinContent.class;
+            case KSK -> KskContent.class;
+            default -> DummyContent.class;
+        };
     }
 
     public ImageListParser getImageListParser(Content content) {
@@ -132,60 +108,34 @@ public class ContentParserFactory {
     }
 
     public ImageListParser getImageListParser(Site site) {
-        switch (site) {
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                return new ASMHentaiParser();
-            case HITOMI:
-                return new HitomiParser();
-            case TSUMINO:
-                return new TsuminoParser();
-            case PURURIN:
-                return new PururinParser();
-            case EHENTAI:
-                return new EHentaiParser();
-            case EXHENTAI:
-                return new ExHentaiParser();
-            case LUSCIOUS:
-                return new LusciousParser();
-            case PORNCOMIX:
-                return new PorncomixParser();
-            case MUSES:
-                return new MusesParser();
-            case NHENTAI:
-                return new NhentaiParser();
-            case DOUJINS:
-                return new DoujinsParser();
-            case HBROWSE:
-                return new HbrowseParser();
-            case HENTAI2READ:
-                return new Hentai2ReadParser();
-            case HENTAIFOX:
-                return new HentaifoxParser();
-            case MRM:
-                return new MrmParser();
-            case MANHWA:
-                return new ManhwaParser();
-            case IMHENTAI:
-                return new ImhentaiParser();
-            case TOONILY:
-                return new ToonilyParser();
-            case ALLPORNCOMIC:
-                return new AllPornComicParser();
-            case PIXIV:
-                return new PixivParser();
-            case MANHWA18:
-                return new Manhwa18Parser();
-            case MULTPORN:
-                return new MultpornParser();
-            case SIMPLY:
-                return new SimplyParser();
-            case HDPORNCOMICS:
-                return new HdPornComicsParser();
-            case EDOUJIN:
-                return new EdoujinParser();
-            default:
-                return new DummyParser();
-        }
+        return switch (site) {
+            case ASMHENTAI, ASMHENTAI_COMICS -> new ASMHentaiParser();
+            case HITOMI -> new HitomiParser();
+            case TSUMINO -> new TsuminoParser();
+            case PURURIN -> new PururinParser();
+            case EHENTAI -> new EHentaiParser();
+            case EXHENTAI -> new ExHentaiParser();
+            case LUSCIOUS -> new LusciousParser();
+            case PORNCOMIX -> new PorncomixParser();
+            case MUSES -> new MusesParser();
+            case NHENTAI -> new NhentaiParser();
+            case DOUJINS -> new DoujinsParser();
+            case HBROWSE -> new HbrowseParser();
+            case HENTAI2READ -> new Hentai2ReadParser();
+            case HENTAIFOX -> new HentaifoxParser();
+            case MRM -> new MrmParser();
+            case MANHWA -> new ManhwaParser();
+            case IMHENTAI -> new ImhentaiParser();
+            case TOONILY -> new ToonilyParser();
+            case ALLPORNCOMIC -> new AllPornComicParser();
+            case PIXIV -> new PixivParser();
+            case MANHWA18 -> new Manhwa18Parser();
+            case MULTPORN -> new MultpornParser();
+            case SIMPLY -> new SimplyParser();
+            case HDPORNCOMICS -> new HdPornComicsParser();
+            case EDOUJIN -> new EdoujinParser();
+            case KSK -> new KskParser();
+            default -> new DummyParser();
+        };
     }
 }

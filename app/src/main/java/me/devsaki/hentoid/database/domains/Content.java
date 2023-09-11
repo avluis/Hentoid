@@ -46,6 +46,7 @@ import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.ImhentaiActivity;
+import me.devsaki.hentoid.activities.sources.KskActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.Manhwa18Activity;
 import me.devsaki.hentoid.activities.sources.ManhwaActivity;
@@ -275,11 +276,6 @@ public class Content implements Serializable {
             case IMHENTAI:
             case HENTAIFOX:
                 return url.replace(site.getUrl(), "").replace("/gallery", "");
-                /*
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                return
-                 */
             case PIXIV:
                 return url.replace(site.getUrl(), "").replaceAll("^[a-z]{2}/", "");
             case ALLPORNCOMIC:
@@ -300,6 +296,8 @@ public class Content implements Serializable {
             case EDOUJIN:
             case LUSCIOUS:
                 return url.replace(site.getUrl().replace("/manga/", ""), "");
+            case KSK:
+                return url.replace(site.getUrl() + "/view", "");
             case PORNCOMIX:
             default:
                 return url;
@@ -344,8 +342,13 @@ public class Content implements Serializable {
             case MULTPORN:
             case EDOUJIN:
             case SIMPLY:
+                // Last part of the URL
                 paths = url.split("/");
                 return paths[paths.length - 1];
+            case KSK:
+                // Last-but-one part of the URL
+                paths = url.split("/");
+                return paths[paths.length - Math.min(paths.length, 2)];
             case DOUJINS:
                 // ID is the last numeric part of the URL
                 // e.g. lewd-title-ch-1-3-42116 -> 42116 is the ID
@@ -419,6 +422,8 @@ public class Content implements Serializable {
                 return HdPornComicsActivity.class;
             case EDOUJIN:
                 return EdoujinActivity.class;
+            case KSK:
+                return KskActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -447,6 +452,9 @@ public class Content implements Serializable {
                 break;
             case FAKKU2:
                 galleryConst = "/hentai/";
+                break;
+            case KSK:
+                galleryConst = "/view";
                 break;
             case EDOUJIN:
             case LUSCIOUS:

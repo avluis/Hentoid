@@ -26,7 +26,8 @@
       "useHentoidAgent": true,
       "hasBackupURLs": true,
       "bookCardExcludedParentClasses": [
-        "gm", "gtb"
+        "gm",
+        "gtb"
       ]
     },
     "EXHENTAI": {
@@ -63,6 +64,11 @@
     },
     "MULTPORN": {
       "galleryHeight": 2
+    },
+    "KSK": {
+      "useWebviewAgent": false,
+      "requestsCapPerSecond": 2,
+      "parallelDownloadCap": 2
     }
   }
 }

@@ -604,7 +604,11 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             } else if (isShown && event.isCompleted) {
                 visibility = View.INVISIBLE
             }
-            progress = event.done * 100 / event.total
+
+            progress = if (event.total > 0)
+                event.done * 100 / event.total
+            else
+                100
         }
     }
 
