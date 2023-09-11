@@ -694,8 +694,21 @@ public class FileHelper {
      * @param title   Title of the user dialog
      */
     public static void shareFile(final @NonNull Context context, final @NonNull Uri fileUri, final @NonNull String title) {
+
+        shareFile(context, fileUri, title, "text/*");
+    }
+
+    /**
+     * Share the given file using the device's app(s) of choice
+     *
+     * @param context Context to use
+     * @param fileUri Uri of the file to share
+     * @param title   Title of the user dialog
+     * @param type    The type to use for the sharing intent
+     */
+    public static void shareFile(final @NonNull Context context, final @NonNull Uri fileUri, final @NonNull String title, final @NonNull String type) {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        sharingIntent.setType("text/*");
+        sharingIntent.setType(type);
         if (!title.isEmpty()) sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
         if (fileUri.toString().startsWith("file")) {
             Uri legitUri = FileProvider.getUriForFile(context, AUTHORITY, new File(fileUri.toString()));

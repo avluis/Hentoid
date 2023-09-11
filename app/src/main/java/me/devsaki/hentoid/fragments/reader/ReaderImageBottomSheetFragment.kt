@@ -262,7 +262,8 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
             if (FileHelper.fileExists(requireContext(), fileUri)) FileHelper.shareFile(
                 requireContext(),
                 fileUri,
-                ""
+                "",
+                "image/*"
             )
         }
     }
