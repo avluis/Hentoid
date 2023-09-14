@@ -274,7 +274,9 @@ class ImagePagerAdapter(val context: Context) :
     }
 
     private fun getDisplayParamsForPosition(position: Int): ReaderPagerFragment.DisplayParams {
-        val bookPreferences = getItem(position).content.target.bookPreferences
+        val content = getItem(position).content.target
+        checkNotNull(content) { "No content found for position $position" }
+        val bookPreferences = content.bookPreferences
         return ReaderPagerFragment.DisplayParams(
             Preferences.getContentBrowseMode(bookPreferences),
             Preferences.getContentDisplayMode(bookPreferences),
