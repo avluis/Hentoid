@@ -349,6 +349,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         return binding!!.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.newContentSearch.observe(viewLifecycleOwner) { b -> onNewSearch(b) }
