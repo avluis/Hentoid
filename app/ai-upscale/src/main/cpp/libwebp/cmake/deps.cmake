@@ -43,16 +43,6 @@ if(WEBP_USE_THREAD)
     if(CMAKE_USE_PTHREADS_INIT AND NOT CMAKE_SYSTEM_NAME STREQUAL "QNX")
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
     endif()
-    check_c_source_compiles(
-      "
-        #include <pthread.h>
-        int main (void) {
-          int attr = PTHREAD_PRIO_INHERIT;
-          return attr;
-        }
-      "
-      FLAG_HAVE_PTHREAD_PRIO_INHERIT)
-    set(HAVE_PTHREAD_PRIO_INHERIT ${FLAG_HAVE_PTHREAD_PRIO_INHERIT})
     list(APPEND WEBP_DEP_LIBRARIES Threads::Threads)
   endif()
   set(WEBP_USE_THREAD ${Threads_FOUND})
@@ -84,72 +74,64 @@ endif()
 # Find the standard image libraries.
 set(WEBP_DEP_IMG_LIBRARIES)
 set(WEBP_DEP_IMG_INCLUDE_DIRS)
-foreach(I_LIB PNG JPEG TIFF)
-  # Disable tiff when compiling in static mode as it is failing on Ubuntu.
-  if(WEBP_LINK_STATIC AND ${I_LIB} STREQUAL "TIFF")
-    message("TIFF is disabled when statically linking.")
-    continue()
+if(WEBP_FIND_IMG_LIBS)
+  foreach(I_LIB PNG JPEG TIFF)
+    # Disable tiff when compiling in static mode as it is failing on Ubuntu.
+    if(WEBP_LINK_STATIC AND ${I_LIB} STREQUAL "TIFF")
+      message(STATUS "TIFF is disabled when statically linking.")
+      continue()
+    endif()
+    find_package(${I_LIB})
+    set(WEBP_HAVE_${I_LIB} ${${I_LIB}_FOUND})
+    if(${I_LIB}_FOUND)
+      list(APPEND WEBP_DEP_IMG_LIBRARIES ${${I_LIB}_LIBRARIES})
+      list(APPEND WEBP_DEP_IMG_INCLUDE_DIRS ${${I_LIB}_INCLUDE_DIR}
+           ${${I_LIB}_INCLUDE_DIRS})
+    endif()
+  endforeach()
+  if(WEBP_DEP_IMG_INCLUDE_DIRS)
+    list(REMOVE_DUPLICATES WEBP_DEP_IMG_INCLUDE_DIRS)
   endif()
-  find_package(${I_LIB})
-  set(WEBP_HAVE_${I_LIB} ${${I_LIB}_FOUND})
-  if(${I_LIB}_FOUND)
-    list(APPEND WEBP_DEP_IMG_LIBRARIES ${${I_LIB}_LIBRARIES})
-    list(APPEND WEBP_DEP_IMG_INCLUDE_DIRS ${${I_LIB}_INCLUDE_DIR}
-         ${${I_LIB}_INCLUDE_DIRS})
-  endif()
-endforeach()
-if(WEBP_DEP_IMG_INCLUDE_DIRS)
-  list(REMOVE_DUPLICATES WEBP_DEP_IMG_INCLUDE_DIRS)
-endif()
 
-# GIF detection, gifdec isn't part of the imageio lib.
-include(CMakePushCheckState)
-set(WEBP_DEP_GIF_LIBRARIES)
-set(WEBP_DEP_GIF_INCLUDE_DIRS)
-find_package(GIF)
-set(WEBP_HAVE_GIF ${GIF_FOUND})
-if(GIF_FOUND)
-  # GIF find_package only locates the header and library, it doesn't fail
-  # compile tests when detecting the version, but falls back to 3 (as of at
-  # least cmake 3.7.2). Make sure the library links to avoid incorrect detection
-  # when cross compiling.
-  cmake_push_check_state()
-  set(CMAKE_REQUIRED_LIBRARIES ${GIF_LIBRARIES})
-  set(CMAKE_REQUIRED_INCLUDES ${GIF_INCLUDE_DIR})
-  check_c_source_compiles(
-    "
+  # GIF detection, gifdec isn't part of the imageio lib.
+  include(CMakePushCheckState)
+  set(WEBP_DEP_GIF_LIBRARIES)
+  set(WEBP_DEP_GIF_INCLUDE_DIRS)
+  find_package(GIF)
+  set(WEBP_HAVE_GIF ${GIF_FOUND})
+  if(GIF_FOUND)
+    # GIF find_package only locates the header and library, it doesn't fail
+    # compile tests when detecting the version, but falls back to 3 (as of at
+    # least cmake 3.7.2). Make sure the library links to avoid incorrect
+    # detection when cross compiling.
+    cmake_push_check_state()
+    set(CMAKE_REQUIRED_LIBRARIES ${GIF_LIBRARIES})
+    set(CMAKE_REQUIRED_INCLUDES ${GIF_INCLUDE_DIR})
+    check_c_source_compiles(
+      "
       #include <gif_lib.h>
       int main(void) {
         (void)DGifOpenFileHandle;
         return 0;
       }
       "
-    GIF_COMPILES)
-  cmake_pop_check_state()
-  if(GIF_COMPILES)
-    list(APPEND WEBP_DEP_GIF_LIBRARIES ${GIF_LIBRARIES})
-    list(APPEND WEBP_DEP_GIF_INCLUDE_DIRS ${GIF_INCLUDE_DIR})
-  else()
-    unset(GIF_FOUND)
+      GIF_COMPILES)
+    cmake_pop_check_state()
+    if(GIF_COMPILES)
+      list(APPEND WEBP_DEP_GIF_LIBRARIES ${GIF_LIBRARIES})
+      list(APPEND WEBP_DEP_GIF_INCLUDE_DIRS ${GIF_INCLUDE_DIR})
+    else()
+      unset(GIF_FOUND)
+    endif()
   endif()
 endif()
 
 # Check for specific headers.
 include(CheckIncludeFiles)
-check_include_files("stdlib.h;stdarg.h;string.h;float.h" STDC_HEADERS)
-check_include_files(dlfcn.h HAVE_DLFCN_H)
 check_include_files(GLUT/glut.h HAVE_GLUT_GLUT_H)
 check_include_files(GL/glut.h HAVE_GL_GLUT_H)
-check_include_files(inttypes.h HAVE_INTTYPES_H)
-check_include_files(memory.h HAVE_MEMORY_H)
 check_include_files(OpenGL/glut.h HAVE_OPENGL_GLUT_H)
 check_include_files(shlwapi.h HAVE_SHLWAPI_H)
-check_include_files(stdint.h HAVE_STDINT_H)
-check_include_files(stdlib.h HAVE_STDLIB_H)
-check_include_files(strings.h HAVE_STRINGS_H)
-check_include_files(string.h HAVE_STRING_H)
-check_include_files(sys/stat.h HAVE_SYS_STAT_H)
-check_include_files(sys/types.h HAVE_SYS_TYPES_H)
 check_include_files(unistd.h HAVE_UNISTD_H)
 check_include_files(wincodec.h HAVE_WINCODEC_H)
 check_include_files(windows.h HAVE_WINDOWS_H)

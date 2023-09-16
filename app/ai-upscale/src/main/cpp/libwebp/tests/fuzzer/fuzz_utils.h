@@ -28,9 +28,20 @@
 
 //------------------------------------------------------------------------------
 // Arbitrary limits to prevent OOM, timeout, or slow execution.
-//
+
 // The decoded image size, and for animations additionally the canvas size.
+// Enabling some sanitizers slow down runtime significantly.
+// Use a very low threshold in this case to avoid timeouts.
+#if defined(__SANITIZE_ADDRESS__)  // GCC
+static const size_t kFuzzPxLimit = 1024 * 1024 / 10;
+#elif !defined(__has_feature)  // Clang
 static const size_t kFuzzPxLimit = 1024 * 1024;
+#elif __has_feature(address_sanitizer) || __has_feature(memory_sanitizer)
+static const size_t kFuzzPxLimit = 1024 * 1024 / 18;
+#else
+static const size_t kFuzzPxLimit = 1024 * 1024;
+#endif
+
 // Demuxed or decoded animation frames.
 static const int kFuzzFrameLimit = 3;
 
@@ -63,6 +74,11 @@ static WEBP_INLINE uint32_t Extract(uint32_t max_value,
 //------------------------------------------------------------------------------
 // Some functions to override VP8GetCPUInfo and disable some optimizations.
 
+#ifdef __cplusplus
+extern "C" VP8CPUInfo VP8GetCPUInfo;
+#else
+extern VP8CPUInfo VP8GetCPUInfo;
+#endif
 static VP8CPUInfo GetCPUInfo;
 
 static WEBP_INLINE int GetCPUInfoNoSSE41(CPUFeature feature) {

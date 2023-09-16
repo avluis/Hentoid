@@ -14,13 +14,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <stdint.h>
 #include <string.h>
 
 #include "./fuzz_utils.h"
+#include "src/utils/rescaler_utils.h"
 #include "src/webp/decode.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
-  int i;
   WebPDecoderConfig config;
   if (!WebPInitDecoderConfig(&config)) return 0;
   if (WebPGetFeatures(data, size, &config.input) != VP8_STATUS_OK) return 0;
@@ -62,17 +63,41 @@ int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   config.output.colorspace = (WEBP_CSP_MODE)(value % MODE_LAST);
 #endif  // WEBP_REDUCE_CSP
 
-  for (i = 0; i < 2; ++i) {
+  for (int i = 0; i < 2; ++i) {
     if (i == 1) {
       // Use the bitstream data to generate extreme ranges for the options. An
       // alternative approach would be to use a custom corpus containing webp
       // files prepended with sizeof(config.options) zeroes to allow the fuzzer
       // to modify these independently.
       const int data_offset = 50;
-      if (size > data_offset + sizeof(config.options)) {
-        memcpy(&config.options, data + data_offset, sizeof(config.options));
-      } else {
-        break;
+      if (data_offset + sizeof(config.options) >= size) break;
+      memcpy(&config.options, data + data_offset, sizeof(config.options));
+
+      // Skip easily avoidable out-of-memory fuzzing errors.
+      if (config.options.use_scaling) {
+        int scaled_width = config.options.scaled_width;
+        int scaled_height = config.options.scaled_height;
+        if (WebPRescalerGetScaledDimensions(config.input.width,
+                                            config.input.height, &scaled_width,
+                                            &scaled_height)) {
+          size_t fuzz_px_limit = kFuzzPxLimit;
+          if (scaled_width != config.input.width ||
+              scaled_height != config.input.height) {
+            // Using the WebPRescalerImport internally can significantly slow
+            // down the execution. Avoid timeouts due to that.
+            fuzz_px_limit /= 2;
+          }
+          // A big output canvas can lead to out-of-memory and timeout issues,
+          // but a big internal working buffer can too. Also, rescaling from a
+          // very wide input image to a very tall canvas can be as slow as
+          // decoding a huge number of pixels. Avoid timeouts due to these.
+          const uint64_t max_num_operations =
+              (uint64_t)Max(scaled_width, config.input.width) *
+              Max(scaled_height, config.input.height);
+          if (max_num_operations > fuzz_px_limit) {
+            break;
+          }
+        }
       }
     }
     if (size % 3) {

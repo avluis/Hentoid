@@ -336,6 +336,7 @@ UTILS_DEC_OBJS = \
     $(DIROBJ)\utils\color_cache_utils.obj \
     $(DIROBJ)\utils\filters_utils.obj \
     $(DIROBJ)\utils\huffman_utils.obj \
+    $(DIROBJ)\utils\palette.obj \
     $(DIROBJ)\utils\quant_levels_dec_utils.obj \
     $(DIROBJ)\utils\rescaler_utils.obj \
     $(DIROBJ)\utils\random_utils.obj \
@@ -400,7 +401,7 @@ $(DIRBIN)\webpmux.exe: $(EX_UTIL_OBJS) $(IMAGEIO_UTIL_OBJS) $(LIBWEBP)
 $(DIRBIN)\img2webp.exe: $(DIROBJ)\examples\img2webp.obj $(LIBWEBPMUX)
 $(DIRBIN)\img2webp.exe: $(IMAGEIO_DEC_OBJS)
 $(DIRBIN)\img2webp.exe: $(EX_UTIL_OBJS) $(IMAGEIO_UTIL_OBJS)
-$(DIRBIN)\img2webp.exe: $(LIBWEBPDEMUX) $(LIBWEBP)
+$(DIRBIN)\img2webp.exe: $(LIBWEBPDEMUX) $(LIBWEBP) $(LIBSHARPYUV)
 $(DIRBIN)\get_disto.exe: $(DIROBJ)\extras\get_disto.obj
 $(DIRBIN)\get_disto.exe: $(IMAGEIO_DEC_OBJS) $(IMAGEIO_UTIL_OBJS)
 $(DIRBIN)\get_disto.exe: $(LIBWEBPDEMUX) $(LIBWEBP)
