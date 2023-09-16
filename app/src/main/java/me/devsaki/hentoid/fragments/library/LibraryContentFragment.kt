@@ -1467,9 +1467,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             loadBookshelf(result)
         }
 
-        // Go back to groups view if there are no books to display (use case : remove the last books from the currently viewed group)
-        if (result.isEmpty() && !isSearchQueryActive() && Grouping.CUSTOM == Preferences.getGroupingDisplay()) activity.get()!!
-            .goBackToGroups()
         newSearch = false
         library = result
     }
