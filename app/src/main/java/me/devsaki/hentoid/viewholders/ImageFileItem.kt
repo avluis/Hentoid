@@ -16,6 +16,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.signature.ObjectKey
 import com.github.penfeizhou.animation.FrameAnimationDrawable
 import com.mikepenz.fastadapter.FastAdapter
@@ -66,14 +67,17 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
 
     override val isAutoExpanding: Boolean
         get() = true
+
     @Suppress("UNUSED_PARAMETER")
     override var isExpanded: Boolean
         get() = expanded
         set(value) {}
+
     @Suppress("UNUSED_PARAMETER")
     override var parent: IParentItem<*>?
         get() = null
         set(value) {}
+
     @Suppress("UNUSED_PARAMETER")
     override var subItems: MutableList<ISubItem<*>>
         get() = mutableListOf()
@@ -151,7 +155,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
-                        target: com.bumptech.glide.request.target.Target<Drawable>?,
+                        target: Target<Drawable>,
                         isFirstResource: Boolean
                     ): Boolean {
                         return false
@@ -159,14 +163,14 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
 
                     override fun onResourceReady(
                         resource: Drawable,
-                        model: Any?,
-                        target: com.bumptech.glide.request.target.Target<Drawable>,
-                        dataSource: DataSource?,
+                        model: Any,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource,
                         isFirstResource: Boolean
                     ): Boolean {
                         var handled = false
                         // If animated, only load frame zero as a plain bitmap
-                        if (resource is FrameAnimationDrawable<*>) {
+                        if (target != null && resource is FrameAnimationDrawable<*>) {
                             target.onResourceReady(
                                 BitmapDrawable(
                                     image.resources,

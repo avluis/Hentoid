@@ -564,7 +564,10 @@ class ImagePagerAdapter(val context: Context) :
 
         // == GLIDE CALLBACKS
         override fun onLoadFailed(
-            e: GlideException?, model: Any, target: Target<Drawable>, isFirstResource: Boolean
+            e: GlideException?,
+            model: Any?,
+            target: Target<Drawable>,
+            isFirstResource: Boolean
         ): Boolean {
             Timber.d(
                 e, "Picture %d : Glide loading failed : %s", absoluteAdapterPosition, img!!.fileUri
