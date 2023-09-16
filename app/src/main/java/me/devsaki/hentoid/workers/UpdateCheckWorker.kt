@@ -80,6 +80,7 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
                 )
             )
         } else {
+            notificationManager.cancel()
             EventBus.getDefault().post(
                 CommunicationEvent(
                     CommunicationEvent.EV_BROADCAST,
