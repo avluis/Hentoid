@@ -16,7 +16,7 @@
             <ListPreference
                 android:defaultValue="@string/pref_library_display_default"
                 android:entries="@array/pref_library_display_entries"
-                android:entryValues="@array/pref_library_display_values"
+                android:entryValues="@array/int_two"
                 android:key="pref_library_display"
                 android:summary="@string/pref_library_display_summary"
                 android:title="@string/pref_library_display_title"
@@ -53,7 +53,7 @@
             <ListPreference
                 android:defaultValue="@string/pref_attributes_list_order_default"
                 android:entries="@array/pref_attribute_list_order_entries"
-                android:entryValues="@array/pref_attribute_list_order_values"
+                android:entryValues="@array/int_two"
                 android:key="pref_order_attribute_lists"
                 android:summary="@string/pref_attributes_list_order_summary"
                 android:title="@string/pref_attributes_list_order_title"
@@ -73,7 +73,7 @@
             <ListPreference
                 android:defaultValue="@string/pref_color_theme_default"
                 android:entries="@array/pref_color_theme_entries"
-                android:entryValues="@array/pref_color_theme_values"
+                android:entryValues="@array/int_three"
                 android:key="pref_color_theme"
                 android:summary="@string/pref_color_theme_summary"
                 android:title="@string/pref_color_theme_title"
@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:defaultValue="@string/pref_folder_naming_content_default"
                 android:entries="@array/pref_folder_naming_content_entries"
-                android:entryValues="@array/pref_folder_naming_content_entry_values"
+                android:entryValues="@array/int_four"
                 android:key="pref_folder_naming_content_lists"
                 android:summary="@string/pref_folder_naming_content_summary"
                 android:title="@string/pref_folder_naming_content_title"
@@ -153,7 +153,7 @@
             <ListPreference
                 android:defaultValue="@string/pref_browser_dl_action_default"
                 android:entries="@array/pref_viewer_dl_action_entries"
-                android:entryValues="@array/pref_viewer_dl_action_values"
+                android:entryValues="@array/int_three"
                 android:key="pref_browser_dl_action"
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_browser_dl_action_title"
@@ -225,6 +225,15 @@
                 android:dependency="download_duplicate_ask"
                 android:key="duplicate_browser_use_cover"
                 android:title="@string/pref_browser_duplicate_use_cover_title"
+                app:iconSpaceReserved="false" />
+            <ListPreference
+                android:defaultValue="@string/duplicate_browser_sensitivity_default"
+                android:dependency="download_duplicate_ask"
+                android:entries="@array/duplicate_use_sensitivities"
+                android:entryValues="@array/int_three"
+                android:key="duplicate_browser_sensitivity"
+                android:summary="@string/pref_generic_summary"
+                android:title="@string/duplicate_use_sensitivity"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_duplicate_try_pages_default"
@@ -328,7 +337,7 @@
         <ListPreference
             android:defaultValue="@string/pref_queue_new_position_default"
             android:entries="@array/pref_queue_new_position_entries"
-            android:entryValues="@array/pref_queue_new_position_values"
+            android:entryValues="@array/int_three"
             android:key="pref_queue_new_position"
             android:summary="@string/pref_attributes_list_order_summary"
             android:title="@string/pref_queue_new_position_title"
@@ -376,7 +385,7 @@
             <ListPreference
                 android:defaultValue="@string/pref_dl_blocked_tags_behaviour_default"
                 android:entries="@array/pref_dl_blocked_tags_behaviour_entries"
-                android:entryValues="@array/pref_dl_blocked_tags_behaviour_values"
+                android:entryValues="@array/int_two"
                 android:key="pref_dl_blocked_tags_behaviour"
                 android:summary="@string/pref_attributes_list_order_summary"
                 android:title="@string/pref_dl_blocked_tags_behaviour_title"
@@ -502,7 +511,7 @@
                 <ListPreference
                     android:defaultValue="@string/pref_viewer_browse_mode_default"
                     android:entries="@array/pref_viewer_browse_mode_entries"
-                    android:entryValues="@array/pref_viewer_browse_mode_values"
+                    android:entryValues="@array/int_three"
                     android:key="pref_viewer_browse_mode"
                     android:summary="@string/pref_generic_summary"
                     android:title="@string/pref_viewer_browse_mode"
@@ -620,7 +629,7 @@
                 <ListPreference
                     android:defaultValue="@string/pref_viewer_rendering_default"
                     android:entries="@array/pref_viewer_rendering_entries"
-                    android:entryValues="@array/pref_viewer_rendering_values"
+                    android:entryValues="@array/int_two"
                     android:key="pref_viewer_rendering"
                     android:summary="@string/pref_generic_summary"
                     android:title="@string/pref_viewer_rendering_mode"
@@ -628,7 +637,7 @@
                 <ListPreference
                     android:defaultValue="@string/pref_viewer_rendering_default"
                     android:entries="@array/pref_viewer_color_depth_entries"
-                    android:entryValues="@array/pref_viewer_color_depth_values"
+                    android:entryValues="@array/int_two"
                     android:key="viewer_color_depth"
                     android:summary="@string/pref_generic_summary"
                     android:title="@string/pref_viewer_color_depth"
@@ -640,7 +649,7 @@
                 <ListPreference
                     android:defaultValue="@string/pref_viewer_display_mode_default"
                     android:entries="@array/pref_viewer_display_mode_entries"
-                    android:entryValues="@array/pref_viewer_display_mode_values"
+                    android:entryValues="@array/int_three"
                     android:key="pref_viewer_image_display"
                     android:summary="@string/pref_generic_summary"
                     android:title="@string/pref_viewer_display_mode"
@@ -657,7 +666,7 @@
                 <ListPreference
                     android:defaultValue="@string/pref_viewer_separating_bars_default"
                     android:entries="@array/pref_viewer_separating_bars_entries"
-                    android:entryValues="@array/pref_viewer_separating_bars_values"
+                    android:entryValues="@array/int_four"
                     android:key="pref_viewer_separating_bars"
                     android:summary="@string/pref_generic_summary"
                     android:title="@string/pref_viewer_separating_bars"

@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 object DuplicateHelper {
 
-    // Thresholds according to the "sensibility" setting
+    // Thresholds according to the "sensitivity" setting
     // @48-bit resolution, according to calibration tests
     private val COVER_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
     private val TEXT_THRESHOLDS = doubleArrayOf(0.78, 0.8, 0.85)

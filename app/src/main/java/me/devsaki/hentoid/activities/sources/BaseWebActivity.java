@@ -1198,6 +1198,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                             Preferences.isDuplicateBrowserUseArtist(),
                             Preferences.isDuplicateBrowserUseSameLanguage(),
                             Preferences.isDuplicateBrowserUseCover(),
+                            Preferences.getDuplicateBrowserSensitivity(),
                             pHash,
                             dao);
                     if (duplicateResult != null) {

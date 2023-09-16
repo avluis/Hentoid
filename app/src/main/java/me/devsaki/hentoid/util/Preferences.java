@@ -768,6 +768,14 @@ public final class Preferences {
         return getBoolPref(Key.DUPLICATE_BROWSER_USE_SAME_LANGUAGE, Default.DUPLICATE_BROWSER_USE_SAME_LANGUAGE);
     }
 
+    public static int getDuplicateBrowserSensitivity() {
+        return getIntPref(Key.DUPLICATE_BROWSER_SENSITIVITY, Default.DUPLICATE_BROWSER_SENSITIVITY);
+    }
+
+    public static void setDuplicateBrowserSensitivity(int value) {
+        sharedPreferences.edit().putString(Key.DUPLICATE_BROWSER_SENSITIVITY, Integer.toString(value)).apply();
+    }
+
     public static boolean isDuplicateIgnoreChapters() {
         return getBoolPref(Key.DUPLICATE_IGNORE_CHAPTERS, Default.DUPLICATE_IGNORE_CHAPTERS);
     }
@@ -953,6 +961,7 @@ public final class Preferences {
         public static final String VIEWER_CURRENT_PAGENUM = "viewer_current_pagenum";
         public static final String VIEWER_GALLERY_COLUMNS = "viewer_gallery_columns";
         public static final String DUPLICATE_SENSITIVITY = "duplicate_sensitivity";
+        public static final String DUPLICATE_BROWSER_SENSITIVITY = "duplicate_browser_sensitivity";
         public static final String DUPLICATE_USE_TITLE = "duplicate_use_title";
         public static final String DUPLICATE_USE_COVER = "duplicate_use_cover";
         public static final String DUPLICATE_USE_ARTIST = "duplicate_use_artist";
@@ -1070,6 +1079,7 @@ public final class Preferences {
         static final int VIEWER_DELETE_TARGET = Constant.VIEWER_DELETE_TARGET_PAGE;
         static final int VIEWER_GALLERY_COLUMNS = 4;
         static final int DUPLICATE_SENSITIVITY = 1;
+        static final int DUPLICATE_BROWSER_SENSITIVITY = 2;
         static final boolean DUPLICATE_USE_TITLE = true;
         static final boolean DUPLICATE_USE_COVER = false;
         static final boolean DUPLICATE_USE_ARTIST = true;
