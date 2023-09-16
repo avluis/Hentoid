@@ -103,8 +103,8 @@ class LibraryGroupsFragment : Fragment(),
     private var llm: LinearLayoutManager? = null
 
     // === FASTADAPTER COMPONENTS AND HELPERS
-    private var itemAdapter: ItemAdapter<GroupDisplayItem>? = null
-    private var fastAdapter: FastAdapter<GroupDisplayItem>? = null
+    private var itemAdapter: ItemAdapter<GroupDisplayItem> = ItemAdapter()
+    private var fastAdapter: FastAdapter<GroupDisplayItem> = FastAdapter.with(itemAdapter)
     private var selectExtension: SelectExtension<GroupDisplayItem>? = null
     private var touchHelper: ItemTouchHelper? = null
 
@@ -277,9 +277,9 @@ class LibraryGroupsFragment : Fragment(),
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
-                while (selectExtension!!.selections.size < itemAdapter!!.adapterItemCount && ++count < 5)
+                while (selectExtension!!.selections.size < itemAdapter.adapterItemCount && ++count < 5)
                     selectExtension!!.select(
-                        IntRange(0, itemAdapter!!.adapterItemCount - 1)
+                        IntRange(0, itemAdapter.adapterItemCount - 1)
                     )
                 keepToolbar = true
             }
@@ -312,7 +312,7 @@ class LibraryGroupsFragment : Fragment(),
         Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM)
         // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
         Preferences.setGroupSortDesc(false)
-        viewModel.saveGroupPositions(itemAdapter!!.adapterItems.mapNotNull { gi -> gi.group })
+        viewModel.saveGroupPositions(itemAdapter.adapterItems.mapNotNull { gi -> gi.group })
         setPagingMethod()
         viewModel.searchGroup()
     }
@@ -535,7 +535,6 @@ class LibraryGroupsFragment : Fragment(),
         val selectedContent = selectedItems
             .mapNotNull { obj -> obj.group }
             .flatMap { g -> viewModel.getGroupContents(g) }
-            .filterNotNull()
             .filterNot { c -> c.storageUri.isEmpty() }
             .toList()
         if (selectedContent.isNotEmpty()) activity.get()!!
@@ -569,14 +568,14 @@ class LibraryGroupsFragment : Fragment(),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         viewModel.onSaveState(outState)
-        fastAdapter?.saveInstanceState(outState)
+        fastAdapter.saveInstanceState(outState)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         if (null == savedInstanceState) return
         viewModel.onRestoreState(savedInstanceState)
-        fastAdapter?.withSavedInstanceState(savedInstanceState)
+        fastAdapter.withSavedInstanceState(savedInstanceState)
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -644,14 +643,10 @@ class LibraryGroupsFragment : Fragment(),
      * Initialize the paging method of the screen
      */
     private fun setPagingMethod() {
-        itemAdapter = ItemAdapter()
-        itemAdapter?.let {
-            fastAdapter = FastAdapter.with(it)
-        }
-        if (!fastAdapter!!.hasObservers()) fastAdapter!!.setHasStableIds(true)
+        if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true)
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
-        selectExtension = fastAdapter!!.requireOrCreateExtension()
+        selectExtension = fastAdapter.requireOrCreateExtension()
         selectExtension?.apply {
             isSelectable = true
             multiSelect = true
@@ -664,9 +659,9 @@ class LibraryGroupsFragment : Fragment(),
                     }
                 }
             val helper = FastAdapterPreClickSelectHelper(this)
-            fastAdapter!!.onPreClickListener =
+            fastAdapter.onPreClickListener =
                 { _, _, _, position -> helper.onPreClickListener(position) }
-            fastAdapter!!.onPreLongClickListener =
+            fastAdapter.onPreLongClickListener =
                 { _, _, _, position -> helper.onPreLongClickListener(position) }
         }
 
@@ -686,10 +681,10 @@ class LibraryGroupsFragment : Fragment(),
         }
 
         // Item click listener
-        fastAdapter!!.onClickListener = { _, _, i: GroupDisplayItem, _ -> onItemClick(i) }
+        fastAdapter.onClickListener = { _, _, i: GroupDisplayItem, _ -> onItemClick(i) }
 
         // Favourite button click listener
-        fastAdapter!!.addEventHook(object : ClickEventHook<GroupDisplayItem>() {
+        fastAdapter.addEventHook(object : ClickEventHook<GroupDisplayItem>() {
             override fun onClick(
                 v: View,
                 position: Int,
@@ -707,7 +702,7 @@ class LibraryGroupsFragment : Fragment(),
         })
 
         // Rating button click listener
-        fastAdapter!!.addEventHook(object : ClickEventHook<GroupDisplayItem>() {
+        fastAdapter.addEventHook(object : ClickEventHook<GroupDisplayItem>() {
             override fun onClick(
                 v: View,
                 position: Int,
@@ -723,7 +718,7 @@ class LibraryGroupsFragment : Fragment(),
                 } else super.onBind(viewHolder)
             }
         })
-        fastAdapter!!.stateRestorationPolicy =
+        fastAdapter.stateRestorationPolicy =
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
         binding?.recyclerView?.apply {
@@ -738,18 +733,18 @@ class LibraryGroupsFragment : Fragment(),
         val isEmpty = result.isEmpty()
         binding?.emptyTxt?.isVisible = isEmpty
         activity.get()!!.updateTitle(result.size.toLong(), totalContentCount.toLong())
-        @GroupDisplayItem.ViewType val viewType = if (activity.get()!!.isEditMode())
-            GroupDisplayItem.ViewType.LIBRARY_EDIT else if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) GroupDisplayItem.ViewType.LIBRARY else GroupDisplayItem.ViewType.LIBRARY_GRID
+        @GroupDisplayItem.ViewType val viewType =
+            if (activity.get()!!.isEditMode()) GroupDisplayItem.ViewType.LIBRARY_EDIT
+            else if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) GroupDisplayItem.ViewType.LIBRARY
+            else GroupDisplayItem.ViewType.LIBRARY_GRID
 
         val groups = result.map { g -> GroupDisplayItem(g, touchHelper, viewType) }.distinct()
-        itemAdapter?.let {
-            set(it, groups, GROUPITEM_DIFF_CALLBACK)
-        }
+        set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK)
 
         // Update visibility and content of advanced search bar
         // - After getting results from a search
         // - When switching between Group and Content view
-        activity.get()!!.updateSearchBarOnResults(result.isNotEmpty())
+        activity.get()?.updateSearchBarOnResults(result.isNotEmpty())
 
         // Reset library load indicator
         firstLibraryLoad = true
@@ -764,7 +759,7 @@ class LibraryGroupsFragment : Fragment(),
         if (!enabled) return
         totalContentCount = count
         activity.get()!!
-            .updateTitle(itemAdapter!!.itemList.size().toLong(), totalContentCount.toLong())
+            .updateTitle(itemAdapter.itemList.size().toLong(), totalContentCount.toLong())
     }
 
     /**
@@ -854,7 +849,7 @@ class LibraryGroupsFragment : Fragment(),
      * DRAG, DROP & SWIPE METHODS
      */
     override fun itemTouchOnMove(oldPosition: Int, newPosition: Int): Boolean {
-        onMove(itemAdapter!!, oldPosition, newPosition) // change position
+        onMove(itemAdapter, oldPosition, newPosition) // change position
         return true
     }
 
@@ -891,16 +886,13 @@ class LibraryGroupsFragment : Fragment(),
     }
 
     override fun getPopupText(view: View, position: Int): CharSequence {
-        if (null == itemAdapter) return ""
-        val g = itemAdapter!!.getAdapterItem(position).group ?: return ""
+        val g = itemAdapter.getAdapterItem(position).group ?: return ""
         return when (Preferences.getGroupSortField()) {
 
             Preferences.Constant.ORDER_FIELD_TITLE -> if (g.getName().isEmpty()) ""
             else (g.getName()[0].toString() + "").uppercase(Locale.getDefault())
 
-            Preferences.Constant.ORDER_FIELD_CHILDREN -> {
-                g.contentIds.size.toString()
-            }
+            Preferences.Constant.ORDER_FIELD_CHILDREN -> g.contentIds.size.toString()
 
             Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE, Preferences.Constant.ORDER_FIELD_NONE, Preferences.Constant.ORDER_FIELD_CUSTOM -> ""
 
