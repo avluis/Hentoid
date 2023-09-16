@@ -48,7 +48,6 @@ import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
-import me.devsaki.hentoid.databinding.FragmentLibraryContentBinding
 import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
@@ -745,9 +744,7 @@ class LibraryGroupsFragment : Fragment(),
             else GroupDisplayItem.ViewType.LIBRARY_GRID
 
         val groups = result.map { g -> GroupDisplayItem(g, touchHelper, viewType) }.distinct()
-        itemAdapter.set(groups)
-
-        //set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK)
+        set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK)
 
         // Update visibility and content of advanced search bar
         // - After getting results from a search
