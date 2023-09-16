@@ -103,6 +103,7 @@
     <string name="menu_archive">Archive</string>
     <string name="menu_archive_help">Archive the book to a ZIP file</string>
     <string name="library_search_hint">Title, artist, tag or book ID</string>
+    <string name="group_search_hint">Group title</string>
     <string name="send_to">Share with:</string>
     <string name="open_settings">Open settings</string>
     <string name="app_settings">App settings</string>

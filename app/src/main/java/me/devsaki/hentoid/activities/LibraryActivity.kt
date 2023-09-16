@@ -416,10 +416,7 @@ class LibraryActivity : BaseActivity() {
                 isUserInputEnabled = false // Disable swipe to change tabs
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
-                        enableCurrentFragment()
-                        hideSearchSubBar()
-                        updateToolbar()
-                        updateSelectionToolbar(0, 0, 0, 0, 0, 0)
+                        this@LibraryActivity.onPageSelected()
                     }
                 })
                 adapter = pagerAdapter
@@ -955,6 +952,8 @@ class LibraryActivity : BaseActivity() {
         val currentGrouping = Preferences.getGroupingDisplay()
         displayTypeMenu!!.isVisible = !editMode
         searchMenu!!.isVisible = !editMode
+        actionSearchView?.queryHint =
+            getString(if (isGroupDisplayed()) R.string.group_search_hint else R.string.library_search_hint)
         newGroupMenu!!.isVisible =
             !editMode && isGroupDisplayed() && currentGrouping.canReorderGroups() // Custom groups only
         reorderConfirmMenu!!.isVisible = editMode
@@ -1181,6 +1180,13 @@ class LibraryActivity : BaseActivity() {
     private fun onNewSearchGroupNameExists() {
         ToastHelper.toast(R.string.group_name_exists)
         saveSearchAsGroup()
+    }
+
+    private fun onPageSelected() {
+        enableCurrentFragment()
+        hideSearchSubBar()
+        updateToolbar()
+        updateSelectionToolbar(0, 0, 0, 0, 0, 0)
     }
 
     /**
