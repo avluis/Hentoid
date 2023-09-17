@@ -115,8 +115,8 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         private var coverScore: TextView? = itemView.findViewById(R.id.cover_score)
         private var artistScore: TextView? = itemView.findViewById(R.id.artist_score)
         private var totalScore: TextView? = itemView.findViewById(R.id.total_score)
-        private var keepButton: TextView? = itemView.findViewById(R.id.keep_btn)
-        private var deleteButton: TextView? = itemView.findViewById(R.id.delete_btn)
+        private var keepButton: TextView? = itemView.findViewById(R.id.keep_choice)
+        private var deleteButton: TextView? = itemView.findViewById(R.id.delete_choice)
         var keepDeleteSwitch: MaterialSwitch? = itemView.findViewById(R.id.keep_delete)
 
         override fun bindView(item: DuplicateItem, payloads: List<Any>) {
