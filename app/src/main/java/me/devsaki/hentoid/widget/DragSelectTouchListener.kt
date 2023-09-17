@@ -14,7 +14,7 @@ import kotlin.math.min
 /**
  * Credits go to https://github.com/MFlisar/DragSelectRecyclerView for the pre-Jetpack version
  */
-class DragSelectTouchListenerK// -----------------------
+class DragSelectTouchListener// -----------------------
 // Konstructur and Builder functions
 // -----------------------
     () : RecyclerView.OnItemTouchListener {
@@ -70,7 +70,7 @@ class DragSelectTouchListenerK// -----------------------
      *
      * @param selectListener the listener that will be notified when items are (un)selected
      */
-    fun withSelectListener(selectListener: OnDragSelectListener?): DragSelectTouchListenerK {
+    fun withSelectListener(selectListener: OnDragSelectListener?): DragSelectTouchListener {
         mSelectListener = selectListener
         return this
     }
@@ -83,7 +83,7 @@ class DragSelectTouchListenerK// -----------------------
      *
      * @param distance the distance in pixels
      */
-    fun withMaxScrollDistance(distance: Int): DragSelectTouchListenerK {
+    fun withMaxScrollDistance(distance: Int): DragSelectTouchListener {
         mMaxScrollDistance = distance
         return this
     }
@@ -96,7 +96,7 @@ class DragSelectTouchListenerK// -----------------------
      *
      * @param size height of region
      */
-    fun withTouchRegion(size: Int): DragSelectTouchListenerK {
+    fun withTouchRegion(size: Int): DragSelectTouchListener {
         mAutoScrollDistance = size
         return this
     }
@@ -109,7 +109,7 @@ class DragSelectTouchListenerK// -----------------------
      *
      * @param distance offset
      */
-    fun withTopOffset(distance: Int): DragSelectTouchListenerK {
+    fun withTopOffset(distance: Int): DragSelectTouchListener {
         mTouchRegionTopOffset = distance
         return this
     }
@@ -123,7 +123,7 @@ class DragSelectTouchListenerK// -----------------------
      *
      * @param distance offset
      */
-    fun withBottomOffset(distance: Int): DragSelectTouchListenerK {
+    fun withBottomOffset(distance: Int): DragSelectTouchListener {
         mTouchRegionBottomOffset = distance
         return this
     }
@@ -136,7 +136,7 @@ class DragSelectTouchListenerK// -----------------------
      *
      * @param enabled if true, scrolling will continue even if the touch moves above the top touch region
      */
-    fun withScrollAboveTopRegion(enabled: Boolean): DragSelectTouchListenerK {
+    fun withScrollAboveTopRegion(enabled: Boolean): DragSelectTouchListener {
         mScrollAboveTopRegion = enabled
         return this
     }
@@ -149,12 +149,12 @@ class DragSelectTouchListenerK// -----------------------
      *
      * @param enabled if true, scrolling will continue even if the touch moves below the bottom touch region
      */
-    fun withScrollBelowTopRegion(enabled: Boolean): DragSelectTouchListenerK {
+    fun withScrollBelowTopRegion(enabled: Boolean): DragSelectTouchListener {
         mScrollBelowTopRegion = enabled
         return this
     }
 
-    fun withDebug(enabled: Boolean): DragSelectTouchListenerK {
+    fun withDebug(enabled: Boolean): DragSelectTouchListener {
         mDebug = enabled
         return this
     }

@@ -52,10 +52,10 @@ import me.devsaki.hentoid.viewholders.ImageFileItem
 import me.devsaki.hentoid.viewholders.SubExpandableItem
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.widget.DragSelectTouchListenerK
-import me.devsaki.hentoid.widget.DragSelectTouchListenerK.OnDragSelectListener
-import me.devsaki.hentoid.widget.DragSelectionProcessorK
-import me.devsaki.hentoid.widget.DragSelectionProcessorK.ISelectionHandler
+import me.devsaki.hentoid.widget.DragSelectTouchListener
+import me.devsaki.hentoid.widget.DragSelectTouchListener.OnDragSelectListener
+import me.devsaki.hentoid.widget.DragSelectionProcessor
+import me.devsaki.hentoid.widget.DragSelectionProcessor.ISelectionHandler
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import me.devsaki.hentoid.widget.ReaderKeyListener
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
@@ -97,7 +97,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private val expandableExtension = expandableFastAdapter.getExpandableExtension()
     private var touchHelper: ItemTouchHelper? = null
 
-    private var mDragSelectTouchListener: DragSelectTouchListenerK? = null
+    private var mDragSelectTouchListener: DragSelectTouchListener? = null
 
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
@@ -388,7 +388,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
                 // Select / deselect on swipe
                 val onDragSelectionListener: OnDragSelectListener =
-                    DragSelectionProcessorK(object : ISelectionHandler {
+                    DragSelectionProcessor(object : ISelectionHandler {
                         override val selection: Set<Int>
                             get() = selectExtension.selections
 
@@ -405,9 +405,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                             if (isSelected) selectExtension.select(IntRange(start, end))
                             else selectExtension.deselect(IntRange(start, end).toMutableList())
                         }
-                    }).withMode(DragSelectionProcessorK.Mode.Simple)
+                    }).withMode(DragSelectionProcessor.Mode.Simple)
 
-                DragSelectTouchListenerK().withSelectListener(onDragSelectionListener).let {
+                DragSelectTouchListener().withSelectListener(onDragSelectionListener).let {
                     mDragSelectTouchListener = it
                     recyclerView.addOnItemTouchListener(it)
                 }

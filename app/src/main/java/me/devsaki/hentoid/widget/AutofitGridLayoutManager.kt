@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.max
 
 // https://stackoverflow.com/a/30256880/8374722
-class AutofitGridLayoutManagerK : GridLayoutManager {
+class AutofitGridLayoutManager : GridLayoutManager {
     private var columnWidthPx = 0
     private var isColumnWidthChanged = true
     private var lastWidth = 0

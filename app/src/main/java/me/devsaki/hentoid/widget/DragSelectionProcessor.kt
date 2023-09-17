@@ -3,8 +3,8 @@ package me.devsaki.hentoid.widget
 /**
  * Credits go to https://github.com/MFlisar/DragSelectRecyclerView for the pre-Jetpack version
  */
-class DragSelectionProcessorK(private val selectionHandler: ISelectionHandler) :
-    DragSelectTouchListenerK.OnAdvancedDragSelectListener {
+class DragSelectionProcessor(private val selectionHandler: ISelectionHandler) :
+    DragSelectTouchListener.OnAdvancedDragSelectListener {
     /**
      * Different existing selection modes
      */
@@ -45,7 +45,7 @@ class DragSelectionProcessorK(private val selectionHandler: ISelectionHandler) :
      * @param mode the mode in which the selection events should be processed
      * @return this
      */
-    fun withMode(mode: Mode): DragSelectionProcessorK {
+    fun withMode(mode: Mode): DragSelectionProcessor {
         mMode = mode
         return this
     }
@@ -54,7 +54,7 @@ class DragSelectionProcessorK(private val selectionHandler: ISelectionHandler) :
      * @param startFinishedListener a listener that get's notified when the drag selection is started or finished
      * @return this
      */
-    fun withStartFinishedListener(startFinishedListener: ISelectionStartFinishedListener): DragSelectionProcessorK {
+    fun withStartFinishedListener(startFinishedListener: ISelectionStartFinishedListener): DragSelectionProcessor {
         mStartFinishedListener = startFinishedListener
         return this
     }
@@ -65,7 +65,7 @@ class DragSelectionProcessorK(private val selectionHandler: ISelectionHandler) :
      * @param check true, if this check should be enabled
      * @return this
      */
-    fun withCheckSelectionState(check: Boolean): DragSelectionProcessorK {
+    fun withCheckSelectionState(check: Boolean): DragSelectionProcessor {
         mCheckSelectionState = check
         return this
     }
@@ -160,7 +160,7 @@ class DragSelectionProcessorK(private val selectionHandler: ISelectionHandler) :
         val selection: Set<Int>?
 
         /**
-         * only used, if [DragSelectionProcessorK.withCheckSelectionState] was enabled
+         * only used, if [DragSelectionProcessor.withCheckSelectionState] was enabled
          *
          * @param index the index which selection state wants to be known
          * @return the current selection state of the passed in index
@@ -173,7 +173,7 @@ class DragSelectionProcessorK(private val selectionHandler: ISelectionHandler) :
          * @param start             the first item of the range who's selection state changed
          * @param end               the last item of the range who's selection state changed
          * @param isSelected        true, if the range should be selected, false otherwise
-         * @param calledFromOnStart true, if it was called from the [DragSelectionProcessorK.onSelectionStarted] event
+         * @param calledFromOnStart true, if it was called from the [DragSelectionProcessor.onSelectionStarted] event
          */
         fun updateSelection(start: Int, end: Int, isSelected: Boolean, calledFromOnStart: Boolean)
     }

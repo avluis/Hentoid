@@ -16,10 +16,10 @@ import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibrarySplitBinding
 import me.devsaki.hentoid.viewholders.ContentItem
-import me.devsaki.hentoid.widget.DragSelectTouchListenerK
-import me.devsaki.hentoid.widget.DragSelectTouchListenerK.OnDragSelectListener
-import me.devsaki.hentoid.widget.DragSelectionProcessorK
-import me.devsaki.hentoid.widget.DragSelectionProcessorK.ISelectionHandler
+import me.devsaki.hentoid.widget.DragSelectTouchListener
+import me.devsaki.hentoid.widget.DragSelectTouchListener.OnDragSelectListener
+import me.devsaki.hentoid.widget.DragSelectionProcessor
+import me.devsaki.hentoid.widget.DragSelectionProcessor.ISelectionHandler
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 
 class SplitDialogFragment : DialogFragment() {
@@ -42,7 +42,7 @@ class SplitDialogFragment : DialogFragment() {
     private val fastAdapter: FastAdapter<ContentItem> = FastAdapter.with(itemAdapter)
     private val selectExtension = fastAdapter.getSelectExtension()
 
-    private var mDragSelectTouchListener: DragSelectTouchListenerK? = null
+    private var mDragSelectTouchListener: DragSelectTouchListener? = null
 
     // === VARIABLES
     private var parent: Parent? = null
@@ -106,7 +106,7 @@ class SplitDialogFragment : DialogFragment() {
 
             // Select / deselect on swipe
             val onDragSelectionListener: OnDragSelectListener =
-                DragSelectionProcessorK(object : ISelectionHandler {
+                DragSelectionProcessor(object : ISelectionHandler {
                     override val selection: Set<Int>
                         get() = selectExtension.selections
 
@@ -123,8 +123,8 @@ class SplitDialogFragment : DialogFragment() {
                         if (isSelected) selectExtension.select(IntRange(start, end))
                         else selectExtension.deselect(IntRange(start, end).toMutableList())
                     }
-                }).withMode(DragSelectionProcessorK.Mode.Simple)
-            DragSelectTouchListenerK().withSelectListener(onDragSelectionListener).let {
+                }).withMode(DragSelectionProcessor.Mode.Simple)
+            DragSelectTouchListener().withSelectListener(onDragSelectionListener).let {
                 mDragSelectTouchListener = it
                 list.addOnItemTouchListener(it)
             }
