@@ -103,7 +103,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         this.content = content
         queueRecord = null
         chapter = null
-        showDragHandle = (viewType == ViewType.MERGE)
+        showDragHandle = (viewType == ViewType.MERGE || viewType == ViewType.LIBRARY_EDIT)
         isFirst = false
         isEmpty = false
         this.viewType = viewType
@@ -185,10 +185,16 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
 
     fun updateProgress(vh: RecyclerView.ViewHolder, isPausedEvent: Boolean, isIndividual: Boolean) {
+        content ?: return
+        val pb = vh.itemView.findViewById<ProgressBar>(R.id.pbDownload) ?: return
+        if (!ContentHelper.isInQueue(content.status)) {
+            pb.visibility = View.GONE
+            return
+        }
+
         val isQueueReady = isQueueActive(vh.itemView.context) && !isQueuePaused && !isPausedEvent
-        content!!.computeProgress()
+        content.computeProgress()
         content.computeDownloadedBytes()
-        val pb = vh.itemView.findViewById<ProgressBar>(R.id.pbDownload)
         if (isQueueReady || content.percent > 0) {
             val tvPages = vh.itemView.findViewById<TextView>(R.id.tvPages)
             if (content.percent > 0) {
@@ -263,7 +269,6 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private var tvStorage: TextView? = view.findViewById(R.id.tvStorage)
 
         // Specific to Queued content
-        private var progressBar: ProgressBar? = view.findViewById(R.id.pbDownload)
         var topButton: View? = view.findViewById(R.id.queueTopBtn)
         var bottomButton: View? = view.findViewById(R.id.queueBottomBtn)
         var ivReorder: View? = view.findViewById(R.id.ivReorder)
@@ -341,7 +346,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 attachTags(it)
             }
             attachButtons(item)
-            if (progressBar != null) item.updateProgress(
+            item.updateProgress(
                 this,
                 isPausedEvent = false,
                 isIndividual = true

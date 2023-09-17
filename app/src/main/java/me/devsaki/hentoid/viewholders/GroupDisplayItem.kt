@@ -101,9 +101,16 @@ class GroupDisplayItem(
                 BlinkAnimation(500, 250)
             ) else baseLayout.clearAnimation()
             ivReorder?.apply {
-                visibility = View.VISIBLE
-                @Suppress("UNCHECKED_CAST")
-                bindDragHandle(this@ViewHolder, item as IExtendedDraggable<RecyclerView.ViewHolder>)
+                if (ViewType.LIBRARY_EDIT == item.viewType) {
+                    visibility = View.VISIBLE
+                    @Suppress("UNCHECKED_CAST")
+                    bindDragHandle(
+                        this@ViewHolder,
+                        item as IExtendedDraggable<RecyclerView.ViewHolder>
+                    )
+                } else {
+                    visibility = View.INVISIBLE
+                }
             }
             if (ivCover != null) {
                 var coverContent: Content? = null

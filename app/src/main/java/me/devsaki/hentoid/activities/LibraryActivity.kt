@@ -100,7 +100,9 @@ class LibraryActivity : BaseActivity() {
 
     // === Toolbar
     private var searchMenu: MenuItem? = null
+    // List / grid view
     private var displayTypeMenu: MenuItem? = null
+    // Reorder books (only when inside a group that allows it)
     private var reorderMenu: MenuItem? = null
     private var reorderConfirmMenu: MenuItem? = null
     private var reorderCancelMenu: MenuItem? = null

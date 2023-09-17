@@ -1360,7 +1360,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     || activity.get()!!.isEditMode()
                 )
                     if (activity.get()!!.isEditMode())
-                        ContentItem.ViewType.LIBRARY_EDIT else ContentItem.ViewType.LIBRARY else ContentItem.ViewType.LIBRARY_GRID
+                        ContentItem.ViewType.LIBRARY_EDIT
+                    else ContentItem.ViewType.LIBRARY
+                else ContentItem.ViewType.LIBRARY_GRID
 
             contentItems = iLibrary.subList(0, iLibrary.size).filterNotNull()
                 .map { c ->
