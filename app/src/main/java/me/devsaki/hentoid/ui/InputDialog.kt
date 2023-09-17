@@ -26,17 +26,17 @@ object InputDialog {
         input.setRawInputType(Configuration.KEYBOARD_12KEY)
         input.filters =
             arrayOf<InputFilter>(LengthFilter(9)) // We don't expect any number longer than 9 chars (999 million)
-        val onOk = DialogInterface.OnClickListener { _: DialogInterface?, _: Int ->
+        val onOk = DialogInterface.OnClickListener { _, _ ->
             if (input.text.isNotEmpty()) onResult.invoke(input.text.toString().toInt())
             val imm =
                 context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.toggleSoftInput(0, 0)
+            imm.hideSoftInputFromWindow(input.windowToken, 0)
         }
         val onCancel =
-            DialogInterface.OnClickListener { _: DialogInterface?, _: Int ->
+            DialogInterface.OnClickListener { _, _ ->
                 val imm =
                     context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.toggleSoftInput(0, 0)
+                imm.hideSoftInputFromWindow(input.windowToken, 0)
             }
         showDialog(context, message, input, onOk, onCancel)
     }
@@ -65,13 +65,13 @@ object InputDialog {
                 input.text.toString().trim { it <= ' ' })
             val imm =
                 context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.toggleSoftInput(0, 0)
+            imm.hideSoftInputFromWindow(input.windowToken, 0)
         }
         val onCancel =
             DialogInterface.OnClickListener { _, _ ->
                 val imm =
                     context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.toggleSoftInput(0, 0)
+                imm.hideSoftInputFromWindow(input.windowToken, 0)
                 onCancelled?.run()
             }
         showDialog(context, message, input, onOk, onCancel)
@@ -92,7 +92,12 @@ object InputDialog {
             .create()
         materialDialog.show()
         input.requestFocus()
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+        input.postDelayed(
+            {
+                val imm =
+                    context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(input, 0)
+            }, 50
+        )
     }
 }
