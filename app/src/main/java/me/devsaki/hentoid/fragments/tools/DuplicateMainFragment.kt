@@ -213,8 +213,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
      * @param item DuplicateItem that has been clicked on
      */
     private fun onItemClick(item: DuplicateItem): Boolean {
-        if (item.content != null) {
-            activity.get()?.showDetailsFor(item.content!!)
+        item.content?.let {
+            activity.get()?.showDetailsFor(it)
         }
         return true
     }

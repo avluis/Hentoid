@@ -63,7 +63,10 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
 
     private val ITEM_DIFF_CALLBACK: DiffCallback<DuplicateItem> =
         object : DiffCallback<DuplicateItem> {
-            override fun areItemsTheSame(oldItem: DuplicateItem, newItem: DuplicateItem): Boolean {
+            override fun areItemsTheSame(
+                oldItem: DuplicateItem,
+                newItem: DuplicateItem
+            ): Boolean {
                 return oldItem.identifier == newItem.identifier
             }
 
@@ -158,7 +161,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is DuplicateItem.ContentViewHolder) {
+                return if (viewHolder is DuplicateItem.ViewHolder) {
                     viewHolder.siteButton
                 } else super.onBind(viewHolder)
             }
@@ -176,7 +179,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is DuplicateItem.ContentViewHolder) {
+                return if (viewHolder is DuplicateItem.ViewHolder) {
                     viewHolder.keepDeleteSwitch
                 } else super.onBind(viewHolder)
             }
