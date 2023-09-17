@@ -66,7 +66,7 @@ import me.devsaki.hentoid.viewholders.GroupDisplayItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.widget.AutofitGridLayoutManager
+import me.devsaki.hentoid.widget.AutofitGridLayoutManagerK
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import me.zhanghai.android.fastscroll.PopupTextProvider
@@ -233,7 +233,7 @@ class LibraryGroupsFragment : Fragment(),
                 requireContext(),
                 LinearLayoutManager.VERTICAL,
                 false
-            ) else AutofitGridLayoutManager(
+            ) else AutofitGridLayoutManagerK(
                 requireContext(),
                 resources.getDimension(R.dimen.card_grid_width).toInt()
             )
@@ -890,7 +890,7 @@ class LibraryGroupsFragment : Fragment(),
     }
 
     override fun getPopupText(view: View, position: Int): CharSequence {
-        val g = itemAdapter.getAdapterItem(position).group ?: return ""
+        val g = itemAdapter.getAdapterItem(position).group
         return when (Preferences.getGroupSortField()) {
 
             Preferences.Constant.ORDER_FIELD_TITLE -> if (g.getName().isEmpty()) ""

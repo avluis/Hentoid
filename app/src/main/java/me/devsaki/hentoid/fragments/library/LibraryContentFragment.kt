@@ -95,7 +95,7 @@ import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.AddQueueMenu
-import me.devsaki.hentoid.widget.AutofitGridLayoutManager
+import me.devsaki.hentoid.widget.AutofitGridLayoutManagerK
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import me.devsaki.hentoid.widget.LibraryPager
 import me.devsaki.hentoid.widget.RedownloadMenu
@@ -392,7 +392,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 requireContext(),
                 LinearLayoutManager.VERTICAL,
                 false
-            ) else AutofitGridLayoutManager(
+            ) else AutofitGridLayoutManagerK(
                 requireContext(),
                 resources.getDimension(R.dimen.card_grid_width).toInt()
             )
