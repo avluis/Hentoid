@@ -1,0 +1,180 @@
+package me.devsaki.hentoid.viewholders
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Bundle
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.Transformation
+import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.request.RequestOptions
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.drag.IExtendedDraggable
+import com.mikepenz.fastadapter.items.AbstractItem
+import com.mikepenz.fastadapter.swipe.ISwipeable
+import com.mikepenz.fastadapter.utils.DragDropUtil.bindDragHandle
+import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.bundles.GroupItemBundle
+import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.core.requireById
+import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.Group
+import me.devsaki.hentoid.database.domains.GroupItem
+import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.ui.BlinkAnimation
+import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.image.ImageHelper
+
+class GroupDisplayItem(
+    val group: Group,
+    override val touchHelper: ItemTouchHelper?,
+    private val viewType: ViewType
+) : AbstractItem<GroupDisplayItem.ViewHolder>(), IExtendedDraggable<GroupDisplayItem.ViewHolder>,
+    ISwipeable {
+
+    enum class ViewType {
+        LIBRARY, LIBRARY_GRID, LIBRARY_EDIT
+    }
+
+    init {
+        identifier = group.uniqueHash()
+    }
+
+    override val layoutRes: Int
+        get() = if (ViewType.LIBRARY_GRID == viewType) R.layout.item_library_group_grid else R.layout.item_library_group
+
+    override val type: Int
+        get() = R.id.group
+
+    override fun getViewHolder(v: View): ViewHolder {
+        return ViewHolder(v)
+    }
+
+    override val isSwipeable: Boolean
+        get() = true
+
+    override fun isDirectionSupported(direction: Int): Boolean {
+        return ItemTouchHelper.LEFT == direction
+    }
+
+    override val isDraggable: Boolean
+        get() = ViewType.LIBRARY_EDIT == viewType
+
+    override fun getDragView(viewHolder: ViewHolder): View? {
+        return viewHolder.ivReorder
+    }
+
+
+    class ViewHolder internal constructor(view: View) :
+        FastAdapter.ViewHolder<GroupDisplayItem>(view) {
+        private val baseLayout: View = view.requireById(R.id.item)
+        private val title: TextView = view.requireById(R.id.tvTitle)
+        private val ivFavourite: ImageView = view.requireById(R.id.ivFavourite)
+        private val ivRating: ImageView = view.requireById(R.id.iv_rating)
+        private var ivCover: ImageView? = view.findViewById(R.id.ivCover)
+        var ivReorder: View? = view.findViewById(R.id.ivReorder)
+        private var coverUri = ""
+
+        override fun bindView(item: GroupDisplayItem, payloads: List<Any>) {
+            // Payloads are set when the content stays the same but some properties alone change
+            if (payloads.isNotEmpty()) {
+                val bundle = payloads[0] as Bundle
+                val bundleParser = GroupItemBundle(bundle)
+                val stringValue = bundleParser.coverUri
+                if (stringValue != null) coverUri = stringValue
+                val boolValue = bundleParser.isFavourite
+                if (boolValue != null) item.group.isFavourite = boolValue
+                val intValue = bundleParser.rating
+                if (intValue != null) item.group.rating = intValue
+            }
+            if (item.group.isBeingProcessed) baseLayout.startAnimation(
+                BlinkAnimation(500, 250)
+            ) else baseLayout.clearAnimation()
+            ivReorder?.apply {
+                visibility = View.VISIBLE
+                @Suppress("UNCHECKED_CAST")
+                bindDragHandle(this@ViewHolder, item as IExtendedDraggable<RecyclerView.ViewHolder>)
+            }
+            if (ivCover != null) {
+                var coverContent: Content? = null
+                if (!item.group.coverContent.isNull) coverContent =
+                    item.group.coverContent.target else if (!item.group.items.isEmpty()) {
+                    if (item.group.items[0].content.isResolved) {
+                        val c = item.group.items[0].content.target
+                        if (c != null) coverContent = c
+                    }
+                }
+                if (coverContent != null) attachCover(coverContent.cover)
+            }
+            val items: List<GroupItem>? = item.group.items
+            val numberStr =
+                if (items.isNullOrEmpty()) ivFavourite.context.getString(R.string.empty) else items.size.toString() + ""
+            title.text = String.format("%s (%s)", item.group.name, numberStr)
+            if (item.group.isFavourite) {
+                ivFavourite.setImageResource(R.drawable.ic_fav_full)
+            } else {
+                ivFavourite.setImageResource(R.drawable.ic_fav_empty)
+            }
+            if (item.group.isFavourite) {
+                ivFavourite.setImageResource(R.drawable.ic_fav_full)
+            } else {
+                ivFavourite.setImageResource(R.drawable.ic_fav_empty)
+            }
+            ivRating.setImageResource(ContentHelper.getRatingResourceId(item.group.rating))
+        }
+
+        private fun attachCover(cover: ImageFile) {
+            ivCover?.let {
+                var thumbLocation = coverUri
+                if (thumbLocation.isEmpty()) thumbLocation = cover.usableUri
+                if (thumbLocation.isEmpty()) {
+                    it.visibility = View.INVISIBLE
+                    return
+                }
+                it.visibility = View.VISIBLE
+                if (thumbLocation.startsWith("http")) Glide.with(it)
+                    .load(thumbLocation)
+                    .apply(glideRequestOptions)
+                    .into(it) else Glide.with(it)
+                    .load(Uri.parse(thumbLocation))
+                    .apply(glideRequestOptions)
+                    .into(it)
+            }
+        }
+
+        val favouriteButton: View
+            get() = ivFavourite
+        val ratingButton: View
+            get() = ivRating
+
+        override fun unbindView(item: GroupDisplayItem) {
+            ivCover?.let {
+                if (Helper.isValidContextForGlide(it)) Glide.with(it).clear(it)
+            }
+        }
+    }
+
+    companion object {
+        private var glideRequestOptions: RequestOptions
+
+        init {
+            val context: Context = HentoidApp.getInstance()
+            val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
+            val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
+            val d: Drawable =
+                BitmapDrawable(context.resources, ImageHelper.tintBitmap(bmp, tintColor))
+            val centerInside: Transformation<Bitmap> = CenterInside()
+            glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
+        }
+    }
+}

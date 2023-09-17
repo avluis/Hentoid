@@ -63,7 +63,6 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewholders.GroupDisplayItem
-import me.devsaki.hentoid.viewholders.GroupDisplayItem.GroupViewHolder
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -104,7 +103,7 @@ class LibraryGroupsFragment : Fragment(),
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private var itemAdapter: ItemAdapter<GroupDisplayItem> = ItemAdapter()
-    private var fastAdapter: FastAdapter<GroupDisplayItem> = FastAdapter.with(itemAdapter)
+    private var fastAdapter = FastAdapter.with(itemAdapter)
     private var selectExtension: SelectExtension<GroupDisplayItem>? = null
     private var touchHelper: ItemTouchHelper? = null
 
@@ -362,7 +361,7 @@ class LibraryGroupsFragment : Fragment(),
     private fun deleteSelectedItems() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         if (selectedItems.isNotEmpty()) {
-            var selectedGroups = selectedItems.mapNotNull { gi -> gi.group }.toMutableList()
+            var selectedGroups = selectedItems.map { gi -> gi.group }.toMutableList()
             val selectedContentLists = selectedGroups.map { g -> viewModel.getGroupContents(g) }
             var selectedContent: MutableList<Content> = ArrayList()
             for (list in selectedContentLists) selectedContent.addAll(list)
@@ -538,7 +537,7 @@ class LibraryGroupsFragment : Fragment(),
     private fun archiveSelectedItems() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         val selectedContent = selectedItems
-            .mapNotNull { obj -> obj.group }
+            .map { obj -> obj.group }
             .flatMap { g -> viewModel.getGroupContents(g) }
             .filterNot { c -> c.storageUri.isEmpty() }
             .toList()
@@ -696,11 +695,11 @@ class LibraryGroupsFragment : Fragment(),
                 fastAdapter: FastAdapter<GroupDisplayItem>,
                 item: GroupDisplayItem
             ) {
-                if (item.group != null) onGroupFavouriteClick(item.group)
+                onGroupFavouriteClick(item.group)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is GroupViewHolder) {
+                return if (viewHolder is GroupDisplayItem.ViewHolder) {
                     viewHolder.favouriteButton
                 } else super.onBind(viewHolder)
             }
@@ -714,11 +713,11 @@ class LibraryGroupsFragment : Fragment(),
                 fastAdapter: FastAdapter<GroupDisplayItem>,
                 item: GroupDisplayItem
             ) {
-                if (item.group != null) onGroupRatingClick(item.group)
+                onGroupRatingClick(item.group)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is GroupViewHolder) {
+                return if (viewHolder is GroupDisplayItem.ViewHolder) {
                     viewHolder.ratingButton
                 } else super.onBind(viewHolder)
             }
@@ -738,7 +737,7 @@ class LibraryGroupsFragment : Fragment(),
         val isEmpty = result.isEmpty()
         binding?.emptyTxt?.isVisible = isEmpty
         activity.get()!!.updateTitle(result.size.toLong(), totalContentCount.toLong())
-        @GroupDisplayItem.ViewType val viewType =
+        val viewType =
             if (activity.get()!!.isEditMode()) GroupDisplayItem.ViewType.LIBRARY_EDIT
             else if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) GroupDisplayItem.ViewType.LIBRARY
             else GroupDisplayItem.ViewType.LIBRARY_GRID
@@ -805,8 +804,8 @@ class LibraryGroupsFragment : Fragment(),
      */
     private fun onItemClick(item: GroupDisplayItem): Boolean {
         if (selectExtension!!.selections.isEmpty()) {
-            if (item.group != null && !item.group.isBeingProcessed) {
-                activity.get()!!.showBooksInGroup(item.group)
+            if (!item.group.isBeingProcessed) {
+                activity.get()?.showBooksInGroup(item.group)
             }
             return true
         }
@@ -824,8 +823,8 @@ class LibraryGroupsFragment : Fragment(),
             selectExtension!!.selectOnLongClick = true
         } else {
             val selectedProcessedCount =
-                selectedItems.mapNotNull { gi -> gi.group }.count { obj -> obj.isBeingProcessed }
-            val selectedLocalCount = selectedItems.mapNotNull { gi -> gi.group }.count()
+                selectedItems.map { gi -> gi.group }.count { obj -> obj.isBeingProcessed }
+            val selectedLocalCount = selectedItems.map { gi -> gi.group }.count()
             activity.get()!!.updateSelectionToolbar(
                 selectedCount.toLong(),
                 selectedProcessedCount.toLong(),
