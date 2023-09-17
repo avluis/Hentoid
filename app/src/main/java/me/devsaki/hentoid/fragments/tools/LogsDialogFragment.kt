@@ -103,7 +103,7 @@ class LogsDialogFragment : DialogFragment(R.layout.dialog_tools_app_logs) {
     }
 
     private fun onItemClick(item: TextItem<DocumentFile>): Boolean {
-        val document = item.getTag() ?: return false
+        val document = item.getObject() ?: return false
         val powerMenu = PowerMenu.Builder(requireContext())
             .addItem(
                 PowerMenuItem(

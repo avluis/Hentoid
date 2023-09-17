@@ -314,7 +314,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
      */
     private fun onSelectionChanged() {
         val item = selectExtension!!.selectedItems.firstOrNull() ?: return
-        val code = item.getTag()
+        val code = item.getObject()
         if (code != null) {
             if (isGroupsDisplayed) {
                 Preferences.setGroupSortField(code)

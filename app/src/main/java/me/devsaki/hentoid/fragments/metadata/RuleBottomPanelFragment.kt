@@ -149,7 +149,7 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
         if (selectedItems.isEmpty()) return
 
         val item = selectedItems.first()
-        val code = item.getTag()
+        val code = item.getObject()
         if (code != null) {
             Preferences.setRuleSortField(code)
             viewModel.loadRules()

@@ -90,7 +90,7 @@ class SearchContentIdDialogFragment : DialogFragment() {
         val fastAdapter: FastAdapter<TextItem<Site>> = FastAdapter.with(itemAdapter)
         fastAdapter.onClickListener =
             { _: View?, _: IAdapter<TextItem<Site>>, i: TextItem<Site>, _: Int? ->
-                onItemSelected(i.getTag())
+                onItemSelected(i.getObject())
             }
         val sitesRecycler =
             ViewCompat.requireViewById<RecyclerView>(rootView, R.id.select_sites)

@@ -155,9 +155,8 @@ class LibraryBottomGroupsFragment : BottomSheetDialogFragment() {
      * Callback for any selected item
      */
     private fun onSelectionChanged(item: TextItem<Int>) {
-        val code = item.getTag()
-        if (code != null) {
-            viewModel.setGrouping(code)
+        item.getObject()?.let {
+            viewModel.setGrouping(it)
             updateArtistVisibility()
         }
     }

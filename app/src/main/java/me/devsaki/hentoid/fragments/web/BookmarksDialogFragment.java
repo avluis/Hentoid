@@ -177,6 +177,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
                         position -> {
                             RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
                             if (vh != null) touchHelper.startDrag(vh);
+                            return null;
                         }
                 )
         );
@@ -299,7 +300,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
         Context context = getActivity();
         if (1 == selectedItems.size() && context != null) {
-            SiteBookmark b = Stream.of(selectedItems).findFirst().get().getTag();
+            SiteBookmark b = Stream.of(selectedItems).findFirst().get().getObject();
             if (b != null && Helper.copyPlainTextToClipboard(context, b.getUrl())) {
                 ToastHelper.toast(context, R.string.web_url_clipboard);
                 selectionToolbar.setVisibility(View.INVISIBLE);
@@ -313,7 +314,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     private void editSelectedItem() {
         Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
         if (1 == selectedItems.size()) {
-            SiteBookmark b = Stream.of(selectedItems).findFirst().get().getTag();
+            SiteBookmark b = Stream.of(selectedItems).findFirst().get().getObject();
             if (b != null)
                 InputDialog.invokeInputDialog(requireActivity(), R.string.bookmark_edit_title, b.getTitle(),
                         this::onEditTitle, () -> selectExtension.deselect(selectExtension.getSelections()));
@@ -324,7 +325,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
         Context context = getActivity();
         if (1 == selectedItems.size() && context != null) {
-            SiteBookmark b = Stream.of(selectedItems).findFirst().get().getTag();
+            SiteBookmark b = Stream.of(selectedItems).findFirst().get().getObject();
             if (b != null) {
                 b.setTitle(newTitle);
                 CollectionDAO dao = new ObjectBoxDAO(context);
@@ -347,7 +348,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
         Context context = getActivity();
         if (!selectedItems.isEmpty() && context != null) {
-            List<SiteBookmark> selectedContent = Stream.of(selectedItems).map(TextItem::getTag).withoutNulls().toList();
+            List<SiteBookmark> selectedContent = Stream.of(selectedItems).map(TextItem::getObject).withoutNulls().toList();
             if (!selectedContent.isEmpty()) {
                 CollectionDAO dao = new ObjectBoxDAO(context);
                 try {
@@ -375,7 +376,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
         Context context = getActivity();
         if (1 == selectedItems.size() && context != null) {
-            List<SiteBookmark> selectedContent = Stream.of(selectedItems).map(TextItem::getTag).withoutNulls().toList();
+            List<SiteBookmark> selectedContent = Stream.of(selectedItems).map(TextItem::getObject).withoutNulls().toList();
             if (!selectedContent.isEmpty()) {
                 SiteBookmark selectedBookmark = selectedContent.get(0);
                 CollectionDAO dao = new ObjectBoxDAO(context);
@@ -403,8 +404,8 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         if (null == selectExtension) return false;
 
         if (selectExtension.getSelectedItems().isEmpty()) {
-            if (!invalidateNextBookClick && item.getTag() != null) {
-                parent.loadUrl(item.getTag().getUrl());
+            if (!invalidateNextBookClick && item.getObject() != null) {
+                parent.loadUrl(item.getObject().getUrl());
                 this.dismiss();
             } else invalidateNextBookClick = false;
 
