@@ -210,10 +210,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     pb.progressDrawable.colorFilter =
-                        BlendModeColorFilter(color, BlendMode.MULTIPLY)
+                        BlendModeColorFilter(color, BlendMode.SRC_IN)
                 } else {
                     @Suppress("DEPRECATION")
-                    pb.progressDrawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
+                    pb.progressDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN)
                 }
 
                 if (content.bookSizeEstimate > 0 && tvPages != null && View.VISIBLE == tvPages.visibility) {
