@@ -154,10 +154,11 @@
 
         <TextView
             android:id="@+id/delete_choice"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:layout_marginStart="8dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             android:layout_marginBottom="4dp"
             android:layout_weight="1"
             android:gravity="center"
@@ -179,15 +180,19 @@
             android:layout_height="48dp"
             android:layout_marginBottom="4dp"
             android:checked="true"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/keep_choice"
             app:layout_constraintStart_toEndOf="@id/delete_choice" />
 
         <TextView
             android:id="@+id/keep_choice"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:layout_gravity="center"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
             android:layout_weight="1"
@@ -201,7 +206,6 @@
             app:drawableStartCompat="@drawable/ic_checked"
             app:drawableTint="?colorSecondary"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/guideline_middle"
             app:layout_constraintStart_toEndOf="@id/keep_delete"
             app:layout_constraintTop_toBottomOf="@id/ivFavourite" />
 
