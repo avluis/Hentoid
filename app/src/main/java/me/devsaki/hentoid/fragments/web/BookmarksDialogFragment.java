@@ -316,8 +316,15 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         if (1 == selectedItems.size()) {
             SiteBookmark b = Stream.of(selectedItems).findFirst().get().getObject();
             if (b != null)
-                InputDialog.invokeInputDialog(requireActivity(), R.string.bookmark_edit_title, b.getTitle(),
-                        this::onEditTitle, () -> selectExtension.deselect(selectExtension.getSelections()));
+                InputDialog.INSTANCE.invokeInputDialog(
+                        requireActivity(),
+                        R.string.bookmark_edit_title,
+                        b.getTitle(),
+                        s -> {
+                            onEditTitle(s);
+                            return null;
+                        },
+                        () -> selectExtension.deselect(selectExtension.getSelections()));
         }
     }
 

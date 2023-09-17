@@ -316,7 +316,7 @@ class LibraryGroupsFragment : Fragment(),
         Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM)
         // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
         Preferences.setGroupSortDesc(false)
-        viewModel.saveGroupPositions(itemAdapter.adapterItems.mapNotNull { gi -> gi.group })
+        viewModel.saveGroupPositions(itemAdapter.adapterItems.map { gi -> gi.group })
         setPagingMethod()
         viewModel.searchGroup()
     }

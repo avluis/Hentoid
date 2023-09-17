@@ -144,9 +144,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
 
         private fun updateLayoutVisibility(item: DuplicateItem) {
             if (item.isBeingDeleted) baseLayout.startAnimation(
-                BlinkAnimation(
-                    500, 250
-                )
+                BlinkAnimation(500, 250)
             ) else baseLayout.clearAnimation()
         }
 

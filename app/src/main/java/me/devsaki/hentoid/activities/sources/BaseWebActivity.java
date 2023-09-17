@@ -741,7 +741,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             int galleryIndex = backListContainsGallery(list);
             if (galleryIndex > -1) webView.goBackOrForward(galleryIndex - list.getCurrentIndex());
         } else { // Seek to page
-            InputDialog.invokeNumberInputDialog(this, R.string.goto_page, this::goToPage);
+            InputDialog.INSTANCE.invokeNumberInputDialog(this, R.string.goto_page, i -> {
+                this.goToPage(i);
+                return null;
+            });
         }
     }
 
