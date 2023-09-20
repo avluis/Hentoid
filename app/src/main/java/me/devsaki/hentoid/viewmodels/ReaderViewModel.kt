@@ -12,6 +12,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import com.annimon.stream.Optional
 import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +51,8 @@ import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.widget.ContentSearchManager
+import me.devsaki.hentoid.workers.DeleteWorker
+import me.devsaki.hentoid.workers.data.DeleteData
 import org.apache.commons.lang3.tuple.ImmutableTriple
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -252,9 +257,7 @@ class ReaderViewModel(
      * @param newImages  Images to process
      */
     private fun loadImages(
-        theContent: Content,
-        pageNumber: Int,
-        newImages: MutableList<ImageFile>
+        theContent: Content, pageNumber: Int, newImages: MutableList<ImageFile>
     ) {
         databaseImages.postValue(newImages)
 
@@ -290,8 +293,7 @@ class ReaderViewModel(
      * @param newImages  Images to process
      */
     private fun processStorageImages(
-        theContent: Content,
-        newImages: MutableList<ImageFile>
+        theContent: Content, newImages: MutableList<ImageFile>
     ) {
         require(!theContent.isArchive) { "Content must not be an archive" }
         val missingUris = newImages.any { img: ImageFile -> img.fileUri.isEmpty() }
@@ -553,16 +555,15 @@ class ReaderViewModel(
                 for (img in theImages) if (readPageNumbers.contains(img.order)) img.isRead = true
                 savedContent.computeReadProgress()
             }
-            if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.isCompleted != markAsCompleted)
-                ContentHelper.updateContentReadStats(
-                    getApplication(),
-                    dao,
-                    savedContent,
-                    theImages,
-                    indexToSet,
-                    updateReads,
-                    markAsCompleted
-                )
+            if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.isCompleted != markAsCompleted) ContentHelper.updateContentReadStats(
+                getApplication(),
+                dao,
+                savedContent,
+                theImages,
+                indexToSet,
+                updateReads,
+                markAsCompleted
+            )
         } finally {
             dao.cleanup()
         }
@@ -702,31 +703,35 @@ class ReaderViewModel(
     /**
      * Delete the current Content
      *
-     * @param onError Callback to call in case an error occurs
+     * @param onLaunched Callback to use if the operation has been launched successfuly
+     * @param onError Callback to use in case an error occurs
      */
     fun deleteContent(onError: (Throwable) -> Unit) {
-        val targetContent: Content = dao.selectContent(loadedContentId) ?: return
+        val targetContent = dao.selectContent(loadedContentId)
+        try {
+            targetContent
+                ?: throw IllegalArgumentException("Content $loadedContentId not found")
 
-        // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
-        if (currentImageSource != null) databaseImages.removeSource(
-            currentImageSource!!
-        )
+            // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
+            currentImageSource?.let { databaseImages.removeSource(it) }
 
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    ContentHelper.removeQueuedContent(
-                        getApplication(), dao, targetContent, true
-                    )
-                }
-                onContentRemoved()
-            } catch (t: Throwable) {
-                onError.invoke(t)
-                // Restore image source listener on error
-                currentImageSource?.let {
-                    databaseImages.addSource(it) { imgs: MutableList<ImageFile> ->
-                        loadImages(targetContent, -1, imgs)
-                    }
+            val builder = DeleteData.Builder()
+            builder.setQueueIds(listOf(loadedContentId))
+
+            val workManager = WorkManager.getInstance(getApplication())
+            workManager.enqueueUniqueWork(
+                R.id.delete_service_delete.toString(),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data)
+                    .build()
+            )
+            onContentRemoved()
+        } catch (t: Throwable) {
+            onError.invoke(t)
+            // Restore image source listener on error
+            currentImageSource?.let { src ->
+                targetContent?.let {
+                    databaseImages.addSource(src) { imgs -> loadImages(it, -1, imgs) }
                 }
             }
         }
@@ -799,30 +804,36 @@ class ReaderViewModel(
      * Load the next Content according to the current filter & search criteria
      *
      * @param viewerIndex Page viewer index the current Content has been left on
+     * @return true if there's a book to load; false if there is none
      */
-    fun loadNextContent(viewerIndex: Int) {
+    fun loadNextContent(viewerIndex: Int): Boolean {
         if (currentContentIndex < contentIds.size - 1) {
             currentContentIndex++
             if (contentIds.isNotEmpty()) {
                 onLeaveBook(viewerIndex)
                 loadContentFromId(contentIds[currentContentIndex], -1)
+                return true
             }
         }
+        return false
     }
 
     /**
      * Load the previous Content according to the current filter & search criteria
      *
      * @param viewerIndex Page viewer index the current Content has been left on
+     * @return true if there's a book to load; false if there is none
      */
-    fun loadPreviousContent(viewerIndex: Int) {
+    fun loadPreviousContent(viewerIndex: Int): Boolean {
         if (currentContentIndex > 0) {
             currentContentIndex--
             if (contentIds.isNotEmpty()) {
                 onLeaveBook(viewerIndex)
                 loadContentFromId(contentIds[currentContentIndex], -1)
+                return true
             }
         }
+        return false
     }
 
     private fun reloadContent(forceImageReload: Boolean = false, viewerIndex: Int = -1) {
@@ -842,8 +853,11 @@ class ReaderViewModel(
         if (-1 == currentContentIndex) currentContentIndex = 0
         c.isFirst = 0 == currentContentIndex
         c.isLast = currentContentIndex >= contentIds.size - 1
-        if (null == FileHelper.getDocumentFromTreeUriString(getApplication(), c.storageUri))
-            c.isFolderExists = false
+        if (null == FileHelper.getDocumentFromTreeUriString(
+                getApplication(),
+                c.storageUri
+            )
+        ) c.isFolderExists = false
         content.postValue(c)
         loadDatabaseImages(c, pageNumber, forceImageReload)
     }
@@ -944,9 +958,12 @@ class ReaderViewModel(
         if (viewerImagesInternal.size <= viewerIndex) return
         val theContent = getContent().value ?: return
         val isArchive = theContent.isArchive
-        val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
-            .filter { i -> isPictureNeedsProcessing(i, viewerImagesInternal) }
-            .toSet()
+        val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1).filter { i ->
+            isPictureNeedsProcessing(
+                i,
+                viewerImagesInternal
+            )
+        }.toSet()
         if (picturesLeftToProcess.isEmpty()) return
 
         // Identify pages to be loaded
@@ -961,9 +978,9 @@ class ReaderViewModel(
                 (viewerImagesInternal.size - 1).toFloat()
             )
         ).toInt()
-        for (i in 0 until quantity)
-            if (picturesLeftToProcess.contains(initialIndex + increment * i))
-                indexesToLoad.add(initialIndex + increment * i)
+        for (i in 0 until quantity) if (picturesLeftToProcess.contains(initialIndex + increment * i)) indexesToLoad.add(
+            initialIndex + increment * i
+        )
 
         // Only run extraction when there's at least 1/3rd of the extract range to fetch
         // (prevents calling extraction for one single picture at every page turn)
@@ -1119,8 +1136,7 @@ class ReaderViewModel(
             } else {
                 extractInstructions.add(
                     Pair(
-                        img.url.replace(c.storageUri + File.separator, ""),
-                        identifier
+                        img.url.replace(c.storageUri + File.separator, ""), identifier
                     )
                 )
                 indexExtractInProgress.add(index)
@@ -1136,14 +1152,12 @@ class ReaderViewModel(
         val nbProcessed = AtomicInteger()
 
         try {
-            ArchiveHelper.extractArchiveEntriesCached(
-                getApplication(),
+            ArchiveHelper.extractArchiveEntriesCached(getApplication(),
                 archiveFile.uri,
                 extractInstructions,
                 archiveExtractKillSwitch,
                 { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
-                { onExtractionComplete(nbProcessed, indexesToLoad.size) }
-            )
+                { onExtractionComplete(nbProcessed, indexesToLoad.size) })
         } catch (e: Exception) {
             EventBus.getDefault().post(
                 ProcessEvent(
@@ -1161,10 +1175,7 @@ class ReaderViewModel(
     }
 
     private fun onResourceExtracted(
-        identifier: String,
-        uri: Uri,
-        nbProcessed: AtomicInteger,
-        maxElements: Int
+        identifier: String, uri: Uri, nbProcessed: AtomicInteger, maxElements: Int
     ) {
 
         val c = getContent().value
@@ -1197,10 +1208,7 @@ class ReaderViewModel(
             indexExtractInProgress.remove(idx)
             // Instanciate a new list to trigger an actual Adapter UI refresh every 4 iterations
             updateImgWithExtractedUri(
-                img,
-                idx,
-                uri,
-                0 == nbProcessed.get() % 4 || nbProcessed.get() == maxElements
+                img, idx, uri, 0 == nbProcessed.get() % 4 || nbProcessed.get() == maxElements
             )
         }
     }
@@ -1228,8 +1236,7 @@ class ReaderViewModel(
     }
 
     private fun onExtractionComplete(
-        nbProcessed: AtomicInteger,
-        maxElements: Int
+        nbProcessed: AtomicInteger, maxElements: Int
     ) {
         Timber.d("Extracted %d files successfuly", maxElements)
         EventBus.getDefault().post(
@@ -1266,8 +1273,9 @@ class ReaderViewModel(
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
         // Already downloaded
-        if (img.fileUri.isNotEmpty() && DiskCache.getFile(formatCacheKey(img)) != null)
-            return Optional.of(ImmutableTriple(pageIndex, img.fileUri, img.mimeType))
+        if (img.fileUri.isNotEmpty() && DiskCache.getFile(formatCacheKey(img)) != null) return Optional.of(
+            ImmutableTriple(pageIndex, img.fileUri, img.mimeType)
+        )
 
         // Initiate download
         try {
@@ -1290,19 +1298,14 @@ class ReaderViewModel(
                     Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
                 )
                 result = downloadPictureFromPage(
-                    content,
-                    img,
-                    pageIndex,
-                    headers,
-                    stopDownload
+                    content, img, pageIndex, headers, stopDownload
                 )
             } else {
                 val imgUrl = HttpHelper.fixUrl(img.url, content.site.url)
                 // Get cookies from the app jar
                 var cookieStr = HttpHelper.getCookies(imgUrl)
                 // If nothing found, peek from the site
-                if (cookieStr.isEmpty()) cookieStr =
-                    HttpHelper.peekCookies(content.galleryUrl)
+                if (cookieStr.isEmpty()) cookieStr = HttpHelper.peekCookies(content.galleryUrl)
                 if (cookieStr.isNotEmpty()) headers.add(
                     Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
                 )

@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.reader
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.graphics.Bitmap
 import android.graphics.Point
@@ -103,7 +104,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var pageSnapWidget: PageSnapWidget
     private val prefsListener =
         OnSharedPreferenceChangeListener { _, key -> onSharedPreferenceChanged(key) }
-    private var viewModel: ReaderViewModel? = null
+    private lateinit var viewModel: ReaderViewModel
     private var absImageIndex = -1 // Absolute (book scale) 0-based image index
 
     private var hasGalleryBeenShown = false
@@ -170,6 +171,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             return img
         }
 
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val vmFactory = ViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider(requireActivity(), vmFactory)[ReaderViewModel::class.java]
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -270,9 +277,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val vmFactory = ViewModelFactory(requireActivity().application)
-        viewModel = ViewModelProvider(requireActivity(), vmFactory)[ReaderViewModel::class.java]
-        viewModel?.apply {
+        viewModel.apply {
             getContent().observe(viewLifecycleOwner) { content: Content? ->
                 onContentChanged(content)
             }
@@ -303,7 +308,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown)
         // Memorize current page
         outState.putInt(KEY_IMG_INDEX, absImageIndex)
-        viewModel?.setViewerStartingIndex(absImageIndex)
+        viewModel.setViewerStartingIndex(absImageIndex)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
@@ -344,7 +349,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     // Make sure position is saved when app is closed by the user
     override fun onStop() {
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
-        viewModel?.onLeaveBook(absImageIndex)
+        viewModel.onLeaveBook(absImageIndex)
         slideshowTimer?.cancel()
         (requireActivity() as ReaderActivity).unregisterKeyListener()
         super.onStop()
@@ -519,7 +524,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
             // Redownload from scratch button
             it.viewerRedownloadBtn.setOnClickListener { _ ->
-                viewModel?.redownloadImages { _ ->
+                viewModel.redownloadImages { _ ->
                     Snackbar.make(
                         it.recyclerView,
                         R.string.redownloaded_error,
@@ -603,14 +608,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onShuffleClick() {
         goToPage(1)
-        viewModel?.toggleShuffle()
+        viewModel.toggleShuffle()
     }
 
     /**
      * Handle click on "Show favourite pages" toggle action button
      */
     private fun onShowFavouriteClick() {
-        viewModel?.filterFavouriteImages(!showFavoritePagesMenu.isChecked)
+        viewModel.filterFavouriteImages(!showFavoritePagesMenu.isChecked)
     }
 
     /**
@@ -684,9 +689,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Handle click on one of the "Favourite" micro menu items
      */
     private fun onFavouriteMicroMenuClick(position: Int) {
-        if (0 == position) viewModel?.toggleContentFavourite(absImageIndex) { newState: Boolean ->
+        if (0 == position) viewModel.toggleContentFavourite(absImageIndex) { newState: Boolean ->
             onBookFavouriteSuccess(newState)
-        } else if (1 == position) viewModel?.toggleImageFavourite(absImageIndex) { newState: Boolean ->
+        } else if (1 == position) viewModel.toggleImageFavourite(absImageIndex) { newState: Boolean ->
             onPageFavouriteSuccess(newState)
         }
         binding?.controlsOverlay?.favouriteMicroMenu?.dips()
@@ -803,7 +808,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onContentChanged(content: Content?) {
         if (null == content) {
-            onBackClick()
+            activity?.finish()
             return
         }
         bookPreferences = content.bookPreferences
@@ -843,11 +848,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     override fun onDeleteElement(onDeletePage: Boolean) {
-        if (onDeletePage) viewModel?.deletePage(absImageIndex) { t: Throwable ->
-            onDeleteError(t)
-        } else viewModel?.deleteContent { t: Throwable ->
-            onDeleteError(t)
-        }
+        if (onDeletePage) viewModel.deletePage(absImageIndex) { t -> onDeleteError(t) }
+        else viewModel.deleteContent { t -> onDeleteError(t) }
     }
 
 
@@ -910,7 +912,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             processPositionDebouncer.submit(ImmutablePair(absImageIndex, scrollDirection))
 
             adapter.getImageAt(absImageIndex)?.let {
-                viewModel?.markPageAsRead(it.order)
+                viewModel.markPageAsRead(it.order)
                 isPageFavourite = it.isFavourite
                 updateFavouriteButtonIcon()
                 Preferences.setReaderCurrentPageNum(it.order)
@@ -925,7 +927,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         currentImg?.let {
             adjustDisplay(it.content.target.bookPreferences)
         }
-        viewModel?.onPageChange(absImageIndex, scrollDirection)
+        viewModel.onPageChange(absImageIndex, scrollDirection)
     }
 
     /**
@@ -952,7 +954,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     override fun onBookPreferenceChanged(newPrefs: Map<String, String>) {
-        viewModel?.updateContentPreferences(newPrefs, absImageIndex)
+        viewModel.updateContentPreferences(newPrefs, absImageIndex)
         bookPreferences = newPrefs
     }
 
@@ -1113,10 +1115,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 if (tag1 != null) {
                     val tag = tag1 as Int
                     if (0 == tag) {
-                        viewModel?.onPageChange(absImageIndex, 0)
+                        viewModel.onPageChange(absImageIndex, 0)
                     } else if (1 == tag) {
                         binding?.apply {
-                            viewModel?.reparseContent { t: Throwable? ->
+                            viewModel.reparseContent { t: Throwable? ->
                                 Timber.w(t)
                                 viewerLoadingTxt.text =
                                     resources.getString(R.string.redownloaded_error)
@@ -1220,12 +1222,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
     }
 
-    override fun nextBook() {
-        viewModel?.loadNextContent(absImageIndex)
+    override fun nextBook(): Boolean {
+        return viewModel.loadNextContent(absImageIndex)
     }
 
-    override fun previousBook() {
-        viewModel?.loadPreviousContent(absImageIndex)
+    override fun previousBook(): Boolean {
+        return viewModel.loadPreviousContent(absImageIndex)
     }
 
     /**
@@ -1356,7 +1358,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun displayGallery() {
         hasGalleryBeenShown = true
-        viewModel?.setViewerStartingIndex(absImageIndex) // Memorize the current page
+        viewModel.setViewerStartingIndex(absImageIndex) // Memorize the current page
         if (parentFragmentManager.backStackEntryCount > 0) { // Gallery mode (Library -> gallery -> pager)
             parentFragmentManager.popBackStack(
                 null, FragmentManager.POP_BACK_STACK_INCLUSIVE

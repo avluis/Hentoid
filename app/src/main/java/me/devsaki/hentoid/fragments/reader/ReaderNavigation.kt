@@ -284,8 +284,8 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
     interface Pager {
         fun goToPage(absPageNum: Int)
         fun seekToPosition(absIndex: Int)
-        fun nextBook()
-        fun previousBook()
+        fun nextBook(): Boolean
+        fun previousBook(): Boolean
         val currentImg: ImageFile?
     }
 }
