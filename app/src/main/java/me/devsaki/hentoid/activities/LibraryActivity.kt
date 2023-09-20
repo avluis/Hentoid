@@ -100,8 +100,10 @@ class LibraryActivity : BaseActivity() {
 
     // === Toolbar
     private var searchMenu: MenuItem? = null
+
     // List / grid view
     private var displayTypeMenu: MenuItem? = null
+
     // Reorder books (only when inside a group that allows it)
     private var reorderMenu: MenuItem? = null
     private var reorderConfirmMenu: MenuItem? = null
@@ -447,8 +449,13 @@ class LibraryActivity : BaseActivity() {
                 libraryAlertIcon.visibility = View.VISIBLE
                 libraryAlertFixBtn.setOnClickListener { fixNotifications() }
                 libraryAlertFixBtn.visibility = View.VISIBLE
-            } else if (isLowOnSpace()) { // Display low space alert
+            } else if (isLowDeviceStorage()) { // Display low device storage alert
                 libraryAlertTxt.setText(R.string.alert_low_memory)
+                libraryAlertTxt.visibility = View.VISIBLE
+                libraryAlertIcon.visibility = View.VISIBLE
+                libraryAlertFixBtn.visibility = View.GONE
+            } else if (isLowDatabaseStorage()) { // Display low database storage alert
+                libraryAlertTxt.setText(R.string.alert_low_memory_db)
                 libraryAlertTxt.visibility = View.VISIBLE
                 libraryAlertIcon.visibility = View.VISIBLE
                 libraryAlertFixBtn.visibility = View.GONE
@@ -861,11 +868,21 @@ class LibraryActivity : BaseActivity() {
         ) updateAlertBanner()
     }
 
-    private fun isLowOnSpace(): Boolean {
-        return isLowOnSpace(StorageLocation.PRIMARY_1) || isLowOnSpace(StorageLocation.PRIMARY_2)
+    private fun isLowDeviceStorage(): Boolean {
+        return isLowDeviceStorage(StorageLocation.PRIMARY_1) || isLowDeviceStorage(StorageLocation.PRIMARY_2)
     }
 
-    private fun isLowOnSpace(location: StorageLocation): Boolean {
+    private fun isLowDatabaseStorage(): Boolean {
+        val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
+        val dao: CollectionDAO = ObjectBoxDAO(applicationContext)
+        try {
+            return dao.dbSizeBytes / 1024f / dbMaxSizeKb < 0.02
+        } finally {
+            dao.cleanup()
+        }
+    }
+
+    private fun isLowDeviceStorage(location: StorageLocation): Boolean {
         val rootFolder =
             FileHelper.getDocumentFromTreeUriString(this, Preferences.getStorageUri(location))
                 ?: return false
