@@ -29,7 +29,7 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.preferences.DownloadStrategyDialogFragment
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
-import me.devsaki.hentoid.fragments.preferences.MemoryUsageDialogFragment
+import me.devsaki.hentoid.fragments.preferences.StorageUsageDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -134,7 +134,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             }
 
             statsPanel.setOnClickListener {
-                MemoryUsageDialogFragment.invoke(supportFragmentManager)
+                StorageUsageDialogFragment.invoke(supportFragmentManager)
             }
         }
     }

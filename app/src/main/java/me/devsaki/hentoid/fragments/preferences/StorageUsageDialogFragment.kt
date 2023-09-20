@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
-import me.devsaki.hentoid.databinding.DialogPrefsMemoryBinding
+import me.devsaki.hentoid.databinding.DialogPrefsStorageBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Preferences
@@ -20,9 +20,9 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import org.apache.commons.lang3.tuple.ImmutablePair
 
-class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
+class StorageUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_storage) {
     // == UI
-    private var _binding: DialogPrefsMemoryBinding? = null
+    private var _binding: DialogPrefsStorageBinding? = null
     private val binding get() = _binding!!
 
     private var rowPadding = 0
@@ -31,7 +31,7 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View {
-        _binding = DialogPrefsMemoryBinding.inflate(inflater, container, false)
+        _binding = DialogPrefsStorageBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -169,7 +169,7 @@ class MemoryUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_memory) {
 
     companion object {
         fun invoke(fragmentManager: FragmentManager) {
-            val fragment = MemoryUsageDialogFragment()
+            val fragment = StorageUsageDialogFragment()
             fragment.show(fragmentManager, null)
         }
     }
