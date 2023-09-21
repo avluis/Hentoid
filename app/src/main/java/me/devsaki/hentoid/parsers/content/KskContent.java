@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -44,7 +45,7 @@ public class KskContent extends BaseContentParser {
 
         if (null == information || information.isEmpty()) return content;
 
-        int qtyPages = thumbs.size();
+        int qtyPages = (thumbs != null) ? thumbs.size() : 0;
         AttributeMap attributes = new AttributeMap();
 
         if (uploadDate != null && !uploadDate.isEmpty()) {
@@ -71,9 +72,9 @@ public class KskContent extends BaseContentParser {
         content.putAttributes(attributes);
 
         if (updateImages) {
-            List<String> pagesUrl = KskParser.parseImages(thumbs);
-
-            content.setImageFiles(ParseHelper.urlsToImageFiles(pagesUrl, content.getCoverImageUrl(), StatusContent.SAVED));
+            List<String> pagesUrl = (thumbs != null) ? KskParser.parseImages(thumbs) : Collections.emptyList();
+            if (!pagesUrl.isEmpty())
+                content.setImageFiles(ParseHelper.urlsToImageFiles(pagesUrl, content.getCoverImageUrl(), StatusContent.SAVED));
             content.setQtyPages(qtyPages);
         }
 
