@@ -630,11 +630,12 @@ class LibraryActivity : BaseActivity() {
         showSearchHistory: Boolean
     ) {
         binding?.advancedSearch?.apply {
-            background.visibility = View.VISIBLE
-            advancedSearchBtn.isVisible = (showAdvancedSearch && !isGroupDisplayed())
+            advancedSearchBtn.isVisible = showAdvancedSearch && !isGroupDisplayed()
             if (showClear != null) searchClearBtn.isVisible = showClear
             if (showSaveSearch != null) searchSaveBtn.isVisible =
-                (showSaveSearch && !isGroupDisplayed())
+                showSaveSearch && !isGroupDisplayed()
+            background.isVisible =
+                advancedSearchBtn.isVisible || searchClearBtn.isVisible || searchSaveBtn.isVisible
         }
 
         if (showSearchHistory && searchRecords.isNotEmpty()) {
@@ -695,10 +696,13 @@ class LibraryActivity : BaseActivity() {
                         R.color.white_opacity_87
                     )
                 )
-                showAsDropDown(binding?.advancedSearch?.background)
+                binding?.apply {
+                    val anchor =
+                        if (advancedSearch.background.isVisible) advancedSearch.background else libraryToolbar
+                    showAsDropDown(anchor)
+                }
             }
         } else if (!showSearchHistory) searchHistory?.dismiss()
-
     }
 
     fun hideSearchSubBar() {
