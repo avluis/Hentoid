@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import me.devsaki.hentoid.R
@@ -76,20 +77,23 @@ class StorageUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_storage)
             setProgress3(1 - deviceFreeBytes * 1f / deviceTotalBytes) // Total size taken on the device
         }
 
-        binding.memoryTotal.text = resources.getString(
+        binding.memoryTotalTxt.text = resources.getString(
             R.string.memory_total, FileHelper.formatHumanReadableSize(deviceTotalBytes, resources)
         )
 
-        binding.memoryFree.text = resources.getString(
+        binding.memoryFreeTxt.text = resources.getString(
             R.string.memory_free, FileHelper.formatHumanReadableSize(deviceFreeBytes, resources)
         )
 
-        binding.memoryHentoidMain.text = resources.getString(
+        binding.memoryHentoidPrimaryTxt.text = resources.getString(
             R.string.memory_hentoid_main,
             FileHelper.formatHumanReadableSize(primaryUsageBytes, resources)
         )
 
-        binding.memoryHentoidExt.text = resources.getString(
+        binding.memoryHentoidExtTxt.isVisible = externalUsageBytes > 0
+        binding.memoryHentoidExtColor.isVisible = externalUsageBytes > 0
+
+        binding.memoryHentoidExtTxt.text = resources.getString(
             R.string.memory_hentoid_ext,
             FileHelper.formatHumanReadableSize(externalUsageBytes, resources)
         )
