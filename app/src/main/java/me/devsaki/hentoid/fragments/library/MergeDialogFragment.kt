@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -49,7 +48,6 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
 
     // === UI
     private var binding: DialogLibraryMergeBinding? = null
-    private var newTitleTxt: EditText? = null
 
     private val itemAdapter = ItemAdapter<ContentItem>()
     private val fastAdapter: FastAdapter<ContentItem> = FastAdapter.with(itemAdapter)
@@ -142,9 +140,12 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
 
     private fun onActionClick() {
         val contents = itemAdapter.adapterItems.mapNotNull { ci -> ci.content }
-        val newTitleStr = if (null == newTitleTxt) "" else newTitleTxt!!.text.toString()
-        binding?.let {
-            parent?.mergeContents(contents, newTitleStr, it.mergeDeleteSwitch.isChecked)
+        var newTitleStr = ""
+        binding?.apply {
+            titleNew.editText?.apply {
+                newTitleStr = text.toString()
+            }
+            parent?.mergeContents(contents, newTitleStr, mergeDeleteSwitch.isChecked)
         }
         dismissAllowingStateLoss()
     }
@@ -155,16 +156,18 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
     // FastAdapter hooks
     override fun itemTouchDropped(oldPosition: Int, newPosition: Int) {
         // Update visuals
-        binding?.let {
-            val vh = it.list.findViewHolderForAdapterPosition(newPosition)
+        binding?.apply {
+            val vh = list.findViewHolderForAdapterPosition(newPosition)
             if (vh is IDraggableViewHolder) {
                 (vh as IDraggableViewHolder).onDropped()
             }
-        }
-        // Update new title if unedited
-        if (0 == newPosition && newTitleTxt!!.text.toString() == initialTitle) {
-            initialTitle = itemAdapter.getAdapterItem(0).title
-            newTitleTxt!!.setText(initialTitle)
+            // Update new title if unedited
+            titleNew.editText?.apply {
+                if (0 == newPosition && text.toString() == initialTitle) {
+                    initialTitle = itemAdapter.getAdapterItem(0).title
+                    setText(initialTitle)
+                }
+            }
         }
     }
 
