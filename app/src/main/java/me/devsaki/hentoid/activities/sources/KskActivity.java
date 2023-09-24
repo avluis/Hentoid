@@ -8,7 +8,7 @@ public class KskActivity extends BaseWebActivity {
     private static final String[] GALLERY_FILTER = {"ksk.moe/view/[0-9]+/[\\w\\-]+$"};
     private static final String[] REMOVABLE_ELEMENTS = {".bwrp"};
     private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
-    private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder"};
+    private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "trackingurl"};
 
     Site getStartSite() {
         return Site.KSK;
