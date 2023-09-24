@@ -432,7 +432,7 @@
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
-            android:title="@string/pref_cat_eh"
+            android:title="@string/pref_cat_ksk"
             app:iconSpaceReserved="false">
             <CheckBoxPreference
                 android:defaultValue="@string/pref_dl_eh_hires_default"
