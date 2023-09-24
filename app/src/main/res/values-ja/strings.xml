@@ -210,11 +210,6 @@
     <string name="duplicate_use_artist">作家</string>
     <string name="duplicate_use_cover">表紙</string>
     <string name="duplicate_use_same_language">同じ言語のみ</string>
-    <string-array name="duplicate_use_sensitivities">
-        <item>寛容</item>
-        <item>標準</item>
-        <item>厳しい</item>
-    </string-array>
     <string name="duplicate_use_sensitivity">感度</string>
     <string name="duplicate_use_title">タイトル</string>
     <string name="duplicate_wait_index">索引付け…</string>

@@ -210,11 +210,6 @@
     <string name="duplicate_use_artist">작가</string>
     <string name="duplicate_use_cover">표지</string>
     <string name="duplicate_use_same_language">같은 언어만</string>
-    <string-array name="duplicate_use_sensitivities">
-        <item>느슨하게</item>
-        <item>표준</item>
-        <item>엄격하게</item>
-    </string-array>
     <string name="duplicate_use_sensitivity">검사 강도</string>
     <string name="duplicate_use_title">제목</string>
     <string name="duplicate_wait_index">인덱싱 중…</string>

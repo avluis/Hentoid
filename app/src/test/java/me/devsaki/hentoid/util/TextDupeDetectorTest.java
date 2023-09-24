@@ -53,7 +53,7 @@ public class TextDupeDetectorTest {
         System.out.printf("%d lines loaded\n", vals1.size());
 
         float tolerance = 0.01f;
-        int sensitivity = 0; // 0=permissive; 2=strict
+        int sensitivity = 0; // 0=loosely similar; 2=very similar
         boolean ignoreChapters = true;
 
         Cosine c = new Cosine();

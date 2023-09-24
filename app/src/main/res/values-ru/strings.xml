@@ -806,11 +806,6 @@
     <string name="duplicate_use_same_language">Только на том же языке</string>
     <string name="duplicate_ignore_chapters">Игнорировать главы и сиквелы</string>
     <string name="duplicate_use_sensitivity">Чувствительность</string>
-    <string-array name="duplicate_use_sensitivities">
-        <item>Слабая</item>
-        <item>Обычная</item>
-        <item>Сильная</item>
-    </string-array>
     <string name="duplicate_find_action">Начать поиск</string>
     <string name="duplicate_index_covers">Индексирую обложки</string>
     <string name="duplicate_find">Определяю дубликаты</string>

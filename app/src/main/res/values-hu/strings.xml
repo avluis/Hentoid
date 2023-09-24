@@ -724,11 +724,6 @@
     <string name="duplicate_use_same_language">Csak ugyanazon a nyelven</string>
     <string name="duplicate_ignore_chapters">Fejezetek és folytatások figyelmen kívül hagyása</string>
     <string name="duplicate_use_sensitivity">Érzékenység</string>
-    <string-array name="duplicate_use_sensitivities">
-        <item>Engedékeny</item>
-        <item>Szabványos</item>
-        <item>Szigorú</item>
-    </string-array>
     <string name="duplicate_find_action">Duplikátumok keresése</string>
     <string name="duplicate_index_covers">Borítóképek indexelése</string>
     <string name="duplicate_find">Duplikált könyvek észlelése</string>

@@ -805,11 +805,6 @@
     <string name="duplicate_use_same_language">Лише тей же мовою</string>
     <string name="duplicate_ignore_chapters">Ігнорувати глави та сіквели</string>
     <string name="duplicate_use_sensitivity">Чутливість</string>
-    <string-array name="duplicate_use_sensitivities">
-        <item>Слабка</item>
-        <item>Звичайна</item>
-        <item>Сильна</item>
-    </string-array>
     <string name="duplicate_find_action">Розпочати пошук</string>
     <string name="duplicate_index_covers">Індексую обкладинки</string>
     <string name="duplicate_find">Визначаю дублікати</string>

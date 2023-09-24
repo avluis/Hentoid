@@ -210,11 +210,6 @@
     <string name="duplicate_use_artist">Artista</string>
     <string name="duplicate_use_cover">Copertina</string>
     <string name="duplicate_use_same_language">Solo nella stessa lingua</string>
-    <string-array name="duplicate_use_sensitivities">
-        <item>Permissivo</item>
-        <item>Standard</item>
-        <item>Severo</item>
-    </string-array>
     <string name="duplicate_use_sensitivity">Sensibilit?</string>
     <string name="duplicate_use_title">Titolo</string>
     <string name="duplicate_wait_index">Indicizzazione?</string>
