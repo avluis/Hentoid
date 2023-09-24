@@ -311,6 +311,9 @@ dependencies {
     // Biometrics
     implementation 'dev.skomlach:biometric:2.2.5'
 
+    // Searchable prefs
+    implementation 'com.github.ByteHamster:SearchPreference:v2.4.0'
+
 
     /**
      * ANALYTICS

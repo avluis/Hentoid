@@ -8,6 +8,7 @@ import android.view.View
 import android.webkit.CookieManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -18,6 +19,7 @@ import androidx.preference.PreferenceScreen
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.bytehamster.lib.preferencesearch.SearchPreference
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -97,6 +99,13 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         setPreferencesFromResource(R.xml.preferences, rootKey)
         onExternalFolderChanged()
 
+        // Search bar
+        (findPreference("searchPreference") as SearchPreference?)?.apply {
+            val config = searchConfiguration
+            config.setActivity(activity as AppCompatActivity)
+            config.index(R.xml.preferences)
+        }
+
         // Numbers-only on delay input
         val editTextPreference =
             preferenceManager.findPreference<EditTextPreference>(Preferences.Key.DL_HTTP_429_DEFAULT_DELAY)
@@ -154,16 +163,37 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             else -> super.onPreferenceTreeClick(preference)
         }
 
-    override fun onNavigateToScreen(preferenceScreen: PreferenceScreen) {
+    fun navigateToScreen(manager : FragmentManager, screenKey: String): PreferencesFragment {
         val preferenceFragment = PreferencesFragment().withArguments {
-            putString(ARG_PREFERENCE_ROOT, preferenceScreen.key)
+            putString(ARG_PREFERENCE_ROOT, screenKey)
         }
 
-        parentFragmentManager.commit(true) {
+        manager.commit(true) {
             replace(android.R.id.content, preferenceFragment)
             addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager
         }
+        return preferenceFragment
     }
+
+    override fun onNavigateToScreen(preferenceScreen: PreferenceScreen) {
+        navigateToScreen(parentFragmentManager, preferenceScreen.key)
+    }
+
+    /*
+    fun onSearchResultClicked(result: SearchPreferenceResult) {
+        if (result.resourceFile == prefResId) {
+            // Result was found in the current file
+            searchPreference.isVisible = false // Do not allow to click search multiple times
+            scrollToPreference(result.key)
+        } else {
+            // Result was found in another file
+            preferenceScreen.removeAll()
+            addPreferencesFromResource(result.resourceFile)
+            result.highlight(this)
+        }
+        prefResId = result.resourceFile
+    }
+     */
 
     private fun onCheckUpdatePrefClick() {
         if (!UpdateDownloadWorker.isRunning(requireContext())) {

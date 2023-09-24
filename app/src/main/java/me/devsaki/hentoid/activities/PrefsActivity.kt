@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
+import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
+import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
@@ -12,7 +14,9 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class PrefsActivity : BaseActivity() {
+class PrefsActivity : BaseActivity(), SearchPreferenceResultListener {
+
+    private lateinit var fragment: PreferencesFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +28,7 @@ class PrefsActivity : BaseActivity() {
             isDownloaderPrefs() -> rootKey = "downloader"
             isStoragePrefs() -> rootKey = "storage"
         }
-        val fragment = PreferencesFragment.newInstance(rootKey)
+        fragment = PreferencesFragment.newInstance(rootKey)
 
         supportFragmentManager.commit {
             replace(android.R.id.content, fragment)
@@ -81,5 +85,20 @@ class PrefsActivity : BaseActivity() {
         // Make sure current activity is active (=eligible to display that toast)
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
         ToastHelper.toast(event.message)
+    }
+
+    override fun onSearchResultClicked(result: SearchPreferenceResult) {
+        /*
+        fragment = PreferencesFragment()
+        supportFragmentManager.beginTransaction()
+            .replace(android.R.id.content, fragment).addToBackStack("PrefsFragment")
+            .commit() // Allow to navigate back to search
+
+
+        Handler(mainLooper).post { fragment.onSearchResultClicked(result) }
+        */
+        if (result.screen != null)
+            fragment = fragment.navigateToScreen(supportFragmentManager, result.screen)
+        result.highlight(fragment)
     }
 }
