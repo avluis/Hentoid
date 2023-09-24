@@ -26,6 +26,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -53,7 +54,6 @@ import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.image.ImageHelper.tintBitmap
-import me.devsaki.hentoid.views.CircularProgressView
 import timber.log.Timber
 import java.util.Locale
 import kotlin.math.floor
@@ -260,7 +260,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private var ivFavourite: ImageView? = view.findViewById(R.id.ivFavourite)
         private var ivRating: ImageView? = view.findViewById(R.id.iv_rating)
         private var ivExternal: ImageView? = view.findViewById(R.id.ivExternal)
-        private var readingProgress: CircularProgressView? =
+        private var readingProgress: CircularProgressIndicator? =
             view.findViewById(R.id.reading_progress)
         private var ivCompleted: ImageView? = view.findViewById(R.id.ivCompleted)
         private var ivChapters: ImageView? = view.findViewById(R.id.ivChapters)
@@ -462,9 +462,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 val imgs = content.imageList
                 if (!content.isCompleted) {
                     visibility = View.VISIBLE
-                    setTotalColor(R.color.transparent)
-                    setTotal(imgs.count { imf -> imf.isReadable }.toLong())
-                    setProgress1(content.readPagesCount.toFloat())
+                    max = imgs.count { imf -> imf.isReadable }
+                    progress = content.readPagesCount
                 } else {
                     visibility = View.INVISIBLE
                 }
