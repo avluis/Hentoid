@@ -179,7 +179,7 @@ class LibraryActivity : BaseActivity() {
 
     // === PUBLIC ACCESSORS (to be used by fragments)
     fun getSelectionToolbar(): Toolbar? {
-        return binding?.librarySelectionToolbar
+        return binding?.selectionToolbar
     }
 
     fun getQuery(): String {
@@ -225,7 +225,7 @@ class LibraryActivity : BaseActivity() {
             it.addDrawerListener(object : ActionBarDrawerToggle(
                 this,
                 activityBinding?.drawerLayout,
-                binding?.libraryToolbar,
+                binding?.toolbar,
                 R.string.open_drawer,
                 R.string.close_drawer
             ) {
@@ -326,8 +326,8 @@ class LibraryActivity : BaseActivity() {
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
 
         // Empty all handlers to avoid leaks
-        binding?.libraryToolbar?.setOnMenuItemClickListener(null)
-        binding?.librarySelectionToolbar?.apply {
+        binding?.toolbar?.setOnMenuItemClickListener(null)
+        binding?.selectionToolbar?.apply {
             setOnMenuItemClickListener(null)
             setNavigationOnClickListener(null)
         }
@@ -347,7 +347,7 @@ class LibraryActivity : BaseActivity() {
         binding?.let {
             if (Preferences.isFirstRunProcessComplete()) TooltipHelper.showTooltip(
                 this, R.string.help_search, ArrowOrientation.TOP,
-                it.libraryToolbar, this
+                it.toolbar, this
             )
             updateAlertBanner()
         }
@@ -433,36 +433,36 @@ class LibraryActivity : BaseActivity() {
         binding?.alertBanner?.apply {
             // Remind user that the app is in browser mode
             if (Preferences.isBrowserMode()) {
-                libraryAlertTxt.setText(R.string.alert_browser_mode)
-                libraryAlertTxt.visibility = View.VISIBLE
-                libraryAlertIcon.visibility = View.GONE
-                libraryAlertFixBtn.visibility = View.GONE
+                alertTxt.setText(R.string.alert_browser_mode)
+                alertTxt.visibility = View.VISIBLE
+                alertIcon.visibility = View.GONE
+                alertFixBtn.visibility = View.GONE
             } else if (!PermissionHelper.checkExternalStorageReadWritePermission(this@LibraryActivity)) { // Warn about permissions being lost
-                libraryAlertTxt.setText(R.string.alert_permissions_lost)
-                libraryAlertTxt.visibility = View.VISIBLE
-                libraryAlertIcon.visibility = View.VISIBLE
-                libraryAlertFixBtn.setOnClickListener { fixPermissions() }
-                libraryAlertFixBtn.visibility = View.VISIBLE
+                alertTxt.setText(R.string.alert_permissions_lost)
+                alertTxt.visibility = View.VISIBLE
+                alertIcon.visibility = View.VISIBLE
+                alertFixBtn.setOnClickListener { fixPermissions() }
+                alertFixBtn.visibility = View.VISIBLE
             } else if (!PermissionHelper.checkNotificationPermission(this@LibraryActivity)) { // Warn about notiftications not being enabled
-                libraryAlertTxt.setText(R.string.alert_notifications)
-                libraryAlertTxt.visibility = View.VISIBLE
-                libraryAlertIcon.visibility = View.VISIBLE
-                libraryAlertFixBtn.setOnClickListener { fixNotifications() }
-                libraryAlertFixBtn.visibility = View.VISIBLE
+                alertTxt.setText(R.string.alert_notifications)
+                alertTxt.visibility = View.VISIBLE
+                alertIcon.visibility = View.VISIBLE
+                alertFixBtn.setOnClickListener { fixNotifications() }
+                alertFixBtn.visibility = View.VISIBLE
             } else if (isLowDeviceStorage()) { // Display low device storage alert
-                libraryAlertTxt.setText(R.string.alert_low_memory)
-                libraryAlertTxt.visibility = View.VISIBLE
-                libraryAlertIcon.visibility = View.VISIBLE
-                libraryAlertFixBtn.visibility = View.GONE
+                alertTxt.setText(R.string.alert_low_memory)
+                alertTxt.visibility = View.VISIBLE
+                alertIcon.visibility = View.VISIBLE
+                alertFixBtn.visibility = View.GONE
             } else if (isLowDatabaseStorage()) { // Display low database storage alert
-                libraryAlertTxt.setText(R.string.alert_low_memory_db)
-                libraryAlertTxt.visibility = View.VISIBLE
-                libraryAlertIcon.visibility = View.VISIBLE
-                libraryAlertFixBtn.visibility = View.GONE
+                alertTxt.setText(R.string.alert_low_memory_db)
+                alertTxt.visibility = View.VISIBLE
+                alertIcon.visibility = View.VISIBLE
+                alertFixBtn.visibility = View.GONE
             } else {
-                libraryAlertTxt.visibility = View.GONE
-                libraryAlertIcon.visibility = View.GONE
-                libraryAlertFixBtn.visibility = View.GONE
+                alertTxt.visibility = View.GONE
+                alertIcon.visibility = View.GONE
+                alertFixBtn.visibility = View.GONE
             }
         }
     }
@@ -477,7 +477,7 @@ class LibraryActivity : BaseActivity() {
 
     private fun initToolbar() {
         binding?.apply {
-            searchMenu = libraryToolbar.menu.findItem(R.id.action_search)
+            searchMenu = toolbar.menu.findItem(R.id.action_search)
             searchMenu?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem): Boolean {
                     showSearchSubBar(true, null, null, !preventShowSearchHistoryNextExpand)
@@ -502,15 +502,15 @@ class LibraryActivity : BaseActivity() {
                     return true
                 }
             })
-            displayTypeMenu = libraryToolbar.menu.findItem(R.id.action_display_type)
+            displayTypeMenu = toolbar.menu.findItem(R.id.action_display_type)
             if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
                 displayTypeMenu?.setIcon(R.drawable.ic_view_gallery)
             else displayTypeMenu?.setIcon(R.drawable.ic_view_list)
-            reorderMenu = libraryToolbar.menu.findItem(R.id.action_edit)
-            reorderCancelMenu = libraryToolbar.menu.findItem(R.id.action_edit_cancel)
-            reorderConfirmMenu = libraryToolbar.menu.findItem(R.id.action_edit_confirm)
-            newGroupMenu = libraryToolbar.menu.findItem(R.id.action_group_new)
-            sortMenu = libraryToolbar.menu.findItem(R.id.action_sort_filter)
+            reorderMenu = toolbar.menu.findItem(R.id.action_edit)
+            reorderCancelMenu = toolbar.menu.findItem(R.id.action_edit_cancel)
+            reorderConfirmMenu = toolbar.menu.findItem(R.id.action_edit_confirm)
+            newGroupMenu = toolbar.menu.findItem(R.id.action_group_new)
+            sortMenu = toolbar.menu.findItem(R.id.action_sort_filter)
             actionSearchView = searchMenu?.actionView as SearchView?
             actionSearchView?.apply {
                 imeOptions = EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING
@@ -561,11 +561,11 @@ class LibraryActivity : BaseActivity() {
         selectionToolbarOnItemClicked: Toolbar.OnMenuItemClickListener
     ) {
         binding?.apply {
-            libraryToolbar.setOnMenuItemClickListener(toolbarOnItemClicked)
-            librarySelectionToolbar.setOnMenuItemClickListener(selectionToolbarOnItemClicked)
-            librarySelectionToolbar.setNavigationOnClickListener {
+            toolbar.setOnMenuItemClickListener(toolbarOnItemClicked)
+            selectionToolbar.setOnMenuItemClickListener(selectionToolbarOnItemClicked)
+            selectionToolbar.setNavigationOnClickListener {
                 selectExtension.deselect(selectExtension.selections.toMutableSet())
-                librarySelectionToolbar.visibility = View.GONE
+                selectionToolbar.visibility = View.GONE
             }
         }
     }
@@ -698,7 +698,7 @@ class LibraryActivity : BaseActivity() {
                 )
                 binding?.apply {
                     val anchor =
-                        if (advancedSearch.background.isVisible) advancedSearch.background else libraryToolbar
+                        if (advancedSearch.background.isVisible) advancedSearch.background else toolbar
                     showAsDropDown(anchor)
                 }
             }
@@ -745,7 +745,7 @@ class LibraryActivity : BaseActivity() {
     }
 
     private fun initSelectionToolbar() {
-        binding?.librarySelectionToolbar?.apply {
+        binding?.selectionToolbar?.apply {
             menu.clear()
             inflateMenu(R.menu.library_selection_menu)
             Helper.tryShowMenuIcons(this@LibraryActivity, menu)
@@ -842,7 +842,7 @@ class LibraryActivity : BaseActivity() {
             )
         }
         binding?.apply {
-            libraryToolbar.title = title
+            toolbar.title = title
             titles[libraryPager.currentItem] = title
         }
     }
@@ -904,15 +904,15 @@ class LibraryActivity : BaseActivity() {
             if (PermissionHelper.RQST_STORAGE_PERMISSION == requestCode) {
                 if (permissions.size < 2) return
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    libraryAlertTxt.visibility = View.GONE
-                    libraryAlertIcon.visibility = View.GONE
-                    libraryAlertFixBtn.visibility = View.GONE
+                    alertTxt.visibility = View.GONE
+                    alertIcon.visibility = View.GONE
+                    alertFixBtn.visibility = View.GONE
                 } // Don't show rationales here; the alert still displayed on screen should be enough
             } else if (PermissionHelper.RQST_NOTIFICATION_PERMISSION == requestCode) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    libraryAlertTxt.visibility = View.GONE
-                    libraryAlertIcon.visibility = View.GONE
-                    libraryAlertFixBtn.visibility = View.GONE
+                    alertTxt.visibility = View.GONE
+                    alertIcon.visibility = View.GONE
+                    alertFixBtn.visibility = View.GONE
                 } // Don't show rationales here; the alert still displayed on screen should be enough
             }
         }
@@ -944,7 +944,7 @@ class LibraryActivity : BaseActivity() {
         viewModel.searchGroup()
         binding?.apply {
             libraryPager.currentItem = 0
-            if (titles.containsKey(0)) libraryToolbar.title = titles[0]
+            if (titles.containsKey(0)) toolbar.title = titles[0]
         }
     }
 
@@ -990,7 +990,7 @@ class LibraryActivity : BaseActivity() {
                 currentGrouping.canReorderBooks() && group != null && group!!.getSubtype() != 1
             isToolbarNavigationDrawer = currentGrouping == Grouping.FLAT
         }
-        binding?.libraryToolbar?.apply {
+        binding?.toolbar?.apply {
             if (isToolbarNavigationDrawer) { // Open the left drawer
                 setNavigationIcon(R.drawable.ic_drawer)
                 setNavigationOnClickListener { openNavigationDrawer() }
@@ -1014,7 +1014,7 @@ class LibraryActivity : BaseActivity() {
         val hasProcessed = selectedProcessedCount > 0
         val selectedDownloadedCount = selectedLocalCount - selectedStreamedCount
         val selectedExternalCount = selectedNonArchiveExternalCount + selectedArchiveExternalCount
-        binding?.librarySelectionToolbar?.title = resources.getQuantityString(
+        binding?.selectionToolbar?.title = resources.getQuantityString(
             R.plurals.items_selected,
             selectedTotalCount.toInt(),
             selectedTotalCount.toInt()

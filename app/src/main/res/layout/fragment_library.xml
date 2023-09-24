@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/library_toolbar"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
@@ -17,7 +17,7 @@
         tools:title="154 items" />
 
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/library_selection_toolbar"
+        android:id="@+id/selection_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:visibility="gone"
@@ -31,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/library_toolbar"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         tools:visibility="visible" />
 
     <androidx.viewpager2.widget.ViewPager2

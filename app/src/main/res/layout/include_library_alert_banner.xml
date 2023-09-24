@@ -8,7 +8,7 @@
     android:textColor="?colorOnSecondary">
 
     <ImageView
-        android:id="@+id/library_alert_icon"
+        android:id="@+id/alert_icon"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginStart="8dp"
@@ -22,7 +22,7 @@
         tools:visibility="visible" />
 
     <TextView
-        android:id="@+id/library_alert_txt"
+        android:id="@+id/alert_txt"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -31,12 +31,12 @@
         android:text="@string/alert_low_memory_db"
         android:textSize="@dimen/text_body_2"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/library_alert_fix_btn"
-        app:layout_constraintStart_toEndOf="@id/library_alert_icon"
+        app:layout_constraintEnd_toStartOf="@id/alert_fix_btn"
+        app:layout_constraintStart_toEndOf="@id/alert_icon"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/library_alert_fix_btn"
+        android:id="@+id/alert_fix_btn"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:background="?colorSecondary"
