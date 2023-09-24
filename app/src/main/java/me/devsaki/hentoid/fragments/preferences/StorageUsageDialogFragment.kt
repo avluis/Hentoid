@@ -66,37 +66,32 @@ class StorageUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_storage)
         val primaryUsageBytes = primaryMemUsage.map { e -> e.value.right }.sum()
         val externalUsageBytes = externalMemUsage.map { e -> e.value.right }.sum()
 
-        binding.memoryGlobalGraph.apply {
-            setTotalColor(R.color.primary_light)
-            setProgress1Color(R.color.secondary_light)
-            setProgress2Color(R.color.secondary_variant_light)
-            setProgress3Color(R.color.white_opacity_25)
-            setTotal(1)
-            setProgress1(primaryUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid primary library
-            setProgress2(externalUsageBytes * 1f / deviceTotalBytes) // Size taken by Hentoid external library
-            setProgress3(1 - deviceFreeBytes * 1f / deviceTotalBytes) // Total size taken on the device
+        binding.apply {
+            graphDevice.progress = (100 - deviceFreeBytes * 100f / deviceTotalBytes).toInt()
+            graphExternal.progress = (externalUsageBytes * 100f / deviceTotalBytes).toInt()
+            graphPrimary.progress = (primaryUsageBytes * 100f / deviceTotalBytes).toInt()
+
+            memoryTotalTxt.text = resources.getString(
+                R.string.memory_total,
+                FileHelper.formatHumanReadableSize(deviceTotalBytes, resources)
+            )
+            memoryFreeTxt.text = resources.getString(
+                R.string.memory_free, FileHelper.formatHumanReadableSize(deviceFreeBytes, resources)
+            )
+
+            memoryHentoidPrimaryTxt.text = resources.getString(
+                R.string.memory_hentoid_main,
+                FileHelper.formatHumanReadableSize(primaryUsageBytes, resources)
+            )
+
+            memoryHentoidExtTxt.isVisible = externalUsageBytes > 0
+            memoryHentoidExtColor.isVisible = externalUsageBytes > 0
+
+            memoryHentoidExtTxt.text = resources.getString(
+                R.string.memory_hentoid_ext,
+                FileHelper.formatHumanReadableSize(externalUsageBytes, resources)
+            )
         }
-
-        binding.memoryTotalTxt.text = resources.getString(
-            R.string.memory_total, FileHelper.formatHumanReadableSize(deviceTotalBytes, resources)
-        )
-
-        binding.memoryFreeTxt.text = resources.getString(
-            R.string.memory_free, FileHelper.formatHumanReadableSize(deviceFreeBytes, resources)
-        )
-
-        binding.memoryHentoidPrimaryTxt.text = resources.getString(
-            R.string.memory_hentoid_main,
-            FileHelper.formatHumanReadableSize(primaryUsageBytes, resources)
-        )
-
-        binding.memoryHentoidExtTxt.isVisible = externalUsageBytes > 0
-        binding.memoryHentoidExtColor.isVisible = externalUsageBytes > 0
-
-        binding.memoryHentoidExtTxt.text = resources.getString(
-            R.string.memory_hentoid_ext,
-            FileHelper.formatHumanReadableSize(externalUsageBytes, resources)
-        )
 
         val table = binding.memoryDetailsTable
         addRow(

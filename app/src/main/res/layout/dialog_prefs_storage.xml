@@ -20,14 +20,61 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <me.devsaki.hentoid.views.CircularProgressView
-        android:id="@+id/memory_global_graph"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/graph_free"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginTop="12dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:progress="100"
+        app:indicatorColor="@color/primary_light"
+        app:indicatorSize="100dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/memory_title" />
+        app:layout_constraintTop_toBottomOf="@id/memory_title"
+        app:trackThickness="4dp" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/graph_device"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:progress="75"
+        app:indicatorColor="@color/medium_gray"
+        app:indicatorSize="100dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/memory_title"
+        app:trackThickness="4dp" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/graph_external"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:progress="50"
+        app:indicatorColor="@color/white"
+        app:indicatorSize="100dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/memory_title"
+        app:trackThickness="4dp" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/graph_primary"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:progress="25"
+        app:indicatorColor="@color/secondary_light"
+        app:indicatorSize="100dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/memory_title"
+        app:trackThickness="4dp" />
 
     <TextView
         android:id="@+id/memory_total_txt"
@@ -36,8 +83,8 @@
         android:layout_marginStart="8dp"
         android:text="@string/memory_total"
         android:textSize="@dimen/text_body_2"
-        app:layout_constraintStart_toEndOf="@id/memory_global_graph"
-        app:layout_constraintTop_toTopOf="@id/memory_global_graph" />
+        app:layout_constraintStart_toEndOf="@id/graph_free"
+        app:layout_constraintTop_toTopOf="@id/graph_free" />
 
     <View
         android:id="@+id/memory_hentoid_primary_color"
@@ -46,7 +93,7 @@
         android:layout_marginStart="8dp"
         android:background="@color/secondary_light"
         app:layout_constraintBottom_toBottomOf="@id/memory_hentoid_primary_txt"
-        app:layout_constraintStart_toEndOf="@id/memory_global_graph"
+        app:layout_constraintStart_toEndOf="@id/graph_free"
         app:layout_constraintTop_toTopOf="@id/memory_hentoid_primary_txt" />
 
     <TextView
@@ -67,7 +114,7 @@
         android:layout_marginStart="8dp"
         android:background="@color/secondary_variant_light"
         app:layout_constraintBottom_toBottomOf="@id/memory_hentoid_ext_txt"
-        app:layout_constraintStart_toEndOf="@id/memory_global_graph"
+        app:layout_constraintStart_toEndOf="@id/graph_free"
         app:layout_constraintTop_toTopOf="@id/memory_hentoid_ext_txt" />
 
     <TextView
@@ -88,7 +135,7 @@
         android:layout_marginStart="8dp"
         android:background="@color/primary_light"
         app:layout_constraintBottom_toBottomOf="@id/memory_free_txt"
-        app:layout_constraintStart_toEndOf="@id/memory_global_graph"
+        app:layout_constraintStart_toEndOf="@id/graph_free"
         app:layout_constraintTop_toTopOf="@id/memory_free_txt" />
 
     <TextView
@@ -112,7 +159,7 @@
         android:focusable="true"
         android:padding="4dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/memory_global_graph">
+        app:layout_constraintTop_toBottomOf="@id/graph_free">
 
         <ImageView
             android:id="@+id/memory_details_icon"
