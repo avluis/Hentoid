@@ -104,6 +104,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             val config = searchConfiguration
             config.setActivity(activity as AppCompatActivity)
             config.index(R.xml.preferences)
+            config.setFuzzySearchEnabled(false)
         }
 
         // Numbers-only on delay input
