@@ -595,13 +595,15 @@ class LibraryGroupsFragment : Fragment(),
         when (event.type) {
             CommunicationEvent.EV_UPDATE_TOOLBAR -> {
                 addCustomBackControl()
-                activity.get()!!.initFragmentToolbars(
-                    selectExtension!!,
-                    { menuItem: MenuItem ->
-                        onToolbarItemClicked(menuItem)
+                selectExtension?.let {
+                    activity.get()?.initFragmentToolbars(
+                        it,
+                        { menuItem: MenuItem ->
+                            onToolbarItemClicked(menuItem)
+                        }
+                    ) { menuItem: MenuItem ->
+                        onSelectionToolbarItemClicked(menuItem)
                     }
-                ) { menuItem: MenuItem ->
-                    onSelectionToolbarItemClicked(menuItem)
                 }
             }
 
