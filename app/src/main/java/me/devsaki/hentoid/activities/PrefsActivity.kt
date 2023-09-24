@@ -88,15 +88,6 @@ class PrefsActivity : BaseActivity(), SearchPreferenceResultListener {
     }
 
     override fun onSearchResultClicked(result: SearchPreferenceResult) {
-        /*
-        fragment = PreferencesFragment()
-        supportFragmentManager.beginTransaction()
-            .replace(android.R.id.content, fragment).addToBackStack("PrefsFragment")
-            .commit() // Allow to navigate back to search
-
-
-        Handler(mainLooper).post { fragment.onSearchResultClicked(result) }
-        */
         if (result.screen != null)
             fragment = fragment.navigateToScreen(supportFragmentManager, result.screen)
         result.highlight(fragment)

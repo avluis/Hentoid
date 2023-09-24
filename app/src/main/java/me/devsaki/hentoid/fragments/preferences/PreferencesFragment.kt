@@ -179,22 +179,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         navigateToScreen(parentFragmentManager, preferenceScreen.key)
     }
 
-    /*
-    fun onSearchResultClicked(result: SearchPreferenceResult) {
-        if (result.resourceFile == prefResId) {
-            // Result was found in the current file
-            searchPreference.isVisible = false // Do not allow to click search multiple times
-            scrollToPreference(result.key)
-        } else {
-            // Result was found in another file
-            preferenceScreen.removeAll()
-            addPreferencesFromResource(result.resourceFile)
-            result.highlight(this)
-        }
-        prefResId = result.resourceFile
-    }
-     */
-
     private fun onCheckUpdatePrefClick() {
         if (!UpdateDownloadWorker.isRunning(requireContext())) {
             val workManager = WorkManager.getInstance(requireContext())
