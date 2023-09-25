@@ -68,15 +68,15 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     AndroidViewModel(application) {
 
     // Search managers
-    private val contentSearchManager: ContentSearchManager
-    private val groupSearchManager: GroupSearchManager
+    private val contentSearchManager: ContentSearchManager = ContentSearchManager(dao)
+    private val groupSearchManager: GroupSearchManager = GroupSearchManager(dao)
 
     // Cleanup for all work observers
     private val workObservers: MutableList<Pair<UUID, Observer<WorkInfo>>> = ArrayList()
 
     // Content data
     private var currentSource: LiveData<PagedList<Content>>? = null
-    val totalContent: LiveData<Int>
+    val totalContent: LiveData<Int> = dao.countAllBooksLive()
     val libraryPaged = MediatorLiveData<PagedList<Content>>()
     val contentSearchBundle = MutableLiveData<Bundle>()
 
@@ -96,21 +96,15 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     val groupSearchBundle = MutableLiveData<Bundle>()
 
     // Other data
-    val searchRecords: LiveData<List<SearchRecord>>
-    val totalQueue: LiveData<Int>
-    val favPages: LiveData<Int>
+    val searchRecords: LiveData<List<SearchRecord>> = dao.selectSearchRecordsLive()
+    val totalQueue: LiveData<Int> = dao.countAllQueueBooksLive()
+    val favPages: LiveData<Int> = dao.countAllFavouritePagesLive()
 
     // Updated whenever a new Contentsearch is performed
     val newContentSearch = MediatorLiveData<Boolean>()
 
 
     init {
-        contentSearchManager = ContentSearchManager(dao)
-        groupSearchManager = GroupSearchManager(dao)
-        totalContent = dao.countAllBooksLive()
-        totalQueue = dao.countAllQueueBooksLive()
-        favPages = dao.countAllFavouritePagesLive()
-        searchRecords = dao.selectSearchRecordsLive()
         refreshAvailableGroupings()
     }
 
@@ -1173,7 +1167,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         splitContent.populateUniqueSiteId()
         var id = chapter.uniqueId
         if (id.isEmpty()) id = content.uniqueSiteId + "_" // Don't create a copy of content
-        splitContent.setUniqueSiteId(id)
+        splitContent.uniqueSiteId = id
         splitContent.downloadMode = content.downloadMode
         var newTitle = content.title
         if (!newTitle.contains(chapter.name)) newTitle += " - " + chapter.name // Avoid swelling the title after multiple merges and splits
@@ -1189,7 +1183,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             for ((position, img) in images.withIndex()) {
                 img.id = 0 // Force working on a new picture
                 img.setChapter(null)
-                img.content.setTarget(null) // Clear content
+                img.content.target = null // Clear content
                 img.setIsCover(0 == position)
                 img.order = position
                 img.computeName(nbMaxDigits)
