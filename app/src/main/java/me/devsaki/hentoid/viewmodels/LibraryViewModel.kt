@@ -571,7 +571,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 isQueueActive(getApplication())
                             )
                         } else {
-                            // TODO : unflag the content as "being deleted" (stop blink animation)
+                            dao.updateContentDeleteFlag(it.id, false)
                             errorCount.incrementAndGet()
                             onError.invoke(
                                 EmptyResultException(
