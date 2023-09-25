@@ -126,7 +126,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         queueRecord = record
         chapter = null
         viewType = ViewType.QUEUE
-        this.showDragHandle = isSearchActive
+        this.showDragHandle = !isSearchActive
         this.touchHelper = touchHelper
         this.deleteAction = deleteAction
         this.isFirst = isFirst
