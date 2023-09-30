@@ -324,13 +324,11 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 deleteActionRunnable = Runnable { invoke(item) }
             }
 
-            // Important to trigger the ViewHolder's global onClick/onLongClick events for swipable layouts
-            if (item.isSwipeable) {
-                swipeableView.setOnClickListener { v: View -> if (v.parent is View) (v.parent as View).performClick() }
-                swipeableView.setOnLongClickListener { v: View ->
-                    if (v.parent is View) return@setOnLongClickListener (v.parent as View).performLongClick()
-                    false
-                }
+            // Important to trigger the ViewHolder's global onClick/onLongClick events
+            swipeableView.setOnClickListener { v: View -> if (v.parent is View) (v.parent as View).performClick() }
+            swipeableView.setOnLongClickListener { v: View ->
+                if (v.parent is View) return@setOnLongClickListener (v.parent as View).performLongClick()
+                false
             }
 
             updateLayoutVisibility(item)
