@@ -40,9 +40,11 @@ import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.workers.StartupWorker
 import me.devsaki.hentoid.workers.UpdateCheckWorker
+import org.conscrypt.Conscrypt
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
+import java.security.Security
 
 typealias BiConsumer<T, U> = (T, U) -> Unit
 typealias Consumer<T> = (T) -> Unit
@@ -124,7 +126,11 @@ object AppStartup {
      */
     private fun getPreLaunchTasks(): List<BiConsumer<Context, (Float) -> Unit>> {
         return listOf(
-            this::stopWorkers, this::processAppUpdate, this::loadSiteProperties, this::initUtils
+            this::stopWorkers,
+            this::processAppUpdate,
+            this::loadSiteProperties,
+            this::initUtils,
+            this::initTLS
         )
     }
 
@@ -271,5 +277,11 @@ object AppStartup {
         Timber.i("Init disk cache : start")
         DiskCache.init(context)
         Timber.i("Init disk cache : done")
+    }
+
+    private fun initTLS(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Init Conscrypt : start")
+        Security.insertProviderAt(Conscrypt.newProvider(), 1);
+        Timber.i("Init Conscrypt : done")
     }
 }
