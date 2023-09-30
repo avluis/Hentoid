@@ -115,7 +115,9 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
                 }
             )
             list.adapter = fastAdapter
-            titleNew.editText?.setText(contentList[0].title)
+
+            initialTitle = contentList[0].title
+            titleNew.editText?.setText(initialTitle)
             if (isExternal) {
                 mergeDeleteSwitch.isEnabled = Preferences.isDeleteExternalLibrary()
                 mergeDeleteSwitch.isChecked = Preferences.isDeleteExternalLibrary() && deleteDefault
