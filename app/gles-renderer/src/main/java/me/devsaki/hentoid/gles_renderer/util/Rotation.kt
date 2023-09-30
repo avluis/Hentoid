@@ -14,7 +14,6 @@ enum class Rotation {
             ROTATION_90 -> 90
             ROTATION_180 -> 180
             ROTATION_270 -> 270
-            else -> throw IllegalStateException("Unknown Rotation!")
         }
     }
 
