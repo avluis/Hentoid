@@ -61,6 +61,7 @@ class ProgressDialogFragment : DialogFragment() {
         binding?.apply {
             bar.max = event.elementsTotal
             bar.isIndeterminate = false
+            val nbProcessed = event.elementsOK + event.elementsKO
             if (ProcessEvent.EventType.PROGRESS == event.eventType) {
                 progress.text = getString(
                     R.string.generic_progress,
@@ -71,9 +72,10 @@ class ProgressDialogFragment : DialogFragment() {
                         event.elementsOK + event.elementsKO
                     )
                 )
-                bar.progress = event.elementsOK + event.elementsKO
-            } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-                dismiss()
+                bar.progress = nbProcessed
+            }
+            if (ProcessEvent.EventType.COMPLETE == event.eventType || nbProcessed == event.elementsTotal) {
+                dismissAllowingStateLoss()
             }
         }
     }
@@ -86,7 +88,7 @@ class ProgressDialogFragment : DialogFragment() {
             bar.isIndeterminate = false
         }
         EventBus.getDefault().removeStickyEvent(event)
-        if (ProcessEvent.EventType.COMPLETE == event.eventType) dismiss()
+        if (ProcessEvent.EventType.COMPLETE == event.eventType) dismissAllowingStateLoss()
     }
 
     companion object {

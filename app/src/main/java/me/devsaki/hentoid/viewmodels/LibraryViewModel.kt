@@ -1029,10 +1029,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             try {
                 withContext(Dispatchers.IO) {
                     // Flag the content as "being deleted" (triggers blink animation)
-                    if (deleteAfterMerging) for (c in contentList) dao.updateContentDeleteFlag(
-                        c.id,
-                        true
-                    )
+                    if (deleteAfterMerging)
+                        contentList.forEach { dao.updateContentDeleteFlag(it.id, true) }
                     ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao)
                 }
                 if (deleteAfterMerging) deleteItems(contentList, emptyList(), false, null)

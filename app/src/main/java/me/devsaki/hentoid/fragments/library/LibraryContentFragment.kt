@@ -1693,10 +1693,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         deleteAfterMerging: Boolean
     ) {
         leaveSelectionMode()
+        invoke(parentFragmentManager, resources.getString(R.string.merge_progress), R.plurals.page)
         viewModel.mergeContents(
             contentList, newTitle, deleteAfterMerging
         ) { onMergeSuccess() }
-        invoke(parentFragmentManager, resources.getString(R.string.merge_progress), R.plurals.page)
     }
 
     private fun onMergeSuccess() {
