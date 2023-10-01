@@ -531,6 +531,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             R.id.action_delete -> deleteSelectedItems()
             R.id.action_completed -> markSelectedAsCompleted()
             R.id.action_reset_read -> resetSelectedReadStats()
+            R.id.action_rate -> onMassRateClick()
             R.id.action_archive -> archiveSelectedItems()
             R.id.action_change_group -> moveSelectedItems()
             R.id.action_open_folder -> openItemFolder()
@@ -651,9 +652,20 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             if (!Preferences.isDeleteExternalLibrary()) selectedContent = selectedContent
                 .filterNot { c: Content? -> c!!.status == StatusContent.EXTERNAL }
             if (selectedContent.isNotEmpty()) activity.get()!!.askDeleteItems(
-                selectedContent, emptyList<Group>(),
+                selectedContent, emptyList(),
                 { refreshIfNeeded() }, selectExtension!!
             )
+        }
+    }
+
+    /**
+     * Callback for the "rate items" action button
+     */
+    private fun onMassRateClick() {
+        val selectedItems = selectExtension!!.selectedItems
+        val selectedIds = selectedItems.mapNotNull { ci -> ci.content }.map { c -> c.id }
+        if (selectedIds.isNotEmpty()) {
+            invoke(this, selectedIds.toLongArray(), 0)
         }
     }
 
@@ -1544,12 +1556,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         viewModel.toggleContentFavourite(content) { refreshIfNeeded() }
     }
 
-    // TODO
+    /**
+     * Callback for the rating dialog
+     */
     override fun rateItems(itemIds: LongArray, newRating: Int) {
-        viewModel.rateContents(
-            Helper.getListFromPrimitiveArray(itemIds), newRating
-        ) { refreshIfNeeded() }
-        //leaveSelectionMode();
+        viewModel.rateContents(itemIds.asList(), newRating) { refreshIfNeeded() }
     }
 
     /**

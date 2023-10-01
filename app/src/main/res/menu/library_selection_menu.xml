@@ -18,6 +18,12 @@
         android:tooltipText="@string/menu_delete_single"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_rate"
+        android:icon="@drawable/ic_star_full"
+        android:title="@string/menu_rate"
+        android:tooltipText="@string/menu_rate"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_completed"
         android:icon="@drawable/ic_completed_empty"
         android:title="@string/menu_completed_single"

@@ -82,25 +82,25 @@ class RatingDialogFragment : DialogFragment() {
         closeDebouncer = Debouncer(
             lifecycleScope, 150
         ) { i: Int ->
-            parent!!.rateItems(itemIds!!, i)
+            parent?.rateItems(itemIds!!, i)
             dismissAllowingStateLoss()
         }
     }
 
     override fun onDestroy() {
         parent = null
-        closeDebouncer!!.clear()
+        closeDebouncer?.clear()
         super.onDestroy()
     }
 
     override fun onCancel(dialog: DialogInterface) {
-        parent!!.leaveSelectionMode()
+        parent?.leaveSelectionMode()
         super.onCancel(dialog)
     }
 
     private fun setRating(rating: Int, close: Boolean) {
         for (i in 5 downTo 1) stars[i - 1].setImageResource(if (i <= rating) R.drawable.ic_star_full else R.drawable.ic_star_empty)
-        if (close) closeDebouncer!!.submit(rating)
+        if (close) closeDebouncer?.submit(rating)
     }
 
     interface Parent {

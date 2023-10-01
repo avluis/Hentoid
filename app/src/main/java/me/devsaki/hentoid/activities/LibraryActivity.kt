@@ -116,6 +116,7 @@ class LibraryActivity : BaseActivity() {
     private var deleteMenu: MenuItem? = null
     private var completedMenu: MenuItem? = null
     private var resetReadStatsMenu: MenuItem? = null
+    private var rateMenu: MenuItem? = null
     private var shareMenu: MenuItem? = null
     private var archiveMenu: MenuItem? = null
     private var changeGroupMenu: MenuItem? = null
@@ -754,6 +755,7 @@ class LibraryActivity : BaseActivity() {
                 deleteMenu = findItem(R.id.action_delete)
                 completedMenu = findItem(R.id.action_completed)
                 resetReadStatsMenu = findItem(R.id.action_reset_read)
+                rateMenu = findItem(R.id.action_rate)
                 shareMenu = findItem(R.id.action_share)
                 archiveMenu = findItem(R.id.action_archive)
                 changeGroupMenu = findItem(R.id.action_change_group)
@@ -1027,6 +1029,7 @@ class LibraryActivity : BaseActivity() {
             shareMenu!!.isVisible = false
             completedMenu!!.isVisible = false
             resetReadStatsMenu!!.isVisible = false
+            rateMenu!!.isVisible = isMultipleSelection
             archiveMenu!!.isVisible = !hasProcessed
             changeGroupMenu!!.isVisible = false
             folderMenu!!.isVisible = false
@@ -1043,6 +1046,7 @@ class LibraryActivity : BaseActivity() {
                 !hasProcessed && ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0L == selectedExternalCount || selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary())
             completedMenu!!.isVisible = true
             resetReadStatsMenu!!.isVisible = true
+            rateMenu!!.isVisible = isMultipleSelection
             shareMenu!!.isVisible = 0L == selectedArchiveExternalCount
             archiveMenu!!.isVisible = !hasProcessed
             changeGroupMenu!!.isVisible = !hasProcessed

@@ -277,6 +277,7 @@ class LibraryGroupsFragment : Fragment(),
         when (menuItem.itemId) {
             R.id.action_edit -> editSelectedItemName()
             R.id.action_delete -> deleteSelectedItems()
+            R.id.action_rate -> onMassRateClick()
             R.id.action_archive -> archiveSelectedItems()
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
@@ -543,6 +544,17 @@ class LibraryGroupsFragment : Fragment(),
             .toList()
         if (selectedContent.isNotEmpty()) activity.get()!!
             .askArchiveItems(selectedContent, selectExtension!!)
+    }
+
+    /**
+     * Callback for the "rate items" action button
+     */
+    private fun onMassRateClick() {
+        val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
+        val selectedIds = selectedItems.map { gi -> gi.group }.map { g -> g.id }
+        if (selectedIds.isNotEmpty()) {
+            invoke(this, selectedIds.toLongArray(), 0)
+        }
     }
 
     /**
@@ -877,8 +889,11 @@ class LibraryGroupsFragment : Fragment(),
         // Nothing
     }
 
+    /**
+     * Callback for the rating dialog
+     */
     override fun rateItems(itemIds: LongArray, newRating: Int) {
-        viewModel.rateGroups(Helper.getListFromPrimitiveArray(itemIds), newRating)
+        viewModel.rateGroups(itemIds.asList(), newRating)
     }
 
     override fun leaveSelectionMode() {
