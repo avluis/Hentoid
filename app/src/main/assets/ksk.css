@@ -2,3 +2,7 @@
 .feed.galleries article {
     width: 48%;
 }
+
+#gallery #previews main div {
+    width: 48%;
+}
