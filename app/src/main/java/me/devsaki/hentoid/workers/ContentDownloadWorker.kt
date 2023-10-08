@@ -982,10 +982,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * @param img     Image to parse
      * @param dir     Folder to save the resulting image to
      * @param content Correponding content
-     * @throws LimitReachedException in case the download limit of the site is reached
      */
     @SuppressLint("TimberArgCount")
-    @Throws(LimitReachedException::class)
     private fun parsePageforImage(
         img: ImageFile,
         dir: DocumentFile,
@@ -1051,7 +1049,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 "Page " + img.name,
                 description
             )
-            throw lre
         } catch (ere: EmptyResultException) {
             Timber.i(ere, "No images have been found while parsing %s", content.title)
             updateImageProperties(img, false, "")
