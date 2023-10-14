@@ -29,7 +29,8 @@
 	  {"sourceName":"IMHENTAI", "status":"GREY"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
-	  {"sourceName":"NEXUS", "status":"BLACK"}
+	  {"sourceName":"NEXUS", "status":"BLACK"},
+	  {"sourceName":"KSK", "status":"BLACK"}
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
