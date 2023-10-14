@@ -547,21 +547,21 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     private Group enrichCustomGroups(@NonNull final Group g) {
         if (g.grouping.equals(Grouping.CUSTOM)) {
+            List<GroupItem> newItems;
             if (g.isUngroupedGroup()) { // Populate Ungrouped custom group
-                List<GroupItem> items = Stream.of(db.selectUngroupedContentIds()).map(id -> new GroupItem(id, g, -1)).toList();
-                g.setItems(items);
-                if (!items.isEmpty()) {
-                    Content c = selectContent(items.get(0).getContentId());
-                    g.coverContent.setTarget(c);
-                }
+                newItems = Stream.of(db.selectUngroupedContentIds()).map(id -> new GroupItem(id, g, -1)).toList();
             } else { // Reselect items; only take items from the library to avoid counting those who've been sent back to the Queue
                 long[] groupContent = db.selectContentIdsByGroup(g.id); // Specific query to get there fast
-                List<GroupItem> newItems = new ArrayList<>();
+                newItems = new ArrayList<>();
                 for (int i = 0; i < groupContent.length; i++) {
                     newItems.add(new GroupItem(groupContent[i], g, i));
                 }
-                g.setItems(newItems);
-                if (!newItems.isEmpty()) {
+            }
+            g.setItems(newItems);
+            // Reset cover content if it isn't among remaining books
+            if (!newItems.isEmpty()) {
+                List<Long> newContents = Stream.of(newItems).map(GroupItem::getContentId).toList();
+                if (!newContents.contains(g.coverContent.getTargetId())) {
                     Content c = selectContent(newItems.get(0).getContentId());
                     g.coverContent.setTarget(c);
                 }
