@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.signature.ObjectKey
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -151,9 +152,11 @@ class GroupDisplayItem(
                 it.visibility = View.VISIBLE
                 if (thumbLocation.startsWith("http")) Glide.with(it)
                     .load(thumbLocation)
+                    .signature(ObjectKey(cover.uniqueHash()))
                     .apply(glideRequestOptions)
                     .into(it) else Glide.with(it)
                     .load(Uri.parse(thumbLocation))
+                    .signature(ObjectKey(cover.uniqueHash()))
                     .apply(glideRequestOptions)
                     .into(it)
             }
