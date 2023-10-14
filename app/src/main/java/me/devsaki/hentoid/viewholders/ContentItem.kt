@@ -251,7 +251,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private val tvPages: TextView? = view.findViewById(R.id.tvPages)
         private val ivError: ImageView? = view.findViewById(R.id.ivError)
         private val ivOnline: ImageView? = view.findViewById(R.id.ivOnline)
-        override val swipeableView: View = view.findViewById(R.id.item_card) ?: baseLayout
+        override val swipeableView: View = view.findViewById(R.id.item_card) ?: ivCover
         private val deleteButton: View? = view.findViewById(R.id.delete_btn)
 
         // Specific to library content
