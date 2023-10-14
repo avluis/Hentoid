@@ -48,7 +48,7 @@ public class HttpHelper {
     public static final String HEADER_COOKIE_KEY = "cookie";
     public static final String HEADER_REFERER_KEY = "referer";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    public static final String HEADER_USER_AGENT = "User-Agent";
+    public static final String HEADER_USER_AGENT = "user-agent";
 
     public static final String POST_MIME_TYPE = "application/x-www-form-urlencoded";
 
