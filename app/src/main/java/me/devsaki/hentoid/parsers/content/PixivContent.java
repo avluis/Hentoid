@@ -15,6 +15,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.PixivIllustMetadata;
 import me.devsaki.hentoid.json.sources.PixivSeriesMetadata;
 import me.devsaki.hentoid.json.sources.PixivUserMetadata;
+import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.retrofit.sources.PixivServer;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
@@ -54,25 +55,26 @@ public class PixivContent extends BaseContentParser {
                         Site.PIXIV.useMobileAgent(), Site.PIXIV.useHentoidAgent(), Site.PIXIV.useWebviewAgent()
                 );
 
+                String userAgent = ParseHelper.getUserAgent(Site.PIXIV);
+                String acceptAll = "*/*";
+
                 switch (entity) {
-                    case "artworks":
-                    case "illust":
-                        PixivIllustMetadata metadata = PixivServer.api.getIllustMetadata(id, cookieStr).execute().body();
+                    case "artworks", "illust" -> {
+                        PixivIllustMetadata metadata = PixivServer.api.getIllustMetadata(id, cookieStr, acceptAll, userAgent).execute().body();
                         if (metadata != null) return metadata.update(content, url, updateImages);
-                        break;
-                    case "series_content":
-                    case "series":
-                        PixivSeriesMetadata seriesData = PixivServer.api.getSeriesMetadata(id, cookieStr).execute().body();
+                    }
+                    case "series_content", "series" -> {
+                        PixivSeriesMetadata seriesData = PixivServer.api.getSeriesMetadata(id, cookieStr, acceptAll, userAgent).execute().body();
                         if (seriesData != null)
                             return seriesData.update(content, url, updateImages);
-                        break;
-                    case "user":
-                    case "users":
-                        PixivUserMetadata userData = PixivServer.api.getUserMetadata(id, cookieStr).execute().body();
+                    }
+                    case "user", "users" -> {
+                        PixivUserMetadata userData = PixivServer.api.getUserMetadata(id, cookieStr, acceptAll, userAgent).execute().body();
                         if (userData != null) return userData.update(content, url, updateImages);
-                        break;
-                    default:
-                        // Nothing specific
+                    }
+                    default -> {
+                    }
+                    // Nothing specific
                 }
             }
         } catch (IOException e) {

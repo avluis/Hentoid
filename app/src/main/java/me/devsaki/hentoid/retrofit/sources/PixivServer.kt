@@ -32,19 +32,25 @@ object PixivServer {
         @GET("touch/ajax/illust/details")
         fun getIllustMetadata(
             @Query("illust_id") id: String,
-            @Header("cookie") cookies: String
+            @Header("cookie") cookies: String,
+            @Header("accept") accept: String,
+            @Header("user-agent") userAgent: String
         ): Call<PixivIllustMetadata>
 
         @GET("ajax/illust/{id}/pages")
         fun getIllustPages(
             @Query("id") id: String,
-            @Header("cookie") cookies: String
+            @Header("cookie") cookies: String,
+            @Header("accept") accept: String,
+            @Header("user-agent") userAgent: String
         ): Call<PixivIllustPagesMetadata>
 
         @GET("touch/ajax/illust/series/{id}")
         fun getSeriesMetadata(
             @Path("id") id: String,
-            @Header("cookie") cookies: String
+            @Header("cookie") cookies: String,
+            @Header("accept") accept: String,
+            @Header("user-agent") userAgent: String
         ): Call<PixivSeriesMetadata>
 
         @GET("touch/ajax/illust/series_content/{id}")
@@ -52,19 +58,25 @@ object PixivServer {
             @Path("id") id: String,
             @Query("limit") limit: Int,
             @Query("last_order") lastorder: Int,
-            @Header("cookie") cookies: String
+            @Header("cookie") cookies: String,
+            @Header("accept") accept: String,
+            @Header("user-agent") userAgent: String
         ): Call<PixivSeriesIllustMetadata>
 
         @GET("touch/ajax/illust/user_illusts")
         fun getUserIllusts(
             @Query("user_id") id: String,
-            @Header("cookie") cookies: String
+            @Header("cookie") cookies: String,
+            @Header("accept") accept: String,
+            @Header("user-agent") userAgent: String
         ): Call<PixivUserIllustMetadata>
 
         @GET("touch/ajax/user/details")
         fun getUserMetadata(
             @Query("id") id: String,
-            @Header("cookie") cookies: String
+            @Header("cookie") cookies: String,
+            @Header("accept") accept: String,
+            @Header("user-agent") userAgent: String
         ): Call<PixivUserMetadata>
     }
 }

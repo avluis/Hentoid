@@ -197,9 +197,21 @@ public class HttpHelper {
                 if (header.second != null)
                     requestBuilder.addHeader(header.first, header.second);
 
-        requestBuilder.header(HEADER_USER_AGENT, useMobileAgent ? getMobileUserAgent(useHentoidAgent, useWebviewAgent) : getDesktopUserAgent(useHentoidAgent, useWebviewAgent));
+        requestBuilder.header(HEADER_USER_AGENT, getUserAgent(useMobileAgent, useHentoidAgent, useWebviewAgent));
 
         return requestBuilder;
+    }
+
+    /**
+     * Generate the user agent corresponding to the given parameters
+     *
+     * @param useMobileAgent  True to use the mobile User-Agent; false to use the desktop User-Agent
+     * @param useHentoidAgent True to use the Hentoid User-Agent; false to use a neutral User-Agent
+     * @param useWebviewAgent True to reveal the use of a webview through the User-Agent; false to use a neutral User-Agent
+     * @return User agent corresponding to the given parameters
+     */
+    public static String getUserAgent(boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
+        return useMobileAgent ? getMobileUserAgent(useHentoidAgent, useWebviewAgent) : getDesktopUserAgent(useHentoidAgent, useWebviewAgent);
     }
 
     /**

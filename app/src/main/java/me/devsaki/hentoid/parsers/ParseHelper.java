@@ -563,4 +563,14 @@ public class ParseHelper {
         if (result.isEmpty()) result = e.attr("data-cfsrc").trim(); // Cloudflare-served image
         return result;
     }
+
+    /**
+     * Generate the user agent corresponding to the given site
+     *
+     * @param site Site to generate the user-agent for
+     * @return User agent corresponding to the given site
+     */
+    public static String getUserAgent(Site site) {
+        return HttpHelper.getUserAgent(site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+    }
 }
