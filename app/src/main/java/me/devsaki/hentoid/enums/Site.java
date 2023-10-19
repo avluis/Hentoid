@@ -56,6 +56,7 @@ public enum Site {
             NEXUS, // Dead
             HBROWSE, // Dead
             HENTAICAFE, // Removed as per Fakku request + dead
+            KSK, // Dead
             FAKKU, // Old Fakku; kept for retrocompatibility
             FAKKU2, // Dropped after Fakku decided to flag downloading accounts and IPs
             ASMHENTAI_COMICS, // Does not work directly

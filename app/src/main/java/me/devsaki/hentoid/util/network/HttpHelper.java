@@ -48,7 +48,7 @@ public class HttpHelper {
     public static final String HEADER_COOKIE_KEY = "cookie";
     public static final String HEADER_REFERER_KEY = "referer";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    public static final String HEADER_USER_AGENT = "User-Agent";
+    public static final String HEADER_USER_AGENT = "user-agent";
 
     public static final String POST_MIME_TYPE = "application/x-www-form-urlencoded";
 
@@ -197,9 +197,21 @@ public class HttpHelper {
                 if (header.second != null)
                     requestBuilder.addHeader(header.first, header.second);
 
-        requestBuilder.header(HEADER_USER_AGENT, useMobileAgent ? getMobileUserAgent(useHentoidAgent, useWebviewAgent) : getDesktopUserAgent(useHentoidAgent, useWebviewAgent));
+        requestBuilder.header(HEADER_USER_AGENT, getUserAgent(useMobileAgent, useHentoidAgent, useWebviewAgent));
 
         return requestBuilder;
+    }
+
+    /**
+     * Generate the user agent corresponding to the given parameters
+     *
+     * @param useMobileAgent  True to use the mobile User-Agent; false to use the desktop User-Agent
+     * @param useHentoidAgent True to use the Hentoid User-Agent; false to use a neutral User-Agent
+     * @param useWebviewAgent True to reveal the use of a webview through the User-Agent; false to use a neutral User-Agent
+     * @return User agent corresponding to the given parameters
+     */
+    public static String getUserAgent(boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
+        return useMobileAgent ? getMobileUserAgent(useHentoidAgent, useWebviewAgent) : getDesktopUserAgent(useHentoidAgent, useWebviewAgent);
     }
 
     /**

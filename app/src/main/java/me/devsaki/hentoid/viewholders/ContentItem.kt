@@ -26,6 +26,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.signature.ObjectKey
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
@@ -250,7 +251,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private val tvPages: TextView? = view.findViewById(R.id.tvPages)
         private val ivError: ImageView? = view.findViewById(R.id.ivError)
         private val ivOnline: ImageView? = view.findViewById(R.id.ivOnline)
-        override val swipeableView: View = view.findViewById(R.id.item_card) ?: baseLayout
+        override val swipeableView: View = view.findViewById(R.id.item_card) ?: ivCover
         private val deleteButton: View? = view.findViewById(R.id.delete_btn)
 
         // Specific to library content
@@ -397,11 +398,13 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             if (thumbLocation.startsWith("http")) {
                 val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, content)
                 if (glideUrl != null) {
-                    Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions).into(ivCover)
+                    Glide.with(ivCover).load(glideUrl).signature(ObjectKey(content.uniqueHash()))
+                        .apply(glideRequestOptions).into(ivCover)
                 }
             } else  // From stored picture
-                Glide.with(ivCover).load(Uri.parse(thumbLocation)).apply(glideRequestOptions)
-                    .into(ivCover)
+                Glide.with(ivCover).load(Uri.parse(thumbLocation))
+                    .signature(ObjectKey(content.uniqueHash()))
+                    .apply(glideRequestOptions).into(ivCover)
         }
 
         private fun attachChapterCover(chapter: Chapter) {
@@ -414,7 +417,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     glideRequest.load(ContentHelper.bindOnlineCover(thumbLocation, null))
                 else glideRequest.load(Uri.parse(thumbLocation))
 
-                builder.apply(glideRequestOptions).into(ivCover)
+                builder.signature(ObjectKey(chapter.uniqueHash()))
+                    .apply(glideRequestOptions).into(ivCover)
             } else {
                 ivCover.visibility = View.INVISIBLE
             }
