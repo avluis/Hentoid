@@ -81,4 +81,14 @@
         app:tint="?colorSecondary"
         tools:ignore="ContentDescription" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/selection_border"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_rectangle_border"
+        android:clickable="false"
+        android:focusable="false"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

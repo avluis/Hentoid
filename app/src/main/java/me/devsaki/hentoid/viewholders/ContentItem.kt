@@ -273,6 +273,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private var tvChapters: TextView? = view.findViewById(R.id.tvChapters)
         private var ivStorage: ImageView? = view.findViewById(R.id.ivStorage)
         private var tvStorage: TextView? = view.findViewById(R.id.tvStorage)
+        private var selectionBorder: View? = view.findViewById(R.id.selection_border)
 
         // Specific to Queued content
         var topButton: View? = view.findViewById(R.id.queueTopBtn)
@@ -368,7 +369,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         }
 
         private fun updateLayoutVisibility(item: ContentItem) {
-            baseLayout.visibility = if (item.isEmpty) View.GONE else View.VISIBLE
+            baseLayout.isVisible = !item.isEmpty
+            selectionBorder?.isVisible = item.isSelected
 
             // Set horizontal spacing between tiles in grid mode
             if (ViewType.LIBRARY_GRID == item.viewType) {

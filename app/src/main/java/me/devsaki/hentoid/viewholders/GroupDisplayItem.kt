@@ -86,6 +86,7 @@ class GroupDisplayItem(
         private val ivRating: ImageView = view.requireById(R.id.iv_rating)
         private var ivCover: ImageView? = view.findViewById(R.id.ivCover)
         var ivReorder: View? = view.findViewById(R.id.ivReorder)
+        private var selectionBorder: View? = view.findViewById(R.id.selection_border)
         private var coverUri = ""
 
         override fun bindView(item: GroupDisplayItem, payloads: List<Any>) {
@@ -104,6 +105,8 @@ class GroupDisplayItem(
             if (item.group.isBeingProcessed) baseLayout.startAnimation(
                 BlinkAnimation(500, 250)
             ) else baseLayout.clearAnimation()
+
+            selectionBorder?.isVisible = item.isSelected
 
             val isGrid = (ViewType.LIBRARY_GRID == item.viewType)
 
@@ -146,6 +149,8 @@ class GroupDisplayItem(
 
             ivRating.isVisible = (!isGrid || Settings.libraryDisplayGridRating)
             ivRating.setImageResource(ContentHelper.getRatingResourceId(item.group.rating))
+
+
         }
 
         private fun attachCover(cover: ImageFile) {
