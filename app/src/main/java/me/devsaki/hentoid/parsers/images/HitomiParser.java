@@ -59,6 +59,9 @@ public class HitomiParser extends BaseImageListParser {
         try {
             result = parseImageListWithWebview(onlineContent, null);
             ParseHelper.setDownloadParams(result, onlineContent.getSite().getUrl());
+        } catch (Exception e) {
+            Helper.logException(e);
+            result = new ArrayList<>();
         } finally {
             EventBus.getDefault().unregister(this);
         }
