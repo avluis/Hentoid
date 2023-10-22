@@ -327,6 +327,7 @@ public final class ContentHelper {
      * @param searchParams     Current search parameters (so that the next/previous book feature
      *                         is faithful to the library screen's order)
      * @param forceShowGallery True to force the gallery screen to show first; false to follow app settings
+     * @param newTask          True to open the reader as a new Task
      */
     public static boolean openReader(@NonNull Context context, @NonNull Content content, int pageNumber, Bundle searchParams, boolean forceShowGallery, boolean newTask) {
         // Check if the book has at least its own folder
@@ -714,11 +715,7 @@ public final class ContentHelper {
      * @return Created or existing directory
      */
     @Nullable
-    public static DocumentFile getOrCreateContentDownloadDir(
-            @NonNull Context context,
-            @NonNull Content content,
-            @NonNull StorageLocation location,
-            boolean createOnly) {
+    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content, @NonNull StorageLocation location, boolean createOnly) {
         // == Site folder
         DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, location, content.getSite());
         if (null == siteDownloadDir) return null;
@@ -842,10 +839,7 @@ public final class ContentHelper {
      * @return Download directory of the given Site
      */
     @Nullable
-    public static DocumentFile getOrCreateSiteDownloadDir(
-            @NonNull Context context,
-            @NonNull StorageLocation location,
-            @NonNull Site site) {
+    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @NonNull StorageLocation location, @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri(location);
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for location %s", location.name());
@@ -859,13 +853,7 @@ public final class ContentHelper {
 
         try (FileExplorer explorer = new FileExplorer(context, appFolder)) {
             String siteFolderName = site.getFolder();
-            List<DocumentFile> siteFolders = explorer.listDocumentFiles(
-                    context,
-                    appFolder,
-                    displayName -> displayName.startsWith(siteFolderName),
-                    true,
-                    false,
-                    false);
+            List<DocumentFile> siteFolders = explorer.listDocumentFiles(context, appFolder, displayName -> displayName.startsWith(siteFolderName), true, false, false);
             // Order by name (nhentai, nhentai1, ..., nhentai10)
             siteFolders = Stream.of(siteFolders).withoutNulls().sorted(new InnerNameNumberFileComparator()).toList();
 
@@ -880,12 +868,7 @@ public final class ContentHelper {
 
                 // Create new one with the next number (taken from the name of the last folder itself, to handle cases where numbering is not contiguous)
                 int newDigits = siteFolders.size();
-                String lastDigits =
-                        StringHelper.keepDigits(
-                                StringHelper.protect(siteFolders.get(siteFolders.size() - 1).getName())
-                                        .toLowerCase()
-                                        .replace(site.getFolder().toLowerCase(), "")
-                        );
+                String lastDigits = StringHelper.keepDigits(StringHelper.protect(siteFolders.get(siteFolders.size() - 1).getName()).toLowerCase().replace(site.getFolder().toLowerCase(), ""));
                 if (!lastDigits.isEmpty()) newDigits = Integer.parseInt(lastDigits) + 1;
                 return appFolder.createDirectory(siteFolderName + newDigits);
             }
@@ -1587,16 +1570,7 @@ public final class ContentHelper {
      * - Right side : Similarity score (between 0 and 1; 1=100%)
      */
     @Nullable
-    public static ImmutablePair<Content, Float> findDuplicate(
-            @NonNull final Context context,
-            @NonNull final Content content,
-            boolean useTitle,
-            boolean useArtist,
-            boolean useLanguage,
-            boolean useCover,
-            int sensitivity,
-            long pHash,
-            @NonNull final CollectionDAO dao) {
+    public static ImmutablePair<Content, Float> findDuplicate(@NonNull final Context context, @NonNull final Content content, boolean useTitle, boolean useArtist, boolean useLanguage, boolean useCover, int sensitivity, long pHash, @NonNull final CollectionDAO dao) {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted(Comparator.comparingInt(String::length)).findLast();
@@ -1913,22 +1887,14 @@ public final class ContentHelper {
         return StorageLocation.NONE;
     }
 
-    public static void purgeContent(
-            @NonNull final Context context,
-            @NonNull final Content content,
-            boolean keepCover,
-            boolean isDownloadPrepurge) {
+    public static void purgeContent(@NonNull final Context context, @NonNull final Content content, boolean keepCover, boolean isDownloadPrepurge) {
         DeleteData.Builder builder = new DeleteData.Builder();
         builder.setContentPurgeIds(Stream.of(content).map(Content::getId).toList());
         builder.setContentPurgeKeepCovers(keepCover);
         builder.setDownloadPrepurge(isDownloadPrepurge);
 
         WorkManager workManager = WorkManager.getInstance(context);
-        workManager.enqueueUniqueWork(
-                Integer.toString(R.id.delete_service_purge),
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                new OneTimeWorkRequest.Builder(PurgeWorker.class).setInputData(builder.getData()).build()
-        );
+        workManager.enqueueUniqueWork(Integer.toString(R.id.delete_service_purge), ExistingWorkPolicy.APPEND_OR_REPLACE, new OneTimeWorkRequest.Builder(PurgeWorker.class).setInputData(builder.getData()).build());
     }
 
 
