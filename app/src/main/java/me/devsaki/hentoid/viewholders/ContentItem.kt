@@ -37,6 +37,7 @@ import com.mikepenz.fastadapter.swipe.ISwipeable
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.adjustAlpha
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.getSelectablePressedBackground
 import com.mikepenz.fastadapter.utils.DragDropUtil.bindDragHandle
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.core.Consumer
@@ -51,7 +52,6 @@ import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
@@ -186,6 +186,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             else ""
 
 
+    /**
+     * Update download progress (queue items only)
+     */
     fun updateProgress(vh: RecyclerView.ViewHolder, isPausedEvent: Boolean, isIndividual: Boolean) {
         content ?: return
         val pb = vh.itemView.findViewById<ProgressBar>(R.id.pbDownload) ?: return
@@ -320,8 +323,11 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 boolValue = bundleParser.frozen
                 if (boolValue != null) item.queueRecord?.isFrozen = boolValue
             }
-            debugStr =
-                "objectBox ID=" + item.content?.id + "; site ID=" + item.content?.uniqueSiteId + "; hashCode=" + item.content.hashCode()
+
+            if (BuildConfig.DEBUG) item.content?.apply {
+                debugStr = "DB ID=" + id + "; site ID=" + uniqueSiteId + "; hashCode=" + hashCode()
+            }
+
             item.deleteAction?.apply {
                 deleteActionRunnable = Runnable { invoke(item) }
             }
@@ -360,7 +366,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
         private fun updateLayoutVisibility(item: ContentItem) {
             baseLayout.visibility = if (item.isEmpty) View.GONE else View.VISIBLE
-            if (Settings.Value.LIBRARY_DISPLAY_GRID == Settings.libraryDisplay) {
+
+            // Set horizontal spacing between tiles in grid mode
+            if (ViewType.LIBRARY_GRID == item.viewType) {
                 val layoutParams = baseLayout.layoutParams
                 if (layoutParams is MarginLayoutParams) {
                     layoutParams.marginStart = ITEM_HORIZONTAL_MARGIN_PX
@@ -695,6 +703,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
         init {
             val context: Context = getInstance()
+
+            // Compute spacing between tiles in grid mode
             val screenWidthPx =
                 context.resources.displayMetrics.widthPixels - 2 * context.resources.getDimension(R.dimen.default_cardview_margin)
                     .toInt()
@@ -704,6 +714,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 floor((screenWidthPx * 1f / gridHorizontalWidthPx).toDouble()).toInt()
             val remainingSpacePx = screenWidthPx % gridHorizontalWidthPx
             ITEM_HORIZONTAL_MARGIN_PX = remainingSpacePx / (nbItems * 2)
+
+            // Glide options
             val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
             val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
             val d: Drawable = BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))

@@ -608,7 +608,7 @@ class LibraryActivity : BaseActivity() {
             R.id.action_display_type -> {
                 var displayType = Settings.libraryDisplay
                 displayType =
-                    if (Settings.Value.LIBRARY_DISPLAY_LIST == displayType) Settings.Value.LIBRARY_DISPLAY_GRID else Settings.Value.LIBRARY_DISPLAY_LIST
+                    if (Settings.Value.LIBRARY_DISPLAY_LIST == displayType) Settings.Value.LIBRARY_DISPLAY_GRID_CLASSIC else Settings.Value.LIBRARY_DISPLAY_LIST
                 Settings.libraryDisplay = displayType
             }
 

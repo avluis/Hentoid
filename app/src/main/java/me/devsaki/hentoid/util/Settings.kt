@@ -118,7 +118,9 @@ object Settings {
         const val ARCHIVE_TARGET_FOLDER_DOWNLOADS = "downloads"
 
         const val LIBRARY_DISPLAY_LIST = 0
-        const val LIBRARY_DISPLAY_GRID = 1
+        const val LIBRARY_DISPLAY_GRID_CLASSIC = 1
+        const val LIBRARY_DISPLAY_GRID_MINI = 2
+        const val LIBRARY_DISPLAY_GRID_OVERLAY = 3
         const val LIBRARY_DISPLAY_DEFAULT = LIBRARY_DISPLAY_LIST
     }
 }
