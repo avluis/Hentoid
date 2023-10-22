@@ -51,6 +51,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
@@ -359,7 +360,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
         private fun updateLayoutVisibility(item: ContentItem) {
             baseLayout.visibility = if (item.isEmpty) View.GONE else View.VISIBLE
-            if (Preferences.Constant.LIBRARY_DISPLAY_GRID == Preferences.getLibraryDisplay()) {
+            if (Settings.Value.LIBRARY_DISPLAY_GRID == Settings.libraryDisplay) {
                 val layoutParams = baseLayout.layoutParams
                 if (layoutParams is MarginLayoutParams) {
                     layoutParams.marginStart = ITEM_HORIZONTAL_MARGIN_PX

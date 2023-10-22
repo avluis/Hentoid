@@ -17,6 +17,9 @@ object Settings {
     /**
      * FIELDS
      */
+    // LIBRARY
+    var libraryDisplay: Int by IntSetting(Key.LIBRARY_DISPLAY, Value.LIBRARY_DISPLAY_DEFAULT)
+
     // DOWNLOADER
     var isKskDownloadOriginal: Boolean by BoolSetting("pref_dl_ksk_hires", false)
 
@@ -106,14 +109,16 @@ object Settings {
 
     // Consts
     object Key {
-        const val TRANSFORM_RESIZE_ENABLED = "TRANSFORM_RESIZE_ENABLED"
-        const val TRANSFORM_RESIZE_METHOD = "TRANSFORM_RESIZE_METHOD"
-        const val TRANSFORM_RESIZE_WIDTH = "TRANSFORM_RESIZE_WIDTH"
+        const val LIBRARY_DISPLAY = "pref_library_display"
         const val READER_COLOR_DEPTH = "viewer_color_depth"
         const val LOCK_TYPE = "LOCK_TYPE"
     }
 
     object Value {
         const val ARCHIVE_TARGET_FOLDER_DOWNLOADS = "downloads"
+
+        const val LIBRARY_DISPLAY_LIST = 0
+        const val LIBRARY_DISPLAY_GRID = 1
+        const val LIBRARY_DISPLAY_DEFAULT = LIBRARY_DISPLAY_LIST
     }
 }

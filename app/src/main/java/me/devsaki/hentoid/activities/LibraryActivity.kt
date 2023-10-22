@@ -64,6 +64,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.LocaleHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.TooltipHelper
 import me.devsaki.hentoid.util.file.FileHelper
@@ -304,6 +305,7 @@ class LibraryActivity : BaseActivity() {
             )
         }
         Preferences.registerPrefsChangedListener(prefsListener)
+        Settings.registerPrefsChangedListener(prefsListener)
         pagerAdapter = LibraryPagerAdapter(this)
         initToolbar()
         initSelectionToolbar()
@@ -324,6 +326,7 @@ class LibraryActivity : BaseActivity() {
 
     override fun onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener)
+        Settings.unregisterPrefsChangedListener(prefsListener)
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
 
         // Empty all handlers to avoid leaks
@@ -504,7 +507,7 @@ class LibraryActivity : BaseActivity() {
                 }
             })
             displayTypeMenu = toolbar.menu.findItem(R.id.action_display_type)
-            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+            if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay)
                 displayTypeMenu?.setIcon(R.drawable.ic_view_gallery)
             else displayTypeMenu?.setIcon(R.drawable.ic_view_list)
             reorderMenu = toolbar.menu.findItem(R.id.action_edit)
@@ -603,10 +606,10 @@ class LibraryActivity : BaseActivity() {
     fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_display_type -> {
-                var displayType = Preferences.getLibraryDisplay()
+                var displayType = Settings.libraryDisplay
                 displayType =
-                    if (Preferences.Constant.LIBRARY_DISPLAY_LIST == displayType) Preferences.Constant.LIBRARY_DISPLAY_GRID else Preferences.Constant.LIBRARY_DISPLAY_LIST
-                Preferences.setLibraryDisplay(displayType)
+                    if (Settings.Value.LIBRARY_DISPLAY_LIST == displayType) Settings.Value.LIBRARY_DISPLAY_GRID else Settings.Value.LIBRARY_DISPLAY_LIST
+                Settings.libraryDisplay = displayType
             }
 
             R.id.action_browse_groups -> LibraryBottomGroupsFragment.invoke(
@@ -777,7 +780,7 @@ class LibraryActivity : BaseActivity() {
     private fun onSharedPreferenceChanged(key: String?) {
         Timber.i("Prefs change detected : %s", key)
         when (key) {
-            Preferences.Key.COLOR_THEME, Preferences.Key.LIBRARY_DISPLAY -> {
+            Preferences.Key.COLOR_THEME, Settings.Key.LIBRARY_DISPLAY -> {
                 // Restart the app with the library activity on top
                 val intent = Intent(this, LibraryActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
