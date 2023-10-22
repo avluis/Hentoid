@@ -21,6 +21,8 @@
         android:focusable="true"
         android:padding="8dp"
         android:src="@drawable/ic_action_delete"
+        android:contentDescription="@string/viewer_delete_book"
+        android:tooltipText="@string/viewer_delete_book"
         app:tint="?colorSecondary"
         tools:ignore="ContentDescription" />
 
@@ -108,6 +110,7 @@
             android:padding="8dp"
             android:src="@drawable/ic_fav_empty"
             android:tooltipText="@string/fav_help"
+            android:contentDescription="@string/fav_help"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="?colorSecondary"
@@ -138,6 +141,7 @@
             android:focusable="true"
             android:padding="8dp"
             android:tooltipText="@string/view_source_help"
+            android:contentDescription="@string/view_source_help"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/iv_rating"
             app:tint="?colorSecondary"
