@@ -52,6 +52,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
@@ -339,19 +340,26 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 false
             }
 
+            val gridMode = when (Settings.libraryDisplay) {
+                Settings.Value.LIBRARY_DISPLAY_GRID_CLASSIC -> 1
+                Settings.Value.LIBRARY_DISPLAY_GRID_MINI -> 2
+                Settings.Value.LIBRARY_DISPLAY_GRID_OVERLAY -> 3
+                else -> 0
+            }
+
             updateLayoutVisibility(item)
             attachCover(item.content, item.chapter)
-            attachTitle(item.content, item.queueRecord, item.chapter)
-            if (tvPages != null) attachMetrics(item.content, item.chapter, item.viewType)
+            attachTitle(item.content, item.queueRecord, item.chapter, gridMode)
+            attachMetrics(item.content, item.chapter, item.viewType, gridMode)
             item.content?.let {
-                attachFlag(it)
                 attachCompleted(it)
-                attachReadingProgress(it)
-                attachArtist(it)
-                attachSeries(it)
-                attachTags(it)
+                attachFlag(it, gridMode)
+                attachReadingProgress(it, gridMode)
+                attachArtist(it, gridMode)
+                attachSeries(it, gridMode)
+                attachTags(it, gridMode)
             }
-            attachButtons(item)
+            attachButtons(item, gridMode)
             item.updateProgress(
                 this,
                 isPausedEvent = false,
@@ -377,17 +385,19 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 baseLayout.layoutParams = layoutParams
             }
 
-            if (item.content != null && item.content.isBeingProcessed) baseLayout.startAnimation(
-                BlinkAnimation(500, 250)
-            ) else baseLayout.clearAnimation()
+            if (item.content != null && item.content.isBeingProcessed)
+                baseLayout.startAnimation(
+                    BlinkAnimation(500, 250)
+                ) else baseLayout.clearAnimation()
 
-            if (item.isSelected) {
-                Timber.i("SELECTED " + item.title)
-            }
+            if (item.isSelected && BuildConfig.DEBUG) Timber.d("SELECTED " + item.title)
 
             // Unread indicator
             ivNew?.apply {
-                visibility = if (0L == item.content!!.reads) View.VISIBLE else View.GONE
+                visibility = View.GONE
+                item.content?.let {
+                    if (0L == it.reads) visibility = View.VISIBLE
+                }
             }
         }
 
@@ -433,10 +443,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachFlag(content: Content) {
+        private fun attachFlag(content: Content, gridMode: Int) {
             ivFlag?.apply {
                 @DrawableRes val resId = ContentHelper.getFlagResourceId(context, content)
-                visibility = if (resId != 0) {
+                visibility = if (resId != 0 && gridMode != 2) {
                     setImageResource(resId)
                     View.VISIBLE
                 } else {
@@ -448,8 +458,12 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private fun attachTitle(
             content: Content?,
             queueRecord: QueueRecord?,
-            chapter: Chapter?
+            chapter: Chapter?,
+            gridMode: Int
         ) {
+            tvTitle.isVisible = (gridMode != 2)
+            if (!tvTitle.isVisible) return
+
             var title = tvTitle.context.getText(R.string.work_untitled)
             if (content != null) {
                 title = if (content.title.isNullOrEmpty()) content.replacementTitle
@@ -468,10 +482,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             ivCompleted?.isVisible = content.isCompleted
         }
 
-        private fun attachReadingProgress(content: Content) {
+        private fun attachReadingProgress(content: Content, gridMode: Int) {
             readingProgress?.apply {
                 val imgs = content.imageList
-                if (!content.isCompleted) {
+                if (!content.isCompleted && gridMode != 2) {
                     visibility = View.VISIBLE
                     max = imgs.count { imf -> imf.isReadable }
                     progress = content.readPagesCount
@@ -481,14 +495,16 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachArtist(content: Content) {
+        private fun attachArtist(content: Content, gridMode: Int) {
             tvArtist?.apply {
+                isVisible = (gridMode != 2)
                 text = ContentHelper.formatArtistForDisplay(context, content)
             }
         }
 
-        private fun attachSeries(content: Content) {
+        private fun attachSeries(content: Content, gridMode: Int) {
             tvSeries?.apply {
+                isVisible = (gridMode != 2)
                 val text = ContentHelper.formatSeriesForDisplay(context, content)
                 if (text.isEmpty()) {
                     visibility = View.GONE
@@ -499,13 +515,21 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachMetrics(content: Content?, chapter: Chapter?, viewType: ViewType) {
+        private fun attachMetrics(
+            content: Content?,
+            chapter: Chapter?,
+            viewType: ViewType,
+            gridMode: Int
+        ) {
+            tvPages ?: return // Mandatory
+
             var qtyPages = 0
             if (content != null) qtyPages = content.qtyPages
             else if (chapter != null) qtyPages = chapter.readableImageFiles.size
 
-            tvPages?.visibility = if (0 == qtyPages) View.INVISIBLE else View.VISIBLE
-            val context = tvPages!!.context
+            tvPages.visibility = if (0 == qtyPages) View.INVISIBLE else View.VISIBLE
+
+            val context = baseLayout.context
             val template: String
             if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS || viewType == ViewType.LIBRARY_EDIT || viewType == ViewType.MERGE || viewType == ViewType.SPLIT) {
                 val nbPages = "$qtyPages"
@@ -521,10 +545,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     } else context.resources.getString(R.string.work_pages_queue, nbPages, "")
                 } else context.resources.getString(R.string.work_pages_queue, nbPages, "")
                 tvPages.text = template
-            } else { // Library
+            } else { // Library (list & grid)
                 check(content != null)
                 val isPlaceholder = content.status == StatusContent.PLACEHOLDER
-                val phVisibility = if (isPlaceholder) View.GONE else View.VISIBLE
+                val phVisibility = if (isPlaceholder || 2 == gridMode) View.GONE else View.VISIBLE
                 tvPages.let { tv ->
                     ivPages?.visibility = phVisibility
                     tv.visibility = phVisibility
@@ -533,7 +557,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 tvChapters?.let { tv ->
                     val chapters = content.chaptersList
                     val chapterVisibility =
-                        if (isPlaceholder || chapters.isNullOrEmpty()) View.GONE else View.VISIBLE
+                        if (isPlaceholder || chapters.isNullOrEmpty() || 2 == gridMode) View.GONE else View.VISIBLE
                     ivChapters?.let { iv ->
                         iv.visibility = chapterVisibility
                         tv.visibility = chapterVisibility
@@ -546,7 +570,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 }
                 tvStorage?.let { tv ->
                     val storageVisibility =
-                        if (isPlaceholder || content.downloadMode == Content.DownloadMode.STREAM) View.GONE else View.VISIBLE
+                        if (isPlaceholder || content.downloadMode == Content.DownloadMode.STREAM || 2 == gridMode) View.GONE else View.VISIBLE
                     ivStorage?.visibility = storageVisibility
                     tv.visibility = storageVisibility
                     if (storageVisibility == View.VISIBLE) tv.text = context.getString(
@@ -557,8 +581,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachTags(content: Content) {
+        private fun attachTags(content: Content, gridMode: Int) {
             tvTags?.apply {
+                isVisible = (gridMode != 2)
                 val tagTxt = ContentHelper.formatTagsForDisplay(content)
                 if (tagTxt.isEmpty()) {
                     visibility = View.GONE
@@ -570,7 +595,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachButtons(item: ContentItem) {
+        private fun attachButtons(item: ContentItem, gridMode: Int) {
             // Universal
             ivReorder?.visibility = if (item.showDragHandle) View.VISIBLE else View.INVISIBLE
 
@@ -580,7 +605,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             // Source icon
             ivSite?.apply {
                 val site = content.site
-                visibility = if (site != null && site != Site.NONE) {
+                visibility = if (site != null && site != Site.NONE && gridMode != 2) {
                     val img = site.ico
                     setImageResource(img)
                     View.VISIBLE
@@ -590,6 +615,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
 
             deleteButton?.apply {
+                isVisible = (gridMode != 2)
                 setOnClickListener { deleteActionRunnable?.run() }
                 setOnLongClickListener {
                     deleteActionRunnable?.run()
@@ -598,7 +624,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
 
             val isStreamed = content.downloadMode == Content.DownloadMode.STREAM
-            ivOnline?.isVisible = isStreamed
+            ivOnline?.isVisible = isStreamed && (gridMode != 2)
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 topButton?.visibility = View.VISIBLE
                 bottomButton?.visibility = View.VISIBLE
@@ -606,6 +632,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 downloadButton?.visibility = View.VISIBLE
                 ivError?.visibility = View.VISIBLE
             } else if (ViewType.LIBRARY == item.viewType || ViewType.LIBRARY_GRID == item.viewType) {
+                ivExternal?.isVisible = (gridMode != 2)
+                ivStorage?.isVisible = (gridMode != 2)
+
                 if (content.status == StatusContent.EXTERNAL) {
                     var resourceId =
                         if (content.isArchive) R.drawable.ic_archive else R.drawable.ic_folder_full
@@ -629,12 +658,16 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     }
                 }
 
-                if (content.isFavourite) ivFavourite?.setImageResource(R.drawable.ic_fav_full)
-                else ivFavourite?.setImageResource(R.drawable.ic_fav_empty)
+                ivFavourite?.apply {
+                    isVisible = (gridMode != 2)
+                    if (content.isFavourite) setImageResource(R.drawable.ic_fav_full)
+                    else setImageResource(R.drawable.ic_fav_empty)
+                }
 
-                ivRating?.setImageResource(
-                    ContentHelper.getRatingResourceId(content.rating)
-                )
+                ivRating?.apply {
+                    isVisible = (gridMode != 2)
+                    setImageResource(ContentHelper.getRatingResourceId(content.rating))
+                }
             }
         }
 

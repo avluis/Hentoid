@@ -17,7 +17,7 @@
             <ListPreference
                 android:defaultValue="@string/pref_library_display_default"
                 android:entries="@array/pref_library_display_entries"
-                android:entryValues="@array/int_two"
+                android:entryValues="@array/int_four"
                 android:key="pref_library_display"
                 android:summary="@string/pref_library_display_summary"
                 android:title="@string/pref_library_display_title"
