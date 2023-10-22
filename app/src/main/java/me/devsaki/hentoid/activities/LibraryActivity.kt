@@ -146,6 +146,10 @@ class LibraryActivity : BaseActivity() {
     // TODO
     private var searchHistory: PowerMenu? = null
 
+    // TODO
+    private var hasChangedDisplaySettings = false
+
+
     // Current text search query; one per tab
     private val query = mutableListOf<String?>("", "")
 
@@ -398,6 +402,11 @@ class LibraryActivity : BaseActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (hasChangedDisplaySettings) resetActivity()
+    }
+
     /**
      * Initialize the UI components
      */
@@ -608,8 +617,9 @@ class LibraryActivity : BaseActivity() {
             R.id.action_display_type -> {
                 var displayType = Settings.libraryDisplay
                 displayType =
-                    if (Settings.Value.LIBRARY_DISPLAY_LIST == displayType) Settings.Value.LIBRARY_DISPLAY_GRID_CLASSIC else Settings.Value.LIBRARY_DISPLAY_LIST
+                    if (Settings.Value.LIBRARY_DISPLAY_LIST == displayType) Settings.Value.LIBRARY_DISPLAY_GRID else Settings.Value.LIBRARY_DISPLAY_LIST
                 Settings.libraryDisplay = displayType
+                resetActivity()
             }
 
             R.id.action_browse_groups -> LibraryBottomGroupsFragment.invoke(
@@ -780,12 +790,16 @@ class LibraryActivity : BaseActivity() {
     private fun onSharedPreferenceChanged(key: String?) {
         Timber.i("Prefs change detected : %s", key)
         when (key) {
-            Preferences.Key.COLOR_THEME, Settings.Key.LIBRARY_DISPLAY -> {
-                // Restart the app with the library activity on top
-                val intent = Intent(this, LibraryActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                finish()
-                startActivity(intent)
+            Preferences.Key.COLOR_THEME,
+            Settings.Key.LIBRARY_DISPLAY,
+            Settings.Key.LIBRARY_DISPLAY_GRID_STORAGE,
+            Settings.Key.LIBRARY_DISPLAY_GRID_LANG,
+            Settings.Key.LIBRARY_DISPLAY_GRID_FAV,
+            Settings.Key.LIBRARY_DISPLAY_GRID_RATING,
+            Settings.Key.LIBRARY_DISPLAY_GRID_SOURCE,
+            Settings.Key.LIBRARY_DISPLAY_GRID_TITLE,
+            -> {
+                hasChangedDisplaySettings = true
             }
 
             Preferences.Key.PRIMARY_STORAGE_URI, Preferences.Key.EXTERNAL_LIBRARY_URI -> {
@@ -1217,6 +1231,16 @@ class LibraryActivity : BaseActivity() {
         hideSearchSubBar()
         updateToolbar()
         updateSelectionToolbar(0, 0, 0, 0, 0, 0)
+    }
+
+    /**
+     * Restart the app with the library activity on top
+     */
+    private fun resetActivity() {
+        val intent = Intent(this, LibraryActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        finish()
+        startActivity(intent)
     }
 
     /**

@@ -340,26 +340,21 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 false
             }
 
-            val gridMode = when (Settings.libraryDisplay) {
-                Settings.Value.LIBRARY_DISPLAY_GRID_CLASSIC -> 1
-                Settings.Value.LIBRARY_DISPLAY_GRID_MINI -> 2
-                Settings.Value.LIBRARY_DISPLAY_GRID_OVERLAY -> 3
-                else -> 0
-            }
+            val isGrid = (Settings.Value.LIBRARY_DISPLAY_GRID == Settings.libraryDisplay)
 
             updateLayoutVisibility(item)
             attachCover(item.content, item.chapter)
-            attachTitle(item.content, item.queueRecord, item.chapter, gridMode)
-            attachMetrics(item.content, item.chapter, item.viewType, gridMode)
+            attachTitle(item.content, item.queueRecord, item.chapter, isGrid)
+            attachMetrics(item.content, item.chapter, item.viewType)
             item.content?.let {
                 attachCompleted(it)
-                attachFlag(it, gridMode)
-                attachReadingProgress(it, gridMode)
-                attachArtist(it, gridMode)
-                attachSeries(it, gridMode)
-                attachTags(it, gridMode)
+                attachReadingProgress(it)
+                attachArtist(it)
+                attachSeries(it)
+                attachTags(it)
+                attachFlag(it, isGrid)
             }
-            attachButtons(item, gridMode)
+            attachButtons(item, isGrid)
             item.updateProgress(
                 this,
                 isPausedEvent = false,
@@ -443,10 +438,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachFlag(content: Content, gridMode: Int) {
+        private fun attachFlag(content: Content, isGrid: Boolean) {
             ivFlag?.apply {
                 @DrawableRes val resId = ContentHelper.getFlagResourceId(context, content)
-                visibility = if (resId != 0 && gridMode != 2) {
+                visibility = if (resId != 0 && (!isGrid || Settings.libraryDisplayGridLanguage)) {
                     setImageResource(resId)
                     View.VISIBLE
                 } else {
@@ -459,9 +454,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             content: Content?,
             queueRecord: QueueRecord?,
             chapter: Chapter?,
-            gridMode: Int
+            isGrid: Boolean
         ) {
-            tvTitle.isVisible = (gridMode != 2)
+            tvTitle.isVisible = (!isGrid || Settings.libraryDisplayGridTitle)
             if (!tvTitle.isVisible) return
 
             var title = tvTitle.context.getText(R.string.work_untitled)
@@ -482,10 +477,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             ivCompleted?.isVisible = content.isCompleted
         }
 
-        private fun attachReadingProgress(content: Content, gridMode: Int) {
+        private fun attachReadingProgress(content: Content) {
             readingProgress?.apply {
                 val imgs = content.imageList
-                if (!content.isCompleted && gridMode != 2) {
+                if (!content.isCompleted) {
                     visibility = View.VISIBLE
                     max = imgs.count { imf -> imf.isReadable }
                     progress = content.readPagesCount
@@ -495,16 +490,14 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachArtist(content: Content, gridMode: Int) {
+        private fun attachArtist(content: Content) {
             tvArtist?.apply {
-                isVisible = (gridMode != 2)
                 text = ContentHelper.formatArtistForDisplay(context, content)
             }
         }
 
-        private fun attachSeries(content: Content, gridMode: Int) {
+        private fun attachSeries(content: Content) {
             tvSeries?.apply {
-                isVisible = (gridMode != 2)
                 val text = ContentHelper.formatSeriesForDisplay(context, content)
                 if (text.isEmpty()) {
                     visibility = View.GONE
@@ -518,8 +511,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private fun attachMetrics(
             content: Content?,
             chapter: Chapter?,
-            viewType: ViewType,
-            gridMode: Int
+            viewType: ViewType
         ) {
             tvPages ?: return // Mandatory
 
@@ -545,10 +537,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     } else context.resources.getString(R.string.work_pages_queue, nbPages, "")
                 } else context.resources.getString(R.string.work_pages_queue, nbPages, "")
                 tvPages.text = template
-            } else { // Library (list & grid)
+            } else { // Library (list; grid doesn't display these details)
                 check(content != null)
                 val isPlaceholder = content.status == StatusContent.PLACEHOLDER
-                val phVisibility = if (isPlaceholder || 2 == gridMode) View.GONE else View.VISIBLE
+                val phVisibility = if (isPlaceholder) View.GONE else View.VISIBLE
                 tvPages.let { tv ->
                     ivPages?.visibility = phVisibility
                     tv.visibility = phVisibility
@@ -557,7 +549,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 tvChapters?.let { tv ->
                     val chapters = content.chaptersList
                     val chapterVisibility =
-                        if (isPlaceholder || chapters.isNullOrEmpty() || 2 == gridMode) View.GONE else View.VISIBLE
+                        if (isPlaceholder || chapters.isNullOrEmpty()) View.GONE else View.VISIBLE
                     ivChapters?.let { iv ->
                         iv.visibility = chapterVisibility
                         tv.visibility = chapterVisibility
@@ -570,7 +562,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 }
                 tvStorage?.let { tv ->
                     val storageVisibility =
-                        if (isPlaceholder || content.downloadMode == Content.DownloadMode.STREAM || 2 == gridMode) View.GONE else View.VISIBLE
+                        if (isPlaceholder || content.downloadMode == Content.DownloadMode.STREAM) View.GONE else View.VISIBLE
                     ivStorage?.visibility = storageVisibility
                     tv.visibility = storageVisibility
                     if (storageVisibility == View.VISIBLE) tv.text = context.getString(
@@ -581,9 +573,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachTags(content: Content, gridMode: Int) {
+        private fun attachTags(content: Content) {
             tvTags?.apply {
-                isVisible = (gridMode != 2)
                 val tagTxt = ContentHelper.formatTagsForDisplay(content)
                 if (tagTxt.isEmpty()) {
                     visibility = View.GONE
@@ -595,7 +586,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachButtons(item: ContentItem, gridMode: Int) {
+        private fun attachButtons(item: ContentItem, isGrid: Boolean) {
             // Universal
             ivReorder?.visibility = if (item.showDragHandle) View.VISIBLE else View.INVISIBLE
 
@@ -605,17 +596,17 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             // Source icon
             ivSite?.apply {
                 val site = content.site
-                visibility = if (site != null && site != Site.NONE && gridMode != 2) {
-                    val img = site.ico
-                    setImageResource(img)
-                    View.VISIBLE
-                } else {
-                    View.GONE
-                }
+                visibility =
+                    if (site != null && site != Site.NONE && (!isGrid || Settings.libraryDisplayGridSource)) {
+                        val img = site.ico
+                        setImageResource(img)
+                        View.VISIBLE
+                    } else {
+                        View.GONE
+                    }
             }
 
             deleteButton?.apply {
-                isVisible = (gridMode != 2)
                 setOnClickListener { deleteActionRunnable?.run() }
                 setOnLongClickListener {
                     deleteActionRunnable?.run()
@@ -624,7 +615,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
 
             val isStreamed = content.downloadMode == Content.DownloadMode.STREAM
-            ivOnline?.isVisible = isStreamed && (gridMode != 2)
+            ivOnline?.isVisible = isStreamed && (!isGrid || Settings.libraryDisplayGridStorageInfo)
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 topButton?.visibility = View.VISIBLE
                 bottomButton?.visibility = View.VISIBLE
@@ -632,8 +623,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 downloadButton?.visibility = View.VISIBLE
                 ivError?.visibility = View.VISIBLE
             } else if (ViewType.LIBRARY == item.viewType || ViewType.LIBRARY_GRID == item.viewType) {
-                ivExternal?.isVisible = (gridMode != 2)
-                ivStorage?.isVisible = (gridMode != 2)
+                ivExternal?.isVisible = (!isGrid || Settings.libraryDisplayGridStorageInfo)
+                ivStorage?.isVisible = (!isGrid || Settings.libraryDisplayGridStorageInfo)
 
                 if (content.status == StatusContent.EXTERNAL) {
                     var resourceId =
@@ -659,13 +650,13 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 }
 
                 ivFavourite?.apply {
-                    isVisible = (gridMode != 2)
+                    isVisible = (!isGrid || Settings.libraryDisplayGridFav)
                     if (content.isFavourite) setImageResource(R.drawable.ic_fav_full)
                     else setImageResource(R.drawable.ic_fav_empty)
                 }
 
                 ivRating?.apply {
-                    isVisible = (gridMode != 2)
+                    isVisible = (!isGrid || Settings.libraryDisplayGridRating)
                     setImageResource(ContentHelper.getRatingResourceId(content.rating))
                 }
             }

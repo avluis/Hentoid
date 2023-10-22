@@ -2,9 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Choice for "Display type" setting -->
     <string name="pref_library_display_entries_1">List (default)</string>
-    <string name="pref_library_display_entries_2">Grid (classic)</string>
-    <string name="pref_library_display_entries_3">Grid (minimalistic)</string>
-    <string name="pref_library_display_entries_4">Grid (with overlay)</string>
+    <string name="pref_library_display_entries_2">Grid</string>
     <!-- Choice for "Alert on low memory" setting -->
     <string name="pref_memory_alert_entries_1">No alert</string>
     <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">on 90% full</string>

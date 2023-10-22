@@ -19,6 +19,15 @@ object Settings {
      */
     // LIBRARY
     var libraryDisplay: Int by IntSetting(Key.LIBRARY_DISPLAY, Value.LIBRARY_DISPLAY_DEFAULT)
+    var libraryDisplayGridFav: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_FAV, true)
+    var libraryDisplayGridRating: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_RATING, true)
+    var libraryDisplayGridSource: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_SOURCE, true)
+    var libraryDisplayGridStorageInfo: Boolean by BoolSetting(
+        Key.LIBRARY_DISPLAY_GRID_STORAGE,
+        true
+    )
+    var libraryDisplayGridTitle: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_TITLE, true)
+    var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
 
     // DOWNLOADER
     var isKskDownloadOriginal: Boolean by BoolSetting("pref_dl_ksk_hires", false)
@@ -112,15 +121,19 @@ object Settings {
         const val LIBRARY_DISPLAY = "pref_library_display"
         const val READER_COLOR_DEPTH = "viewer_color_depth"
         const val LOCK_TYPE = "LOCK_TYPE"
+        const val LIBRARY_DISPLAY_GRID_FAV = "LIBRARY_DISPLAY_GRID_FAV"
+        const val LIBRARY_DISPLAY_GRID_RATING = "LIBRARY_DISPLAY_GRID_RATING"
+        const val LIBRARY_DISPLAY_GRID_SOURCE = "LIBRARY_DISPLAY_GRID_SOURCE"
+        const val LIBRARY_DISPLAY_GRID_STORAGE = "LIBRARY_DISPLAY_GRID_STORAGE"
+        const val LIBRARY_DISPLAY_GRID_TITLE = "LIBRARY_DISPLAY_GRID_TITLE"
+        const val LIBRARY_DISPLAY_GRID_LANG = "LIBRARY_DISPLAY_GRID_LANG"
     }
 
     object Value {
         const val ARCHIVE_TARGET_FOLDER_DOWNLOADS = "downloads"
 
         const val LIBRARY_DISPLAY_LIST = 0
-        const val LIBRARY_DISPLAY_GRID_CLASSIC = 1
-        const val LIBRARY_DISPLAY_GRID_MINI = 2
-        const val LIBRARY_DISPLAY_GRID_OVERLAY = 3
+        const val LIBRARY_DISPLAY_GRID = 1
         const val LIBRARY_DISPLAY_DEFAULT = LIBRARY_DISPLAY_LIST
     }
 }
