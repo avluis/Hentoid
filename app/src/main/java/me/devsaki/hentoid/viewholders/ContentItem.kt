@@ -340,7 +340,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 false
             }
 
-            val isGrid = (Settings.Value.LIBRARY_DISPLAY_GRID == Settings.libraryDisplay)
+            val isGrid = (ViewType.LIBRARY_GRID == item.viewType)
 
             updateLayoutVisibility(item)
             attachCover(item.content, item.chapter)

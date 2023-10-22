@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -33,6 +34,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 
@@ -98,9 +100,13 @@ class GroupDisplayItem(
                 val intValue = bundleParser.rating
                 if (intValue != null) item.group.rating = intValue
             }
+
             if (item.group.isBeingProcessed) baseLayout.startAnimation(
                 BlinkAnimation(500, 250)
             ) else baseLayout.clearAnimation()
+
+            val isGrid = (ViewType.LIBRARY_GRID == item.viewType)
+
             ivReorder?.apply {
                 if (ViewType.LIBRARY_EDIT == item.viewType) {
                     visibility = View.VISIBLE
@@ -113,6 +119,7 @@ class GroupDisplayItem(
                     visibility = View.INVISIBLE
                 }
             }
+
             if (ivCover != null) {
                 var coverContent: Content? = null
                 if (!item.group.coverContent.isNull) coverContent =
@@ -124,20 +131,20 @@ class GroupDisplayItem(
                 }
                 if (coverContent != null) attachCover(coverContent.cover)
             }
+
             val items: List<GroupItem>? = item.group.items
             val numberStr =
                 if (items.isNullOrEmpty()) ivFavourite.context.getString(R.string.empty) else items.size.toString() + ""
             title.text = String.format("%s (%s)", item.group.name, numberStr)
+
+            ivFavourite.isVisible = (!isGrid || Settings.libraryDisplayGridFav)
             if (item.group.isFavourite) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full)
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_empty)
             }
-            if (item.group.isFavourite) {
-                ivFavourite.setImageResource(R.drawable.ic_fav_full)
-            } else {
-                ivFavourite.setImageResource(R.drawable.ic_fav_empty)
-            }
+
+            ivRating.isVisible = (!isGrid || Settings.libraryDisplayGridRating)
             ivRating.setImageResource(ContentHelper.getRatingResourceId(item.group.rating))
         }
 
