@@ -34,7 +34,7 @@
         android:layout_marginEnd="8dp"
         android:ellipsize="middle"
         android:maxLines="2"
-        android:textColor="@color/card_title_light"
+        android:textColor="?card_title"
         android:textSize="@dimen/text_subtitle_2"
         android:textStyle="bold"
         android:focusable="false"

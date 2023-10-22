@@ -52,7 +52,7 @@
             android:layout_marginEnd="8dp"
             android:ellipsize="middle"
             android:singleLine="true"
-            android:textColor="@color/card_tags_light"
+            android:textColor="?card_title"
             android:textSize="@dimen/text_subtitle_2"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
