@@ -37,6 +37,7 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -196,12 +197,11 @@ public class ExternalImportWorker extends BaseWorker {
             eventComplete(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO, null);
             // Clear disk cache as import may reuse previous image IDs
             DiskCache.INSTANCE.init(getApplicationContext());
-
-            // Write log in root folder
-            logFile = LogHelper.INSTANCE.writeLog(context, buildLogInfo(log));
         } catch (IOException e) {
             Timber.w(e);
+            Helper.logException(e);
         } finally {
+            logFile = LogHelper.INSTANCE.writeLog(context, buildLogInfo(log));
             eventComplete(PrimaryImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
         }
