@@ -49,7 +49,7 @@ object DownloadHelper {
         failFast: Boolean = true,
         resourceId: Int,
         notifyProgress: Consumer<Float>? = null
-    ): Pair<Uri, String> {
+    ): Pair<Uri?, String> {
         return downloadToFile(
             context, site, rawUrl, requestHeaders,
             fileCreator = { _, _ -> DiskCache.createFile(cacheKey) },
@@ -75,7 +75,7 @@ object DownloadHelper {
         failFast: Boolean = true,
         resourceId: Int,
         notifyProgress: Consumer<Float>? = null
-    ): Pair<Uri, String> {
+    ): Pair<Uri?, String> {
         return downloadToFile(
             context, site, rawUrl, requestHeaders,
             fileCreator = { ctx, mimeType ->
@@ -118,7 +118,7 @@ object DownloadHelper {
         failFast: Boolean = true,
         resourceId: Int,
         notifyProgress: Consumer<Float>? = null
-    ): Pair<Uri, String> {
+    ): Pair<Uri?, String> {
         Helper.assertNonUiThread()
         val url = HttpHelper.fixUrl(rawUrl, site.url)
         if (interruptDownload.get()) throw DownloadInterruptedException("Download interrupted")

@@ -14,7 +14,6 @@ import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.HttpHelper
-import org.apache.commons.lang3.tuple.ImmutableTriple
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.util.Queue
@@ -44,7 +43,7 @@ class RequestQueue(
         active = false
     }
 
-    suspend fun executeRequest(context : Context, requestOrder: RequestOrder) {
+    suspend fun executeRequest(context: Context, requestOrder: RequestOrder) {
         if (!active) {
             Timber.d("Can't execute a request while request queue is inactive!")
             return
@@ -76,7 +75,7 @@ class RequestQueue(
 
     private fun handleSuccess(
         requestOrder: RequestOrder,
-        resultOpt: Optional<ImmutableTriple<Int, Uri, String>>
+        resultOpt: Optional<Triple<Int, Uri, String>>
     ) {
         // Nothing to download => this is actually an error
         if (resultOpt.isEmpty) {
@@ -87,7 +86,7 @@ class RequestQueue(
         handleComplete(requestOrder)
         successHandler.accept(
             requestOrder,
-            resultOpt.get().middle
+            resultOpt.get().second
         )
     }
 
@@ -139,7 +138,7 @@ class RequestQueue(
         targetFileNameNoExt: String,
         pageIndex: Int,
         killSwitch: AtomicBoolean
-    ): Optional<ImmutableTriple<Int, Uri, String>> {
+    ): Optional<Triple<Int, Uri, String>> {
         Helper.assertNonUiThread()
 
         val requestHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url)
@@ -166,9 +165,10 @@ class RequestQueue(
 
         val targetFileUri = result.first
         val mimeType = result.second
+        if (null == targetFileUri) throw ParseException("Resource not available");
 
         return Optional.of(
-            ImmutableTriple(
+            Triple(
                 pageIndex,
                 targetFileUri,
                 mimeType
