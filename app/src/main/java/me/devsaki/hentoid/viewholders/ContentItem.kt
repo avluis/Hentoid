@@ -13,7 +13,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -59,7 +58,6 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.image.ImageHelper.tintBitmap
 import timber.log.Timber
 import java.util.Locale
-import kotlin.math.floor
 
 class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     IExtendedDraggable<ContentItem.ViewHolder>, ISwipeable {
@@ -371,18 +369,6 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private fun updateLayoutVisibility(item: ContentItem) {
             baseLayout.isVisible = !item.isEmpty
             selectionBorder?.isVisible = item.isSelected
-
-            // Set horizontal spacing between tiles in grid mode
-            /*
-            if (ViewType.LIBRARY_GRID == item.viewType) {
-                val layoutParams = baseLayout.layoutParams
-                if (layoutParams is MarginLayoutParams) {
-                    layoutParams.marginStart = ITEM_HORIZONTAL_MARGIN_PX
-                    layoutParams.marginEnd = ITEM_HORIZONTAL_MARGIN_PX
-                }
-                baseLayout.layoutParams = layoutParams
-            }
-             */
 
             if (item.content != null && item.content.isBeingProcessed)
                 baseLayout.startAnimation(
@@ -726,22 +712,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     }
 
     companion object {
-        private val ITEM_HORIZONTAL_MARGIN_PX: Int
         private val glideRequestOptions: RequestOptions
 
         init {
             val context: Context = getInstance()
-
-            // Compute spacing between tiles in grid mode
-            val screenWidthPx =
-                context.resources.displayMetrics.widthPixels - 2 * context.resources.getDimension(R.dimen.default_cardview_margin)
-                    .toInt()
-            val gridHorizontalWidthPx =
-                context.resources.getDimension(R.dimen.card_grid_width).toInt()
-            val nbItems =
-                floor((screenWidthPx * 1f / gridHorizontalWidthPx).toDouble()).toInt()
-            val remainingSpacePx = screenWidthPx % gridHorizontalWidthPx
-            ITEM_HORIZONTAL_MARGIN_PX = remainingSpacePx / (nbItems * 2)
 
             // Glide options
             val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
