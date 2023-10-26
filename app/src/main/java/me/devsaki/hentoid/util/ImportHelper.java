@@ -386,8 +386,8 @@ public class ImportHelper {
      * @param location Locations to keep credentials for
      */
     public static void persistLocationCredentials(@NonNull final Context context,
-                                                   @NonNull final Uri treeUri,
-                                                   List<StorageLocation> location) {
+                                                  @NonNull final Uri treeUri,
+                                                  List<StorageLocation> location) {
         List<Uri> uri = Stream.of(location)
                 .map(Preferences::getStorageUri)
                 .filterNot(String::isEmpty)
@@ -872,6 +872,7 @@ public class ImportHelper {
 
         List<ArchiveHelper.ArchiveEntry> imageEntries = Stream.of(entries)
                 .filter(s -> ImageHelper.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(s.getPath())))
+                .filter(s -> new File(s.getPath()).length() > 0)
                 .toList();
 
         if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
