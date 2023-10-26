@@ -155,6 +155,7 @@ public class HitomiActivity extends BaseWebActivity {
                 parser.parseImageListWithWebview(content, webView); // Only fetch them when queue is processed
                 content.setStatus(StatusContent.SAVED);
             } catch (Exception e) {
+                Helper.logException(e);
                 Timber.i(e);
                 content.setStatus(StatusContent.IGNORED);
             }
