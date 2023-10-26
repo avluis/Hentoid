@@ -373,6 +373,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             selectionBorder?.isVisible = item.isSelected
 
             // Set horizontal spacing between tiles in grid mode
+            /*
             if (ViewType.LIBRARY_GRID == item.viewType) {
                 val layoutParams = baseLayout.layoutParams
                 if (layoutParams is MarginLayoutParams) {
@@ -381,6 +382,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 }
                 baseLayout.layoutParams = layoutParams
             }
+             */
 
             if (item.content != null && item.content.isBeingProcessed)
                 baseLayout.startAnimation(
