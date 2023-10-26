@@ -28,6 +28,7 @@ object Settings {
     )
     var libraryDisplayGridTitle: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_TITLE, true)
     var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
+    var libraryGridCardWidthDP: Int by IntSetting(Key.LIBRARY_GRID_CARD_WIDTH, 150)
 
     // DOWNLOADER
     var isKskDownloadOriginal: Boolean by BoolSetting("pref_dl_ksk_hires", false)
@@ -127,6 +128,7 @@ object Settings {
         const val LIBRARY_DISPLAY_GRID_STORAGE = "LIBRARY_DISPLAY_GRID_STORAGE"
         const val LIBRARY_DISPLAY_GRID_TITLE = "LIBRARY_DISPLAY_GRID_TITLE"
         const val LIBRARY_DISPLAY_GRID_LANG = "LIBRARY_DISPLAY_GRID_LANG"
+        const val LIBRARY_GRID_CARD_WIDTH = "grid_card_width"
     }
 
     object Value {

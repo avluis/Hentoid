@@ -395,7 +395,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 false
             ) else AutofitGridLayoutManager(
                 requireContext(),
-                resources.getDimension(R.dimen.card_grid_width).toInt()
+                Helper.dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
             )
         binding?.recyclerView?.apply {
             layoutManager = llm

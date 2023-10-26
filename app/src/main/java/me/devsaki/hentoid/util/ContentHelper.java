@@ -586,7 +586,7 @@ public final class ContentHelper {
                                         finalFile = new File(targetFolder, targetFileName);
                                     }
                                     try (OutputStream os = FileHelper.getOutputStream(finalFile)) {
-                                        Bitmap resizedBitmap = ImageHelper.INSTANCE.getScaledDownBitmap(b, context.getResources().getDimensionPixelSize(R.dimen.card_grid_width), false);
+                                        Bitmap resizedBitmap = ImageHelper.INSTANCE.getScaledDownBitmap(b, Helper.dimensAsPx(context, Settings.INSTANCE.getLibraryGridCardWidthDP()), false);
                                         resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os);
                                         resizedBitmap.recycle();
                                     }

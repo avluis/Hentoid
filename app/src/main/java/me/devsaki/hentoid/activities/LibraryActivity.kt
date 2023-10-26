@@ -798,6 +798,7 @@ class LibraryActivity : BaseActivity() {
             Settings.Key.LIBRARY_DISPLAY_GRID_RATING,
             Settings.Key.LIBRARY_DISPLAY_GRID_SOURCE,
             Settings.Key.LIBRARY_DISPLAY_GRID_TITLE,
+            Settings.Key.LIBRARY_GRID_CARD_WIDTH
             -> {
                 hasChangedDisplaySettings = true
             }

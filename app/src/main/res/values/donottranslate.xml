@@ -56,6 +56,20 @@
         <item>80</item>
         <item>100</item>
     </string-array>
+    <string-array name="pref_grid_card_width_entries" translatable="false">
+        <item>100dp</item>
+        <item>150dp (default)</item>
+        <item>200dp</item>
+        <item>250dp</item>
+        <item>300dp</item>
+    </string-array>
+    <string-array name="pref_grid_card_width_values" translatable="false">
+        <item>100</item>
+        <item>150</item>
+        <item>200</item>
+        <item>250</item>
+        <item>300</item>
+    </string-array>
     <string-array name="pref_memory_alert_entries" translatable="false">
         <item>@string/pref_memory_alert_entries_1</item>
         <item>@string/pref_memory_alert_entries_2</item>
@@ -453,6 +467,15 @@
     <string name="pref_endless_scroll_default" translatable="false">true</string>
     <string name="pref_quantity_per_page_default" translatable="false">20</string>
     <string name="pref_top_fab_default" translatable="false">true</string>
+
+    <string name="pref_grid_display_title_default" translatable="false">true</string>
+    <string name="pref_grid_display_lang_default" translatable="false">true</string>
+    <string name="pref_grid_display_fav_default" translatable="false">true</string>
+    <string name="pref_grid_display_rating_default" translatable="false">true</string>
+    <string name="pref_grid_display_source_default" translatable="false">true</string>
+    <string name="pref_grid_display_storage_default" translatable="false">true</string>
+    <string name="pref_grid_card_width_default" translatable="false">150</string>
+
     <string name="pref_attributes_list_order_default" translatable="false">1</string>
     <string name="pref_attributes_list_order_summary" translatable="false">%s</string>
     <string name="pref_attributes_list_count_default" translatable="false">true</string>
