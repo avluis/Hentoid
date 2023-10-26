@@ -42,6 +42,7 @@ import me.devsaki.hentoid.util.download.DownloadHelper
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
+import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.ArchiveHelper
 import me.devsaki.hentoid.util.file.DiskCache
@@ -53,7 +54,6 @@ import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
-import org.apache.commons.lang3.tuple.ImmutableTriple
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.File
@@ -1056,14 +1056,14 @@ class ReaderViewModel(
                             notifyDownloadProgress(-1f, index)
                             return@withContext
                         }
-                        val downloadedPageIndex = resultOpt.get().left
+                        val downloadedPageIndex = resultOpt.get().first
                         synchronized(viewerImagesInternal) {
                             if (viewerImagesInternal.size <= downloadedPageIndex) return@withContext
 
                             // Instanciate a new ImageFile not to modify the one used by the UI
                             val downloadedPic = ImageFile(viewerImagesInternal[downloadedPageIndex])
-                            downloadedPic.fileUri = resultOpt.get().middle
-                            downloadedPic.mimeType = resultOpt.get().right
+                            downloadedPic.fileUri = resultOpt.get().second
+                            downloadedPic.mimeType = resultOpt.get().third
                             viewerImagesInternal.removeAt(downloadedPageIndex)
                             viewerImagesInternal.add(downloadedPageIndex, downloadedPic)
                             Timber.d(
@@ -1267,14 +1267,14 @@ class ReaderViewModel(
      */
     private fun downloadPic(
         pageIndex: Int, stopDownload: AtomicBoolean
-    ): Optional<ImmutableTriple<Int, String?, String?>> {
+    ): Optional<Triple<Int, String?, String?>> {
         Helper.assertNonUiThread()
         if (viewerImagesInternal.size <= pageIndex) return Optional.empty()
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
         // Already downloaded
         if (img.fileUri.isNotEmpty() && DiskCache.getFile(formatCacheKey(img)) != null) return Optional.of(
-            ImmutableTriple(pageIndex, img.fileUri, img.mimeType)
+            Triple(pageIndex, img.fileUri, img.mimeType)
         )
 
         // Initiate download
@@ -1287,7 +1287,7 @@ class ReaderViewModel(
             headers.add(
                 Pair(HttpHelper.HEADER_REFERER_KEY, content.readerUrl)
             ) // Useful for Hitomi and Toonily
-            val result: Pair<Uri, String>
+            val result: Pair<Uri?, String>
             if (img.needsPageParsing()) {
                 val pageUrl = HttpHelper.fixUrl(img.pageUrl, content.site.url)
                 // Get cookies from the app jar
@@ -1321,11 +1321,15 @@ class ReaderViewModel(
                     notifyDownloadProgress(f, pageIndex)
                 }
             }
-            targetFile = File(result.first.path!!)
+
+            val targetFileUri = result.first
+            targetFileUri ?: throw ParseException("Resource is not available")
+
+            targetFile = File(targetFileUri.path!!)
             mimeType = result.second
 
             return Optional.of(
-                ImmutableTriple(
+                Triple(
                     pageIndex, Uri.fromFile(targetFile).toString(), mimeType
                 )
             )
@@ -1363,7 +1367,7 @@ class ReaderViewModel(
         pageIndex: Int,
         requestHeaders: List<Pair<String, String>>,
         interruptDownload: AtomicBoolean
-    ): Pair<Uri, String> {
+    ): Pair<Uri?, String> {
         val site = content.site
         val pageUrl = HttpHelper.fixUrl(img.pageUrl, site.url)
         val parser = ContentParserFactory.getInstance().getImageListParser(content.site)

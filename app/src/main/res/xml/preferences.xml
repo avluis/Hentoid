@@ -48,6 +48,42 @@
                 android:title="@string/pref_top_fab_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
+
+        <PreferenceCategory
+            android:title="@string/pref_cat_library_grid"
+            app:iconSpaceReserved="false">
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_endless_scroll_default"
+                android:key="LIBRARY_DISPLAY_GRID_TITLE"
+                android:title="@string/pref_display_grid_title_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_endless_scroll_default"
+                android:key="LIBRARY_DISPLAY_GRID_LANG"
+                android:title="@string/pref_display_grid_lang_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_endless_scroll_default"
+                android:key="LIBRARY_DISPLAY_GRID_FAV"
+                android:title="@string/pref_display_grid_fav_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_endless_scroll_default"
+                android:key="LIBRARY_DISPLAY_GRID_RATING"
+                android:title="@string/pref_display_grid_rating_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_endless_scroll_default"
+                android:key="LIBRARY_DISPLAY_GRID_SOURCE"
+                android:title="@string/pref_display_grid_source_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_endless_scroll_default"
+                android:key="LIBRARY_DISPLAY_GRID_STORAGE"
+                android:title="@string/pref_display_grid_storage_title"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
+
         <PreferenceCategory
             android:title="@string/pref_cat_search"
             app:iconSpaceReserved="false">

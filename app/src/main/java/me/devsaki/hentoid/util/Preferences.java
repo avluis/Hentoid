@@ -166,14 +166,6 @@ public final class Preferences {
         return getBoolPref(Key.IMPORT_QUEUE_EMPTY, Default.IMPORT_QUEUE_EMPTY);
     }
 
-    public static int getLibraryDisplay() {
-        return getIntPref(Key.LIBRARY_DISPLAY, Default.LIBRARY_DISPLAY);
-    }
-
-    public static void setLibraryDisplay(int displayMode) {
-        sharedPreferences.edit().putString(Key.LIBRARY_DISPLAY, Integer.toString(displayMode)).apply();
-    }
-
     public static boolean isForceEnglishLocale() {
         return getBoolPref(Key.FORCE_ENGLISH, Default.FORCE_ENGLISH);
     }
@@ -858,7 +850,6 @@ public final class Preferences {
         static final String REFRESH_JSON_1_DONE = "refresh_json_1_done";
         static final String VERSION_KEY = "prefs_version";
         public static final String FORCE_ENGLISH = "force_english";
-        public static final String LIBRARY_DISPLAY = "pref_library_display";
         public static final String IMPORT_QUEUE_EMPTY = "pref_import_queue_empty";
         static final String QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String ORDER_CONTENT_FIELD = "pref_order_content_field";
@@ -985,8 +976,6 @@ public final class Preferences {
         private Default() {
             throw new IllegalStateException("Utility class");
         }
-
-        public static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
 
         static final int PRIMARY_STORAGE_FILL_METHOD = Constant.STORAGE_FILL_BALANCE_FREE;
         static final int PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = 90;
@@ -1129,9 +1118,6 @@ public final class Preferences {
 
         public static final int SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0;
         static final int SEARCH_ORDER_ATTRIBUTES_COUNT = 1;
-
-        public static final int LIBRARY_DISPLAY_LIST = 0;
-        public static final int LIBRARY_DISPLAY_GRID = 1;
 
         static final int FOLDER_NAMING_CONTENT_ID = 0;
         static final int FOLDER_NAMING_CONTENT_TITLE_ID = 1;

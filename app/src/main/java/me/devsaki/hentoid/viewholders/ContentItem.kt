@@ -37,6 +37,7 @@ import com.mikepenz.fastadapter.swipe.ISwipeable
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.adjustAlpha
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.getSelectablePressedBackground
 import com.mikepenz.fastadapter.utils.DragDropUtil.bindDragHandle
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.core.Consumer
@@ -51,6 +52,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
@@ -185,6 +187,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             else ""
 
 
+    /**
+     * Update download progress (queue items only)
+     */
     fun updateProgress(vh: RecyclerView.ViewHolder, isPausedEvent: Boolean, isIndividual: Boolean) {
         content ?: return
         val pb = vh.itemView.findViewById<ProgressBar>(R.id.pbDownload) ?: return
@@ -268,6 +273,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private var tvChapters: TextView? = view.findViewById(R.id.tvChapters)
         private var ivStorage: ImageView? = view.findViewById(R.id.ivStorage)
         private var tvStorage: TextView? = view.findViewById(R.id.tvStorage)
+        private var selectionBorder: View? = view.findViewById(R.id.selection_border)
 
         // Specific to Queued content
         var topButton: View? = view.findViewById(R.id.queueTopBtn)
@@ -319,8 +325,11 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 boolValue = bundleParser.frozen
                 if (boolValue != null) item.queueRecord?.isFrozen = boolValue
             }
-            debugStr =
-                "objectBox ID=" + item.content?.id + "; site ID=" + item.content?.uniqueSiteId + "; hashCode=" + item.content.hashCode()
+
+            if (BuildConfig.DEBUG) item.content?.apply {
+                debugStr = "DB ID=" + id + "; site ID=" + uniqueSiteId + "; hashCode=" + hashCode()
+            }
+
             item.deleteAction?.apply {
                 deleteActionRunnable = Runnable { invoke(item) }
             }
@@ -332,19 +341,21 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 false
             }
 
+            val isGrid = (ViewType.LIBRARY_GRID == item.viewType)
+
             updateLayoutVisibility(item)
             attachCover(item.content, item.chapter)
-            attachTitle(item.content, item.queueRecord, item.chapter)
-            if (tvPages != null) attachMetrics(item.content, item.chapter, item.viewType)
+            attachTitle(item.content, item.queueRecord, item.chapter, isGrid)
+            attachMetrics(item.content, item.chapter, item.viewType)
             item.content?.let {
-                attachFlag(it)
                 attachCompleted(it)
                 attachReadingProgress(it)
                 attachArtist(it)
                 attachSeries(it)
                 attachTags(it)
+                attachFlag(it, isGrid)
             }
-            attachButtons(item)
+            attachButtons(item, isGrid)
             item.updateProgress(
                 this,
                 isPausedEvent = false,
@@ -358,8 +369,11 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         }
 
         private fun updateLayoutVisibility(item: ContentItem) {
-            baseLayout.visibility = if (item.isEmpty) View.GONE else View.VISIBLE
-            if (Preferences.Constant.LIBRARY_DISPLAY_GRID == Preferences.getLibraryDisplay()) {
+            baseLayout.isVisible = !item.isEmpty
+            selectionBorder?.isVisible = item.isSelected
+
+            // Set horizontal spacing between tiles in grid mode
+            if (ViewType.LIBRARY_GRID == item.viewType) {
                 val layoutParams = baseLayout.layoutParams
                 if (layoutParams is MarginLayoutParams) {
                     layoutParams.marginStart = ITEM_HORIZONTAL_MARGIN_PX
@@ -368,17 +382,19 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 baseLayout.layoutParams = layoutParams
             }
 
-            if (item.content != null && item.content.isBeingProcessed) baseLayout.startAnimation(
-                BlinkAnimation(500, 250)
-            ) else baseLayout.clearAnimation()
+            if (item.content != null && item.content.isBeingProcessed)
+                baseLayout.startAnimation(
+                    BlinkAnimation(500, 250)
+                ) else baseLayout.clearAnimation()
 
-            if (item.isSelected) {
-                Timber.i("SELECTED " + item.title)
-            }
+            if (item.isSelected && BuildConfig.DEBUG) Timber.d("SELECTED " + item.title)
 
             // Unread indicator
             ivNew?.apply {
-                visibility = if (0L == item.content!!.reads) View.VISIBLE else View.GONE
+                visibility = View.GONE
+                item.content?.let {
+                    if (0L == it.reads) visibility = View.VISIBLE
+                }
             }
         }
 
@@ -424,10 +440,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachFlag(content: Content) {
+        private fun attachFlag(content: Content, isGrid: Boolean) {
             ivFlag?.apply {
                 @DrawableRes val resId = ContentHelper.getFlagResourceId(context, content)
-                visibility = if (resId != 0) {
+                visibility = if (resId != 0 && (!isGrid || Settings.libraryDisplayGridLanguage)) {
                     setImageResource(resId)
                     View.VISIBLE
                 } else {
@@ -439,8 +455,12 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private fun attachTitle(
             content: Content?,
             queueRecord: QueueRecord?,
-            chapter: Chapter?
+            chapter: Chapter?,
+            isGrid: Boolean
         ) {
+            tvTitle.isVisible = (!isGrid || Settings.libraryDisplayGridTitle)
+            if (!tvTitle.isVisible) return
+
             var title = tvTitle.context.getText(R.string.work_untitled)
             if (content != null) {
                 title = if (content.title.isNullOrEmpty()) content.replacementTitle
@@ -490,13 +510,20 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachMetrics(content: Content?, chapter: Chapter?, viewType: ViewType) {
+        private fun attachMetrics(
+            content: Content?,
+            chapter: Chapter?,
+            viewType: ViewType
+        ) {
+            tvPages ?: return // Mandatory
+
             var qtyPages = 0
             if (content != null) qtyPages = content.qtyPages
             else if (chapter != null) qtyPages = chapter.readableImageFiles.size
 
-            tvPages?.visibility = if (0 == qtyPages) View.INVISIBLE else View.VISIBLE
-            val context = tvPages!!.context
+            tvPages.visibility = if (0 == qtyPages) View.INVISIBLE else View.VISIBLE
+
+            val context = baseLayout.context
             val template: String
             if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS || viewType == ViewType.LIBRARY_EDIT || viewType == ViewType.MERGE || viewType == ViewType.SPLIT) {
                 val nbPages = "$qtyPages"
@@ -512,7 +539,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     } else context.resources.getString(R.string.work_pages_queue, nbPages, "")
                 } else context.resources.getString(R.string.work_pages_queue, nbPages, "")
                 tvPages.text = template
-            } else { // Library
+            } else { // Library (list; grid doesn't display these details)
                 check(content != null)
                 val isPlaceholder = content.status == StatusContent.PLACEHOLDER
                 val phVisibility = if (isPlaceholder) View.GONE else View.VISIBLE
@@ -561,7 +588,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
         }
 
-        private fun attachButtons(item: ContentItem) {
+        private fun attachButtons(item: ContentItem, isGrid: Boolean) {
             // Universal
             ivReorder?.visibility = if (item.showDragHandle) View.VISIBLE else View.INVISIBLE
 
@@ -571,13 +598,14 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             // Source icon
             ivSite?.apply {
                 val site = content.site
-                visibility = if (site != null && site != Site.NONE) {
-                    val img = site.ico
-                    setImageResource(img)
-                    View.VISIBLE
-                } else {
-                    View.GONE
-                }
+                visibility =
+                    if (site != null && site != Site.NONE && (!isGrid || Settings.libraryDisplayGridSource)) {
+                        val img = site.ico
+                        setImageResource(img)
+                        View.VISIBLE
+                    } else {
+                        View.GONE
+                    }
             }
 
             deleteButton?.apply {
@@ -589,7 +617,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
 
             val isStreamed = content.downloadMode == Content.DownloadMode.STREAM
-            ivOnline?.isVisible = isStreamed
+            ivOnline?.isVisible = isStreamed && (!isGrid || Settings.libraryDisplayGridStorageInfo)
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 topButton?.visibility = View.VISIBLE
                 bottomButton?.visibility = View.VISIBLE
@@ -597,6 +625,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 downloadButton?.visibility = View.VISIBLE
                 ivError?.visibility = View.VISIBLE
             } else if (ViewType.LIBRARY == item.viewType || ViewType.LIBRARY_GRID == item.viewType) {
+                ivExternal?.isVisible = (!isGrid || Settings.libraryDisplayGridStorageInfo)
+                ivStorage?.isVisible = (!isGrid || Settings.libraryDisplayGridStorageInfo)
+
                 if (content.status == StatusContent.EXTERNAL) {
                     var resourceId =
                         if (content.isArchive) R.drawable.ic_archive else R.drawable.ic_folder_full
@@ -620,12 +651,16 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     }
                 }
 
-                if (content.isFavourite) ivFavourite?.setImageResource(R.drawable.ic_fav_full)
-                else ivFavourite?.setImageResource(R.drawable.ic_fav_empty)
+                ivFavourite?.apply {
+                    isVisible = (!isGrid || Settings.libraryDisplayGridFav)
+                    if (content.isFavourite) setImageResource(R.drawable.ic_fav_full)
+                    else setImageResource(R.drawable.ic_fav_empty)
+                }
 
-                ivRating?.setImageResource(
-                    ContentHelper.getRatingResourceId(content.rating)
-                )
+                ivRating?.apply {
+                    isVisible = (!isGrid || Settings.libraryDisplayGridRating)
+                    setImageResource(ContentHelper.getRatingResourceId(content.rating))
+                }
             }
         }
 
@@ -694,6 +729,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
         init {
             val context: Context = getInstance()
+
+            // Compute spacing between tiles in grid mode
             val screenWidthPx =
                 context.resources.displayMetrics.widthPixels - 2 * context.resources.getDimension(R.dimen.default_cardview_margin)
                     .toInt()
@@ -703,6 +740,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 floor((screenWidthPx * 1f / gridHorizontalWidthPx).toDouble()).toInt()
             val remainingSpacePx = screenWidthPx % gridHorizontalWidthPx
             ITEM_HORIZONTAL_MARGIN_PX = remainingSpacePx / (nbItems * 2)
+
+            // Glide options
             val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
             val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
             val d: Drawable = BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))

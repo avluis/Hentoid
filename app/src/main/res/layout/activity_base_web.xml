@@ -53,7 +53,7 @@
         android:indeterminate="true"
         android:progress="100"
         android:visibility="gone"
-        app:indicatorColor="@color/secondary_light"
+        app:indicatorColor="?colorSecondary"
         app:indicatorSize="0.75in"
         app:trackThickness="8dp"
         tools:ignore="InOrMmUsage"

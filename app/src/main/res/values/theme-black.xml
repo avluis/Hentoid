@@ -42,6 +42,7 @@
         <item name="android:textColorTertiary">@color/on_primary_black</item>
         <!-- Custom items for specific places of the app -->
         <item name="drawer_header_diagonal">@color/drawer_header_diagonal_black</item>
+        <item name="card_title">@color/card_title_black</item>
         <item name="card_surface">@color/card_surface_black</item>
         <item name="card_pressed">@color/card_pressed_black</item>
         <item name="card_selected">@color/card_selected_black</item>

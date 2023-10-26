@@ -37,6 +37,7 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -128,7 +129,7 @@ public class ExternalImportWorker extends BaseWorker {
             // Deep recursive search starting from the place the user has selected
             CollectionDAO dao = new ObjectBoxDAO(context);
             try {
-                scanFolderRecursive(context, rootFolder, explorer, new ArrayList<>(), detectedContent, dao);
+                scanFolderRecursive(context, rootFolder, explorer, new ArrayList<>(), detectedContent, dao, log);
             } finally {
                 dao.cleanup();
             }
@@ -196,12 +197,11 @@ public class ExternalImportWorker extends BaseWorker {
             eventComplete(PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size(), booksOK, booksKO, null);
             // Clear disk cache as import may reuse previous image IDs
             DiskCache.INSTANCE.init(getApplicationContext());
-
-            // Write log in root folder
-            logFile = LogHelper.INSTANCE.writeLog(context, buildLogInfo(log));
         } catch (IOException e) {
             Timber.w(e);
+            Helper.logException(e);
         } finally {
+            logFile = LogHelper.INSTANCE.writeLog(context, buildLogInfo(log));
             eventComplete(PrimaryImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
         }
@@ -221,7 +221,8 @@ public class ExternalImportWorker extends BaseWorker {
             @NonNull final FileExplorer explorer,
             @NonNull final List<String> parentNames,
             @NonNull final List<Content> library,
-            @NonNull final CollectionDAO dao) {
+            @NonNull final CollectionDAO dao,
+            @NonNull final List<LogHelper.LogEntry> log) {
         if (parentNames.size() > 4) return; // We've descended too far
 
         String rootName = (null == root.getName()) ? "" : root.getName();
@@ -273,6 +274,8 @@ public class ExternalImportWorker extends BaseWorker {
                 DocumentFile json = ImportHelper.getFileWithName(jsons, archive.getName());
                 Content c = scanArchive(context, root, archive, parentNames, StatusContent.EXTERNAL, dao, json);
                 if (!c.getStatus().equals(StatusContent.IGNORED)) library.add(c);
+                else
+                    trace(Log.DEBUG, 0, log, "Archive ignored (unsupported pictures or corrupted archive) : %s", archive.getName());
             }
         }
         if (images.size() > 2 || !contentJsons.isEmpty()) { // We've got a book
@@ -284,7 +287,7 @@ public class ExternalImportWorker extends BaseWorker {
         List<String> newParentNames = new ArrayList<>(parentNames);
         newParentNames.add(rootName);
         for (DocumentFile subfolder : subFolders)
-            scanFolderRecursive(context, subfolder, explorer, newParentNames, library, dao);
+            scanFolderRecursive(context, subfolder, explorer, newParentNames, library, dao, log);
     }
 
     @Nullable

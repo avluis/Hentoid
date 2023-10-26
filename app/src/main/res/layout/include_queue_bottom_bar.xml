@@ -33,7 +33,7 @@
             android:focusable="false"
             android:progress="76"
             android:visibility="invisible"
-            app:indicatorColor="@color/secondary_light"
+            app:indicatorColor="?colorSecondary"
             app:indicatorSize="56dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
