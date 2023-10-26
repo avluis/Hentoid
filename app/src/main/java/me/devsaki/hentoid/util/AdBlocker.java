@@ -148,7 +148,7 @@ public class AdBlocker {
      * @param sequence Sequence to add to the Javascript content blacklist
      */
     public void addJsContentBlacklist(@NonNull final String sequence) {
-        jsContentBlacklist.add(sequence);
+        jsContentBlacklist.add(sequence.toLowerCase());
     }
 
     /**
