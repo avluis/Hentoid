@@ -66,7 +66,7 @@
     <dimen name="card_grid_height">200dp</dimen>
     <dimen name="delete_drawer_width_list">80dp</dimen>
     <dimen name="delete_drawer_width_grid">60dp</dimen>
-    <dimen name="default_cardview_vertical_padding">8dp</dimen>
+    <dimen name="grid_cardview_vertical_margin">1dp</dimen>
 
     <!-- image viewer -->
     <dimen name="tap_zone_width">64dp</dimen>
