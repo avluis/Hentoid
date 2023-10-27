@@ -1868,7 +1868,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             Preferences.Constant.ORDER_FIELD_NB_PAGES -> c.qtyPages.toLong().toString()
             Preferences.Constant.ORDER_FIELD_READS -> c.reads.toString()
-            Preferences.Constant.ORDER_FIELD_SIZE -> FileHelper.formatHumanReadableSize(
+            Preferences.Constant.ORDER_FIELD_SIZE -> FileHelper.formatHumanReadableSizeInt(
                 c.size,
                 resources
             )

@@ -873,6 +873,17 @@ public class FileHelper {
     }
 
     /**
+     * Format the given file size using human-readable units, no decimals
+     * e.g. if the size represents more than 1M Bytes, the result is formatted as megabytes
+     *
+     * @param bytes Size to format, in bytes
+     * @return Given file size using human-readable units, no decimals
+     */
+    public static String formatHumanReadableSizeInt(long bytes, final Resources res) {
+        return FileUtil.byteCountToDisplayRoundedSize(bytes, 0, res);
+    }
+
+    /**
      * Class to use to obtain information about memory usage
      */
     public static class MemoryUsageFigures {
