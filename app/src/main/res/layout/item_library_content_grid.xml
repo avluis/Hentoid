@@ -78,7 +78,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:background="@color/black_opacity_50"
-            android:ellipsize="middle"
+            android:ellipsize="end"
             android:maxLines="1"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
