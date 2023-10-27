@@ -137,14 +137,13 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
             android:clickable="true"
             android:contentDescription="@string/view_source_help"
             android:focusable="true"
             android:padding="8dp"
             android:tooltipText="@string/view_source_help"
+            app:layout_constraintBottom_toTopOf="@id/tvTitle"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_rating"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_hentoid_shape" />
@@ -188,8 +187,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="visible" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
