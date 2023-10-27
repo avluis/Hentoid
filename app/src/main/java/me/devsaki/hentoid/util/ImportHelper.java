@@ -872,7 +872,7 @@ public class ImportHelper {
 
         List<ArchiveHelper.ArchiveEntry> imageEntries = Stream.of(entries)
                 .filter(s -> ImageHelper.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(s.getPath())))
-                .filter(s -> new File(s.getPath()).length() > 0)
+                .filter(s -> s.getSize() > 0)
                 .toList();
 
         if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
