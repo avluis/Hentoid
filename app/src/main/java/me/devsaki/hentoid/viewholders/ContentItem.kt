@@ -461,6 +461,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             tvTitle.text = title
             var colorId: Int = R.color.card_title_light
             if (queueRecord != null && queueRecord.isFrozen) colorId = R.color.frozen_blue
+            if (isGrid) colorId = R.color.white_opacity_87
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.context, colorId))
         }
 
