@@ -477,17 +477,6 @@
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
-            android:title="@string/pref_cat_ksk"
-            app:iconSpaceReserved="false">
-            <CheckBoxPreference
-                android:defaultValue="@string/pref_dl_eh_hires_default"
-                android:key="pref_dl_ksk_hires"
-                android:summaryOff="@string/pref_dl_eh_hires_off"
-                android:summaryOn="@string/pref_dl_ksk_hires_on"
-                android:title="@string/download_eh_hires_title"
-                app:iconSpaceReserved="false" />
-        </PreferenceCategory>
-        <PreferenceCategory
             android:title="@string/pref_cat_advanced"
             app:iconSpaceReserved="false">
             <ListPreference

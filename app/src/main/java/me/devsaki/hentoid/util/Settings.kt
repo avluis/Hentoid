@@ -31,7 +31,6 @@ object Settings {
     var libraryGridCardWidthDP: Int by IntSetting(Key.LIBRARY_GRID_CARD_WIDTH, 150)
 
     // DOWNLOADER
-    var isKskDownloadOriginal: Boolean by BoolSetting("pref_dl_ksk_hires", false)
 
     // LOCK
     var lockType: Int by IntSetting(Key.LOCK_TYPE, 0)

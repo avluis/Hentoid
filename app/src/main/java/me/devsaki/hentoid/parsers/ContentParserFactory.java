@@ -16,7 +16,6 @@ import me.devsaki.hentoid.parsers.content.Hentai2ReadContent;
 import me.devsaki.hentoid.parsers.content.HentaifoxContent;
 import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.ImhentaiContent;
-import me.devsaki.hentoid.parsers.content.KskContent;
 import me.devsaki.hentoid.parsers.content.LusciousContent;
 import me.devsaki.hentoid.parsers.content.Manhwa18Content;
 import me.devsaki.hentoid.parsers.content.ManhwaContent;
@@ -44,7 +43,6 @@ import me.devsaki.hentoid.parsers.images.HentaifoxParser;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.parsers.images.ImhentaiParser;
-import me.devsaki.hentoid.parsers.images.KskParser;
 import me.devsaki.hentoid.parsers.images.LusciousParser;
 import me.devsaki.hentoid.parsers.images.Manhwa18Parser;
 import me.devsaki.hentoid.parsers.images.ManhwaParser;
@@ -98,7 +96,6 @@ public class ContentParserFactory {
             case SIMPLY -> SimplyContent.class;
             case HDPORNCOMICS -> HdPornComicsContent.class;
             case EDOUJIN -> EdoujinContent.class;
-            case KSK -> KskContent.class;
             default -> DummyContent.class;
         };
     }
@@ -134,7 +131,6 @@ public class ContentParserFactory {
             case SIMPLY -> new SimplyParser();
             case HDPORNCOMICS -> new HdPornComicsParser();
             case EDOUJIN -> new EdoujinParser();
-            case KSK -> new KskParser();
             default -> new DummyParser();
         };
     }
