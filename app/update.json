@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.18.7/hentoid1187-681.apk",
-  "versionCode": "681",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.18.8/hentoid1188-688.apk",
+  "versionCode": "688",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/test1/v415.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -13,9 +13,7 @@
 	  {"sourceName":"ASMHENTAI", "status":"RED", "fixedByBuild":"255"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"257"},
 	  {"sourceName":"IMHENTAI", "status":"BLACK", "fixedByBuild":"350"},
-	  {"sourceName":"TOONILY", "status":"RED", "fixedByBuild":"439"},
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"440"},
-	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"441"},
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"441"},
 	  {"sourceName":"NHENTAI", "status":"RED", "fixedByBuild":"442"},
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"449"},
@@ -25,7 +23,7 @@
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"565"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"611"},
 	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"669"},
-	  {"sourceName":"TOONILY", "status":"RED"},
+	  {"sourceName":"TOONILY", "status":"RED", "fixedByBuild":"688"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"GREY"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
