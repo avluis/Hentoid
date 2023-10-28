@@ -144,7 +144,7 @@ class RequestQueue(
         val requestHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url)
         requestHeaders.add(
             androidx.core.util.Pair(
-                "Accept",
+                HttpHelper.HEADER_ACCEPT_KEY,
                 "image/jpeg,image/png,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*"
             )
         ) // Required to pass through cloudflare filtering on some sites
@@ -154,7 +154,7 @@ class RequestQueue(
             context,
             site,
             url,
-            HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url),
+            requestHeaders,
             targetFolder.uri,
             targetFileNameNoExt,
             killSwitch,
