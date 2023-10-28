@@ -147,13 +147,13 @@ class LibraryActivity : BaseActivity() {
     // Used to ignore native calls to onQueryTextChange
     private var invalidateNextQueryTextChange = false
 
-    // TODO
+    // Used to prevent search history to show up when unneeded
     private var preventShowSearchHistoryNextExpand = false
 
-    // TODO
+    // Menu for search history; useful to dismiss when search bar is dismissed
     private var searchHistory: PowerMenu? = null
 
-    // TODO
+    // True if display settings have been changed
     private var hasChangedDisplaySettings = false
 
 
@@ -174,16 +174,16 @@ class LibraryActivity : BaseActivity() {
     // Titles of each of the Viewpager2's tabs
     private val titles: MutableMap<Int, String> = HashMap()
 
-    // TODO doc
+    // Current group
     private var group: Group? = null
 
-    // TODO doc
+    // Current grouping
     private var grouping = Preferences.getGroupingDisplay()
 
-    // TODO doc
+    // Current Content search query
     private var contentSearchBundle: Bundle? = null
 
-    // TODO doc
+    // Current Group search query
     private var groupSearchBundle: Bundle? = null
 
     // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
