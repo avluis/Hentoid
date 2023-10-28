@@ -15,6 +15,14 @@
     <string name="pref_top_fab_title">Go to Top button</string>
     <string name="pref_top_fab_summary_off">Button disabled</string>
     <string name="pref_top_fab_summary_on">Button enabled</string>
+    <string name="pref_cat_library_grid">Library / Grid view customization</string>
+    <string name="pref_display_grid_title_title">Title</string>
+    <string name="pref_display_grid_lang_title">Language flag</string>
+    <string name="pref_display_grid_fav_title">Set favourite</string>
+    <string name="pref_display_grid_rating_title">Set rating</string>
+    <string name="pref_display_grid_source_title">View source</string>
+    <string name="pref_display_grid_storage_title">Storage information</string>
+    <string name="pref_grid_card_width">Book display width</string>
     <string name="pref_cat_search">Advanced search</string>
     <string name="pref_attributes_list_order_title">Sorting order of displayed metadata</string>
     <string name="pref_attributes_list_count_title">Count available books</string>
@@ -57,7 +65,6 @@
     <string name="pref_external_library_detach_title">Detach external library</string>
     <string name="pref_external_library_detach_summary">Don\'t include the external library into Hentoid anymore</string>
     <string name="pref_cat_eh">E-hentai / ExHentai</string>
-    <string name="pref_cat_ksk">Ksk.moe</string>
     <string name="pref_cat_advanced">Advanced</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
@@ -152,7 +159,6 @@
     <string name="download_eh_hires_title">Download hi-res pictures</string>
     <string name="pref_dl_eh_hires_on">Download hi-res pictures when available\nCAUTION:Enabling this option will consume your E-hentai/Exhentai image view limit much faster</string>
     <string name="pref_dl_eh_hires_off">Download pictures that are displayed on the website</string>
-    <string name="pref_dl_ksk_hires_on">Download hi-res pictures when available</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">Download speed limit</string>

@@ -143,12 +143,14 @@ public final class DuplicateDialogFragment extends DialogFragment {
 
         binding.tvTitle.setText(libraryContent.getTitle());
         binding.tvTitle.setSelected(true);
+
         ImageFile cover = libraryContent.getCover();
         String thumbLocation = cover.getUsableUri();
         if (thumbLocation.isEmpty()) {
             binding.ivCover.setVisibility(View.INVISIBLE);
         } else {
             binding.ivCover.setVisibility(View.VISIBLE);
+            binding.ivCover.setOnClickListener(v -> ContentHelper.openReader(context, libraryContent, -1, null, false, true));
             if (thumbLocation.startsWith("http"))
                 Glide.with(binding.ivCover)
                         .load(thumbLocation)

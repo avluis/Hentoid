@@ -52,7 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:textColor="?colorSecondary"
+        android:textColor="?card_title"
         android:textSize="@dimen/text_subtitle_1"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"

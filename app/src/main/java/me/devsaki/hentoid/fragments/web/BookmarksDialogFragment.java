@@ -208,7 +208,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     private List<SiteBookmark> reloadBookmarks(CollectionDAO dao) {
         List<SiteBookmark> bookmarks;
         bookmarks = dao.selectBookmarks(site);
-        itemAdapter.set(Stream.of(bookmarks).map(b -> new TextItem<>(b.getTitle(), b, true, true, b.isHomepage(), touchHelper)).toList());
+        itemAdapter.set(Stream.of(bookmarks).map(b -> new TextItem<>(b.getTitle(), b, true, true, b.isHomepage(), false, touchHelper)).toList());
         return bookmarks;
     }
 

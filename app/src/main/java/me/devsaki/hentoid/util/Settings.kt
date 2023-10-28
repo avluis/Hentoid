@@ -17,8 +17,20 @@ object Settings {
     /**
      * FIELDS
      */
+    // LIBRARY
+    var libraryDisplay: Int by IntSetting(Key.LIBRARY_DISPLAY, Value.LIBRARY_DISPLAY_DEFAULT)
+    var libraryDisplayGridFav: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_FAV, true)
+    var libraryDisplayGridRating: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_RATING, true)
+    var libraryDisplayGridSource: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_SOURCE, true)
+    var libraryDisplayGridStorageInfo: Boolean by BoolSetting(
+        Key.LIBRARY_DISPLAY_GRID_STORAGE,
+        true
+    )
+    var libraryDisplayGridTitle: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_TITLE, true)
+    var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
+    var libraryGridCardWidthDP: Int by IntSetting(Key.LIBRARY_GRID_CARD_WIDTH, 150)
+
     // DOWNLOADER
-    var isKskDownloadOriginal: Boolean by BoolSetting("pref_dl_ksk_hires", false)
 
     // LOCK
     var lockType: Int by IntSetting(Key.LOCK_TYPE, 0)
@@ -106,14 +118,23 @@ object Settings {
 
     // Consts
     object Key {
-        const val TRANSFORM_RESIZE_ENABLED = "TRANSFORM_RESIZE_ENABLED"
-        const val TRANSFORM_RESIZE_METHOD = "TRANSFORM_RESIZE_METHOD"
-        const val TRANSFORM_RESIZE_WIDTH = "TRANSFORM_RESIZE_WIDTH"
+        const val LIBRARY_DISPLAY = "pref_library_display"
         const val READER_COLOR_DEPTH = "viewer_color_depth"
         const val LOCK_TYPE = "LOCK_TYPE"
+        const val LIBRARY_DISPLAY_GRID_FAV = "LIBRARY_DISPLAY_GRID_FAV"
+        const val LIBRARY_DISPLAY_GRID_RATING = "LIBRARY_DISPLAY_GRID_RATING"
+        const val LIBRARY_DISPLAY_GRID_SOURCE = "LIBRARY_DISPLAY_GRID_SOURCE"
+        const val LIBRARY_DISPLAY_GRID_STORAGE = "LIBRARY_DISPLAY_GRID_STORAGE"
+        const val LIBRARY_DISPLAY_GRID_TITLE = "LIBRARY_DISPLAY_GRID_TITLE"
+        const val LIBRARY_DISPLAY_GRID_LANG = "LIBRARY_DISPLAY_GRID_LANG"
+        const val LIBRARY_GRID_CARD_WIDTH = "grid_card_width"
     }
 
     object Value {
         const val ARCHIVE_TARGET_FOLDER_DOWNLOADS = "downloads"
+
+        const val LIBRARY_DISPLAY_LIST = 0
+        const val LIBRARY_DISPLAY_GRID = 1
+        const val LIBRARY_DISPLAY_DEFAULT = LIBRARY_DISPLAY_LIST
     }
 }

@@ -62,13 +62,28 @@ object ImageHelper {
      * @param extension File extension to test
      * @return True if the app supports the reading of images with the given file extension; false if not
      */
-    fun isImageExtensionSupported(extension: String): Boolean {
-        return (extension.equals("jpg", ignoreCase = true)
-                || extension.equals("jpeg", ignoreCase = true)
-                || extension.equals("jfif", ignoreCase = true)
-                || extension.equals("gif", ignoreCase = true)
-                || extension.equals("png", ignoreCase = true)
-                || extension.equals("webp", ignoreCase = true))
+    fun isMimeTypeSupported(extension: String): Boolean {
+        return (extension.equals(MIME_IMAGE_JPEG, ignoreCase = true)
+                || extension.equals(MIME_IMAGE_WEBP, ignoreCase = true)
+                || extension.equals(MIME_IMAGE_PNG, ignoreCase = true)
+                || extension.equals(MIME_IMAGE_APNG, ignoreCase = true)
+                || extension.equals(MIME_IMAGE_GIF, ignoreCase = true)
+                || extension.equals(MIME_IMAGE_BMP, ignoreCase = true))
+    }
+
+    /**
+     * Determine if the given image MIME type is supported by the app
+     *
+     * @param mimeType MIME type to test
+     * @return True if the app supports the reading of images with the given MIME type; false if not
+     */
+    fun isImageExtensionSupported(mimeType: String): Boolean {
+        return (mimeType.equals("jpg", ignoreCase = true)
+                || mimeType.equals("jpeg", ignoreCase = true)
+                || mimeType.equals("webp", ignoreCase = true)
+                || mimeType.equals("png", ignoreCase = true)
+                || mimeType.equals("jfif", ignoreCase = true)
+                || mimeType.equals("gif", ignoreCase = true))
     }
 
     fun isSupportedImage(fileName: String): Boolean {

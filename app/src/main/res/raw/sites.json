@@ -38,6 +38,8 @@
       "useCloudflare": true
     },
     "TOONILY": {
+      "useHentoidAgent": false,
+      "useWebviewAgent": false,
       "hasCoverBasedPageUpdates": true,
       "useCloudflare": true
     },

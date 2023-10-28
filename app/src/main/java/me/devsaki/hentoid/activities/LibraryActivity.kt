@@ -30,6 +30,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.select.SelectExtension
 import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.powermenu.MenuAnimation
@@ -64,11 +66,13 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.LocaleHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.TooltipHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -103,6 +107,10 @@ class LibraryActivity : BaseActivity() {
 
     // List / grid view
     private var displayTypeMenu: MenuItem? = null
+
+    // Grid size selection menu
+    private val gridSizeItemAdapter = ItemAdapter<TextItem<Int>>()
+    private val gridSizefastAdapter = FastAdapter.with(gridSizeItemAdapter)
 
     // Reorder books (only when inside a group that allows it)
     private var reorderMenu: MenuItem? = null
@@ -139,11 +147,15 @@ class LibraryActivity : BaseActivity() {
     // Used to ignore native calls to onQueryTextChange
     private var invalidateNextQueryTextChange = false
 
-    // TODO
+    // Used to prevent search history to show up when unneeded
     private var preventShowSearchHistoryNextExpand = false
 
-    // TODO
+    // Menu for search history; useful to dismiss when search bar is dismissed
     private var searchHistory: PowerMenu? = null
+
+    // True if display settings have been changed
+    private var hasChangedDisplaySettings = false
+
 
     // Current text search query; one per tab
     private val query = mutableListOf<String?>("", "")
@@ -162,16 +174,16 @@ class LibraryActivity : BaseActivity() {
     // Titles of each of the Viewpager2's tabs
     private val titles: MutableMap<Int, String> = HashMap()
 
-    // TODO doc
+    // Current group
     private var group: Group? = null
 
-    // TODO doc
+    // Current grouping
     private var grouping = Preferences.getGroupingDisplay()
 
-    // TODO doc
+    // Current Content search query
     private var contentSearchBundle: Bundle? = null
 
-    // TODO doc
+    // Current Group search query
     private var groupSearchBundle: Bundle? = null
 
     // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
@@ -304,6 +316,7 @@ class LibraryActivity : BaseActivity() {
             )
         }
         Preferences.registerPrefsChangedListener(prefsListener)
+        Settings.registerPrefsChangedListener(prefsListener)
         pagerAdapter = LibraryPagerAdapter(this)
         initToolbar()
         initSelectionToolbar()
@@ -324,6 +337,7 @@ class LibraryActivity : BaseActivity() {
 
     override fun onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener)
+        Settings.unregisterPrefsChangedListener(prefsListener)
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
 
         // Empty all handlers to avoid leaks
@@ -351,6 +365,24 @@ class LibraryActivity : BaseActivity() {
                 it.toolbar, this
             )
             updateAlertBanner()
+            if (hasChangedGridDisplay) {
+                it.gridSizeBanner.root.alpha = 1f
+                it.gridSizeBanner.root.isVisible = true
+                hasChangedGridDisplay = false
+                // Fade away after 3s
+                Debouncer<Int>(
+                    this.lifecycleScope,
+                    3000
+                ) {
+                    binding?.gridSizeBanner?.root?.apply {
+                        animate()
+                            .alpha(0f)
+                            .setDuration(1000)
+                            .setListener(null)
+                        isVisible = false
+                    }
+                }.submit(1)
+            }
         }
     }
 
@@ -395,6 +427,11 @@ class LibraryActivity : BaseActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (hasChangedDisplaySettings) resetActivity()
+    }
+
     /**
      * Initialize the UI components
      */
@@ -427,6 +464,34 @@ class LibraryActivity : BaseActivity() {
                 adapter = pagerAdapter
             }
             updateDisplay(Preferences.getGroupingDisplay().id)
+        }
+        // Grid size choice
+        binding?.gridSizeBanner?.let {
+            it.recyclerView.adapter = gridSizefastAdapter
+            val labels = resources.getStringArray(R.array.pref_grid_card_width_entries)
+            val values =
+                resources.getStringArray(R.array.pref_grid_card_width_values).map { s -> s.toInt() }
+            val gridSizePref = Settings.libraryGridCardWidthDP
+            labels.forEachIndexed { index, s ->
+                val item = TextItem(
+                    s, index,
+                    draggable = false,
+                    reformatCase = false,
+                    isHighlighted = values[index] == gridSizePref,
+                    centered = true,
+                    touchHelper = null
+                )
+                item.isSimple = true
+                item.isSelected = item.isHighlighted
+                gridSizeItemAdapter.add(item)
+            }
+            gridSizefastAdapter.onClickListener =
+                { _, _, _, p ->
+                    Settings.libraryGridCardWidthDP = values[p]
+                    hasChangedGridDisplay = true
+                    resetActivity()
+                    true
+                }
         }
     }
 
@@ -504,7 +569,7 @@ class LibraryActivity : BaseActivity() {
                 }
             })
             displayTypeMenu = toolbar.menu.findItem(R.id.action_display_type)
-            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+            if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay)
                 displayTypeMenu?.setIcon(R.drawable.ic_view_gallery)
             else displayTypeMenu?.setIcon(R.drawable.ic_view_list)
             reorderMenu = toolbar.menu.findItem(R.id.action_edit)
@@ -603,10 +668,12 @@ class LibraryActivity : BaseActivity() {
     fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_display_type -> {
-                var displayType = Preferences.getLibraryDisplay()
+                var displayType = Settings.libraryDisplay
                 displayType =
-                    if (Preferences.Constant.LIBRARY_DISPLAY_LIST == displayType) Preferences.Constant.LIBRARY_DISPLAY_GRID else Preferences.Constant.LIBRARY_DISPLAY_LIST
-                Preferences.setLibraryDisplay(displayType)
+                    if (Settings.Value.LIBRARY_DISPLAY_LIST == displayType) Settings.Value.LIBRARY_DISPLAY_GRID else Settings.Value.LIBRARY_DISPLAY_LIST
+                Settings.libraryDisplay = displayType
+                hasChangedGridDisplay = Settings.Value.LIBRARY_DISPLAY_GRID == displayType
+                resetActivity()
             }
 
             R.id.action_browse_groups -> LibraryBottomGroupsFragment.invoke(
@@ -777,12 +844,17 @@ class LibraryActivity : BaseActivity() {
     private fun onSharedPreferenceChanged(key: String?) {
         Timber.i("Prefs change detected : %s", key)
         when (key) {
-            Preferences.Key.COLOR_THEME, Preferences.Key.LIBRARY_DISPLAY -> {
-                // Restart the app with the library activity on top
-                val intent = Intent(this, LibraryActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                finish()
-                startActivity(intent)
+            Preferences.Key.COLOR_THEME,
+            Settings.Key.LIBRARY_DISPLAY,
+            Settings.Key.LIBRARY_DISPLAY_GRID_STORAGE,
+            Settings.Key.LIBRARY_DISPLAY_GRID_LANG,
+            Settings.Key.LIBRARY_DISPLAY_GRID_FAV,
+            Settings.Key.LIBRARY_DISPLAY_GRID_RATING,
+            Settings.Key.LIBRARY_DISPLAY_GRID_SOURCE,
+            Settings.Key.LIBRARY_DISPLAY_GRID_TITLE,
+            Settings.Key.LIBRARY_GRID_CARD_WIDTH
+            -> {
+                hasChangedDisplaySettings = true
             }
 
             Preferences.Key.PRIMARY_STORAGE_URI, Preferences.Key.EXTERNAL_LIBRARY_URI -> {
@@ -1217,6 +1289,16 @@ class LibraryActivity : BaseActivity() {
     }
 
     /**
+     * Restart the app with the library activity on top
+     */
+    private fun resetActivity() {
+        val intent = Intent(this, LibraryActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        finish()
+        startActivity(intent)
+    }
+
+    /**
      * ============================== SUBCLASS
      */
     private class LibraryPagerAdapter(fa: FragmentActivity) :
@@ -1235,6 +1317,8 @@ class LibraryActivity : BaseActivity() {
     }
 
     companion object {
+        var hasChangedGridDisplay = false
+
         @StringRes
         fun getNameFromFieldCode(prefFieldCode: Int): Int {
             return when (prefFieldCode) {

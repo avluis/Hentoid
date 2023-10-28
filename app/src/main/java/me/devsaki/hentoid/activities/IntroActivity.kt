@@ -20,6 +20,7 @@ import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment
 import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 
 /**
@@ -109,7 +110,7 @@ class IntroActivity : AppIntro2() {
         autoEndHandler!!.removeCallbacksAndMessages(null)
         Preferences.setIsFirstRun(false)
         // Need to do that to avoid a useless reloading of the library screen upon loading prefs for the first time
-        Preferences.setLibraryDisplay(Preferences.Default.LIBRARY_DISPLAY)
+        Settings.libraryDisplay = Settings.Value.LIBRARY_DISPLAY_DEFAULT
 
         // Load library screen
         val intent = Intent(this, LibraryActivity::class.java)

@@ -14,6 +14,7 @@ import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.brotli.BrotliInterceptor;
 import okhttp3.dnsoverhttps.DnsOverHttps;
 import timber.log.Timber;
 
@@ -69,6 +70,7 @@ public class OkHttpClientSingleton {
 
         return new OkHttpClient.Builder()
                 .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
+                .addInterceptor(BrotliInterceptor.INSTANCE)
                 .cache(new Cache(HentoidApp.Companion.getInstance().getCacheDir(), CACHE_SIZE))
                 .build();
     }

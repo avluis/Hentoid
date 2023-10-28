@@ -1251,10 +1251,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     resourceId = img.order
                 )
 
+                val targetFileUri = result.first
+                targetFileUri ?: throw IOException("Couldn't download ugoira file : resource not available")
+
                 // == Extract all frames
                 extractArchiveEntries(
                     applicationContext,
-                    result.first,
+                    targetFileUri,
                     ugoiraCacheFolder,
                     null,  // Extract everything; keep original names
                     downloadInterrupted

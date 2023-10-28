@@ -14,6 +14,7 @@ import android.graphics.Point;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Debug;
 import android.os.Looper;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -84,7 +85,7 @@ public final class Helper {
 
 
     /**
-     * Retreives the given dimension value as DP, not pixels
+     * Retreive the given dimension value as DP, not pixels
      *
      * @param context Context to use to access resources
      * @param id      Dimension resource ID to get the value from
@@ -92,6 +93,18 @@ public final class Helper {
      */
     public static int dimensAsDp(@NonNull final Context context, @DimenRes int id) {
         return (int) (context.getResources().getDimension(id) / context.getResources().getDisplayMetrics().density);
+    }
+
+    /**
+     * Convert the given dimension value from DP to pixels
+     *
+     * @param context Context to use to access resources
+     * @param dpValue Dimension value as DP
+     * @return Given dimension value as pixels
+     */
+    public static int dimensAsPx(@NonNull final Context context, int dpValue) {
+        Resources r = context.getResources();
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, r.getDisplayMetrics()));
     }
 
     /**

@@ -3,6 +3,7 @@
 
     <!-- Custom style items -->
     <attr name="drawer_header_diagonal" format="reference" />
+    <attr name="card_title" format="reference" />
     <attr name="card_surface" format="reference" />
     <attr name="card_pressed" format="reference" />
     <attr name="card_selected" format="reference" />

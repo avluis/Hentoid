@@ -85,6 +85,7 @@ import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
@@ -388,13 +389,13 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun initUI(rootView: View) {
         // RecyclerView
         llm =
-            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) LinearLayoutManager(
+            if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) LinearLayoutManager(
                 requireContext(),
                 LinearLayoutManager.VERTICAL,
                 false
             ) else AutofitGridLayoutManager(
                 requireContext(),
-                resources.getDimension(R.dimen.card_grid_width).toInt()
+                Helper.dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
             )
         binding?.recyclerView?.apply {
             layoutManager = llm
@@ -1142,7 +1143,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         // Adapter initialization
         if (isEndless && !isEditMode) {
             val viewType =
-                if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) ContentItem.ViewType.LIBRARY else ContentItem.ViewType.LIBRARY_GRID
+                if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) ContentItem.ViewType.LIBRARY else ContentItem.ViewType.LIBRARY_GRID
             pagedItemAdapter = PagedModelAdapter(
                 asyncDifferConfig,
                 { ContentItem(viewType) }) { c: Content ->
@@ -1277,7 +1278,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         // Drag, drop & swiping
         @DimenRes val dimen: Int =
-            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) R.dimen.delete_drawer_width_list else R.dimen.delete_drawer_width_grid
+            if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) R.dimen.delete_drawer_width_list else R.dimen.delete_drawer_width_grid
         val dragSwipeCallback = SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
             .withSwipeLeft(Helper.dimensAsDp(requireContext(), dimen))
             .withSensitivity(1.5f)
@@ -1349,7 +1350,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val maxIndex = bounds.getRight()
         // Paged mode won't be used in edit mode
         val viewType =
-            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) ContentItem.ViewType.LIBRARY
+            if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) ContentItem.ViewType.LIBRARY
             else ContentItem.ViewType.LIBRARY_GRID // Paged mode won't be used in edit mode
         val contentItems =
             iLibrary.subList(minIndex, maxIndex).filterNotNull().map { c ->
@@ -1370,7 +1371,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         } else {
             // Grid won't be used in edit mode
             val viewType =
-                if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()
+                if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay
                     || activity.get()!!.isEditMode()
                 )
                     if (activity.get()!!.isEditMode())
@@ -1867,7 +1868,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             Preferences.Constant.ORDER_FIELD_NB_PAGES -> c.qtyPages.toLong().toString()
             Preferences.Constant.ORDER_FIELD_READS -> c.reads.toString()
-            Preferences.Constant.ORDER_FIELD_SIZE -> FileHelper.formatHumanReadableSize(
+            Preferences.Constant.ORDER_FIELD_SIZE -> FileHelper.formatHumanReadableSizeInt(
                 c.size,
                 resources
             )

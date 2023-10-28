@@ -60,6 +60,7 @@ import me.devsaki.hentoid.ui.InputDialog
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewholders.GroupDisplayItem
@@ -229,13 +230,13 @@ class LibraryGroupsFragment : Fragment(),
     private fun initUI() {
         // RecyclerView
         llm =
-            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) LinearLayoutManager(
+            if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) LinearLayoutManager(
                 requireContext(),
                 LinearLayoutManager.VERTICAL,
                 false
             ) else AutofitGridLayoutManager(
                 requireContext(),
-                resources.getDimension(R.dimen.card_grid_width).toInt()
+                Helper.dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
             )
 
         binding?.recyclerView?.let {
@@ -753,7 +754,7 @@ class LibraryGroupsFragment : Fragment(),
         activity.get()!!.updateTitle(result.size.toLong(), totalContentCount.toLong())
         val viewType =
             if (activity.get()!!.isEditMode()) GroupDisplayItem.ViewType.LIBRARY_EDIT
-            else if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) GroupDisplayItem.ViewType.LIBRARY
+            else if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) GroupDisplayItem.ViewType.LIBRARY
             else GroupDisplayItem.ViewType.LIBRARY_GRID
 
         val groups = result.map { g -> GroupDisplayItem(g, touchHelper, viewType) }.distinct()

@@ -17,6 +17,7 @@ import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
+import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageHelper.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.jsoup.nodes.Document
@@ -42,14 +43,14 @@ object DownloadHelper {
         context: Context,
         site: Site,
         rawUrl: String,
-        requestHeaders: List<Pair<String, String>>?,
+        requestHeaders: List<Pair<String, String>>,
         interruptDownload: AtomicBoolean,
-        cacheKey : String,
+        cacheKey: String,
         forceMimeType: String? = null,
         failFast: Boolean = true,
         resourceId: Int,
         notifyProgress: Consumer<Float>? = null
-    ): Pair<Uri, String> {
+    ): Pair<Uri?, String> {
         return downloadToFile(
             context, site, rawUrl, requestHeaders,
             fileCreator = { _, _ -> DiskCache.createFile(cacheKey) },
@@ -67,7 +68,7 @@ object DownloadHelper {
         context: Context,
         site: Site,
         rawUrl: String,
-        requestHeaders: List<Pair<String, String>>?,
+        requestHeaders: List<Pair<String, String>>,
         targetFolderUri: Uri,
         targetFileName: String,
         interruptDownload: AtomicBoolean,
@@ -75,7 +76,7 @@ object DownloadHelper {
         failFast: Boolean = true,
         resourceId: Int,
         notifyProgress: Consumer<Float>? = null
-    ): Pair<Uri, String> {
+    ): Pair<Uri?, String> {
         return downloadToFile(
             context, site, rawUrl, requestHeaders,
             fileCreator = { ctx, mimeType ->
@@ -111,14 +112,14 @@ object DownloadHelper {
         context: Context,
         site: Site,
         rawUrl: String,
-        requestHeaders: List<Pair<String, String>>?,
+        requestHeaders: List<Pair<String, String>>,
         fileCreator: (Context, String) -> Uri,
         interruptDownload: AtomicBoolean,
         forceMimeType: String? = null,
         failFast: Boolean = true,
         resourceId: Int,
         notifyProgress: Consumer<Float>? = null
-    ): Pair<Uri, String> {
+    ): Pair<Uri?, String> {
         Helper.assertNonUiThread()
         val url = HttpHelper.fixUrl(rawUrl, site.url)
         if (interruptDownload.get()) throw DownloadInterruptedException("Download interrupted")
@@ -144,9 +145,9 @@ object DownloadHelper {
         )
         val body = response.body
             ?: throw IOException("Could not read response : empty body for $url")
-        var size = body.contentLength()
-        if (size < 1) size = 1
-        val sizeStr = FileHelper.formatHumanReadableSize(size, context.resources)
+        val size = body.contentLength()
+        val sizeStr =
+            if (size < 1) "unknown" else FileHelper.formatHumanReadableSize(size, context.resources)
         Timber.d(
             "STARTING DOWNLOAD FOR %d (size %s)",
             resourceId,
@@ -185,7 +186,7 @@ object DownloadHelper {
                     }
                     if (len > 0 && out != null) {
                         out!!.write(buffer, 0, len)
-                        if (notifyProgress != null && 0 == iteration % notificationResolution)
+                        if (notifyProgress != null && 0 == iteration % notificationResolution && size > 0)
                             notifyProgress.invoke(processed * 100f / size)
                         take(len.toLong())
                     }
@@ -226,12 +227,12 @@ object DownloadHelper {
         size: String,
     ): String {
         val result = getMimeTypeFromPictureBinary(buffer)
-        if (result.isEmpty() || result.endsWith("/*")) {
+        if (!ImageHelper.isMimeTypeSupported(result)) {
             if (contentType.contains("text/")) {
                 val message = buffer.copyOfRange(0, bufLength).toString(UTF_8).trim()
                 throw UnsupportedContentException("Message received from $url : $message")
             }
-            throw UnsupportedContentException("Invalid mime-type received from $url (size=$size; content-type=$contentType)")
+            throw UnsupportedContentException("Invalid mime-type received from $url (size=$size; content-type=$contentType; img mime-type=$result)")
         }
         return result
     }
