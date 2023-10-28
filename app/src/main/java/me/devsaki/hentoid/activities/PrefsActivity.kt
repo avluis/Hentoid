@@ -81,7 +81,7 @@ class PrefsActivity : BaseActivity(), SearchPreferenceResultListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     override fun onCommunicationEvent(event: CommunicationEvent) {
-        if (event.recipient != CommunicationEvent.RC_PREFS || event.type != CommunicationEvent.EV_BROADCAST || null == event.message) return
+        if (event.recipient != CommunicationEvent.RC_PREFS || event.type != CommunicationEvent.EV_BROADCAST || event.message.isEmpty()) return
         // Make sure current activity is active (=eligible to display that toast)
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
         ToastHelper.toast(event.message)

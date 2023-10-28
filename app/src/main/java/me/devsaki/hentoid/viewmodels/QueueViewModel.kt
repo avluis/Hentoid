@@ -346,7 +346,7 @@ class QueueViewModel(
                     }
                     EventBus.getDefault().post(
                         ProcessEvent(
-                            ProcessEvent.EventType.PROGRESS,
+                            ProcessEvent.Type.PROGRESS,
                             R.id.generic_progress,
                             0,
                             okCount.get(),
@@ -359,7 +359,7 @@ class QueueViewModel(
                     ContentQueueManager.resumeQueue(getApplication())
                 EventBus.getDefault().postSticky(
                     ProcessEvent(
-                        ProcessEvent.EventType.COMPLETE,
+                        ProcessEvent.Type.COMPLETE,
                         R.id.generic_progress,
                         0,
                         okCount.get(),

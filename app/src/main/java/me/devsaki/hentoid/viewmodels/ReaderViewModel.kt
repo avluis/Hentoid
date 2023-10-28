@@ -703,7 +703,6 @@ class ReaderViewModel(
     /**
      * Delete the current Content
      *
-     * @param onLaunched Callback to use if the operation has been launched successfuly
      * @param onError Callback to use in case an error occurs
      */
     fun deleteContent(onError: (Throwable) -> Unit) {
@@ -1161,7 +1160,7 @@ class ReaderViewModel(
         } catch (e: Exception) {
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.COMPLETE,
+                    ProcessEvent.Type.COMPLETE,
                     R.id.viewer_load,
                     0,
                     nbProcessed.get(),
@@ -1186,7 +1185,7 @@ class ReaderViewModel(
         nbProcessed.getAndIncrement()
         EventBus.getDefault().post(
             ProcessEvent(
-                ProcessEvent.EventType.PROGRESS,
+                ProcessEvent.Type.PROGRESS,
                 R.id.viewer_load,
                 0,
                 nbProcessed.get(),
@@ -1241,7 +1240,7 @@ class ReaderViewModel(
         Timber.d("Extracted %d files successfuly", maxElements)
         EventBus.getDefault().post(
             ProcessEvent(
-                ProcessEvent.EventType.COMPLETE,
+                ProcessEvent.Type.COMPLETE,
                 R.id.viewer_load,
                 0,
                 nbProcessed.get(),
@@ -1507,7 +1506,7 @@ class ReaderViewModel(
         if (progress < 0) { // Error
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.FAILURE,
+                    ProcessEvent.Type.FAILURE,
                     R.id.viewer_page_download,
                     pageIndex,
                     0,
@@ -1518,7 +1517,7 @@ class ReaderViewModel(
         } else if (progress < 100) {
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.PROGRESS,
+                    ProcessEvent.Type.PROGRESS,
                     R.id.viewer_page_download,
                     pageIndex,
                     progress,
@@ -1529,7 +1528,7 @@ class ReaderViewModel(
         } else {
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.COMPLETE,
+                    ProcessEvent.Type.COMPLETE,
                     R.id.viewer_page_download,
                     pageIndex,
                     progress,
@@ -1842,7 +1841,7 @@ class ReaderViewModel(
             }
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.PROGRESS,
+                    ProcessEvent.Type.PROGRESS,
                     R.id.generic_progress,
                     0,
                     nbProcessedTasks++,
@@ -1858,7 +1857,7 @@ class ReaderViewModel(
             task.third.fileUri = task.first.uri.toString()
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.PROGRESS,
+                    ProcessEvent.Type.PROGRESS,
                     R.id.generic_progress,
                     0,
                     nbProcessedTasks++,
@@ -1874,7 +1873,7 @@ class ReaderViewModel(
         if (finalContent != null) ContentHelper.persistJson(getApplication(), finalContent)
         EventBus.getDefault().postSticky(
             ProcessEvent(
-                ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbTasks, 0, nbTasks
+                ProcessEvent.Type.COMPLETE, R.id.generic_progress, 0, nbTasks, 0, nbTasks
             )
         )
 

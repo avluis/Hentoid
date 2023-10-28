@@ -1111,7 +1111,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         newUri.toString() else Timber.w("Could not move file %s", img.fileUri)
                     EventBus.getDefault().post(
                         ProcessEvent(
-                            ProcessEvent.EventType.PROGRESS,
+                            ProcessEvent.Type.PROGRESS,
                             R.id.generic_progress,
                             0,
                             nbProcessedPics++,
@@ -1138,7 +1138,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
         EventBus.getDefault().postSticky(
             ProcessEvent(
-                ProcessEvent.EventType.COMPLETE,
+                ProcessEvent.Type.COMPLETE,
                 R.id.generic_progress,
                 0,
                 nbImages,

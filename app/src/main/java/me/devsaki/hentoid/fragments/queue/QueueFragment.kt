@@ -481,7 +481,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 event.pagesOK,
                 event.pagesKO,
                 event.pagesTotal,
-                event.numberRetries,
+                event.getNumberRetries(),
                 event.downloadedSizeB,
                 false
             )
@@ -558,20 +558,19 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 R.string.paused_dl_no_available_downloads
 
             DownloadEvent.Motive.NONE -> motiveMsg = -1
-            else -> motiveMsg = -1
         }
         if (motiveMsg != -1) Snackbar.make(
             binding.root, getString(motiveMsg), BaseTransientBottomBar.LENGTH_SHORT
         ).setAnchorView(bottomBarBinding.backgroundBottomBar).show()
     }
 
-    private fun formatStep(@DownloadEvent.Step step: Int, log: String?): String {
+    private fun formatStep(step: DownloadEvent.Step, log: String?): String {
         val standardMsg = resources.getString(formatStep(step))
         return if (log != null) "$standardMsg $log" else standardMsg
     }
 
     @StringRes
-    private fun formatStep(@DownloadEvent.Step step: Int): Int {
+    private fun formatStep(step: DownloadEvent.Step): Int {
         return when (step) {
             DownloadEvent.Step.INIT -> R.string.step_init
             DownloadEvent.Step.PROCESS_IMG -> R.string.step_prepare_img
@@ -584,7 +583,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             DownloadEvent.Step.COMPLETE_DOWNLOAD -> R.string.step_complete_download
             DownloadEvent.Step.REMOVE_DUPLICATE -> R.string.step_remove_duplicate
             DownloadEvent.Step.NONE -> R.string.empty_string
-            else -> R.string.empty_string
         }
     }
 
@@ -596,12 +594,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPrepDownloadEvent(event: DownloadPreparationEvent) {
         bottomBarBinding.queueDownloadPreparationProgressBar.apply {
-            if (!isShown && !event.isCompleted && !isPaused() && !isEmpty()) {
+            if (!isShown && !event.isCompleted() && !isPaused() && !isEmpty()) {
                 visibility = View.VISIBLE
                 bottomBarBinding.queueInfo.setText(R.string.queue_preparing)
                 isPreparingDownload = true
                 updateProgress(false)
-            } else if (isShown && event.isCompleted) {
+            } else if (isShown && event.isCompleted()) {
                 visibility = View.INVISIBLE
             }
 
@@ -635,7 +633,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      * @param forceDisplay    True to force display even if the queue is paused
      */
     private fun updateProgress(
-        content: Content,
+        content: Content?,
         pagesOK: Int,
         pagesKO: Int,
         totalPages: Int,
@@ -643,7 +641,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         downloadedSizeB: Long,
         forceDisplay: Boolean
     ) {
-        if ((!ContentQueueManager.isQueuePaused || forceDisplay) && itemAdapter.adapterItemCount > 0) {
+        if ((!ContentQueueManager.isQueuePaused || forceDisplay) && itemAdapter.adapterItemCount > 0 && content != null) {
             contentId = content.id
             // Pages download has started
             if (pagesKO + pagesOK > 1 || forceDisplay) {
@@ -769,7 +767,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     }
 
     private fun updateControlBar(
-        @DownloadEvent.Step preparationStep: Int = DownloadEvent.Step.NONE,
+        preparationStep: DownloadEvent.Step = DownloadEvent.Step.NONE,
         log: String? = null,
         content: Content? = null
     ) {
@@ -842,10 +840,11 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     }
 
     private fun updateProgress(
-        content: Content,
+        content: Content?,
         isPausedevent: Boolean,
         isIndividual: Boolean = true
     ) {
+        if (null == content) return
         binding.queueList.findViewHolderForItemId(content.uniqueHash())?.let {
             fastAdapter.getItemById(content.uniqueHash())?.first?.updateProgress(
                 it,
@@ -915,7 +914,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         // Filter on cancel complete event
         if (R.id.generic_progress != event.processId) return
         EventBus.getDefault().removeStickyEvent(event)
-        if (event.eventType == ProcessEvent.EventType.COMPLETE) onCancelComplete()
+        if (event.eventType == ProcessEvent.Type.COMPLETE) onCancelComplete()
     }
 
     private fun onCancelComplete() {

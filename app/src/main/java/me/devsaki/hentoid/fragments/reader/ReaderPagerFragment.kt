@@ -384,7 +384,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun processEvent(event: ProcessEvent) {
         binding?.apply {
-            if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            if (ProcessEvent.Type.PROGRESS == event.eventType) {
                 @StringRes var msgResource: Int = R.string.loading_image
                 if (event.processId == R.id.viewer_load) { // Archive unpacking
                     msgResource = R.string.loading_archive
@@ -402,11 +402,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 controlsOverlay.progressBar.progress = event.elementsKO + event.elementsOK
                 progressBar.visibility = View.VISIBLE
                 controlsOverlay.progressBar.visibility = View.VISIBLE
-            } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            } else if (ProcessEvent.Type.COMPLETE == event.eventType) {
                 viewerLoadingTxt.visibility = View.GONE
                 progressBar.visibility = View.GONE
                 controlsOverlay.progressBar.visibility = View.GONE
-            } else if (ProcessEvent.EventType.FAILURE == event.eventType) {
+            } else if (ProcessEvent.Type.FAILURE == event.eventType) {
                 viewerLoadingTxt.visibility = View.GONE
                 progressBar.visibility = View.GONE
                 controlsOverlay.progressBar.visibility = View.GONE

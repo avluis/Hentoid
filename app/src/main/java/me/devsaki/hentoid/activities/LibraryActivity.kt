@@ -248,8 +248,7 @@ class LibraryActivity : BaseActivity() {
                     EventBus.getDefault().post(
                         CommunicationEvent(
                             CommunicationEvent.EV_CLOSED,
-                            CommunicationEvent.RC_DRAWER,
-                            ""
+                            CommunicationEvent.RC_DRAWER
                         )
                     )
                 }
@@ -329,7 +328,7 @@ class LibraryActivity : BaseActivity() {
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onAppUpdated(event: AppUpdatedEvent?) {
+    fun onAppUpdated(event: AppUpdatedEvent) {
         EventBus.getDefault().removeStickyEvent(event)
         // Display the "update success" dialog when an update is detected on a release version
         if (!BuildConfig.DEBUG) invoke(this)
@@ -871,7 +870,7 @@ class LibraryActivity : BaseActivity() {
      * Handler for the "Advanced search" button
      */
     private fun onAdvancedSearchButtonClick() {
-        signalCurrentFragment(CommunicationEvent.EV_ADVANCED_SEARCH, null)
+        signalCurrentFragment(CommunicationEvent.EV_ADVANCED_SEARCH)
     }
 
     private fun onGroupingChanged(targetGroupingId: Int) {
@@ -1073,7 +1072,7 @@ class LibraryActivity : BaseActivity() {
                 setNavigationOnClickListener { goBackToGroups() }
             }
         }
-        signalCurrentFragment(CommunicationEvent.EV_UPDATE_TOOLBAR, null)
+        signalCurrentFragment(CommunicationEvent.EV_UPDATE_TOOLBAR)
     }
 
     fun updateSelectionToolbar(
@@ -1172,7 +1171,7 @@ class LibraryActivity : BaseActivity() {
     fun onProcessEvent(event: ProcessEvent) {
         // Filter on delete complete event
         if (R.id.delete_service_delete != event.processId) return
-        if (ProcessEvent.EventType.COMPLETE != event.eventType) return
+        if (ProcessEvent.Type.COMPLETE != event.eventType) return
         processEvent(event)
     }
 
@@ -1180,7 +1179,7 @@ class LibraryActivity : BaseActivity() {
     fun onProcessStickyEvent(event: ProcessEvent) {
         // Filter on delete complete event
         if (R.id.delete_service_delete != event.processId) return
-        if (ProcessEvent.EventType.COMPLETE != event.eventType) return
+        if (ProcessEvent.Type.COMPLETE != event.eventType) return
         EventBus.getDefault().removeStickyEvent(event)
         processEvent(event)
     }
@@ -1221,11 +1220,11 @@ class LibraryActivity : BaseActivity() {
         LibraryArchiveDialogFragment.invoke(this, items)
     }
 
-    private fun signalCurrentFragment(eventType: Int, message: String?) {
+    private fun signalCurrentFragment(eventType: Int, message: String = "") {
         signalFragment(getCurrentFragmentIndex(), eventType, message)
     }
 
-    private fun signalFragment(fragmentIndex: Int, eventType: Int, message: String?) {
+    private fun signalFragment(fragmentIndex: Int, eventType: Int, message: String) {
         EventBus.getDefault().post(
             CommunicationEvent(
                 eventType,
@@ -1247,15 +1246,13 @@ class LibraryActivity : BaseActivity() {
         EventBus.getDefault().post(
             CommunicationEvent(
                 CommunicationEvent.EV_ENABLE,
-                if (0 == fragmentIndex) CommunicationEvent.RC_GROUPS else CommunicationEvent.RC_CONTENTS,
-                null
+                if (0 == fragmentIndex) CommunicationEvent.RC_GROUPS else CommunicationEvent.RC_CONTENTS
             )
         )
         EventBus.getDefault().post(
             CommunicationEvent(
                 CommunicationEvent.EV_DISABLE,
-                if (0 == fragmentIndex) CommunicationEvent.RC_CONTENTS else CommunicationEvent.RC_GROUPS,
-                null
+                if (0 == fragmentIndex) CommunicationEvent.RC_CONTENTS else CommunicationEvent.RC_GROUPS
             )
         )
     }

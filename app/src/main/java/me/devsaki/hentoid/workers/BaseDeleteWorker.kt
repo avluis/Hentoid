@@ -301,7 +301,7 @@ abstract class BaseDeleteWorker(
             )
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.PROGRESS,
+                    ProcessEvent.Type.PROGRESS,
                     R.id.generic_progress,
                     0,
                     deleteProgress,
@@ -322,7 +322,7 @@ abstract class BaseDeleteWorker(
         )
         EventBus.getDefault().postSticky(
             ProcessEvent(
-                ProcessEvent.EventType.COMPLETE,
+                ProcessEvent.Type.COMPLETE,
                 R.id.generic_progress,
                 0,
                 deleteProgress,

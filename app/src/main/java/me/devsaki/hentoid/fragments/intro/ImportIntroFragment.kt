@@ -248,7 +248,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 else -> importStep4Bar
             }
 
-            if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            if (ProcessEvent.Type.PROGRESS == event.eventType) {
                 if (event.elementsTotal > -1) {
                     progressBar.isIndeterminate = false
                     progressBar.max = event.elementsTotal
@@ -266,7 +266,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     importStep3Check.visibility = View.VISIBLE
                     importStep4.visibility = View.VISIBLE
                 }
-            } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            } else if (ProcessEvent.Type.COMPLETE == event.eventType) {
                 when {
                     PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step -> {
                         importStep2Check.visibility = View.VISIBLE

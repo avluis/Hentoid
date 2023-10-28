@@ -248,7 +248,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
         progressBarTxt.text = String.format("%d / %d", progressBar.progress, progressBar.max)
         progressBarTxt.visibility = View.VISIBLE
 
-        if (ProcessEvent.EventType.COMPLETE == event.eventType && DuplicateDetectorWorker.STEP_DUPLICATES == event.step) {
+        if (ProcessEvent.Type.COMPLETE == event.eventType && DuplicateDetectorWorker.STEP_DUPLICATES == event.step) {
             disableScanUi()
         } else if (binding.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
                 binding.scanFab.context
@@ -264,7 +264,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
 
         EventBus.getDefault().removeStickyEvent(event)
 
-        if (ProcessEvent.EventType.COMPLETE == event.eventType && DuplicateDetectorWorker.STEP_DUPLICATES == event.step) {
+        if (ProcessEvent.Type.COMPLETE == event.eventType && DuplicateDetectorWorker.STEP_DUPLICATES == event.step) {
             disableScanUi()
         } else if (binding.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
                 binding.scanFab.context

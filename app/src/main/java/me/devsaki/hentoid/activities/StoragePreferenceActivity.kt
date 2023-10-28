@@ -476,19 +476,20 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onImportEventComplete(event: ProcessEvent) {
-        if (ProcessEvent.EventType.COMPLETE == event.eventType
-            && event.logFile != null
+        if (ProcessEvent.Type.COMPLETE == event.eventType
             && (event.processId == R.id.import_external || event.processId == R.id.import_primary)
         ) {
-            refreshDisplay()
-            val snackbar =
-                Snackbar.make(
-                    findViewById(android.R.id.content),
-                    R.string.task_done,
-                    BaseTransientBottomBar.LENGTH_LONG
-                )
-            snackbar.setAction(R.string.read_log) { FileHelper.openFile(this, event.logFile) }
-            snackbar.show()
+            event.logFile?.let { logFile ->
+                refreshDisplay()
+                val snackbar =
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
+                        R.string.task_done,
+                        BaseTransientBottomBar.LENGTH_LONG
+                    )
+                snackbar.setAction(R.string.read_log) { FileHelper.openFile(this, logFile) }
+                snackbar.show()
+            }
         }
     }
 }

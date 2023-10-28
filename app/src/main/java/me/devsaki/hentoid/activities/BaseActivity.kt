@@ -61,7 +61,7 @@ abstract class BaseActivity : AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onCommunicationEvent(event: CommunicationEvent) {
-        if (event.recipient != CommunicationEvent.RC_ALL || event.type != CommunicationEvent.EV_BROADCAST || null == event.message) return
+        if (event.recipient != CommunicationEvent.RC_ALL || event.type != CommunicationEvent.EV_BROADCAST || event.message.isEmpty()) return
         // Make sure current activity is active (=eligible to display that toast)
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
         ToastHelper.toast(event.message)

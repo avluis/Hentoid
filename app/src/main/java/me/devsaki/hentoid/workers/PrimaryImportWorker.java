@@ -134,11 +134,11 @@ public class PrimaryImportWorker extends BaseWorker {
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO, @NonNull String name) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary, step, name, booksOK, booksKO, nbBooks));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.Type.PROGRESS, R.id.import_primary, step, name, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary, step, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.Type.COMPLETE, R.id.import_primary, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, Object... t) {
@@ -175,7 +175,7 @@ public class PrimaryImportWorker extends BaseWorker {
         Context context = getApplicationContext();
 
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
-        EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE));
+        EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE, null));
 
         String previousUriStr = Preferences.getStorageUri(location);
         if (previousUriStr.isEmpty()) previousUriStr = "FAIL"; // Auto-fails if location is not set
@@ -562,10 +562,10 @@ public class PrimaryImportWorker extends BaseWorker {
                 }
             }
             if (nbRenumbered > 0)
-                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary_pages, STEP_3_PAGES, "Page " + naturalOrder, naturalOrder, 0, orderedImages.size()));
+                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.Type.PROGRESS, R.id.import_primary_pages, STEP_3_PAGES, "Page " + naturalOrder, naturalOrder, 0, orderedImages.size()));
         }
         if (nbRenumbered > 0) {
-            EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary_pages, STEP_3_PAGES, orderedImages.size(), 0, orderedImages.size()));
+            EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.Type.COMPLETE, R.id.import_primary_pages, STEP_3_PAGES, orderedImages.size(), 0, orderedImages.size()));
             trace(Log.INFO, STEP_3_PAGES, log, "Renumbered %d pages", nbRenumbered);
             content.setImageFiles(contentImages);
             ContentHelper.persistJson(context, content);

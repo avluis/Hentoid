@@ -358,8 +358,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     @SuppressWarnings("unused")
     public void onUpdateEvent(UpdateEvent event) {
-        if (event.sourceAlerts.containsKey(getStartSite())) {
-            alert = event.sourceAlerts.get(getStartSite());
+        if (event.getSourceAlerts().containsKey(getStartSite())) {
+            alert = event.getSourceAlerts().get(getStartSite());
             displayTopAlertBanner();
         }
     }
@@ -372,8 +372,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.getRelevantId() == currentContent.getId())
                         || (duplicateId > 0 && event.getRelevantId() == duplicateId)
         ) {
-            binding.progressBar.setMax(event.total);
-            binding.progressBar.setProgress(event.done);
+            binding.progressBar.setMax(event.getTotal());
+            binding.progressBar.setProgress(event.getDone());
             binding.progressBar.setProgressTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.secondary_light)));
             binding.progressBar.setVisibility(View.VISIBLE);
         }
@@ -453,7 +453,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         Preferences.unregisterPrefsChangedListener(listener);
 
         // Cancel any previous extra page load
-        EventBus.getDefault().post(new DownloadCommandEvent(currentContent, DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT));
+        EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT, currentContent));
 
         if (dao != null) dao.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
@@ -647,7 +647,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         duplicateId = -1;
         duplicateSimilarity = 0f;
         // Cancel any previous extra page load
-        EventBus.getDefault().post(new DownloadCommandEvent(currentContent, DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT));
+        EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT, currentContent));
         // Greys out the action button
         // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious, Pixiv)
         runOnUiThread(() -> {
@@ -1436,9 +1436,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.Type.EV_COMPLETE) {
+        if (event.getEventType() == DownloadEvent.Type.EV_COMPLETE) {
             if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls();
-            if (event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
+            if (event.getContent() != null && event.getContent().equals(currentContent) && event.getContent().getStatus().equals(StatusContent.DOWNLOADED)) {
                 setActionMode(ActionMode.READ);
             }
         }

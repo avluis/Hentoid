@@ -110,11 +110,12 @@ class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
             previousNbErrors = 0
         } else if (event.eventType == DownloadEvent.Type.EV_PROGRESS
             && event.pagesKO > previousNbErrors
-            && event.content != null
         ) {
-            currentId = event.content.id
-            previousNbErrors = event.pagesKO
-            updateStats(currentId)
+            event.content?.let {
+                currentId = it.id
+                previousNbErrors = event.pagesKO
+                updateStats(currentId)
+            }
         }
     }
 

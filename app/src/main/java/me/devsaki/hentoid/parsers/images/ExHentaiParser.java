@@ -113,14 +113,14 @@ public class ExHentaiParser implements ImageListParser {
      */
     @Subscribe
     public void onDownloadCommand(DownloadCommandEvent event) {
-        switch (event.eventType) {
-            case DownloadCommandEvent.Type.EV_PAUSE:
-            case DownloadCommandEvent.Type.EV_CANCEL:
-            case DownloadCommandEvent.Type.EV_SKIP:
+        switch (event.getType()) {
+            case EV_PAUSE:
+            case EV_CANCEL:
+            case EV_SKIP:
                 progress.haltProcess();
                 break;
-            case DownloadCommandEvent.Type.EV_UNPAUSE:
-            case DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT:
+            case EV_UNPAUSE:
+            case EV_INTERRUPT_CONTENT:
             default:
                 // Other events aren't handled here
                 break;

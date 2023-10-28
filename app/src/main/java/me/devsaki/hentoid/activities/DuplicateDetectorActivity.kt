@@ -130,15 +130,13 @@ class DuplicateDetectorActivity : BaseActivity() {
         EventBus.getDefault().post(
             CommunicationEvent(
                 CommunicationEvent.EV_ENABLE,
-                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_MAIN else CommunicationEvent.RC_DUPLICATE_DETAILS,
-                null
+                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_MAIN else CommunicationEvent.RC_DUPLICATE_DETAILS
             )
         )
         EventBus.getDefault().post(
             CommunicationEvent(
                 CommunicationEvent.EV_DISABLE,
-                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_DETAILS else CommunicationEvent.RC_DUPLICATE_MAIN,
-                null
+                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_DETAILS else CommunicationEvent.RC_DUPLICATE_MAIN
             )
         )
     }

@@ -281,7 +281,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         if (progress < max) {
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.PROGRESS,
+                    ProcessEvent.Type.PROGRESS,
                     R.id.duplicate_index,
                     STEP_COVER_INDEX,
                     progress,
@@ -292,7 +292,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         } else {
             EventBus.getDefault().postSticky(
                 ProcessEvent(
-                    ProcessEvent.EventType.COMPLETE,
+                    ProcessEvent.Type.COMPLETE,
                     R.id.duplicate_index,
                     STEP_COVER_INDEX,
                     progress,
@@ -320,7 +320,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
             )
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.PROGRESS,
+                    ProcessEvent.Type.PROGRESS,
                     R.id.duplicate_detect,
                     STEP_DUPLICATES,
                     progress,
@@ -336,7 +336,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
             )
             EventBus.getDefault().postSticky(
                 ProcessEvent(
-                    ProcessEvent.EventType.COMPLETE,
+                    ProcessEvent.Type.COMPLETE,
                     R.id.duplicate_detect,
                     STEP_DUPLICATES,
                     progress,

@@ -216,11 +216,11 @@ public class DownloadsImportWorker extends BaseWorker {
 
     private void doNotifyProcessProgress(@NonNull Context context) {
         notificationManager.notify(new ImportProgressNotification(context.getResources().getString(R.string.importing_downloads), nbOK + nbKO, totalItems));
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_downloads, 0, nbOK, nbKO, totalItems));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.Type.PROGRESS, R.id.import_downloads, 0, nbOK, nbKO, totalItems));
     }
 
     private void notifyProcessEnd() {
         notificationManager.notify(new ImportCompleteNotification(nbOK, nbKO));
-        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_downloads, 0, nbOK, nbKO, totalItems));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.Type.COMPLETE, R.id.import_downloads, 0, nbOK, nbKO, totalItems));
     }
 }

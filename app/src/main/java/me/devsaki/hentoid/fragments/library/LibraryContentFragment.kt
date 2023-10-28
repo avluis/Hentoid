@@ -965,7 +965,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onAppUpdated(event: AppUpdatedEvent?) {
+    fun onAppUpdated(event: AppUpdatedEvent) {
         EventBus.getDefault().removeStickyEvent(event)
         // Display the "update success" dialog when an update is detected on a release version
         if (!BuildConfig.DEBUG) invoke(this)
@@ -989,7 +989,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 }
             }
 
-            CommunicationEvent.EV_SEARCH -> if (event.message != null) onSubmitSearch(event.message!!)
+            CommunicationEvent.EV_SEARCH -> if (event.message.isNotEmpty()) onSubmitSearch(event.message)
             CommunicationEvent.EV_ADVANCED_SEARCH -> onAdvancedSearchButtonClick()
             CommunicationEvent.EV_ENABLE -> onEnable()
             CommunicationEvent.EV_DISABLE -> onDisable()
@@ -1731,7 +1731,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     fun onProcessStickyEvent(event: ProcessEvent) {
         // Filter on delete complete event
         if (R.id.delete_service_delete != event.processId) return
-        if (ProcessEvent.EventType.COMPLETE != event.eventType) return
+        if (ProcessEvent.Type.COMPLETE != event.eventType) return
         refreshIfNeeded()
     }
 

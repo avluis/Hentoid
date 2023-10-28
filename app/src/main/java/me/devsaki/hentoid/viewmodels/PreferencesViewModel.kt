@@ -61,7 +61,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
             }
             EventBus.getDefault().postSticky(
                 ProcessEvent(
-                    ProcessEvent.EventType.COMPLETE,
+                    ProcessEvent.Type.COMPLETE,
                     R.id.generic_progress,
                     0,
                     nbOK.get(),
@@ -128,7 +128,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
 
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.EventType.PROGRESS,
+                    ProcessEvent.Type.PROGRESS,
                     R.id.generic_progress,
                     0,
                     nbOK.get(),

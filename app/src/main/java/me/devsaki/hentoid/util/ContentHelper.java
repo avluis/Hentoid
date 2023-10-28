@@ -455,7 +455,7 @@ public final class ContentHelper {
         if (isInQueueTab(content.getStatus())) {
             List<QueueRecord> queue = dao.selectQueue();
             if (!queue.isEmpty() && queue.get(0).getContent().getTargetId() == content.getId())
-                EventBus.getDefault().post(new DownloadCommandEvent(content, DownloadCommandEvent.Type.EV_CANCEL));
+                EventBus.getDefault().post(new DownloadCommandEvent(DownloadCommandEvent.Type.EV_CANCEL, content));
 
             // Remove from queue
             dao.deleteQueue(content);
@@ -1890,7 +1890,7 @@ public final class ContentHelper {
                         Uri newUri = FileHelper.copyFile(context, Uri.parse(img.getFileUri()), targetFolder.getUri(), newImg.getMimeType(), newImg.getName() + "." + extension);
                         if (newUri != null) newImg.setFileUri(newUri.toString());
                         else Timber.w("Could not move file %s", img.getFileUri());
-                        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
+                        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.Type.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
                     }
                     mergedImages.add(newImg);
                 }
@@ -1919,7 +1919,7 @@ public final class ContentHelper {
                 GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
         }
 
-        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.Type.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
     }
 
     public static StorageLocation getLocation(Content content) {

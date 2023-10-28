@@ -199,7 +199,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         // Check for wifi if wifi-only mode is on
         if (Preferences.isQueueWifiOnly() && Connectivity.WIFI != connectivity) {
             Timber.i("No wi-fi connection available. Queue paused.")
-            EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_WIFI))
+            EventBus.getDefault()
+                .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_WIFI))
             return ImmutablePair(QueuingResult.QUEUE_END, null)
         }
 
@@ -237,7 +238,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             notificationManager.notify(DownloadErrorNotification(content))
             return ImmutablePair(QueuingResult.CONTENT_SKIPPED, null)
         }
-        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null))
+        EventBus.getDefault()
+            .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null))
 
         // Check for download folder existence, available free space and credentials
         var dir: DocumentFile? = null
@@ -1252,7 +1254,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
 
                 val targetFileUri = result.first
-                targetFileUri ?: throw IOException("Couldn't download ugoira file : resource not available")
+                targetFileUri
+                    ?: throw IOException("Couldn't download ugoira file : resource not available")
 
                 // == Extract all frames
                 extractArchiveEntries(
@@ -1360,7 +1363,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      */
     @Subscribe
     fun onDownloadCommand(event: DownloadCommandEvent) {
-        when (event.eventType) {
+        when (event.type) {
             DownloadCommandEvent.Type.EV_PAUSE -> {
                 dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED)
                 requestQueueManager.cancelQueue()
@@ -1386,7 +1389,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT, DownloadCommandEvent.Type.EV_UNPAUSE -> {}
-            else -> {}
         }
         EventBus.getDefault().post(DownloadEvent(event))
     }

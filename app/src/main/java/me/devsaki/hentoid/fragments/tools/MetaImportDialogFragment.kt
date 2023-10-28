@@ -302,7 +302,7 @@ class MetaImportDialogFragment : DialogFragment() {
 
     private fun importEvent(event: ProcessEvent) {
         binding?.apply {
-            if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            if (ProcessEvent.Type.PROGRESS == event.eventType) {
                 val progress = event.elementsOK + event.elementsKO
                 val itemTxt = resources.getQuantityString(R.plurals.item, progress)
                 importProgressText.text = resources.getString(
@@ -314,7 +314,7 @@ class MetaImportDialogFragment : DialogFragment() {
                 importProgressBar.max = event.elementsTotal
                 importProgressBar.progress = progress
                 importProgressBar.isIndeterminate = false
-            } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            } else if (ProcessEvent.Type.COMPLETE == event.eventType) {
                 isServiceGracefulClose = true
                 Snackbar.make(
                     root,

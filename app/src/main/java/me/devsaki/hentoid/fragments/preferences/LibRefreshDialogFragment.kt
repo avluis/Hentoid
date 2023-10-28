@@ -429,7 +429,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                 PrimaryImportWorker.STEP_3_PAGES -> importStep3SubBar
                 else -> importStep4Bar
             }
-            if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            if (ProcessEvent.Type.PROGRESS == event.eventType) {
                 if (event.elementsTotal > -1) {
                     progressBar.isIndeterminate = false
                     progressBar.max = event.elementsTotal
@@ -465,7 +465,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         importStep4.visibility = View.VISIBLE
                     }
                 }
-            } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            } else if (ProcessEvent.Type.COMPLETE == event.eventType) {
                 when (event.step) {
                     PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> {
                         importStep2Bar.isIndeterminate = false
@@ -498,8 +498,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         EventBus.getDefault().post(
                             CommunicationEvent(
                                 CommunicationEvent.EV_SCROLL_TOP,
-                                CommunicationEvent.RC_ALL,
-                                ""
+                                CommunicationEvent.RC_ALL
                             )
                         )
                         dismissAllowingStateLoss()

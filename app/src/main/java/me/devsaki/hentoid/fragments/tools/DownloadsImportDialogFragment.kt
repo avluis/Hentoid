@@ -22,7 +22,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.*
+import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.databinding.DialogQueueDownloadsImportBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.ProcessEvent
@@ -221,7 +221,7 @@ class DownloadsImportDialogFragment : DialogFragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onImportEvent(event: ProcessEvent) {
         if (event.processId != R.id.import_downloads || isServiceGracefulClose) return
-        if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+        if (ProcessEvent.Type.PROGRESS == event.eventType) {
             val progress = event.elementsOK + event.elementsKO
             val itemTxt = resources.getQuantityString(R.plurals.item, progress)
             binding.importProgressText.text =
@@ -234,7 +234,7 @@ class DownloadsImportDialogFragment : DialogFragment() {
             binding.importProgressBar.max = event.elementsTotal
             binding.importProgressBar.progress = progress
             binding.importProgressBar.isIndeterminate = false
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+        } else if (ProcessEvent.Type.COMPLETE == event.eventType) {
             isServiceGracefulClose = true
             binding.importProgressBar.progress = event.elementsTotal
             binding.importProgressText.text =
@@ -249,10 +249,10 @@ class DownloadsImportDialogFragment : DialogFragment() {
         }
     }
 
-    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onImportStickyEvent(event: ProcessEvent) {
         if (event.processId != R.id.import_downloads || isServiceGracefulClose) return
-        if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+        if (ProcessEvent.Type.COMPLETE == event.eventType) {
             EventBus.getDefault().removeStickyEvent(event)
             isServiceGracefulClose = true
             binding.importProgressBar.progress = event.elementsTotal

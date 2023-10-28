@@ -533,7 +533,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     fun onProcessStickyEvent(event: ProcessEvent) {
         // Filter on cancel complete event
         if (R.id.generic_progress != event.processId) return
-        if (event.eventType == ProcessEvent.EventType.COMPLETE) onDeleteComplete()
+        if (event.eventType == ProcessEvent.Type.COMPLETE) onDeleteComplete()
         EventBus.getDefault().removeStickyEvent(event)
     }
 

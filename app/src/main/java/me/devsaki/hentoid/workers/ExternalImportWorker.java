@@ -90,15 +90,15 @@ public class ExternalImportWorker extends BaseWorker {
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_external, step, booksOK, booksKO, nbBooks));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.Type.PROGRESS, R.id.import_external, step, booksOK, booksKO, nbBooks));
     }
 
     private void eventProcessed(int step, String name) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_external, step, name));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.Type.PROGRESS, R.id.import_external, step, name));
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_external, step, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.Type.COMPLETE, R.id.import_external, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, String... t) {
@@ -123,7 +123,7 @@ public class ExternalImportWorker extends BaseWorker {
             return;
         }
 
-        DocumentFile logFile = null;
+        DocumentFile logFile;
         try (FileExplorer explorer = new FileExplorer(context, Uri.parse(Preferences.getExternalLibraryUri()))) {
             List<Content> detectedContent = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
