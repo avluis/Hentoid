@@ -1499,7 +1499,7 @@ public final class ContentHelper {
             case 3 -> R.drawable.ic_star_3;
             case 4 -> R.drawable.ic_star_4;
             case 5 -> R.drawable.ic_star_5;
-            default -> R.drawable.ic_star_none;
+            default -> R.drawable.ic_star_empty;
         };
     }
 
