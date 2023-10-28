@@ -613,30 +613,19 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 downloadButton?.visibility = View.VISIBLE
                 ivError?.visibility = View.VISIBLE
             } else if (ViewType.LIBRARY == item.viewType || ViewType.LIBRARY_GRID == item.viewType) {
-                ivExternal?.isVisible = (!isGrid || Settings.libraryDisplayGridStorageInfo)
+                ivExternal?.isVisible =
+                    content.status == StatusContent.EXTERNAL && (!isGrid || Settings.libraryDisplayGridStorageInfo)
                 ivStorage?.isVisible = (!isGrid || Settings.libraryDisplayGridStorageInfo)
 
                 if (content.status == StatusContent.EXTERNAL) {
                     var resourceId =
                         if (content.isArchive) R.drawable.ic_archive else R.drawable.ic_folder_full
-                    if (ivExternal != null) {
-                        ivExternal?.apply {
-                            setImageResource(resourceId)
-                            visibility = View.VISIBLE
-                        }
-                    } else if (ivStorage != null) {
-                        // External streamed is streamed icon
-                        if (isStreamed) resourceId = R.drawable.ic_action_download_stream
-                        ivStorage?.setImageResource(resourceId)
-                    }
+                    ivExternal?.setImageResource(resourceId)
+                    // External streamed is streamed icon
+                    if (isStreamed) resourceId = R.drawable.ic_action_download_stream
+                    ivStorage?.setImageResource(resourceId)
                 } else {
-                    if (ivExternal != null) {
-                        ivExternal?.visibility = View.GONE
-                    } else if (ivStorage != null) {
-                        val resourceId: Int =
-                            if (isStreamed) R.drawable.ic_action_download_stream else R.drawable.ic_storage
-                        ivStorage?.setImageResource(resourceId)
-                    }
+                    ivStorage?.setImageResource(if (isStreamed) R.drawable.ic_action_download_stream else R.drawable.ic_storage)
                 }
 
                 ivFavourite?.apply {
