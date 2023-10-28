@@ -30,6 +30,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.select.SelectExtension
 import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.powermenu.MenuAnimation
@@ -70,6 +72,7 @@ import me.devsaki.hentoid.util.TooltipHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -104,6 +107,10 @@ class LibraryActivity : BaseActivity() {
 
     // List / grid view
     private var displayTypeMenu: MenuItem? = null
+
+    // Grid size selection menu
+    private val gridSizeItemAdapter = ItemAdapter<TextItem<Int>>()
+    private val gridSizefastAdapter = FastAdapter.with(gridSizeItemAdapter)
 
     // Reorder books (only when inside a group that allows it)
     private var reorderMenu: MenuItem? = null
@@ -358,6 +365,24 @@ class LibraryActivity : BaseActivity() {
                 it.toolbar, this
             )
             updateAlertBanner()
+            if (hasChangedGridDisplay) {
+                it.gridSizeBanner.root.alpha = 1f
+                it.gridSizeBanner.root.isVisible = true
+                hasChangedGridDisplay = false
+                // Fade away after 3s
+                Debouncer<Int>(
+                    this.lifecycleScope,
+                    3000
+                ) {
+                    binding?.gridSizeBanner?.root?.apply {
+                        animate()
+                            .alpha(0f)
+                            .setDuration(1000)
+                            .setListener(null)
+                        isVisible = false
+                    }
+                }.submit(1)
+            }
         }
     }
 
@@ -439,6 +464,34 @@ class LibraryActivity : BaseActivity() {
                 adapter = pagerAdapter
             }
             updateDisplay(Preferences.getGroupingDisplay().id)
+        }
+        // Grid size choice
+        binding?.gridSizeBanner?.let {
+            it.recyclerView.adapter = gridSizefastAdapter
+            val labels = resources.getStringArray(R.array.pref_grid_card_width_entries)
+            val values =
+                resources.getStringArray(R.array.pref_grid_card_width_values).map { s -> s.toInt() }
+            val gridSizePref = Settings.libraryGridCardWidthDP
+            labels.forEachIndexed { index, s ->
+                val item = TextItem(
+                    s, index,
+                    draggable = false,
+                    reformatCase = false,
+                    isHighlighted = values[index] == gridSizePref,
+                    centered = true,
+                    touchHelper = null
+                )
+                item.isSimple = true
+                item.isSelected = item.isHighlighted
+                gridSizeItemAdapter.add(item)
+            }
+            gridSizefastAdapter.onClickListener =
+                { _, _, _, p ->
+                    Settings.libraryGridCardWidthDP = values[p]
+                    hasChangedGridDisplay = true
+                    resetActivity()
+                    true
+                }
         }
     }
 
@@ -619,6 +672,7 @@ class LibraryActivity : BaseActivity() {
                 displayType =
                     if (Settings.Value.LIBRARY_DISPLAY_LIST == displayType) Settings.Value.LIBRARY_DISPLAY_GRID else Settings.Value.LIBRARY_DISPLAY_LIST
                 Settings.libraryDisplay = displayType
+                hasChangedGridDisplay = Settings.Value.LIBRARY_DISPLAY_GRID == displayType
                 resetActivity()
             }
 
@@ -1263,6 +1317,8 @@ class LibraryActivity : BaseActivity() {
     }
 
     companion object {
+        var hasChangedGridDisplay = false
+
         @StringRes
         fun getNameFromFieldCode(prefFieldCode: Int): Int {
             return when (prefFieldCode) {

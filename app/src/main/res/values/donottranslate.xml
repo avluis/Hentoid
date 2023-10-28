@@ -58,7 +58,7 @@
     </string-array>
     <string-array name="pref_grid_card_width_entries" translatable="false">
         <item>S</item>
-        <item>M (default)</item>
+        <item>M</item>
         <item>L</item>
         <item>XL</item>
         <item>XXL</item>
