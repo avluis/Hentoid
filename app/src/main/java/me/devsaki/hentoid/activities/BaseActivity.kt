@@ -86,6 +86,8 @@ abstract class BaseActivity : AppCompatActivity {
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
         if (event.achievementId >= Achievement.achievements.size) return
 
+        // TODO handle display of multiples achievements if many triggered at once
+
         val achievement = Achievement.achievements[event.achievementId]
         val powerMenu = PowerMenu.Builder(this)
             .addItem(
@@ -106,9 +108,17 @@ abstract class BaseActivity : AppCompatActivity {
             .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
             .setAutoDismiss(true)
             .build()
-        powerMenu.setIconColor(ContextCompat.getColor(this, R.color.white_opacity_87))
+
+        val color = when (achievement.type) {
+            Achievement.Type.GOLD -> R.color.gold
+            Achievement.Type.SILVER -> R.color.silver
+            else -> R.color.bronze
+        }
+        powerMenu.setIconColor(ContextCompat.getColor(this, color))
+
         val root: ViewGroup = findViewById(android.R.id.content)
         powerMenu.showAtLocation(root, (Gravity.BOTTOM or Gravity.RIGHT), 0, 0)
+
         // Fade away after 3s
         Debouncer<Int>(
             this.lifecycleScope,

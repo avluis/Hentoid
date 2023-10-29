@@ -12,7 +12,7 @@ class DuplicatesDAO(ctx: Context) {
     private val db: ObjectBoxDB = ObjectBoxDB.getInstance(ctx)
 
     fun cleanup() {
-        db.closeThreadResources()
+        db.cleanup()
         duplicatesDb.closeThreadResources()
     }
 

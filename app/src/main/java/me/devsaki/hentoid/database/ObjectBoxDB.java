@@ -155,7 +155,7 @@ public class ObjectBoxDB {
     }
 
 
-    void closeThreadResources() {
+    public void cleanup() {
         store.closeThreadResources();
     }
 
@@ -1765,5 +1765,71 @@ public class ObjectBoxDB {
     long[] selectOrphanQueueRecordIds() {
         QueryCondition<QueueRecord> qrCondition = QueueRecord_.contentId.lessOrEqual(0).or(QueueRecord_.contentId.isNull());
         return DBHelper.safeFindIds(store.boxFor(QueueRecord.class).query(qrCondition));
+    }
+
+
+    // == ACHIEVEMENTS
+
+    public Set<Long> selectEligibleContentIds() {
+        QueryBuilder<Content> query = selectStoredContentQ(false, -1, false);
+        // Can't remove edited books based on getLastEditDate as this field is updated when reimporting and transforming books
+        return Helper.getSetFromPrimitiveArray(DBHelper.safeFindIds(query));
+    }
+
+    public long selectTotalReadPages() {
+        QueryCondition<ImageFile> condition = ImageFile_.read.equal(true);
+        return DBHelper.safeCount(store.boxFor(ImageFile.class).query(condition));
+    }
+
+    public long selectLargestArtist(Set<Long> eligibleContent, int max) {
+        // Select all ARTIST attributes
+        QueryCondition<Attribute> condition = Attribute_.type.equal(AttributeType.ARTIST.getCode());
+        List<Attribute> artists = DBHelper.safeFind(store.boxFor(Attribute.class).query(condition));
+        long largest = 0;
+        for (Attribute a : artists) {
+            Set<Long> linkedContents = new HashSet<>(Stream.of(a.contents).map(Content::getId).toList());
+            // Limit to stored books
+            linkedContents.retainAll(eligibleContent);
+            largest = Math.max(largest, linkedContents.size());
+            if (largest >= max) break;
+        }
+        return largest;
+    }
+
+    public long countWithTagsOr(Set<Long> eligibleContent, String... tagNames) {
+        QueryCondition<Attribute> condition = Attribute_.name.equal(tagNames[0], QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        for (int i = 1; i <= tagNames.length - 1; i++)
+            condition = condition.or(Attribute_.name.equal(tagNames[1], QueryBuilder.StringOrder.CASE_INSENSITIVE));
+        List<Attribute> tags = DBHelper.safeFind(store.boxFor(Attribute.class).query(condition));
+
+        Set<Long> linkedContents = new HashSet<>();
+        for (Attribute a : tags)
+            linkedContents.addAll(Stream.of(a.contents).map(Content::getId).toList());
+
+        // Limit to stored books
+        linkedContents.retainAll(eligibleContent);
+        return linkedContents.size();
+    }
+
+    public long countWithTagsAnd(Set<Long> eligibleContent, String... tagNames) {
+        Set<Long> linkedContents = new HashSet<>();
+
+        // Populate with first set
+        QueryCondition<Attribute> condition = Attribute_.name.equal(tagNames[0], QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        List<Attribute> tags = DBHelper.safeFind(store.boxFor(Attribute.class).query(condition));
+        for (Attribute a : tags)
+            linkedContents.addAll(Stream.of(a.contents).map(Content::getId).toList());
+
+        // Retain all subsequent sets
+        for (int i = 1; i <= tagNames.length - 1; i++) {
+            condition = Attribute_.name.equal(tagNames[i], QueryBuilder.StringOrder.CASE_INSENSITIVE);
+            tags = DBHelper.safeFind(store.boxFor(Attribute.class).query(condition));
+            for (Attribute a : tags)
+                linkedContents.retainAll(Stream.of(a.contents).map(Content::getId).toList());
+        }
+
+        // Limit to stored books
+        linkedContents.retainAll(eligibleContent);
+        return linkedContents.size();
     }
 }

@@ -48,5 +48,10 @@
     <color name="purple_light">@android:color/holo_purple</color>
     <color name="purple_dark">#8600C4</color>
     <color name="blue">@android:color/holo_blue_dark</color>
-    <color name="bronze">@android:color/holo_orange_light</color>
+    <color name="orange_light">@android:color/holo_orange_light</color>
+
+    <!-- Achievements colors -->
+    <color name="gold">#ffd700</color>
+    <color name="silver">#c0c0c0</color>
+    <color name="bronze">#cd7f32</color>
 </resources>

@@ -25,8 +25,10 @@ data class Achievement(
 
     companion object {
         val achievements: List<Achievement> by lazy { init(HentoidApp.getInstance()) }
+
         fun init(context: Context): List<Achievement> {
             val result = ArrayList<Achievement>()
+
             context.resources.openRawResource(R.raw.achievements).use { `is` ->
                 val achievementsStr = FileHelper.readStreamAsString(`is`)
                 val achievementsObj = JsonHelper.jsonToObject(
@@ -44,29 +46,35 @@ data class Achievement(
                         "string",
                         context.packageName
                     )
-                    // TODO
-                    val icon =
-                        if (Type.BRONZE == entry.type) R.drawable.bg_badge else R.drawable.bg_badge
-                    result.add(Achievement(entry.id, entry.type, false, title, desc, icon))
+                    result.add(
+                        Achievement(
+                            entry.id,
+                            entry.type,
+                            false,
+                            title,
+                            desc,
+                            R.drawable.ic_achievement
+                        )
+                    )
                 }
                 result.add(
                     Achievement(
-                        100,
+                        63,
                         Type.GOLD,
                         true,
                         R.string.ach_name_100,
                         R.string.ach_desc_100,
-                        R.drawable.ic_warning
+                        R.drawable.ic_warning // TODO special icon
                     )
                 )
                 result.add(
                     Achievement(
-                        101,
+                        62,
                         Type.GOLD,
                         true,
                         R.string.ach_name_101,
                         R.string.ach_desc_101,
-                        R.drawable.ic_warning
+                        R.drawable.ic_warning // TODO special icon
                     )
                 )
             }

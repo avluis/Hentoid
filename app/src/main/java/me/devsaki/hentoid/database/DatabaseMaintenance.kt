@@ -97,7 +97,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Moving back isolated items to queue : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -116,7 +116,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Clearing temporary books : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -149,7 +149,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Upgrading Pururin image hosts : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -174,7 +174,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Upgrading Tsumino covers : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -196,7 +196,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Upgrading Hitomi covers : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -221,7 +221,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Fixing M18 covers : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -248,7 +248,7 @@ object DatabaseMaintenance {
             db.insertChapters(chapters)
             Timber.i("Empying empty chapters : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -263,7 +263,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Detecting duplicate bookmarks : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -345,7 +345,7 @@ object DatabaseMaintenance {
             db.insertChapters(chapters)
             Timber.i("Set default ObjectBox properties : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -365,7 +365,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Computing downloaded content size : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -500,7 +500,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Create non-existing groupings : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -523,7 +523,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Computing downloaded content read progress : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -546,7 +546,7 @@ object DatabaseMaintenance {
             }
             Timber.i("Reattaching group covers : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -558,7 +558,7 @@ object DatabaseMaintenance {
             db.cleanupOrphanAttributes()
             Timber.i("Cleaning orphan attributes : done")
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 
@@ -592,7 +592,7 @@ object DatabaseMaintenance {
                 Preferences.setIsRefreshJson1Complete(true)
             }
         } finally {
-            db.closeThreadResources()
+            db.cleanup()
         }
     }
 }

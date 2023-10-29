@@ -71,6 +71,9 @@ object Settings {
     // READER
     var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)
 
+    // ACHIEVEMENTS
+    var achievements: ULong by ULongSetting(Key.ACHIEVEMENTS, 0UL)
+
 
     // Public Helpers
 
@@ -84,6 +87,16 @@ object Settings {
 
 
     // Delegates
+
+    private class ULongSetting(val key: String, val default: ULong) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): ULong {
+            return (sharedPreferences.getString(key, default.toString()) + "").toULong()
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: ULong) {
+            sharedPreferences.edit().putString(key, value.toString()).apply()
+        }
+    }
 
     private class IntSetting(val key: String, val default: Int) {
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Int {
@@ -128,6 +141,7 @@ object Settings {
         const val LIBRARY_DISPLAY_GRID_TITLE = "LIBRARY_DISPLAY_GRID_TITLE"
         const val LIBRARY_DISPLAY_GRID_LANG = "LIBRARY_DISPLAY_GRID_LANG"
         const val LIBRARY_GRID_CARD_WIDTH = "grid_card_width"
+        const val ACHIEVEMENTS = "achievements"
     }
 
     object Value {
