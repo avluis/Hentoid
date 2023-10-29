@@ -30,7 +30,7 @@ public class ThemeHelper {
      * @param activity Activity to apply the theme to
      */
     public static void applyTheme(@NonNull AppCompatActivity activity) {
-        Theme theme = Theme.searchById(Preferences.getColorTheme());
+        Theme theme = Theme.Companion.searchById(Preferences.getColorTheme());
         applyTheme(activity, theme);
     }
 
@@ -144,7 +144,7 @@ public class ThemeHelper {
      * @return Renamed theme according to the app's current color theme
      */
     private static String renameThemeToCurrentTheme(@NonNull String themeName) {
-        Theme targetTheme = Theme.searchById(Preferences.getColorTheme());
+        Theme targetTheme = Theme.Companion.searchById(Preferences.getColorTheme());
         return renameTheme(themeName, targetTheme);
     }
 
@@ -175,7 +175,7 @@ public class ThemeHelper {
      * @return Renamed color according to the app's current color theme
      */
     private static String renameColorToCurrentTheme(@NonNull String colorName) {
-        Theme targetTheme = Theme.searchById(Preferences.getColorTheme());
+        Theme targetTheme = Theme.Companion.searchById(Preferences.getColorTheme());
         return renameColorToTheme(colorName, targetTheme);
     }
 
