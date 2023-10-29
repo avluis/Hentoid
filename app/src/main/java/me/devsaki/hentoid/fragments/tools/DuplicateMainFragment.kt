@@ -221,12 +221,11 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onActivityEvent(event: CommunicationEvent) {
-        if (event.recipient != CommunicationEvent.RC_DUPLICATE_MAIN) return
+        if (event.recipient != CommunicationEvent.Recipient.DUPLICATE_MAIN) return
         when (event.type) {
-            CommunicationEvent.EV_ENABLE -> onEnable()
-            CommunicationEvent.EV_DISABLE -> onDisable()
-            else -> {
-            }
+            CommunicationEvent.Type.ENABLE -> onEnable()
+            CommunicationEvent.Type.DISABLE -> onDisable()
+            else -> {}
         }
     }
 

@@ -256,10 +256,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onActivityEvent(event: CommunicationEvent) {
-        if (event.recipient != CommunicationEvent.RC_DUPLICATE_DETAILS) return
+        if (event.recipient != CommunicationEvent.Recipient.DUPLICATE_DETAILS) return
         when (event.type) {
-            CommunicationEvent.EV_ENABLE -> onEnable()
-            CommunicationEvent.EV_DISABLE -> onDisable()
+            CommunicationEvent.Type.ENABLE -> onEnable()
+            CommunicationEvent.Type.DISABLE -> onDisable()
+            else -> {}
         }
     }
 

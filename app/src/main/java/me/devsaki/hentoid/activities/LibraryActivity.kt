@@ -221,7 +221,7 @@ class LibraryActivity : BaseActivity() {
 
     fun setEditMode(editMode: Boolean) {
         this.editMode = editMode
-        signalFragment(1, CommunicationEvent.EV_UPDATE_EDIT_MODE, "")
+        signalFragment(1, CommunicationEvent.Type.UPDATE_EDIT_MODE, "")
         updateToolbar()
     }
 
@@ -247,8 +247,8 @@ class LibraryActivity : BaseActivity() {
                     super.onDrawerClosed(view)
                     EventBus.getDefault().post(
                         CommunicationEvent(
-                            CommunicationEvent.EV_CLOSED,
-                            CommunicationEvent.RC_DRAWER
+                            CommunicationEvent.Type.CLOSED,
+                            CommunicationEvent.Recipient.DRAWER
                         )
                     )
                 }
@@ -449,7 +449,7 @@ class LibraryActivity : BaseActivity() {
                 clearAdvancedSearchCriteria()
                 actionSearchView!!.setQuery("", false)
                 hideSearchSubBar()
-                signalCurrentFragment(CommunicationEvent.EV_SEARCH, "")
+                signalCurrentFragment(CommunicationEvent.Type.SEARCH, "")
             }
 
             // Main tabs
@@ -592,7 +592,7 @@ class LibraryActivity : BaseActivity() {
                 setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(s: String): Boolean {
                         setQuery(s.trim { it <= ' ' })
-                        signalCurrentFragment(CommunicationEvent.EV_SEARCH, query.toString())
+                        signalCurrentFragment(CommunicationEvent.Type.SEARCH, query.toString())
                         clearFocus()
                         return true
                     }
@@ -613,7 +613,7 @@ class LibraryActivity : BaseActivity() {
     private fun clearSearch() {
         setQuery("")
         getAdvSearchCriteria().query = ""
-        signalCurrentFragment(CommunicationEvent.EV_SEARCH, getQuery())
+        signalCurrentFragment(CommunicationEvent.Type.SEARCH, getQuery())
         binding?.advancedSearch?.apply {
             searchClearBtn.visibility = View.GONE
             searchSaveBtn.visibility = View.GONE
@@ -870,7 +870,7 @@ class LibraryActivity : BaseActivity() {
      * Handler for the "Advanced search" button
      */
     private fun onAdvancedSearchButtonClick() {
-        signalCurrentFragment(CommunicationEvent.EV_ADVANCED_SEARCH)
+        signalCurrentFragment(CommunicationEvent.Type.ADVANCED_SEARCH)
     }
 
     private fun onGroupingChanged(targetGroupingId: Int) {
@@ -1072,7 +1072,7 @@ class LibraryActivity : BaseActivity() {
                 setNavigationOnClickListener { goBackToGroups() }
             }
         }
-        signalCurrentFragment(CommunicationEvent.EV_UPDATE_TOOLBAR)
+        signalCurrentFragment(CommunicationEvent.Type.UPDATE_TOOLBAR)
     }
 
     fun updateSelectionToolbar(
@@ -1220,15 +1220,15 @@ class LibraryActivity : BaseActivity() {
         LibraryArchiveDialogFragment.invoke(this, items)
     }
 
-    private fun signalCurrentFragment(eventType: Int, message: String = "") {
+    private fun signalCurrentFragment(eventType: CommunicationEvent.Type, message: String = "") {
         signalFragment(getCurrentFragmentIndex(), eventType, message)
     }
 
-    private fun signalFragment(fragmentIndex: Int, eventType: Int, message: String) {
+    private fun signalFragment(fragmentIndex: Int, eventType: CommunicationEvent.Type, message: String) {
         EventBus.getDefault().post(
             CommunicationEvent(
                 eventType,
-                if (0 == fragmentIndex) CommunicationEvent.RC_GROUPS else CommunicationEvent.RC_CONTENTS,
+                if (0 == fragmentIndex) CommunicationEvent.Recipient.GROUPS else CommunicationEvent.Recipient.CONTENTS,
                 message
             )
         )
@@ -1245,14 +1245,14 @@ class LibraryActivity : BaseActivity() {
     private fun enableFragment(fragmentIndex: Int) {
         EventBus.getDefault().post(
             CommunicationEvent(
-                CommunicationEvent.EV_ENABLE,
-                if (0 == fragmentIndex) CommunicationEvent.RC_GROUPS else CommunicationEvent.RC_CONTENTS
+                CommunicationEvent.Type.ENABLE,
+                if (0 == fragmentIndex) CommunicationEvent.Recipient.GROUPS else CommunicationEvent.Recipient.CONTENTS
             )
         )
         EventBus.getDefault().post(
             CommunicationEvent(
-                CommunicationEvent.EV_DISABLE,
-                if (0 == fragmentIndex) CommunicationEvent.RC_CONTENTS else CommunicationEvent.RC_GROUPS
+                CommunicationEvent.Type.DISABLE,
+                if (0 == fragmentIndex) CommunicationEvent.Recipient.CONTENTS else CommunicationEvent.Recipient.GROUPS
             )
         )
     }

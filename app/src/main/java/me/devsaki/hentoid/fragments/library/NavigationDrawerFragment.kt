@@ -216,8 +216,8 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDrawerClosed(event: CommunicationEvent) {
-        if (event.recipient != CommunicationEvent.RC_DRAWER) return
-        if (CommunicationEvent.EV_CLOSED == event.type) binding?.drawerList?.scrollToPosition(0)
+        if (event.recipient != CommunicationEvent.Recipient.DRAWER) return
+        if (CommunicationEvent.Type.CLOSED == event.type) binding?.drawerList?.scrollToPosition(0)
     }
 
     private fun onAboutClick() {

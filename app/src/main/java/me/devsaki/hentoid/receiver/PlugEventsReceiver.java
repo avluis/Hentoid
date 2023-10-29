@@ -23,11 +23,11 @@ public class PlugEventsReceiver extends BroadcastReceiver {
         if (!isInitialStickyBroadcast()) {
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action) || Intent.ACTION_POWER_CONNECTED.equals(action)) {
                 EventBus.getDefault().post(
-                        new CommunicationEvent(CommunicationEvent.EV_BROADCAST, CommunicationEvent.RC_ALL, getRandomQuoteFrom(context, R.array.power_reactions))
+                        new CommunicationEvent(CommunicationEvent.Type.BROADCAST, CommunicationEvent.Recipient.ALL, getRandomQuoteFrom(context, R.array.power_reactions))
                 );
             } else if (Intent.ACTION_HEADSET_PLUG.equals(action) && intent.getIntExtra("state", 0) > 0) { // "Connect" event
                 EventBus.getDefault().post(
-                        new CommunicationEvent(CommunicationEvent.EV_BROADCAST, CommunicationEvent.RC_ALL, getRandomQuoteFrom(context, R.array.audio_reactions))
+                        new CommunicationEvent(CommunicationEvent.Type.BROADCAST, CommunicationEvent.Recipient.ALL, getRandomQuoteFrom(context, R.array.audio_reactions))
                 );
             }
         }

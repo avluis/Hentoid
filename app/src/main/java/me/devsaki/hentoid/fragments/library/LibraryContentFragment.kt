@@ -973,9 +973,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onActivityEvent(event: CommunicationEvent) {
-        if (event.recipient != CommunicationEvent.RC_CONTENTS && event.recipient != CommunicationEvent.RC_ALL) return
+        if (event.recipient != CommunicationEvent.Recipient.CONTENTS && event.recipient != CommunicationEvent.Recipient.ALL) return
         when (event.type) {
-            CommunicationEvent.EV_UPDATE_TOOLBAR -> {
+            CommunicationEvent.Type.UPDATE_TOOLBAR -> {
                 addCustomBackControl()
                 selectExtension?.let {
                     activity.get()?.initFragmentToolbars(
@@ -989,15 +989,15 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 }
             }
 
-            CommunicationEvent.EV_SEARCH -> if (event.message.isNotEmpty()) onSubmitSearch(event.message)
-            CommunicationEvent.EV_ADVANCED_SEARCH -> onAdvancedSearchButtonClick()
-            CommunicationEvent.EV_ENABLE -> onEnable()
-            CommunicationEvent.EV_DISABLE -> onDisable()
-            CommunicationEvent.EV_UPDATE_EDIT_MODE -> setPagingMethod(
+            CommunicationEvent.Type.SEARCH -> if (event.message.isNotEmpty()) onSubmitSearch(event.message)
+            CommunicationEvent.Type.ADVANCED_SEARCH -> onAdvancedSearchButtonClick()
+            CommunicationEvent.Type.ENABLE -> onEnable()
+            CommunicationEvent.Type.DISABLE -> onDisable()
+            CommunicationEvent.Type.UPDATE_EDIT_MODE -> setPagingMethod(
                 Preferences.getEndlessScroll(), activity.get()!!.isEditMode()
             )
 
-            CommunicationEvent.EV_SCROLL_TOP -> {
+            CommunicationEvent.Type.SCROLL_TOP -> {
                 topItemPosition = 0
                 llm!!.scrollToPositionWithOffset(0, 0)
             }

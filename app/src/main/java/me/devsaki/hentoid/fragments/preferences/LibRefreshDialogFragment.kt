@@ -497,8 +497,8 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         // Tell library screens to go back to top
                         EventBus.getDefault().post(
                             CommunicationEvent(
-                                CommunicationEvent.EV_SCROLL_TOP,
-                                CommunicationEvent.RC_ALL
+                                CommunicationEvent.Type.SCROLL_TOP,
+                                CommunicationEvent.Recipient.ALL
                             )
                         )
                         dismissAllowingStateLoss()
