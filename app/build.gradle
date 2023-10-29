@@ -1,5 +1,5 @@
 plugins {
-    id("com.google.devtools.ksp").version("1.8.0-1.0.9") // Or latest version of KSP
+    id("com.google.devtools.ksp").version("1.9.10-1.0.13") // Or latest version of KSP
 }
 
 apply plugin: 'com.android.application'
