@@ -639,7 +639,7 @@ public class PrimaryImportWorker extends BaseWorker {
 
     private void importEditedGroups(JsonContentCollection contentCollection, Grouping grouping, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
         List<Group> editedArtistGroups = contentCollection.getGroups(grouping);
-        trace(Log.INFO, STEP_GROUPS, log, "%d edited %s groups detected", editedArtistGroups.size(), grouping.getName());
+        trace(Log.INFO, STEP_GROUPS, log, "%d edited %s groups detected", editedArtistGroups.size(), grouping.getDisplayName());
         for (Group g : editedArtistGroups) {
             // Only add if it isn't a duplicate
             Group duplicate = dao.selectGroupByName(grouping.getId(), g.name);
@@ -650,7 +650,7 @@ public class PrimaryImportWorker extends BaseWorker {
                 dao.insertGroup(duplicate);
             }
         }
-        trace(Log.INFO, STEP_GROUPS, log, "Import edited %s groups succeeded", grouping.getName());
+        trace(Log.INFO, STEP_GROUPS, log, "Import edited %s groups succeeded", grouping.getDisplayName());
     }
 
     private void importBookmarks(@NonNull final Context context, @NonNull DocumentFile bookmarksFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {

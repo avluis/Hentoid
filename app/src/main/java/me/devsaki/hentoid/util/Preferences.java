@@ -673,7 +673,7 @@ public final class Preferences {
     }
 
     public static Grouping getGroupingDisplay() {
-        return Grouping.searchById(getIntPref(Key.GROUPING_DISPLAY, Default.GROUPING_DISPLAY));
+        return Grouping.Companion.searchById(getIntPref(Key.GROUPING_DISPLAY, Default.GROUPING_DISPLAY));
     }
 
     public static void setGroupingDisplay(int groupingDisplay) {

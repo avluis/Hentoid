@@ -380,14 +380,14 @@ class LibraryGroupsFragment : Fragment(),
                     )
                     selectedContent = contentToDelete.toMutableList()
                     // Rebuild the groups list from the remaining contents if needed
-                    if (Preferences.getGroupingDisplay().canDeleteGroups()) selectedGroups =
+                    if (Preferences.getGroupingDisplay().canDeleteGroups) selectedGroups =
                         selectedContent.flatMap { c -> c.groupItems }
                             .map { gi: GroupItem -> gi.group.target }
                             .toMutableList()
                 }
             }
             // Don't remove non-deletable groups
-            if (!Preferences.getGroupingDisplay().canDeleteGroups()) selectedGroups.clear()
+            if (!Preferences.getGroupingDisplay().canDeleteGroups) selectedGroups.clear()
             if (selectedContent.isNotEmpty() || selectedGroups.isNotEmpty()) {
                 val powerMenuBuilder = PowerMenu.Builder(requireContext())
                     .setOnDismissListener { leaveSelectionMode() }
@@ -411,7 +411,7 @@ class LibraryGroupsFragment : Fragment(),
                     )
                     .setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
                     .setAutoDismiss(true)
-                if (!Preferences.getGroupingDisplay().canDeleteGroups()) {
+                if (!Preferences.getGroupingDisplay().canDeleteGroups) {
                     // Delete books only
                     powerMenuBuilder.addItem(
                         PowerMenuItem(
@@ -429,16 +429,15 @@ class LibraryGroupsFragment : Fragment(),
                     )
                 } else {
                     // Delete group only
-                    if (Preferences.getGroupingDisplay()
-                            .canReorderGroups()
-                    ) powerMenuBuilder.addItem(
-                        PowerMenuItem(
-                            resources.getQuantityString(
-                                R.plurals.group_delete_selected_group,
-                                selectedGroups.size
-                            ), false, R.drawable.ic_folder_delete, null, null, 1
+                    if (Preferences.getGroupingDisplay().canReorderGroups)
+                        powerMenuBuilder.addItem(
+                            PowerMenuItem(
+                                resources.getQuantityString(
+                                    R.plurals.group_delete_selected_group,
+                                    selectedGroups.size
+                                ), false, R.drawable.ic_folder_delete, null, null, 1
+                            )
                         )
-                    )
                     if (selectedContent.isNotEmpty()) // Delete groups and books
                         powerMenuBuilder.addItem(
                             PowerMenuItem(

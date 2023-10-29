@@ -169,7 +169,7 @@ public class Group {
         @Override
         public Grouping convertToEntityProperty(Integer databaseValue) {
             if (databaseValue == null) return null;
-            return Grouping.searchById(databaseValue);
+            return Grouping.Companion.searchById(databaseValue);
         }
 
         @Override

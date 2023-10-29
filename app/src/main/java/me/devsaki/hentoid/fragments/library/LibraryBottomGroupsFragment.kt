@@ -130,7 +130,7 @@ class LibraryBottomGroupsFragment : BottomSheetDialogFragment() {
 
     private fun createFromGrouping(grouping: Grouping): TextItem<Int> {
         return TextItem(
-            resources.getString(grouping.getName()),
+            resources.getString(grouping.displayName),
             grouping.id,
             true,
             Preferences.getGroupingDisplay().id == grouping.id

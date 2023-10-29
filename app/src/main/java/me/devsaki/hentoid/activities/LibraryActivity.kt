@@ -877,11 +877,11 @@ class LibraryActivity : BaseActivity() {
         val targetGrouping = Grouping.searchById(targetGroupingId)
         if (grouping.id != targetGroupingId) {
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
-            if (!targetGrouping.canReorderBooks() && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
+            if (!targetGrouping.canReorderGroups && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
                 Preferences.setContentSortField(Preferences.Default.ORDER_CONTENT_FIELD)
             }
             // Reset custom group ordering if reverting to a grouping where that doesn't apply
-            if (!targetGrouping.canReorderGroups() && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getGroupSortField()) {
+            if (!targetGrouping.canReorderGroups && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getGroupSortField()) {
                 Preferences.setGroupSortField(Preferences.Default.ORDER_GROUP_FIELD)
             }
 
@@ -1051,16 +1051,16 @@ class LibraryActivity : BaseActivity() {
         actionSearchView?.queryHint =
             getString(if (isGroupDisplayed()) R.string.group_search_hint else R.string.library_search_hint)
         newGroupMenu!!.isVisible =
-            !editMode && isGroupDisplayed() && currentGrouping.canReorderGroups() // Custom groups only
+            !editMode && isGroupDisplayed() && currentGrouping.canReorderGroups // Custom groups only
         reorderConfirmMenu!!.isVisible = editMode
         reorderCancelMenu!!.isVisible = editMode
         sortMenu!!.isVisible = !editMode
         var isToolbarNavigationDrawer = true
         if (isGroupDisplayed()) {
-            reorderMenu!!.isVisible = currentGrouping.canReorderGroups()
+            reorderMenu!!.isVisible = currentGrouping.canReorderGroups
         } else {
             reorderMenu!!.isVisible =
-                currentGrouping.canReorderBooks() && group != null && group!!.getSubtype() != 1
+                currentGrouping.canReorderBooks && group != null && group!!.getSubtype() != 1
             isToolbarNavigationDrawer = currentGrouping == Grouping.FLAT
         }
         binding?.toolbar?.apply {
@@ -1095,7 +1095,7 @@ class LibraryActivity : BaseActivity() {
         if (isGroupDisplayed()) {
             editMenu!!.isVisible =
                 !hasProcessed && !isMultipleSelection && Preferences.getGroupingDisplay()
-                    .canReorderGroups()
+                    .canReorderGroups
             deleteMenu!!.isVisible = !hasProcessed
             shareMenu!!.isVisible = false
             completedMenu!!.isVisible = false
