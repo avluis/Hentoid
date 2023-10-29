@@ -87,24 +87,24 @@ public class MetadataImportWorker extends BaseWorker {
     }
 
     @Override
-    BaseNotification
+    protected BaseNotification
     getStartNotification() {
         return new ImportStartNotification();
     }
 
     @Override
-    void onInterrupt() {
+    protected void onInterrupt() {
         notificationDisposables.clear();
     }
 
     @Override
-    void onClear() {
+    protected void onClear() {
         notificationDisposables.clear();
         if (dao != null) dao.cleanup();
     }
 
     @Override
-    void getToWork(@NonNull Data input) {
+    protected void getToWork(@NonNull Data input) {
         MetadataImportData.Parser data = new MetadataImportData.Parser(getInputData());
 
         startImport(

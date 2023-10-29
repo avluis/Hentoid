@@ -49,23 +49,23 @@ public class UpdateJsonWorker extends BaseWorker {
     }
 
     @Override
-    BaseNotification getStartNotification() {
+    protected BaseNotification getStartNotification() {
         return new UpdateJsonStartNotification();
     }
 
     @Override
-    void onInterrupt() {
+    protected void onInterrupt() {
         notificationDisposables.clear();
     }
 
     @Override
-    void onClear() {
+    protected void onClear() {
         notificationDisposables.clear();
         if (dao != null) dao.cleanup();
     }
 
     @Override
-    void getToWork(@NonNull Data input) {
+    protected void getToWork(@NonNull Data input) {
         UpdateJsonData.Parser data = new UpdateJsonData.Parser(getInputData());
         long[] contentIds = data.getContentIds();
 

@@ -40,6 +40,7 @@ import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -63,7 +64,6 @@ import me.devsaki.hentoid.ui.InputDialog
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.LocaleHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
 import me.devsaki.hentoid.util.Settings
@@ -352,7 +352,7 @@ class LibraryActivity : BaseActivity() {
 
     override fun onRestart() {
         // Change locale if set manually
-        LocaleHelper.convertLocaleToEnglish(this)
+        this.convertLocaleToEnglish()
         super.onRestart()
     }
 

@@ -99,22 +99,22 @@ public class PrimaryImportWorker extends BaseWorker {
     }
 
     @Override
-    BaseNotification getStartNotification() {
+    protected BaseNotification getStartNotification() {
         return new ImportStartNotification();
     }
 
     @Override
-    void onInterrupt() {
+    protected void onInterrupt() {
         // Nothing
     }
 
     @Override
-    void onClear() {
+    protected void onClear() {
         // Nothing
     }
 
     @Override
-    void getToWork(@NonNull Data input) {
+    protected void getToWork(@NonNull Data input) {
         PrimaryImportData.Parser data = new PrimaryImportData.Parser(getInputData());
 
         startImport(

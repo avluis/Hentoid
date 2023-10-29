@@ -70,22 +70,22 @@ public class ExternalImportWorker extends BaseWorker {
     }
 
     @Override
-    BaseNotification getStartNotification() {
+    protected BaseNotification getStartNotification() {
         return new ImportStartNotification();
     }
 
     @Override
-    void onInterrupt() {
+    protected void onInterrupt() {
         // Nothing
     }
 
     @Override
-    void onClear() {
+    protected void onClear() {
         // Nothing
     }
 
     @Override
-    void getToWork(@NonNull Data input) {
+    protected void getToWork(@NonNull Data input) {
         startImport(getApplicationContext());
     }
 

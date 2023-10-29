@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.webkit.WebView
@@ -13,11 +14,13 @@ import android.widget.Toast
 import androidx.core.util.Consumer
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.views.NestedScrollWebView
 import timber.log.Timber
+import java.util.Locale
 
 /**
  * Open the given url using the device's app(s) of choice
@@ -71,4 +74,19 @@ fun Context.clearAppCache() {
 
 internal fun Context.isFinishing(): Boolean {
     return this is Activity && this.isFinishing
+}
+
+fun Context.convertLocaleToEnglish() {
+    if (Preferences.isForceEnglishLocale()) {
+        val config = this.resources.configuration
+        if (config.locale != Locale.ENGLISH) {
+            val englishLocale = Locale("en")
+            Locale.setDefault(englishLocale)
+            config.setLocale(englishLocale)
+            // TODO https://stackoverflow.com/questions/40221711/android-context-getresources-updateconfiguration-deprecated
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                this.createConfigurationContext(config)
+            this.resources.updateConfiguration(config, this.resources.displayMetrics)
+        }
+    }
 }

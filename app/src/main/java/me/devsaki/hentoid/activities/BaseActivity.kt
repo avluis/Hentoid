@@ -8,8 +8,8 @@ import androidx.lifecycle.Lifecycle
 import me.devsaki.hentoid.core.HentoidApp.Companion.getLockInstant
 import me.devsaki.hentoid.core.HentoidApp.Companion.isUnlocked
 import me.devsaki.hentoid.core.HentoidApp.Companion.setUnlocked
+import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.events.CommunicationEvent
-import me.devsaki.hentoid.util.LocaleHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings.lockType
 import me.devsaki.hentoid.util.ThemeHelper
@@ -28,7 +28,7 @@ abstract class BaseActivity : AppCompatActivity {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Change locale if set manually
-        LocaleHelper.convertLocaleToEnglish(this)
+        this.convertLocaleToEnglish()
         ThemeHelper.applyTheme(this)
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
     }

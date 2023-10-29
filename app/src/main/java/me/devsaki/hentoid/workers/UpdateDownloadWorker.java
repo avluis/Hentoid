@@ -40,22 +40,22 @@ public class UpdateDownloadWorker extends BaseWorker {
     }
 
     @Override
-    BaseNotification getStartNotification() {
+    protected BaseNotification getStartNotification() {
         return new UpdateProgressNotification();
     }
 
     @Override
-    void onInterrupt() {
+    protected void onInterrupt() {
         // Nothing
     }
 
     @Override
-    void onClear() {
+    protected void onClear() {
         // Nothing
     }
 
     @Override
-    void getToWork(@NonNull Data input) {
+    protected void getToWork(@NonNull Data input) {
         UpdateDownloadData.Parser data = new UpdateDownloadData.Parser(getInputData());
         String apkUrl = data.getUrl();
 
