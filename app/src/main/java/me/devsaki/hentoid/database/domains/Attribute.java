@@ -66,14 +66,16 @@ public class Attribute {
         this.id = data.id;
         this.name = data.name;
         this.type = data.type;
-        this.locations = data.locations; // this isn't a deep copy
-        this.group = data.group; // this isn't a deep copy
+        data.locations.clear();
+        data.locations.addAll(this.locations); // this isn't a deep copy
+        data.group.setTargetId(this.group.getTargetId());
 
         this.excluded = data.excluded;
         this.isNew = data.isNew;
         this.count = data.count;
         this.externalId = data.externalId;
-        this.contents = data.contents;  // this isn't a deep copy
+        data.contents.clear();
+        data.contents.addAll(this.contents); // this isn't a deep copy
         this.displayName = data.displayName;
         this.uniqueHash = data.uniqueHash;
     }

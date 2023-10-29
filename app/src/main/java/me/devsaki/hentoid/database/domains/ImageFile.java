@@ -85,8 +85,8 @@ public class ImageFile {
         this.favourite = img.favourite;
         this.isCover = img.isCover;
         this.status = img.status;
-        this.content = img.content; // NB : That's not a deep copy
-        this.chapter = img.chapter; // NB : That's not a deep copy
+        this.content.setTargetId(img.content.getTargetId());
+        this.chapter.setTargetId(img.chapter.getTargetId());
         this.mimeType = img.mimeType;
         this.size = img.size;
         this.imageHash = img.imageHash;
@@ -97,6 +97,7 @@ public class ImageFile {
         this.displayOrder = img.displayOrder;
         this.backupUrl = img.backupUrl;
         this.isBackup = img.isBackup;
+        this.isForceRefresh = img.isForceRefresh;
     }
 
     public static ImageFile fromImageUrl(int order, String url, StatusContent status, int maxPages) {
