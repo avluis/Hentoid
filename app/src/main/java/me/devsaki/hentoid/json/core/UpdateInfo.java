@@ -49,7 +49,7 @@ public class UpdateInfo {
         }
 
         public AlertStatus getStatus() {
-            return AlertStatus.searchByName(status);
+            return AlertStatus.Companion.searchByName(status);
         }
 
         public int getFixedByBuild() {

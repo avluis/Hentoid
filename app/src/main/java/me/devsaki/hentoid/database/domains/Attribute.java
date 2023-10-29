@@ -94,7 +94,7 @@ public class Attribute {
     public Attribute(@Nonnull DataInputStream input) throws IOException {
         input.readInt(); // file version
         name = input.readUTF();
-        type = AttributeType.searchByCode(input.readInt());
+        type = AttributeType.Companion.searchByCode(input.readInt());
         count = input.readInt();
         externalId = input.readInt();
         int nbLocations = input.readInt();
