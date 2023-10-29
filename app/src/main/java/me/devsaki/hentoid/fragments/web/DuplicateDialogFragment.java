@@ -67,7 +67,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
         Context context = HentoidApp.Companion.getInstance();
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
-        int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
+        int tintColor = ThemeHelper.INSTANCE.getColor(context, R.color.light_gray);
         Drawable d = new BitmapDrawable(context.getResources(), ImageHelper.INSTANCE.tintBitmap(bmp, tintColor));
 
         final Transformation<Bitmap> centerInside = new CenterInside();

@@ -410,7 +410,7 @@ public class ImportHelper {
             @NonNull final String rootUri,
             @Nullable Runnable cancelCallback
     ) {
-        new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
+        new MaterialAlertDialogBuilder(context, ThemeHelper.INSTANCE.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
                 .setIcon(R.drawable.ic_warning)
                 .setCancelable(false)
                 .setTitle(R.string.app_name)

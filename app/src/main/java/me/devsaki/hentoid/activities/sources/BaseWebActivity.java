@@ -596,7 +596,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                         if (res.isEmpty()) {
                             binding.quickDlFeedback.setVisibility(View.INVISIBLE);
                         } else {
-                            binding.quickDlFeedback.setIndicatorColor(ThemeHelper.getColor(this, R.color.secondary_light));
+                            binding.quickDlFeedback.setIndicatorColor(ThemeHelper.INSTANCE.getColor(this, R.color.secondary_light));
                         }
                     }, Timber::e));
         }
