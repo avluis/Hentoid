@@ -18,7 +18,6 @@ import me.devsaki.hentoid.viewholders.GitHubReleaseItem
 import me.devsaki.hentoid.viewmodels.ChangelogViewModel
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import timber.log.Timber
-import java.util.*
 
 // TODO - invisible init while loading
 class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
