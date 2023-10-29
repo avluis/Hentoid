@@ -93,7 +93,7 @@ class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
         }
         val detailsStr = StringBuilder()
         errorsByType.forEach {
-            detailsStr.append(resources.getString(it.key.getName())).append(": ")
+            detailsStr.append(resources.getString(it.key.displayName)).append(": ")
             detailsStr.append(it.value)
             detailsStr.append(System.getProperty("line.separator"))
         }

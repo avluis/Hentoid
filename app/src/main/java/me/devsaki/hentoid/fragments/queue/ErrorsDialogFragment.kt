@@ -80,7 +80,7 @@ class ErrorsDialogFragment : DialogFragment(R.layout.dialog_library_errors) {
                     val firstError = log[0]
                     var message = context.getString(
                         R.string.redownload_first_error,
-                        context.getString(firstError.type.getName())
+                        context.getString(firstError.type.displayName)
                     )
                     if (firstError.description.isNotEmpty()) message += String.format(
                         " - %s", firstError.description
