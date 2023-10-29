@@ -1480,7 +1480,7 @@ public final class ContentHelper {
         List<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
         if (langAttributes != null && !langAttributes.isEmpty())
             for (Attribute lang : langAttributes) {
-                @DrawableRes int resId = LanguageHelper.getFlagFromLanguage(context, lang.getName());
+                @DrawableRes int resId = LanguageHelper.INSTANCE.getFlagFromLanguage(context, lang.getName());
                 if (resId != 0) return resId;
             }
         return 0;
