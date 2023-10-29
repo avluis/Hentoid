@@ -51,6 +51,7 @@ import me.devsaki.hentoid.databinding.ActivityLibraryBinding
 import me.devsaki.hentoid.databinding.FragmentLibraryBinding
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StorageLocation
+import me.devsaki.hentoid.events.AchievementEvent
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
@@ -1224,7 +1225,11 @@ class LibraryActivity : BaseActivity() {
         signalFragment(getCurrentFragmentIndex(), eventType, message)
     }
 
-    private fun signalFragment(fragmentIndex: Int, eventType: CommunicationEvent.Type, message: String) {
+    private fun signalFragment(
+        fragmentIndex: Int,
+        eventType: CommunicationEvent.Type,
+        message: String
+    ) {
         EventBus.getDefault().post(
             CommunicationEvent(
                 eventType,
