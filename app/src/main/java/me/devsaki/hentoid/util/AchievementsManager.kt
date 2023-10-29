@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util
 
 import android.content.Context
 import me.devsaki.hentoid.database.ObjectBoxDB
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.AchievementEvent
 import org.greenrobot.eventbus.EventBus
 import kotlin.math.pow
@@ -17,7 +18,7 @@ object AchievementsManager {
         }
     }
 
-    fun checkDB(context: Context) {
+    fun checkCollection(context: Context) {
         val db = ObjectBoxDB.getInstance(context)
         try {
             val eligibleContent = db.selectEligibleContentIds();
@@ -53,6 +54,11 @@ object AchievementsManager {
             if (!isRegistered(15)) {
                 val count = db.countWithTagsOr(eligibleContent, "stockings")
                 if (count >= 20) registerAndSignal(15)
+            }
+            if (!isRegistered(19)) {
+                val invisibleSites = Site.entries.filter { e -> !e.isVisible }
+                val count = db.countWithSitesOr(eligibleContent, invisibleSites)
+                if (count >= 10) registerAndSignal(19)
             }
         } finally {
             db.cleanup()

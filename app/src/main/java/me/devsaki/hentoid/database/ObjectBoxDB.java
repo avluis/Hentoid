@@ -1799,7 +1799,7 @@ public class ObjectBoxDB {
     public long countWithTagsOr(Set<Long> eligibleContent, String... tagNames) {
         QueryCondition<Attribute> condition = Attribute_.name.equal(tagNames[0], QueryBuilder.StringOrder.CASE_INSENSITIVE);
         for (int i = 1; i <= tagNames.length - 1; i++)
-            condition = condition.or(Attribute_.name.equal(tagNames[1], QueryBuilder.StringOrder.CASE_INSENSITIVE));
+            condition = condition.or(Attribute_.name.equal(tagNames[i], QueryBuilder.StringOrder.CASE_INSENSITIVE));
         List<Attribute> tags = DBHelper.safeFind(store.boxFor(Attribute.class).query(condition));
 
         Set<Long> linkedContents = new HashSet<>();
@@ -1827,6 +1827,21 @@ public class ObjectBoxDB {
             for (Attribute a : tags)
                 linkedContents.retainAll(Stream.of(a.contents).map(Content::getId).toList());
         }
+
+        // Limit to stored books
+        linkedContents.retainAll(eligibleContent);
+        return linkedContents.size();
+    }
+
+    public long countWithSitesOr(Set<Long> eligibleContent, List<Site> sites) {
+        QueryCondition<Content> condition = Content_.site.equal(sites.get(0).getCode());
+        for (int i = 1; i <= sites.size() - 1; i++)
+            condition = condition.or(Content_.site.equal(sites.get(i).getCode()));
+        List<Content> contents = DBHelper.safeFind(store.boxFor(Content.class).query(condition));
+
+        Set<Long> linkedContents = new HashSet<>();
+        for (Content c : contents)
+            linkedContents.addAll(Stream.of(c).map(Content::getId).toList());
 
         // Limit to stored books
         linkedContents.retainAll(eligibleContent);
