@@ -43,7 +43,7 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        binding.toolbar.setNavigationOnClickListener { requireActivity().finish() }
+        binding.toolbar.setNavigationOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
 
         binding.changelogRecycler.setHasFixedSize(true)
 
