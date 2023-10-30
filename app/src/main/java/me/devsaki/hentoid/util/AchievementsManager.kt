@@ -66,13 +66,13 @@ object AchievementsManager {
     }
 
     fun trigger(id: Int) {
-        if (isRegistered(id)) return
+        //if (isRegistered(id)) return
         registerAndSignal(id)
     }
 
     private fun registerAndSignal(id: Int) {
         register(id)
-        EventBus.getDefault().post(AchievementEvent(id))
+        EventBus.getDefault().postSticky(AchievementEvent(id))
     }
 
     private fun register(id: Int) {

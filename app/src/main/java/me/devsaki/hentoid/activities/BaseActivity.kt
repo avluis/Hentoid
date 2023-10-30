@@ -72,7 +72,7 @@ abstract class BaseActivity : AppCompatActivity {
         super.onRestart()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     open fun onCommunicationEvent(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.ALL || event.type != CommunicationEvent.Type.BROADCAST || event.message.isEmpty()) return
         // Make sure current activity is active (=eligible to display that event)
@@ -80,33 +80,25 @@ abstract class BaseActivity : AppCompatActivity {
         ToastHelper.toast(event.message)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
     open fun onAchievementEvent(event: AchievementEvent) {
         // Make sure current activity is active (=eligible to display that event)
-        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
-        if (event.achievementId >= Achievement.achievements.size) return
+        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return
 
         // TODO handle display of multiples achievements if many triggered at once
-
-        val achievement = Achievement.achievements[event.achievementId]
-        val powerMenu = PowerMenu.Builder(this)
-            .addItem(
-                PowerMenuItem(
-                    resources.getString(achievement.title),
-                    false,
-                    achievement.icon
-                )
+        EventBus.getDefault().removeStickyEvent(event)
+        val achievement = Achievement.achievements[event.achievementId] ?: return
+        val powerMenu = PowerMenu.Builder(this).addItem(
+            PowerMenuItem(
+                resources.getString(achievement.title), false, achievement.icon
             )
-            .setAnimation(MenuAnimation.SHOWUP_BOTTOM_RIGHT)
-            .setMenuRadius(10f)
-            .setLifecycleOwner(this)
-            .setBackgroundAlpha(0f)
+        ).setAnimation(MenuAnimation.SHOWUP_BOTTOM_RIGHT).setMenuRadius(10f)
+            .setLifecycleOwner(this).setBackgroundAlpha(0f)
             .setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
             .setMenuColor(ContextCompat.getColor(this, R.color.dark_gray))
             .setTextSize(Helper.dimensAsDp(this, R.dimen.text_subtitle_1))
-            .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
-            .setAutoDismiss(true)
+            .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt()).setAutoDismiss(true)
             .build()
 
         val color = when (achievement.type) {
@@ -117,12 +109,11 @@ abstract class BaseActivity : AppCompatActivity {
         powerMenu.setIconColor(ContextCompat.getColor(this, color))
 
         val root: ViewGroup = findViewById(android.R.id.content)
-        powerMenu.showAtLocation(root, (Gravity.BOTTOM or Gravity.RIGHT), 0, 0)
+        powerMenu.showAtLocation(root.rootView, (Gravity.BOTTOM or Gravity.RIGHT), 0, 0)
 
-        // Fade away after 3s
+        // Dismiss after 3s
         Debouncer<Int>(
-            this.lifecycleScope,
-            3000
+            this.lifecycleScope, 3000
         ) {
             powerMenu.dismiss()
         }.submit(1)

@@ -459,6 +459,7 @@
     <!-- Strings: Main: About Activity -->
     <string name="about_github" translatable="false"><u>GitHub</u></string>
     <string name="about_discord" translatable="false"><u>Discord</u></string>
+    <string name="about_api" translatable="false"><u>Android API %d</u></string>
 
     <!-- Strings: Settings -->
     <string name="pref_generic_summary" translatable="false">%s</string>

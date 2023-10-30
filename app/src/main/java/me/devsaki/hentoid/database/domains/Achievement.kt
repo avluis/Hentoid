@@ -24,10 +24,10 @@ data class Achievement(
     }
 
     companion object {
-        val achievements: List<Achievement> by lazy { init(HentoidApp.getInstance()) }
+        val achievements: Map<Int, Achievement> by lazy { init(HentoidApp.getInstance()) }
 
-        fun init(context: Context): List<Achievement> {
-            val result = ArrayList<Achievement>()
+        fun init(context: Context): Map<Int, Achievement> {
+            val result = HashMap<Int, Achievement>()
 
             context.resources.openRawResource(R.raw.achievements).use { `is` ->
                 val achievementsStr = FileHelper.readStreamAsString(`is`)
@@ -35,47 +35,42 @@ data class Achievement(
                     achievementsStr,
                     JsonAchievements::class.java
                 )
-                achievementsObj.achievements.forEachIndexed { index, entry ->
+                achievementsObj.achievements.forEach { entry ->
+                    val id = entry.id
                     val title = context.resources.getIdentifier(
-                        "ach_name_$index",
+                        "ach_name_$id",
                         "string",
                         context.packageName
                     )
                     val desc = context.resources.getIdentifier(
-                        "ach_desc_$index",
+                        "ach_desc_$id",
                         "string",
                         context.packageName
                     )
-                    result.add(
-                        Achievement(
-                            entry.id,
-                            entry.type,
-                            false,
-                            title,
-                            desc,
-                            R.drawable.ic_achievement
-                        )
+                    result[entry.id] = Achievement(
+                        entry.id,
+                        entry.type,
+                        false,
+                        title,
+                        desc,
+                        R.drawable.ic_achievement
                     )
                 }
-                result.add(
-                    Achievement(
-                        63,
-                        Type.GOLD,
-                        true,
-                        R.string.ach_name_100,
-                        R.string.ach_desc_100,
-                        R.drawable.ic_warning // TODO special icon
-                    )
+                result[63] = Achievement(
+                    63,
+                    Type.GOLD,
+                    true,
+                    R.string.ach_name_62,
+                    R.string.ach_desc_62,
+                    R.drawable.ic_warning // TODO special icon
                 )
-                result.add(
-                    Achievement(
-                        62,
-                        Type.GOLD,
-                        true,
-                        R.string.ach_name_101,
-                        R.string.ach_desc_101,
-                        R.drawable.ic_warning // TODO special icon
-                    )
+                result[62] = Achievement(
+                    62,
+                    Type.GOLD,
+                    true,
+                    R.string.ach_name_63,
+                    R.string.ach_desc_63,
+                    R.drawable.ic_warning // TODO special icon
                 )
             }
             return result
