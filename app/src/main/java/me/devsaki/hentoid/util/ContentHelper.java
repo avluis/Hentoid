@@ -1168,6 +1168,7 @@ public final class ContentHelper {
                         result.add(tag);
                         break;
                     }
+            if (tags.size() == result.size()) AchievementsManager.INSTANCE.trigger(2);
         }
         return result;
     }
