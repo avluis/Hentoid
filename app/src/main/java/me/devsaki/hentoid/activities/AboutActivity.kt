@@ -10,6 +10,7 @@ import com.mikepenz.aboutlibraries.LibsConfiguration
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.ActivityAboutBinding
 import me.devsaki.hentoid.fragments.about.AboutFragment
+import me.devsaki.hentoid.fragments.about.AchievementsFragment
 import me.devsaki.hentoid.fragments.about.ChangelogFragment
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ThemeHelper
@@ -74,6 +75,10 @@ class AboutActivity : BaseActivity() {
 
     fun showChangelog() {
         showFragment(ChangelogFragment())
+    }
+
+    fun showAchievements() {
+        showFragment(AchievementsFragment())
     }
 
     private fun showFragment(fragment: Fragment, keepHistory: Boolean = true) {

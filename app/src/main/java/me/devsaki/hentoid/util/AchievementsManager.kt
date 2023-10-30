@@ -5,6 +5,7 @@ import me.devsaki.hentoid.database.ObjectBoxDB
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.AchievementEvent
 import org.greenrobot.eventbus.EventBus
+import timber.log.Timber
 import kotlin.math.pow
 
 object AchievementsManager {
@@ -71,6 +72,7 @@ object AchievementsManager {
     }
 
     private fun registerAndSignal(id: Int) {
+        Timber.d("ACHIEVEMENT $id UNLOCKED")
         register(id)
         EventBus.getDefault().postSticky(AchievementEvent(id))
     }
@@ -84,7 +86,7 @@ object AchievementsManager {
         }
     }
 
-    private fun isRegistered(id: Int): Boolean {
+    fun isRegistered(id: Int): Boolean {
         return isRegistered(id, storageCache)
     }
 

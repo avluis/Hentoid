@@ -6,22 +6,6 @@
     android:background="?android:colorBackground"
     tools:context=".activities.AboutActivity">
 
-    <ImageView
-        android:id="@+id/changelogDownloadLatestButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:adjustViewBounds="true"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_action_download"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/changelogDownloadLatestText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        tools:ignore="ContentDescription" />
-
     <TextView
         android:id="@+id/changelogDownloadLatestText"
         android:layout_width="match_parent"
@@ -37,15 +21,32 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription"
-        tools:text="Get the latest version (x.xx.x)" />
+        tools:text="Get the latest version (x.xx.x)"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/changelogDownloadLatestButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:adjustViewBounds="true"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_action_download"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/changelogDownloadLatestText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/changelogDownloadLatestText"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/changelogRecycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/changelogDownloadLatestText"

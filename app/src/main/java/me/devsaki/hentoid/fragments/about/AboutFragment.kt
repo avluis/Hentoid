@@ -77,6 +77,7 @@ class AboutFragment : Fragment(R.layout.fragment_about) {
 
             changelogButton.setOnClickListener { activity.get()?.showChangelog() }
             licensesButton.setOnClickListener { activity.get()?.showLicences() }
+            achievementsButton.setOnClickListener { activity.get()?.showAchievements() }
         }
     }
 

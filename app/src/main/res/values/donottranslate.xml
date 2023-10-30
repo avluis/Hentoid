@@ -439,6 +439,7 @@
     <string name="app_name" translatable="false">Hentoid</string>
     <string name="error" translatable="false">Error</string>
     <string name="percent_no_digits" translatable="false">%.0f%%</string>
+    <string name="what" translatable="false">\???</string>
     <string name="empty_string" translatable="false" />
     <!-- Strings: Main: TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>

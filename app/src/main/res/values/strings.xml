@@ -685,7 +685,8 @@
     <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHentoid is a free and open-source software maintained by the Hentoid Community (join us on Discord - see link above)</string>
     <string name="personalDataStatement2">Hentoid collects the following personal data and sends them to Google for processing through the firebase library:\n  - Session ID\n  - IP address</string>
     <string name="personalDataStatement3">The abovementioned data is removed from Firebase live and backup system within 180 days (see https://firebase.google.com/support/privacy/ for more details)\n\nNo other personal data is collected nor sent to any other party.</string>
-    <string name="about_licenses">Display Licenses</string>
+    <string name="about_licenses">Licenses</string>
+    <string name="about_achievements">Achievements</string>
     <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
     <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g></string>
     <string name="about_chrome_unavailable">WebView is unavailable</string>
@@ -845,8 +846,8 @@
     <string name="view_book">View book</string>
 
     <!-- Changelog -->
-    <string name="view_changelog">View changelog</string>
-    <string name="view_changelog_flagged">View changelog*</string>
+    <string name="view_changelog">Changelog</string>
+    <string name="view_changelog_flagged">Changelog*</string>
     <string name="changelog">Changelog</string>
     <string name="get_latest">Get the latest version (<x:g example="1.18.1" id="version">%1$s</x:g>)</string>
     <string name="update_success">Update successful!</string>

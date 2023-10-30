@@ -12,7 +12,7 @@ import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.databinding.FragmentChangelogBinding
+import me.devsaki.hentoid.databinding.FragmentAboutChangelogBinding
 import me.devsaki.hentoid.util.AppHelper
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem
 import me.devsaki.hentoid.viewmodels.ChangelogViewModel
@@ -20,9 +20,9 @@ import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import timber.log.Timber
 
 // TODO - invisible init while loading
-class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
+class ChangelogFragment : Fragment(R.layout.fragment_about_changelog) {
 
-    private var _binding: FragmentChangelogBinding? = null
+    private var _binding: FragmentAboutChangelogBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel by viewModels<ChangelogViewModel>()
@@ -32,7 +32,7 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentChangelogBinding.inflate(inflater, container, false)
+        _binding = FragmentAboutChangelogBinding.inflate(inflater, container, false)
         return binding.root
     }
 

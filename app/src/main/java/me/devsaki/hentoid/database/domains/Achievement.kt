@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.database.domains
 
 import android.content.Context
+import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import me.devsaki.hentoid.R
@@ -74,6 +75,15 @@ data class Achievement(
                 )
             }
             return result
+        }
+
+        @ColorInt
+        fun colorFromType(type: Type): Int {
+            return when (type) {
+                Type.BRONZE -> R.color.bronze
+                Type.SILVER -> R.color.silver
+                Type.GOLD -> R.color.gold
+            }
         }
     }
 }

@@ -64,21 +64,19 @@
             app:layout_constraintStart_toEndOf="@id/discordIcon"
             app:layout_constraintTop_toTopOf="@id/discordIcon" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/changelogButton"
+            style="@style/HentoidMaterialButtonOutlinedStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:layout_marginTop="8dp"
             android:text="@string/view_changelog"
-            android:textColor="?attr/colorSecondary"
-            android:textSize="@dimen/about_textSize"
-            android:textStyle="bold"
             app:flow_horizontalAlign="start"
+            app:icon="@drawable/ic_logs"
+            app:iconTint="@color/secondary_color_selector"
             app:layout_constraintBottom_toBottomOf="@id/appLogo"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/appLogo"
-            app:layout_constraintTop_toBottomOf="@id/discordIcon" />
+            app:layout_constraintStart_toEndOf="@id/appLogo" />
 
         <TextView
             android:id="@+id/tv_version_name"
@@ -121,7 +119,7 @@
             android:text="@string/about1"
             android:textSize="@dimen/about_textSize"
             app:layout_constraintEnd_toEndOf="@id/tv_version_name"
-            app:layout_constraintStart_toStartOf="@id/tv_chrome_version_name"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_chrome_version_name" />
 
         <TextView
@@ -132,7 +130,7 @@
             android:text="@string/personalDataStatement1"
             android:textSize="@dimen/about_textSize"
             app:layout_constraintEnd_toEndOf="@id/aboutText1"
-            app:layout_constraintStart_toStartOf="@id/aboutText1"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/aboutText1" />
 
         <TextView
@@ -143,7 +141,7 @@
             android:text="@string/personalDataStatement2"
             android:textSize="@dimen/about_textSize"
             app:layout_constraintEnd_toEndOf="@id/personalDataStatement1"
-            app:layout_constraintStart_toStartOf="@id/personalDataStatement1"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/personalDataStatement1" />
 
         <TextView
@@ -154,25 +152,31 @@
             android:text="@string/personalDataStatement3"
             android:textSize="@dimen/about_textSize"
             app:layout_constraintEnd_toEndOf="@id/personalDataStatement2"
-            app:layout_constraintStart_toStartOf="@id/personalDataStatement2"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/personalDataStatement2" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/licensesButton"
+            style="@style/HentoidMaterialButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:clickable="true"
-            android:focusable="true"
             android:text="@string/about_licenses"
-            android:textColor="?attr/colorSecondary"
-            android:textSize="@dimen/about_textSize"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@id/personalDataStatement3"
-            app:layout_constraintStart_toStartOf="@id/personalDataStatement3"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/personalDataStatement3" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/achievementsButton"
+            style="@style/HentoidMaterialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/about_achievements"
+            app:icon="@drawable/ic_achievement"
+            app:iconTint="@color/secondary_color_selector"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/personalDataStatement3" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>
