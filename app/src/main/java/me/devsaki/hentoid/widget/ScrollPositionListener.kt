@@ -84,14 +84,14 @@ class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit
                 if (!(llm.findLastVisibleItemPosition() == llm.itemCount - 1 || 0 == llm.findFirstVisibleItemPosition())) return
                 val onEndOut = onEndOutOfBoundScroll
                 val onStartOut = onStartOutOfBoundScroll
-                if (null == onEndOut || null == onStartOut) return
+                if (null == onEndOut && null == onStartOut) return
                 var scrollDirection = 0
                 if (llm is PrefetchLinearLayoutManager) scrollDirection = llm.rawDeltaPx
                 if (recyclerView.computeHorizontalScrollOffset() == dragStartPositionX && !isSettlingX && llm.canScrollHorizontally()) {
-                    if (!llm.reverseLayout && scrollDirection >= 0 || llm.reverseLayout && scrollDirection < 0) onEndOut.run() else onStartOut.run()
+                    if (!llm.reverseLayout && scrollDirection >= 0 || llm.reverseLayout && scrollDirection < 0) onEndOut?.run() else onStartOut?.run()
                 }
                 if (recyclerView.computeVerticalScrollOffset() == dragStartPositionY && !isSettlingY && llm.canScrollVertically()) {
-                    if (!llm.reverseLayout && scrollDirection >= 0 || llm.reverseLayout && scrollDirection < 0) onEndOut.run() else onStartOut.run()
+                    if (!llm.reverseLayout && scrollDirection >= 0 || llm.reverseLayout && scrollDirection < 0) onEndOut?.run() else onStartOut?.run()
                 }
             }
         }
