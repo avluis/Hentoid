@@ -25,7 +25,7 @@ public class LusciousActivity extends BaseWebActivity {
             "operationName=AlbumGet", // Fetch using GraphQL call
             "luscious.net/[\\w\\-]+/[\\w\\-]+_[0-9]+/$" // Actual gallery page URL (NB : only works for the first viewed gallery, or when manually reloading a page)
     };
-    //private static final String[] DIRTY_ELEMENTS = {".ad_banner"}; <-- doesn't work; added dynamically on an element tagged with a neutral-looking class
+    //private static final String[] REMOVABLE_ELEMENTS = {".ad_banner"}; <-- doesn't work; added dynamically on an element tagged with a neutral-looking class
 
 
     Site getStartSite() {
@@ -37,7 +37,6 @@ public class LusciousActivity extends BaseWebActivity {
         LusciousWebClient client = new LusciousWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER);
-        //client.addDirtyElements(DIRTY_ELEMENTS);
         client.setJsStartupScripts("luscious_adblock.js");
 
         // Init fetch handler here for convenience

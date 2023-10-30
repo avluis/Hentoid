@@ -904,7 +904,7 @@ public class FileHelper {
 
         // Old way of measuring memory (inaccurate on certain devices)
         private void initLegacy(@NonNull Context context, @NonNull DocumentFile f) {
-            String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
+            String fullPath = getFullPathFromUri(context, f.getUri()); // Oh so dirty !!
             if (fullPath != null) {
                 File file = new File(fullPath);
                 this.freeMemBytes = file.getFreeSpace(); // should actually have been getUsableSpace
@@ -914,7 +914,7 @@ public class FileHelper {
 
         // Init for API 21 to 25
         private void init21(@NonNull Context context, @NonNull DocumentFile f) {
-            String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
+            String fullPath = getFullPathFromUri(context, f.getUri()); // Oh so dirty !!
             if (fullPath != null) {
                 StatFs stat = new StatFs(fullPath);
 

@@ -13,7 +13,7 @@ public class TsuminoActivity extends BaseWebActivity {
     private static final String DOMAIN_FILTER = "tsumino.com";
     private static final String[] GALLERY_FILTER = {"//www.tsumino.com/entry/"};
     private static final String[] blockedContent = {"/static/"};
-    private static final String[] DIRTY_ELEMENTS = {".ads-area", ".erogames_container"};
+    private static final String[] REMOVABLE_ELEMENTS = {".ads-area", ".erogames_container"};
     private boolean downloadFabPressed = false;
     private int historyIndex;
 
@@ -25,7 +25,7 @@ public class TsuminoActivity extends BaseWebActivity {
     protected CustomWebViewClient createWebClient() {
         CustomWebViewClient client = new TsuminoWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        client.addRemovableElements(DIRTY_ELEMENTS);
+        client.addRemovableElements(REMOVABLE_ELEMENTS);
         client.adBlocker.addToUrlBlacklist(blockedContent);
 
         return client;
@@ -38,8 +38,8 @@ public class TsuminoActivity extends BaseWebActivity {
             historyIndex = webView.copyBackForwardList().getCurrentIndex();
 
             // Hack to reach the first gallery page to initiate download, and go back to the book page
-            String newUrl = webView.getUrl().replace("entry", "Read/Index");
-            webView.loadUrl(newUrl);
+            String url = webView.getUrl();
+            if (url != null) webView.loadUrl(url.replace("entry", "Read/Index"));
         } else {
             super.onActionClick();
         }
