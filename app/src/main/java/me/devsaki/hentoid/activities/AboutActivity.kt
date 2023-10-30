@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities
 
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
@@ -30,33 +31,34 @@ class AboutActivity : BaseActivity() {
         ThemeHelper.applyTheme(this)
 
         binding = ActivityAboutBinding.inflate(layoutInflater)
-        binding?.let {
-            setContentView(it.root)
+        binding?.apply {
+            setContentView(root)
 
-            it.toolbar.setNavigationOnClickListener { finish() }
+            toolbar.setNavigationOnClickListener { finish() }
 
-            it.appLogo.setOnClickListener { startBrowserActivity(URL_GITHUB_WIKI) }
-            it.githubText.setOnClickListener { startBrowserActivity(URL_GITHUB) }
-            it.discordText.setOnClickListener { startBrowserActivity(URL_DISCORD) }
+            appLogo.setOnClickListener { startBrowserActivity(URL_GITHUB_WIKI) }
+            githubText.setOnClickListener { startBrowserActivity(URL_GITHUB) }
+            discordText.setOnClickListener { startBrowserActivity(URL_DISCORD) }
 
-            it.tvVersionName.text = getString(
+            tvVersionName.text = getString(
                 R.string.about_app_version,
                 BuildConfig.VERSION_NAME,
                 BuildConfig.VERSION_CODE
             )
-            it.tvChromeVersionName.text =
+            tvChromeVersionName.text =
                 if (WebkitPackageHelper.getWebViewAvailable())
                     getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
                 else
                     getString(R.string.about_chrome_unavailable)
+            tvAndroidApi.text = "Android API ${Build.VERSION.SDK_INT}"
 
-            it.changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
+            changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
 
-            it.licensesButton.setOnClickListener {
+            licensesButton.setOnClickListener {
                 LibsBuilder()
                     .withLicenseShown(true)
                     .withSearchEnabled(true)
-                    .start(this)
+                    .start(this@AboutActivity)
             }
         }
 
