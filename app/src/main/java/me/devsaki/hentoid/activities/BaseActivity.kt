@@ -21,6 +21,7 @@ import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.database.domains.Achievement
 import me.devsaki.hentoid.events.AchievementEvent
 import me.devsaki.hentoid.events.CommunicationEvent
+import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -87,7 +88,7 @@ abstract class BaseActivity : AppCompatActivity {
 
         // TODO handle display of multiples achievements if many triggered at once
         EventBus.getDefault().removeStickyEvent(event)
-        val achievement = Achievement.achievements[event.achievementId] ?: return
+        val achievement = AchievementsManager.masterdata[event.achievementId] ?: return
         val powerMenu = PowerMenu.Builder(this).addItem(
             PowerMenuItem(
                 resources.getString(achievement.title), false, achievement.icon

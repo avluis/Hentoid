@@ -1,9 +1,14 @@
 package me.devsaki.hentoid.util
 
 import android.content.Context
+import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.ObjectBoxDB
+import me.devsaki.hentoid.database.domains.Achievement
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.AchievementEvent
+import me.devsaki.hentoid.json.core.JsonAchievements
+import me.devsaki.hentoid.util.file.FileHelper
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import kotlin.math.pow
@@ -11,7 +16,60 @@ import kotlin.math.pow
 object AchievementsManager {
 
     private val syncObject = Any()
+
     private var storageCache = Settings.achievements
+
+    val masterdata: Map<Int, Achievement> by lazy { init(HentoidApp.getInstance()) }
+
+    fun init(context: Context): Map<Int, Achievement> {
+        val result = HashMap<Int, Achievement>()
+
+        context.resources.openRawResource(R.raw.achievements).use { `is` ->
+            val achievementsStr = FileHelper.readStreamAsString(`is`)
+            val achievementsObj = JsonHelper.jsonToObject(
+                achievementsStr,
+                JsonAchievements::class.java
+            )
+            achievementsObj.achievements.forEach { entry ->
+                val id = entry.id
+                val title = context.resources.getIdentifier(
+                    "ach_name_$id",
+                    "string",
+                    context.packageName
+                )
+                val desc = context.resources.getIdentifier(
+                    "ach_desc_$id",
+                    "string",
+                    context.packageName
+                )
+                result[entry.id] = Achievement(
+                    entry.id,
+                    entry.type,
+                    false,
+                    title,
+                    desc,
+                    R.drawable.ic_achievement
+                )
+            }
+        }
+        result[63] = Achievement(
+            63,
+            Achievement.Type.GOLD,
+            true,
+            R.string.ach_name_62,
+            R.string.ach_desc_62,
+            R.drawable.ic_warning // TODO special icon
+        )
+        result[62] = Achievement(
+            62,
+            Achievement.Type.GOLD,
+            true,
+            R.string.ach_name_63,
+            R.string.ach_desc_63,
+            R.drawable.ic_warning // TODO special icon
+        )
+        return result
+    }
 
     fun checkPrefs(context: Context) {
         if (!isRegistered(1)) {

@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.database.domains.Achievement
 import me.devsaki.hentoid.databinding.FragmentAboutAchievementsBinding
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.viewholders.AchievementItem
@@ -38,7 +37,7 @@ class AchievementsFragment : Fragment(R.layout.fragment_about_achievements) {
         binding?.apply {
             recyclerView.setHasFixedSize(true)
 
-            Achievement.achievements.values.forEach { ac ->
+            AchievementsManager.masterdata.values.forEach { ac ->
                 itemAdapter.add(AchievementItem(ac, AchievementsManager.isRegistered(ac.id)))
             }
 
