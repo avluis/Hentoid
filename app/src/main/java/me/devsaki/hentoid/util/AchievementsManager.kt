@@ -9,8 +9,11 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.AchievementEvent
 import me.devsaki.hentoid.json.core.JsonAchievements
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.StorageHelper
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
+import java.time.Instant
+import kotlin.math.max
 import kotlin.math.pow
 
 object AchievementsManager {
@@ -77,6 +80,12 @@ object AchievementsManager {
         }
     }
 
+    fun checkStorage(context: Context) {
+        if (!isRegistered(18)) {
+            if (StorageHelper.isLowDeviceStorage(context)) registerAndSignal(18)
+        }
+    }
+
     fun checkCollection(context: Context) {
         val db = ObjectBoxDB.getInstance(context)
         try {
@@ -114,10 +123,39 @@ object AchievementsManager {
                 val count = db.countWithTagsOr(eligibleContent, "stockings")
                 if (count >= 20) registerAndSignal(15)
             }
+            if (!isRegistered(17)) {
+                val newestRead = db.selectNewestRead()
+                val newestDownload = db.selectNewestDownload()
+                val now = Instant.now().toEpochMilli()
+                val maxDiff = now - max(newestRead, newestDownload)
+                if (maxDiff >= 72 * 60 * 60 * 1000) registerAndSignal(17)
+            }
             if (!isRegistered(19)) {
                 val invisibleSites = Site.entries.filter { e -> !e.isVisible }
                 val count = db.countWithSitesOr(eligibleContent, invisibleSites)
                 if (count >= 10) registerAndSignal(19)
+            }
+            if (!isRegistered(21)) {
+                val count = db.countWithTagsOr(eligibleContent, "x-ray", "nakadashi")
+                if (count >= 20) registerAndSignal(21)
+            }
+            if (!isRegistered(22)) {
+                val count = db.countWithTagsOr(eligibleContent, "story arc")
+                if (count >= 20) registerAndSignal(22)
+            }
+
+            if (!isRegistered(24)) {
+                val nbBooks = eligibleContent.size
+                val nbUngroupedBooks = db.selectUngroupedContentIds().size
+                if (nbBooks >= 100 && 0 == nbUngroupedBooks) registerAndSignal(24)
+            }
+            if (!isRegistered(25)) {
+                val count = db.countQueuedBooks()
+                if (count > 50) registerAndSignal(25)
+            }
+            if (!isRegistered(26)) {
+                val count = db.countQueuedBooks()
+                if (count > 100) registerAndSignal(26)
             }
         } finally {
             db.cleanup()

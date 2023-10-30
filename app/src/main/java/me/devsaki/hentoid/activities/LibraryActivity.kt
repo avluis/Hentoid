@@ -50,8 +50,6 @@ import me.devsaki.hentoid.database.domains.SearchRecord
 import me.devsaki.hentoid.databinding.ActivityLibraryBinding
 import me.devsaki.hentoid.databinding.FragmentLibraryBinding
 import me.devsaki.hentoid.enums.Grouping
-import me.devsaki.hentoid.enums.StorageLocation
-import me.devsaki.hentoid.events.AchievementEvent
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
@@ -70,9 +68,8 @@ import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.TooltipHelper
-import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.util.file.StorageHelper
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -515,7 +512,7 @@ class LibraryActivity : BaseActivity() {
                 alertIcon.visibility = View.VISIBLE
                 alertFixBtn.setOnClickListener { fixNotifications() }
                 alertFixBtn.visibility = View.VISIBLE
-            } else if (isLowDeviceStorage()) { // Display low device storage alert
+            } else if (StorageHelper.isLowDeviceStorage(this@LibraryActivity)) { // Display low device storage alert
                 alertTxt.setText(R.string.alert_low_memory)
                 alertTxt.visibility = View.VISIBLE
                 alertIcon.visibility = View.VISIBLE
@@ -946,10 +943,6 @@ class LibraryActivity : BaseActivity() {
         ) updateAlertBanner()
     }
 
-    private fun isLowDeviceStorage(): Boolean {
-        return isLowDeviceStorage(StorageLocation.PRIMARY_1) || isLowDeviceStorage(StorageLocation.PRIMARY_2)
-    }
-
     private fun isLowDatabaseStorage(): Boolean {
         val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
         val dao: CollectionDAO = ObjectBoxDAO(applicationContext)
@@ -958,14 +951,6 @@ class LibraryActivity : BaseActivity() {
         } finally {
             dao.cleanup()
         }
-    }
-
-    private fun isLowDeviceStorage(location: StorageLocation): Boolean {
-        val rootFolder =
-            FileHelper.getDocumentFromTreeUriString(this, Preferences.getStorageUri(location))
-                ?: return false
-        val freeSpaceRatio = MemoryUsageFigures(this, rootFolder).freeUsageRatio100
-        return freeSpaceRatio < 100 - Preferences.getMemoryAlertThreshold()
     }
 
     override fun onRequestPermissionsResult(

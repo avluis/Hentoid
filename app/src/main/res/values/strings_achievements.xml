@@ -33,7 +33,7 @@
     <string name="ach_name_16">Legal Department</string>
     <string name="ach_desc_16">Read the "Licenses" screen from top to bottom</string>
     <string name="ach_name_17">Touched Grass</string>
-    <string name="ach_desc_17">Don\'t use hentoid for at least 72 hours</string>
+    <string name="ach_desc_17">Don\'t read nor download for at least 72 hours</string>
     <string name="ach_name_18">Satiated</string>
     <string name="ach_desc_18">Fill up your storage</string>
     <string name="ach_name_19">Ghost Town</string>
@@ -47,7 +47,7 @@
     <string name="ach_name_23">Neverending Story</string>
     <string name="ach_desc_23">Collect one book with more than 300 chapters</string>
     <string name="ach_name_24">No Stone Unturned</string>
-    <string name="ach_desc_24">Have no book inside the "Ungrouped" group</string>
+    <string name="ach_desc_24">Have no book inside the "Ungrouped" group in a 100+ books collection</string>
     <string name="ach_name_25">Stack Overflow</string>
     <string name="ach_desc_25">Have more than 50 queued books</string>
     <string name="ach_name_26">Crow Squire</string>

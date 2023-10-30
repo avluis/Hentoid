@@ -1741,7 +1741,7 @@ public class ObjectBoxDB {
         return DBHelper.safeFindIds(customContentQB);
     }
 
-    Set<Long> selectUngroupedContentIds() {
+    public Set<Long> selectUngroupedContentIds() {
         // Select all eligible content
         QueryBuilder<Content> allContentQ = store.boxFor(Content.class).query().in(Content_.status, libraryStatus);
         Set<Long> allContent = Helper.getSetFromPrimitiveArray(DBHelper.safeFindIds(allContentQ));
@@ -1846,5 +1846,23 @@ public class ObjectBoxDB {
         // Limit to stored books
         linkedContents.retainAll(eligibleContent);
         return linkedContents.size();
+    }
+
+    public long selectNewestRead() {
+        Content c = DBHelper.safeFindFirst(store.boxFor(Content.class).query().orderDesc(Content_.lastReadDate));
+        if (c != null) return c.getLastReadDate();
+        else return 0;
+    }
+
+    public long selectNewestDownload() {
+        Content c = DBHelper.safeFindFirst(store.boxFor(Content.class).query().orderDesc(Content_.downloadDate));
+        if (c != null) return c.getDownloadDate();
+        else return 0;
+    }
+
+    public long countQueuedBooks() {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, queueStatus);
+        return DBHelper.safeCount(query);
     }
 }
