@@ -42,6 +42,7 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification
 import me.devsaki.hentoid.notification.userAction.UserActionNotification
 import me.devsaki.hentoid.parsers.ContentParserFactory
+import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
@@ -961,6 +962,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                         R.string.queue_json_failed
                     )
                 )
+
+                AchievementsManager.checkStorage(context)
+                AchievementsManager.checkCollection(context)
 
                 // Tracking Event (Download Completed)
                 trackDownloadEvent("Completed")

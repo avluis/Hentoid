@@ -925,7 +925,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {
         currentImg?.let {
-            adjustDisplay(it.content.target.bookPreferences)
+            if (!me.devsaki.hentoid.database.isDetached(it)) adjustDisplay(it.content.target.bookPreferences)
         }
         viewModel.onPageChange(absImageIndex, scrollDirection)
     }

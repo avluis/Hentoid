@@ -32,6 +32,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.parsers.ContentParserFactory
+import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -334,7 +335,11 @@ class ReaderViewModel(
      * Callback to run when the activity is on the verge of being destroyed
      */
     fun onActivityLeave() {
-        // Nothing for now
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                AchievementsManager.checkCollection(getApplication())
+            }
+        }
     }
 
     /**

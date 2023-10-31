@@ -60,6 +60,7 @@ import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.InputDialog
+import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
@@ -840,6 +841,7 @@ class LibraryActivity : BaseActivity() {
      */
     private fun onSharedPreferenceChanged(key: String?) {
         Timber.i("Prefs change detected : %s", key)
+        AchievementsManager.checkPrefs()
         when (key) {
             Preferences.Key.COLOR_THEME,
             Settings.Key.LIBRARY_DISPLAY,

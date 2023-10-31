@@ -165,7 +165,7 @@ object AchievementsManager {
     }
 
     fun trigger(id: Int) {
-        //if (isRegistered(id)) return
+        if (isRegistered(id)) return
         registerAndSignal(id)
     }
 
@@ -185,7 +185,10 @@ object AchievementsManager {
     }
 
     fun isRegistered(id: Int): Boolean {
-        return isRegistered(id, storageCache)
+        // TODO temp
+        return false
+        // TODO temp
+        //return isRegistered(id, storageCache)
     }
 
     private fun isRegistered(id: Int, storage: ULong): Boolean {

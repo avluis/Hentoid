@@ -37,7 +37,7 @@ public class PlugEventsReceiver extends BroadcastReceiver {
     private String getRandomQuoteFrom(Context context, @ArrayRes int res) {
         String[] quotes = context.getResources().getStringArray(res);
         int random = Helper.getRandomInt(quotes.length);
-        if (2 == random && R.array.power_reactions == res) AchievementsManager.INSTANCE.trigger(62);
+        if (3 == random && R.array.power_reactions == res) AchievementsManager.INSTANCE.trigger(62);
         return quotes[random];
     }
 }
