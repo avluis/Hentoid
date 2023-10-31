@@ -619,7 +619,7 @@ class LibraryGroupsFragment : Fragment(),
                 }
             }
 
-            CommunicationEvent.Type.SEARCH -> if (event.message.isNotEmpty()) onSubmitSearch(event.message)
+            CommunicationEvent.Type.SEARCH -> onSubmitSearch(event.message)
             CommunicationEvent.Type.ENABLE -> onEnable()
             CommunicationEvent.Type.DISABLE -> onDisable()
             CommunicationEvent.Type.SCROLL_TOP -> llm!!.scrollToPositionWithOffset(0, 0)

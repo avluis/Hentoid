@@ -990,7 +990,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 }
             }
 
-            CommunicationEvent.Type.SEARCH -> if (event.message.isNotEmpty()) onSubmitSearch(event.message)
+            CommunicationEvent.Type.SEARCH -> onSubmitSearch(event.message)
             CommunicationEvent.Type.ADVANCED_SEARCH -> onAdvancedSearchButtonClick()
             CommunicationEvent.Type.ENABLE -> onEnable()
             CommunicationEvent.Type.DISABLE -> onDisable()
