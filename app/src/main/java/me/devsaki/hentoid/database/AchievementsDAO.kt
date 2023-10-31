@@ -5,6 +5,8 @@ import io.objectbox.query.QueryBuilder
 import io.objectbox.query.QueryCondition
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Attribute_
+import me.devsaki.hentoid.database.domains.Chapter
+import me.devsaki.hentoid.database.domains.Chapter_
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Content_
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -121,5 +123,15 @@ class AchievementsDAO(ctx: Context) {
         val query: QueryBuilder<Content> = db.store.boxFor(Content::class.java).query()
         query.`in`(Content_.status, ObjectBoxDB.queueStatus)
         return query.safeCount()
+    }
+
+    fun hasAtLeastCHapters(eligibleContent: Set<Long>, max: Int): Boolean {
+        eligibleContent.forEach {
+            val nbChaps =
+                db.store.boxFor<Chapter>(Chapter::class.java).query()
+                    .equal(Chapter_.contentId, it).safeCount()
+            if (nbChaps >= max) return true
+        }
+        return false
     }
 }

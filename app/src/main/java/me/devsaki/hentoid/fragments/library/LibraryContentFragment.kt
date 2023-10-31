@@ -80,6 +80,7 @@ import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invok
 import me.devsaki.hentoid.fragments.library.SearchContentIdDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
+import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
@@ -1465,6 +1466,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 parentFragmentManager, query, siteCodes
             )
         }
+
+        if (newSearch && query.contains(AchievementsManager.A63, true) && result.isNotEmpty())
+            AchievementsManager.trigger(63)
 
         // If the update is the result of a new search, get back on top of the list
         if (newSearch) topItemPosition = 0

@@ -12,6 +12,7 @@ import org.greenrobot.eventbus.EventBus;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.CommunicationEvent;
+import me.devsaki.hentoid.util.AchievementsManager;
 import me.devsaki.hentoid.util.Helper;
 
 public class PlugEventsReceiver extends BroadcastReceiver {
@@ -35,6 +36,8 @@ public class PlugEventsReceiver extends BroadcastReceiver {
 
     private String getRandomQuoteFrom(Context context, @ArrayRes int res) {
         String[] quotes = context.getResources().getStringArray(res);
-        return quotes[Helper.getRandomInt(quotes.length)];
+        int random = Helper.getRandomInt(quotes.length);
+        if (2 == random && R.array.power_reactions == res) AchievementsManager.INSTANCE.trigger(62);
+        return quotes[random];
     }
 }

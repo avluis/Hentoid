@@ -80,6 +80,7 @@ public final class Preferences {
         result.remove(Key.REFRESH_JSON_1_DONE);
         result.remove(Settings.Key.LOCK_TYPE);
         result.remove(Settings.Key.ACHIEVEMENTS);
+        result.remove(Settings.Key.ACHIEVEMENTS_NB_AI_RESCALE);
 
         return result;
     }

@@ -73,6 +73,7 @@ object Settings {
 
     // ACHIEVEMENTS
     var achievements: ULong by ULongSetting(Key.ACHIEVEMENTS, 0UL)
+    var nbAIRescale: Int by IntSetting(Key.ACHIEVEMENTS_NB_AI_RESCALE, 0)
 
 
     // Public Helpers
@@ -142,6 +143,7 @@ object Settings {
         const val LIBRARY_DISPLAY_GRID_LANG = "LIBRARY_DISPLAY_GRID_LANG"
         const val LIBRARY_GRID_CARD_WIDTH = "grid_card_width"
         const val ACHIEVEMENTS = "achievements"
+        const val ACHIEVEMENTS_NB_AI_RESCALE = "ach_nb_ai_rescale"
     }
 
     object Value {

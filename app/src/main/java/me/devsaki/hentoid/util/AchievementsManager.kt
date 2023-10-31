@@ -18,6 +18,8 @@ import kotlin.math.pow
 
 object AchievementsManager {
 
+    const val A63 = "\u0077\u0061\u006C\u0064\u006F"
+
     private val syncObject = Any()
 
     private var storageCache = Settings.achievements
@@ -143,7 +145,9 @@ object AchievementsManager {
                 val count = db.countWithTagsOr(eligibleContent, "story arc")
                 if (count >= 20) registerAndSignal(22)
             }
-
+            if (!isRegistered(23)) {
+                if (db.hasAtLeastCHapters(eligibleContent, 300)) registerAndSignal(23)
+            }
             if (!isRegistered(24)) {
                 val nbBooks = eligibleContent.size
                 val nbUngroupedBooks = db.selectUngroupedContentIds().size

@@ -22,8 +22,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.notification.transform.TransformCompleteNotification
 import me.devsaki.hentoid.notification.transform.TransformProgressNotification
+import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ProgressManager
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
@@ -134,6 +136,15 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             content.lastEditDate = Instant.now().toEpochMilli()
             content.setIsBeingProcessed(false)
             dao.insertContentCore(content)
+
+            // Achievements
+            if (upscaler != null) { // AI upscale
+                Settings.nbAIRescale = Settings.nbAIRescale + 1
+                if (Settings.nbAIRescale >= 2) AchievementsManager.trigger(20)
+            }
+            val pagesTotal = images.count { i -> i.isReadable }
+            if (pagesTotal >= 50) AchievementsManager.trigger(27)
+            if (pagesTotal >= 100) AchievementsManager.trigger(28)
         } else {
             nbKO += images.size
         }
