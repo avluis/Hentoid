@@ -3,7 +3,7 @@ package me.devsaki.hentoid.util
 import android.content.Context
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
-import me.devsaki.hentoid.database.ObjectBoxDB
+import me.devsaki.hentoid.database.AchievementsDAO
 import me.devsaki.hentoid.database.domains.Achievement
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.AchievementEvent
@@ -74,7 +74,7 @@ object AchievementsManager {
         return result
     }
 
-    fun checkPrefs(context: Context) {
+    fun checkPrefs() {
         if (!isRegistered(1)) {
             if (1 == Preferences.getActiveSites().size) registerAndSignal(1)
         }
@@ -87,7 +87,7 @@ object AchievementsManager {
     }
 
     fun checkCollection(context: Context) {
-        val db = ObjectBoxDB.getInstance(context)
+        val db = AchievementsDAO(context)
         try {
             val eligibleContent = db.selectEligibleContentIds();
             if (!isRegistered(3) || !isRegistered(4) || !isRegistered(5)) {

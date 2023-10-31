@@ -30,10 +30,7 @@ object DatabaseMaintenance {
         return listOf(
             this::setDefaultPropertiesOneShot,
             this::cleanContent,
-            this::cleanPropertiesOneShot1,
-            this::cleanPropertiesOneShot2,
-            this::cleanPropertiesOneShot3,
-            this::cleanPropertiesOneShot4,
+            this::cleanPropertiesOneShot,
             this::renameEmptyChapters,
             this::computeContentSize,
             this::createGroups,
@@ -61,24 +58,17 @@ object DatabaseMaintenance {
 
             // Unflag all books marked for deletion
             Timber.i("Unflag books : start")
-            var contentList = DBHelper.safeFind(db.selectAllFlaggedBooksQ())
+            var contentList = db.selectAllFlaggedBooksQ().safeFind()
             Timber.i("Unflag books : %s books detected", contentList.size)
             db.flagContentsForDeletion(contentList, false)
             Timber.i("Unflag books : done")
 
             // Unflag all books signaled as being processed
             Timber.i("Unmark books as being processed : start")
-            contentList = DBHelper.safeFind(db.selectAllProcessedBooksQ())
+            contentList = db.selectAllProcessedBooksQ().safeFind()
             Timber.i("Unmark books as being processed : %s books detected", contentList.size)
             db.markContentsAsBeingProcessed(contentList, false)
             Timber.i("Unmark books as being processed : done")
-
-            // Remove empty QueueRecords from the queue (still not sure how they appear in the first place)
-            Timber.i("Removing orphan Queue records : start")
-            val orphanIds = db.selectOrphanQueueRecordIds()
-            Timber.i("Removing orphan Queue records : %s items detected", orphanIds.size)
-            db.deleteQueueRecords(orphanIds)
-            Timber.i("Removing orphan Queue records : done")
 
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
             Timber.i("Moving back isolated items to queue : start")
@@ -98,6 +88,18 @@ object DatabaseMaintenance {
             Timber.i("Moving back isolated items to queue : done")
         } finally {
             db.cleanup()
+        }
+
+        val mdb = MaintenanceDAO(context)
+        try {
+            // Remove empty QueueRecords from the queue (still not sure how they appear in the first place)
+            Timber.i("Removing orphan Queue records : start")
+            val orphanIds = mdb.selectOrphanQueueRecordIds()
+            Timber.i("Removing orphan Queue records : %s items detected", orphanIds.size)
+            mdb.deleteQueueRecords(orphanIds)
+            Timber.i("Removing orphan Queue records : done")
+        } finally {
+            mdb.cleanup()
         }
     }
 
@@ -120,14 +122,14 @@ object DatabaseMaintenance {
         }
     }
 
-    private fun cleanPropertiesOneShot1(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
+    private fun cleanPropertiesOneShot(context: Context, emitter: (Float) -> Unit) {
+        val db = MaintenanceDAO(context)
         try {
             // Update URLs from deprecated Pururin image hosts
             Timber.i("Upgrading Pururin image hosts : start")
-            val contents = db.selectContentWithOldPururinHost()
+            var contents = db.selectContentWithOldPururinHost()
             Timber.i("Upgrading Pururin image hosts : %s books detected", contents.size)
-            val max = contents.size
+            var max = contents.size
             var pos = 1f
             for (c in contents) {
                 c.coverImageUrl = c.coverImageUrl.replace(
@@ -148,20 +150,13 @@ object DatabaseMaintenance {
                 emitter(pos++ / max)
             }
             Timber.i("Upgrading Pururin image hosts : done")
-        } finally {
-            db.cleanup()
-        }
-    }
 
-    private fun cleanPropertiesOneShot2(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
-        try {
             // Update URLs from deprecated Tsumino image covers
             Timber.i("Upgrading Tsumino covers : start")
-            val contents = db.selectContentWithOldTsuminoCovers()
+            contents = db.selectContentWithOldTsuminoCovers()
             Timber.i("Upgrading Tsumino covers : %s books detected", contents.size)
-            val max = contents.size
-            var pos = 1f
+            max = contents.size
+            pos = 1f
             for (c in contents) {
                 var url = c.coverImageUrl.replace(
                     "www.tsumino.com/Image/Thumb",
@@ -173,20 +168,13 @@ object DatabaseMaintenance {
                 emitter(pos++ / max)
             }
             Timber.i("Upgrading Tsumino covers : done")
-        } finally {
-            db.cleanup()
-        }
-    }
 
-    private fun cleanPropertiesOneShot3(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
-        try {
             // Update URLs from deprecated Hitomi image covers
             Timber.i("Upgrading Hitomi covers : start")
-            val contents = db.selectContentWithOldHitomiCovers()
+            contents = db.selectContentWithOldHitomiCovers()
             Timber.i("Upgrading Hitomi covers : %s books detected", contents.size)
-            val max = contents.size
-            var pos = 1f
+            max = contents.size
+            pos = 1f
             for (c in contents) {
                 val url =
                     c.coverImageUrl.replace("/smallbigtn/", "/webpbigtn/").replace(".jpg", ".webp")
@@ -195,21 +183,14 @@ object DatabaseMaintenance {
                 emitter(pos++ / max)
             }
             Timber.i("Upgrading Hitomi covers : done")
-        } finally {
-            db.cleanup()
-        }
-    }
 
-    private fun cleanPropertiesOneShot4(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
-        try {
-            // Update URLs from deprecated Hitomi image covers
+            // Update URLs from deprecated M18 image covers
             Timber.i("Fixing M18 covers : start")
-            var contents = db.selectDownloadedM18Books()
+            contents = db.selectDownloadedM18Books()
             contents = contents.filter { c -> isM18WrongCover(c) }
             Timber.i("Fixing M18 covers : %s books detected", contents.size)
-            val max = contents.size
-            var pos = 1f
+            max = contents.size
+            pos = 1f
             for (c in contents) {
                 val images: MutableList<ImageFile> = c.imageList.toMutableList()
                 val newCover =
@@ -233,7 +214,7 @@ object DatabaseMaintenance {
     }
 
     private fun renameEmptyChapters(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
+        val db = MaintenanceDAO(context)
         try {
             // Update URLs from deprecated Hitomi image covers
             Timber.i("Empying empty chapters : start")
@@ -268,7 +249,7 @@ object DatabaseMaintenance {
     }
 
     private fun setDefaultPropertiesOneShot(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
+        val db = MaintenanceDAO(context)
         try {
             // Set default values for new ObjectBox properties that are values as null by default (see https://github.com/objectbox/objectbox-java/issues/157)
             Timber.i("Set default ObjectBox properties : start")
@@ -281,7 +262,7 @@ object DatabaseMaintenance {
             var pos = 1f
             for (c in contents) {
                 c.isCompleted = false
-                db.updateContentObject(c)
+                db.insertContentCore(c)
                 emitter(pos++ / max)
             }
             contents = db.selectContentWithNullDlModeField()
@@ -293,7 +274,7 @@ object DatabaseMaintenance {
             pos = 1f
             for (c in contents) {
                 c.downloadMode = Content.DownloadMode.DOWNLOAD
-                db.updateContentObject(c)
+                db.insertContentCore(c)
                 emitter(pos++ / max)
             }
             contents = db.selectContentWithNullMergeField()
@@ -305,7 +286,7 @@ object DatabaseMaintenance {
             pos = 1f
             for (c in contents) {
                 c.isManuallyMerged = false
-                db.updateContentObject(c)
+                db.insertContentCore(c)
                 emitter(pos++ / max)
             }
             contents = db.selectContentWithNullDlCompletionDateField()
@@ -319,7 +300,7 @@ object DatabaseMaintenance {
                 if (ContentHelper.isInLibrary(c.status)) c.downloadCompletionDate =
                     c.downloadDate else c.downloadCompletionDate =
                     0
-                db.updateContentObject(c)
+                db.insertContentCore(c)
                 emitter(pos++ / max)
             }
             contents = db.selectContentWithInvalidUploadDate()
@@ -328,7 +309,7 @@ object DatabaseMaintenance {
             pos = 1f
             for (c in contents) {
                 c.uploadDate = c.uploadDate * 1000
-                db.updateContentObject(c)
+                db.insertContentCore(c)
                 emitter(pos++ / max)
             }
             val chapters = db.selectChapterWithNullUploadDate()
@@ -350,7 +331,7 @@ object DatabaseMaintenance {
     }
 
     private fun computeContentSize(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
+        val db = MaintenanceDAO(context)
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Computing downloaded content size : start")
@@ -381,7 +362,7 @@ object DatabaseMaintenance {
             )) if (0L == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping)
 
             // Test the existence of the "Ungrouped" custom group
-            val ungroupedCustomGroup = DBHelper.safeFind(
+            val ungroupedCustomGroup =
                 db.selectGroupsQ(
                     Grouping.CUSTOM.id,
                     null,
@@ -391,8 +372,8 @@ object DatabaseMaintenance {
                     false,
                     false,
                     -1
-                )
-            )
+                ).safeFind()
+
             if (ungroupedCustomGroup.isEmpty()) groupingsToProcess.add(Grouping.CUSTOM)
             Timber.i(
                 "Create non-existing groupings : %s non-existing groupings detected",
@@ -505,7 +486,7 @@ object DatabaseMaintenance {
     }
 
     private fun computeReadingProgress(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
+        val db = MaintenanceDAO(context)
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Computing downloaded content read progress : start")
@@ -528,7 +509,7 @@ object DatabaseMaintenance {
     }
 
     private fun reattachGroupCovers(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
+        val db = MaintenanceDAO(context)
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Reattaching group covers : start")

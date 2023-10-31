@@ -7,6 +7,7 @@ import io.objectbox.internal.ReflectionCache;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 
+@kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin has QueryX
 public class DBHelper {
 
     static <T> List<T> safeFind(QueryBuilder<T> qb) {
