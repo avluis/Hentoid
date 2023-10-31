@@ -8,16 +8,19 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 
 class DuplicatesDAO(ctx: Context) {
-    private val duplicatesDb: DuplicatesDB = DuplicatesDB.getInstance(ctx)
     private val db: ObjectBoxDB = ObjectBoxDB.getInstance(ctx)
+
+    init {
+        DuplicatesDB.init(ctx)
+    }
 
     fun cleanup() {
         db.cleanup()
-        duplicatesDb.closeThreadResources()
+        DuplicatesDB.cleanup()
     }
 
     fun getEntries(): List<DuplicateEntry> {
-        val entries = duplicatesDb.selectEntriesQ().find()
+        val entries = DuplicatesDB.selectEntriesQ().find()
 
         // Get all contents in one go
         val contentIds = entries.map { it.referenceId }
@@ -35,7 +38,7 @@ class DuplicatesDAO(ctx: Context) {
     }
 
     fun getEntriesLive(): LiveData<List<DuplicateEntry>> {
-        val livedata = ObjectBoxLiveData(duplicatesDb.selectEntriesQ())
+        val livedata = ObjectBoxLiveData(DuplicatesDB.selectEntriesQ())
 
         // Get all contents in one go
         val livedata2 = MediatorLiveData<List<DuplicateEntry>>()
@@ -48,7 +51,8 @@ class DuplicatesDAO(ctx: Context) {
     }
 
     private fun enrichWithContent(e: DuplicateEntry): DuplicateEntry {
-        val items: List<Content>? = db.selectContentById(mutableListOf(e.referenceId, e.duplicateId))
+        val items: List<Content>? =
+            db.selectContentById(mutableListOf(e.referenceId, e.duplicateId))
         if (items != null && items.size > 1) {
             e.referenceContent = items[0]
             e.duplicateContent = items[1]
@@ -57,14 +61,14 @@ class DuplicatesDAO(ctx: Context) {
     }
 
     fun clearEntries() {
-        duplicatesDb.clearEntries()
+        DuplicatesDB.clearEntries()
     }
 
     fun insertEntries(entry: List<DuplicateEntry>) {
-        duplicatesDb.insertEntries(entry)
+        DuplicatesDB.insertEntries(entry)
     }
 
     fun delete(entry: DuplicateEntry) {
-        duplicatesDb.delete(entry)
+        DuplicatesDB.delete(entry)
     }
 }
