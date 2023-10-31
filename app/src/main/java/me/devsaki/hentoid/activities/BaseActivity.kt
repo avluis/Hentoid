@@ -102,7 +102,9 @@ abstract class BaseActivity : AppCompatActivity {
             .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt()).setAutoDismiss(true)
             .build()
 
-        powerMenu.setIconColor(Achievement.colorFromType(achievement.type))
+        powerMenu.setIconColor(
+            ContextCompat.getColor(this, Achievement.colorFromType(achievement.type))
+        )
         val root: ViewGroup = findViewById(android.R.id.content)
         powerMenu.showAtLocation(root.rootView, (Gravity.BOTTOM or Gravity.RIGHT), 0, 0)
 

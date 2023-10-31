@@ -1467,8 +1467,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             )
         }
 
-        if (newSearch && query.contains(AchievementsManager.A63, true) && result.isNotEmpty())
-            AchievementsManager.trigger(63)
+        if (newSearch && query.trim().equals(
+                resources.getString(R.string.ach_63),
+                true
+            ) && result.isNotEmpty()
+        ) AchievementsManager.trigger(63)
 
         // If the update is the result of a new search, get back on top of the list
         if (newSearch) topItemPosition = 0

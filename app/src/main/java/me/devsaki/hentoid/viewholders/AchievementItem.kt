@@ -37,12 +37,15 @@ class AchievementItem(
                 if (!item.enabled) R.color.dark_gray else Achievement.colorFromType(item.achievement.type)
             icon.setImageResource(item.achievement.icon)
             icon.setColorFilter(ContextCompat.getColor(ctx, iconColor))
-            val textColor =
-                if (!item.enabled) R.color.dark_gray else R.color.white_opacity_87
+            val textColor = if (!item.enabled) R.color.dark_gray else R.color.white_opacity_87
             title.text = ctx.resources.getText(item.achievement.title)
             title.setTextColor(ContextCompat.getColor(ctx, textColor))
-            val descRes = if (item.achievement.himitsu) R.string.what else item.achievement.description
-            desc.text = ctx.resources.getText(descRes)
+            val descRes =
+                if (item.achievement.himitsu && !item.enabled) R.string.what else item.achievement.description
+            val descTxt = if (63 == item.achievement.id)
+                ctx.resources.getString(descRes, ctx.resources.getString(R.string.ach_63))
+            else ctx.resources.getString(descRes)
+            desc.text = descTxt
             desc.setTextColor(ContextCompat.getColor(ctx, textColor))
         }
 

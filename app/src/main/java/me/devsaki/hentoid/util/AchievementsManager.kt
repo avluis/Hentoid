@@ -18,8 +18,6 @@ import kotlin.math.pow
 
 object AchievementsManager {
 
-    const val A63 = "\u0077\u0061\u006C\u0064\u006F"
-
     private val syncObject = Any()
 
     private var storageCache = Settings.achievements
@@ -57,16 +55,16 @@ object AchievementsManager {
                 )
             }
         }
-        result[63] = Achievement(
-            63,
+        result[62] = Achievement(
+            62,
             Achievement.Type.GOLD,
             true,
             R.string.ach_name_62,
             R.string.ach_desc_62,
             R.drawable.ic_warning // TODO special icon
         )
-        result[62] = Achievement(
-            62,
+        result[63] = Achievement(
+            63,
             Achievement.Type.GOLD,
             true,
             R.string.ach_name_63,

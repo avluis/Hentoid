@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.database.domains
 
-import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import me.devsaki.hentoid.R
@@ -20,7 +20,7 @@ data class Achievement(
     }
 
     companion object {
-        @ColorInt
+        @ColorRes
         fun colorFromType(type: Type): Int {
             return when (type) {
                 Type.BRONZE -> R.color.bronze

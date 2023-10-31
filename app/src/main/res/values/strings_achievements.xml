@@ -57,8 +57,9 @@
     <string name="ach_name_28">Optimus Prime</string>
     <string name="ach_desc_28">Use the Transform feature on more than 100 pages in one shot</string>
 
-    <string name="ach_name_63">Do the funky chicken</string>
-    <string name="ach_desc_63">Do the hoo-hah</string>
-    <string name="ach_name_62">Do the chicky funkun</string>
-    <string name="ach_desc_62">Do the boo-hah</string>
+    <string name="ach_63">\u0057\u0061\u006C\u0064\u006F</string>
+    <string name="ach_name_63">Here You Are!</string>
+    <string name="ach_desc_63">Find %s</string>
+    <string name="ach_name_62">Virtual Kanojo</string>
+    <string name="ach_desc_62">Make the app come</string>
 </resources>
