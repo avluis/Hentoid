@@ -404,7 +404,7 @@ public class ImageFile {
 
     public long uniqueHash() {
         if (0 == uniqueHash)
-            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId() + "." + isForceRefresh).getBytes());
+            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId()).getBytes());
         return uniqueHash;
     }
 }

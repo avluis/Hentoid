@@ -181,24 +181,24 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        indexRefreshDebouncer = Debouncer(this.lifecycleScope, 75) { startingIndex: Int ->
+        indexRefreshDebouncer = Debouncer(lifecycleScope, 75) { startingIndex ->
             applyStartingIndexInternal(startingIndex)
         }
-        slideshowSliderDebouncer = Debouncer(this.lifecycleScope, 2500) { sliderIndex: Int ->
+        slideshowSliderDebouncer = Debouncer(lifecycleScope, 2500) { sliderIndex ->
             onSlideShowSliderChosen(sliderIndex)
         }
-        processPositionDebouncer = Debouncer(this.lifecycleScope, 75) { pair: Pair<Int, Int> ->
+        processPositionDebouncer = Debouncer(lifecycleScope, 75) { pair ->
             onPageChanged(pair.left, pair.right)
         }
-        rescaleDebouncer = Debouncer(this.lifecycleScope, 100) { scale: Float ->
+        rescaleDebouncer = Debouncer(lifecycleScope, 100) { scale ->
             adapter.multiplyScale(scale)
             if (!firstZoom) displayZoomLevel(scale)
             else firstZoom = false
         }
-        adapterRescaleDebouncer = Debouncer(this.lifecycleScope, 100) { scale: Float ->
+        adapterRescaleDebouncer = Debouncer(lifecycleScope, 100) { scale ->
             displayZoomLevel(scale)
         }
-        zoomLevelDebouncer = Debouncer(this.lifecycleScope, 500) {
+        zoomLevelDebouncer = Debouncer(lifecycleScope, 500) {
             hideZoomLevel()
         }
         Preferences.registerPrefsChangedListener(prefsListener)
@@ -938,6 +938,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onSharedPreferenceChanged(key: String?) {
         if (null == key) return
+        Timber.v("Prefs change detected : %s", key)
         when (key) {
             Preferences.Key.VIEWER_BROWSE_MODE, Preferences.Key.VIEWER_HOLD_TO_ZOOM, Preferences.Key.VIEWER_CONTINUOUS -> onBrowseModeChange()
             Preferences.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()
@@ -1157,9 +1158,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 if (VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(
                         bookPreferences
                     )
-                ) recyclerView.scrollToPosition(absImageIndex + 1) else llm.scrollToPositionWithOffset(
-                    absImageIndex + 1, 0
-                )
+                ) recyclerView.scrollToPosition(absImageIndex + 1)
+                else llm.scrollToPositionWithOffset(absImageIndex + 1, 0)
             }
         }
     }
@@ -1173,9 +1173,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             return
         }
         binding?.apply {
-            if (Preferences.isReaderTapTransitions()) recyclerView.smoothScrollToPosition(
-                absImageIndex - 1
-            ) else recyclerView.scrollToPosition(absImageIndex - 1)
+            if (Preferences.isReaderTapTransitions())
+                recyclerView.smoothScrollToPosition(absImageIndex - 1)
+            else recyclerView.scrollToPosition(absImageIndex - 1)
         }
     }
 
