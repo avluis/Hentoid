@@ -348,7 +348,7 @@ public class ImageFile {
     }
 
     public boolean isReadable() {
-        return !name.equals(Consts.THUMB_FILE_NAME);
+        return !name.equals(Consts.THUMB_FILE_NAME) && !name.startsWith(Consts.EXT_THUMB_FILE_PREFIX);
     }
 
     public String getUsableUri() {

@@ -599,6 +599,7 @@ public final class ContentHelper {
                             }
                             Timber.i(">> Set cover for %s", content.getTitle());
                             content.getCover().setFileUri(uri.toString());
+                            content.getCover().setName(uri.getLastPathSegment());
                             dao.replaceImageList(newContentId, content.getImageFiles());
                         }
                     }

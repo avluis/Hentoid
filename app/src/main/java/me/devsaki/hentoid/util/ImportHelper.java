@@ -745,8 +745,8 @@ public class ImportHelper {
      */
     public static void createCover(@NonNull final List<ImageFile> images) {
         if (!images.isEmpty()) {
-            // Set the 1st element as cover
-            images.get(0).setIsCover(true);
+            // Create a new cover entry from the 1st element
+            images.add(0, new ImageFile(images.get(0)).setIsCover(true));
         }
     }
 
