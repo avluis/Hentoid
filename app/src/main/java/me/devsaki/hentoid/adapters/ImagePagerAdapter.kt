@@ -276,8 +276,8 @@ class ImagePagerAdapter(val context: Context) :
 
     private fun getDisplayParamsForPosition(position: Int): ReaderPagerFragment.DisplayParams? {
         val img = getItem(position)
-        if (isDetached(img)) return null
-        val content = getItem(position).content.target ?: return null
+        if (isDetached(img.content.target)) return null
+        val content = img.content.target ?: return null
         val bookPreferences = content.bookPreferences
         return ReaderPagerFragment.DisplayParams(
             Preferences.getContentBrowseMode(bookPreferences),

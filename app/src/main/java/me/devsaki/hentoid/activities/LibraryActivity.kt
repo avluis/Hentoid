@@ -840,7 +840,7 @@ class LibraryActivity : BaseActivity() {
      * Callback for any change in Preferences
      */
     private fun onSharedPreferenceChanged(key: String?) {
-        Timber.i("Prefs change detected : %s", key)
+        Timber.v("Prefs change detected : %s", key)
         AchievementsManager.checkPrefs()
         when (key) {
             Preferences.Key.COLOR_THEME,

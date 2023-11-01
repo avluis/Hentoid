@@ -12,6 +12,7 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.core.Consts;
+import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -85,8 +86,13 @@ public class ImageFile {
         this.favourite = img.favourite;
         this.isCover = img.isCover;
         this.status = img.status;
-        this.content.setTargetId(img.content.getTargetId());
-        this.chapter.setTargetId(img.chapter.getTargetId());
+        if (!DBHelper.isDetached(img)) {
+            this.content.setTarget(img.content.getTarget());
+            this.chapter.setTarget(img.chapter.getTarget());
+        } else {
+            this.content.setTargetId(img.content.getTargetId());
+            this.chapter.setTargetId(img.chapter.getTargetId());
+        }
         this.mimeType = img.mimeType;
         this.size = img.size;
         this.imageHash = img.imageHash;

@@ -18,6 +18,7 @@ import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
+import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Helper;
@@ -66,16 +67,19 @@ public class Attribute {
         this.id = data.id;
         this.name = data.name;
         this.type = data.type;
-        data.locations.clear();
-        data.locations.addAll(this.locations); // this isn't a deep copy
-        data.group.setTargetId(this.group.getTargetId());
-
+        this.locations.clear();
+        this.locations.addAll(data.locations); // this isn't a deep copy
+        if (!DBHelper.isDetached(data)) {
+            this.group.setTarget(data.group.getTarget());
+        } else {
+            this.group.setTargetId(data.group.getTargetId());
+        }
         this.excluded = data.excluded;
         this.isNew = data.isNew;
         this.count = data.count;
         this.externalId = data.externalId;
-        data.contents.clear();
-        data.contents.addAll(this.contents); // this isn't a deep copy
+        this.contents.clear();
+        this.contents.addAll(data.contents); // this isn't a deep copy
         this.displayName = data.displayName;
         this.uniqueHash = data.uniqueHash;
     }
