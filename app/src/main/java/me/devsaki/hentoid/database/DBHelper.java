@@ -6,6 +6,8 @@ import java.util.List;
 import io.objectbox.internal.ReflectionCache;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
+import io.objectbox.relation.ToMany;
+import io.objectbox.relation.ToOne;
 
 @kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin has QueryX
 public class DBHelper {
@@ -70,13 +72,36 @@ public class DBHelper {
         }
     }
 
-    // Inspired by ToMany.ensureBoxes
-    public static boolean isDetached(Object entity) {
+    // Inspired by ToOne/ToMany.ensureBoxes
+    public static <T> boolean isReachable(Object entity, ToOne<T> relationship) {
+        if (relationship.isResolved()) return true;
         Field boxStoreField = ReflectionCache.getInstance().getField(entity.getClass(), "__boxStore");
         try {
             return (null == boxStoreField.get(entity));
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static <T> boolean isReachable(Object entity, ToMany<T> relationship) {
+        if (relationship.isResolved()) return true;
+        Field boxStoreField = ReflectionCache.getInstance().getField(entity.getClass(), "__boxStore");
+        try {
+            return (null == boxStoreField.get(entity));
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T reach(Object entity, ToOne<T> relationship) {
+        if (!relationship.isResolved()) {
+            Field boxStoreField = ReflectionCache.getInstance().getField(entity.getClass(), "__boxStore");
+            try {
+                if (null == boxStoreField.get(entity)) return null;
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return relationship.getTarget();
     }
 }

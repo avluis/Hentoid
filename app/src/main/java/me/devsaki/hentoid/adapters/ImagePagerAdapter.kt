@@ -32,7 +32,7 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
 import me.devsaki.hentoid.customssiv.ImageSource
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.database.isDetached
+import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.gles_renderer.GPUImage
@@ -276,14 +276,16 @@ class ImagePagerAdapter(val context: Context) :
 
     private fun getDisplayParamsForPosition(position: Int): ReaderPagerFragment.DisplayParams? {
         val img = getItem(position)
-        if (isDetached(img.content.target)) return null
-        val content = img.content.target ?: return null
-        val bookPreferences = content.bookPreferences
-        return ReaderPagerFragment.DisplayParams(
-            Preferences.getContentBrowseMode(bookPreferences),
-            Preferences.getContentDisplayMode(bookPreferences),
-            Preferences.isContentSmoothRendering(bookPreferences)
-        )
+        val content = img.content.reach(img)
+        if (content != null) {
+            val bookPreferences = content.bookPreferences
+            return ReaderPagerFragment.DisplayParams(
+                Preferences.getContentBrowseMode(bookPreferences),
+                Preferences.getContentDisplayMode(bookPreferences),
+                Preferences.isContentSmoothRendering(bookPreferences)
+            )
+        }
+        return null
     }
 
     fun getDimensionsAtPosition(position: Int): Point {

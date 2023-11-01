@@ -86,11 +86,14 @@ public class ImageFile {
         this.favourite = img.favourite;
         this.isCover = img.isCover;
         this.status = img.status;
-        if (!DBHelper.isDetached(img)) {
+        if (DBHelper.isReachable(img, img.content)) {
             this.content.setTarget(img.content.getTarget());
-            this.chapter.setTarget(img.chapter.getTarget());
         } else {
             this.content.setTargetId(img.content.getTargetId());
+        }
+        if (DBHelper.isReachable(img, img.chapter)) {
+            this.chapter.setTarget(img.chapter.getTarget());
+        } else {
             this.chapter.setTargetId(img.chapter.getTargetId());
         }
         this.mimeType = img.mimeType;

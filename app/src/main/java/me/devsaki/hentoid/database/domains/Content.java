@@ -209,7 +209,7 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        if (attributes != null && (!DBHelper.isDetached(this) || !attributes.isEmpty()))
+        if (attributes != null && (!DBHelper.isReachable(this, attributes) || !attributes.isEmpty()))
             for (Attribute a : attributes) result.add(a);
         return result;
     }
@@ -658,7 +658,7 @@ public class Content implements Serializable {
     }
 
     public List<ImageFile> getImageList() {
-        return (imageFiles != null && !DBHelper.isDetached(this)) ? imageFiles : Collections.emptyList();
+        return (imageFiles != null && !DBHelper.isReachable(this, imageFiles)) ? imageFiles : Collections.emptyList();
     }
 
     public Content setImageFiles(List<ImageFile> imageFiles) {
@@ -953,7 +953,7 @@ public class Content implements Serializable {
     }
 
     public List<Chapter> getChaptersList() {
-        return (chapters != null && !DBHelper.isDetached(this)) ? chapters : Collections.emptyList();
+        return (chapters != null && !DBHelper.isReachable(this, chapters)) ? chapters : Collections.emptyList();
     }
 
     public void setChapters(List<Chapter> chapters) {

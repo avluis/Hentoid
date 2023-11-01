@@ -69,7 +69,7 @@ public class Attribute {
         this.type = data.type;
         this.locations.clear();
         this.locations.addAll(data.locations); // this isn't a deep copy
-        if (!DBHelper.isDetached(data)) {
+        if (DBHelper.isReachable(data, data.group)) {
             this.group.setTarget(data.group.getTarget());
         } else {
             this.group.setTargetId(data.group.getTargetId());

@@ -264,15 +264,17 @@ class ReaderViewModel(
 
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
-        if (forceImgReload || !theContent.isArchive) {
+        if (forceImgReload) {
             viewModelScope.launch {
                 if (forceImgReload) {
                     newImages.forEach { it.isForceRefresh = true }
                     forceImgReload = false
                 }
-                withContext(Dispatchers.IO) {
-                    processStorageImages(theContent, newImages)
-                    cacheJson(getApplication<Application>().applicationContext, theContent)
+                if (!theContent.isArchive) {
+                    withContext(Dispatchers.IO) {
+                        processStorageImages(theContent, newImages)
+                        cacheJson(getApplication<Application>().applicationContext, theContent)
+                    }
                 }
                 processImages(theContent, -1, newImages)
             }

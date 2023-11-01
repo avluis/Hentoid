@@ -122,7 +122,7 @@ public class Chapter {
     }
 
     public List<ImageFile> getImageList() {
-        return (imageFiles != null && !DBHelper.isDetached(this)) ? imageFiles : Collections.emptyList();
+        return (imageFiles != null && DBHelper.isReachable(this, imageFiles)) ? imageFiles : Collections.emptyList();
     }
 
     public List<ImageFile> getReadableImageFiles() {

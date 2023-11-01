@@ -3,6 +3,8 @@ package me.devsaki.hentoid.database
 import io.objectbox.internal.ReflectionCache
 import io.objectbox.query.Query
 import io.objectbox.query.QueryBuilder
+import io.objectbox.relation.ToMany
+import io.objectbox.relation.ToOne
 
 fun <T> QueryBuilder<T>.safeFind(): List<T> {
     return this.build().safeFind()
@@ -44,12 +46,35 @@ fun <T> Query<T>.safeRemove() {
     this.use { this.remove() }
 }
 
-// Inspired by ToMany.ensureBoxes
-fun isDetached(entity: Any): Boolean {
+// Inspired by ToOne/ToMany.ensureBoxes
+fun <T> ToOne<T>.isReachable(entity: Any): Boolean {
+    if (this.isResolved) return true
     val boxStoreField = ReflectionCache.getInstance().getField(entity.javaClass, "__boxStore")
     return try {
         null == boxStoreField[entity]
     } catch (e: IllegalAccessException) {
-        throw RuntimeException(e)
+        throw java.lang.RuntimeException(e)
     }
+}
+
+fun <T> ToMany<T>.isReachable(entity: Any): Boolean {
+    if (this.isResolved) return true
+    val boxStoreField = ReflectionCache.getInstance().getField(entity.javaClass, "__boxStore")
+    return try {
+        null == boxStoreField[entity]
+    } catch (e: IllegalAccessException) {
+        throw java.lang.RuntimeException(e)
+    }
+}
+
+fun <T> ToOne<T>.reach(entity: Any): T? {
+    if (!this.isResolved) {
+        val boxStoreField = ReflectionCache.getInstance().getField(entity.javaClass, "__boxStore")
+        try {
+            if (null == boxStoreField[entity]) return null
+        } catch (e: IllegalAccessException) {
+            throw java.lang.RuntimeException(e)
+        }
+    }
+    return this.target
 }
