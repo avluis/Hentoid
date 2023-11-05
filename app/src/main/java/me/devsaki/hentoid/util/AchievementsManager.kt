@@ -131,7 +131,8 @@ object AchievementsManager {
                 if (maxDiff >= 72 * 60 * 60 * 1000) registerAndSignal(17)
             }
             if (!isRegistered(19)) {
-                val invisibleSites = Site.entries.filter { e -> !e.isVisible }
+                val invisibleSites =
+                    Site.entries.filter { e -> !e.isVisible }.filterNot { e -> e == Site.NONE }
                 val count = db.countWithSitesOr(eligibleContent, invisibleSites)
                 if (count >= 10) registerAndSignal(19)
             }
