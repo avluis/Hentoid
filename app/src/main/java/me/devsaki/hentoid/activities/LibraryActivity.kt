@@ -877,7 +877,7 @@ class LibraryActivity : BaseActivity() {
         val targetGrouping = Grouping.searchById(targetGroupingId)
         if (grouping.id != targetGroupingId) {
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
-            if (!targetGrouping.canReorderGroups && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
+            if (!targetGrouping.canReorderBooks && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
                 Preferences.setContentSortField(Preferences.Default.ORDER_CONTENT_FIELD)
             }
             // Reset custom group ordering if reverting to a grouping where that doesn't apply
