@@ -82,7 +82,7 @@ object AchievementsManager {
 
     fun checkStorage(context: Context) {
         if (!isRegistered(18)) {
-            if (StorageHelper.isLowDeviceStorage(context)) registerAndSignal(18)
+            if (StorageHelper.isLowDeviceStorage(context, 98)) registerAndSignal(18)
         }
     }
 
@@ -123,7 +123,7 @@ object AchievementsManager {
                 val count = db.countWithTagsOr(eligibleContent, "stockings")
                 if (count >= 20) registerAndSignal(15)
             }
-            if (!isRegistered(17)) {
+            if (!isRegistered(17) && eligibleContent.isNotEmpty()) {
                 val newestRead = db.selectNewestRead()
                 val newestDownload = db.selectNewestDownload()
                 val now = Instant.now().toEpochMilli()
