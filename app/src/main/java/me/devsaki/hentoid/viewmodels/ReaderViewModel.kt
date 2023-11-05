@@ -172,6 +172,7 @@ class ReaderViewModel(
                 if (contentIds.isEmpty()) contentIds.add(contentId)
                 loadContent(loadedContent, pageNumber, forceImageUIReload)
             }
+            AchievementsManager.trigger(29)
         }
     }
 

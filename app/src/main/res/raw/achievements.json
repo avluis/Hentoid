@@ -102,11 +102,19 @@
     },
     {
       "id": 26,
-      "type": "BRONZE"
+      "type": "GOLD"
     },
     {
       "id": 27,
+      "type": "BRONZE"
+    },
+    {
+      "id": 28,
       "type": "SILVER"
+    },
+    {
+      "id": 29,
+      "type": "BRONZE"
     }
   ]
 }
