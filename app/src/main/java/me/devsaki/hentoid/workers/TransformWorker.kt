@@ -138,13 +138,15 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             dao.insertContentCore(content)
 
             // Achievements
-            if (upscaler != null) { // AI upscale
-                Settings.nbAIRescale = Settings.nbAIRescale + 1
-                if (Settings.nbAIRescale >= 2) AchievementsManager.trigger(20)
+            if (!isStopped) {
+                if (upscaler != null) { // AI upscale
+                    Settings.nbAIRescale = Settings.nbAIRescale + 1
+                    if (Settings.nbAIRescale >= 2) AchievementsManager.trigger(20)
+                }
+                val pagesTotal = images.count { i -> i.isReadable }
+                if (pagesTotal >= 50) AchievementsManager.trigger(27)
+                if (pagesTotal >= 100) AchievementsManager.trigger(28)
             }
-            val pagesTotal = images.count { i -> i.isReadable }
-            if (pagesTotal >= 50) AchievementsManager.trigger(27)
-            if (pagesTotal >= 100) AchievementsManager.trigger(28)
         } else {
             nbKO += images.size
         }
