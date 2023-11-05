@@ -81,7 +81,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val params = moshi.adapter(ImageTransform.Params::class.java).fromJson(paramsStr)
         require(params != null)
 
-        if (3 == params.resizeMethod) { // AI upscale
+        if (params.resizeEnabled && 3 == params.resizeMethod) { // AI upscale
             upscaler = AiUpscaler()
             upscaler!!.init(
                 applicationContext.resources.assets,
@@ -203,8 +203,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
         BitmapFactory.decodeByteArray(targetData, 0, targetData.size, metadataOpts)
         val targetDims = Point(metadataOpts.outWidth, metadataOpts.outHeight)
-        val targetMime =
-            ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
+        val targetMime = ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
         val targetName = img.name + "." + FileHelper.getExtensionFromMimeType(targetMime)
         val newFile = sourceName != targetName
 
@@ -293,9 +292,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     private fun notifyProcessProgress() {
         notificationManager.notify(
             TransformProgressNotification(
-                nbOK + nbKO,
-                totalItems,
-                globalProgress.getGlobalProgress()
+                nbOK + nbKO, totalItems, globalProgress.getGlobalProgress()
             )
         )
     }
