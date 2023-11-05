@@ -128,7 +128,7 @@ class AchievementsDAO(ctx: Context) {
     fun hasAtLeastCHapters(eligibleContent: Set<Long>, max: Int): Boolean {
         eligibleContent.forEach {
             val nbChaps =
-                db.store.boxFor<Chapter>(Chapter::class.java).query()
+                db.store.boxFor(Chapter::class.java).query()
                     .equal(Chapter_.contentId, it).safeCount()
             if (nbChaps >= max) return true
         }

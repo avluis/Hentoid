@@ -9,7 +9,7 @@ import io.objectbox.converter.PropertyConverter;
  */
 public enum StatusContent {
 
-    SAVED(0, "Saved"), // Content webpage has been accessed by the browser -> content is "pre-saved" to the DB and will be deleted upon next app restart if not queued
+    SAVED(0, "Saved"), // Content webpage has been accessed by the browser but hasn't been queued yet -> content is "pre-saved" to the DB and will be deleted upon next app restart if not queued
     DOWNLOADED(1, "Downloaded"), // Content has been downloaded successfully
     DOWNLOADING(2, "Downloading"), // Content is in Hentoid's download queue and is being downloaded
     PAUSED(3, "Paused"), // Content is in Hentoid's download queue and is not being downloaded
