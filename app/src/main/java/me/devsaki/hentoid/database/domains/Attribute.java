@@ -67,8 +67,12 @@ public class Attribute {
         this.id = data.id;
         this.name = data.name;
         this.type = data.type;
-        this.locations.clear();
-        this.locations.addAll(data.locations); // this isn't a deep copy
+        if (DBHelper.isReachable(this, locations)) {
+            this.locations.clear();
+            this.locations.addAll(data.locations); // this isn't a deep copy
+        } else {
+            this.locations = data.locations;
+        }
         if (DBHelper.isReachable(data, data.group)) {
             this.group.setTarget(data.group.getTarget());
         } else {
@@ -78,8 +82,12 @@ public class Attribute {
         this.isNew = data.isNew;
         this.count = data.count;
         this.externalId = data.externalId;
-        this.contents.clear();
-        this.contents.addAll(data.contents); // this isn't a deep copy
+        if (DBHelper.isReachable(this, contents)) {
+            this.contents.clear();
+            this.contents.addAll(data.contents); // this isn't a deep copy
+        } else {
+            this.contents = data.contents;
+        }
         this.displayName = data.displayName;
         this.uniqueHash = data.uniqueHash;
     }

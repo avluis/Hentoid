@@ -51,7 +51,7 @@ fun <T> ToOne<T>.isReachable(entity: Any): Boolean {
     if (this.isResolved) return true
     val boxStoreField = ReflectionCache.getInstance().getField(entity.javaClass, "__boxStore")
     return try {
-        null == boxStoreField[entity]
+        null != boxStoreField[entity]
     } catch (e: IllegalAccessException) {
         throw java.lang.RuntimeException(e)
     }
@@ -61,7 +61,7 @@ fun <T> ToMany<T>.isReachable(entity: Any): Boolean {
     if (this.isResolved) return true
     val boxStoreField = ReflectionCache.getInstance().getField(entity.javaClass, "__boxStore")
     return try {
-        null == boxStoreField[entity]
+        null != boxStoreField[entity]
     } catch (e: IllegalAccessException) {
         throw java.lang.RuntimeException(e)
     }

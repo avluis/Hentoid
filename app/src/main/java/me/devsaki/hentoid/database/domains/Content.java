@@ -18,7 +18,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -209,8 +208,8 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        if (attributes != null && (!DBHelper.isReachable(this, attributes) || !attributes.isEmpty()))
-            for (Attribute a : attributes) result.add(a);
+        List<Attribute> list = DBHelper.reach(this, attributes);
+        for (Attribute a : list) result.add(a);
         return result;
     }
 
@@ -658,7 +657,7 @@ public class Content implements Serializable {
     }
 
     public List<ImageFile> getImageList() {
-        return (imageFiles != null && !DBHelper.isReachable(this, imageFiles)) ? imageFiles : Collections.emptyList();
+        return DBHelper.reach(this, imageFiles);
     }
 
     public Content setImageFiles(List<ImageFile> imageFiles) {
@@ -953,7 +952,7 @@ public class Content implements Serializable {
     }
 
     public List<Chapter> getChaptersList() {
-        return (chapters != null && !DBHelper.isReachable(this, chapters)) ? chapters : Collections.emptyList();
+        return DBHelper.reach(this, chapters);
     }
 
     public void setChapters(List<Chapter> chapters) {
