@@ -115,6 +115,10 @@
     {
       "id": 29,
       "type": "BRONZE"
+    },
+    {
+      "id": 30,
+      "type": "SILVER"
     }
   ]
 }

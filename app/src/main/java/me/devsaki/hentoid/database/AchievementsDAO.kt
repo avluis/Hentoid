@@ -97,7 +97,7 @@ class AchievementsDAO(ctx: Context) {
     }
 
     fun countWithSitesOr(eligibleContent: Set<Long>, sites: List<Site>): Long {
-        var condition: QueryCondition<Content?> = Content_.site.equal(sites[0].code)
+        var condition: QueryCondition<Content> = Content_.site.equal(sites[0].code)
         for (i in 1..<sites.size) condition = condition.or(Content_.site.equal(sites[i].code))
         val contents = db.store.boxFor(Content::class.java).query(condition).safeFind()
         val linkedContents = contents.map { obj -> obj.id }.toHashSet()
@@ -117,6 +117,14 @@ class AchievementsDAO(ctx: Context) {
         val c = db.store.boxFor(Content::class.java).query()
             .orderDesc(Content_.downloadDate).safeFindFirst()
         return c?.downloadDate ?: 0
+    }
+
+    fun selectOldestUpload(): Long {
+        val condition: QueryCondition<Content> = Content_.uploadDate.greater(0)
+        val c = db.store.boxFor(Content::class.java).query(condition)
+            .order(Content_.uploadDate)
+            .safeFindFirst()
+        return c?.uploadDate ?: 0
     }
 
     fun countQueuedBooks(): Long {

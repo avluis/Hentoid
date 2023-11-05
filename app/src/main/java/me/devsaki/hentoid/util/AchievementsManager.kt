@@ -88,6 +88,7 @@ object AchievementsManager {
 
     fun checkCollection(context: Context) {
         val db = AchievementsDAO(context)
+        val now = Instant.now().toEpochMilli()
         try {
             val eligibleContent = db.selectEligibleContentIds();
             if (!isRegistered(3) || !isRegistered(4) || !isRegistered(5)) {
@@ -126,7 +127,6 @@ object AchievementsManager {
             if (!isRegistered(17) && eligibleContent.isNotEmpty()) {
                 val newestRead = db.selectNewestRead()
                 val newestDownload = db.selectNewestDownload()
-                val now = Instant.now().toEpochMilli()
                 val maxDiff = now - max(newestRead, newestDownload)
                 if (maxDiff >= 72 * 60 * 60 * 1000) registerAndSignal(17)
             }
@@ -159,6 +159,11 @@ object AchievementsManager {
             if (!isRegistered(26)) {
                 val count = db.countQueuedBooks()
                 if (count > 100) registerAndSignal(26)
+            }
+            if (!isRegistered(30)) {
+                val maxDiff =
+                    (now - db.selectOldestUpload()) / (365L * 24 * 60 * 60 * 1000) // Years
+                if (maxDiff >= 1) registerAndSignal(30)
             }
         } finally {
             db.cleanup()
