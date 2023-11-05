@@ -100,7 +100,7 @@ public class DBHelper {
 
     public static <T> List<T> reach(Object entity, ToMany<T> relationship) {
         if (relationship != null && (!relationship.isEmpty() || DBHelper.isReachable(entity, relationship)))
-            return relationship.stream().toList();
+            return relationship;
         return Collections.emptyList();
     }
 
