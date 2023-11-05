@@ -11,7 +11,6 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.fragments.reader.ReaderGalleryFragment
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
-import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
