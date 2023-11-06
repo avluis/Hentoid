@@ -93,21 +93,19 @@ object AchievementsManager {
             val eligibleContent = db.selectEligibleContentIds();
             if (!isRegistered(3) || !isRegistered(4) || !isRegistered(5)) {
                 val readPages = db.selectTotalReadPages()
-                if (readPages >= 5000) registerAndSignal(5)
-                if (readPages >= 1000) registerAndSignal(4)
-                if (readPages >= 500) registerAndSignal(3)
+                if (!isRegistered(5) && readPages >= 5000) registerAndSignal(5)
+                if (!isRegistered(4) && readPages >= 1000) registerAndSignal(4)
+                if (!isRegistered(3) && readPages >= 500) registerAndSignal(3)
             }
             if (!isRegistered(6) || !isRegistered(7) || !isRegistered(8)) {
                 val largestArtist = db.selectLargestArtist(eligibleContent, 50)
-                if (largestArtist >= 50) registerAndSignal(8)
-                if (largestArtist >= 30) registerAndSignal(7)
-                if (largestArtist >= 10) registerAndSignal(6)
+                if (!isRegistered(8) && largestArtist >= 50) registerAndSignal(8)
+                if (!isRegistered(7) && largestArtist >= 30) registerAndSignal(7)
+                if (!isRegistered(6) && largestArtist >= 10) registerAndSignal(6)
             }
-            if (!isRegistered(9) || !isRegistered(10) || !isRegistered(11)) {
-                if (eligibleContent.size >= 1000) registerAndSignal(9)
-                if (eligibleContent.size >= 2000) registerAndSignal(10)
-                if (eligibleContent.size >= 5000) registerAndSignal(11)
-            }
+            if (!isRegistered(9) && eligibleContent.size >= 1000) registerAndSignal(9)
+            if (!isRegistered(10) && eligibleContent.size >= 2000) registerAndSignal(10)
+            if (!isRegistered(11) && eligibleContent.size >= 5000) registerAndSignal(11)
             if (!isRegistered(12)) {
                 val count = db.countWithTagsOr(eligibleContent, "netorare", "ntr")
                 if (count >= 20) registerAndSignal(12)
