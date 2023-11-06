@@ -177,6 +177,13 @@
         app:layout_constraintTop_toTopOf="@id/ivPages"
         tools:text="124 MB" />
 
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/horizontal_barrier"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="ivStorage,ivChapters,ivPages " />
+
     <View
         android:id="@+id/divider"
         style="@style/Divider"
@@ -184,7 +191,7 @@
         android:layout_marginTop="2dp"
         app:layout_constraintEnd_toEndOf="@id/tvArtist"
         app:layout_constraintStart_toStartOf="@id/tvArtist"
-        app:layout_constraintTop_toBottomOf="@id/ivPages" />
+        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier" />
 
     <TextView
         android:id="@+id/tvTags"
