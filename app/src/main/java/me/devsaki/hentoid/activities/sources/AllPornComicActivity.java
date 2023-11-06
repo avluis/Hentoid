@@ -4,8 +4,10 @@ import me.devsaki.hentoid.enums.Site;
 
 public class AllPornComicActivity extends BaseWebActivity {
 
+    public static final String GALLERY_PATTERN = "allporncomic.com/porncomic/[%\\w\\-]+/$";
+
     private static final String DOMAIN_FILTER = "allporncomic.com";
-    private static final String[] GALLERY_FILTER = {"allporncomic.com/porncomic/[%\\w\\-]+/$"};
+    private static final String[] GALLERY_FILTER = {GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "[%\\w\\-]+/$")};
     private static final String[] JS_WHITELIST = {DOMAIN_FILTER + "/cdn", DOMAIN_FILTER + "/wp"};
     private static final String[] JS_CONTENT_BLACKLIST = {"var exoloader;", "popunder"};
     private static final String[] AD_ELEMENTS = {"iframe", ".c-ads"};
