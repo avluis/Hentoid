@@ -74,7 +74,7 @@ class ProgressDialogFragment : DialogFragment() {
                 )
                 bar.progress = nbProcessed
             }
-            if (ProcessEvent.Type.COMPLETE == event.eventType || nbProcessed == event.elementsTotal) {
+            if (ProcessEvent.Type.COMPLETE == event.eventType || (nbProcessed > 0 && nbProcessed == event.elementsTotal)) {
                 dismissAllowingStateLoss()
             }
         }

@@ -326,10 +326,10 @@ class MetaImportDialogFragment : DialogFragment() {
                     ),
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
+                // Dismiss after 3s, for the user to be able to see the snackbar
+                Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 3000)
             }
         }
-        // Dismiss after 3s, for the user to be able to see the snackbar
-        Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 3000)
     }
 
     /**
