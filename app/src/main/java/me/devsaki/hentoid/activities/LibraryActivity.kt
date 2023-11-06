@@ -889,9 +889,9 @@ class LibraryActivity : BaseActivity() {
             if (targetGroupingId != Grouping.FLAT.id) goBackToGroups()
 
             // Update screen display if needed (flat <-> the rest)
-            if (grouping == Grouping.FLAT || targetGroupingId == Grouping.FLAT.id) updateDisplay(
-                targetGroupingId
-            )
+            if (grouping == Grouping.FLAT || targetGroupingId == Grouping.FLAT.id)
+                updateDisplay(targetGroupingId)
+
             grouping = targetGrouping
             updateToolbar()
         }

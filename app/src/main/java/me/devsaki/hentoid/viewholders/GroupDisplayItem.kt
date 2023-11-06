@@ -102,9 +102,9 @@ class GroupDisplayItem(
                 if (intValue != null) item.group.rating = intValue
             }
 
-            if (item.group.isBeingProcessed) baseLayout.startAnimation(
-                BlinkAnimation(500, 250)
-            ) else baseLayout.clearAnimation()
+            if (item.group.isBeingProcessed)
+                baseLayout.startAnimation(BlinkAnimation(500, 250))
+            else baseLayout.clearAnimation()
 
             selectionBorder?.isVisible = item.isSelected
 
@@ -125,8 +125,8 @@ class GroupDisplayItem(
 
             if (ivCover != null) {
                 var coverContent: Content? = null
-                if (!item.group.coverContent.isNull) coverContent =
-                    item.group.coverContent.target else if (!item.group.items.isEmpty()) {
+                if (!item.group.coverContent.isNull) coverContent = item.group.coverContent.target
+                else if (!item.group.items.isEmpty()) {
                     if (item.group.items[0].content.isResolved) {
                         val c = item.group.items[0].content.target
                         if (c != null) coverContent = c
@@ -149,8 +149,6 @@ class GroupDisplayItem(
 
             ivRating.isVisible = (!isGrid || Settings.libraryDisplayGridRating)
             ivRating.setImageResource(ContentHelper.getRatingResourceId(item.group.rating))
-
-
         }
 
         private fun attachCover(cover: ImageFile) {
@@ -166,7 +164,8 @@ class GroupDisplayItem(
                     .load(thumbLocation)
                     .signature(ObjectKey(cover.uniqueHash()))
                     .apply(glideRequestOptions)
-                    .into(it) else Glide.with(it)
+                    .into(it)
+                else Glide.with(it)
                     .load(Uri.parse(thumbLocation))
                     .signature(ObjectKey(cover.uniqueHash()))
                     .apply(glideRequestOptions)
