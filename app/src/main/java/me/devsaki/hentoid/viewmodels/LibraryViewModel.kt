@@ -228,8 +228,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
         currentGroupsTotalSource?.let { currentGroupTotal.removeSource(it) }
         currentGroupsTotalSource = groupSearchManager.getAllGroups()
-        currentGroupsSource?.let {
-            currentGroupTotal.addSource(it) { list -> currentGroupTotal.setValue(list.size) }
+        currentGroupsTotalSource?.let {
+            currentGroupTotal.addSource(it) { list -> currentGroupTotal.postValue(list.size) }
         }
 
         groupSearchBundle.postValue(groupSearchManager.toBundle())
