@@ -389,6 +389,8 @@
     <string name="content_not_found">Error - content not found</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library\?</string>
     <string name="library_imports_title">Library imports</string>
+    <string name="library_metrics_storage_mb">%.0f MB</string>
+    <string name="library_metrics_storage_gb">%.2f GB</string>
     <string name="starting_import">Starting import…</string>
     <string name="importing_library">Importing Library</string>
     <string name="import_complete">Import complete</string>

@@ -55,7 +55,6 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper.tintBitmap
 import timber.log.Timber
 import java.util.Locale
@@ -557,8 +556,14 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                         if (isPlaceholder || content.downloadMode == Content.DownloadMode.STREAM) View.GONE else View.VISIBLE
                     ivStorage?.visibility = storageVisibility
                     tv.visibility = storageVisibility
-                    if (storageVisibility == View.VISIBLE) tv.text =
-                        FileHelper.formatHumanReadableSizeInt(content.size, context.resources)
+                    if (storageVisibility == View.VISIBLE) {
+                        val sizeMb = content.size / (1024.0 * 1024.0)
+                        val sizeGb = sizeMb / 1024.0
+                        if (sizeGb > 1) tv.text =
+                            context.getString(R.string.library_metrics_storage_gb, sizeGb)
+                        else tv.text =
+                            context.getString(R.string.library_metrics_storage_mb, sizeMb)
+                    }
                 }
             }
         }
