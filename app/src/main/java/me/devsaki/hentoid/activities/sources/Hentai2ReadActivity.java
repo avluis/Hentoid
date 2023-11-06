@@ -7,7 +7,7 @@ public class Hentai2ReadActivity extends BaseWebActivity {
     public static final String GALLERY_PATTERN = "//hentai2read.com/[\\w\\-]+/$";
 
     private static final String DOMAIN_FILTER = "hentai2read.com";
-    private static final String[] GALLERY_FILTER = {GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "[0-9\\.]+/$"};
+    private static final String[] GALLERY_FILTER = {GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "[0-9\\.]+/$")};
     private static final String[] REMOVABLE_ELEMENTS = {"div[data-refresh]", ".js-rotating"}; // iframe[src*=ads]
     private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
     private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "trackingurl", "exo_slider", "exojspop", "data-exo", "exoslider"};
