@@ -191,10 +191,7 @@ object AchievementsManager {
     }
 
     fun isRegistered(id: Int): Boolean {
-        // TODO temp
-        return false
-        // TODO temp
-        //return isRegistered(id, storageCache)
+        return isRegistered(id, storageCache)
     }
 
     private fun isRegistered(id: Int, storage: ULong): Boolean {
