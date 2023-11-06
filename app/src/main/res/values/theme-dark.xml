@@ -109,6 +109,8 @@
 
     <!-- Search Activity -->
     <style name="Theme.Dark.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
         <item name="colorPrimary">@color/primary_dark</item>
         <item name="colorSecondary">@color/secondary_dark</item>
         <item name="android:colorBackground">@color/window_background_dark</item>
