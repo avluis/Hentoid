@@ -77,7 +77,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
 
     public void cleanup() {
-        db.closeThreadResources();
+        db.cleanup();
     }
 
     public void cleanupOrphanAttributes() {

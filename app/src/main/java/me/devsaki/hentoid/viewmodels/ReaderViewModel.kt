@@ -32,6 +32,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.parsers.ContentParserFactory
+import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -84,8 +85,6 @@ class ReaderViewModel(
     private var currentContentIndex = -1 // Index of current content within the above list
 
     private var loadedContentId: Long = -1 // ID of currently loaded book
-
-    private var forceImgReload = false
 
 
     // Pictures data
@@ -166,13 +165,14 @@ class ReaderViewModel(
      * @param contentId  ID of the Content to load
      * @param pageNumber Page number to start with
      */
-    fun loadContentFromId(contentId: Long, pageNumber: Int, forceImageReload: Boolean = false) {
+    fun loadContentFromId(contentId: Long, pageNumber: Int, forceImageUIReload: Boolean = false) {
         if (contentId > 0) {
             val loadedContent = dao.selectContent(contentId)
             if (loadedContent != null) {
                 if (contentIds.isEmpty()) contentIds.add(contentId)
-                loadContent(loadedContent, pageNumber, forceImageReload)
+                loadContent(loadedContent, pageNumber, forceImageUIReload)
             }
+            AchievementsManager.trigger(29)
         }
     }
 
@@ -255,20 +255,21 @@ class ReaderViewModel(
      * @param theContent Content to use
      * @param pageNumber Page number to start with
      * @param newImages  Images to process
+     * @param forceImgUIReload  Force the reloading of all images
      */
     private fun loadImages(
-        theContent: Content, pageNumber: Int, newImages: MutableList<ImageFile>
+        theContent: Content,
+        pageNumber: Int,
+        newImages: MutableList<ImageFile>,
+        forceImgUIReload: Boolean = false
     ) {
         databaseImages.postValue(newImages)
+        if (forceImgUIReload) newImages.forEach { it.isForceRefresh = true }
 
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
-        if (forceImgReload || !theContent.isArchive) {
+        if (!theContent.isArchive) {
             viewModelScope.launch {
-                if (forceImgReload) {
-                    newImages.forEach { it.isForceRefresh = true }
-                    forceImgReload = false
-                }
                 withContext(Dispatchers.IO) {
                     processStorageImages(theContent, newImages)
                     cacheJson(getApplication<Application>().applicationContext, theContent)
@@ -334,7 +335,11 @@ class ReaderViewModel(
      * Callback to run when the activity is on the verge of being destroyed
      */
     fun onActivityLeave() {
-        // Nothing for now
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                AchievementsManager.checkCollection(getApplication())
+            }
+        }
     }
 
     /**
@@ -708,8 +713,7 @@ class ReaderViewModel(
     fun deleteContent(onError: (Throwable) -> Unit) {
         val targetContent = dao.selectContent(loadedContentId)
         try {
-            targetContent
-                ?: throw IllegalArgumentException("Content $loadedContentId not found")
+            targetContent ?: throw IllegalArgumentException("Content $loadedContentId not found")
 
             // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
             currentImageSource?.let { databaseImages.removeSource(it) }
@@ -835,8 +839,8 @@ class ReaderViewModel(
         return false
     }
 
-    private fun reloadContent(forceImageReload: Boolean = false, viewerIndex: Int = -1) {
-        loadContentFromId(contentIds[currentContentIndex], -1, forceImageReload)
+    private fun reloadContent(forceImageUIReload: Boolean = false, viewerIndex: Int = -1) {
+        loadContentFromId(contentIds[currentContentIndex], -1, forceImageUIReload)
         if (viewerIndex > -1) setViewerStartingIndex(viewerIndex)
     }
 
@@ -846,7 +850,7 @@ class ReaderViewModel(
      * @param c Content to load
      * @param pageNumber Page number to start with
      */
-    private fun loadContent(c: Content, pageNumber: Int, forceImageReload: Boolean = false) {
+    private fun loadContent(c: Content, pageNumber: Int, forceImageUIReload: Boolean = false) {
         Preferences.setReaderCurrentContent(c.id)
         currentContentIndex = contentIds.indexOf(c.id)
         if (-1 == currentContentIndex) currentContentIndex = 0
@@ -858,7 +862,7 @@ class ReaderViewModel(
             )
         ) c.isFolderExists = false
         content.postValue(c)
-        loadDatabaseImages(c, pageNumber, forceImageReload)
+        loadDatabaseImages(c, pageNumber, forceImageUIReload)
     }
 
     /**
@@ -868,15 +872,16 @@ class ReaderViewModel(
      * @param pageNumber Page number to start with
      */
     private fun loadDatabaseImages(
-        theContent: Content, pageNumber: Int, forceImageReload: Boolean = false
+        theContent: Content,
+        pageNumber: Int,
+        forceImageUIReload: Boolean = false
     ) {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource!!)
         currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.id)
-        forceImgReload = forceImageReload
         databaseImages.addSource(currentImageSource!!) { imgs ->
-            loadImages(theContent, pageNumber, imgs)
+            loadImages(theContent, pageNumber, imgs, forceImageUIReload)
         }
     }
 
@@ -959,8 +964,7 @@ class ReaderViewModel(
         val isArchive = theContent.isArchive
         val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1).filter { i ->
             isPictureNeedsProcessing(
-                i,
-                viewerImagesInternal
+                i, viewerImagesInternal
             )
         }.toSet()
         if (picturesLeftToProcess.isEmpty()) return
@@ -1185,12 +1189,7 @@ class ReaderViewModel(
         nbProcessed.getAndIncrement()
         EventBus.getDefault().post(
             ProcessEvent(
-                ProcessEvent.Type.PROGRESS,
-                R.id.viewer_load,
-                0,
-                nbProcessed.get(),
-                0,
-                maxElements
+                ProcessEvent.Type.PROGRESS, R.id.viewer_load, 0, nbProcessed.get(), 0, maxElements
             )
         )
         var idx: Int? = null
@@ -1240,12 +1239,7 @@ class ReaderViewModel(
         Timber.d("Extracted %d files successfuly", maxElements)
         EventBus.getDefault().post(
             ProcessEvent(
-                ProcessEvent.Type.COMPLETE,
-                R.id.viewer_load,
-                0,
-                nbProcessed.get(),
-                0,
-                maxElements
+                ProcessEvent.Type.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, maxElements
             )
         )
         indexExtractInProgress.clear()
@@ -1506,12 +1500,7 @@ class ReaderViewModel(
         if (progress < 0) { // Error
             EventBus.getDefault().post(
                 ProcessEvent(
-                    ProcessEvent.Type.FAILURE,
-                    R.id.viewer_page_download,
-                    pageIndex,
-                    0,
-                    100,
-                    100
+                    ProcessEvent.Type.FAILURE, R.id.viewer_page_download, pageIndex, 0, 100, 100
                 )
             )
         } else if (progress < 100) {

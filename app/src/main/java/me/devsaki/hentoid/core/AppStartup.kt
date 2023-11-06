@@ -33,6 +33,7 @@ import me.devsaki.hentoid.notification.update.UpdateNotificationChannel
 import me.devsaki.hentoid.notification.updateJson.UpdateJsonNotificationChannel
 import me.devsaki.hentoid.notification.userAction.UserActionNotificationChannel
 import me.devsaki.hentoid.receiver.PlugEventsReceiver
+import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
@@ -140,7 +141,8 @@ object AppStartup {
             this::searchForUpdates,
             this::sendFirebaseStats,
             this::createBookmarksJson,
-            this::createPlugReceiver
+            this::createPlugReceiver,
+            this::checkAchievements
         )
     }
 
@@ -283,5 +285,13 @@ object AppStartup {
         Timber.i("Init Conscrypt : start")
         Security.insertProviderAt(Conscrypt.newProvider(), 1);
         Timber.i("Init Conscrypt : done")
+    }
+
+    private fun checkAchievements(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Check achievements : start")
+        AchievementsManager.checkPrefs()
+        AchievementsManager.checkStorage(context)
+        AchievementsManager.checkCollection(context)
+        Timber.i("Check achievements : done")
     }
 }

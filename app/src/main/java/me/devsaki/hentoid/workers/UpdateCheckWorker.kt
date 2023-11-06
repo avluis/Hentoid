@@ -36,8 +36,8 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
         try {
             EventBus.getDefault().post(
                 CommunicationEvent(
-                    CommunicationEvent.EV_BROADCAST,
-                    CommunicationEvent.RC_PREFS,
+                    CommunicationEvent.Type.BROADCAST,
+                    CommunicationEvent.Recipient.PREFS,
                     applicationContext.resources.getString(R.string.pref_check_updates_manual_checking)
                 )
             )
@@ -46,8 +46,8 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
             else {
                 EventBus.getDefault().post(
                     CommunicationEvent(
-                        CommunicationEvent.EV_BROADCAST,
-                        CommunicationEvent.RC_PREFS,
+                        CommunicationEvent.Type.BROADCAST,
+                        CommunicationEvent.Recipient.PREFS,
                         applicationContext.resources.getString(R.string.pref_check_updates_manual_no_connection)
                     )
                 )
@@ -56,8 +56,8 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
         } catch (e: Exception) {
             EventBus.getDefault().post(
                 CommunicationEvent(
-                    CommunicationEvent.EV_BROADCAST,
-                    CommunicationEvent.RC_PREFS,
+                    CommunicationEvent.Type.BROADCAST,
+                    CommunicationEvent.Recipient.PREFS,
                     applicationContext.resources.getString(R.string.pref_check_updates_manual_no_connection)
                 )
             )
@@ -74,8 +74,8 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
             newVersion = true
             EventBus.getDefault().post(
                 CommunicationEvent(
-                    CommunicationEvent.EV_BROADCAST,
-                    CommunicationEvent.RC_PREFS,
+                    CommunicationEvent.Type.BROADCAST,
+                    CommunicationEvent.Recipient.PREFS,
                     applicationContext.resources.getString(R.string.pref_check_updates_manual_new)
                 )
             )
@@ -83,8 +83,8 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
             notificationManager.cancel()
             EventBus.getDefault().post(
                 CommunicationEvent(
-                    CommunicationEvent.EV_BROADCAST,
-                    CommunicationEvent.RC_PREFS,
+                    CommunicationEvent.Type.BROADCAST,
+                    CommunicationEvent.Recipient.PREFS,
                     applicationContext.resources.getString(R.string.pref_check_updates_manual_no_new)
                 )
             )

@@ -129,14 +129,14 @@ class DuplicateDetectorActivity : BaseActivity() {
     private fun enableFragment(fragmentIndex: Int) {
         EventBus.getDefault().post(
             CommunicationEvent(
-                CommunicationEvent.EV_ENABLE,
-                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_MAIN else CommunicationEvent.RC_DUPLICATE_DETAILS
+                CommunicationEvent.Type.ENABLE,
+                if (0 == fragmentIndex) CommunicationEvent.Recipient.DUPLICATE_MAIN else CommunicationEvent.Recipient.DUPLICATE_DETAILS
             )
         )
         EventBus.getDefault().post(
             CommunicationEvent(
-                CommunicationEvent.EV_DISABLE,
-                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_DETAILS else CommunicationEvent.RC_DUPLICATE_MAIN
+                CommunicationEvent.Type.DISABLE,
+                if (0 == fragmentIndex) CommunicationEvent.Recipient.DUPLICATE_DETAILS else CommunicationEvent.Recipient.DUPLICATE_MAIN
             )
         )
     }

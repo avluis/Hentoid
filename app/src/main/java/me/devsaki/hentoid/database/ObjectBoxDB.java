@@ -78,18 +78,18 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle;
 import timber.log.Timber;
 
-public class ObjectBoxDB {
+class ObjectBoxDB {
 
     // Status displayed in the library view (all books of the library; both internal and external)
-    private static final int[] libraryStatus = ContentHelper.getLibraryStatuses();
-    private static final int[] queueStatus = ContentHelper.getQueueStatuses();
-    private static final int[] libraryQueueStatus = ArrayUtils.addAll(libraryStatus, queueStatus);
+    static final int[] libraryStatus = ContentHelper.getLibraryStatuses();
+    static final int[] queueStatus = ContentHelper.getQueueStatuses();
+    static final int[] libraryQueueStatus = ArrayUtils.addAll(libraryStatus, queueStatus);
 
     private static final long DAY_IN_MILLIS = 1000L * 60 * 60 * 24;
 
     private static ObjectBoxDB instance;
 
-    private final BoxStore store;
+    final BoxStore store;
 
     // Cached queries
     private final Query<Content> contentFromAttributesSearchQ;
@@ -155,7 +155,7 @@ public class ObjectBoxDB {
     }
 
 
-    void closeThreadResources() {
+    public void cleanup() {
         store.closeThreadResources();
     }
 
@@ -196,13 +196,9 @@ public class ObjectBoxDB {
         return new ImmutablePair<>(result, newAttrs);
     }
 
+    // Faster alternative to insertContent when Content fields only need to be updated
     long insertContentCore(@NonNull Content content) {
         return store.boxFor(Content.class).put(content);
-    }
-
-    // Faster alternative to insertContent when Content fields only need to be updated
-    void updateContentObject(Content content) {
-        store.boxFor(Content.class).put(content);
     }
 
     void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
@@ -547,31 +543,22 @@ public class ObjectBoxDB {
     }
 
     @Nullable
-    private Property<Content> getPropertyFromField(int prefsFieldCode) {
-        switch (prefsFieldCode) {
-            case Preferences.Constant.ORDER_FIELD_TITLE:
-                return Content_.title;
-            case Preferences.Constant.ORDER_FIELD_ARTIST:
-                return Content_.author; // Might not be what users want when there are multiple authors
-            case Preferences.Constant.ORDER_FIELD_NB_PAGES:
-                return Content_.qtyPages;
-            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE:
-                return Content_.downloadDate;
-            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE:
-                return Content_.downloadCompletionDate;
-            case Preferences.Constant.ORDER_FIELD_UPLOAD_DATE:
-                return Content_.uploadDate;
-            case Preferences.Constant.ORDER_FIELD_READ_DATE:
-                return Content_.lastReadDate;
-            case Preferences.Constant.ORDER_FIELD_READS:
-                return Content_.reads;
-            case Preferences.Constant.ORDER_FIELD_SIZE:
-                return Content_.size;
-            case Preferences.Constant.ORDER_FIELD_READ_PROGRESS:
-                return Content_.readProgress;
-            default:
-                return null;
-        }
+    Property<Content> getPropertyFromField(int prefsFieldCode) {
+        return switch (prefsFieldCode) {
+            case Preferences.Constant.ORDER_FIELD_TITLE -> Content_.title;
+            case Preferences.Constant.ORDER_FIELD_ARTIST ->
+                    Content_.author; // Might not be what users want when there are multiple authors
+            case Preferences.Constant.ORDER_FIELD_NB_PAGES -> Content_.qtyPages;
+            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> Content_.downloadDate;
+            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE ->
+                    Content_.downloadCompletionDate;
+            case Preferences.Constant.ORDER_FIELD_UPLOAD_DATE -> Content_.uploadDate;
+            case Preferences.Constant.ORDER_FIELD_READ_DATE -> Content_.lastReadDate;
+            case Preferences.Constant.ORDER_FIELD_READS -> Content_.reads;
+            case Preferences.Constant.ORDER_FIELD_SIZE -> Content_.size;
+            case Preferences.Constant.ORDER_FIELD_READ_PROGRESS -> Content_.readProgress;
+            default -> null;
+        };
     }
 
     Query<Content> selectNoContentQ() {
@@ -1621,67 +1608,6 @@ public class ObjectBoxDB {
         store.boxFor(Chapter.class).remove(chapterId);
     }
 
-
-    /**
-     * ONE-SHOT USE QUERIES (MIGRATION & MAINTENANCE)
-     */
-
-    List<Content> selectContentWithOldPururinHost() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().equal(Content_.site, Site.PURURIN.getCode()).contains(Content_.coverImageUrl, "://api.pururin.io/images/", QueryBuilder.StringOrder.CASE_INSENSITIVE));
-    }
-
-    List<Content> selectContentWithOldTsuminoCovers() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().equal(Content_.site, Site.TSUMINO.getCode()).contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/", QueryBuilder.StringOrder.CASE_INSENSITIVE));
-    }
-
-    List<Content> selectContentWithOldHitomiCovers() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().equal(Content_.site, Site.HITOMI.getCode()).contains(Content_.coverImageUrl, "/smallbigtn/", QueryBuilder.StringOrder.CASE_INSENSITIVE));
-    }
-
-    List<Content> selectDownloadedM18Books() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().equal(Content_.site, Site.MANHWA18.getCode()).in(Content_.status, libraryStatus));
-    }
-
-    List<Chapter> selecChaptersEmptyName() {
-        return DBHelper.safeFind(store.boxFor(Chapter.class).query().equal(Chapter_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE));
-    }
-
-    List<Content> selectDownloadedContentWithNoSize() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.size));
-    }
-
-    List<Content> selectDownloadedContentWithNoReadProgress() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.readProgress));
-    }
-
-    List<Group> selectGroupsWithNoCoverContent() {
-        return DBHelper.safeFind(store.boxFor(Group.class).query().isNull(Group_.coverContentId).or().equal(Group_.coverContentId, 0));
-    }
-
-    List<Content> selectContentWithNullCompleteField() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().isNull(Content_.completed));
-    }
-
-    List<Content> selectContentWithNullDlModeField() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().isNull(Content_.downloadMode));
-    }
-
-    List<Content> selectContentWithNullMergeField() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().isNull(Content_.manuallyMerged));
-    }
-
-    List<Content> selectContentWithNullDlCompletionDateField() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().isNull(Content_.downloadCompletionDate));
-    }
-
-    List<Content> selectContentWithInvalidUploadDate() {
-        return DBHelper.safeFind(store.boxFor(Content.class).query().greater(Content_.uploadDate, 0).less(Content_.uploadDate, 10000000000L));
-    }
-
-    List<Chapter> selectChapterWithNullUploadDate() {
-        return DBHelper.safeFind(store.boxFor(Chapter.class).query().isNull(Chapter_.uploadDate));
-    }
-
     QueryBuilder<Content> selectStoredContentQ(boolean includeQueued, int orderField, boolean orderDesc) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         if (includeQueued) query.in(Content_.status, libraryQueueStatus);
@@ -1741,7 +1667,7 @@ public class ObjectBoxDB {
         return DBHelper.safeFindIds(customContentQB);
     }
 
-    Set<Long> selectUngroupedContentIds() {
+    public Set<Long> selectUngroupedContentIds() {
         // Select all eligible content
         QueryBuilder<Content> allContentQ = store.boxFor(Content.class).query().in(Content_.status, libraryStatus);
         Set<Long> allContent = Helper.getSetFromPrimitiveArray(DBHelper.safeFindIds(allContentQ));
@@ -1760,10 +1686,5 @@ public class ObjectBoxDB {
         QueryCondition<Content> contentCondition = Content_.jsonUri.endsWith(".json").and(Content_.downloadCompletionDate.greater(0));
         QueryBuilder<Content> allContentQ = store.boxFor(Content.class).query(contentCondition).filter(c -> Math.abs(c.getDownloadCompletionDate() - c.getDownloadDate()) > 10);
         return DBHelper.safeFindIds(allContentQ);
-    }
-
-    long[] selectOrphanQueueRecordIds() {
-        QueryCondition<QueueRecord> qrCondition = QueueRecord_.contentId.lessOrEqual(0).or(QueueRecord_.contentId.isNull());
-        return DBHelper.safeFindIds(store.boxFor(QueueRecord.class).query(qrCondition));
     }
 }

@@ -76,7 +76,7 @@ enum class AttributeType(
         R.string.category_character,
         R.string.object_character,
         R.drawable.ic_attribute_character,
-        R.color.bronze
+        R.color.orange_light
     ),
     CATEGORY(
         9,

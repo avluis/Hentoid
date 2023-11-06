@@ -14,4 +14,5 @@
     <item name="group" type="id"/>
     <item name="expandable_item" type="id"/>
     <item name="renamingRule" type="id"/>
+    <item name="achievement" type="id"/>
 </resources>

@@ -32,6 +32,7 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
 import me.devsaki.hentoid.customssiv.ImageSource
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.gles_renderer.GPUImage
@@ -164,7 +165,7 @@ class ImagePagerAdapter(val context: Context) :
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         Timber.d("Picture %d : BindViewHolder", position)
 
-        val displayParams = getDisplayParamsForPosition(position)
+        val displayParams = getDisplayParamsForPosition(position) ?: return
         val imgViewType = getImageViewType(displayParams)
 
         reset(holder)
@@ -203,9 +204,8 @@ class ImagePagerAdapter(val context: Context) :
 
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT.value && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
-                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer) else ssiv.setGlEsRenderer(
-                    null
-                )
+                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer)
+                else ssiv.setGlEsRenderer(null)
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
 
@@ -273,15 +273,18 @@ class ImagePagerAdapter(val context: Context) :
         initialAbsoluteScales.clear()
     }
 
-    private fun getDisplayParamsForPosition(position: Int): ReaderPagerFragment.DisplayParams {
-        val content = getItem(position).content.target
-        checkNotNull(content) { "No content found for position $position" }
-        val bookPreferences = content.bookPreferences
-        return ReaderPagerFragment.DisplayParams(
-            Preferences.getContentBrowseMode(bookPreferences),
-            Preferences.getContentDisplayMode(bookPreferences),
-            Preferences.isContentSmoothRendering(bookPreferences)
-        )
+    private fun getDisplayParamsForPosition(position: Int): ReaderPagerFragment.DisplayParams? {
+        val img = getItem(position)
+        val content = img.content.reach(img)
+        if (content != null) {
+            val bookPreferences = content.bookPreferences
+            return ReaderPagerFragment.DisplayParams(
+                Preferences.getContentBrowseMode(bookPreferences),
+                Preferences.getContentDisplayMode(bookPreferences),
+                Preferences.isContentSmoothRendering(bookPreferences)
+            )
+        }
+        return null
     }
 
     fun getDimensionsAtPosition(position: Int): Point {

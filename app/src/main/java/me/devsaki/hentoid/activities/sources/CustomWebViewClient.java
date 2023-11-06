@@ -16,6 +16,7 @@ import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
 
 import com.annimon.stream.Optional;
@@ -161,21 +162,21 @@ class CustomWebViewClient extends WebViewClient {
         CHECKMARK = ImageHelper.INSTANCE.bitmapToWebp(
                 ImageHelper.INSTANCE.tintBitmap(
                         ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.Companion.getInstance(), R.drawable.ic_checked),
-                        HentoidApp.Companion.getInstance().getResources().getColor(R.color.secondary_light)
+                        ContextCompat.getColor(HentoidApp.Companion.getInstance(), R.color.secondary_light)
                 )
         );
 
         MERGED_MARK = ImageHelper.INSTANCE.bitmapToWebp(
                 ImageHelper.INSTANCE.tintBitmap(
                         ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.Companion.getInstance(), R.drawable.ic_action_merge),
-                        HentoidApp.Companion.getInstance().getResources().getColor(R.color.secondary_light)
+                        ContextCompat.getColor(HentoidApp.Companion.getInstance(), R.color.secondary_light)
                 )
         );
 
         BLOCKED_MARK = ImageHelper.INSTANCE.bitmapToWebp(
                 ImageHelper.INSTANCE.tintBitmap(
                         ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.Companion.getInstance(), R.drawable.ic_forbidden),
-                        HentoidApp.Companion.getInstance().getResources().getColor(R.color.secondary_light)
+                        ContextCompat.getColor(HentoidApp.Companion.getInstance(), R.color.secondary_light)
                 )
         );
     }
@@ -384,13 +385,12 @@ class CustomWebViewClient extends WebViewClient {
 
         Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         ResponseBody body = onlineFileResponse.body();
-        if (null == body)
-            throw new IOException("Empty response from server");
+        if (null == body) throw new IOException("Empty response from server");
 
         File cacheDir = context.getCacheDir();
         // Using a random file name rather than the original name to avoid errors caused by path length
         File file = new File(cacheDir.getAbsolutePath() + File.separator + Helper.getRandomInt(10000) + "." + getExtensionFromUri(url));
-        file.createNewFile();
+        if (!file.createNewFile()) throw new IOException("Couldn't create file");
 
         Uri torrentFileUri = Uri.fromFile(file);
         FileHelper.saveBinary(context, torrentFileUri, body.bytes());
@@ -462,7 +462,7 @@ class CustomWebViewClient extends WebViewClient {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
             else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url);
 
-            // If we're here to remove "dirty elements" or mark downloaded books, we only do it
+            // If we're here to remove removable elements or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
             if ((removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !activity.getCustomCss().isEmpty())
                     && (HttpHelper.getExtensionFromUri(url).isEmpty() || HttpHelper.getExtensionFromUri(url).equalsIgnoreCase("html"))) {
@@ -537,7 +537,7 @@ class CustomWebViewClient extends WebViewClient {
         if (BuildConfig.DEBUG)
             Timber.v("WebView : parseResponse %s %s", analyzeForDownload ? "DL" : "", urlStr);
 
-        // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
+        // If we're here for remove elements only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
         if (analyzeForDownload) activity.onGalleryPageStarted();
@@ -608,7 +608,7 @@ class CustomWebViewClient extends WebViewClient {
                         browserStream = body.byteStream();
                     }
 
-                    // Remove dirty elements from HTML resources
+                    // Remove removable elements from HTML resources
                     String customCss = activity.getCustomCss();
                     if (removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !customCss.isEmpty()) {
                         browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls(), activity.getPrefBlockedTags());

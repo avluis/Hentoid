@@ -439,6 +439,7 @@
     <string name="app_name" translatable="false">Hentoid</string>
     <string name="error" translatable="false">Error</string>
     <string name="percent_no_digits" translatable="false">%.0f%%</string>
+    <string name="what" translatable="false">\???</string>
     <string name="empty_string" translatable="false" />
     <!-- Strings: Main: TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
@@ -459,6 +460,7 @@
     <!-- Strings: Main: About Activity -->
     <string name="about_github" translatable="false"><u>GitHub</u></string>
     <string name="about_discord" translatable="false"><u>Discord</u></string>
+    <string name="about_api" translatable="false"> / Android API %d</string>
 
     <!-- Strings: Settings -->
     <string name="pref_generic_summary" translatable="false">%s</string>

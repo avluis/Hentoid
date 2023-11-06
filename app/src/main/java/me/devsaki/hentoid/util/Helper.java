@@ -113,12 +113,14 @@ public final class Helper {
      * @param input Array of primitive values to transform
      * @return Given values contained in a Collections.List
      */
+    @kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin does it natively
     public static List<Long> getListFromPrimitiveArray(long[] input) {
         List<Long> list = new ArrayList<>(input.length);
         for (long n : input) list.add(n);
         return list;
     }
 
+    @kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin does it natively
     public static Set<Long> getSetFromPrimitiveArray(long[] input) {
         Set<Long> set = new HashSet<>(input.length);
         for (long n : input) set.add(n);
@@ -131,12 +133,14 @@ public final class Helper {
      * @param input Array of primitive values to transform
      * @return Given values contained in a Collections.List
      */
+    @kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin does it natively
     public static List<Integer> getListFromPrimitiveArray(int[] input) {
         List<Integer> list = new ArrayList<>(input.length);
         for (int n : input) list.add(n);
         return list;
     }
 
+    @kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin does it natively
     public static Set<Integer> getSetFromPrimitiveArray(int[] input) {
         Set<Integer> list = new HashSet<>(input.length);
         for (int n : input) list.add(n);

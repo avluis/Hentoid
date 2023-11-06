@@ -22,8 +22,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.notification.transform.TransformCompleteNotification
 import me.devsaki.hentoid.notification.transform.TransformProgressNotification
+import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ProgressManager
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageTransform
@@ -79,7 +81,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val params = moshi.adapter(ImageTransform.Params::class.java).fromJson(paramsStr)
         require(params != null)
 
-        if (3 == params.resizeMethod) { // AI upscale
+        if (params.resizeEnabled && 3 == params.resizeMethod) { // AI upscale
             upscaler = AiUpscaler()
             upscaler!!.init(
                 applicationContext.resources.assets,
@@ -134,6 +136,17 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             content.lastEditDate = Instant.now().toEpochMilli()
             content.setIsBeingProcessed(false)
             dao.insertContentCore(content)
+
+            // Achievements
+            if (!isStopped) {
+                if (upscaler != null) { // AI upscale
+                    Settings.nbAIRescale = Settings.nbAIRescale + 1
+                    if (Settings.nbAIRescale >= 2) AchievementsManager.trigger(20)
+                }
+                val pagesTotal = images.count { i -> i.isReadable }
+                if (pagesTotal >= 50) AchievementsManager.trigger(27)
+                if (pagesTotal >= 100) AchievementsManager.trigger(28)
+            }
         } else {
             nbKO += images.size
         }
@@ -192,8 +205,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
         BitmapFactory.decodeByteArray(targetData, 0, targetData.size, metadataOpts)
         val targetDims = Point(metadataOpts.outWidth, metadataOpts.outHeight)
-        val targetMime =
-            ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
+        val targetMime = ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
         val targetName = img.name + "." + FileHelper.getExtensionFromMimeType(targetMime)
         val newFile = sourceName != targetName
 
@@ -282,9 +294,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     private fun notifyProcessProgress() {
         notificationManager.notify(
             TransformProgressNotification(
-                nbOK + nbKO,
-                totalItems,
-                globalProgress.getGlobalProgress()
+                nbOK + nbKO, totalItems, globalProgress.getGlobalProgress()
             )
         )
     }

@@ -12,6 +12,7 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.core.Consts;
+import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -85,8 +86,16 @@ public class ImageFile {
         this.favourite = img.favourite;
         this.isCover = img.isCover;
         this.status = img.status;
-        this.content.setTargetId(img.content.getTargetId());
-        this.chapter.setTargetId(img.chapter.getTargetId());
+        if (DBHelper.isReachable(img, img.content)) {
+            this.content.setTarget(img.content.getTarget());
+        } else {
+            this.content.setTargetId(img.content.getTargetId());
+        }
+        if (DBHelper.isReachable(img, img.chapter)) {
+            this.chapter.setTarget(img.chapter.getTarget());
+        } else {
+            this.chapter.setTargetId(img.chapter.getTargetId());
+        }
         this.mimeType = img.mimeType;
         this.size = img.size;
         this.imageHash = img.imageHash;
@@ -342,7 +351,7 @@ public class ImageFile {
     }
 
     public boolean isReadable() {
-        return !name.equals(Consts.THUMB_FILE_NAME);
+        return !name.equals(Consts.THUMB_FILE_NAME) && !name.startsWith(Consts.EXT_THUMB_FILE_PREFIX);
     }
 
     public String getUsableUri() {
@@ -395,7 +404,7 @@ public class ImageFile {
 
     public long uniqueHash() {
         if (0 == uniqueHash)
-            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId() + "." + isForceRefresh).getBytes());
+            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId()).getBytes());
         return uniqueHash;
     }
 }
