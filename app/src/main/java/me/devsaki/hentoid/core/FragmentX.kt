@@ -105,6 +105,7 @@ fun FragmentActivity.startBiometric(
 
         override fun onUIClosed() {
             BiometricLoggerImpl.e("CheckBiometric.onUIClosed()")
+            resultHandler.invoke(false)
         }
     })
 }
