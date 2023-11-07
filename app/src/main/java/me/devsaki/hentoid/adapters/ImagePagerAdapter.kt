@@ -158,6 +158,7 @@ class ImagePagerAdapter(val context: Context) :
             ssiv.setOnTouchListener(null)
 
             rootView.minimumHeight = 0
+            noImgTxt?.isVisible = false
         }
     }
 
@@ -235,10 +236,10 @@ class ImagePagerAdapter(val context: Context) :
             val isExtracting = img != null && !imageAvailable && !img.url.startsWith("http")
             if (noImgTxt != null) {
                 @StringRes var text: Int = R.string.image_not_found
-                if (isStreaming) text = R.string.image_streaming else if (isExtracting) text =
-                    R.string.image_extracting
+                if (isStreaming) text = R.string.image_streaming
+                else if (isExtracting) text = R.string.image_extracting
                 noImgTxt.setText(text)
-                noImgTxt.visibility = if (!imageAvailable) View.VISIBLE else View.GONE
+                noImgTxt.isVisible = !imageAvailable
             }
         }
     }
@@ -387,14 +388,11 @@ class ImagePagerAdapter(val context: Context) :
         private var img: ImageFile? = null
         private var scaleMultiplier = 1f // When used with ZoomableFrame in vertical mode
 
-        init {
-            noImgTxt?.visibility = View.GONE
-        }
-
         fun setImage(img: ImageFile) {
             this.img = img
             val imgType: Int = getImageType(img)
             val uri = Uri.parse(img.fileUri)
+            noImgTxt?.isVisible = false
             Timber.d("Picture %d : binding viewholder %s %s", absoluteAdapterPosition, imgType, uri)
             if (!isImageView) { // SubsamplingScaleImageView
                 Timber.d("Using SSIV")
@@ -575,7 +573,7 @@ class ImagePagerAdapter(val context: Context) :
             Timber.d(
                 e, "Picture %d : Glide loading failed : %s", absoluteAdapterPosition, img!!.fileUri
             )
-            if (noImgTxt != null) noImgTxt.visibility = View.VISIBLE
+            noImgTxt?.visibility = View.VISIBLE
             return false
         }
 
@@ -586,6 +584,7 @@ class ImagePagerAdapter(val context: Context) :
             dataSource: DataSource,
             isFirstResource: Boolean
         ): Boolean {
+            noImgTxt?.visibility = View.GONE
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
                 adjustHeight(resource.intrinsicWidth, resource.intrinsicHeight, true)
             return false
