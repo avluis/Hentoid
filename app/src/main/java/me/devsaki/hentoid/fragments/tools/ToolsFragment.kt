@@ -32,6 +32,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -123,8 +124,15 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.P
             }
 
             CLEAR_APP_CACHE -> {
-                context?.clearAppCache()
-                ToastHelper.toast(R.string.tools_cache_app_success)
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        context?.apply {
+                            clearAppCache()
+                            DiskCache.init(this)
+                        }
+                    }
+                    ToastHelper.toast(R.string.tools_cache_app_success)
+                }
                 true
             }
 
@@ -135,7 +143,10 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.P
 
             RAM -> {
                 val usedAppHeap =
-                    FileHelper.formatHumanReadableSize(Helper.getAppHeapBytes().first, resources)
+                    FileHelper.formatHumanReadableSize(
+                        Helper.getAppHeapBytes().first,
+                        resources
+                    )
                 val usedAppTotal =
                     FileHelper.formatHumanReadableSize(Helper.getAppTotalRamBytes(), resources)
                 val systemHeap = Helper.getSystemHeapBytes(activity)
@@ -204,7 +215,8 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.P
         }
     }
 
-    private fun getExportedSettings(): JsonSettings {
+    private fun getExportedSettings()
+            : JsonSettings {
         val jsonSettings = JsonSettings()
 
         jsonSettings.settings = Preferences.extractPortableInformation()
