@@ -1,8 +1,0 @@
-/* Custom style to fix column display after ad blocker has been enabled */
-.feed.galleries article {
-    width: 48%;
-}
-
-#gallery #previews main div {
-    width: 48%;
-}

@@ -132,7 +132,7 @@
             android:name=".activities.sources.EdoujinActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".activities.sources.KskActivity"
+            android:name=".activities.sources.AnchiraActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.LibraryActivity"
@@ -593,8 +593,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="ksk.moe"
-                    android:pathPattern="/view/..*/..*"
+                    android:host="anchira.to"
+                    android:pathPattern="/g/..*/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>

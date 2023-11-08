@@ -3,13 +3,16 @@ package me.devsaki.hentoid.views
 import android.content.Context
 import android.graphics.Bitmap
 import android.webkit.CookieManager
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.annimon.stream.function.BiConsumer
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.HttpHelper
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -17,7 +20,7 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicBoolean
 
-class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
+class AnchiraBackgroundWebView(context: Context, site: Site) : WebView(context) {
     private var client: SingleLoadWebViewClient
 
     init {
@@ -34,6 +37,10 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
         if (BuildConfig.DEBUG) setWebContentsDebuggingEnabled(true)
         client = SingleLoadWebViewClient(site)
         webViewClient = client
+        addJavascriptInterface(
+            AnchiraJsInterface { a, b -> client.jsHandler(a, b) },
+            "anchiraJsInterface"
+        )
     }
 
     fun loadUrl(url: String, onLoaded: Runnable) {
@@ -49,6 +56,7 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
             Timber.v(">>> onPageStarted %s", url)
             isPageLoading.set(true)
+            view.loadUrl(getJsScript(view.context, "anchira_pages.js"))
         }
 
         override fun onPageFinished(view: WebView, url: String) {
@@ -63,13 +71,13 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
             this.onLoaded = onLoaded
         }
 
-        // Disable window width checks when the Webview in run outside of the UI
         override fun shouldInterceptRequest(
             view: WebView,
             request: WebResourceRequest
         ): WebResourceResponse? {
             val url = request.url.toString()
-            if (url.contains("gg.js")) {
+            val uriParts = HttpHelper.UriParts(url)
+            if (uriParts.entireFileName.startsWith("app.") && uriParts.extension.equals("js")) {
                 val requestHeadersList =
                     HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url)
                 try {
@@ -84,10 +92,27 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                     val body = response.body ?: throw IOException("Empty body")
                     if (response.code < 300) {
                         var jsFile = body.source().readString(StandardCharsets.UTF_8)
-                        jsFile = jsFile.replace(
-                            "\\{[\\s]*return[\\s]+[0-9]+;[\\s]*\\}".toRegex(),
-                            "{return o;}"
-                        )
+                        Timber.d("app JS found")
+
+                        val beginStr = "arguments;return new Promise((function("
+                        val beginIndex = jsFile.indexOf(beginStr)
+                        val endIndex = jsFile.indexOf("(void 0)}))}}")
+                        if (beginIndex > -1 && endIndex > -1) {
+                            val funStr = "function "
+                            val funBeginIndex = jsFile.indexOf(funStr, beginIndex + beginStr.length)
+                            val bracketBeginIndex =
+                                jsFile.indexOf("(", funBeginIndex + funStr.length)
+                            val bracketEndIndex = jsFile.indexOf(")", bracketBeginIndex)
+                            val argumentName =
+                                jsFile.substring(bracketBeginIndex + 1, bracketEndIndex)
+
+                            val part1 = jsFile.substring(0, bracketEndIndex + 2)
+                            val part2 = jsFile.substring(bracketEndIndex + 2)
+                            jsFile = "$part1 processAnchiraData($argumentName); $part2"
+                        } else {
+                            Timber.w("APP JS LOCATION NOT FOUND")
+                        }
+                        Timber.d("app JS edited")
                         return HttpHelper.okHttpResponseToWebkitResponse(
                             response, ByteArrayInputStream(
                                 jsFile.toByteArray(
@@ -128,6 +153,26 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                 }
             }
             return null
+        }
+
+        private fun getJsScript(context: Context, assetName: String): String {
+            val sb = java.lang.StringBuilder()
+            sb.append("javascript:")
+            FileHelper.getAssetAsString(context.assets, assetName, sb)
+            return sb.toString()
+        }
+
+        fun jsHandler(a: String, b: String) {
+            Timber.d("anchira2 %s : %s", a, b)
+        }
+    }
+
+    class AnchiraJsInterface(private val handler: BiConsumer<String, String>) {
+        @JavascriptInterface
+        @Suppress("unused")
+        fun transmit(a: String, b: String) {
+            Timber.d("anchira1 %s : %s", a, b)
+            handler.accept(a, b)
         }
     }
 }

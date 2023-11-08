@@ -49,6 +49,7 @@ public enum Site {
     HDPORNCOMICS(28, "HD Porn Comics", "https://hdporncomics.com/", R.drawable.ic_site_hdporncomics),
     EDOUJIN(29, "Edoujin", "https://edoujin.net/", R.drawable.ic_site_edoujin),
     KSK(30, "Koushoku", "https://ksk.moe", R.drawable.ic_site_ksk),
+    ANCHIRA(31, "Anchira", "https://anchira.to", R.drawable.ic_site_ksk),
     NONE(98, "none", "", R.drawable.ic_attribute_source), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_site_panda); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
