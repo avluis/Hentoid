@@ -8,8 +8,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.annimon.stream.function.BiConsumer
 import me.devsaki.hentoid.BuildConfig
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
@@ -38,7 +38,7 @@ class AnchiraBackgroundWebView(context: Context, site: Site) : WebView(context) 
         client = SingleLoadWebViewClient(site)
         webViewClient = client
         addJavascriptInterface(
-            AnchiraJsInterface { a, b -> client.jsHandler(a, b) },
+            AnchiraJsInterface { a -> client.jsHandler(a) },
             "anchiraJsInterface"
         )
     }
@@ -162,17 +162,17 @@ class AnchiraBackgroundWebView(context: Context, site: Site) : WebView(context) 
             return sb.toString()
         }
 
-        fun jsHandler(a: String, b: String) {
-            Timber.d("anchira2 %s : %s", a, b)
+        fun jsHandler(a: String) {
+            Timber.d("anchira2 %s", a)
         }
     }
 
-    class AnchiraJsInterface(private val handler: BiConsumer<String, String>) {
+    class AnchiraJsInterface(private val handler: Consumer<String>) {
         @JavascriptInterface
         @Suppress("unused")
-        fun transmit(a: String, b: String) {
-            Timber.d("anchira1 %s : %s", a, b)
-            handler.accept(a, b)
+        fun transmit(a: String) {
+            Timber.d("anchira1 %s", a)
+            handler.invoke(a)
         }
     }
 }
