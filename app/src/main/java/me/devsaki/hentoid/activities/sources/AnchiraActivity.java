@@ -1,6 +1,10 @@
 package me.devsaki.hentoid.activities.sources;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,9 +14,11 @@ import java.util.Map;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.json.sources.AnchiraGalleryMetadata;
 import me.devsaki.hentoid.parsers.content.AnchiraContent;
 import me.devsaki.hentoid.parsers.images.AnchiraParser;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.views.AnchiraBackgroundWebView;
 import timber.log.Timber;
 
 /**
@@ -31,8 +37,8 @@ public class AnchiraActivity extends BaseWebActivity {
     protected CustomWebViewClient createWebClient() {
         AnchiraWebClient client = new AnchiraWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        //client.setJsStartupScripts("anchira_pages.js");
-        //webView.addJavascriptInterface(new AnchiraJsInterface(client::jsHandler), "anchiraJsInterface");
+        client.setJsStartupScripts("anchira_pages.js");
+        webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsInterface(s -> client.jsHandler(s, false)), "anchiraJsInterface");
         return client;
     }
 
@@ -50,7 +56,7 @@ public class AnchiraActivity extends BaseWebActivity {
             Content content = new AnchiraContent().toContent(urlStr);
             AnchiraParser parser = new AnchiraParser();
             try {
-                parser.parseImageListWithWebview(content, webView); // Only fetch them when queue is processed
+                //parser.parseImageListWithWebview(content, webView); // Only fetch them when queue is processed
                 content.setStatus(StatusContent.SAVED);
             } catch (Exception e) {
                 Helper.logException(e);
@@ -60,54 +66,19 @@ public class AnchiraActivity extends BaseWebActivity {
 
             return null;
         }
-/*
+
         @Override
-        protected Content processContent(@NonNull Content content, @NonNull String url, boolean quickDownload) {
-            // Wait until the page's resources are all loaded
-            if (!quickDownload) {
-                Timber.v(">> not loading");
-                while (!isLoading()) Helper.pause(20);
-                Timber.v(">> loading");
-                while (isLoading()) Helper.pause(100);
-                Timber.v(">> done");
-            }
-            AnchiraParser parser = new AnchiraParser();
-            try {
-                parser.parseImageListWithWebview(content, webView); // Only fetch them when queue is processed
-                content.setStatus(StatusContent.SAVED);
-            } catch (Exception e) {
-                Helper.logException(e);
-                Timber.i(e);
-                content.setStatus(StatusContent.IGNORED);
-            }
-
-            return super.processContent(content, url, quickDownload);
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
+            return AnchiraBackgroundWebView.Companion.shouldInterceptRequestInternal(view, request, site);
         }
 
- */
-
-        /*
-        public void jsHandler(String a, String b) {
-            // TODO
-        }
-         */
-    }
-
-    /*
-    public static class AnchiraJsInterface {
-
-        private final BiConsumer<String, String> handler;
-
-        public AnchiraJsInterface(BiConsumer<String, String> handler) {
-            this.handler = handler;
-        }
-
-        @JavascriptInterface
-        @SuppressWarnings("unused")
-        public void anchiraJsInterface(String a, String b) {
-            Timber.d("anchira %s : %s", a, b);
-            handler.accept(a, b);
+        public void jsHandler(AnchiraGalleryMetadata a, boolean quickDownload) {
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(() -> {
+                Content content = a.toContent();
+                processContent(content, content.getGalleryUrl(), quickDownload);
+                activity.onResultReady(content, quickDownload);
+            });
         }
     }
-     */
 }

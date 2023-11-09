@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +23,9 @@ import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.StringHelper;
-import me.devsaki.hentoid.util.exception.EmptyResultException;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.AnchiraBackgroundWebView;
 import timber.log.Timber;
@@ -53,7 +49,7 @@ public class AnchiraParser extends BaseImageListParser {
 
         List<ImageFile> result;
         try {
-            result = parseImageListWithWebview(onlineContent, null);
+            result = parseImageListWithWebview(onlineContent);
             ParseHelper.setDownloadParams(result, onlineContent.getSite().getUrl());
         } catch (Exception e) {
             Helper.logException(e);
@@ -65,7 +61,7 @@ public class AnchiraParser extends BaseImageListParser {
         return result;
     }
 
-    public List<ImageFile> parseImageListWithWebview(@NonNull Content onlineContent, WebView webview) throws Exception {
+    public List<ImageFile> parseImageListWithWebview(@NonNull Content onlineContent) throws Exception {
         String pageUrl = onlineContent.getGalleryUrl();
 
         // Add referer information to downloadParams for future image download
@@ -77,7 +73,6 @@ public class AnchiraParser extends BaseImageListParser {
         final AtomicBoolean done = new AtomicBoolean(false);
         final AtomicReference<String> imagesStr = new AtomicReference<>();
         Handler handler = new Handler(Looper.getMainLooper());
-        //if (null == webview) {
         handler.post(() -> {
             if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
             AnchiraBackgroundWebView anchiraWv = new AnchiraBackgroundWebView(HentoidApp.Companion.getInstance(), Site.ANCHIRA);
@@ -86,67 +81,8 @@ public class AnchiraParser extends BaseImageListParser {
             //anchiraWv.loadUrl(pageUrl, () -> evaluateJs(anchiraWv, galleryInfo, imagesStr, done));
             Timber.i(">> loading wv");
         });
-            /*
-        } else { // We suppose the caller is the main thread if the webview is provided
-            //handler.post(() -> evaluateJs(webview, galleryInfo, imagesStr, done));
-        }
 
-             */
-
-        int remainingIterations = 15; // Timeout
-        do {
-            Helper.pause(1000);
-        } while (!done.get() && !processHalted.get() && remainingIterations-- > 0);
-        if (processHalted.get())
-            throw new EmptyResultException("Unable to detect pages (empty result)");
-
-        String jsResult = imagesStr.get();
-        if (null == jsResult || jsResult.isEmpty())
-            throw new EmptyResultException("Unable to detect pages (empty result)");
-
-        List<ImageFile> result = new ArrayList<>();
-        jsResult = jsResult.replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
-        List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
-        if (imageUrls != null && !imageUrls.isEmpty()) {
-            onlineContent.setCoverImageUrl(imageUrls.get(0));
-            result.add(ImageFile.newCover(imageUrls.get(0), StatusContent.SAVED));
-            int order = 1;
-            for (String s : imageUrls) {
-                ImageFile img = ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED);
-                img.setDownloadParams(downloadParamsStr);
-                result.add(img);
-            }
-        }
-
-        return result;
-    }
-
-    // TODO doc
-    private void evaluateJs(@NonNull WebView webview, @NonNull String galleryInfo, @NonNull AtomicReference<String> imagesStr, @NonNull AtomicBoolean done) {
-        Timber.d(">> evaluating JS");
-        webview.evaluateJavascript(getJsPagesScript(galleryInfo), s -> {
-            Timber.d(">> JS evaluated");
-            imagesStr.set(StringHelper.protect(s));
-            done.set(true);
-        });
-    }
-
-    // TODO optimize
-    private String getJsPagesScript(@NonNull String galleryInfo) {
-        StringBuilder sb = new StringBuilder();
-        FileHelper.getAssetAsString(HentoidApp.Companion.getInstance().getAssets(), "hitomi_pages.js", sb);
-        return sb.toString().replace("$galleryInfo", galleryInfo);
-    }
-
-    // TODO doc
-    private void updateContentInfo(@NonNull Content content, @NonNull String galleryInfoStr) throws Exception {
-        int firstBrace = galleryInfoStr.indexOf("{");
-        int lastBrace = galleryInfoStr.lastIndexOf("}");
-        if (firstBrace > -1 && lastBrace > -1) {
-            String galleryJson = galleryInfoStr.substring(firstBrace, lastBrace + 1);
-            HitomiGalleryInfo galleryInfo = JsonHelper.jsonToObject(galleryJson, HitomiGalleryInfo.class);
-            galleryInfo.updateContent(content);
-        } else throw new EmptyResultException("Couldn't find gallery information");
+        return Collections.emptyList();
     }
 
     @Override
