@@ -27,6 +27,9 @@ import timber.log.Timber;
 public class AnchiraActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "anchira.to";
+    private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
+
+    private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "adGuardBase", "adtrace.online", "Admanager"};
     private static final String[] GALLERY_FILTER = {"//anchira.to/g/[\\w\\-]+/[\\w\\-]+$", "//anchira.to/api/v1/library/[\\w\\-]+/[\\w\\-]+$"};
 
     Site getStartSite() {
@@ -38,6 +41,8 @@ public class AnchiraActivity extends BaseWebActivity {
         AnchiraWebClient client = new AnchiraWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.setJsStartupScripts("anchira_pages.js");
+        for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
+        client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
         webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsInterface(s -> client.jsHandler(s, false)), "anchiraJsInterface");
         return client;
     }
@@ -69,7 +74,9 @@ public class AnchiraActivity extends BaseWebActivity {
 
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
-            return AnchiraBackgroundWebView.Companion.shouldInterceptRequestInternal(view, request, site);
+            WebResourceResponse res = AnchiraBackgroundWebView.Companion.shouldInterceptRequestInternal(view, request, site);
+            if (null == res) return super.shouldInterceptRequest(view, request);
+            else return res;
         }
 
         public void jsHandler(AnchiraGalleryMetadata a, boolean quickDownload) {

@@ -160,7 +160,7 @@ class AnchiraBackgroundWebView(context: Context, site: Site) : WebView(context) 
                     Timber.w(e)
                 }
             }
-            return sendRequest(request, site)
+            return null
         }
 
         // TODO optimize, factorize with the ones in HitomiWv and CustomWebViewClient
