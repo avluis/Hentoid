@@ -7,18 +7,16 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
-import java.util.Map;
+import java.io.IOException;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.AnchiraGalleryMetadata;
-import me.devsaki.hentoid.parsers.content.AnchiraContent;
-import me.devsaki.hentoid.parsers.images.AnchiraParser;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.AnchiraBackgroundWebView;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -30,7 +28,7 @@ public class AnchiraActivity extends BaseWebActivity {
     private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
 
     private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "adGuardBase", "adtrace.online", "Admanager"};
-    private static final String[] GALLERY_FILTER = {"//anchira.to/g/[\\w\\-]+/[\\w\\-]+$", "//anchira.to/api/v1/library/[\\w\\-]+/[\\w\\-]+$"};
+    private static final String[] GALLERY_FILTER = {}; // {"//anchira.to/g/[\\w\\-]+/[\\w\\-]+$", "//anchira.to/api/v1/library/[\\w\\-]+/[\\w\\-]+$"};
 
     Site getStartSite() {
         return Site.ANCHIRA;
@@ -44,6 +42,7 @@ public class AnchiraActivity extends BaseWebActivity {
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
         webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsInterface(s -> client.jsHandler(s, false)), "anchiraJsInterface");
+
         return client;
     }
 
@@ -54,6 +53,7 @@ public class AnchiraActivity extends BaseWebActivity {
         }
 
         // Call the API without using BaseWebActivity.parseResponse
+        /*
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             activity.onGalleryPageStarted();
@@ -71,9 +71,34 @@ public class AnchiraActivity extends BaseWebActivity {
 
             return null;
         }
+         */
 
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
+            String url = request.getUrl().toString();
+
+            // Kill CORS
+            if (url.contains(AnchiraGalleryMetadata.IMG_HOST) && request.getMethod().equalsIgnoreCase("options")) {
+                try {
+                    Response response = HttpHelper.optOnlineResourceFast(
+                            url,
+                            HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), url),
+                            Site.ANCHIRA.useMobileAgent(), Site.ANCHIRA.useHentoidAgent(), Site.ANCHIRA.useWebviewAgent()
+                    );
+
+                    // Scram if the response is a redirection or an error
+                    if (response.code() >= 300) return null;
+
+                    // Scram if the response is empty
+                    ResponseBody body = response.body();
+                    if (null == body) throw new IOException("Empty body");
+
+                    return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream());
+                } catch (IOException e) {
+                    Timber.w(e);
+                }
+            }
+
             WebResourceResponse res = AnchiraBackgroundWebView.Companion.shouldInterceptRequestInternal(view, request, site);
             if (null == res) return super.shouldInterceptRequest(view, request);
             else return res;

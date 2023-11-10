@@ -17,7 +17,7 @@ import me.devsaki.hentoid.util.StringHelper;
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class AnchiraGalleryMetadata {
 
-    private static final String IMG_HOST = "https://kisakisexo.xyz";
+    public static final String IMG_HOST = "https://kisakisexo.xyz";
 
     private int id;
     private String key;
