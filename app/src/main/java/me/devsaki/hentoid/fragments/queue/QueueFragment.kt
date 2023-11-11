@@ -151,6 +151,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         check(requireActivity() is QueueActivity) { "Parent activity has to be a QueueActivity" }
         activity = WeakReference(requireActivity() as QueueActivity)
 
+        val vmFactory = ViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider(requireActivity(), vmFactory)[QueueViewModel::class.java]
+
         listRefreshDebouncer = Debouncer(lifecycleScope, 75)
         { topItemPosition: Int -> this.onRecyclerUpdated(topItemPosition) }
 
@@ -242,6 +245,16 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         addCustomBackControl()
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.getQueue().observe(viewLifecycleOwner) { result -> onQueueChanged(result) }
+        viewModel.getContentHashToShowFirst().observe(viewLifecycleOwner) { hash: Long ->
+            contentHashToDisplayFirst = hash
+        }
+        viewModel.getNewSearch().observe(viewLifecycleOwner) { b: Boolean -> newSearch = b }
     }
 
     private fun addCustomBackControl() {
@@ -443,19 +456,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 } else super.onBind(viewHolder)
             }
         })
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val vmFactory = ViewModelFactory(requireActivity().application)
-        viewModel = ViewModelProvider(requireActivity(), vmFactory)[QueueViewModel::class.java]
-        viewModel.getQueue().observe(viewLifecycleOwner) { result: List<QueueRecord> ->
-            onQueueChanged(result)
-        }
-        viewModel.getContentHashToShowFirst().observe(viewLifecycleOwner) { hash: Long ->
-            contentHashToDisplayFirst = hash
-        }
-        viewModel.getNewSearch().observe(viewLifecycleOwner) { b: Boolean -> newSearch = b }
     }
 
     /**

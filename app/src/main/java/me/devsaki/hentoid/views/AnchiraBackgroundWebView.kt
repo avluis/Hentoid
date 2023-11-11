@@ -13,7 +13,6 @@ import me.devsaki.hentoid.activities.sources.WebResultConsumer
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.json.sources.AnchiraGalleryMetadata
 import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.HttpHelper
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -80,8 +79,7 @@ class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, si
 
                             val beginStr = "arguments;return new Promise((function("
                             val beginIndex = jsFile.indexOf(beginStr)
-                            val endIndex = jsFile.indexOf("(void 0)}))}}")
-                            if (beginIndex > -1 && endIndex > -1) {
+                            if (beginIndex > -1) {
                                 val funStr = "function "
                                 val funBeginIndex =
                                     jsFile.indexOf(funStr, beginIndex + beginStr.length)
@@ -109,42 +107,6 @@ class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, si
                     }
                 } catch (e: IOException) {
                     Timber.w(e)
-                }
-            }
-            return null
-        }
-
-        // TODO optimize, factorize with the ones in HitomiWv and CustomWebViewClient
-        private fun sendRequest(
-            request: WebResourceRequest,
-            site: Site
-        ): WebResourceResponse? {
-            if (Preferences.getDnsOverHttps() > -1) {
-                // Query resource using OkHttp
-                val urlStr = request.url.toString()
-                val requestHeadersList =
-                    HttpHelper.webkitRequestHeadersToOkHttpHeaders(
-                        request.requestHeaders,
-                        urlStr
-                    )
-                try {
-                    val response = HttpHelper.getOnlineResource(
-                        urlStr,
-                        requestHeadersList,
-                        site.useMobileAgent(),
-                        site.useHentoidAgent(),
-                        site.useWebviewAgent()
-                    )
-
-                    // Scram if the response is a redirection or an error
-                    if (response.code >= 300) return null
-                    val body = response.body ?: throw IOException("Empty body")
-                    return HttpHelper.okHttpResponseToWebkitResponse(
-                        response,
-                        body.byteStream()
-                    )
-                } catch (e: IOException) {
-                    Timber.i(e)
                 }
             }
             return null

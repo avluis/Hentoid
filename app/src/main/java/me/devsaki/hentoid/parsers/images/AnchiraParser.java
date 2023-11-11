@@ -10,11 +10,7 @@ import androidx.annotation.Nullable;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,8 +21,8 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.views.AnchiraBackgroundWebView;
 import timber.log.Timber;
 
@@ -35,7 +31,8 @@ import timber.log.Timber;
  */
 public class AnchiraParser extends BaseImageListParser implements WebResultConsumer {
 
-    AtomicInteger result = new AtomicInteger(-1);
+    private final AtomicInteger resultCode = new AtomicInteger(-1);
+    private final AtomicReference<Content> resultContent = new AtomicReference<>();
 
     @Override
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
@@ -64,28 +61,34 @@ public class AnchiraParser extends BaseImageListParser implements WebResultConsu
     }
 
     public List<ImageFile> parseImageListWithWebview(@NonNull Content onlineContent) throws Exception {
-        String pageUrl = onlineContent.getGalleryUrl();
-
-        // Add referer information to downloadParams for future image download
-        Map<String, String> downloadParams = new HashMap<>();
-        downloadParams.put(HttpHelper.HEADER_REFERER_KEY, pageUrl);
-        String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
-
-        // Get pages URL
-        final AtomicBoolean done = new AtomicBoolean(false);
-        final AtomicReference<String> imagesStr = new AtomicReference<>();
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
             AnchiraBackgroundWebView anchiraWv = new AnchiraBackgroundWebView(HentoidApp.Companion.getInstance(), this, Site.ANCHIRA);
+            String pageUrl = onlineContent.getGalleryUrl();
             Timber.d(">> loading url %s", pageUrl);
             anchiraWv.loadUrl(pageUrl);
             Timber.i(">> loading wv");
         });
 
-        while (-1 == result.get()) Helper.pause(500);
-        Timber.i(">> result obtained : %d", result.get());
+        while (-1 == resultCode.get()) Helper.pause(500);
 
-        return Collections.emptyList();
+        synchronized (resultCode) {
+            int res = resultCode.get();
+            if (0 == res) {
+                Content c = resultContent.get();
+                if (c != null) {
+                    onlineContent.setTitle(c.getTitle());
+                    onlineContent.setCoverImageUrl(c.getCoverImageUrl());
+                    onlineContent.putAttributes(c.getAttributeMap());
+                    onlineContent.setImageFiles(c.getImageList());
+                    onlineContent.setUpdatedProperties(true);
+                    return c.getImageList();
+                }
+            } else if (2 == res) {
+                throw new ParseException("Parsing has failed");
+            }
+            throw new EmptyResultException("Parsing hasn't found any page");
+        }
     }
 
     @Override
@@ -95,18 +98,18 @@ public class AnchiraParser extends BaseImageListParser implements WebResultConsu
     }
 
     @Override
-    public void onResultReady(@NonNull Content results, boolean quickDownload) {
-        Timber.i(results.getTitle());
-        result.set(0);
+    public void onResultReady(@NonNull Content result, boolean quickDownload) {
+        resultContent.set(result);
+        resultCode.set(0);
     }
 
     @Override
     public void onNoResult() {
-        result.set(1);
+        resultCode.set(1);
     }
 
     @Override
     public void onResultFailed() {
-        result.set(2);
+        resultCode.set(2);
     }
 }

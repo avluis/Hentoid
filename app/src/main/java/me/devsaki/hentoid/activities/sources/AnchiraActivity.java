@@ -13,6 +13,7 @@ import java.io.IOException;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.sources.AnchiraGalleryMetadata;
+import me.devsaki.hentoid.parsers.images.AnchiraParser;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.AnchiraBackgroundWebView;
 import okhttp3.Response;
@@ -81,6 +82,21 @@ public class AnchiraActivity extends BaseWebActivity {
             WebResourceResponse res = AnchiraBackgroundWebView.Companion.shouldInterceptRequestInternal(view, request, site);
             if (null == res) return super.shouldInterceptRequest(view, request);
             else return res;
+        }
+
+        @Override
+        protected Content processContent(@NonNull Content content, @NonNull String url, boolean quickDownload) {
+            if (quickDownload) {
+                // Use a background Wv to get book attributes
+                AnchiraParser parser = new AnchiraParser();
+                try {
+                    parser.parseImageListWithWebview(content);
+                } catch (Exception e) {
+                    Timber.w(e);
+                }
+            }
+
+            return super.processContent(content, url, quickDownload);
         }
 
         public void jsHandler(AnchiraGalleryMetadata a, boolean quickDownload) {

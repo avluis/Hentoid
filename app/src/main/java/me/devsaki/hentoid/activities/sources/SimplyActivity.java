@@ -64,9 +64,9 @@ public class SimplyActivity extends BaseWebActivity {
             super.destroy();
         }
 
+        // Call the API without using BaseWebActivity.parseResponse
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-            // Call the API without using BaseWebActivity.parseResponse
             if (!urlStr.endsWith("/status") && !urlStr.endsWith("/home") && !urlStr.endsWith("/starting")) {
                 if (urlStr.contains("api.simply-hentai.com") && (analyzeForDownload || quickDownload)) {
                     if (activity != null) activity.onGalleryPageStarted();

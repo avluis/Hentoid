@@ -556,13 +556,16 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             binding.quickDlFeedback.setVisibility(View.VISIBLE);
 
             // Run on a new thread to avoid crashes
-            parseResponseDisposable.add(Single.fromCallable(() -> webClient.parseResponseOptional(url, null, true, true)).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(res -> {
-                if (res.isEmpty()) {
-                    binding.quickDlFeedback.setVisibility(View.INVISIBLE);
-                } else {
-                    binding.quickDlFeedback.setIndicatorColor(ThemeHelper.INSTANCE.getColor(this, R.color.secondary_light));
-                }
-            }, Timber::e));
+            parseResponseDisposable.add(Single.fromCallable(() -> webClient.parseResponseOptional(url, null, true, true))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(res -> {
+                        if (res.isEmpty()) {
+                            binding.quickDlFeedback.setVisibility(View.INVISIBLE);
+                        } else {
+                            binding.quickDlFeedback.setIndicatorColor(ThemeHelper.INSTANCE.getColor(this, R.color.secondary_light));
+                        }
+                    }, Timber::e));
         }
     }
 
