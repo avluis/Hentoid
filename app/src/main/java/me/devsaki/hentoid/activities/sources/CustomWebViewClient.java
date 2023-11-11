@@ -172,10 +172,12 @@ class CustomWebViewClient extends WebViewClient {
         );
     }
 
-    CustomWebViewClient(Site site, WebResultConsumer resConsumer) {
+    CustomWebViewClient(Site site, String[] galleryUrl, WebResultConsumer resConsumer) {
         this.site = site;
         this.activity = null;
         this.resConsumer = resConsumer;
+
+        for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
 
         htmlAdapter = initJspoon(site);
         adBlocker = new AdBlocker(site);

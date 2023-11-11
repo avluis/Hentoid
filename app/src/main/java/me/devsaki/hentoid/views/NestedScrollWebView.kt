@@ -90,8 +90,6 @@ class NestedScrollWebView : VariableLongClickWebView {
     }
 
     // NestedScrollingChild
-
-    // NestedScrollingChild
     override fun setNestedScrollingEnabled(enabled: Boolean) {
         mChildHelper.isNestedScrollingEnabled = enabled
     }

@@ -58,11 +58,12 @@ open class VariableLongClickWebView : WebView {
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> longTapDebouncer.submit(
-                Point(event.x.toInt(), event.y.toInt())
-            )
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN ->
+                longTapDebouncer.submit(Point(event.x.toInt(), event.y.toInt()))
 
-            MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> longTapDebouncer.clear()
+            MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP/*, MotionEvent.ACTION_CANCEL*/ ->
+                longTapDebouncer.clear()
+
             else -> {}
         }
         return super.onTouchEvent(event)

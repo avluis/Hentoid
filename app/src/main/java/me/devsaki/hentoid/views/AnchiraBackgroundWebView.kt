@@ -36,7 +36,7 @@ class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, si
         webSettings.javaScriptEnabled = true
         webSettings.loadWithOverviewMode = true
         if (BuildConfig.DEBUG) setWebContentsDebuggingEnabled(true)
-        client = AnchiraWebClient(site, consumer)
+        client = AnchiraWebClient(site, emptyArray(), consumer)
         webViewClient = client
 
         addJavascriptInterface(AnchiraJsInterface { s ->

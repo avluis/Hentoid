@@ -28,7 +28,7 @@ public class AnchiraActivity extends BaseWebActivity {
     private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
 
     private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "adGuardBase", "adtrace.online", "Admanager"};
-    private static final String[] GALLERY_FILTER = {}; // {"//anchira.to/g/[\\w\\-]+/[\\w\\-]+$", "//anchira.to/api/v1/library/[\\w\\-]+/[\\w\\-]+$"};
+    private static final String[] GALLERY_FILTER = {"//anchira.to/g/[\\w\\-]+/[\\w\\-]+$"/*, "//anchira.to/api/v1/library/[\\w\\-]+/[\\w\\-]+$"*/};
 
     Site getStartSite() {
         return Site.ANCHIRA;
@@ -36,7 +36,7 @@ public class AnchiraActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient createWebClient() {
-        AnchiraWebClient client = new AnchiraWebClient(getStartSite(), this);
+        AnchiraWebClient client = new AnchiraWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
@@ -48,31 +48,10 @@ public class AnchiraActivity extends BaseWebActivity {
 
     public static class AnchiraWebClient extends CustomWebViewClient {
 
-        public AnchiraWebClient(Site site, WebResultConsumer resultConsumer) {
-            super(site, resultConsumer);
+        public AnchiraWebClient(Site site, String[] filter, WebResultConsumer resultConsumer) {
+            super(site, filter, resultConsumer);
             setJsStartupScripts("anchira_pages.js");
         }
-
-        // Call the API without using BaseWebActivity.parseResponse
-        /*
-        @Override
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-            if (activity != null) activity.onGalleryPageStarted();
-
-            Content content = new AnchiraContent().toContent(urlStr);
-            AnchiraParser parser = new AnchiraParser();
-            try {
-                //parser.parseImageListWithWebview(content, webView); // Only fetch them when queue is processed
-                content.setStatus(StatusContent.SAVED);
-            } catch (Exception e) {
-                Helper.logException(e);
-                Timber.i(e);
-                content.setStatus(StatusContent.IGNORED);
-            }
-
-            return null;
-        }
-        */
 
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
