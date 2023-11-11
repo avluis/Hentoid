@@ -34,7 +34,6 @@
         android:elevation="6dp"
         android:focusable="true"
         android:longClickable="true"
-        android:paddingStart="4dp"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible">
 
@@ -113,6 +112,19 @@
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_hentoid_shape" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/selection_border"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bg_rectangle_border"
+            android:clickable="false"
+            android:focusable="false"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
