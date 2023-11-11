@@ -512,7 +512,8 @@ class ReaderViewModel(
         val completedThresholdPosition = (completedThresholdRatio * nbReadablePages).roundToInt()
         val collectionIndex =
             viewerIndex + if (-1 == thumbIndex || thumbIndex > viewerIndex) 0 else 1
-        val indexToSet = if (collectionIndex >= nbReadablePages) 0 else collectionIndex
+        val isLastPage = viewerIndex >= viewerImagesInternal.size - 1
+        val indexToSet = if (isLastPage) 0 else collectionIndex
         val updateReads = readPageNumbers.size >= readThresholdPosition || theContent.reads > 0
         val markAsComplete = readPageNumbers.size >= completedThresholdPosition
 
@@ -552,7 +553,8 @@ class ReaderViewModel(
 
             // Update image read status with the cached read statuses
             val previousReadPageNumbers =
-                theImages.filter { obj -> obj.isRead && obj.isReadable }.map { obj -> obj.order }
+                theImages.filter { obj -> obj.isRead && obj.isReadable }
+                    .map { obj -> obj.order }
                     .toSet()
             val reReadPagesNumbers = readPageNumbers.toMutableSet()
             reReadPagesNumbers.retainAll(previousReadPageNumbers)
@@ -560,7 +562,8 @@ class ReaderViewModel(
                 for (img in theImages) if (readPageNumbers.contains(img.order)) img.isRead = true
                 savedContent.computeReadProgress()
             }
-            if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.isCompleted != markAsCompleted) ContentHelper.updateContentReadStats(
+            if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.isCompleted != markAsCompleted)
+                ContentHelper.updateContentReadStats(
                 getApplication(),
                 dao,
                 savedContent,
