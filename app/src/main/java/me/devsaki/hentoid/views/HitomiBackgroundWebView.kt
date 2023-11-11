@@ -43,7 +43,7 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
 
     internal class SingleLoadWebViewClient(private val site: Site) :
         WebViewClient() {
-        private var targetUrl: String? = null
+        private var targetUrl: String = ""
         private var onLoaded: Runnable? = null
         private val isPageLoading = AtomicBoolean(false)
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
@@ -54,7 +54,7 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
         override fun onPageFinished(view: WebView, url: String) {
             Timber.v(">>> onPageFinished %s", url)
             isPageLoading.set(false)
-            if (onLoaded != null && targetUrl.equals(url, ignoreCase = true)) onLoaded!!.run()
+            if (targetUrl.equals(url, ignoreCase = true)) onLoaded?.run()
         }
 
         fun startLoad(url: String, onLoaded: Runnable) {

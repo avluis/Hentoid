@@ -383,18 +383,19 @@ class CustomWebViewClient extends WebViewClient {
         List<Pair<String, String>> requestHeadersList;
         requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url);
 
-        Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-        ResponseBody body = onlineFileResponse.body();
-        if (null == body) throw new IOException("Empty response from server");
+        try (Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent())) {
+            ResponseBody body = onlineFileResponse.body();
+            if (null == body) throw new IOException("Empty response from server");
 
-        File cacheDir = context.getCacheDir();
-        // Using a random file name rather than the original name to avoid errors caused by path length
-        File file = new File(cacheDir.getAbsolutePath() + File.separator + Helper.getRandomInt(10000) + "." + getExtensionFromUri(url));
-        if (!file.createNewFile()) throw new IOException("Couldn't create file");
+            File cacheDir = context.getCacheDir();
+            // Using a random file name rather than the original name to avoid errors caused by path length
+            File file = new File(cacheDir.getAbsolutePath() + File.separator + Helper.getRandomInt(10000) + "." + getExtensionFromUri(url));
+            if (!file.createNewFile()) throw new IOException("Couldn't create file");
 
-        Uri torrentFileUri = Uri.fromFile(file);
-        FileHelper.saveBinary(context, torrentFileUri, body.bytes());
-        return file;
+            Uri torrentFileUri = Uri.fromFile(file);
+            FileHelper.saveBinary(context, torrentFileUri, body.bytes());
+            return file;
+        }
     }
 
     /**
@@ -480,9 +481,7 @@ class CustomWebViewClient extends WebViewClient {
             // Query resource using OkHttp
             String urlStr = request.getUrl().toString();
             List<Pair<String, String>> requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), urlStr);
-            try {
-                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-
+            try (Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent())) {
                 // Scram if the response is a redirection or an error
                 if (response.code() >= 300) return null;
 
@@ -659,6 +658,8 @@ class CustomWebViewClient extends WebViewClient {
                 return result;
             } catch (IOException | IllegalStateException e) {
                 Timber.e(e);
+            } finally {
+                response.close();
             }
         }
         return null;
