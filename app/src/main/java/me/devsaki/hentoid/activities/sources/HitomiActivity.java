@@ -12,7 +12,6 @@ import androidx.annotation.NonNull;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -59,10 +58,9 @@ public class HitomiActivity extends BaseWebActivity {
             String url,
             boolean isGalleryPage,
             boolean isHtmlLoaded,
-            boolean isBookmarkable,
-            List<String> jsStartupScripts) {
+            boolean isBookmarkable) {
         languageFilterButton.setVisibility(View.INVISIBLE);
-        super.onPageStarted(url, isGalleryPage, isHtmlLoaded, isBookmarkable, jsStartupScripts);
+        super.onPageStarted(url, isGalleryPage, isHtmlLoaded, isBookmarkable);
     }
 
     @Override

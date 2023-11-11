@@ -66,7 +66,7 @@ public class EHentaiActivity extends BaseWebActivity {
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             if (analyzeForDownload || quickDownload) {
-                activity.onGalleryPageStarted();
+                if (activity != null) activity.onGalleryPageStarted();
 
                 ContentParser contentParser = new EhentaiContent();
                 compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
@@ -75,7 +75,7 @@ public class EHentaiActivity extends BaseWebActivity {
                         .map(content -> super.processContent(content, urlStr, quickDownload))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                content2 -> activity.onResultReady(content2, quickDownload),
+                                content2 -> resConsumer.onResultReady(content2, quickDownload),
                                 Timber::w
                         )
                 );

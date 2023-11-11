@@ -566,26 +566,22 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
     }
 
-    public void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded, boolean isBookmarkable, List<String> jsStartupScripts) {
+    public void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded, boolean isBookmarkable) {
         refreshStopMenu.setIcon(R.drawable.ic_close);
         binding.progressBar.setVisibility(View.GONE);
         if (!isHtmlLoaded) disableActions();
 
         // Activate fetch handler
         if (fetchHandler != null) {
-            if (null == jsInterceptorScript) jsInterceptorScript = getJsScript("fetch_override.js");
+            if (null == jsInterceptorScript)
+                jsInterceptorScript = CustomWebViewClient.getJsScript(this, "fetch_override.js");
             webView.loadUrl(jsInterceptorScript);
         }
         // Activate XHR handler
         if (xhrHandler != null) {
-            if (null == jsInterceptorScript) jsInterceptorScript = getJsScript("xhr_override.js");
+            if (null == jsInterceptorScript)
+                jsInterceptorScript = CustomWebViewClient.getJsScript(this, "xhr_override.js");
             webView.loadUrl(jsInterceptorScript);
-        }
-
-        // Activate startup JS
-        if (jsStartupScripts != null) {
-            for (String s : jsStartupScripts)
-                webView.loadUrl(getJsScript(s));
         }
 
         // Display download button tooltip if a book page has been reached
@@ -1421,13 +1417,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             webView.setLongClickThreshold(Preferences.getBrowserQuickDlThreshold());
         }
         if (reload && !webClient.isLoading()) webView.reload();
-    }
-
-    private String getJsScript(String assetName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("javascript:");
-        FileHelper.getAssetAsString(getAssets(), assetName, sb);
-        return sb.toString();
     }
 
     public String getCustomCss() {

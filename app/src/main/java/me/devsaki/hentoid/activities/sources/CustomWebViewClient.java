@@ -91,11 +91,11 @@ class CustomWebViewClient extends WebViewClient {
     private final byte[] NOTHING = new byte[0];
     // Pre-built object to represent WEBP binary data for the checkmark icon used to mark downloaded books
     // (will be fed directly to the browser when the resourcei is requested)
-    private final byte[] CHECKMARK;
+    private final static byte[] CHECKMARK;
     // this is for merged books
-    private final byte[] MERGED_MARK;
+    private final static byte[] MERGED_MARK;
     // this is for books with blocked tags;
-    private final byte[] BLOCKED_MARK;
+    private final static byte[] BLOCKED_MARK;
 
     // Site for the session
     protected final Site site;
@@ -103,6 +103,8 @@ class CustomWebViewClient extends WebViewClient {
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
     // Listener to the results of the page parser
     protected final CustomWebActivity activity;
+    // Listener to the results of the page parser
+    protected final WebResultConsumer resConsumer;
     // List of the URL patterns identifying a parsable book gallery page
     private final List<Pattern> galleryUrlPattern = new ArrayList<>();
     // List of the URL patterns identifying a parsable book gallery page
@@ -147,18 +149,7 @@ class CustomWebViewClient extends WebViewClient {
     private List<String> jsStartupScripts;
 
 
-    CustomWebViewClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
-        this.site = site;
-        this.activity = activity;
-
-        Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(site);
-        final Jspoon jspoon = Jspoon.create();
-        htmlAdapter = jspoon.adapter(c); // Unchecked but alright
-
-        adBlocker = new AdBlocker(site);
-
-        for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
-
+    static {
         CHECKMARK = ImageHelper.INSTANCE.bitmapToWebp(
                 ImageHelper.INSTANCE.tintBitmap(
                         ImageHelper.INSTANCE.getBitmapFromVectorDrawable(HentoidApp.Companion.getInstance(), R.drawable.ic_checked),
@@ -179,6 +170,32 @@ class CustomWebViewClient extends WebViewClient {
                         ContextCompat.getColor(HentoidApp.Companion.getInstance(), R.color.secondary_light)
                 )
         );
+    }
+
+    CustomWebViewClient(Site site, WebResultConsumer resConsumer) {
+        this.site = site;
+        this.activity = null;
+        this.resConsumer = resConsumer;
+
+        htmlAdapter = initJspoon(site);
+        adBlocker = new AdBlocker(site);
+    }
+
+    CustomWebViewClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
+        this.site = site;
+        this.activity = activity;
+        this.resConsumer = activity;
+
+        for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
+
+        htmlAdapter = initJspoon(site);
+        adBlocker = new AdBlocker(site);
+    }
+
+    private HtmlAdapter<? extends ContentParser> initJspoon(Site site) {
+        Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(site);
+        final Jspoon jspoon = Jspoon.create();
+        return jspoon.adapter(c); // Unchecked but alright
     }
 
     void destroy() {
@@ -409,7 +426,14 @@ class CustomWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         if (BuildConfig.DEBUG) Timber.v("WebView : page started %s", url);
         isPageLoading.set(true);
-        activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded.get(), true, jsStartupScripts);
+
+        // Activate startup JS
+        if (jsStartupScripts != null) {
+            for (String s : jsStartupScripts) view.loadUrl(getJsScript(view.getContext(), s));
+        }
+
+        if (activity != null)
+            activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded.get(), true);
     }
 
     @Override
@@ -417,7 +441,8 @@ class CustomWebViewClient extends WebViewClient {
         if (BuildConfig.DEBUG) Timber.v("WebView : page finished %s", url);
         isPageLoading.set(false);
         isHtmlLoaded.set(false); // Reset for the next page
-        activity.onPageFinished(isResultsPage(StringHelper.protect(url)), isGalleryPage(url));
+        if (activity != null)
+            activity.onPageFinished(isResultsPage(StringHelper.protect(url)), isGalleryPage(url));
     }
 
     /**
@@ -465,7 +490,7 @@ class CustomWebViewClient extends WebViewClient {
 
             // If we're here to remove removable elements or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !activity.getCustomCss().isEmpty())
+            if ((removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || (activity != null && !activity.getCustomCss().isEmpty()))
                     && (HttpHelper.getExtensionFromUri(url).isEmpty() || HttpHelper.getExtensionFromUri(url).equalsIgnoreCase("html"))) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
@@ -502,7 +527,9 @@ class CustomWebViewClient extends WebViewClient {
      */
     void browserLoadAsync(@NonNull String url) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> activity.loadUrl(url))
+                Completable.fromRunnable(() -> {
+                            if (activity != null) activity.loadUrl(url);
+                        })
                         .subscribeOn(AndroidSchedulers.mainThread())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(() -> {
@@ -539,7 +566,7 @@ class CustomWebViewClient extends WebViewClient {
         // If we're here for remove elements only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
-        if (analyzeForDownload) activity.onGalleryPageStarted();
+        if (analyzeForDownload && activity != null) activity.onGalleryPageStarted();
 
         List<Pair<String, String>> requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, urlStr);
 
@@ -608,10 +635,12 @@ class CustomWebViewClient extends WebViewClient {
                     }
 
                     // Remove removable elements from HTML resources
-                    String customCss = activity.getCustomCss();
-                    if (removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !customCss.isEmpty()) {
-                        browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls(), activity.getPrefBlockedTags());
-                        if (null == browserStream) return null;
+                    if (activity != null) {
+                        String customCss = activity.getCustomCss();
+                        if (removableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !customCss.isEmpty()) {
+                            browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls(), activity.getPrefBlockedTags());
+                            if (null == browserStream) return null;
+                        }
                     }
 
                     // Convert OkHttp response to the expected format
@@ -643,16 +672,16 @@ class CustomWebViewClient extends WebViewClient {
                                     .map(content -> processContent(content, urlStr, quickDownload))
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
-                                            content2 -> activity.onResultReady(content2, quickDownload),
+                                            content2 -> resConsumer.onResultReady(content2, quickDownload),
                                             throwable -> {
                                                 Timber.e(throwable, "Error parsing content.");
                                                 isHtmlLoaded.set(true);
-                                                activity.onResultFailed();
+                                                resConsumer.onResultFailed();
                                             })
                     );
                 } else {
                     isHtmlLoaded.set(true);
-                    activity.onNoResult();
+                    resConsumer.onNoResult();
                 }
 
                 return result;
@@ -911,7 +940,15 @@ class CustomWebViewClient extends WebViewClient {
         return Stream.of(classNames).anyMatch(forbiddenElements::contains);
     }
 
-    interface CustomWebActivity {
+    public static String getJsScript(Context context, String assetName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("javascript:");
+        FileHelper.getAssetAsString(context.getAssets(), assetName, sb);
+        return sb.toString();
+    }
+
+
+    interface CustomWebActivity extends WebResultConsumer {
         // ACTIONS
         void loadUrl(@NonNull final String url);
 
@@ -920,30 +957,11 @@ class CustomWebViewClient extends WebViewClient {
                 String url,
                 boolean isGalleryPage,
                 boolean isHtmlLoaded,
-                boolean isBookmarkable,
-                List<String> jsStartupScripts);
+                boolean isBookmarkable);
 
         void onPageFinished(boolean isResultsPage, boolean isGalleryPage);
 
         void onGalleryPageStarted();
-
-        /**
-         * Callback when the page has been successfuly parsed into a Content
-         *
-         * @param results       Parsed Content
-         * @param quickDownload True if the action has been triggered by a quick download action
-         */
-        void onResultReady(@NonNull Content results, boolean quickDownload);
-
-        /**
-         * Callback when the page does not have any Content to parse
-         */
-        void onNoResult();
-
-        /**
-         * Callback when the page should have been parsed into a Content, but the parsing failed
-         */
-        void onResultFailed();
 
         // GETTERS
         List<String> getAllSiteUrls();

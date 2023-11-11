@@ -69,7 +69,7 @@ public class SimplyActivity extends BaseWebActivity {
             // Call the API without using BaseWebActivity.parseResponse
             if (!urlStr.endsWith("/status") && !urlStr.endsWith("/home") && !urlStr.endsWith("/starting")) {
                 if (urlStr.contains("api.simply-hentai.com") && (analyzeForDownload || quickDownload)) {
-                    activity.onGalleryPageStarted();
+                    if (activity != null) activity.onGalleryPageStarted();
 
                     ContentParser contentParser = new SimplyApiContent();
                     compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
@@ -77,7 +77,7 @@ public class SimplyActivity extends BaseWebActivity {
                             .map(content -> super.processContent(content, content.getGalleryUrl(), quickDownload))
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
-                                    content2 -> activity.onResultReady(content2, quickDownload),
+                                    content2 -> resConsumer.onResultReady(content2, quickDownload),
                                     Timber::e
                             )
                     );

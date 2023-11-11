@@ -1,102 +1,53 @@
 package me.devsaki.hentoid.views
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import com.annimon.stream.function.Consumer
 import me.devsaki.hentoid.BuildConfig
+import me.devsaki.hentoid.activities.sources.AnchiraActivity.AnchiraWebClient
+import me.devsaki.hentoid.activities.sources.WebResultConsumer
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.json.sources.AnchiraGalleryMetadata
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.HttpHelper
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.atomic.AtomicBoolean
 
-class AnchiraBackgroundWebView(context: Context, site: Site) : WebView(context) {
-    private var client: SingleLoadWebViewClient
+class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, site: Site) :
+    WebView(context) {
+    private val client: AnchiraWebClient
 
     init {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptThirdPartyCookies(this, true)
         val webSettings = settings
+        webSettings.userAgentString = site.userAgent
         webSettings.builtInZoomControls = true
         webSettings.displayZoomControls = false
-        webSettings.userAgentString = site.userAgent
         webSettings.domStorageEnabled = true
         webSettings.useWideViewPort = true
         webSettings.javaScriptEnabled = true
         webSettings.loadWithOverviewMode = true
         if (BuildConfig.DEBUG) setWebContentsDebuggingEnabled(true)
-        client = SingleLoadWebViewClient(site)
+        client = AnchiraWebClient(site, consumer)
         webViewClient = client
-        addJavascriptInterface(
-            AnchiraJsInterface { a -> client.jsHandler(a) },
-            "anchiraJsInterface"
-        )
-    }
 
-    fun loadUrl(url: String, onLoaded: Runnable) {
-        client.startLoad(url, onLoaded)
-        super.loadUrl(url)
-    }
-
-    internal class SingleLoadWebViewClient(private val site: Site) :
-        WebViewClient() {
-        private var targetUrl: String? = null
-        private var onLoaded: Runnable? = null
-        private val isPageLoading = AtomicBoolean(false)
-        override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-            Timber.v(">>> onPageStarted %s", url)
-            isPageLoading.set(true)
-            view.loadUrl(getJsScript(view.context, "anchira_pages.js"))
-        }
-
-        override fun onPageFinished(view: WebView, url: String) {
-            Timber.v(">>> onPageFinished %s", url)
-            isPageLoading.set(false)
-            if (onLoaded != null && targetUrl.equals(url, ignoreCase = true)) onLoaded!!.run()
-        }
-
-        fun startLoad(url: String, onLoaded: Runnable) {
-            isPageLoading.set(true)
-            targetUrl = url
-            this.onLoaded = onLoaded
-        }
-
-        override fun shouldInterceptRequest(
-            view: WebView,
-            request: WebResourceRequest
-        ): WebResourceResponse? {
-            return shouldInterceptRequestInternal(view, request, site)
-        }
-
-        private fun getJsScript(context: Context, assetName: String): String {
-            val sb = java.lang.StringBuilder()
-            sb.append("javascript:")
-            FileHelper.getAssetAsString(context.assets, assetName, sb)
-            return sb.toString()
-        }
-
-        fun jsHandler(a: AnchiraGalleryMetadata) {
-            Timber.d("anchira2 %s", a)
-        }
+        addJavascriptInterface(AnchiraJsInterface { s ->
+            client.jsHandler(s, false)
+        }, "anchiraJsInterface")
     }
 
     class AnchiraJsInterface(private val handler: Consumer<AnchiraGalleryMetadata>) {
         @JavascriptInterface
         @Suppress("unused")
         fun transmit(a: String) {
-            Timber.d("anchira1 %s", a)
             val data = JsonHelper.jsonToObject(a, AnchiraGalleryMetadata::class.java)
             handler.accept(data)
         }

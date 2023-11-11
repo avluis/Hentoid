@@ -3,7 +3,6 @@ package me.devsaki.hentoid.parsers.images;
 import android.os.Handler;
 import android.os.Looper;
 import android.webkit.URLUtil;
-import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,9 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.activities.sources.WebResultConsumer;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -33,7 +33,9 @@ import timber.log.Timber;
 /**
  * Handles parsing of content from anchira.to
  */
-public class AnchiraParser extends BaseImageListParser {
+public class AnchiraParser extends BaseImageListParser implements WebResultConsumer {
+
+    AtomicInteger result = new AtomicInteger(-1);
 
     @Override
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
@@ -74,13 +76,14 @@ public class AnchiraParser extends BaseImageListParser {
         final AtomicReference<String> imagesStr = new AtomicReference<>();
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
-            if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
-            AnchiraBackgroundWebView anchiraWv = new AnchiraBackgroundWebView(HentoidApp.Companion.getInstance(), Site.ANCHIRA);
+            AnchiraBackgroundWebView anchiraWv = new AnchiraBackgroundWebView(HentoidApp.Companion.getInstance(), this, Site.ANCHIRA);
             Timber.d(">> loading url %s", pageUrl);
             anchiraWv.loadUrl(pageUrl);
-            //anchiraWv.loadUrl(pageUrl, () -> evaluateJs(anchiraWv, galleryInfo, imagesStr, done));
             Timber.i(">> loading wv");
         });
+
+        while (-1 == result.get()) Helper.pause(500);
+        Timber.i(">> result obtained : %d", result.get());
 
         return Collections.emptyList();
     }
@@ -89,5 +92,21 @@ public class AnchiraParser extends BaseImageListParser {
     protected List<String> parseImages(@NonNull Content content) {
         /// We won't use that as parseImageListImpl is overriden directly
         return null;
+    }
+
+    @Override
+    public void onResultReady(@NonNull Content results, boolean quickDownload) {
+        Timber.i(results.getTitle());
+        result.set(0);
+    }
+
+    @Override
+    public void onNoResult() {
+        result.set(1);
+    }
+
+    @Override
+    public void onResultFailed() {
+        result.set(2);
     }
 }

@@ -65,7 +65,7 @@ public class LusciousActivity extends BaseWebActivity {
         // Call the API without using BaseWebActivity.parseResponse
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-            activity.onGalleryPageStarted();
+            if (activity != null) activity.onGalleryPageStarted();
 
             ContentParser contentParser = new LusciousContent();
             compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
@@ -73,7 +73,7 @@ public class LusciousActivity extends BaseWebActivity {
                     .map(content -> super.processContent(content, content.getGalleryUrl(), quickDownload))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            content2 -> activity.onResultReady(content2, quickDownload),
+                            content2 -> resConsumer.onResultReady(content2, quickDownload),
                             Timber::e
                     )
             );

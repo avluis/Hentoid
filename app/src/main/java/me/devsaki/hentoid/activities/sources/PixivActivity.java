@@ -93,7 +93,10 @@ public class PixivActivity extends BaseWebActivity {
             for (String s : NAVIGATION_QUERIES)
                 if (url.contains(s)) {
                     compositeDisposable.add(
-                            Completable.fromRunnable(() -> activity.onPageStarted(url, isGalleryPage(url), false, false, null))
+                            Completable.fromRunnable(() -> {
+                                        if (activity != null)
+                                            activity.onPageStarted(url, isGalleryPage(url), false, false);
+                                    })
                                     .subscribeOn(AndroidSchedulers.mainThread())
                                     .subscribe()
                     );
@@ -106,7 +109,7 @@ public class PixivActivity extends BaseWebActivity {
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             if (analyzeForDownload || quickDownload) {
-                activity.onGalleryPageStarted();
+                if (activity != null) activity.onGalleryPageStarted();
 
                 if (BuildConfig.DEBUG) Timber.v("WebView : parseResponse Pixiv %s", urlStr);
 
@@ -117,7 +120,7 @@ public class PixivActivity extends BaseWebActivity {
                         .map(content -> super.processContent(content, content.getGalleryUrl(), quickDownload))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                content2 -> activity.onResultReady(content2, quickDownload),
+                                content2 -> resConsumer.onResultReady(content2, quickDownload),
                                 Timber::e
                         )
                 );

@@ -36,27 +36,28 @@ public class AnchiraActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient createWebClient() {
-        AnchiraWebClient client = new AnchiraWebClient(getStartSite(), GALLERY_FILTER, this);
+        AnchiraWebClient client = new AnchiraWebClient(getStartSite(), this);
         client.restrictTo(DOMAIN_FILTER);
-        client.setJsStartupScripts("anchira_pages.js");
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
+
         webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsInterface(s -> client.jsHandler(s, false)), "anchiraJsInterface");
 
         return client;
     }
 
-    private static class AnchiraWebClient extends CustomWebViewClient {
+    public static class AnchiraWebClient extends CustomWebViewClient {
 
-        AnchiraWebClient(Site site, String[] filter, CustomWebActivity activity) {
-            super(site, filter, activity);
+        public AnchiraWebClient(Site site, WebResultConsumer resultConsumer) {
+            super(site, resultConsumer);
+            setJsStartupScripts("anchira_pages.js");
         }
 
         // Call the API without using BaseWebActivity.parseResponse
         /*
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-            activity.onGalleryPageStarted();
+            if (activity != null) activity.onGalleryPageStarted();
 
             Content content = new AnchiraContent().toContent(urlStr);
             AnchiraParser parser = new AnchiraParser();
@@ -71,7 +72,7 @@ public class AnchiraActivity extends BaseWebActivity {
 
             return null;
         }
-         */
+        */
 
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
@@ -108,7 +109,7 @@ public class AnchiraActivity extends BaseWebActivity {
             handler.post(() -> {
                 Content content = a.toContent();
                 processContent(content, content.getGalleryUrl(), quickDownload);
-                activity.onResultReady(content, quickDownload);
+                resConsumer.onResultReady(content, quickDownload);
             });
         }
     }
