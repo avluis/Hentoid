@@ -7,4 +7,7 @@
     <dimen name="about_ic_icons_height">65dp</dimen>
     <dimen name="about_ic_icons_textSize">36sp</dimen>
     <dimen name="about_textSize">36sp</dimen>
+
+    <!-- card view -->
+    <dimen name="card_book_title">24sp</dimen>
 </resources>

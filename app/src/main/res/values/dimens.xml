@@ -64,6 +64,7 @@
     <dimen name="list_item_spacing_half">8dp</dimen>
     <dimen name="delete_drawer_width_list">80dp</dimen>
     <dimen name="delete_drawer_width_grid">60dp</dimen>
+    <dimen name="card_book_title">12sp</dimen>
 
     <!-- image viewer -->
     <dimen name="tap_zone_width">64dp</dimen>
