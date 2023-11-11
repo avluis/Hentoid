@@ -70,7 +70,12 @@ public class AnchiraParser extends BaseImageListParser implements WebResultConsu
             Timber.i(">> loading wv");
         });
 
-        while (-1 == resultCode.get()) Helper.pause(500);
+        var remainingIterations = 30; // Timeout
+        while (-1 == resultCode.get() && remainingIterations-- > 0 && !processHalted.get())
+            Helper.pause(500);
+
+        if (processHalted.get())
+            throw new EmptyResultException("Unable to detect pages (empty result)");
 
         synchronized (resultCode) {
             int res = resultCode.get();
@@ -84,8 +89,10 @@ public class AnchiraParser extends BaseImageListParser implements WebResultConsu
                     onlineContent.setUpdatedProperties(true);
                     return c.getImageList();
                 }
+            } else if (-1 == res) {
+                throw new ParseException("Parsing failed to start");
             } else if (2 == res) {
-                throw new ParseException("Parsing has failed");
+                throw new ParseException("Parsing has failed unexpectedly");
             }
             throw new EmptyResultException("Parsing hasn't found any page");
         }

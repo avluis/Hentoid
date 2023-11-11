@@ -97,7 +97,6 @@ public class HitomiParser extends BaseImageListParser {
         Handler handler = new Handler(Looper.getMainLooper());
         if (null == webview) {
             handler.post(() -> {
-                if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
                 HitomiBackgroundWebView hitomiWv = new HitomiBackgroundWebView(HentoidApp.Companion.getInstance(), Site.HITOMI);
                 Timber.d(">> loading url %s", pageUrl);
                 hitomiWv.loadUrl(pageUrl, () -> evaluateJs(hitomiWv, galleryInfo, imagesStr, done));
