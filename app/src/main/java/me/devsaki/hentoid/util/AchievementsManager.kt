@@ -159,9 +159,12 @@ object AchievementsManager {
                 if (count > 100) registerAndSignal(26)
             }
             if (!isRegistered(30)) {
-                val maxDiff =
-                    (now - db.selectOldestUpload()) / (365L * 24 * 60 * 60 * 1000) // Years
-                if (maxDiff >= 10) registerAndSignal(30)
+                val oldestUpload = db.selectOldestUpload()
+                if (oldestUpload > 0) {
+                    val maxDiff =
+                        (now - oldestUpload) / (365L * 24 * 60 * 60 * 1000) // Years
+                    if (maxDiff >= 10) registerAndSignal(30)
+                }
             }
         } finally {
             db.cleanup()
