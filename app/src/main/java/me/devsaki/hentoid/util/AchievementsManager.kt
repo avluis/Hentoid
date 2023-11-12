@@ -61,7 +61,7 @@ object AchievementsManager {
             true,
             R.string.ach_name_62,
             R.string.ach_desc_62,
-            R.drawable.ic_warning // TODO special icon
+            R.drawable.ic_star_full
         )
         result[63] = Achievement(
             63,
@@ -69,7 +69,7 @@ object AchievementsManager {
             true,
             R.string.ach_name_63,
             R.string.ach_desc_63,
-            R.drawable.ic_warning // TODO special icon
+            R.drawable.ic_star_full
         )
         return result
     }
