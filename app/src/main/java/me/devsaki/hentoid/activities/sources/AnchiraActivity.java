@@ -60,12 +60,12 @@ public class AnchiraActivity extends BaseWebActivity {
 
             // Kill CORS
             if (url.contains(AnchiraGalleryMetadata.IMG_HOST) && request.getMethod().equalsIgnoreCase("options")) {
-                try (Response response = HttpHelper.optOnlineResourceFast(
-                        url,
-                        HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), url),
-                        Site.ANCHIRA.useMobileAgent(), Site.ANCHIRA.useHentoidAgent(), Site.ANCHIRA.useWebviewAgent()
-                )) {
-
+                try {
+                    Response response = HttpHelper.optOnlineResourceFast(
+                            url,
+                            HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), url),
+                            Site.ANCHIRA.useMobileAgent(), Site.ANCHIRA.useHentoidAgent(), Site.ANCHIRA.useWebviewAgent()
+                    );
                     // Scram if the response is a redirection or an error
                     if (response.code() >= 300) return null;
 
