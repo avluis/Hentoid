@@ -130,6 +130,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     companion object {
         private const val KEY_LAST_LIST_POSITION = "last_list_position"
 
+        // The one for "legacy" List (paged mode)
         val CONTENT_ITEM_DIFF_CALLBACK: DiffCallback<ContentItem> =
             object : DiffCallback<ContentItem> {
                 override fun areItemsTheSame(
@@ -272,7 +273,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     /**
      * Diff calculation rules for contents
      *
-     *
      * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
      */
     // The one for the PagedList (endless mode)
@@ -282,7 +282,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 return oldItem.uniqueHash() == newItem.uniqueHash()
             }
 
-            // Using equals for consistency with hashcode (see comment on Content#equals)
             override fun areContentsTheSame(oldItem: Content, newItem: Content): Boolean {
                 return oldItem == newItem
             }
@@ -314,7 +313,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
         }).build()
 
-    // The one for "legacy" List (paged mode)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
