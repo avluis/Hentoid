@@ -245,7 +245,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             contentRetrieval = getPagedContentByQuery(isUniversal, searchBundle, metadata);
 
         int nbPages = Preferences.getContentPageQuantity();
-        int initialLoad = nbPages * 2;
+        int initialLoad = nbPages * 3;
         if (searchBundle.getLoadAll()) {
             // Trump Android's algorithm by setting a number of pages higher that the actual number of results
             // to avoid having a truncated result set (see issue #501)

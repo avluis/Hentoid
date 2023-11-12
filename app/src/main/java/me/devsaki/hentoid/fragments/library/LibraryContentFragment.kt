@@ -283,7 +283,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
 
             override fun areContentsTheSame(oldItem: Content, newItem: Content): Boolean {
-                return oldItem == newItem
+                if (oldItem.isFavourite != newItem.isFavourite) return false
+                if (oldItem.rating != newItem.rating) return false
+                if (oldItem.isCompleted != newItem.isCompleted) return false
+                if (oldItem.reads != newItem.reads) return false
+                if (oldItem.readPagesCount != newItem.readPagesCount) return false
+                if (oldItem.coverImageUrl != newItem.coverImageUrl) return false
+                if (oldItem.title != newItem.title) return false
+                return true
             }
 
             override fun getChangePayload(oldItem: Content, newItem: Content): Any? {
@@ -312,7 +319,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
             }
         }).build()
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
