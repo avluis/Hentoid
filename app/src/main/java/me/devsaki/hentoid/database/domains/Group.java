@@ -158,11 +158,11 @@ public class Group {
     @Override
     // Must be an int32, so we're bound to use Objects.hash
     public int hashCode() {
-        return Objects.hash(grouping, name);
+        return Objects.hash(grouping.name(), name);
     }
 
     public long uniqueHash() {
-        return Helper.hash64((grouping + "." + name).getBytes());
+        return Helper.hash64((grouping.name() + "." + name).getBytes());
     }
 
     public static class GroupingConverter implements PropertyConverter<Grouping, Integer> {

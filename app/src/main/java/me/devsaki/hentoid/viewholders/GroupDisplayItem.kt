@@ -30,7 +30,7 @@ import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
-import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.database.isReachable
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
@@ -127,12 +127,16 @@ class GroupDisplayItem(
                 var coverContent: Content? = null
                 if (!item.group.coverContent.isNull) coverContent = item.group.coverContent.target
                 else if (!item.group.items.isEmpty()) {
-                    if (item.group.items[0].content.isResolved) {
-                        val c = item.group.items[0].content.target
-                        if (c != null) coverContent = c
+                    item.group.items[0].let {
+                        if (it.content.isReachable(it)) {
+                            val c = it.content.target
+                            if (c != null) coverContent = c
+                        }
                     }
                 }
-                if (coverContent != null) attachCover(coverContent.cover)
+                var uri = coverUri
+                coverContent?.let { uri = it.cover.usableUri }
+                attachCover(uri)
             }
 
             val items: List<GroupItem>? = item.group.items
@@ -151,23 +155,21 @@ class GroupDisplayItem(
             ivRating.setImageResource(ContentHelper.getRatingResourceId(item.group.rating))
         }
 
-        private fun attachCover(cover: ImageFile) {
+        private fun attachCover(uri: String) {
             ivCover?.let {
-                var thumbLocation = coverUri
-                if (thumbLocation.isEmpty()) thumbLocation = cover.usableUri
-                if (thumbLocation.isEmpty()) {
+                if (uri.isEmpty()) {
                     it.visibility = View.INVISIBLE
                     return
                 }
                 it.visibility = View.VISIBLE
-                if (thumbLocation.startsWith("http")) Glide.with(it)
-                    .load(thumbLocation)
-                    .signature(ObjectKey(cover.uniqueHash()))
+                if (uri.startsWith("http")) Glide.with(it)
+                    .load(uri)
+                    .signature(ObjectKey(uri))
                     .apply(glideRequestOptions)
                     .into(it)
                 else Glide.with(it)
-                    .load(Uri.parse(thumbLocation))
-                    .signature(ObjectKey(cover.uniqueHash()))
+                    .load(Uri.parse(uri))
+                    .signature(ObjectKey(uri))
                     .apply(glideRequestOptions)
                     .into(it)
             }

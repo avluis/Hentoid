@@ -137,7 +137,10 @@ class LibraryGroupsFragment : Fragment(),
                     oldItem: GroupDisplayItem,
                     newItem: GroupDisplayItem
                 ): Boolean {
-                    return oldItem.group.coverContent.targetId == newItem.group.coverContent.targetId && oldItem.group.isFavourite == newItem.group.isFavourite && oldItem.group.rating == newItem.group.rating && oldItem.group.items.size == newItem.group.items.size
+                    return oldItem.group.coverContent.targetId == newItem.group.coverContent.targetId
+                            && oldItem.group.isFavourite == newItem.group.isFavourite
+                            && oldItem.group.rating == newItem.group.rating
+                            && oldItem.group.items.size == newItem.group.items.size
                 }
 
                 override fun getChangePayload(
