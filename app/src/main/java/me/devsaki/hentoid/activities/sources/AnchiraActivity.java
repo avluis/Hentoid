@@ -12,6 +12,7 @@ import java.io.IOException;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.AnchiraGalleryMetadata;
 import me.devsaki.hentoid.parsers.images.AnchiraParser;
 import me.devsaki.hentoid.util.network.HttpHelper;
@@ -49,8 +50,13 @@ public class AnchiraActivity extends BaseWebActivity {
 
     public static class AnchiraWebClient extends CustomWebViewClient {
 
-        public AnchiraWebClient(Site site, String[] filter, WebResultConsumer resultConsumer) {
-            super(site, filter, resultConsumer);
+        public AnchiraWebClient(Site site, String[] galleryUrl, WebResultConsumer resultConsumer) {
+            super(site, galleryUrl, resultConsumer);
+            setJsStartupScripts("anchira_pages.js");
+        }
+
+        AnchiraWebClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
+            super(site, galleryUrl, activity);
             setJsStartupScripts("anchira_pages.js");
         }
 
@@ -91,8 +97,11 @@ public class AnchiraActivity extends BaseWebActivity {
                 AnchiraParser parser = new AnchiraParser();
                 try {
                     parser.parseImageListWithWebview(content);
+                    content.setStatus(StatusContent.SAVED);
+                    if (activity != null) activity.onGalleryPageStarted();
                 } catch (Exception e) {
                     Timber.w(e);
+                    content.setStatus(StatusContent.IGNORED);
                 }
             }
 
