@@ -9,11 +9,7 @@ import me.devsaki.hentoid.database.domains.DuplicateEntry
 
 class DuplicatesDAO(ctx: Context) {
     private val db: ObjectBoxDB = ObjectBoxDB.getInstance(ctx)
-
-    init {
-        DuplicatesDB.init(ctx)
-    }
-
+    
     fun cleanup() {
         db.cleanup()
         DuplicatesDB.cleanup()

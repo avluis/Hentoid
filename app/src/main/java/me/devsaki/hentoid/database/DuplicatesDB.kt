@@ -1,10 +1,10 @@
 package me.devsaki.hentoid.database
 
-import android.content.Context
 import io.objectbox.BoxStore
 import io.objectbox.android.Admin
 import io.objectbox.query.Query
 import me.devsaki.hentoid.BuildConfig
+import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.database.domains.DuplicateEntry_
 import me.devsaki.hentoid.database.domains.MyObjectBox
@@ -14,16 +14,17 @@ import timber.log.Timber
 object DuplicatesDB {
     private const val DB_NAME = "duplicates-db"
 
-    lateinit var store: BoxStore
-        private set
+    val store: BoxStore by lazy { initStore() }
 
-    fun init(context: Context) {
-        store = MyObjectBox.builder().name(DB_NAME).androidContext(context.applicationContext)
+    private fun initStore(): BoxStore {
+        val context = HentoidApp.getInstance()
+        val mStore = MyObjectBox.builder().name(DB_NAME).androidContext(context)
             .maxSizeInKByte(Preferences.getMaxDbSizeKb()).build()
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
-            val started = Admin(store).start(context.applicationContext)
+            val started = Admin(mStore).start(context)
             Timber.i("ObjectBrowser started: %s", started)
         }
+        return mStore
     }
 
 
