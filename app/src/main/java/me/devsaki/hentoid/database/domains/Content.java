@@ -1083,7 +1083,7 @@ public class Content implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingProcessed(), getDownloadMode(), getLastEditDate());
+        return Objects.hash(isFavourite(), getRating(), isCompleted(), getDownloadDate(), getSize(), getLastReadDate(), isBeingProcessed(), getUrl(), getCoverImageUrl(), getSite(), getDownloadMode(), getLastEditDate());
     }
 
     public long uniqueHash() {

@@ -87,7 +87,7 @@ public class AnchiraActivity extends BaseWebActivity {
         @Override
         protected Content processContent(@NonNull Content content, @NonNull String url, boolean quickDownload) {
             if (quickDownload) {
-                // Use a background Wv to get book attributes
+                // Use a background Wv to get book attributes when targeting another page (quick download)
                 AnchiraParser parser = new AnchiraParser();
                 try {
                     parser.parseImageListWithWebview(content);
@@ -99,10 +99,10 @@ public class AnchiraActivity extends BaseWebActivity {
             return super.processContent(content, url, quickDownload);
         }
 
-        public void jsHandler(AnchiraGalleryMetadata a, boolean quickDownload) {
+        public void jsHandler(AnchiraGalleryMetadata metadata, boolean quickDownload) {
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
-                Content content = a.toContent();
+                Content content = metadata.toContent();
                 processContent(content, content.getGalleryUrl(), quickDownload);
                 resConsumer.onResultReady(content, quickDownload);
             });

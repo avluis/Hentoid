@@ -1122,10 +1122,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             processContentDisposable.dispose(); // Cancel whichever process was happening before
         if (Preferences.isBrowserMode()) return;
 
-        processContentDisposable = Single.fromCallable(() -> processContent(result, quickDownload)).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(status -> onContentProcessed(status, quickDownload), t -> {
-            Timber.e(t);
-            onContentProcessed(ContentStatus.UNKNOWN, false);
-        });
+        processContentDisposable = Single.fromCallable(() -> processContent(result, quickDownload))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(status -> onContentProcessed(status, quickDownload), t -> {
+                    Timber.e(t);
+                    onContentProcessed(ContentStatus.UNKNOWN, false);
+                });
     }
 
     private void onContentProcessed(ContentStatus status, boolean quickDownload) {
