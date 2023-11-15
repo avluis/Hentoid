@@ -13,6 +13,7 @@ import me.devsaki.hentoid.activities.sources.WebResultConsumer
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.json.sources.AnchiraGalleryMetadata
 import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.HttpHelper
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -77,21 +78,35 @@ class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, si
                             var jsFile = body.source().readString(StandardCharsets.UTF_8)
                             Timber.d("app JS found")
 
-                            val beginStr = "arguments;return new Promise((function("
-                            val beginIndex = jsFile.indexOf(beginStr)
-                            if (beginIndex > -1) {
-                                val funStr = "function "
-                                val funBeginIndex =
-                                    jsFile.indexOf(funStr, beginIndex + beginStr.length)
-                                val bracketBeginIndex =
-                                    jsFile.indexOf("(", funBeginIndex + funStr.length)
-                                val bracketEndIndex = jsFile.indexOf(")", bracketBeginIndex)
-                                val argumentName =
-                                    jsFile.substring(bracketBeginIndex + 1, bracketEndIndex)
+                            val landmarkStr = "404==="
+                            val borderStr1 = ".dirty"
+                            var landmarkIndex = 0
+                            var borderIndex1 = 0
+                            var found = false
 
-                                val part1 = jsFile.substring(0, bracketEndIndex + 2)
-                                val part2 = jsFile.substring(bracketEndIndex + 2)
-                                jsFile = "$part1 processAnchiraData($argumentName); $part2"
+                            while (!found && landmarkIndex > -1) {
+                                landmarkIndex = jsFile.indexOf(landmarkStr, landmarkIndex + 1)
+                                if (landmarkIndex > -1) {
+                                    borderIndex1 = jsFile.indexOf(borderStr1, landmarkIndex)
+                                    if (borderIndex1 - landmarkIndex < 300) found = true
+                                }
+                            }
+                            if (!found) throw ParseException("Error while parsing JS : landmark not found")
+
+                            val anchorBeginIndex = jsFile.lastIndexOf("await", landmarkIndex)
+                            if (anchorBeginIndex > -1) {
+                                val anchorEndIndex = jsFile.indexOf(");", anchorBeginIndex)
+                                if (anchorEndIndex > landmarkIndex) throw ParseException("Error while parsing JS : anchor not found")
+
+                                var variableEndIndex = jsFile.indexOf("[", borderIndex1)
+                                val variableBeginIndex = jsFile.lastIndexOf("return ", variableEndIndex)
+                                variableEndIndex = jsFile.indexOf("?", variableBeginIndex)
+                                val variable =
+                                    jsFile.substring(variableBeginIndex + 7, variableEndIndex)
+
+                                val part1 = jsFile.substring(0, anchorEndIndex + 2)
+                                val part2 = jsFile.substring(anchorEndIndex + 2)
+                                jsFile = "$part1 processAnchiraData($variable); $part2"
                             } else {
                                 Timber.w("APP JS LOCATION NOT FOUND")
                             }

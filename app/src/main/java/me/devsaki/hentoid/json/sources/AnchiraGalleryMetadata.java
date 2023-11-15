@@ -19,8 +19,8 @@ public class AnchiraGalleryMetadata {
 
     public static final String IMG_HOST = "https://kisakisexo.xyz";
 
-    private int id_v2;
-    private String key_v2;
+    private int id;
+    private String key;
     private long uploaded_at;
     private long updated_at;
     private String title;
@@ -46,7 +46,7 @@ public class AnchiraGalleryMetadata {
     }
 
     public Content toContent() {
-        String url = Site.ANCHIRA.getUrl() + "/g/" + id_v2 + "/" + key_v2;
+        String url = Site.ANCHIRA.getUrl() + "/g/" + id + "/" + key;
         Content content = new Content();
         content.setSite(Site.ANCHIRA);
         content.setRawUrl(url);
@@ -74,9 +74,9 @@ public class AnchiraGalleryMetadata {
         if (!data.isEmpty()) {
             List<String> pageUrls = new ArrayList<>();
             for (AnchiraPage page : data) {
-                pageUrls.add(IMG_HOST + "/" + id_v2 + "/" + key_v2 + "/" + hash + "/b/" + page.n);
+                pageUrls.add(IMG_HOST + "/" + id + "/" + key + "/" + hash + "/b/" + page.n);
             }
-            String coverUrl = IMG_HOST + "/" + id_v2 + "/" + key_v2 + "/s/" + data.get(0).n;
+            String coverUrl = IMG_HOST + "/" + id + "/" + key + "/s/" + data.get(0).n;
             content.setImageFiles(ParseHelper.urlsToImageFiles(pageUrls, coverUrl, StatusContent.SAVED));
             content.setCoverImageUrl(coverUrl);
         }
