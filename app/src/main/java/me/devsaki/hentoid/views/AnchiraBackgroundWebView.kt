@@ -99,7 +99,8 @@ class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, si
                                 if (anchorEndIndex > landmarkIndex) throw ParseException("Error while parsing JS : anchor not found")
 
                                 var variableEndIndex = jsFile.indexOf("[", borderIndex1)
-                                val variableBeginIndex = jsFile.lastIndexOf("return ", variableEndIndex)
+                                val variableBeginIndex =
+                                    jsFile.lastIndexOf("return ", variableEndIndex)
                                 variableEndIndex = jsFile.indexOf("?", variableBeginIndex)
                                 val variable =
                                     jsFile.substring(variableBeginIndex + 7, variableEndIndex)
@@ -120,7 +121,7 @@ class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, si
                             )
                         }
                     }
-                } catch (e: IOException) {
+                } catch (e: Exception) {
                     Timber.w(e)
                 }
             }
