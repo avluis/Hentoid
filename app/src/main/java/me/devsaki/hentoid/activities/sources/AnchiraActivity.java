@@ -43,7 +43,7 @@ public class AnchiraActivity extends BaseWebActivity {
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
 
-        webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsInterface(s -> client.jsHandler(s, false)), "anchiraJsInterface");
+        webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsInterface(s -> client.jsHandler(s, false)), "wysiwygInterface");
 
         return client;
     }
@@ -52,12 +52,12 @@ public class AnchiraActivity extends BaseWebActivity {
 
         public AnchiraWebClient(Site site, String[] galleryUrl, WebResultConsumer resultConsumer) {
             super(site, galleryUrl, resultConsumer);
-            setJsStartupScripts("anchira_pages.js");
+            setJsStartupScripts("wysiwyg_parser.js");
         }
 
         AnchiraWebClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
             super(site, galleryUrl, activity);
-            setJsStartupScripts("anchira_pages.js");
+            setJsStartupScripts("wysiwyg_parser.js");
         }
 
         @Override
@@ -85,9 +85,12 @@ public class AnchiraActivity extends BaseWebActivity {
                 }
             }
 
+            /*
             WebResourceResponse res = AnchiraBackgroundWebView.Companion.shouldInterceptRequestInternal(view, request, site);
             if (null == res) return super.shouldInterceptRequest(view, request);
             else return res;
+             */
+            return super.shouldInterceptRequest(view, request);
         }
 
         @Override
@@ -108,10 +111,9 @@ public class AnchiraActivity extends BaseWebActivity {
             return super.processContent(content, url, quickDownload);
         }
 
-        public void jsHandler(AnchiraGalleryMetadata metadata, boolean quickDownload) {
+        public void jsHandler(Content content, boolean quickDownload) {
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
-                Content content = metadata.toContent();
                 processContent(content, content.getGalleryUrl(), quickDownload);
                 resConsumer.onResultReady(content, quickDownload);
             });

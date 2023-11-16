@@ -10,14 +10,18 @@ import com.annimon.stream.function.Consumer
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.activities.sources.AnchiraActivity.AnchiraWebClient
 import me.devsaki.hentoid.activities.sources.WebResultConsumer
+import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.json.sources.AnchiraGalleryMetadata
+import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.HttpHelper
+import pl.droidsonroids.jspoon.Jspoon
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.net.URL
 import java.nio.charset.StandardCharsets
 
 class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, site: Site) :
@@ -39,16 +43,19 @@ class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, si
         client = AnchiraWebClient(site, emptyArray(), consumer)
         webViewClient = client
 
-        addJavascriptInterface(AnchiraJsInterface { s ->
-            client.jsHandler(s, false)
-        }, "anchiraJsInterface")
+        addJavascriptInterface(AnchiraJsInterface { c ->
+            client.jsHandler(c, false)
+        }, "wysiwygInterface")
     }
 
-    class AnchiraJsInterface(private val handler: Consumer<AnchiraGalleryMetadata>) {
+    class AnchiraJsInterface(private val handler: Consumer<Content>) {
         @JavascriptInterface
         @Suppress("unused")
-        fun transmit(a: String) {
-            val data = JsonHelper.jsonToObject(a, AnchiraGalleryMetadata::class.java)
+        fun transmit(url : String, html: String) {
+            val c = ContentParserFactory.getInstance().getContentParserClass(Site.ANCHIRA)
+            val jspoon = Jspoon.create()
+            val adapter = jspoon.adapter(c) // Unchecked but alright
+            val data = adapter.fromHtml("<html>$html</html>").toContent(url)
             handler.accept(data)
         }
     }
