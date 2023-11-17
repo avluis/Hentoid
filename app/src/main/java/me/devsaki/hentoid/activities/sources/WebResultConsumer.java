@@ -11,7 +11,7 @@ public interface WebResultConsumer {
      * @param result        Parsed Content
      * @param quickDownload True if the action has been triggered by a quick download action
      */
-    void onResultReady(@NonNull Content result, boolean quickDownload);
+    void onContentReady(@NonNull Content result, boolean quickDownload);
 
     /**
      * Callback when the page does not have any Content to parse

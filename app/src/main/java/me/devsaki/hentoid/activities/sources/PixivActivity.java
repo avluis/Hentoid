@@ -120,7 +120,7 @@ public class PixivActivity extends BaseWebActivity {
                         .map(content -> super.processContent(content, content.getGalleryUrl(), quickDownload))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                content2 -> resConsumer.onResultReady(content2, quickDownload),
+                                content2 -> resConsumer.onContentReady(content2, quickDownload),
                                 Timber::e
                         )
                 );

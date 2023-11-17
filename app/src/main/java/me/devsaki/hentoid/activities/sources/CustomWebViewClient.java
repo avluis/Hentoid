@@ -674,7 +674,7 @@ class CustomWebViewClient extends WebViewClient {
                                     .map(content -> processContent(content, urlStr, quickDownload))
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
-                                            content2 -> resConsumer.onResultReady(content2, quickDownload),
+                                            content2 -> resConsumer.onContentReady(content2, quickDownload),
                                             throwable -> {
                                                 Timber.e(throwable, "Error parsing content.");
                                                 isHtmlLoaded.set(true);

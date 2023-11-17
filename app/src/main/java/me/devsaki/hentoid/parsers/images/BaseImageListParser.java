@@ -86,6 +86,8 @@ public abstract class BaseImageListParser implements ImageListParser {
         progress.start(onlineContent.getId(), storedId, maxSteps);
     }
 
+    // TODO method to free resources after caller decides work's done
+
     void progressPlus() {
         progress.advance();
     }

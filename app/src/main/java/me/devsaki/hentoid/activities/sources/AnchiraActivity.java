@@ -30,7 +30,7 @@ public class AnchiraActivity extends BaseWebActivity {
     private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
 
     private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "adGuardBase", "adtrace.online", "Admanager"};
-    private static final String[] GALLERY_FILTER = {"//anchira.to/g/[\\w\\-]+/[\\w\\-]+$"/*, "//anchira.to/api/v1/library/[\\w\\-]+/[\\w\\-]+$"*/};
+    private static final String[] GALLERY_FILTER = {"//anchira.to/g/[\\w\\-]+/[\\w\\-]+$"};
 
     Site getStartSite() {
         return Site.ANCHIRA;
@@ -43,7 +43,7 @@ public class AnchiraActivity extends BaseWebActivity {
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
 
-        webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsInterface(s -> client.jsHandler(s, false)), "wysiwygInterface");
+        webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsContentInterface(s -> client.jsHandler(s, false)), "wysiwygInterface");
 
         return client;
     }
@@ -65,57 +65,69 @@ public class AnchiraActivity extends BaseWebActivity {
             String url = request.getUrl().toString();
 
             // Kill CORS
-            if (url.contains(AnchiraGalleryMetadata.IMG_HOST) && request.getMethod().equalsIgnoreCase("options")) {
-                try {
-                    Response response = HttpHelper.optOnlineResourceFast(
-                            url,
-                            HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), url),
-                            Site.ANCHIRA.useMobileAgent(), Site.ANCHIRA.useHentoidAgent(), Site.ANCHIRA.useWebviewAgent()
-                    );
-                    // Scram if the response is a redirection or an error
-                    if (response.code() >= 300) return null;
+            if (url.contains(AnchiraGalleryMetadata.IMG_HOST)) {
+                String[] parts = url.split("/");
+                if (parts.length > 7) {
+                    if (request.getMethod().equalsIgnoreCase("options")) {
+                        try {
+                            Response response = HttpHelper.optOnlineResourceFast(
+                                    url,
+                                    HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), url),
+                                    Site.ANCHIRA.useMobileAgent(), Site.ANCHIRA.useHentoidAgent(), Site.ANCHIRA.useWebviewAgent()
+                            );
+                            // Scram if the response is a redirection or an error
+                            if (response.code() >= 300) return null;
 
-                    // Scram if the response is empty
-                    ResponseBody body = response.body();
-                    if (null == body) throw new IOException("Empty body");
+                            // Scram if the response is empty
+                            ResponseBody body = response.body();
+                            if (null == body) throw new IOException("Empty body");
 
-                    return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream());
-                } catch (IOException e) {
-                    Timber.w(e);
+                            return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream());
+                        } catch (IOException e) {
+                            Timber.w(e);
+                        }
+                    }
+                    // TODO that's ugly; find a more suitable interface; e.g. onImagesReady
+                    Content c = new Content();
+                    c.setSite(Site.ANCHIRA);
+                    c.setCoverImageUrl(url);
+                    resConsumer.onContentReady(c, false);
                 }
             }
 
-            /*
-            WebResourceResponse res = AnchiraBackgroundWebView.Companion.shouldInterceptRequestInternal(view, request, site);
-            if (null == res) return super.shouldInterceptRequest(view, request);
-            else return res;
-             */
             return super.shouldInterceptRequest(view, request);
         }
 
         @Override
-        protected Content processContent(@NonNull Content content, @NonNull String url, boolean quickDownload) {
+        protected Content processContent(@NonNull Content content, @NonNull String url,
+                                         boolean quickDownload) {
             if (quickDownload) {
                 // Use a background Wv to get book attributes when targeting another page (quick download)
                 AnchiraParser parser = new AnchiraParser();
                 try {
-                    parser.parseImageListWithWebview(content);
+                    parser.parseContentWithWebview(content);
                     content.setStatus(StatusContent.SAVED);
                     if (activity != null) activity.onGalleryPageStarted();
                 } catch (Exception e) {
                     Timber.w(e);
                     content.setStatus(StatusContent.IGNORED);
+                } finally {
+                    parser.destroy();
                 }
             }
 
             return super.processContent(content, url, quickDownload);
         }
 
+        public void destroy() {
+            super.destroy();
+        }
+
         public void jsHandler(Content content, boolean quickDownload) {
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> {
                 processContent(content, content.getGalleryUrl(), quickDownload);
-                resConsumer.onResultReady(content, quickDownload);
+                resConsumer.onContentReady(content, quickDownload);
             });
         }
     }

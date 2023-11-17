@@ -55,20 +55,21 @@ public class AnchiraContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.ANCHIRA);
         content.putAttributes(attributes);
 
+        int nbPages = 0;
         for (Element e : extraData) {
             String txt = e.text().toLowerCase();
             if (txt.contains("page")) {
                 txt = StringHelper.keepDigits(txt);
                 if (StringHelper.isNumeric(txt)) {
-                    content.setQtyPages(Integer.parseInt(txt));
+                    nbPages = Integer.parseInt(txt);
                     break;
                 }
             }
         }
+        content.setQtyPages(nbPages);
 
         if (updateImages) {
             content.setImageFiles(Collections.emptyList());
-            content.setQtyPages(0);
         }
 
         return content;
