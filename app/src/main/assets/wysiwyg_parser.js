@@ -38,6 +38,7 @@ function eval() {
 }
 
 async function aaa() {
+    console.info("ready");
     var result = await eval();
     if (!result) result = await eval();
     if (!result) result = await eval();
