@@ -102,6 +102,11 @@ public class ExHentaiParser implements ImageListParser {
     }
 
     @Override
+    public String getAltUrl(@NonNull String url) {
+        return "";
+    }
+
+    @Override
     public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
         return EHentaiParser.parseImagePage(url, requestHeaders, Site.EXHENTAI);
     }

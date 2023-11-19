@@ -1078,7 +1078,15 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Apply image download parameters
         val requestHeaders = getRequestHeaders(imageUrl, img.downloadParams)
+
+        // Process backup URLs if any
+        if (img.backupUrl.isEmpty() && content.site.hasBackupURLs()) {
+            val imgParser = ContentParserFactory.getInstance().getImageListParser(content)
+            img.backupUrl = imgParser.getAltUrl(imageUrl)
+        }
         val backupUrlFinal = HttpHelper.fixUrl(img.backupUrl, site.url)
+
+        // Create request order
         return RequestOrder(
             RequestOrder.HttpMethod.GET,
             imageUrl,

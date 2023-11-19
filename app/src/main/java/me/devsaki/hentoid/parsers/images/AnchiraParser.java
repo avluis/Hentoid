@@ -132,6 +132,7 @@ public class AnchiraParser extends BaseImageListParser implements WebResultConsu
                     List<String> urls = new ArrayList<>();
                     for (int i = 1; i <= onlineContent.getQtyPages(); i++) {
                         parts.setFileNameNoExt(StringHelper.formatIntAsStr(i, length));
+                        parts.setExtension((1 == i) ? "jpg" : "png"); // Try to minimize failed requests
                         urls.add(parts.toUri());
                     }
 
@@ -149,6 +150,15 @@ public class AnchiraParser extends BaseImageListParser implements WebResultConsu
     public void destroy() {
         if (anchiraWv != null) anchiraWv.destroy();
         anchiraWv = null;
+    }
+
+    @Override
+    public String getAltUrl(@NonNull String url) {
+        HttpHelper.UriParts parts = new HttpHelper.UriParts(url);
+        String ext = parts.getExtension();
+        String altExt = (ext.equalsIgnoreCase("jpg")) ? "png" : "jpg";
+        parts.setExtension(altExt);
+        return parts.toUri();
     }
 
     @Override
