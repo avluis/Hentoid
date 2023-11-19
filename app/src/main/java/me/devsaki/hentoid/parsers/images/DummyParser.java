@@ -1,8 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
-import androidx.core.util.Pair;
-
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.Optional;
 
@@ -39,5 +38,10 @@ public class DummyParser implements ImageListParser {
     @Override
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
         return Optional.of(ParseHelper.urlToImageFile(url, order, maxPages, StatusContent.SAVED, chapter));
+    }
+
+    @Override
+    public String getAltUrl(@NonNull String url) {
+        return "";
     }
 }

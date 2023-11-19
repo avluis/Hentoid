@@ -202,6 +202,7 @@ object AppStartup {
             context.clearWebviewCache(null)
             Timber.d("Process app update : Clearing app cache")
             context.clearAppCache()
+            DiskCache.init(context)
             Timber.d("Process app update : Complete")
             EventBus.getDefault().postSticky(AppUpdatedEvent())
             Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE)

@@ -30,4 +30,6 @@ public interface ImageListParser {
             int order,
             int maxPages,
             Chapter chapter) throws Exception;
+
+    String getAltUrl(@NonNull String url);
 }

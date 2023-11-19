@@ -80,11 +80,18 @@ public abstract class BaseImageListParser implements ImageListParser {
         throw new NotImplementedException("Parser does not implement parseImagePage");
     }
 
+    @Override
+    public String getAltUrl(@NonNull String url) {
+        return "";
+    }
+
     void progressStart(@NonNull Content onlineContent, @Nullable Content storedContent, int maxSteps) {
         if (progress.hasStarted()) return;
         long storedId = (storedContent != null) ? storedContent.getId() : -1;
         progress.start(onlineContent.getId(), storedId, maxSteps);
     }
+
+    // TODO method to free resources after caller decides work's done
 
     void progressPlus() {
         progress.advance();

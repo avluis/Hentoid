@@ -358,6 +358,11 @@ public class EHentaiParser implements ImageListParser {
         return parseBackupUrl(url, Site.EHENTAI, requestHeaders, order, maxPages, chapter);
     }
 
+    @Override
+    public String getAltUrl(@NonNull String url) {
+        return "";
+    }
+
     static ImmutablePair<String, Optional<String>> parseImagePageMpv(@NonNull String json, @NonNull List<Pair<String, String>> requestHeaders, @NonNull final Site site) throws IOException, LimitReachedException, EmptyResultException {
         MpvImageInfo mpvInfo = JsonHelper.jsonToObject(json, MpvImageInfo.class);
         EHentaiImageResponse imageMetadata = getMpvImage(mpvInfo, requestHeaders, site.useHentoidAgent(), site.useWebviewAgent());

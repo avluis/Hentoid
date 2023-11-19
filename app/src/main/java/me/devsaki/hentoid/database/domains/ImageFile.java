@@ -56,7 +56,7 @@ public class ImageFile {
     // cached value of uniqueHash
     @Transient
     private long uniqueHash = 0;
-    // Display order of the image in the image viewer (view-time only; 0-indexed)
+    // Display order of the image in the image viewer (read-time only; 0-indexed)
     @Transient
     private int displayOrder;
     // Backup URL for that picture (download-time only)
@@ -65,7 +65,7 @@ public class ImageFile {
     // Has the image been read from a backup URL ? (download-time only)
     @Transient
     private boolean isBackup = false;
-    // Force refresh
+    // Force refresh (read-time only)
     @Transient
     public boolean isForceRefresh = false;
 

@@ -70,7 +70,8 @@
     "ANCHIRA": {
       "useWebviewAgent": false,
       "requestsCapPerSecond": 2,
-      "parallelDownloadCap": 2
+      "parallelDownloadCap": 2,
+      "hasBackupURLs": true
     }
   }
 }

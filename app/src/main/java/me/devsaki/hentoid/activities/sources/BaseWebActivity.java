@@ -1116,7 +1116,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         return ContentStatus.UNKNOWN;
     }
 
-    public void onResultReady(@NonNull Content result, boolean quickDownload) {
+    public void onContentReady(@NonNull Content result, boolean quickDownload) {
         parseResponseDisposable.clear();
         if (processContentDisposable != null)
             processContentDisposable.dispose(); // Cancel whichever process was happening before
