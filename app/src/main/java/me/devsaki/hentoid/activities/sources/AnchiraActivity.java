@@ -7,8 +7,10 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
+import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -99,24 +101,26 @@ public class AnchiraActivity extends BaseWebActivity {
         }
 
         @Override
-        protected Content processContent(@NonNull Content content, @NonNull String url,
-                                         boolean quickDownload) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
+            // Complete override of default behaviour because
+            // - There's no HTML to be parsed for ads
+            // - The interesting parts are loaded by JS, not now
+
             if (quickDownload) {
                 // Use a background Wv to get book attributes when targeting another page (quick download)
                 AnchiraParser parser = new AnchiraParser();
                 try {
-                    parser.parseContentWithWebview(content);
+                    Content content = parser.parseContentWithWebview(urlStr);
                     content.setStatus(StatusContent.SAVED);
                     if (activity != null) activity.onGalleryPageStarted();
                 } catch (Exception e) {
                     Timber.w(e);
-                    content.setStatus(StatusContent.IGNORED);
                 } finally {
                     parser.destroy();
                 }
             }
 
-            return super.processContent(content, url, quickDownload);
+            return null;
         }
 
         public void destroy() {

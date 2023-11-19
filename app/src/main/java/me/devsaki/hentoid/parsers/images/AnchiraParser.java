@@ -64,13 +64,12 @@ public class AnchiraParser extends BaseImageListParser implements WebResultConsu
         return result;
     }
 
-    public Content parseContentWithWebview(@NonNull Content onlineContent) throws Exception {
+    public Content parseContentWithWebview(@NonNull String url) throws Exception {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
             anchiraWv = new AnchiraBackgroundWebView(HentoidApp.Companion.getInstance(), this, Site.ANCHIRA);
-            String pageUrl = onlineContent.getGalleryUrl();
-            Timber.d(">> loading url %s", pageUrl);
-            anchiraWv.loadUrl(pageUrl);
+            Timber.d(">> loading url %s", url);
+            anchiraWv.loadUrl(url);
             Timber.i(">> loading wv");
         });
 
@@ -85,14 +84,7 @@ public class AnchiraParser extends BaseImageListParser implements WebResultConsu
             int res = resultCode.get();
             if (0 == res) {
                 Content c = resultContent.get();
-                if (c != null) {
-                    onlineContent.setTitle(c.getTitle());
-                    onlineContent.setCoverImageUrl(c.getCoverImageUrl());
-                    onlineContent.putAttributes(c.getAttributeMap());
-                    onlineContent.setImageFiles(c.getImageList());
-                    onlineContent.setUpdatedProperties(true);
-                    return onlineContent;
-                }
+                if (c != null) return c;
             } else if (-1 == res) {
                 throw new ParseException("Parsing failed to start");
             } else if (2 == res) {

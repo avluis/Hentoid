@@ -24,6 +24,10 @@ window.addEventListener("locationchange", function () {
     aaa();
 });
 
+document.addEventListener("DOMContentLoaded", (event) => {
+    aaa();
+});
+
 function eval() {
   return new Promise((resolve) => {
     setTimeout(() => {
