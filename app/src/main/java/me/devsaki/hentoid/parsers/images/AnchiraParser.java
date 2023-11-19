@@ -140,8 +140,11 @@ public class AnchiraParser extends BaseImageListParser implements WebResultConsu
     }
 
     public void destroy() {
-        if (anchiraWv != null) anchiraWv.destroy();
-        anchiraWv = null;
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            if (anchiraWv != null) anchiraWv.destroy();
+            anchiraWv = null;
+        });
     }
 
     @Override

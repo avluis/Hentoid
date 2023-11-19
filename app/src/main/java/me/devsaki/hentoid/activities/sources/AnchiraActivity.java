@@ -113,6 +113,11 @@ public class AnchiraActivity extends BaseWebActivity {
                     Content content = parser.parseContentWithWebview(urlStr);
                     content.setStatus(StatusContent.SAVED);
                     if (activity != null) activity.onGalleryPageStarted();
+                    final Content contentFinal = super.processContent(content, urlStr, true);
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(() -> {
+                        resConsumer.onContentReady(contentFinal, true);
+                    });
                 } catch (Exception e) {
                     Timber.w(e);
                 } finally {
