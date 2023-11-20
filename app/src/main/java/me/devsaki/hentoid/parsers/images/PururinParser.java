@@ -44,7 +44,7 @@ public class PururinParser extends BaseImageListParser {
     }
 
     private static String thumbToPage(String thumbUrl) {
-        HttpHelper.UriParts parts = new HttpHelper.UriParts(thumbUrl);
+        HttpHelper.UriParts parts = new HttpHelper.UriParts(thumbUrl, true);
         String name = parts.getFileNameNoExt();
         parts.setFileNameNoExt(name.substring(0, name.length() - 1)); // Remove the trailing 't'
         return parts.toUri();

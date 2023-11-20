@@ -11,9 +11,15 @@ import me.devsaki.hentoid.activities.sources.WebResultConsumer
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.ContentParserFactory
+import me.devsaki.hentoid.util.Helper
 import pl.droidsonroids.jspoon.Jspoon
 
-class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, site: Site) :
+class AnchiraBackgroundWebView(
+    context: Context,
+    consumer: WebResultConsumer,
+    site: Site,
+    jsMode: Int
+) :
     WebView(context) {
     private val client: AnchiraWebClient
 
@@ -29,18 +35,21 @@ class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, si
         webSettings.javaScriptEnabled = true
         webSettings.loadWithOverviewMode = true
         if (BuildConfig.DEBUG) setWebContentsDebuggingEnabled(true)
-        client = AnchiraWebClient(site, emptyArray(), consumer)
+        client = AnchiraWebClient(site, emptyArray(), consumer, jsMode)
         webViewClient = client
 
-        addJavascriptInterface(AnchiraJsContentInterface { c ->
-            client.jsHandler(c, false)
-        }, "wysiwygInterface")
+        if (0 == jsMode) {
+            addJavascriptInterface(AnchiraJsContentInterface { c ->
+                client.jsHandler(c, false)
+            }, interfaceName)
+        }
     }
 
     class AnchiraJsContentInterface(private val handler: Consumer<Content>) {
+
         @JavascriptInterface
         @Suppress("unused")
-        fun transmit(url: String, html: String) {
+        fun ha(url: String, html: String) {
             val c = ContentParserFactory.getInstance().getContentParserClass(Site.ANCHIRA)
             val jspoon = Jspoon.create()
             val adapter = jspoon.adapter(c) // Unchecked but alright
@@ -56,6 +65,16 @@ class AnchiraBackgroundWebView(context: Context, consumer: WebResultConsumer, si
     }
 
     companion object {
+        val interfaceName = generateName()
+        const val functionName = "ha"
 
+        private fun generateName(): String {
+            val sb = StringBuilder()
+            for (i in 1..10) {
+                val randomChar = 65 + Helper.getRandomInt(26)
+                sb.append(randomChar.toChar())
+            }
+            return sb.toString()
+        }
     }
 }

@@ -483,8 +483,6 @@ public class Content implements Serializable {
                 else return getGalleryUrl() + "#&gid=1&pid=1";
             case HENTAIFOX:
                 return site.getUrl() + "g" + url;
-            case ANCHIRA:
-                return getGalleryUrl() + "/1";
             default:
                 return getGalleryUrl();
         }
@@ -533,7 +531,7 @@ public class Content implements Serializable {
         if (url.isEmpty()) return url;
 
         if (site == Site.MANHWA) {
-            HttpHelper.UriParts parts = new HttpHelper.UriParts(url);
+            HttpHelper.UriParts parts = new HttpHelper.UriParts(url, true);
             // Remove the last part of the filename if it is formatted as "numberxnumber"
             String[] nameParts = parts.getFileNameNoExt().split("-");
             String[] lastPartParts = nameParts[nameParts.length - 1].split("x");

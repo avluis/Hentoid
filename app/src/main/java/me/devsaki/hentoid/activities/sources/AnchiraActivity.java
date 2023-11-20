@@ -45,31 +45,39 @@ public class AnchiraActivity extends BaseWebActivity {
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
 
-        webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsContentInterface(s -> client.jsHandler(s, false)), "wysiwygInterface");
+        webView.addJavascriptInterface(new AnchiraBackgroundWebView.AnchiraJsContentInterface(s -> client.jsHandler(s, false)), AnchiraBackgroundWebView.Companion.getInterfaceName());
 
         return client;
     }
 
     public static class AnchiraWebClient extends CustomWebViewClient {
 
-        public AnchiraWebClient(Site site, String[] galleryUrl, WebResultConsumer resultConsumer) {
+        public AnchiraWebClient(Site site, String[] galleryUrl, WebResultConsumer resultConsumer, int jsMode) {
             super(site, galleryUrl, resultConsumer);
-            setJsStartupScripts("wysiwyg_parser.js");
+            if (0 == jsMode) { // Content parsing
+                setJsStartupScripts("wysiwyg_parser.js");
+                addJsReplacement("$interface", AnchiraBackgroundWebView.Companion.getInterfaceName());
+                addJsReplacement("$fun", AnchiraBackgroundWebView.functionName);
+            } else { // Images parsing
+                setJsStartupScripts("anchira_pages_parser.js");
+            }
         }
 
         AnchiraWebClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
             super(site, galleryUrl, activity);
             setJsStartupScripts("wysiwyg_parser.js");
+            addJsReplacement("$interface",AnchiraBackgroundWebView.Companion.getInterfaceName());
+            addJsReplacement("$fun",AnchiraBackgroundWebView.functionName);
         }
 
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
 
-            // Kill CORS
             if (url.contains(AnchiraGalleryMetadata.IMG_HOST)) {
                 String[] parts = url.split("/");
                 if (parts.length > 7) {
+                    // Kill CORS
                     if (request.getMethod().equalsIgnoreCase("options")) {
                         try {
                             Response response = HttpHelper.optOnlineResourceFast(
@@ -115,9 +123,7 @@ public class AnchiraActivity extends BaseWebActivity {
                     if (activity != null) activity.onGalleryPageStarted();
                     final Content contentFinal = super.processContent(content, urlStr, true);
                     Handler handler = new Handler(Looper.getMainLooper());
-                    handler.post(() -> {
-                        resConsumer.onContentReady(contentFinal, true);
-                    });
+                    handler.post(() -> resConsumer.onContentReady(contentFinal, true));
                 } catch (Exception e) {
                     Timber.w(e);
                 } finally {

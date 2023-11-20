@@ -32,7 +32,7 @@ function eval() {
   return new Promise((resolve) => {
     setTimeout(() => {
         if (document.querySelector("#metadata") != null) {
-            wysiwygInterface.transmit(document.URL, document.querySelector("html").innerHTML);
+            $interface.$fun(document.URL, document.querySelector("html").innerHTML);
             resolve(true);
         } else {
             resolve(false);

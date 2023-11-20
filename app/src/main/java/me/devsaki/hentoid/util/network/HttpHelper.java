@@ -349,7 +349,7 @@ public class HttpHelper {
      * @return Extension of the file located at the given URI, without the leading '.'
      */
     public static String getExtensionFromUri(String uri) {
-        UriParts parts = new UriParts(uri);
+        UriParts parts = new UriParts(uri, true);
         return parts.getExtension();
     }
 
@@ -731,8 +731,8 @@ public class HttpHelper {
         private String query;
         private final String fragment;
 
-        public UriParts(@NonNull final String uri) {
-            String uriNoParams = uri.toLowerCase();
+        public UriParts(@NonNull final String uri, boolean lowercase) {
+            String uriNoParams = lowercase ? uri.toLowerCase() : uri;
 
             int fragmentIndex = uriNoParams.lastIndexOf('#');
             if (fragmentIndex > -1) {

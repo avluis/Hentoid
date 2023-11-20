@@ -577,13 +577,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // Activate fetch handler
         if (fetchHandler != null) {
             if (null == jsInterceptorScript)
-                jsInterceptorScript = CustomWebViewClient.getJsScript(this, "fetch_override.js");
+                jsInterceptorScript = CustomWebViewClient.getJsScript(this, "fetch_override.js", null);
             webView.loadUrl(jsInterceptorScript);
         }
         // Activate XHR handler
         if (xhrHandler != null) {
             if (null == jsInterceptorScript)
-                jsInterceptorScript = CustomWebViewClient.getJsScript(this, "xhr_override.js");
+                jsInterceptorScript = CustomWebViewClient.getJsScript(this, "xhr_override.js", null);
             webView.loadUrl(jsInterceptorScript);
         }
 

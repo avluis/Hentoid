@@ -147,6 +147,7 @@ class CustomWebViewClient extends WebViewClient {
 
     // List of JS scripts to load from app resources every time a webpage is started
     private List<String> jsStartupScripts;
+    private List<Pair<String, String>> jsReplacements;
 
 
     static {
@@ -258,6 +259,11 @@ class CustomWebViewClient extends WebViewClient {
     void setJsStartupScripts(String... assetNames) {
         if (null == jsStartupScripts) jsStartupScripts = new ArrayList<>();
         Collections.addAll(jsStartupScripts, assetNames);
+    }
+
+    void addJsReplacement(String source, String target) {
+        if (null == jsReplacements) jsReplacements = new ArrayList<>();
+        jsReplacements.add(new Pair<>(source, target));
     }
 
     /**
@@ -431,7 +437,8 @@ class CustomWebViewClient extends WebViewClient {
 
         // Activate startup JS
         if (jsStartupScripts != null) {
-            for (String s : jsStartupScripts) view.loadUrl(getJsScript(view.getContext(), s));
+            for (String s : jsStartupScripts)
+                view.loadUrl(getJsScript(view.getContext(), s, jsReplacements));
         }
 
         if (activity != null)
@@ -942,11 +949,15 @@ class CustomWebViewClient extends WebViewClient {
         return Stream.of(classNames).anyMatch(forbiddenElements::contains);
     }
 
-    public static String getJsScript(Context context, String assetName) {
+    public static String getJsScript(Context context, String assetName, @Nullable List<Pair<String, String>> replacements) {
         StringBuilder sb = new StringBuilder();
         sb.append("javascript:");
         FileHelper.getAssetAsString(context.getAssets(), assetName, sb);
-        return sb.toString();
+        String result = sb.toString();
+        if (replacements != null) {
+            for (Pair<String, String> p : replacements) result = result.replace(p.first, p.second);
+        }
+        return result;
     }
 
 

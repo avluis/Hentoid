@@ -418,7 +418,7 @@ public final class Helper {
      * calling `new Random().nextInt`
      *
      * @param maxExclude Upper bound (excluded)
-     * @return random positive integer bound to the given argument (excluded)
+     * @return Random positive integer (zero included) bound to the given argument (excluded)
      */
     public static int getRandomInt(int maxExclude) {
         return rand.nextInt(maxExclude);
