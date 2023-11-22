@@ -27,6 +27,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
+import android.widget.Toast;
 
 import androidx.annotation.AnyThread;
 import androidx.annotation.IntDef;
@@ -2560,6 +2561,11 @@ public class CustomSubsamplingScaleImageView extends View {
                 else return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
             case ScaleType.CENTER_INSIDE:
             default:
+                String msg = viewWidth + "-" + sWidth() + " / " + viewHeight + "-" + sHeight();
+                if (!msg.equals("0-0 / 0-0")) {
+                    Toast toast = Toast.makeText(getContext(), msg, Toast.LENGTH_LONG);
+                    toast.show();
+                }
                 return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
         }
     }
