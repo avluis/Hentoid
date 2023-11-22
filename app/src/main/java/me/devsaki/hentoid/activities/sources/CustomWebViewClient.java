@@ -684,6 +684,7 @@ class CustomWebViewClient extends WebViewClient {
                                             content2 -> resConsumer.onContentReady(content2, quickDownload),
                                             throwable -> {
                                                 Timber.e(throwable, "Error parsing content.");
+                                                parserStream.close();
                                                 isHtmlLoaded.set(true);
                                                 resConsumer.onResultFailed();
                                             })
@@ -696,8 +697,6 @@ class CustomWebViewClient extends WebViewClient {
                 return result;
             } catch (IOException | IllegalStateException e) {
                 Timber.e(e);
-            } finally {
-                response.close();
             }
         }
         return null;
