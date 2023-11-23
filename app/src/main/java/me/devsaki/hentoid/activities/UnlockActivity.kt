@@ -86,12 +86,13 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
     @Suppress("DEPRECATION")
     private fun goToNextActivity() {
         val parcelableExtra: Intent? = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
-            intent.getParcelableExtra<Parcelable>(EXTRA_INTENT) as Intent
+            intent.getParcelableExtra<Parcelable>(EXTRA_INTENT) as Intent?
         else
             intent.getParcelableExtra(EXTRA_INTENT, Intent::class.java)
 
         val targetIntent: Intent
-        if (parcelableExtra != null) targetIntent = parcelableExtra else {
+        if (parcelableExtra != null) targetIntent = parcelableExtra
+        else {
             val siteCode = intent.getIntExtra(EXTRA_SITE_CODE, Site.NONE.code)
             if (siteCode == Site.NONE.code) {
                 finish()
