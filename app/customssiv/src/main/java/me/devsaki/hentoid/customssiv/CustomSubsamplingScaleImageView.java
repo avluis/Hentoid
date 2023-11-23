@@ -2561,11 +2561,14 @@ public class CustomSubsamplingScaleImageView extends View {
                 else return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
             case ScaleType.CENTER_INSIDE:
             default:
+                /*
                 String msg = viewWidth + "-" + sWidth() + " / " + viewHeight + "-" + sHeight();
                 if (!msg.equals("0-0 / 0-0")) {
                     Toast toast = Toast.makeText(getContext(), msg, Toast.LENGTH_LONG);
                     toast.show();
                 }
+
+                 */
                 return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
         }
     }
@@ -2574,8 +2577,15 @@ public class CustomSubsamplingScaleImageView extends View {
      * Adjust a requested scale to be within the allowed limits.
      */
     private float limitedScale(float targetScale) {
-        targetScale = Math.max(minScale(), targetScale);
+        float minScale = minScale();
+
+        Toast toast = Toast.makeText(getContext(), "scale " + minScale + "-" + maxScale + "-" + targetScale, Toast.LENGTH_LONG);
+        toast.show();
+
+        targetScale = Math.max(minScale, targetScale);
+
         targetScale = Math.min(maxScale, targetScale);
+
         return targetScale;
     }
 
