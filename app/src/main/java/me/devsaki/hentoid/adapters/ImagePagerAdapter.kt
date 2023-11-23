@@ -573,7 +573,7 @@ class ImagePagerAdapter(val context: Context) :
             Timber.d(
                 e, "Picture %d : Glide loading failed : %s", absoluteAdapterPosition, img!!.fileUri
             )
-            noImgTxt?.visibility = View.VISIBLE
+            if (isImageView) noImgTxt?.visibility = View.VISIBLE
             return false
         }
 
