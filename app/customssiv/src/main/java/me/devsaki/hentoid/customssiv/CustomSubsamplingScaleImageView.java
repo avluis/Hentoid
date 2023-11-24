@@ -3,6 +3,7 @@ package me.devsaki.hentoid.customssiv;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -16,6 +17,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -27,6 +29,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.AnyThread;
@@ -455,7 +458,7 @@ public class CustomSubsamplingScaleImageView extends View {
         });
     }
 
-    public CustomSubsamplingScaleImageView(Context context) {
+    public CustomSubsamplingScaleImageView(@NonNull Context context) {
         this(context, null);
     }
 
@@ -2721,7 +2724,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
     /**
      * Set the maximum scale allowed. A value of 1 means 1:1 pixels at maximum scale. You may wish to set this according
-     * to screen density - on a retina screen, 1:1 may still be too small. Consider using {@link #setMinimumDpi(int)},
+     * to screen density - on a retina screen, 1:1 may still be too small. Consider using {@link #setMinimumDpi(int, WindowManager)},
      * which is density aware.
      *
      * @param maxScale maximum scale expressed as a source/view pixels ratio.
@@ -2751,9 +2754,23 @@ public class CustomSubsamplingScaleImageView extends View {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
         float generalDpi = metrics.densityDpi;
-        if ((Math.abs(generalDpi - averageDpi) / averageDpi) > 0.3) averageDpi = generalDpi;
 
-        String msg = "dpi " + dpi + "-" + metrics.xdpi + "-" + metrics.ydpi + "-" + metrics.densityDpi;
+        Configuration config = getResources().getConfiguration();
+        float generalDpi2 = config.densityDpi;
+
+        WindowManager wMgr = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        float generalDpi3;
+        if (Build.VERSION.SDK_INT >= 34) {
+            generalDpi3 = wMgr.getCurrentWindowMetrics().getDensity() * 160;
+        } else {
+            DisplayMetrics metrics3 = new DisplayMetrics();
+            wMgr.getDefaultDisplay().getRealMetrics(metrics3);
+            generalDpi3 = metrics3.densityDpi;
+        }
+
+//        if ((Math.abs(generalDpi - averageDpi) / averageDpi) > 0.3) averageDpi = generalDpi;
+
+        String msg = Build.VERSION.SDK_INT + "-" + metrics.xdpi + "-" + metrics.ydpi + "-" + metrics.densityDpi + "-" + config.densityDpi + "-" + generalDpi3;
         Toast toast = Toast.makeText(getContext(), msg, Toast.LENGTH_LONG);
         toast.show();
 
