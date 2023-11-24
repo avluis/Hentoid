@@ -2750,8 +2750,10 @@ public class CustomSubsamplingScaleImageView extends View {
     public final void setMinimumDpi(int dpi) {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
+        float generalDpi = metrics.densityDpi;
+        if ((Math.abs(generalDpi - averageDpi) / averageDpi) > 0.3) averageDpi = generalDpi;
 
-        String msg = "dpi " + dpi + "-" + metrics.xdpi + "-" + metrics.ydpi;
+        String msg = "dpi " + dpi + "-" + metrics.xdpi + "-" + metrics.ydpi + "-" + metrics.densityDpi;
         Toast toast = Toast.makeText(getContext(), msg, Toast.LENGTH_LONG);
         toast.show();
 
