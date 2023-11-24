@@ -21,7 +21,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -391,6 +390,8 @@ public class CustomSubsamplingScaleImageView extends View {
     private final int screenWidth;
     private final int screenHeight;
 
+    private final float screenDpi;
+
     private final CompositeDisposable loadDisposable = new CompositeDisposable();
     // GPUImage instance to use to smoothen images; sharp mode will be used if not set
     private GPUImage glEsRenderer;
@@ -401,6 +402,7 @@ public class CustomSubsamplingScaleImageView extends View {
         density = getResources().getDisplayMetrics().density;
         screenWidth = context.getResources().getDisplayMetrics().widthPixels;
         screenHeight = context.getResources().getDisplayMetrics().heightPixels;
+        screenDpi = Helper.getScreenDpi(context);
 
         setMinimumDpi(160);
         setDoubleTapZoomDpi(160);
@@ -454,7 +456,7 @@ public class CustomSubsamplingScaleImageView extends View {
         });
     }
 
-    public CustomSubsamplingScaleImageView(Context context) {
+    public CustomSubsamplingScaleImageView(@NonNull Context context) {
         this(context, null);
     }
 
@@ -1698,9 +1700,7 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private int calculateInSampleSize(float scale) {
         if (minimumTileDpi > 0) {
-            DisplayMetrics metrics = getResources().getDisplayMetrics();
-            float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
-            scale = (minimumTileDpi / averageDpi) * scale;
+            scale = (minimumTileDpi / screenDpi) * scale;
         }
 
         int reqWidth = (int) (sWidth() * scale);
@@ -2570,6 +2570,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private float limitedScale(float targetScale) {
         targetScale = Math.max(minScale(), targetScale);
         targetScale = Math.min(maxScale, targetScale);
+
         return targetScale;
     }
 
@@ -2732,9 +2733,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param dpi Source image pixel density at maximum zoom.
      */
     public final void setMinimumDpi(int dpi) {
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
-        setMaxScale(averageDpi / dpi);
+        setMaxScale(screenDpi / dpi);
     }
 
     /**
@@ -2744,9 +2743,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param dpi Source image pixel density at minimum zoom.
      */
     public final void setMaximumDpi(int dpi) {
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
-        setMinScale(averageDpi / dpi);
+        setMinScale(screenDpi / dpi);
     }
 
 
@@ -2778,9 +2775,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param minimumTileDpi Tile loading threshold.
      */
     public void setMinimumTileDpi(int minimumTileDpi) {
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
-        this.minimumTileDpi = (int) Math.min(averageDpi, minimumTileDpi);
+        this.minimumTileDpi = (int) Math.min(screenDpi, minimumTileDpi);
         if (isReady()) {
             reset(false);
             invalidate();
@@ -3114,9 +3109,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param dpi New value for double tap gesture zoom scale.
      */
     public final void setDoubleTapZoomDpi(int dpi) {
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
-        setDoubleTapZoomScale(averageDpi / dpi);
+        setDoubleTapZoomScale(screenDpi / dpi);
     }
 
     /**

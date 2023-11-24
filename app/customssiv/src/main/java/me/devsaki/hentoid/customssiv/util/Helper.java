@@ -1,6 +1,10 @@
 package me.devsaki.hentoid.customssiv.util;
 
+import android.content.Context;
+import android.os.Build;
 import android.os.Looper;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -35,5 +39,24 @@ public final class Helper {
             out.write(buf, 0, len);
         }
         out.flush();
+    }
+
+    public static float getScreenDpi(@NonNull Context context) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
+
+        WindowManager wMgr = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        float generalDpi;
+        if (Build.VERSION.SDK_INT >= 34) {
+            generalDpi = wMgr.getCurrentWindowMetrics().getDensity() * 160;
+        } else {
+            DisplayMetrics metrics3 = new DisplayMetrics();
+            wMgr.getDefaultDisplay().getRealMetrics(metrics3);
+            generalDpi = metrics3.densityDpi;
+        }
+
+        // Dimensions retrieved by metrics.xdpi/ydpi might be expressed as ppi (as per specs) and not dpi (as per naming)
+        // In that case, values are off scale => fallback to general dpi
+        return ((Math.abs(generalDpi - averageDpi) / averageDpi) > 1) ? generalDpi : averageDpi;
     }
 }

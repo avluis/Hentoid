@@ -1672,7 +1672,7 @@ public final class ContentHelper {
      */
     public static boolean isDownloadable(@NonNull final Content content) {
         List<ImageFile> images = content.getImageFiles();
-        if (null == images) return false;
+        if (null == images || images.isEmpty()) return false;
 
         // Pick a random picture
         ImageFile img = images.get(Helper.getRandomInt(images.size()));

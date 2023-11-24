@@ -9,7 +9,9 @@ import android.webkit.WebView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -66,25 +68,60 @@ public class AnchiraActivity extends BaseWebActivity {
         AnchiraWebClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
             super(site, galleryUrl, activity);
             setJsStartupScripts("wysiwyg_parser.js");
-            addJsReplacement("$interface",AnchiraBackgroundWebView.Companion.getInterfaceName());
-            addJsReplacement("$fun",AnchiraBackgroundWebView.functionName);
+            addJsReplacement("$interface", AnchiraBackgroundWebView.Companion.getInterfaceName());
+            addJsReplacement("$fun", AnchiraBackgroundWebView.functionName);
         }
 
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
 
+            HttpHelper.UriParts uriParts = new HttpHelper.UriParts(url, true);
+            if (uriParts.getEntireFileName().startsWith("app.") && uriParts.getExtension().equals("js")) {
+                try (
+                        Response response = HttpHelper.getOnlineResourceFast(
+                                url,
+                                HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), url),
+                                Site.ANCHIRA.useMobileAgent(), Site.ANCHIRA.useHentoidAgent(), Site.ANCHIRA.useWebviewAgent()
+                        )) {
+                    // Scram if the response is a redirection or an error
+                    if (response.code() >= 300) return null;
+
+                    // Scram if the response is empty
+                    ResponseBody body = response.body();
+                    if (null == body) throw new IOException("Empty body");
+
+                    var jsFile = body.source().readString(StandardCharsets.UTF_8);
+
+                    jsFile = jsFile.replace(".isTrusted", ".cancelable");
+
+                    return HttpHelper.okHttpResponseToWebkitResponse(
+                            response, new ByteArrayInputStream(
+                                    jsFile.getBytes(StandardCharsets.UTF_8)
+                            )
+                    );
+                } catch (IOException e) {
+                    Timber.w(e);
+                }
+            }
+
             if (url.contains(AnchiraGalleryMetadata.IMG_HOST)) {
                 String[] parts = url.split("/");
                 if (parts.length > 7) {
+                    // TODO that's ugly; find a more suitable interface; e.g. onImagesReady
+                    Content c = new Content();
+                    c.setSite(Site.ANCHIRA);
+                    c.setCoverImageUrl(url);
+                    resConsumer.onContentReady(c, false);
+
                     // Kill CORS
                     if (request.getMethod().equalsIgnoreCase("options")) {
                         try {
                             Response response = HttpHelper.optOnlineResourceFast(
                                     url,
                                     HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), url),
-                                    Site.ANCHIRA.useMobileAgent(), Site.ANCHIRA.useHentoidAgent(), Site.ANCHIRA.useWebviewAgent()
-                            );
+                                    Site.ANCHIRA.useMobileAgent(), Site.ANCHIRA.useHentoidAgent(), Site.ANCHIRA.useWebviewAgent());
+
                             // Scram if the response is a redirection or an error
                             if (response.code() >= 300) return null;
 
@@ -93,15 +130,10 @@ public class AnchiraActivity extends BaseWebActivity {
                             if (null == body) throw new IOException("Empty body");
 
                             return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream());
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             Timber.w(e);
                         }
                     }
-                    // TODO that's ugly; find a more suitable interface; e.g. onImagesReady
-                    Content c = new Content();
-                    c.setSite(Site.ANCHIRA);
-                    c.setCoverImageUrl(url);
-                    resConsumer.onContentReady(c, false);
                 }
             }
 
@@ -109,7 +141,10 @@ public class AnchiraActivity extends BaseWebActivity {
         }
 
         @Override
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr,
+                                                    @Nullable Map<String, String> requestHeaders,
+                                                    boolean analyzeForDownload,
+                                                    boolean quickDownload) {
             // Complete override of default behaviour because
             // - There's no HTML to be parsed for ads
             // - The interesting parts are loaded by JS, not now
