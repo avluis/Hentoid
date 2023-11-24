@@ -3,7 +3,6 @@ package me.devsaki.hentoid.customssiv;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -30,7 +29,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import androidx.annotation.AnyThread;
 import androidx.annotation.IntDef;
@@ -2564,14 +2562,6 @@ public class CustomSubsamplingScaleImageView extends View {
                 else return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
             case ScaleType.CENTER_INSIDE:
             default:
-                /*
-                String msg = viewWidth + "-" + sWidth() + " / " + viewHeight + "-" + sHeight();
-                if (!msg.equals("0-0 / 0-0")) {
-                    Toast toast = Toast.makeText(getContext(), msg, Toast.LENGTH_LONG);
-                    toast.show();
-                }
-
-                 */
                 return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
         }
     }
@@ -2580,13 +2570,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * Adjust a requested scale to be within the allowed limits.
      */
     private float limitedScale(float targetScale) {
-        float minScale = minScale();
-/*
-        Toast toast = Toast.makeText(getContext(), "scale " + minScale + "-" + maxScale + "-" + targetScale, Toast.LENGTH_LONG);
-        toast.show();
-*/
-        targetScale = Math.max(minScale, targetScale);
-
+        targetScale = Math.max(minScale(), targetScale);
         targetScale = Math.min(maxScale, targetScale);
 
         return targetScale;
@@ -2724,7 +2708,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
     /**
      * Set the maximum scale allowed. A value of 1 means 1:1 pixels at maximum scale. You may wish to set this according
-     * to screen density - on a retina screen, 1:1 may still be too small. Consider using {@link #setMinimumDpi(int, WindowManager)},
+     * to screen density - on a retina screen, 1:1 may still be too small. Consider using {@link #setMinimumDpi(int)},
      * which is density aware.
      *
      * @param maxScale maximum scale expressed as a source/view pixels ratio.
@@ -2753,28 +2737,22 @@ public class CustomSubsamplingScaleImageView extends View {
     public final void setMinimumDpi(int dpi) {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
-        float generalDpi = metrics.densityDpi;
-
-        Configuration config = getResources().getConfiguration();
-        float generalDpi2 = config.densityDpi;
 
         WindowManager wMgr = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        float generalDpi3;
+        float generalDpi;
         if (Build.VERSION.SDK_INT >= 34) {
-            generalDpi3 = wMgr.getCurrentWindowMetrics().getDensity() * 160;
+            generalDpi = wMgr.getCurrentWindowMetrics().getDensity() * 160;
         } else {
             DisplayMetrics metrics3 = new DisplayMetrics();
             wMgr.getDefaultDisplay().getRealMetrics(metrics3);
-            generalDpi3 = metrics3.densityDpi;
+            generalDpi = metrics3.densityDpi;
         }
 
-//        if ((Math.abs(generalDpi - averageDpi) / averageDpi) > 0.3) averageDpi = generalDpi;
+        // Dimensions retrieved by metrics.xdpi/ydpi might be expressed as ppi (as per specs) and not dpi (as per naming)
+        // In that case, values are off scale => fallback to general dpi
+        final float finalDpi = ((Math.abs(generalDpi - averageDpi) / averageDpi) > 1) ? generalDpi : averageDpi;
 
-        String msg = Build.VERSION.SDK_INT + "-" + metrics.xdpi + "-" + metrics.ydpi + "-" + metrics.densityDpi + "-" + config.densityDpi + "-" + generalDpi3;
-        Toast toast = Toast.makeText(getContext(), msg, Toast.LENGTH_LONG);
-        toast.show();
-
-        setMaxScale(averageDpi / dpi);
+        setMaxScale(finalDpi / dpi);
     }
 
     /**
