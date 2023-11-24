@@ -2578,10 +2578,10 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private float limitedScale(float targetScale) {
         float minScale = minScale();
-
+/*
         Toast toast = Toast.makeText(getContext(), "scale " + minScale + "-" + maxScale + "-" + targetScale, Toast.LENGTH_LONG);
         toast.show();
-
+*/
         targetScale = Math.max(minScale, targetScale);
 
         targetScale = Math.min(maxScale, targetScale);
@@ -2750,6 +2750,11 @@ public class CustomSubsamplingScaleImageView extends View {
     public final void setMinimumDpi(int dpi) {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
+
+        String msg = "dpi " + dpi + "-" + metrics.xdpi + "-" + metrics.ydpi;
+        Toast toast = Toast.makeText(getContext(), msg, Toast.LENGTH_LONG);
+        toast.show();
+
         setMaxScale(averageDpi / dpi);
     }
 
