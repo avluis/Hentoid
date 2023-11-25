@@ -97,7 +97,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         // Flag contents as "being deleted" (triggers blink animation; lock operations)
         // +count the total number of images to convert
         contentIds.forEach {
-            if (it > 0) dao.updateContentDeleteFlag(it, true)
+            if (it > 0) dao.updateContentProcessedFlag(it, true)
             totalItems += dao.selectDownloadedImagesFromContent(it).count { i -> i.isReadable }
             if (isStopped) return
         }

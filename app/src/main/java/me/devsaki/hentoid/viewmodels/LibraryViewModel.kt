@@ -545,7 +545,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
 
         // Flag the content as "being deleted" (triggers blink animation)
-        for (c in contentList) dao.updateContentDeleteFlag(c.id, true)
+        for (c in contentList) dao.updateContentProcessedFlag(c.id, true)
         val sourceImageStatus = if (reparseImages) null else StatusContent.ERROR
         val targetImageStatus = if (reparseImages) StatusContent.ERROR else null
         val errorCount = AtomicInteger(0)
@@ -571,7 +571,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 isQueueActive(getApplication())
                             )
                         } else {
-                            dao.updateContentDeleteFlag(it.id, false)
+                            dao.updateContentProcessedFlag(it.id, false)
                             errorCount.incrementAndGet()
                             onError.invoke(
                                 EmptyResultException(
@@ -604,8 +604,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             return
         }
 
-        // Flag the content as "being deleted" (triggers blink animation)
-        for (c in contentList) dao.updateContentDeleteFlag(c.id, true)
+        // Flag the content as "being processed" (triggers blink animation)
+        for (c in contentList) dao.updateContentProcessedFlag(c.id, true)
         val nbErrors = AtomicInteger(0)
         viewModelScope.launch {
             try {
@@ -617,7 +617,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             // Reparse content itself
                             val newContent: Pair<Content, Optional<Content>> =
                                 ContentHelper.reparseFromScratch(c)
-                            if (newContent.right.isEmpty) dao.updateContentDeleteFlag(c.id, false)
+                            if (newContent.right.isEmpty) dao.updateContentProcessedFlag(c.id, false)
                             newContent.right
                         } else Optional.of<Content>(c)
 
@@ -659,7 +659,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
 
         // Flag the content as "being deleted" (triggers blink animation)
-        for (c in contentList) dao.updateContentDeleteFlag(c.id, true)
+        for (c in contentList) dao.updateContentProcessedFlag(c.id, true)
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -672,7 +672,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             val newContent: Pair<Content, Optional<Content>> =
                                 ContentHelper.reparseFromScratch(c)
                             if (newContent.right.isEmpty) {
-                                dao.updateContentDeleteFlag(c.id, false)
+                                dao.updateContentProcessedFlag(c.id, false)
                                 newContent.right
                             } else {
                                 val reparsedContent = newContent.right.get()
@@ -1030,7 +1030,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 withContext(Dispatchers.IO) {
                     // Flag the content as "being deleted" (triggers blink animation)
                     if (deleteAfterMerging)
-                        contentList.forEach { dao.updateContentDeleteFlag(it.id, true) }
+                        contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
                     ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao)
                 }
                 if (deleteAfterMerging) deleteItems(contentList, emptyList(), false, null)
@@ -1038,7 +1038,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             } catch (t: Throwable) {
                 Timber.e(t)
                 if (deleteAfterMerging)
-                    contentList.forEach { dao.updateContentDeleteFlag(it.id, false) }
+                    contentList.forEach { dao.updateContentProcessedFlag(it.id, false) }
             }
         }
     }
