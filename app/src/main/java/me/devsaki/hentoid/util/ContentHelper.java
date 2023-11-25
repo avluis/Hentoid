@@ -54,6 +54,7 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Chapter;
@@ -1128,7 +1129,7 @@ public final class ContentHelper {
     /**
      * Launch the web browser for the given site and URL
      *
-     * @param context   COntext to be used
+     * @param context   Context to be used
      * @param targetUrl Url to navigate to
      */
     public static void launchBrowserFor(@NonNull final Context context,
@@ -1184,23 +1185,98 @@ public final class ContentHelper {
     public static ImmutablePair<Content, Optional<Content>> reparseFromScratch(
             @NonNull final Content content) {
         try {
-            return new ImmutablePair<>(content, reparseFromScratch(content, content.getGalleryUrl()));
-        } catch (IOException e) {
+            return new ImmutablePair<>(content, reparseFromScratch(content.getGalleryUrl(), content));
+        } catch (IOException | CloudflareHelper.CloudflareProtectedException e) {
             Timber.w(e);
             return new ImmutablePair<>(content, Optional.empty());
         }
     }
 
-    // TODO factorize with reparseFromScratch
-    public static Optional<Content> parseFromScratch(@NonNull final String url) throws
-            IOException, CloudflareHelper.CloudflareProtectedException {
+    /**
+     * Create a new Content by parsing the webpage at the given URL
+     *
+     * @param url Webpage to parse to create the Content
+     * @return Content created from the webpage at the given URL, or Optional.empty if something went wrong
+     * @throws IOException If something horrible happens during parsing
+     */
+    public static Optional<Content> parseFromScratch(@NonNull final String url) throws IOException, CloudflareHelper.CloudflareProtectedException {
+        return reparseFromScratch(url, null);
+    }
+
+    /**
+     * Parse the given webpage to update the given Content's properties
+     *
+     * @param url     Webpage to parse to update the given Content's properties
+     * @param content Content which properties to update (read-only). If this parameter is null, the call returns a completely new Content
+     * @return Content with updated properties, or Optional.empty if something went wrong
+     * @throws IOException If something horrible happens during parsing
+     */
+    private static Optional<Content> reparseFromScratch(
+            @NonNull final String url,
+            @Nullable final Content content) throws IOException, CloudflareHelper.CloudflareProtectedException {
         Helper.assertNonUiThread();
 
-        Site site = Site.searchByUrl(url);
+        String urlToLoad;
+        Site site;
+        if (null == content) {
+            urlToLoad = url;
+            site = Site.searchByUrl(url);
+        } else {
+            urlToLoad = content.getReaderUrl();
+            site = content.getSite();
+        }
         if (null == site || Site.NONE == site) return Optional.empty();
 
-        List<Pair<String, String>> requestHeadersList = new ArrayList<>();
-        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, url));
+        Pair<ResponseBody, String> fetchResponse = fetchBodyFast(urlToLoad, site, null, "text/html");
+        try (ResponseBody body = fetchResponse.first) {
+            if (null == body) return Optional.empty();
+
+            Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(site);
+            final Jspoon jspoon = Jspoon.create();
+            HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
+
+            ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(urlToLoad));
+            Content newContent;
+            if (null == content) newContent = contentParser.toContent(urlToLoad);
+            else newContent = contentParser.update(content, urlToLoad, true);
+
+            newContent.setJsonUri("");
+            newContent.setStorageUri("");
+            newContent.setArchiveLocationUri("");
+
+            if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
+                String canonicalUrl = contentParser.getCanonicalUrl();
+                if (!canonicalUrl.isEmpty() && !canonicalUrl.equalsIgnoreCase(urlToLoad))
+                    return reparseFromScratch(canonicalUrl, content);
+                else return Optional.empty();
+            }
+
+            // Clear existing chapters to avoid issues with extra chapter detection
+            newContent.clearChapters();
+
+            // Save cookies for future calls during download
+            Map<String, String> params = new HashMap<>();
+            String cookieStr = fetchResponse.second;
+            if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+
+            newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
+            return Optional.of(newContent);
+        }
+    }
+
+    private static Pair<ResponseBody, String> fetchBodyFast(
+            @NonNull String url,
+            @NonNull Site site,
+            List<Pair<String, String>> requestHeaders,
+            String targetContentType) throws IOException, CloudflareHelper.CloudflareProtectedException {
+
+        List<Pair<String, String>> requestHeadersList;
+        if (null == requestHeaders) {
+            requestHeadersList = new ArrayList<>();
+            requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, url));
+        } else {
+            requestHeadersList = requestHeaders;
+        }
         String cookieStr = HttpHelper.getCookies(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         if (!cookieStr.isEmpty())
             requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
@@ -1212,105 +1288,16 @@ public final class ContentHelper {
             throw new CloudflareHelper.CloudflareProtectedException();
 
         // Scram if the response is a redirection or an error
-        if (response.code() >= 300) return Optional.empty();
+        if (response.code() >= 300) throw new IOException("Network error " + response.code());
 
-        // Scram if the response is something else than html
-        Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE, "")));
-        if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
-            return Optional.empty();
-
-        // Scram if the response is empty
-        ResponseBody body = response.body();
-        if (null == body) return Optional.empty();
-
-        Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(site);
-        final Jspoon jspoon = Jspoon.create();
-        HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
-
-        ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(url));
-        Content newContent = contentParser.toContent(url);
-        newContent.setJsonUri("");
-        newContent.setStorageUri("");
-        newContent.setArchiveLocationUri("");
-
-        if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
-            String canonicalUrl = contentParser.getCanonicalUrl();
-            if (!canonicalUrl.isEmpty() && !canonicalUrl.equalsIgnoreCase(url))
-                return parseFromScratch(canonicalUrl);
-            else return Optional.empty();
+        // Scram if the response content-type is something else than the target type
+        if (targetContentType != null) {
+            Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE, "")));
+            if (!contentType.first.isEmpty() && !contentType.first.equalsIgnoreCase(targetContentType))
+                throw new IOException("Not an HTML resource " + url);
         }
 
-        // Clear existing chapters to avoid issues with extra chapter detection
-        newContent.clearChapters();
-
-        // Save cookies for future calls during download
-        Map<String, String> params = new HashMap<>();
-        if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
-
-        newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
-        return Optional.of(newContent);
-    }
-
-    /**
-     * Parse the given webpage to update the given Content's properties
-     *
-     * @param content Content which properties to update
-     * @param url     Webpage to parse to update the given Content's properties
-     * @return Content with updated properties, or Optional.empty if something went wrong
-     * @throws IOException If something horrible happens during parsing
-     */
-    // TODO factorize with parseFromScratch
-    private static Optional<Content> reparseFromScratch(@NonNull final Content content,
-                                                        @NonNull final String url) throws IOException {
-        Helper.assertNonUiThread();
-
-        String readerUrl = content.getReaderUrl();
-        List<Pair<String, String>> requestHeadersList = new ArrayList<>();
-        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, readerUrl));
-        String cookieStr = HttpHelper.getCookies(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
-        if (!cookieStr.isEmpty())
-            requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-
-        Response response = HttpHelper.getOnlineResourceFast(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
-
-        // Scram if the response is a redirection or an error
-        if (response.code() >= 300) return Optional.empty();
-
-        // Scram if the response is something else than html
-        Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE, "")));
-        if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
-            return Optional.empty();
-
-        // Scram if the response is empty
-        ResponseBody body = response.body();
-        if (null == body) return Optional.empty();
-
-        Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(content.getSite());
-        final Jspoon jspoon = Jspoon.create();
-        HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
-
-        ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(url));
-        Content newContent = contentParser.update(content, url, true);
-        newContent.setJsonUri("");
-        newContent.setStorageUri("");
-        newContent.setArchiveLocationUri("");
-
-        if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
-            String canonicalUrl = contentParser.getCanonicalUrl();
-            if (!canonicalUrl.isEmpty() && !canonicalUrl.equalsIgnoreCase(url))
-                return reparseFromScratch(content, canonicalUrl);
-            else return Optional.empty();
-        }
-
-        // Clear existing chapters to avoid issues with extra chapter detection
-        newContent.clearChapters();
-
-        // Save cookies for future calls during download
-        Map<String, String> params = new HashMap<>();
-        if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
-
-        newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
-        return Optional.of(newContent);
+        return new Pair<>(response.body(), cookieStr);
     }
 
     /**
@@ -1700,7 +1687,55 @@ public final class ContentHelper {
                     headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPicture(content.getSite(), img, headers);
             }
-        } catch (IOException | LimitReachedException | EmptyResultException e) {
+        } catch (IOException | LimitReachedException | EmptyResultException |
+                 CloudflareHelper.CloudflareProtectedException e) {
+            Timber.w(e);
+        }
+        return false;
+    }
+
+    /**
+     * Test if online pages for the given Chapter are downloadable
+     * NB : Implementation does not test all pages but one page picked randomly
+     *
+     * @param chapter Chapter whose pages to test
+     * @return True if pages are downloadable; false if they aren't
+     */
+    public static boolean isDownloadable(@NonNull final Chapter chapter) {
+        List<ImageFile> images = chapter.getImageList();
+        if (null == images || images.isEmpty()) return false;
+
+        Content content = DBHelper.reach(chapter, chapter.getContent());
+        if (null == content) return false;
+
+        // Pick a random picture
+        ImageFile img = images.get(Helper.getRandomInt(images.size()));
+
+        // Peek it to see if downloads work
+        List<Pair<String, String>> headers = new ArrayList<>();
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
+
+        try {
+            if (img.needsPageParsing()) {
+                // Get cookies from the app jar
+                String cookieStr = HttpHelper.getCookies(img.getPageUrl());
+                // If nothing found, peek from the site
+                if (cookieStr.isEmpty()) cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                if (!cookieStr.isEmpty())
+                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                return testDownloadPictureFromPage(content.getSite(), img, headers);
+            } else {
+                // Get cookies from the app jar
+                String cookieStr = HttpHelper.getCookies(img.getUrl());
+                // If nothing found, peek from the site
+                if (cookieStr.isEmpty())
+                    cookieStr = HttpHelper.peekCookies(chapter.getUrl());
+                if (!cookieStr.isEmpty())
+                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                return testDownloadPicture(content.getSite(), img, headers);
+            }
+        } catch (IOException | LimitReachedException | EmptyResultException |
+                 CloudflareHelper.CloudflareProtectedException e) {
             Timber.w(e);
         }
         return false;
@@ -1719,7 +1754,7 @@ public final class ContentHelper {
      */
     public static boolean testDownloadPictureFromPage(@NonNull Site site, @NonNull ImageFile
             img, List<Pair<String, String>> requestHeaders) throws
-            IOException, LimitReachedException, EmptyResultException {
+            IOException, LimitReachedException, EmptyResultException, CloudflareHelper.CloudflareProtectedException {
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
         ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
@@ -1727,7 +1762,7 @@ public final class ContentHelper {
         // Download the picture
         try {
             return testDownloadPicture(site, img, requestHeaders);
-        } catch (IOException e) {
+        } catch (IOException | CloudflareHelper.CloudflareProtectedException e) {
             if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
             else throw e;
         }
@@ -1746,13 +1781,12 @@ public final class ContentHelper {
      * @throws IOException If something happens during the download attempt
      */
     public static boolean testDownloadPicture(@NonNull Site site, @NonNull ImageFile
-            img, List<Pair<String, String>> requestHeaders) throws IOException {
+            img, List<Pair<String, String>> requestHeaders) throws IOException, CloudflareHelper.CloudflareProtectedException {
         String url = img.getUrl();
         if (!url.startsWith("http")) url = HttpHelper.fixUrl(url, site.getUrl());
-        Response response = HttpHelper.getOnlineResourceFast(url, requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-        if (response.code() >= 300) throw new IOException("Network error " + response.code());
 
-        ResponseBody body = response.body();
+        Pair<ResponseBody, String> response = fetchBodyFast(url, site, requestHeaders, null);
+        ResponseBody body = response.first;
         if (null == body)
             throw new IOException("Could not read response : empty body for " + img.getUrl());
 
