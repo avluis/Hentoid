@@ -3,6 +3,7 @@ package me.devsaki.hentoid.parsers.images;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -45,5 +46,11 @@ public class ASMHentaiParser extends BaseImageListParser {
         }
 
         return result;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        // Nothing as ASM doesn't have chapters
+        return null;
     }
 }

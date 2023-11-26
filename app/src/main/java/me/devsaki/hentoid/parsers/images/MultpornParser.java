@@ -17,9 +17,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
-/**
- * Handles parsing of chapters and pages from Multporn
- */
 public class MultpornParser extends BaseImageListParser {
 
     @Override
@@ -68,5 +65,11 @@ public class MultpornParser extends BaseImageListParser {
             }
         }
         return result;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        // Nothing; no chapters for this source
+        return null;
     }
 }

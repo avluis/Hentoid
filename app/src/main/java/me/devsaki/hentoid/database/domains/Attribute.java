@@ -186,7 +186,7 @@ public class Attribute {
 
     @Nullable
     public Group getLinkedGroup() {
-        return (group != null && !group.isNull()) ? group.getTarget() : null;
+        return DBHelper.reach(this, group);
     }
 
     public void putGroup(@NonNull Group group) {

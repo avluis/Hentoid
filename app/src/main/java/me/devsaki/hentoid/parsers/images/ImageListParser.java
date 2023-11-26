@@ -20,6 +20,8 @@ import me.devsaki.hentoid.util.exception.LimitReachedException;
 public interface ImageListParser {
     List<ImageFile> parseImageList(@NonNull Content content) throws Exception;
 
+    List<ImageFile> parseImageList(@NonNull Chapter chapter, @NonNull Content content) throws Exception;
+
     List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception;
 
     ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException;

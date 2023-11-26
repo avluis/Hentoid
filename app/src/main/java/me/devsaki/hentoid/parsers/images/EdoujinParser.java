@@ -29,9 +29,6 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import timber.log.Timber;
 
-/**
- * Handles parsing of content from edoujin.net
- */
 public class EdoujinParser extends BaseImageListParser {
 
     public static class EdoujinInfo {
@@ -78,8 +75,7 @@ public class EdoujinParser extends BaseImageListParser {
     private List<ImageFile> parseImageFiles(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         List<ImageFile> result = new ArrayList<>();
 
-        List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(onlineContent.getDownloadParams(), headers);
+        List<Pair<String, String>> headers = fetchHeaders(onlineContent);
 
         // 1. Scan the gallery page for chapter URLs
         // NB : We can't just guess the URLs by starting to 1 and increment them
@@ -110,19 +106,7 @@ public class EdoujinParser extends BaseImageListParser {
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (Chapter chp : extraChapters) {
-            doc = getOnlineDocument(chp.getUrl(), headers, Site.EDOUJIN.useHentoidAgent(), Site.EDOUJIN.useWebviewAgent());
-            if (doc != null) {
-                List<Element> scripts = doc.select("script");
-                EdoujinInfo info = getDataFromScripts(scripts);
-                if (info != null) {
-                    List<String> imageUrls = info.getImages();
-                    if (!imageUrls.isEmpty())
-                        result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, 1000, chp));
-                } else
-                    Timber.i("Chapter parsing failed for %s : no pictures found", chp.getUrl());
-            } else {
-                Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
-            }
+            result.addAll(parseChapterImageFiles(onlineContent, chp, imgOffset + result.size() + 1, headers));
             if (processHalted.get()) break;
             progressPlus();
         }
@@ -131,6 +115,47 @@ public class EdoujinParser extends BaseImageListParser {
 
         progressComplete();
         return result;
+    }
+
+    @Override
+    public List<ImageFile> parseChapterImageListImpl(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
+        String url = chapter.getUrl();
+
+        if (!URLUtil.isValidUrl(url))
+            throw new IllegalArgumentException("Invalid gallery URL : " + url);
+
+        if (processedUrl.isEmpty()) processedUrl = url;
+        Timber.d("Chapter URL: %s", url);
+
+        EventBus.getDefault().register(this);
+
+        List<ImageFile> result;
+        try {
+            result = parseChapterImageFiles(content, chapter, 1, null);
+            ParseHelper.setDownloadParams(result, content.getSite().getUrl());
+        } finally {
+            EventBus.getDefault().unregister(this);
+        }
+
+        return result;
+    }
+
+    private List<ImageFile> parseChapterImageFiles(@NonNull Content content, @NonNull Chapter chp, int targetOrder, List<Pair<String, String>> headers) throws Exception {
+        if (null == headers) headers = fetchHeaders(content);
+        Document doc = getOnlineDocument(chp.getUrl(), headers, content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
+        if (doc != null) {
+            List<Element> scripts = doc.select("script");
+            EdoujinInfo info = getDataFromScripts(scripts);
+            if (info != null) {
+                List<String> imageUrls = info.getImages();
+                if (!imageUrls.isEmpty())
+                    return ParseHelper.urlsToImageFiles(imageUrls, targetOrder, StatusContent.SAVED, 1000, chp);
+            } else
+                Timber.i("Chapter parsing failed for %s : no pictures found", chp.getUrl());
+        } else {
+            Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
+        }
+        return Collections.emptyList();
     }
 
     public static EdoujinInfo getDataFromScripts(List<Element> scripts) throws IOException {
@@ -147,6 +172,12 @@ public class EdoujinParser extends BaseImageListParser {
     @Override
     protected List<String> parseImages(@NonNull Content content) {
         /// We won't use that as parseImageListImpl is overriden directly
+        return null;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        /// We won't use that as parseChapterImageListImpl is overriden directly
         return null;
     }
 }

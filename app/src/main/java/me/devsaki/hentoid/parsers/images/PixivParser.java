@@ -1,9 +1,13 @@
 package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.ContentHelper.KEY_DL_PARAMS_NB_CHAPTERS;
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
+import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.Stream;
 
@@ -294,8 +298,42 @@ public class PixivParser extends BaseImageListParser {
     }
 
     @Override
+    public List<ImageFile> parseChapterImageListImpl(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
+        String url = chapter.getUrl();
+
+        if (!URLUtil.isValidUrl(url))
+            throw new IllegalArgumentException("Invalid gallery URL : " + url);
+
+        if (processedUrl.isEmpty()) processedUrl = url;
+        Timber.d("Chapter URL: %s", url);
+
+        EventBus.getDefault().register(this);
+
+        List<ImageFile> result;
+        try {
+            result = parseChapterImageFiles(content, chapter, 1, null);
+            ParseHelper.setDownloadParams(result, content.getSite().getUrl());
+        } finally {
+            EventBus.getDefault().unregister(this);
+        }
+
+        return result;
+    }
+
+    private List<ImageFile> parseChapterImageFiles(@NonNull Content content, @NonNull Chapter chp, int targetOrder, List<Pair<String, String>> headers) throws Exception {
+        if (null == headers) headers = fetchHeaders(content);
+        return Collections.emptyList();
+    }
+
+    @Override
     protected List<String> parseImages(@NonNull Content content) {
         /// We won't use that as parseImageList is overriden directly
+        return null;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        /// We won't use that as parseChapterImageListImpl is overriden directly
         return null;
     }
 }

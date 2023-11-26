@@ -368,11 +368,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     // =========================
     // ========= CONTENT ACTIONS
     // =========================
-
-
-    // =========================
-    // ========= CONTENT ACTIONS
-    // =========================
     fun toggleContentCompleted(content: List<Content>, onSuccess: Runnable) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -636,7 +631,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                     }
                                 }
                             }
-
                             c.setChapters(chaps)
                         } else { // Classic content
                             if (!ContentHelper.isDownloadable(c)) {
@@ -664,24 +658,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 )
                             )
                         }
-
-                        /*
-                        if (res.isPresent) {
-                            res.get().downloadMode = Content.DownloadMode.DOWNLOAD
-                            dao.addContentToQueue(
-                                res.get(), null, StatusContent.SAVED, position, -1, null,
-                                isQueueActive(getApplication())
-                            )
-                        } else {
-                            nbErrors.incrementAndGet()
-                            onError.invoke(
-                                EmptyResultException(
-                                    getApplication<Application>().getString(R.string.download_canceled)
-                                )
-                            )
-                        }
-
-                         */
                     } // Each content
                 }
                 if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
@@ -716,7 +692,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         val res = if (!ContentHelper.isDownloadable(c)) {
                             Timber.d("Pages unreachable; reparsing content")
                             // Reparse content itself
-                            val newContent =                                ContentHelper.reparseFromScratch(c)
+                            val newContent = ContentHelper.reparseFromScratch(c)
                             if (newContent.isEmpty) {
                                 dao.updateContentProcessedFlag(c.id, false)
                                 newContent

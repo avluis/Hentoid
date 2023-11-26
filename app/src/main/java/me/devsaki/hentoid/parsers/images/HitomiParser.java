@@ -38,9 +38,6 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
-/**
- * Handles parsing of content from hitomi.la
- */
 public class HitomiParser extends BaseImageListParser {
 
     @Override
@@ -165,6 +162,12 @@ public class HitomiParser extends BaseImageListParser {
     @Override
     protected List<String> parseImages(@NonNull Content content) {
         /// We won't use that as parseImageListImpl is overriden directly
+        return null;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        // Nothing; no chapters for this source
         return null;
     }
 }

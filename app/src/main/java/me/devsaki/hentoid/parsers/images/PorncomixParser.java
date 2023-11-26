@@ -3,6 +3,7 @@ package me.devsaki.hentoid.parsers.images;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.Stream;
 
@@ -82,5 +83,11 @@ public class PorncomixParser extends BaseImageListParser {
         if (pages.isEmpty()) return Collections.emptyList();
 
         return Stream.of(pages).map(e -> e.attr("href")).withoutNulls().distinct().toList();
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        // Nothing; no chapters for this source
+        return null;
     }
 }

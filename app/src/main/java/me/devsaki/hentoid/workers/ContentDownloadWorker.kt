@@ -25,6 +25,7 @@ import me.devsaki.hentoid.database.domains.Content.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.RenamingRule
+import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.ErrorType
 import me.devsaki.hentoid.enums.Grouping
@@ -86,6 +87,7 @@ import timber.log.Timber
 import java.io.File
 import java.io.FileFilter
 import java.io.IOException
+import java.security.InvalidParameterException
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
@@ -220,7 +222,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         var index = 0
         for (rec in queue) {
             if (!rec.isFrozen) {
-                content = rec.content.target
+                content = rec.content.reach(rec)
                 if (content != null) break // Don't take broken links
             }
             index++
@@ -277,36 +279,36 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         //   - Case 2 : If all images are in ERROR state => re-parse all images
         //   - Case 3 : If some images are in ERROR state and the site has backup URLs
         //     => re-parse images with ERROR state using their order as reference
-        var hasError = false
-        var nbErrors = 0
+        //   - Case 4 : If the book is merged and some chapters have zero images
+        //     (equivalent to case 1 for chapters) => parse all images from these chapters
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PROCESS_IMG, content))
-        var images: MutableList<ImageFile> = content.imageList
-        images = ArrayList(images) // Safe copy of the original list
-        for (img in images) if (img.status == StatusContent.ERROR) nbErrors++
+        var images = content.imageList
         val targetImageStatus =
             if (downloadMode == DownloadMode.DOWNLOAD) StatusContent.SAVED else StatusContent.ONLINE
-        if (images.isEmpty() || nbErrors == images.size || nbErrors > 0 && content.site.hasBackupURLs()) {
+
+        var hasError = false
+        val nbErrors = images.count { i -> i.status == StatusContent.ERROR }
+
+        val isCase1 = images.isEmpty()
+        val isCase2 = nbErrors == images.size
+        val isCase3 = nbErrors > 0 && content.site.hasBackupURLs()
+        val isCase4 =
+            content.isManuallyMerged && content.chaptersList.any { c -> c.imageList.isEmpty() }
+
+        if (isCase1 || isCase2 || isCase3 || isCase4) {
             EventBus.getDefault()
                 .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.FETCH_IMG, content))
             try {
-                val newImages = ContentHelper.fetchImageURLs(content, targetImageStatus)
-                // Cases 1 and 2 : Replace existing images with the parsed images
-                if (images.isEmpty() || nbErrors == images.size) images = newImages
-                // Case 3 : Replace images in ERROR state with the parsed images at the same position
-                if (nbErrors > 0 && content.site.hasBackupURLs()) {
-                    for (i in images.indices) {
-                        val oldImage = images[i]
-                        if (oldImage.status == StatusContent.ERROR) {
-                            for (newImg in newImages) if (newImg.order == oldImage.order) images[i] =
-                                newImg
-                        }
-                    }
-                }
-                if (content.isUpdatedProperties) dao.insertContent(content)
-
-                // Manually insert new images (without using insertContent)
-                dao.replaceImageList(content.id, images)
+                images = parseMissingImages(
+                    content,
+                    images,
+                    isCase1,
+                    isCase2,
+                    isCase3,
+                    isCase4,
+                    targetImageStatus
+                )
             } catch (cpe: CaptchaException) {
                 Timber.i(
                     cpe,
@@ -490,19 +492,16 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val pagesToParse: MutableList<ImageFile> = ArrayList()
         val ugoirasToDownload: MutableList<ImageFile> = ArrayList()
 
-        // Just get the cover if we're in a streamed download
+        // Streamed download => just get the cover
         if (downloadMode == DownloadMode.STREAM) {
             val coverOptional = images.firstOrNull { img -> img.isCover }
             if (coverOptional != null) {
                 enrichImageDownloadParams(coverOptional, content)
                 requestQueueManager.queueRequest(
-                    buildImageDownloadRequest(
-                        coverOptional, targetFolder,
-                        content
-                    )
+                    buildImageDownloadRequest(coverOptional, targetFolder, content)
                 )
             }
-        } else { // Regular downloads
+        } else { // Regular download
             var cover: ImageFile? = null
             // Queue image download requests
             for (img in images) {
@@ -514,24 +513,18 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                         img.backupUrl = images[1].url
                         cover = img
                     }
-                    if (img.needsPageParsing()) pagesToParse.add(img) else if (img.downloadParams.contains(
-                            ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES
-                        )
-                    ) ugoirasToDownload.add(img) else if (!img.isCover) requestQueueManager.queueRequest(
-                        buildImageDownloadRequest(
-                            img, targetFolder,
-                            content
-                        )
+                    if (img.needsPageParsing()) pagesToParse.add(img)
+                    else if (img.downloadParams.contains(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES))
+                        ugoirasToDownload.add(img)
+                    else if (!img.isCover) requestQueueManager.queueRequest(
+                        buildImageDownloadRequest(img, targetFolder, content)
                     )
                 }
             }
 
             // Download cover last, to avoid being blocked by the server when downloading cover and page 1 back to back when they are the same resource
             if (cover != null) requestQueueManager.queueRequest(
-                buildImageDownloadRequest(
-                    cover, targetFolder,
-                    content
-                )
+                buildImageDownloadRequest(cover, targetFolder, content)
             )
 
             // Parse pages for images
@@ -558,13 +551,74 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.SAVE_QUEUE, content))
-        if (
-            ContentHelper.updateQueueJson(applicationContext, dao)
-        ) Timber.i(context.getString(R.string.queue_json_saved))
+        if (ContentHelper.updateQueueJson(applicationContext, dao))
+            Timber.i(context.getString(R.string.queue_json_saved))
         else Timber.w(context.getString(R.string.queue_json_failed))
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.START_DOWNLOAD, content))
         return ImmutablePair(QueuingResult.CONTENT_FOUND, content)
+    }
+
+    private fun parseMissingImages(
+        content: Content,
+        storedImages: List<ImageFile>,
+        isCase1: Boolean,
+        isCase2: Boolean,
+        isCase3: Boolean,
+        isCase4: Boolean,
+        targetImageStatus: StatusContent
+    ): MutableList<ImageFile> {
+        var result = storedImages.toMutableList()
+        if (isCase1 || isCase2 || isCase3) {
+            val onlineImages = ContentHelper.fetchImageURLs(content, targetImageStatus)
+            // Cases 1 and 2 : Replace existing images with the parsed images
+            if (isCase1 || isCase2) result = onlineImages
+            // Case 3 : Replace images in ERROR state with the parsed images at the same position
+            if (isCase3) {
+                for (i in result.indices) {
+                    val oldImage = result[i]
+                    if (oldImage.status == StatusContent.ERROR) {
+                        onlineImages.forEach { newImg ->
+                            if (newImg.order == oldImage.order) result[i] = newImg
+                        }
+                    }
+                }
+            }
+        }
+        // Case 4 : Reparse chapters whose pages are missing
+        if (isCase4) {
+            content.chaptersList.forEachIndexed { idx, ch ->
+                if (ch.imageList.isEmpty()) {
+                    /* There are two very different cases to consider
+                     1- parse an actual chapter belonging to the overarching content (or at least originating from the same site)
+                     2- parse a content merged inside the overarching content and stored as a chapter,
+                        but originating from another site entirely
+                     */
+                    val chapterSite = Site.searchByUrl(ch.url)
+                    if (null == chapterSite || !chapterSite.isVisible)
+                        throw InvalidParameterException("A valid site couldn't be found from " + ch.url)
+
+                    val onlineImages =
+                        if (content.site == chapterSite) { // (1)
+                            ContentHelper.fetchImageURLs(ch, content, targetImageStatus)
+                        } else { // (2)
+                            // We should parse a Content but all we have is a Chapter (merged book)
+                            // Forge a bogus Content from the given chapter to retrieve images
+                            val forgedContent = Content().setSite(chapterSite)
+                            forgedContent.setRawUrl(ch.url)
+                            ContentHelper.fetchImageURLs(forgedContent, targetImageStatus)
+                        }
+                    content.chaptersList[idx].setImageFiles(onlineImages)
+                }
+            }
+
+            // Manually insert updated chapters
+        }
+        if (content.isUpdatedProperties) dao.insertContent(content)
+
+        // Manually insert new images (without using insertContent)
+        dao.replaceImageList(content.id, result)
+        return result
     }
 
     private fun enrichImageDownloadParams(img: ImageFile, content: Content) {

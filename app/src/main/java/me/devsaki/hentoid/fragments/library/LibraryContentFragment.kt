@@ -806,7 +806,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     /**
-     * Callback for the "Download" action button
+     * Callback for the "Download" action button (for streamed books)
      */
     private fun askDownloadSelectedItems() {
         val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
@@ -834,20 +834,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             .setCancelable(false)
             .setTitle(R.string.app_name)
             .setMessage(message)
-            .setPositiveButton(
-                R.string.yes
-            ) { dialog1, _ ->
+            .setPositiveButton(R.string.yes)
+            { dialog1, _ ->
                 dialog1.dismiss()
-                download(
-                    contents
-                ) { t: Throwable ->
-                    onDownloadError(t)
-                }
+                download(contents) { t -> onDownloadError(t) }
                 leaveSelectionMode()
             }
-            .setNegativeButton(
-                R.string.no
-            ) { dialog12, _ -> dialog12.dismiss() }
+            .setNegativeButton(R.string.no)
+            { dialog12, _ -> dialog12.dismiss() }
             .create()
             .show()
     }

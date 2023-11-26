@@ -1287,7 +1287,8 @@ public final class ContentHelper {
             throw new CloudflareHelper.CloudflareProtectedException();
 
         // Scram if the response is a redirection or an error
-        if (response.code() >= 300) throw new IOException("Network error " + response.code());
+        if (response.code() >= 300)
+            throw new IOException("Network error " + response.code() + " @ " + url);
 
         // Scram if the response content-type is something else than the target type
         if (targetContentType != null) {
@@ -1356,6 +1357,74 @@ public final class ContentHelper {
             img.setId(0);
             img.setStatus(targetImageStatus);
             img.setContentId(content.getId());
+        }
+
+        return imgs;
+    }
+
+    /**
+     * Query source to fetch all image file names and URLs of a given chapter
+     * TODO update
+     *
+     * @param chapter           Chapter whose pages to retrieve
+     * @param targetImageStatus Target status to set on the fetched images
+     * @return List of pages with original URLs and file name
+     */
+    public static List<ImageFile> fetchImageURLs(
+            @NonNull Chapter chapter,
+            @NonNull Content c,
+            @NonNull StatusContent targetImageStatus) throws Exception {
+        List<ImageFile> imgs;
+
+        // If content doesn't have any download parameters, get them from the cookie manager
+        String contentDownloadParamsStr = c.getDownloadParams();
+        if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
+            String url = c.getGalleryUrl();
+            String cookieStr = HttpHelper.getCookies(url);
+            if (!cookieStr.isEmpty()) {
+                Map<String, String> downloadParams = new HashMap<>();
+                downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+                String params = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
+                c.setDownloadParams(params);
+            }
+        }
+
+        // Use ImageListParser to query the source
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(c.getSite());
+        imgs = parser.parseImageList(chapter, c);
+
+        // If no images found, or just the cover, image detection has failed
+        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
+            throw new EmptyResultException();
+
+        // Add the content's download params to the images only if they have missing information
+        contentDownloadParamsStr = c.getDownloadParams();
+        if (contentDownloadParamsStr != null && contentDownloadParamsStr.length() > 2) {
+            Map<String, String> contentDownloadParams = ContentHelper.parseDownloadParams(contentDownloadParamsStr);
+            for (ImageFile i : imgs) {
+                if (i.getDownloadParams() != null && i.getDownloadParams().length() > 2) {
+                    Map<String, String> imageDownloadParams = ContentHelper.parseDownloadParams(i.getDownloadParams());
+                    // Content's params
+                    for (Map.Entry<String, String> entry : contentDownloadParams.entrySet())
+                        if (!imageDownloadParams.containsKey(entry.getKey()))
+                            imageDownloadParams.put(entry.getKey(), entry.getValue());
+                    // Referer, just in case
+                    if (!imageDownloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
+                        imageDownloadParams.put(HttpHelper.HEADER_REFERER_KEY, c.getSite().getUrl());
+                    }
+                    i.setDownloadParams(JsonHelper.serializeToJson(imageDownloadParams, JsonHelper.MAP_STRINGS));
+                } else {
+                    i.setDownloadParams(contentDownloadParamsStr);
+                }
+            }
+        }
+
+        // Cleanup generated objects
+        for (ImageFile img : imgs) {
+            img.setId(0);
+            img.setStatus(targetImageStatus);
+            img.setContentId(c.getId());
+            img.setChapterId(chapter.getId());
         }
 
         return imgs;

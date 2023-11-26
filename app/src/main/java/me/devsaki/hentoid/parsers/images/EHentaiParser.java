@@ -152,6 +152,11 @@ public class EHentaiParser implements ImageListParser {
         return result;
     }
 
+    @Override
+    public List<ImageFile> parseImageList(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
+        return null;
+    }
+
     private static EHentaiImageResponse getMpvImage(
             @NonNull MpvImageInfo imageInfo,
             @NonNull final List<Pair<String, String>> headers,

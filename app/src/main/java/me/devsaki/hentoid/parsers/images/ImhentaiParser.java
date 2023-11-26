@@ -3,9 +3,8 @@ package me.devsaki.hentoid.parsers.images;
 import static me.devsaki.hentoid.parsers.ParseHelper.getExtensionFromFormat;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-import androidx.core.util.Pair;
-
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,9 +20,6 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
-/**
- * Handles parsing of content from imhentai
- */
 public class ImhentaiParser extends BaseImageListParser {
 
     @Override
@@ -72,5 +68,11 @@ public class ImhentaiParser extends BaseImageListParser {
         }
 
         return result;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        // Nothing; no chapters for this source
+        return null;
     }
 }

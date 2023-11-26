@@ -95,6 +95,10 @@ public class Chapter {
         this.uniqueId = content.getTarget().getUniqueSiteId() + "-" + order;
     }
 
+    public long getContentId() {
+        return this.content.getTargetId();
+    }
+
     public Chapter setContentId(long contentId) {
         this.content.setTargetId(contentId);
         return this;

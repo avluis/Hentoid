@@ -274,7 +274,7 @@ public class Content implements Serializable {
             case MANHWA18:
             case IMHENTAI:
             case HENTAIFOX:
-                return url.replace(site.getUrl(), "").replace("/gallery", "");
+                return url.replace(site.getUrl(), "").replace("/gallery", "").replace("/g", "");
             case PIXIV:
                 return url.replace(site.getUrl(), "").replaceAll("^[a-z]{2}/", "");
             case ALLPORNCOMIC:
@@ -482,7 +482,7 @@ public class Content implements Serializable {
                 if (getGalleryUrl().contains("/manga")) return getGalleryUrl() + "/p/1/";
                 else return getGalleryUrl() + "#&gid=1&pid=1";
             case HENTAIFOX:
-                return site.getUrl() + "g" + url;
+                return site.getUrl() + "/g" + url + "1";
             default:
                 return getGalleryUrl();
         }

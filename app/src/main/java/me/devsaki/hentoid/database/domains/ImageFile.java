@@ -287,8 +287,8 @@ public class ImageFile {
         return this.content.getTargetId();
     }
 
-    public ImageFile setContentId(long contentId) {
-        this.content.setTargetId(contentId);
+    public ImageFile setContentId(long id) {
+        this.content.setTargetId(id);
         return this;
     }
 
@@ -335,12 +335,21 @@ public class ImageFile {
 
     @Nullable
     public Chapter getLinkedChapter() {
-        return (chapter != null && !chapter.isNull()) ? chapter.getTarget() : null;
+        return DBHelper.reach(this, chapter);
     }
 
     @Nullable
     public ToOne<Chapter> getChapter() {
         return chapter;
+    }
+
+    public long getChapterId() {
+        return this.chapter.getTargetId();
+    }
+
+    public ImageFile setChapterId(long id) {
+        this.chapter.setTargetId(id);
+        return this;
     }
 
     public void setChapter(Chapter chapter) {

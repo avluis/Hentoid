@@ -2,6 +2,7 @@ package me.devsaki.hentoid.parsers.images;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,6 +68,12 @@ public class LusciousParser extends BaseImageListParser {
     @Override
     protected List<String> parseImages(@NonNull Content content) {
         /// We won't use that as parseImageListImpl is overriden directly
+        return null;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        // Nothing; no chapters for this source
         return null;
     }
 }

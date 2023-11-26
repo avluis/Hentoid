@@ -30,19 +30,16 @@ import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
-/**
- * Handles parsing of content from manhwahentai.me
- */
 public class ManhwaParser extends BaseImageListParser {
 
     @Override
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         String readerUrl = onlineContent.getReaderUrl();
-        processedUrl = onlineContent.getGalleryUrl();
 
         if (!URLUtil.isValidUrl(readerUrl))
             throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
 
+        processedUrl = onlineContent.getGalleryUrl();
         Timber.d("Gallery URL: %s", readerUrl);
 
         EventBus.getDefault().register(this);
@@ -63,9 +60,7 @@ public class ManhwaParser extends BaseImageListParser {
     private List<ImageFile> parseImageFiles(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         List<ImageFile> result = new ArrayList<>();
 
-        List<Pair<String, String>> headers = new ArrayList<>();
-        HttpHelper.addCurrentCookiesToHeader(onlineContent.getGalleryUrl(), headers);
-        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, onlineContent.getGalleryUrl()));
+        List<Pair<String, String>> headers = fetchHeaders(onlineContent);
 
         // 1- Detect chapters on gallery page
         List<Chapter> chapters = new ArrayList<>();
@@ -114,21 +109,7 @@ public class ManhwaParser extends BaseImageListParser {
         int storedOrderOffset = ParseHelper.getMaxChapterOrder(storedChapters);
         for (Chapter chp : extraChapters) {
             chp.setOrder(++storedOrderOffset);
-            doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
-            if (doc != null) {
-                List<Element> images = doc.select(".reading-content img");
-                List<String> urls = new ArrayList<>();
-                for (Element e : images) {
-                    String url = ParseHelper.getImgSrc(e);
-                    if (!url.isEmpty()) urls.add(url);
-                }
-                if (!urls.isEmpty())
-                    result.addAll(ParseHelper.urlsToImageFiles(urls, imgOffset + result.size() + 1, StatusContent.SAVED, 1000, chp));
-                else
-                    Timber.w("Chapter parsing failed for %s : no pictures found", chp.getUrl());
-            } else {
-                Timber.w("Chapter parsing failed for %s : no response", chp.getUrl());
-            }
+            result.addAll(parseChapterImageFiles(onlineContent, chp, imgOffset + result.size() + 1, headers));
             if (processHalted.get()) break;
             progressPlus();
         }
@@ -144,8 +125,57 @@ public class ManhwaParser extends BaseImageListParser {
     }
 
     @Override
+    public List<ImageFile> parseChapterImageListImpl(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
+        String url = chapter.getUrl();
+
+        if (!URLUtil.isValidUrl(url))
+            throw new IllegalArgumentException("Invalid gallery URL : " + url);
+
+        if (processedUrl.isEmpty()) processedUrl = url;
+        Timber.d("Chapter URL: %s", url);
+
+        EventBus.getDefault().register(this);
+
+        List<ImageFile> result;
+        try {
+            result = parseChapterImageFiles(content, chapter, 1, null);
+            ParseHelper.setDownloadParams(result, content.getSite().getUrl());
+        } finally {
+            EventBus.getDefault().unregister(this);
+        }
+
+        return result;
+    }
+
+    private List<ImageFile> parseChapterImageFiles(@NonNull Content content, @NonNull Chapter chp, int targetOrder, List<Pair<String, String>> headers) throws Exception {
+        if (null == headers) headers = fetchHeaders(content);
+        Document doc = getOnlineDocument(chp.getUrl(), headers, content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
+        if (doc != null) {
+            List<Element> images = doc.select(".reading-content img");
+            List<String> urls = new ArrayList<>();
+            for (Element e : images) {
+                String url = ParseHelper.getImgSrc(e);
+                if (!url.isEmpty()) urls.add(url);
+            }
+            if (!urls.isEmpty())
+                return ParseHelper.urlsToImageFiles(urls, targetOrder, StatusContent.SAVED, 1000, chp);
+            else
+                Timber.w("Chapter parsing failed for %s : no pictures found", chp.getUrl());
+        } else {
+            Timber.w("Chapter parsing failed for %s : no response", chp.getUrl());
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
     protected List<String> parseImages(@NonNull Content content) {
         /// We won't use that as parseImageListImpl is overriden directly
+        return null;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        /// We won't use that as parseChapterImageListImpl is overriden directly
         return null;
     }
 }

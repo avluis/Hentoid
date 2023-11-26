@@ -5,10 +5,13 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
+import com.annimon.stream.Stream;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -16,9 +19,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 
-/**
- * Handles parsing of content from myreadingmanga.info
- */
 public class MrmParser extends BaseImageListParser {
 
     @Override
@@ -26,8 +26,7 @@ public class MrmParser extends BaseImageListParser {
         List<String> result = new ArrayList<>();
         processedUrl = content.getGalleryUrl();
 
-        List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
+        List<Pair<String, String>> headers = fetchHeaders(content);
 
         // 1. Scan the gallery page for chapter URLs
         // NB : We can't just guess the URLs by starting to 1 and increment them
@@ -49,11 +48,7 @@ public class MrmParser extends BaseImageListParser {
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {
-            doc = getOnlineDocument(url, headers, Site.MRM.useHentoidAgent(), Site.MRM.useWebviewAgent());
-            if (doc != null) {
-                List<Element> images = doc.select(".entry-content img");
-                for (Element e : images) result.add(ParseHelper.getImgSrc(e));
-            }
+            result.addAll(parseImages(url, null, headers));
             if (processHalted.get()) break;
             progressPlus();
         }
@@ -64,5 +59,18 @@ public class MrmParser extends BaseImageListParser {
 
         progressComplete();
         return result;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        if (null == headers) headers = fetchHeaders(chapterUrl, downloadParams);
+        if (processedUrl.isEmpty()) processedUrl = chapterUrl;
+
+        Document doc = getOnlineDocument(processedUrl, headers, Site.MRM.useHentoidAgent(), Site.MRM.useWebviewAgent());
+        if (doc != null) {
+            List<Element> images = doc.select(".entry-content img");
+            return Stream.of(images).map(ParseHelper::getImgSrc).filterNot(String::isEmpty).toList();
+        }
+        return Collections.emptyList();
     }
 }

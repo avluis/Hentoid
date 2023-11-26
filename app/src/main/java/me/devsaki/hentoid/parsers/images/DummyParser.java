@@ -27,7 +27,12 @@ public class DummyParser implements ImageListParser {
 
     @Override
     public List<ImageFile> parseImageList(@NonNull Content content) {
-        return (null == content.getImageFiles()) ? new ArrayList<>() : new ArrayList<>(content.getImageFiles());
+        return new ArrayList<>(content.getImageList());
+    }
+
+    @Override
+    public List<ImageFile> parseImageList(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
+        return new ArrayList<>(chapter.getImageList());
     }
 
     @Override

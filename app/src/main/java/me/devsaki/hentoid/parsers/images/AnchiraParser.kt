@@ -3,6 +3,7 @@ package me.devsaki.hentoid.parsers.images
 import android.os.Handler
 import android.os.Looper
 import android.webkit.URLUtil
+import androidx.core.util.Pair
 import me.devsaki.hentoid.activities.sources.WebResultConsumer
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.domains.Content
@@ -21,9 +22,6 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
-/**
- * Handles parsing of content from anchira.to
- */
 class AnchiraParser : BaseImageListParser(), WebResultConsumer {
     private val resultCode = AtomicInteger(-1)
     private val resultContent = AtomicReference<Content>()
@@ -170,7 +168,16 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
         return parts.toUri()
     }
 
-    override fun parseImages(content: Content): List<String?>? {
+    override fun parseImages(content: Content): List<String>? {
+        // We won't use that as parseImageListImpl is overriden directly
+        return null
+    }
+
+    override fun parseImages(
+        chapterUrl: String,
+        downloadParams: String?,
+        headers: MutableList<Pair<String, String>>?
+    ): MutableList<String>? {
         // We won't use that as parseImageListImpl is overriden directly
         return null
     }
