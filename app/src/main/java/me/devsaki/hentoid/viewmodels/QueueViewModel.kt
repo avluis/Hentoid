@@ -300,10 +300,10 @@ class QueueViewModel(
             withContext(Dispatchers.IO) {
                 contentList.forEach {
                     val res = if (reparseContent) ContentHelper.reparseFromScratch(it)
-                    else ImmutablePair(it, Optional.of(it))
+                    else Optional.of(it)
 
-                    if (res.right.isPresent) {
-                        val content = res.right.get()
+                    if (res.isPresent) {
+                        val content = res.get()
                         // Non-blocking performance bottleneck; run in a dedicated worker
                         if (reparseImages) purgeItem(content)
                         okCount.incrementAndGet()
@@ -314,7 +314,7 @@ class QueueViewModel(
                         )
                     } else {
                         // As we're in the download queue, an item whose content is unreachable should directly get to the error queue
-                        val c = dao.selectContent(res.left.id)
+                        val c = dao.selectContent(it.id)
                         if (c != null) {
                             // Remove the content from the regular queue
                             ContentHelper.removeQueuedContent(

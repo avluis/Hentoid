@@ -554,7 +554,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 withContext(Dispatchers.IO) {
                     contentList.forEach {
                         val res =
-                            if (reparseContent) ContentHelper.reparseFromScratch(it).right
+                            if (reparseContent) ContentHelper.reparseFromScratch(it)
                             else Optional.of<Content>(it)
                         if (res.isPresent) {
                             val content = res.get()
@@ -604,23 +604,68 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             return
         }
 
-        // Flag the content as "being processed" (triggers blink animation)
+        // Flag contents as "being processed" (triggers blink animation)
         for (c in contentList) dao.updateContentProcessedFlag(c.id, true)
+
         val nbErrors = AtomicInteger(0)
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     contentList.forEach { c ->
-                        // Reparse content from scratch if images KO
-                        val res = if (!ContentHelper.isDownloadable(c)) {
-                            Timber.d("Pages unreachable; reparsing content")
-                            // Reparse content itself
-                            val newContent: Pair<Content, Optional<Content>> =
-                                ContentHelper.reparseFromScratch(c)
-                            if (newContent.right.isEmpty) dao.updateContentProcessedFlag(c.id, false)
-                            newContent.right
-                        } else Optional.of<Content>(c)
+                        var res = Optional.of(c)
 
+                        // Merged books
+                        val chaps = c.chaptersList
+                        if (c.isManuallyMerged && chaps.isNotEmpty()) {
+                            // Reparse main book from scratch if images are KO
+                            if (!ContentHelper.isDownloadable(c)) {
+                                Timber.d("Pages unreachable; reparsing content")
+                                // Reparse content itself
+                                res = ContentHelper.reparseFromScratch(c)
+                            }
+
+                            // Reparse chapters from scratch if images are KO
+                            chaps.forEachIndexed { idx, ch ->
+                                if (res.isPresent) {
+                                    if (!ContentHelper.isDownloadable(ch)) {
+                                        if (ContentHelper.parseFromScratch(ch.url).isPresent) {
+                                            // Resetting pics; will be parsed by the downloader
+                                            Timber.d("Pages unreachable; resetting chapter $idx")
+                                            ch.setImageFiles(emptyList())
+                                        } else res = Optional.empty()
+                                    }
+                                }
+                            }
+
+                            c.setChapters(chaps)
+                        } else { // Classic content
+                            if (!ContentHelper.isDownloadable(c)) {
+                                Timber.d("Pages unreachable; reparsing content")
+                                // Reparse content itself
+                                res = ContentHelper.reparseFromScratch(c)
+                            }
+                        }
+
+                        if (res.isPresent) {
+                            res.get().downloadMode = Content.DownloadMode.DOWNLOAD
+                            dao.addContentToQueue(
+                                res.get(), null, StatusContent.SAVED, position, -1, null,
+                                isQueueActive(getApplication())
+                            )
+                        } else {
+                            dao.updateContentProcessedFlag(c.id, false)
+                            nbErrors.incrementAndGet()
+                            onError.invoke(
+                                if (c.isManuallyMerged && chaps.isNotEmpty()) EmptyResultException(
+                                    getApplication<Application>().getString(R.string.download_canceled_merged)
+                                )
+                                else EmptyResultException(
+                                    getApplication<Application>().getString(R.string.download_canceled)
+                                )
+                            )
+                        }
+
+                        /*
                         if (res.isPresent) {
                             res.get().downloadMode = Content.DownloadMode.DOWNLOAD
                             dao.addContentToQueue(
@@ -635,7 +680,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 )
                             )
                         }
-                    }
+
+                         */
+                    } // Each content
                 }
                 if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
                 onSuccess.invoke(contentList.size - nbErrors.get())
@@ -669,13 +716,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         val res = if (!ContentHelper.isDownloadable(c)) {
                             Timber.d("Pages unreachable; reparsing content")
                             // Reparse content itself
-                            val newContent: Pair<Content, Optional<Content>> =
-                                ContentHelper.reparseFromScratch(c)
-                            if (newContent.right.isEmpty) {
+                            val newContent =                                ContentHelper.reparseFromScratch(c)
+                            if (newContent.isEmpty) {
                                 dao.updateContentProcessedFlag(c.id, false)
-                                newContent.right
+                                newContent
                             } else {
-                                val reparsedContent = newContent.right.get()
+                                val reparsedContent = newContent.get()
                                 // Reparse pages
                                 val newImages =
                                     ContentHelper.fetchImageURLs(

@@ -1182,13 +1182,12 @@ public final class ContentHelper {
      * @param content Content to parse again from its online source
      * @return Content updated from its online source, or Optional.empty if something went wrong
      */
-    public static ImmutablePair<Content, Optional<Content>> reparseFromScratch(
-            @NonNull final Content content) {
+    public static Optional<Content> reparseFromScratch(@NonNull final Content content) {
         try {
-            return new ImmutablePair<>(content, reparseFromScratch(content.getGalleryUrl(), content));
+            return reparseFromScratch(content.getGalleryUrl(), content);
         } catch (IOException | CloudflareHelper.CloudflareProtectedException e) {
             Timber.w(e);
-            return new ImmutablePair<>(content, Optional.empty());
+            return Optional.empty();
         }
     }
 
@@ -1307,8 +1306,9 @@ public final class ContentHelper {
      * @param targetImageStatus Target status to set on the fetched images
      * @return List of pages with original URLs and file name
      */
-    public static List<ImageFile> fetchImageURLs(@NonNull Content
-                                                         content, @NonNull StatusContent targetImageStatus) throws Exception {
+    public static List<ImageFile> fetchImageURLs(
+            @NonNull Content content,
+            @NonNull StatusContent targetImageStatus) throws Exception {
         List<ImageFile> imgs;
 
         // If content doesn't have any download parameters, get them from the cookie manager
@@ -1752,8 +1752,10 @@ public final class ContentHelper {
      * @throws LimitReachedException If the site's download limit has been reached
      * @throws EmptyResultException  If no picture has been detected
      */
-    public static boolean testDownloadPictureFromPage(@NonNull Site site, @NonNull ImageFile
-            img, List<Pair<String, String>> requestHeaders) throws
+    public static boolean testDownloadPictureFromPage(
+            @NonNull Site site,
+            @NonNull ImageFile img,
+            List<Pair<String, String>> requestHeaders) throws
             IOException, LimitReachedException, EmptyResultException, CloudflareHelper.CloudflareProtectedException {
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
@@ -1780,8 +1782,10 @@ public final class ContentHelper {
      * @return True if the given picture is downloadable; false if not
      * @throws IOException If something happens during the download attempt
      */
-    public static boolean testDownloadPicture(@NonNull Site site, @NonNull ImageFile
-            img, List<Pair<String, String>> requestHeaders) throws IOException, CloudflareHelper.CloudflareProtectedException {
+    public static boolean testDownloadPicture(
+            @NonNull Site site,
+            @NonNull ImageFile img,
+            List<Pair<String, String>> requestHeaders) throws IOException, CloudflareHelper.CloudflareProtectedException {
         String url = img.getUrl();
         if (!url.startsWith("http")) url = HttpHelper.fixUrl(url, site.getUrl());
 
@@ -1812,9 +1816,11 @@ public final class ContentHelper {
      * @param dao         DAO to use
      * @throws ContentNotProcessedException If something terrible happens
      */
-    public static void mergeContents(@NonNull Context
-                                             context, @NonNull List<Content> contentList, @NonNull String newTitle,
-                                     @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
+    public static void mergeContents(
+            @NonNull Context context,
+            @NonNull List<Content> contentList,
+            @NonNull String newTitle,
+            @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
         // New book inherits properties of the first content of the list

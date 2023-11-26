@@ -1412,9 +1412,9 @@ class ReaderViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     val c = ContentHelper.reparseFromScratch(theContent)
-                    if (c.right.isEmpty) throw EmptyResultException()
+                    if (c.isEmpty) throw EmptyResultException()
                     dao.addContentToQueue(
-                        c.right.get(),
+                        c.get(),
                         null,
                         StatusContent.SAVED,
                         ContentHelper.QueuePosition.TOP,
