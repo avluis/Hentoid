@@ -36,6 +36,8 @@ public abstract class BaseImageListParser implements ImageListParser {
     protected AtomicBoolean processHalted = new AtomicBoolean(false);
     protected String processedUrl = "";
 
+    protected abstract boolean isChapterUrl(@NonNull String url);
+
     protected abstract List<String> parseImages(@NonNull Content content) throws Exception;
 
     protected abstract List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception;
@@ -48,19 +50,20 @@ public abstract class BaseImageListParser implements ImageListParser {
         return parseImageListImpl(content, null);
     }
 
-    public List<ImageFile> parseImageList(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
-        return parseChapterImageListImpl(chapter, content);
+    public List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) throws Exception {
+        if (isChapterUrl(url)) return parseChapterImageListImpl(url, content);
+        else return parseImageListImpl(content, null);
     }
 
     protected List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         String readerUrl = onlineContent.getReaderUrl();
-        processedUrl = onlineContent.getGalleryUrl();
 
         if (!URLUtil.isValidUrl(readerUrl))
             throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
 
         Timber.d("Gallery URL: %s", readerUrl);
 
+        processedUrl = onlineContent.getGalleryUrl();
         EventBus.getDefault().register(this);
 
         List<ImageFile> result;
@@ -75,19 +78,18 @@ public abstract class BaseImageListParser implements ImageListParser {
         return result;
     }
 
-    public List<ImageFile> parseChapterImageListImpl(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
-        String url = chapter.getUrl();
-
+    public List<ImageFile> parseChapterImageListImpl(@NonNull String url, @NonNull Content content) throws Exception {
         if (!URLUtil.isValidUrl(url))
             throw new IllegalArgumentException("Invalid gallery URL : " + url);
 
-        Timber.d("Gallery URL: %s", url);
+        Timber.d("Chapter URL: %s", url);
 
+        processedUrl = url;
         EventBus.getDefault().register(this);
 
         List<ImageFile> result;
         try {
-            List<String> imgUrls = parseImages(chapter.getUrl(), content.getDownloadParams(), null);
+            List<String> imgUrls = parseImages(url, content.getDownloadParams(), null);
             result = ParseHelper.urlsToImageFiles(imgUrls, StatusContent.SAVED, null, null);
             ParseHelper.setDownloadParams(result, content.getSite().getUrl());
         } finally {

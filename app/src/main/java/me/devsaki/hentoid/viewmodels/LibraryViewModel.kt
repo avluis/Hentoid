@@ -575,8 +575,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                     if (reparseContent || !ContentHelper.isDownloadable(ch)) {
                                         if (!reparseContent) Timber.d("Pages unreachable; reparsing chapter $idx")
                                         if (ContentHelper.parseFromScratch(ch.url).isPresent) {
-                                            // Resetting pics; will be parsed by the downloader
-                                            ch.setImageFiles(emptyList())
+                                            // Flagging all pics as ERROR; will be reparsed by the downloader
+                                            ch.imageList.forEach { img ->
+                                                img.status = StatusContent.ERROR
+                                            }
                                             areModifiedChapters = true
                                         } else res = Optional.empty()
                                     }

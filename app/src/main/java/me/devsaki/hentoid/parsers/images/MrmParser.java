@@ -73,4 +73,9 @@ public class MrmParser extends BaseImageListParser {
         }
         return Collections.emptyList();
     }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return Stream.of(url.split("/")).filterNot(String::isEmpty).count() > 3;
+    }
 }

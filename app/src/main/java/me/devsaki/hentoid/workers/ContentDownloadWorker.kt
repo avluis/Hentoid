@@ -16,6 +16,7 @@ import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp.Companion.isInForeground
 import me.devsaki.hentoid.core.HentoidApp.Companion.trackDownloadEvent
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
+import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.core.UGOIRA_CACHE_FOLDER
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -91,6 +92,8 @@ import java.security.InvalidParameterException
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
+import kotlin.math.floor
+import kotlin.math.log10
 
 class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.download_service, null) {
@@ -294,7 +297,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val isCase2 = nbErrors == images.size
         val isCase3 = nbErrors > 0 && content.site.hasBackupURLs()
         val isCase4 =
-            content.isManuallyMerged && content.chaptersList.any { c -> c.imageList.isEmpty() }
+            content.isManuallyMerged && content.chaptersList.any { c -> c.imageList.all { img -> img.status == StatusContent.ERROR } }
 
         if (isCase1 || isCase2 || isCase3 || isCase4) {
             EventBus.getDefault()
@@ -440,7 +443,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         content.storageUri = targetFolder.uri.toString()
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
-        if (0 == content.qtyPages) content.qtyPages = images.size - 1
+        if (0 == content.qtyPages) content.qtyPages = images.count { i -> i.isReadable }
         content.status = StatusContent.DOWNLOADING
         // Mark the cover for downloading when saving a streamed book
         if (downloadMode == DownloadMode.STREAM) content.cover.status =
@@ -502,16 +505,17 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
             }
         } else { // Regular download
-            var cover: ImageFile? = null
+            val covers = ArrayList<ImageFile>()
             // Queue image download requests
-            for (img in images) {
+            images.forEachIndexed { idx, img ->
                 if (img.status == StatusContent.SAVED) {
                     enrichImageDownloadParams(img, content)
 
-                    // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
-                    if (img.isCover && images.size > 1) {
-                        img.backupUrl = images[1].url
-                        cover = img
+                    // Set the next image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
+                    // NB : Per convention, cover is always the 1st picture of a given set
+                    if (img.isCover) {
+                        if (images.size > idx + 1) img.backupUrl = images[index + 1].url
+                        covers.add(img)
                     }
                     if (img.needsPageParsing()) pagesToParse.add(img)
                     else if (img.downloadParams.contains(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES))
@@ -523,9 +527,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             // Download cover last, to avoid being blocked by the server when downloading cover and page 1 back to back when they are the same resource
-            if (cover != null) requestQueueManager.queueRequest(
-                buildImageDownloadRequest(cover, targetFolder, content)
-            )
+            covers.forEach {
+                requestQueueManager.queueRequest(
+                    buildImageDownloadRequest(it, targetFolder, content)
+                )
+            }
 
             // Parse pages for images
             if (pagesToParse.isNotEmpty()) {
@@ -569,7 +575,70 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         targetImageStatus: StatusContent
     ): MutableList<ImageFile> {
         var result = storedImages.toMutableList()
-        if (isCase1 || isCase2 || isCase3) {
+
+        // Case 4 : Reparse chapters whose pages are all in ERROR state
+        // NB : exclusive to the other cases
+        if (isCase4) {
+            content.chaptersList.forEachIndexed { idx, ch ->
+                if (ch.imageList.all { img -> img.status == StatusContent.ERROR }) {
+                    /* There are two very different cases to consider
+                     1- parse an actual chapter belonging to the overarching content (or at least originating from the same site)
+                     2- parse a content merged inside the overarching content and stored as a chapter,
+                        but originating from another site entirely
+                     */
+                    val chapterSite = Site.searchByUrl(ch.url)
+                    if (null == chapterSite || !chapterSite.isVisible)
+                        throw InvalidParameterException("A valid site couldn't be found from " + ch.url)
+
+                    val onlineImages =
+                        if (content.site == chapterSite) { // (1)
+                            ContentHelper.fetchImageURLs(
+                                content,
+                                content.galleryUrl,
+                                targetImageStatus
+                            )
+                        } else { // (2)
+                            // We should parse a Content but all we have is a Chapter (merged book)
+                            // Forge a bogus Content from the given chapter to retrieve images
+                            val forgedContent = Content().setSite(chapterSite)
+                            forgedContent.qtyPages = ch.imageList.size
+                            forgedContent.setRawUrl(ch.url)
+                            ContentHelper.fetchImageURLs(forgedContent, ch.url, targetImageStatus)
+                        }
+                    // Link the chapter to the found pages
+                    for (img in onlineImages) img.chapterId = ch.id
+
+                    // Remplace the image set within the results
+                    val index = result.indexOfFirst { img -> img.chapterId == ch.id }
+                    if (index > -1) {
+                        result.removeIf { img -> img.chapterId == ch.id }
+                        result.addAll(index, onlineImages)
+                    }
+
+                    // Link new image set to current chapter
+                    content.chaptersList[idx].setImageFiles(onlineImages)
+                }
+            } // Chapters loop
+
+            // Renumber all pages; fix covers if marked as ERROR
+            var coverIndex = 0
+            result.forEachIndexed { idx, img ->
+                img.order = idx
+                if (img.isReadable) {
+                    img.computeName(floor(log10(result.size.toDouble()) + 1).toInt())
+                } else if (img.isCover) {
+                    img.status = StatusContent.SAVED
+                    if (0 == coverIndex++) {
+                        img.url = content.coverImageUrl
+                    } else {
+                        img.name = THUMB_FILE_NAME + coverIndex
+                    }
+                }
+            }
+
+            // Manually insert updated chapters
+            dao.insertChapters(content.chaptersList)
+        } else if (isCase1 || isCase2 || isCase3) {
             val onlineImages = ContentHelper.fetchImageURLs(content, targetImageStatus)
             // Cases 1 and 2 : Replace existing images with the parsed images
             if (isCase1 || isCase2) result = onlineImages
@@ -585,36 +654,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
         }
-        // Case 4 : Reparse chapters whose pages are missing
-        if (isCase4) {
-            content.chaptersList.forEachIndexed { idx, ch ->
-                if (ch.imageList.isEmpty()) {
-                    /* There are two very different cases to consider
-                     1- parse an actual chapter belonging to the overarching content (or at least originating from the same site)
-                     2- parse a content merged inside the overarching content and stored as a chapter,
-                        but originating from another site entirely
-                     */
-                    val chapterSite = Site.searchByUrl(ch.url)
-                    if (null == chapterSite || !chapterSite.isVisible)
-                        throw InvalidParameterException("A valid site couldn't be found from " + ch.url)
 
-                    val onlineImages =
-                        if (content.site == chapterSite) { // (1)
-                            ContentHelper.fetchImageURLs(ch, content, targetImageStatus)
-                        } else { // (2)
-                            // We should parse a Content but all we have is a Chapter (merged book)
-                            // Forge a bogus Content from the given chapter to retrieve images
-                            val forgedContent = Content().setSite(chapterSite)
-                            forgedContent.setRawUrl(ch.url)
-                            ContentHelper.fetchImageURLs(forgedContent, targetImageStatus)
-                        }
-                    content.chaptersList[idx].setImageFiles(onlineImages)
-                }
-            }
-
-            // Manually insert updated chapters
-        }
-        if (content.isUpdatedProperties) dao.insertContent(content)
+        content.qtyPages = 0
+        dao.insertContent(content)
 
         // Manually insert new images (without using insertContent)
         dao.replaceImageList(content.id, result)

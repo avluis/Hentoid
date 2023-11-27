@@ -50,4 +50,9 @@ public class MusesParser extends BaseImageListParser {
         // Nothing; no chapters for this source
         return null;
     }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return false;
+    }
 }

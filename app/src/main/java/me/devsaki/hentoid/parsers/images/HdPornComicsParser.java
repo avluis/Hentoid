@@ -46,4 +46,8 @@ public class HdPornComicsParser extends BaseImageListParser {
         return null;
     }
 
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return false;
+    }
 }

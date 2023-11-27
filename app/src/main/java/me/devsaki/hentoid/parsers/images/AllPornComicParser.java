@@ -22,6 +22,11 @@ import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 public class AllPornComicParser extends BaseImageListParser {
 
     @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return Stream.of(url.split("/")).filterNot(String::isEmpty).count() > 4;
+    }
+
+    @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {
         List<String> result = new ArrayList<>();
         processedUrl = content.getGalleryUrl();

@@ -298,9 +298,7 @@ public class PixivParser extends BaseImageListParser {
     }
 
     @Override
-    public List<ImageFile> parseChapterImageListImpl(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
-        String url = chapter.getUrl();
-
+    public List<ImageFile> parseChapterImageListImpl(@NonNull String url, @NonNull Content content) throws Exception {
         if (!URLUtil.isValidUrl(url))
             throw new IllegalArgumentException("Invalid gallery URL : " + url);
 
@@ -311,7 +309,8 @@ public class PixivParser extends BaseImageListParser {
 
         List<ImageFile> result;
         try {
-            result = parseChapterImageFiles(content, chapter, 1, null);
+            Chapter ch = new Chapter().setUrl(url); // Forge a chapter
+            result = parseChapterImageFiles(content, ch, 1, null);
             ParseHelper.setDownloadParams(result, content.getSite().getUrl());
         } finally {
             EventBus.getDefault().unregister(this);
@@ -322,7 +321,14 @@ public class PixivParser extends BaseImageListParser {
 
     private List<ImageFile> parseChapterImageFiles(@NonNull Content content, @NonNull Chapter chp, int targetOrder, List<Pair<String, String>> headers) throws Exception {
         if (null == headers) headers = fetchHeaders(content);
+        // TODO
         return Collections.emptyList();
+    }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        // TODO
+        return false;
     }
 
     @Override

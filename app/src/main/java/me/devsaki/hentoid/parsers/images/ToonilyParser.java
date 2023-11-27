@@ -123,9 +123,7 @@ public class ToonilyParser extends BaseImageListParser {
     }
 
     @Override
-    public List<ImageFile> parseChapterImageListImpl(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
-        String url = chapter.getUrl();
-
+    public List<ImageFile> parseChapterImageListImpl(@NonNull String url, @NonNull Content content) throws Exception {
         if (!URLUtil.isValidUrl(url))
             throw new IllegalArgumentException("Invalid gallery URL : " + url);
 
@@ -136,7 +134,8 @@ public class ToonilyParser extends BaseImageListParser {
 
         List<ImageFile> result;
         try {
-            result = parseChapterImageFiles(content, chapter, 1, null);
+            Chapter ch = new Chapter().setUrl(url); // Forge a chapter
+            result = parseChapterImageFiles(content, ch, 1, null);
             ParseHelper.setDownloadParams(result, content.getSite().getUrl());
         } finally {
             EventBus.getDefault().unregister(this);
@@ -163,6 +162,14 @@ public class ToonilyParser extends BaseImageListParser {
             Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        String[] parts = url.split("/");
+        String part = parts[parts.length - 1];
+        if (part.isEmpty()) part = parts[parts.length - 2];
+        return part.contains("chap");
     }
 
     @Override

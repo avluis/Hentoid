@@ -97,7 +97,7 @@ public class ExHentaiParser implements ImageListParser {
     }
 
     @Override
-    public List<ImageFile> parseImageList(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
+    public List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) throws Exception {
         return null;
     }
 

@@ -31,8 +31,8 @@ public class DummyParser implements ImageListParser {
     }
 
     @Override
-    public List<ImageFile> parseImageList(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
-        return new ArrayList<>(chapter.getImageList());
+    public List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) throws Exception {
+        return new ArrayList<>(content.getImageList());
     }
 
     @Override

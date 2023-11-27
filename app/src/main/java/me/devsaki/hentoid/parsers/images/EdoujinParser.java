@@ -26,6 +26,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import timber.log.Timber;
 
@@ -118,9 +119,7 @@ public class EdoujinParser extends BaseImageListParser {
     }
 
     @Override
-    public List<ImageFile> parseChapterImageListImpl(@NonNull Chapter chapter, @NonNull Content content) throws Exception {
-        String url = chapter.getUrl();
-
+    public List<ImageFile> parseChapterImageListImpl(@NonNull String url, @NonNull Content content) throws Exception {
         if (!URLUtil.isValidUrl(url))
             throw new IllegalArgumentException("Invalid gallery URL : " + url);
 
@@ -131,7 +130,8 @@ public class EdoujinParser extends BaseImageListParser {
 
         List<ImageFile> result;
         try {
-            result = parseChapterImageFiles(content, chapter, 1, null);
+            Chapter ch = new Chapter().setUrl(url); // Forge a chapter
+            result = parseChapterImageFiles(content, ch, 1, null);
             ParseHelper.setDownloadParams(result, content.getSite().getUrl());
         } finally {
             EventBus.getDefault().unregister(this);
@@ -167,6 +167,13 @@ public class EdoujinParser extends BaseImageListParser {
             }
         }
         return null;
+    }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        String[] parts = url.split("/");
+        parts = parts[parts.length - 1].split("-");
+        return StringHelper.isNumeric(parts[parts.length - 1]);
     }
 
     @Override

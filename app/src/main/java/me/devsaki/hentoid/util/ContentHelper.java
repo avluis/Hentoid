@@ -1022,7 +1022,7 @@ public final class ContentHelper {
                 property = fileNameProperties.get(imgName);
             }
             if (property != null) {
-                if (imgName.equals(Consts.THUMB_FILE_NAME)) {
+                if (imgName.startsWith(Consts.THUMB_FILE_NAME)) {
                     coverFound = true;
                     img.setIsCover(true);
                 }
@@ -1362,24 +1362,16 @@ public final class ContentHelper {
         return imgs;
     }
 
-    /**
-     * Query source to fetch all image file names and URLs of a given chapter
-     * TODO update
-     *
-     * @param chapter           Chapter whose pages to retrieve
-     * @param targetImageStatus Target status to set on the fetched images
-     * @return List of pages with original URLs and file name
-     */
+    // TODO doc
     public static List<ImageFile> fetchImageURLs(
-            @NonNull Chapter chapter,
             @NonNull Content c,
+            @NonNull String url,
             @NonNull StatusContent targetImageStatus) throws Exception {
         List<ImageFile> imgs;
 
         // If content doesn't have any download parameters, get them from the cookie manager
         String contentDownloadParamsStr = c.getDownloadParams();
         if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
-            String url = c.getGalleryUrl();
             String cookieStr = HttpHelper.getCookies(url);
             if (!cookieStr.isEmpty()) {
                 Map<String, String> downloadParams = new HashMap<>();
@@ -1391,11 +1383,11 @@ public final class ContentHelper {
 
         // Use ImageListParser to query the source
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(c.getSite());
-        imgs = parser.parseImageList(chapter, c);
+        imgs = parser.parseImageList(c, url);
 
         // If no images found, or just the cover, image detection has failed
         if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
-            throw new EmptyResultException();
+            throw new EmptyResultException(url);
 
         // Add the content's download params to the images only if they have missing information
         contentDownloadParamsStr = c.getDownloadParams();
@@ -1419,12 +1411,11 @@ public final class ContentHelper {
             }
         }
 
-        // Cleanup generated objects
+        // Cleanup and enrich generated objects
         for (ImageFile img : imgs) {
             img.setId(0);
             img.setStatus(targetImageStatus);
             img.setContentId(c.getId());
-            img.setChapterId(chapter.getId());
         }
 
         return imgs;

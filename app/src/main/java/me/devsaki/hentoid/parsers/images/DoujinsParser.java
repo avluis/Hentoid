@@ -41,4 +41,9 @@ public class DoujinsParser extends BaseImageListParser {
         // Nothing as this source doesn't have chapters
         return null;
     }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return false;
+    }
 }

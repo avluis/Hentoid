@@ -63,7 +63,7 @@ public class HentaifoxParser extends BaseImageListParser {
             String thumbPath = thumbUrl.substring(thumbUrl.indexOf("hentaifox.com") + 14, thumbUrl.lastIndexOf("/") + 1);
 
             // Forge all page URLs
-            for (int i = 0; i < content.getQtyPages(); i++) {
+            for (int i = 0; i < imageFormats.size(); i++) {
                 String imgUrl = "https://" + HOSTS[Helper.getRandomInt(HOSTS.length)] + "/" +
                         thumbPath +
                         (i + 1) + "." + getExtensionFromFormat(imageFormats, i);
@@ -78,5 +78,10 @@ public class HentaifoxParser extends BaseImageListParser {
     protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
         // Nothing; no chapters for this source
         return null;
+    }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return false;
     }
 }
