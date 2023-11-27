@@ -557,13 +557,14 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 withContext(Dispatchers.IO) {
                     contentList.forEach { c ->
                         var res = Optional.of(c)
+                        var areModifiedChapters = false
 
                         // Merged books
-                        val chaps = c.chaptersList
+                        val chaps = c.chaptersList.toMutableList()
                         if (c.isManuallyMerged && chaps.isNotEmpty()) {
                             // Reparse main book from scratch if images are KO
                             if (reparseContent || !ContentHelper.isDownloadable(c)) {
-                                Timber.d("Pages unreachable; reparsing content")
+                                if (!reparseContent) Timber.d("Pages unreachable; reparsing content")
                                 // Reparse content itself
                                 res = ContentHelper.reparseFromScratch(c)
                             }
@@ -572,15 +573,16 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             chaps.forEachIndexed { idx, ch ->
                                 if (res.isPresent) {
                                     if (reparseContent || !ContentHelper.isDownloadable(ch)) {
+                                        if (!reparseContent) Timber.d("Pages unreachable; reparsing chapter $idx")
                                         if (ContentHelper.parseFromScratch(ch.url).isPresent) {
                                             // Resetting pics; will be parsed by the downloader
-                                            Timber.d("Pages unreachable; resetting chapter $idx")
                                             ch.setImageFiles(emptyList())
+                                            areModifiedChapters = true
                                         } else res = Optional.empty()
                                     }
                                 }
                             }
-                            c.setChapters(chaps)
+                            if (res.isPresent) res.get().setChapters(chaps)
                         } else { // Classic content
                             if (reparseContent || !ContentHelper.isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content")
@@ -591,6 +593,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
                         if (res.isPresent) {
                             res.get().downloadMode = Content.DownloadMode.DOWNLOAD
+                            if (areModifiedChapters) dao.insertChapters(res.get().chaptersList)
+
                             // Non-blocking performance bottleneck; run in a dedicated worker
                             if (reparseImages) ContentHelper.purgeContent(
                                 getApplication(),
