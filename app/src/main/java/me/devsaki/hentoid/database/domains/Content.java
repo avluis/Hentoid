@@ -426,7 +426,6 @@ public class Content implements Serializable {
     public String getGalleryUrl() {
         String galleryConst;
         switch (site) {
-            case HENTAIFOX:
             case PURURIN:
             case IMHENTAI:
                 galleryConst = "/gallery";
@@ -453,6 +452,11 @@ public class Content implements Serializable {
                 return site.getUrl().replace("/manga/", "") + url;
             case PORNCOMIX:
                 return url;
+            case HENTAIFOX:
+                String result = site.getUrl() + ("/gallery" + url).replace("//", "/");
+                if (result.endsWith("/1/")) result = result.substring(0, result.length() - 3);
+                if (result.endsWith("/1")) result = result.substring(0, result.length() - 2);
+                return result;
             default:
                 galleryConst = "";
         }
@@ -482,7 +486,7 @@ public class Content implements Serializable {
                 if (getGalleryUrl().contains("/manga")) return getGalleryUrl() + "/p/1/";
                 else return getGalleryUrl() + "#&gid=1&pid=1";
             case HENTAIFOX:
-                return site.getUrl() + "/g" + url + "1";
+                return (getGalleryUrl().replace("/gallery/", "/g/") + "/1/").replace("//1/", "/1/");
             default:
                 return getGalleryUrl();
         }
