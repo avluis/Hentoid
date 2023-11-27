@@ -73,7 +73,6 @@ import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment.Companion.invoke
-import me.devsaki.hentoid.fragments.library.ChangeGroupDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.LibraryTransformDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
@@ -679,12 +678,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * Callback for "book completed" action button
      */
     private fun markSelectedAsCompleted() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        if (selectedItems.isNotEmpty()) {
-            val selectedContent = selectedItems.mapNotNull { ci -> ci.content }
-            if (selectedContent.isNotEmpty()) {
-                viewModel.toggleContentCompleted(selectedContent) { refreshIfNeeded() }
-                selectExtension!!.deselect(selectExtension!!.selections.toMutableSet())
+        selectExtension?.apply {
+            val selectedItems: Set<ContentItem> = selectedItems
+            if (selectedItems.isNotEmpty()) {
+                val selectedContent = selectedItems.mapNotNull { ci -> ci.content }
+                if (selectedContent.isNotEmpty()) {
+                    viewModel.toggleContentCompleted(selectedContent) { refreshIfNeeded() }
+                    deselect(selections.toMutableSet())
+                }
             }
         }
     }
@@ -693,12 +694,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * Callback for "reset read stats" action button
      */
     private fun resetSelectedReadStats() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        if (selectedItems.isNotEmpty()) {
-            val selectedContent = selectedItems.mapNotNull { ci -> ci.content }
-            if (selectedContent.isNotEmpty()) {
-                viewModel.resetReadStats(selectedContent) { refreshIfNeeded() }
-                selectExtension!!.deselect(selectExtension!!.selections.toMutableSet())
+        selectExtension?.apply {
+            val selectedItems: Set<ContentItem> = selectedItems
+            if (selectedItems.isNotEmpty()) {
+                val selectedContent = selectedItems.mapNotNull { ci -> ci.content }
+                if (selectedContent.isNotEmpty()) {
+                    viewModel.resetReadStats(selectedContent) { refreshIfNeeded() }
+                    deselect(selections.toMutableSet())
+                }
             }
         }
     }
@@ -707,20 +710,27 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * Callback for the "archive item" action button
      */
     private fun archiveSelectedItems() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        val contents = selectedItems.mapNotNull { ci -> ci.content }
-            .filterNot { c -> c.storageUri.isEmpty() }
-        activity.get()!!.askArchiveItems(contents, selectExtension!!)
+        selectExtension?.apply {
+            val selectedItems: Set<ContentItem> = selectedItems
+            val contents = selectedItems.mapNotNull { ci -> ci.content }
+                .filterNot { c -> c.storageUri.isEmpty() }
+            activity.get()?.askArchiveItems(contents, this)
+        }
     }
 
     /**
      * Callback for the "change group" action button
      */
     private fun moveSelectedItems() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        selectExtension!!.deselect(selectExtension!!.selections.toMutableSet())
-        val bookIds = selectedItems.mapNotNull { ci -> ci.content }.map { c -> c.id }
-        invoke(this, Helper.getPrimitiveArrayFromList(bookIds))
+        selectExtension?.apply {
+            val selectedItems: Set<ContentItem> = selectedItems
+            deselect(selections.toMutableSet())
+            val bookIds = selectedItems.mapNotNull { ci -> ci.content }.map { c -> c.id }
+            ChangeGroupDialogFragment.invoke(
+                this@LibraryContentFragment,
+                Helper.getPrimitiveArrayFromList(bookIds)
+            )
+        }
     }
 
     /**
@@ -728,24 +738,22 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      */
     private fun openItemFolder() {
         val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        val context: Context? = getActivity()
-        if (1 == selectedItems.size && context != null) {
-            val item = selectedItems.firstOrNull()
-            if (item != null) {
-                val c = item.content
-                if (c != null) {
-                    if (c.storageUri.isEmpty()) {
-                        ToastHelper.toast(R.string.folder_undefined)
-                        return
-                    }
-                    val folder =
-                        FileHelper.getDocumentFromTreeUriString(requireContext(), c.storageUri)
-                    if (folder != null) {
-                        selectExtension!!.deselect(selectExtension!!.selections.toMutableSet())
-                        activity.get()!!.getSelectionToolbar()!!.visibility = View.GONE
-                        FileHelper.openFile(requireContext(), folder)
-                    }
+        val context = getActivity() ?: return
+        if (1 == selectedItems.size) {
+            val item = selectedItems.firstOrNull() ?: return
+            val c = item.content ?: return
+            if (c.storageUri.isEmpty()) {
+                ToastHelper.toast(R.string.folder_undefined)
+                return
+            }
+            val folder =
+                FileHelper.getDocumentFromTreeUriString(context, c.storageUri)
+            if (folder != null) {
+                selectExtension?.apply {
+                    deselect(selections.toMutableSet())
                 }
+                activity.get()?.getSelectionToolbar()?.visibility = View.GONE
+                FileHelper.openFile(context, folder)
             }
         }
     }
@@ -775,8 +783,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 it,
                 this
             ) { position: Int, _ ->
-                if (0 == position) redownloadFromScratch(contents)
-                else viewModel.redownloadContent(contents,
+                if (0 == position) redownloadFromScratch(contents) // Redownload images
+                else viewModel.downloadContent(contents, // Update metadata only
                     reparseContent = true,
                     reparseImages = false,
                     position = 0,
@@ -1581,10 +1589,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun redownloadFromScratch(contentList: List<Content>) {
         if (Preferences.getQueueNewDownloadPosition() == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.recyclerView?.let {
-                AddQueueMenu.show(requireActivity(), it, this) { position: Int, _: PowerMenuItem? ->
+                AddQueueMenu.show(requireActivity(), it, this) { position, _ ->
                     redownloadFromScratch(
                         contentList,
-                        if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+                        if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP
+                        else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
                     )
                 }
             }
@@ -1594,11 +1603,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun redownloadFromScratch(contentList: List<Content>, addMode: Int) {
         topItemPosition = getTopItemPosition()
         binding?.recyclerView?.let {
-            viewModel.redownloadContent(contentList,
+            viewModel.downloadContent(contentList,
                 reparseContent = true,
                 reparseImages = true,
                 position = addMode,
-                onSuccess = { nbSuccess: Int? ->
+                onSuccess = { nbSuccess ->
                     val message = resources.getQuantityString(
                         R.plurals.add_to_queue,
                         contentList.size,
@@ -1609,7 +1618,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     snackbar.setAction(R.string.view_queue) { viewQueue() }
                     snackbar.show()
                 }
-            ) { t: Throwable? ->
+            ) { t ->
                 Timber.w(t)
                 snack(R.string.redownloaded_error)
             }
@@ -1634,8 +1643,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         topItemPosition = getTopItemPosition()
         binding?.recyclerView?.let {
             viewModel.downloadContent(
-                contentList, addMode,
-                { nbSuccess: Int ->
+                contentList,
+                false, reparseImages = true,
+                position = addMode,
+                onSuccess = { nbSuccess ->
                     val message = resources.getQuantityString(
                         R.plurals.add_to_queue,
                         nbSuccess, nbSuccess, contentList.size
@@ -1645,7 +1656,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     snackbar.setAction(R.string.view_queue) { viewQueue() }
                     snackbar.show()
                 },
-                onError
+                onError = onError
             )
         }
     }
