@@ -294,7 +294,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val nbErrors = images.count { i -> i.status == StatusContent.ERROR }
 
         val isCase1 = images.isEmpty()
-        val isCase2 = nbErrors == images.size
+        val isCase2 = nbErrors > 0 && nbErrors == images.size
         val isCase3 = nbErrors > 0 && content.site.hasBackupURLs()
         val isCase4 =
             content.isManuallyMerged && content.chaptersList.any { c -> c.imageList.all { img -> img.status == StatusContent.ERROR } }
@@ -590,21 +590,14 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     if (null == chapterSite || !chapterSite.isVisible)
                         throw InvalidParameterException("A valid site couldn't be found from " + ch.url)
 
+                    // We should parse a Content but all we have is a Chapter (merged book)
+                    // Forge a bogus Content from the given chapter to retrieve images
+                    val forgedContent = Content().setSite(chapterSite)
+                    forgedContent.qtyPages = ch.imageList.size
+                    forgedContent.setRawUrl(ch.url)
                     val onlineImages =
-                        if (content.site == chapterSite) { // (1)
-                            ContentHelper.fetchImageURLs(
-                                content,
-                                content.galleryUrl,
-                                targetImageStatus
-                            )
-                        } else { // (2)
-                            // We should parse a Content but all we have is a Chapter (merged book)
-                            // Forge a bogus Content from the given chapter to retrieve images
-                            val forgedContent = Content().setSite(chapterSite)
-                            forgedContent.qtyPages = ch.imageList.size
-                            forgedContent.setRawUrl(ch.url)
-                            ContentHelper.fetchImageURLs(forgedContent, ch.url, targetImageStatus)
-                        }
+                        ContentHelper.fetchImageURLs(content, ch.url, targetImageStatus)
+
                     // Link the chapter to the found pages
                     for (img in onlineImages) img.chapterId = ch.id
 

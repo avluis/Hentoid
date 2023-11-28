@@ -557,10 +557,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 withContext(Dispatchers.IO) {
                     contentList.forEach { c ->
                         var res = Optional.of(c)
-                        var areModifiedChapters = false
+                        var areModifiedImages = false
 
                         // Merged books
-                        val chaps = c.chaptersList.toMutableList()
+                        val chaps = c.chaptersList.toMutableList() // Safe copy
                         if (c.isManuallyMerged && chaps.isNotEmpty()) {
                             // Reparse main book from scratch if images are KO
                             if (reparseContent || !ContentHelper.isDownloadable(c)) {
@@ -579,12 +579,15 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                             ch.imageList.forEach { img ->
                                                 img.status = StatusContent.ERROR
                                             }
-                                            areModifiedChapters = true
+                                            areModifiedImages = true
                                         } else res = Optional.empty()
                                     }
                                 }
                             }
-                            if (res.isPresent) res.get().setChapters(chaps)
+                            if (res.isPresent) {
+                                res.get().setChapters(chaps)
+                                res.get().setImageFiles(chaps.flatMap { ch -> ch.imageList })
+                            }
                         } else { // Classic content
                             if (reparseContent || !ContentHelper.isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content")
@@ -595,7 +598,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
                         if (res.isPresent) {
                             res.get().downloadMode = Content.DownloadMode.DOWNLOAD
-                            if (areModifiedChapters) dao.insertChapters(res.get().chaptersList)
+                            if (areModifiedImages) {
+                                dao.insertChapters(res.get().chaptersList)
+                                dao.insertImageFiles(res.get().imageList)
+                            }
 
                             // Non-blocking performance bottleneck; run in a dedicated worker
                             if (reparseImages) ContentHelper.purgeContent(
