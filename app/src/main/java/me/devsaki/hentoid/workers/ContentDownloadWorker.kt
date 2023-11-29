@@ -616,7 +616,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Renumber all pages; fix covers if marked as ERROR
             var coverIndex = 0
             result.forEachIndexed { idx, img ->
-                img.order = idx
+                img.order = idx + 1
                 if (img.isReadable) {
                     img.computeName(floor(log10(result.size.toDouble()) + 1).toInt())
                 } else if (img.isCover) {
