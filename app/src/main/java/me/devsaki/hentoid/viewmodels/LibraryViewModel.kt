@@ -368,11 +368,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     // =========================
     // ========= CONTENT ACTIONS
     // =========================
-
-
-    // =========================
-    // ========= CONTENT ACTIONS
-    // =========================
     fun toggleContentCompleted(content: List<Content>, onSuccess: Runnable) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -527,70 +522,15 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         throw InvalidParameterException("Invalid ContentId : $contentId")
     }
 
-    fun redownloadContent(
+    /**
+     * General purpose download/redownload
+     * @reparseContent : True to reparse Content metadata from the site
+     * @reparseImages : True to reparse and redownload images from the site
+     */
+    fun downloadContent(
         contentList: List<Content>,
         reparseContent: Boolean,
         reparseImages: Boolean,
-        position: Int,
-        onSuccess: Consumer<Int>,
-        onError: Consumer<Throwable>
-    ) {
-        if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.invoke(
-                EmptyResultException(
-                    getApplication<Application>().getString(R.string.redownloaded_updating_webview)
-                )
-            ) else onError.invoke(EmptyResultException(getApplication<Application>().getString(R.string.redownloaded_missing_webview)))
-            return
-        }
-
-        // Flag the content as "being deleted" (triggers blink animation)
-        for (c in contentList) dao.updateContentDeleteFlag(c.id, true)
-        val sourceImageStatus = if (reparseImages) null else StatusContent.ERROR
-        val targetImageStatus = if (reparseImages) StatusContent.ERROR else null
-        val errorCount = AtomicInteger(0)
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    contentList.forEach {
-                        val res =
-                            if (reparseContent) ContentHelper.reparseFromScratch(it).right
-                            else Optional.of<Content>(it)
-                        if (res.isPresent) {
-                            val content = res.get()
-                            // Non-blocking performance bottleneck; run in a dedicated worker
-                            if (reparseImages) ContentHelper.purgeContent(
-                                getApplication(),
-                                content,
-                                false,
-                                true
-                            )
-                            dao.addContentToQueue(
-                                content, sourceImageStatus, targetImageStatus, position,
-                                -1, null,
-                                isQueueActive(getApplication())
-                            )
-                        } else {
-                            dao.updateContentDeleteFlag(it.id, false)
-                            errorCount.incrementAndGet()
-                            onError.invoke(
-                                EmptyResultException(
-                                    getApplication<Application>().getString(R.string.stream_canceled)
-                                )
-                            )
-                        }
-                    }
-                }
-                if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
-                onSuccess.invoke(contentList.size - errorCount.get())
-            } catch (t: Throwable) {
-                onError.invoke(t)
-            }
-        }
-    }
-
-    fun downloadContent(
-        contentList: List<Content>,
         position: Int,
         onSuccess: Consumer<Int>,
         onError: Consumer<Throwable>
@@ -604,38 +544,89 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             return
         }
 
-        // Flag the content as "being deleted" (triggers blink animation)
-        for (c in contentList) dao.updateContentDeleteFlag(c.id, true)
+        // Flag contents as "being processed" (triggers blink animation)
+        for (c in contentList) dao.updateContentProcessedFlag(c.id, true)
+
+        val sourceImageStatus = if (reparseImages) null else StatusContent.ERROR
+        val targetImageStatus =
+            if (!reparseImages) null else if (reparseContent) StatusContent.ERROR else StatusContent.SAVED
+
         val nbErrors = AtomicInteger(0)
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     contentList.forEach { c ->
-                        // Reparse content from scratch if images KO
-                        val res = if (!ContentHelper.isDownloadable(c)) {
-                            Timber.d("Pages unreachable; reparsing content")
-                            // Reparse content itself
-                            val newContent: Pair<Content, Optional<Content>> =
-                                ContentHelper.reparseFromScratch(c)
-                            if (newContent.right.isEmpty) dao.updateContentDeleteFlag(c.id, false)
-                            newContent.right
-                        } else Optional.of<Content>(c)
+                        var res = Optional.of(c)
+                        var areModifiedImages = false
+
+                        // Merged books
+                        val chaps = c.chaptersList.toMutableList() // Safe copy
+                        if (c.isManuallyMerged && chaps.isNotEmpty()) {
+                            // Reparse main book from scratch if images are KO
+                            if (reparseContent || !ContentHelper.isDownloadable(c)) {
+                                if (!reparseContent) Timber.d("Pages unreachable; reparsing content")
+                                // Reparse content itself
+                                res = ContentHelper.reparseFromScratch(c)
+                            }
+
+                            // Reparse chapters from scratch if images are KO
+                            chaps.forEachIndexed { idx, ch ->
+                                if (res.isPresent) {
+                                    if (reparseContent || !ContentHelper.isDownloadable(ch)) {
+                                        if (!reparseContent) Timber.d("Pages unreachable; reparsing chapter $idx")
+                                        if (ContentHelper.parseFromScratch(ch.url).isPresent) {
+                                            // Flagging all pics as ERROR; will be reparsed by the downloader
+                                            ch.imageList.forEach { img ->
+                                                img.status = StatusContent.ERROR
+                                            }
+                                            areModifiedImages = true
+                                        } else res = Optional.empty()
+                                    }
+                                }
+                            }
+                            if (res.isPresent) {
+                                res.get().setChapters(chaps)
+                                res.get().setImageFiles(chaps.flatMap { ch -> ch.imageList })
+                            }
+                        } else { // Classic content
+                            if (reparseContent || !ContentHelper.isDownloadable(c)) {
+                                Timber.d("Pages unreachable; reparsing content")
+                                // Reparse content itself
+                                res = ContentHelper.reparseFromScratch(c)
+                            }
+                        }
 
                         if (res.isPresent) {
                             res.get().downloadMode = Content.DownloadMode.DOWNLOAD
+                            if (areModifiedImages) {
+                                dao.insertChapters(res.get().chaptersList)
+                                dao.insertImageFiles(res.get().imageList)
+                            }
+
+                            // Non-blocking performance bottleneck; run in a dedicated worker
+                            if (reparseImages) ContentHelper.purgeContent(
+                                getApplication(),
+                                res.get(),
+                                false,
+                                true
+                            )
                             dao.addContentToQueue(
-                                res.get(), null, StatusContent.SAVED, position, -1, null,
+                                res.get(), sourceImageStatus, targetImageStatus, position, -1, null,
                                 isQueueActive(getApplication())
                             )
                         } else {
+                            dao.updateContentProcessedFlag(c.id, false)
                             nbErrors.incrementAndGet()
                             onError.invoke(
-                                EmptyResultException(
+                                if (c.isManuallyMerged && chaps.isNotEmpty()) EmptyResultException(
+                                    getApplication<Application>().getString(R.string.download_canceled_merged)
+                                )
+                                else EmptyResultException(
                                     getApplication<Application>().getString(R.string.download_canceled)
                                 )
                             )
                         }
-                    }
+                    } // Each content
                 }
                 if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
                 onSuccess.invoke(contentList.size - nbErrors.get())
@@ -659,7 +650,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
 
         // Flag the content as "being deleted" (triggers blink animation)
-        for (c in contentList) dao.updateContentDeleteFlag(c.id, true)
+        for (c in contentList) dao.updateContentProcessedFlag(c.id, true)
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -669,13 +660,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         val res = if (!ContentHelper.isDownloadable(c)) {
                             Timber.d("Pages unreachable; reparsing content")
                             // Reparse content itself
-                            val newContent: Pair<Content, Optional<Content>> =
-                                ContentHelper.reparseFromScratch(c)
-                            if (newContent.right.isEmpty) {
-                                dao.updateContentDeleteFlag(c.id, false)
-                                newContent.right
+                            val newContent = ContentHelper.reparseFromScratch(c)
+                            if (newContent.isEmpty) {
+                                dao.updateContentProcessedFlag(c.id, false)
+                                newContent
                             } else {
-                                val reparsedContent = newContent.right.get()
+                                val reparsedContent = newContent.get()
                                 // Reparse pages
                                 val newImages =
                                     ContentHelper.fetchImageURLs(
@@ -760,8 +750,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun setGroupCoverContent(groupId: Long, coverContent: Content) {
-        val localGroup = dao.selectGroup(groupId)
-        localGroup?.coverContent?.setAndPutTarget(coverContent)
+        val localGroup = dao.selectGroup(groupId) ?: return
+        localGroup.coverContent.setAndPutTarget(coverContent)
     }
 
     fun saveContentPositions(
@@ -923,17 +913,16 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
         // Check if given group still exists in DB
         val theGroup = dao.selectGroup(groupId)
-        if (theGroup != null) {
-            theGroup.isFavourite = !theGroup.isFavourite
+            ?: throw InvalidParameterException("Invalid GroupId : $groupId")
 
-            // Persist in it DB
-            dao.insertGroup(theGroup)
+        theGroup.isFavourite = !theGroup.isFavourite
 
-            // Persist in it JSON
-            GroupHelper.updateGroupsJson(getApplication(), dao)
-            return theGroup
-        }
-        throw InvalidParameterException("Invalid GroupId : $groupId")
+        // Persist in it DB
+        dao.insertGroup(theGroup)
+
+        // Persist in it JSON
+        GroupHelper.updateGroupsJson(getApplication(), dao)
+        return theGroup
     }
 
     /**
@@ -967,16 +956,17 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
         // Check if given content still exists in DB
         val theGroup = dao.selectGroup(groupId)
-        if (theGroup != null && !theGroup.isBeingProcessed) {
+            ?: throw InvalidParameterException("Invalid GroupId : $groupId")
+
+        if (!theGroup.isBeingProcessed) {
             theGroup.rating = targetRating
             // Persist in it JSON
             GroupHelper.updateGroupsJson(getApplication(), dao)
 
             // Persist in it DB
             dao.insertGroup(theGroup)
-            return theGroup
         }
-        throw InvalidParameterException("Invalid GroupId : $groupId")
+        return theGroup
     }
 
     fun moveContentsToNewCustomGroup(
@@ -1030,7 +1020,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 withContext(Dispatchers.IO) {
                     // Flag the content as "being deleted" (triggers blink animation)
                     if (deleteAfterMerging)
-                        contentList.forEach { dao.updateContentDeleteFlag(it.id, true) }
+                        contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
                     ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao)
                 }
                 if (deleteAfterMerging) deleteItems(contentList, emptyList(), false, null)
@@ -1038,7 +1028,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             } catch (t: Throwable) {
                 Timber.e(t)
                 if (deleteAfterMerging)
-                    contentList.forEach { dao.updateContentDeleteFlag(it.id, false) }
+                    contentList.forEach { dao.updateContentProcessedFlag(it.id, false) }
             }
         }
     }

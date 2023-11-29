@@ -19,9 +19,6 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
-/**
- * Handles parsing of chapters and pages from Simply Hentai
- */
 public class SimplyParser extends BaseImageListParser {
 
     @Override
@@ -67,5 +64,16 @@ public class SimplyParser extends BaseImageListParser {
         if (processHalted.get()) throw new PreparationInterruptedException();
 
         return result;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        // Nothing; no chapters for this source
+        return null;
+    }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return false;
     }
 }

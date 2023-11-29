@@ -67,6 +67,11 @@ fun <T> ToMany<T>.isReachable(entity: Any): Boolean {
     }
 }
 
+fun <T> ToMany<T>.reach(entity: Any): List<T> {
+    return if (!this.isEmpty() || this.isReachable(entity)) this
+    else emptyList()
+}
+
 fun <T> ToOne<T>.reach(entity: Any): T? {
     if (!this.isResolved) {
         val boxStoreField = ReflectionCache.getInstance().getField(entity.javaClass, "__boxStore")

@@ -1,16 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <plurals name="download_completed" tools:ignore="MissingQuantity">
-        <item quantity="one" tools:ignore="ImpliedQuantity">Download completato</item>
-        <item quantity="other"><x:g example="2" id="number">%d</x:g>download completati</item>
-    </plurals>
-    <string name="download_complete">Download completato</string>
-    <string name="download_cancelled">Download cancellato</string>
-    <string name="download_error">Download completato, ma si è verificato un errore</string>
-    <plurals name="add_to_queue" tools:ignore="MissingQuantity">
-        <item quantity="one"><x:g example="1" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> elemento aggiunto alla coda</item>
-        <item quantity="other"><x:g example="2" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> elementi aggiunti alla coda</item>
-    </plurals>
-    <string name="already_downloaded">Già scaricato</string>
-    <string name="already_queued">Già in coda</string>
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <string name="download_completed">Download completato</string>
+  <string name="download_complete">Download completato</string>
+  <string name="download_cancelled">Download cancellato</string>
+  <string name="download_error">Download completato, ma si è verificato un errore</string>
+  <string name="add_to_queue">%1$d/%2$d elemento aggiunto alla coda</string>
+  <string name="already_downloaded">Già scaricato</string>
+  <string name="already_queued">Già in coda</string>
 </resources>

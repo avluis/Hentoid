@@ -62,7 +62,7 @@ public class ASMHentaiContent extends BaseContentParser {
         content.putAttributes(attributes);
 
         if (updateImages) {
-            content.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
+            content.setQtyPages(0);
             content.setImageFiles(Collections.emptyList());
         }
 

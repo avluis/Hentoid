@@ -343,8 +343,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.updateContentStatus(updateFrom, updateTo);
     }
 
-    public void updateContentDeleteFlag(long contentId, boolean flag) {
-        db.updateContentDeleteFlag(contentId, flag);
+    public void updateContentProcessedFlag(long contentId, boolean flag) {
+        db.updateContentProcessedFlag(contentId, flag);
     }
 
     public void deleteContent(@NonNull final Content content) {

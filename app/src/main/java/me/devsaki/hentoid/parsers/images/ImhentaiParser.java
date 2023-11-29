@@ -3,9 +3,8 @@ package me.devsaki.hentoid.parsers.images;
 import static me.devsaki.hentoid.parsers.ParseHelper.getExtensionFromFormat;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-import androidx.core.util.Pair;
-
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,9 +20,6 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
-/**
- * Handles parsing of content from imhentai
- */
 public class ImhentaiParser extends BaseImageListParser {
 
     @Override
@@ -37,7 +33,7 @@ public class ImhentaiParser extends BaseImageListParser {
 
         // The whole algorithm is in app.js
         // 1- Get image extension from gallery data (JSON on HTML body)
-        // 2- Generate image URL from  imagePath constant, gallery ID, page number and extension
+        // 2- Generate image URL from imagePath constant, gallery ID, page number and extension
 
         // 1- Get image extension from gallery data (JSON on HTML body)
         Document doc = getOnlineDocument(url, headers, Site.IMHENTAI.useHentoidAgent(), Site.IMHENTAI.useWebviewAgent());
@@ -59,12 +55,13 @@ public class ImhentaiParser extends BaseImageListParser {
                 }
             }
 
+            // 2- Generate image URL from imagePath constant, gallery ID, page number and extension
             if (!thumbs.isEmpty() && imageFormats != null) {
                 String thumbUrl = ParseHelper.getImgSrc(thumbs.get(0));
                 String thumbPath = thumbUrl.substring(0, thumbUrl.lastIndexOf("/") + 1);
 
                 // Forge all page URLs
-                for (int i = 0; i < content.getQtyPages(); i++) {
+                for (int i = 0; i < imageFormats.size(); i++) {
                     String imgUrl = thumbPath + (i + 1) + "." + getExtensionFromFormat(imageFormats, i);
                     result.add(imgUrl);
                 }
@@ -72,5 +69,16 @@ public class ImhentaiParser extends BaseImageListParser {
         }
 
         return result;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        // Nothing; no chapters for this source
+        return null;
+    }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return false;
     }
 }

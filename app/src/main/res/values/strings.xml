@@ -495,6 +495,7 @@
     <string name="stream_missing_webview">Streaming canceled - WebView is unavailable</string>
     <string name="stream_updating_webview">Streaming canceled - WebView is updating</string>
     <string name="download_canceled">Download canceled - book unavailable online</string>
+    <string name="download_canceled_merged">Download canceled - at least one chapter is unavailable online</string>
     <string name="download_missing_webview">Download canceled - WebView is unavailable</string>
     <string name="download_updating_webview">Download canceled - WebView is updating</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>

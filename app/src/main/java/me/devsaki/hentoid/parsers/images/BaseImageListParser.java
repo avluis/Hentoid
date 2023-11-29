@@ -14,6 +14,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,6 +27,7 @@ import me.devsaki.hentoid.events.DownloadCommandEvent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 public abstract class BaseImageListParser implements ImageListParser {
@@ -34,7 +36,11 @@ public abstract class BaseImageListParser implements ImageListParser {
     protected AtomicBoolean processHalted = new AtomicBoolean(false);
     protected String processedUrl = "";
 
+    protected abstract boolean isChapterUrl(@NonNull String url);
+
     protected abstract List<String> parseImages(@NonNull Content content) throws Exception;
+
+    protected abstract List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception;
 
     public List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception {
         return parseImageListImpl(onlineContent, storedContent);
@@ -44,27 +50,51 @@ public abstract class BaseImageListParser implements ImageListParser {
         return parseImageListImpl(content, null);
     }
 
+    public List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) throws Exception {
+        if (isChapterUrl(url)) return parseChapterImageListImpl(url, content);
+        else return parseImageListImpl(content, null);
+    }
+
     protected List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         String readerUrl = onlineContent.getReaderUrl();
-        processedUrl = onlineContent.getGalleryUrl();
 
         if (!URLUtil.isValidUrl(readerUrl))
             throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
 
         Timber.d("Gallery URL: %s", readerUrl);
 
+        processedUrl = onlineContent.getGalleryUrl();
         EventBus.getDefault().register(this);
 
         List<ImageFile> result;
         try {
             List<String> imgUrls = parseImages(onlineContent);
-            result = ParseHelper.urlsToImageFiles(imgUrls, onlineContent.getCoverImageUrl(), StatusContent.SAVED, null);
+            result = ParseHelper.urlsToImageFiles(imgUrls, StatusContent.SAVED, onlineContent.getCoverImageUrl(), null);
             ParseHelper.setDownloadParams(result, onlineContent.getSite().getUrl());
         } finally {
             EventBus.getDefault().unregister(this);
         }
 
-        Timber.d("%s", result);
+        return result;
+    }
+
+    public List<ImageFile> parseChapterImageListImpl(@NonNull String url, @NonNull Content content) throws Exception {
+        if (!URLUtil.isValidUrl(url))
+            throw new IllegalArgumentException("Invalid gallery URL : " + url);
+
+        Timber.d("Chapter URL: %s", url);
+
+        processedUrl = url;
+        EventBus.getDefault().register(this);
+
+        List<ImageFile> result;
+        try {
+            List<String> imgUrls = parseImages(url, content.getDownloadParams(), null);
+            result = ParseHelper.urlsToImageFiles(imgUrls, StatusContent.SAVED, null, null);
+            ParseHelper.setDownloadParams(result, content.getSite().getUrl());
+        } finally {
+            EventBus.getDefault().unregister(this);
+        }
 
         return result;
     }
@@ -124,5 +154,16 @@ public abstract class BaseImageListParser implements ImageListParser {
             default:
                 // Other events aren't handled here
         }
+    }
+
+    protected List<Pair<String, String>> fetchHeaders(@NonNull Content content) {
+        return fetchHeaders(content.getGalleryUrl(), content.getDownloadParams());
+    }
+
+    protected List<Pair<String, String>> fetchHeaders(@NonNull String url, String downloadParams) {
+        List<Pair<String, String>> headers = new ArrayList<>();
+        if (downloadParams != null) ParseHelper.addSavedCookiesToHeader(downloadParams, headers);
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, url));
+        return headers;
     }
 }

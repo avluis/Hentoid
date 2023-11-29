@@ -3,6 +3,7 @@ package me.devsaki.hentoid.parsers.images
 import android.os.Handler
 import android.os.Looper
 import android.webkit.URLUtil
+import androidx.core.util.Pair
 import me.devsaki.hentoid.activities.sources.WebResultConsumer
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.domains.Content
@@ -21,9 +22,6 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
-/**
- * Handles parsing of content from anchira.to
- */
 class AnchiraParser : BaseImageListParser(), WebResultConsumer {
     private val resultCode = AtomicInteger(-1)
     private val resultContent = AtomicReference<Content>()
@@ -66,10 +64,12 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
             anchiraWv?.loadUrl(url)
             Timber.i(">> loading wv")
         }
+
         var remainingIterations = 30 // Timeout
         while (-1 == resultCode.get() && remainingIterations-- > 0 && !processHalted.get())
             Helper.pause(500)
         if (processHalted.get()) throw EmptyResultException("Unable to detect content (empty result)")
+
         synchronized(resultCode) {
             val res = resultCode.get()
             if (0 == res) {
@@ -99,15 +99,19 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
             anchiraWv?.loadUrl(pageUrl)
             Timber.i(">> loading wv")
         }
+
         var remainingIterations = 30 // Timeout
-        while (-1 == resultCode.get() && remainingIterations-- > 0 && !processHalted.get()) Helper.pause(
-            500
-        )
+        while (-1 == resultCode.get() && remainingIterations-- > 0 && !processHalted.get())
+            Helper.pause(500)
         if (processHalted.get()) throw EmptyResultException("Unable to detect pages (empty result)")
+
         synchronized(resultCode) {
             val res = resultCode.get()
             if (0 == res) {
                 val c = resultContent.get()
+                // Might fail when called from a merged book where qtyPages accounts for all chapters
+                val nbPages = onlineContent.qtyPages
+
                 if (c != null) {
                     val imgUrl = c.coverImageUrl
                     Timber.d(">> retrieving url %s", imgUrl)
@@ -117,7 +121,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
                         ArrayList()
                     if (StringHelper.isNumeric(fileName)) {
                         val length = fileName.length
-                        for (i in 1..onlineContent.qtyPages) {
+                        for (i in 1..nbPages) {
                             parts.fileNameNoExt = StringHelper.formatIntAsStr(i, length)
                             parts.extension =
                                 if (1 == i) "jpg" else "png" // Try to minimize failed requests
@@ -129,7 +133,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
                         val length = endIndex - startIndex
                         val part1 = fileName.substring(0, startIndex)
                         val part2 = fileName.substring(endIndex)
-                        for (i in 1..onlineContent.qtyPages) {
+                        for (i in 1..nbPages) {
                             parts.fileNameNoExt = part1 + StringHelper.formatIntAsStr(
                                 i,
                                 length
@@ -170,7 +174,21 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
         return parts.toUri()
     }
 
-    override fun parseImages(content: Content): List<String?>? {
+    override fun isChapterUrl(url: String): Boolean {
+        // No chapters for this source
+        return false
+    }
+
+    override fun parseImages(content: Content): List<String>? {
+        // We won't use that as parseImageListImpl is overriden directly
+        return null
+    }
+
+    override fun parseImages(
+        chapterUrl: String,
+        downloadParams: String?,
+        headers: MutableList<Pair<String, String>>?
+    ): MutableList<String>? {
         // We won't use that as parseImageListImpl is overriden directly
         return null
     }

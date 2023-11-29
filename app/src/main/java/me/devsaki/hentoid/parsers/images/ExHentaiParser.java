@@ -96,6 +96,11 @@ public class ExHentaiParser implements ImageListParser {
         return result;
     }
 
+    @Override
+    public List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) throws Exception {
+        return null;
+    }
+
     @Nullable
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) throws Exception {
         return EHentaiParser.parseBackupUrl(url, Site.EXHENTAI, requestHeaders, order, maxPages, chapter);

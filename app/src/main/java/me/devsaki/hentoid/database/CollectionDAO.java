@@ -67,7 +67,7 @@ public interface CollectionDAO {
 
     void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo);
 
-    void updateContentDeleteFlag(long contentId, boolean flag);
+    void updateContentProcessedFlag(long contentId, boolean flag);
 
     void deleteContent(@NonNull final Content content);
 

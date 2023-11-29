@@ -17,9 +17,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
-/**
- * Handles parsing of content from pururin.to
- */
 public class PururinParser extends BaseImageListParser {
 
     @Override
@@ -48,5 +45,16 @@ public class PururinParser extends BaseImageListParser {
         String name = parts.getFileNameNoExt();
         parts.setFileNameNoExt(name.substring(0, name.length() - 1)); // Remove the trailing 't'
         return parts.toUri();
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        // Nothing; no chapters for this source
+        return null;
+    }
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return false;
     }
 }

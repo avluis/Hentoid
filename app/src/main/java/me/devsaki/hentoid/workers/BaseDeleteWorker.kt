@@ -117,7 +117,7 @@ abstract class BaseDeleteWorker(
             val maxIndex = ((i + 1) * 50).coerceAtMost(ids.size)
             // Flag the content as "being deleted" (triggers blink animation; lock operations)
             for (id in minIndex until maxIndex) {
-                if (ids[id] > 0) dao.updateContentDeleteFlag(ids[id], true)
+                if (ids[id] > 0) dao.updateContentProcessedFlag(ids[id], true)
                 if (isStopped) break
             }
             // Delete it
@@ -143,7 +143,7 @@ abstract class BaseDeleteWorker(
         } catch (cnre: ContentNotProcessedException) {
             nbError++
             trace(Log.WARN, "Error when trying to delete %s", content.id)
-            dao.updateContentDeleteFlag(content.id, false)
+            dao.updateContentProcessedFlag(content.id, false)
         } catch (e: Exception) {
             nbError++
             trace(
@@ -153,19 +153,19 @@ abstract class BaseDeleteWorker(
                 e.message,
                 Helper.getStackTraceString(e)
             )
-            dao.updateContentDeleteFlag(content.id, false)
+            dao.updateContentProcessedFlag(content.id, false)
         }
     }
 
     private fun purgeContentList(ids: LongArray, keepCovers: Boolean) {
         // Flag the content as "being deleted" (triggers blink animation; lock operations)
-        for (id in ids) dao.updateContentDeleteFlag(id, true)
+        for (id in ids) dao.updateContentProcessedFlag(id, true)
 
         // Purge them
         for (id in ids) {
             val c = dao.selectContent(id)
             if (c != null) purgeContentFiles(c, !keepCovers)
-            dao.updateContentDeleteFlag(id, false)
+            dao.updateContentProcessedFlag(id, false)
             if (isStopped) break
         }
     }

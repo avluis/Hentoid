@@ -19,18 +19,19 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 
-/**
- * Handles parsing of chapters and pages from Allporncomic
- */
 public class AllPornComicParser extends BaseImageListParser {
+
+    @Override
+    protected boolean isChapterUrl(@NonNull String url) {
+        return Stream.of(url.split("/")).filterNot(String::isEmpty).count() > 4;
+    }
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {
         List<String> result = new ArrayList<>();
         processedUrl = content.getGalleryUrl();
 
-        List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
+        List<Pair<String, String>> headers = fetchHeaders(content);
 
         // 1. Scan the gallery page for chapter URLs
         List<String> chapterUrls = new ArrayList<>();
@@ -49,11 +50,7 @@ public class AllPornComicParser extends BaseImageListParser {
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {
-            doc = getOnlineDocument(url, headers, Site.ALLPORNCOMIC.useHentoidAgent(), Site.ALLPORNCOMIC.useWebviewAgent());
-            if (doc != null) {
-                List<Element> images = doc.select("[class^=page-break] img");
-                result.addAll(Stream.of(images).map(ParseHelper::getImgSrc).filterNot(String::isEmpty).toList());
-            }
+            result.addAll(parseImages(url, null, headers));
             if (processHalted.get()) break;
             progressPlus();
         }
@@ -62,5 +59,18 @@ public class AllPornComicParser extends BaseImageListParser {
 
         progressComplete();
         return result;
+    }
+
+    @Override
+    protected List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception {
+        if (null == headers) headers = fetchHeaders(chapterUrl, downloadParams);
+        if (processedUrl.isEmpty()) processedUrl = chapterUrl;
+
+        Document doc = getOnlineDocument(processedUrl, headers, Site.ALLPORNCOMIC.useHentoidAgent(), Site.ALLPORNCOMIC.useWebviewAgent());
+        if (doc != null) {
+            List<Element> images = doc.select("[class^=page-break] img");
+            return Stream.of(images).map(ParseHelper::getImgSrc).filterNot(String::isEmpty).toList();
+        }
+        return Collections.emptyList();
     }
 }

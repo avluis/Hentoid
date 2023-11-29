@@ -42,7 +42,7 @@ public class Chapter {
     }
 
     public static Chapter fromChapter(Chapter chap) {
-        return new Chapter(chap.order, chap.url, chap.name).setUniqueId(chap.uniqueId);
+        return new Chapter(chap.order, chap.url, chap.name).setUniqueId(chap.uniqueId).setUploadDate(chap.uploadDate);
     }
 
 
@@ -93,6 +93,10 @@ public class Chapter {
     // NB : Doesn't work when Content is not linked
     public void populateUniqueId() {
         this.uniqueId = content.getTarget().getUniqueSiteId() + "-" + order;
+    }
+
+    public long getContentId() {
+        return this.content.getTargetId();
     }
 
     public Chapter setContentId(long contentId) {
@@ -150,8 +154,9 @@ public class Chapter {
         return uploadDate;
     }
 
-    public void setUploadDate(long uploadDate) {
+    public Chapter setUploadDate(long uploadDate) {
         this.uploadDate = uploadDate;
+        return this;
     }
 
     @Override

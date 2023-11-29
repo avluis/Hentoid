@@ -202,7 +202,7 @@ public class ParseHelper {
             @NonNull String coverUrl,
             @NonNull final StatusContent status
     ) {
-        return urlsToImageFiles(imgUrls, coverUrl, status, null);
+        return urlsToImageFiles(imgUrls, status, coverUrl, null);
     }
 
     /**
@@ -210,13 +210,14 @@ public class ParseHelper {
      */
     public static List<ImageFile> urlsToImageFiles(
             @Nonnull List<String> imgUrls,
-            @NonNull String coverUrl,
             @NonNull final StatusContent status,
+            String coverUrl,
             final Chapter chapter
     ) {
         List<ImageFile> result = new ArrayList<>();
 
-        result.add(ImageFile.newCover(coverUrl, status));
+        if (coverUrl != null && !coverUrl.isEmpty())
+            result.add(ImageFile.newCover(coverUrl, status));
         result.addAll(urlsToImageFiles(imgUrls, 1, status, imgUrls.size(), chapter));
 
         return result;
