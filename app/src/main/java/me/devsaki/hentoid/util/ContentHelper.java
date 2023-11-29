@@ -1221,7 +1221,7 @@ public final class ContentHelper {
             urlToLoad = url;
             site = Site.searchByUrl(url);
         } else {
-            urlToLoad = content.getReaderUrl();
+            urlToLoad = content.getGalleryUrl();
             site = content.getSite();
         }
         if (null == site || Site.NONE == site) return Optional.empty();
