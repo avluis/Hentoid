@@ -17,7 +17,7 @@
   <string name="tools_screen_cache">Gestione della cache</string>
   <string name="tools_cache_browser">Svuota la cache del browser</string>
   <string name="tools_cache_browser_success">WebView cache cancellata correttamente</string>
-  <string name="tools_cache_browser_missing_webview">WebView non ? disponibile, impossibile pulire la cache al momento</string>
+  <string name="tools_cache_browser_missing_webview">WebView non è disponibile, impossibile pulire la cache al momento</string>
   <string name="tools_cache_browser_updating_webview">WebView si sta aggiornando, ancora impossibile pulire la cache</string>
   <string name="tools_cache_app">Cancella la cache dell\'app</string>
   <string name="tools_cache_app_success">Cache dell\'app cancellata con successo</string>
@@ -27,7 +27,7 @@
   <string name="tools_latest_logs_summary">Visualizza gli ultimi log dell\'app</string>
   <string name="tools_ram_usage_title">Utilizzo RAM</string>
   <string name="tools_ram_usage_summary">Mostra attuale utilizzo RAM</string>
-  <string name="tools_import_empty_books_intro">Se nessuna cartella delle immagini ? rilevata…</string>
+  <string name="tools_import_empty_books_intro">Se nessuna cartella delle immagini è rilevata…</string>
   <string name="tools_import_empty_books_entries_1">Non importare</string>
   <string name="tools_import_empty_books_entries_2">Importa come libro vuoto</string>
   <string name="tools_import_empty_books_entries_3">Improta come libro da streaming se possibile</string>
