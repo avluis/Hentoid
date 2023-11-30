@@ -255,7 +255,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
 
     // Download speed limit
-    implementation "com.bucket4j:bucket4j_jdk8-core:8.2.0"
+    implementation 'com.bucket4j:bucket4j_jdk8-core:8.7.0'
 
     // TLS v1.3 support for Android <= 9
     implementation 'org.conscrypt:conscrypt-android:2.5.2'
