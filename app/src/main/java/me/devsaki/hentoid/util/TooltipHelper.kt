@@ -51,11 +51,12 @@ object TooltipHelper {
             .setLifecycleOwner(lifecycleOwner)
         if (!always) balloonBuilder.setPreferenceName(prefName)
         val balloon: Balloon = balloonBuilder.build()
-        if (orientation == ArrowOrientation.BOTTOM) balloon.showAlignTop(anchor) else if (orientation == ArrowOrientation.TOP) balloon.showAlignBottom(
-            anchor
-        ) else if (orientation == ArrowOrientation.START) balloon.showAlignRight(anchor) else if (orientation == ArrowOrientation.END) balloon.showAlignLeft(
-            anchor
-        )
+        when (orientation) {
+            ArrowOrientation.BOTTOM -> balloon.showAlignTop(anchor)
+            ArrowOrientation.TOP -> balloon.showAlignBottom(anchor)
+            ArrowOrientation.START -> balloon.showAlignEnd(anchor)
+            ArrowOrientation.END -> balloon.showAlignStart(anchor)
+        }
     }
 
     private fun getViewName(view: View): String {
