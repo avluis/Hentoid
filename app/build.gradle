@@ -228,7 +228,7 @@ dependencies {
      * NETWORKING
      */
     // JSON serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
-    def moshi_version = '1.14.0'
+    def moshi_version = '1.15.0'
     implementation "com.squareup.moshi:moshi:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
     implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
