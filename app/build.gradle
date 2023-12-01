@@ -246,7 +246,7 @@ dependencies {
     implementation "pl.droidsonroids.retrofit2:converter-jspoon:$jspoon_version"
 
     // JSOUP HTML parser: github.com/jhy/jsoup
-    implementation 'org.jsoup:jsoup:1.16.1'
+    implementation 'org.jsoup:jsoup:1.17.1'
 
     //    https://github.com/square/retrofit
     def retrofit_version = '2.9.0'
