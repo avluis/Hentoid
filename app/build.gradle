@@ -141,7 +141,7 @@ dependencies {
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     implementation 'androidx.core:core-ktx:1.12.0'
 
     def android_work_version = '2.8.1'
