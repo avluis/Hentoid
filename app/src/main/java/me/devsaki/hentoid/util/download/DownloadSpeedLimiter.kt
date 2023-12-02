@@ -12,10 +12,10 @@ object DownloadSpeedLimiter {
     fun setSpeedLimitKbps(kbps: Int) {
         bucket = if (kbps <= 0) null
         else {
-            val limit = Bandwidth.simple(
-                kbps * 1000L,
-                Duration.ofSeconds(1)
-            )
+            val limit = Bandwidth.builder()
+                .capacity(kbps * 1000L)
+                .refillGreedy(kbps * 1000L, Duration.ofSeconds(1))
+                .build()
             Bucket.builder().addLimit(limit).build().asBlocking()
         }
     }

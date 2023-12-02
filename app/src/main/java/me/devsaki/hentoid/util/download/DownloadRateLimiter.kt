@@ -3,7 +3,6 @@ package me.devsaki.hentoid.util.download
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.BlockingBucket
 import io.github.bucket4j.Bucket
-import io.github.bucket4j.Refill
 import java.time.Duration
 
 
@@ -13,7 +12,11 @@ object DownloadRateLimiter {
     fun setRateLimit(perSecond: Long) {
         bucket = if (perSecond <= 0) null
         else {
-            val limit = Bandwidth.classic(perSecond, Refill.intervally(1, Duration.ofSeconds(1)))
+            val limit =
+                Bandwidth.builder()
+                    .capacity(perSecond)
+                    .refillIntervally(1, Duration.ofSeconds(1))
+                    .build()
             Bucket.builder().addLimit(limit).build().asBlocking()
         }
     }
