@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.parsers.content;
 
-import static me.devsaki.hentoid.activities.sources.LusciousActivity.GALLERY_FILTER;
-
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -13,6 +11,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -30,7 +29,7 @@ public class LusciousContent extends BaseContentParser {
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         String bookId;
 
-        if (url.contains(GALLERY_FILTER[0])) { // Triggered by a graphQL request
+        if (url.contains(LusciousActivity.Companion.getGALLERY_FILTER()[0])) { // Triggered by a graphQL request
             String vars = Uri.parse(url).getQueryParameter("variables");
             if (null == vars || vars.isEmpty()) {
                 Timber.w("No variable field found in %s", url);

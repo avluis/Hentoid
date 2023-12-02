@@ -40,7 +40,6 @@ import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.EdoujinActivity;
 import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
-import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.HdPornComicsActivity;
 import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
@@ -388,8 +387,6 @@ public class Content implements Serializable {
                 return LusciousActivity.class;
             case PORNCOMIX:
                 return PorncomixActivity.class;
-            case HBROWSE:
-                return HbrowseActivity.class;
             case HENTAI2READ:
                 return Hentai2ReadActivity.class;
             case HENTAIFOX:
