@@ -187,7 +187,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     private fun initJspoon(site: Site): HtmlAdapter<out ContentParser> {
-        val c = ContentParserFactory.getInstance().getContentParserClass(site)
+        val c = ContentParserFactory.getContentParserClass(site)
         val jspoon = Jspoon.create()
         return jspoon.adapter(c) // Unchecked but alright
     }

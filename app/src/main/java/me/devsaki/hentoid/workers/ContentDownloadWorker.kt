@@ -1092,7 +1092,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         try {
             val reqHeaders =
                 HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.pageUrl)
-            val parser = ContentParserFactory.getInstance().getImageListParser(content.site)
+            val parser = ContentParserFactory.getImageListParser(content.site)
             val pages = parser.parseImagePage(img.pageUrl, reqHeaders)
             img.url = pages.left
             // Set backup URL
@@ -1170,7 +1170,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Process backup URLs if any
         if (img.backupUrl.isEmpty() && content.site.hasBackupURLs()) {
-            val imgParser = ContentParserFactory.getInstance().getImageListParser(content)
+            val imgParser = ContentParserFactory.getImageListParser(content)
             img.backupUrl = imgParser.getAltUrl(imageUrl)
         }
         val backupUrlFinal = HttpHelper.fixUrl(img.backupUrl, site.url)
@@ -1264,7 +1264,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         Timber.i("Using backup URL %s", backupUrl)
         val content = img.content.target ?: return
         val site = content.site
-        val parser = ContentParserFactory.getInstance().getImageListParser(site)
+        val parser = ContentParserFactory.getImageListParser(site)
         val chp = img.linkedChapter
         try {
             val backupImg =

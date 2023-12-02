@@ -1366,7 +1366,7 @@ class ReaderViewModel(
     ): Pair<Uri?, String> {
         val site = content.site
         val pageUrl = HttpHelper.fixUrl(img.pageUrl, site.url)
-        val parser = ContentParserFactory.getInstance().getImageListParser(content.site)
+        val parser = ContentParserFactory.getImageListParser(content.site)
         val pages = parser.parseImagePage(pageUrl, requestHeaders)
         img.url = pages.left
         // Download the picture

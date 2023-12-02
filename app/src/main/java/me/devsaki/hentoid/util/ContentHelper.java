@@ -1230,7 +1230,7 @@ public final class ContentHelper {
         try (ResponseBody body = fetchResponse.first) {
             if (null == body) return Optional.empty();
 
-            Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(site);
+            Class<? extends ContentParser> c = ContentParserFactory.INSTANCE.getContentParserClass(site);
             final Jspoon jspoon = Jspoon.create();
             HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
@@ -1324,7 +1324,7 @@ public final class ContentHelper {
         }
 
         // Use ImageListParser to query the source
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
+        ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(content);
         imgs = parser.parseImageList(content);
 
         // If no images found, or just the cover, image detection has failed
@@ -1382,7 +1382,7 @@ public final class ContentHelper {
         }
 
         // Use ImageListParser to query the source
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(c.getSite());
+        ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(c.getSite());
         imgs = parser.parseImageList(c, url);
 
         // If no images found, or just the cover, image detection has failed
@@ -1818,7 +1818,7 @@ public final class ContentHelper {
             List<Pair<String, String>> requestHeaders) throws
             IOException, LimitReachedException, EmptyResultException, CloudflareHelper.CloudflareProtectedException {
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
+        ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(site);
         ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
         img.setUrl(pages.left);
         // Download the picture

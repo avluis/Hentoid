@@ -50,7 +50,7 @@ class AnchiraBackgroundWebView(
         @JavascriptInterface
         @Suppress("unused")
         fun ha(url: String, html: String) {
-            val c = ContentParserFactory.getInstance().getContentParserClass(Site.ANCHIRA)
+            val c = ContentParserFactory.getContentParserClass(Site.ANCHIRA)
             val jspoon = Jspoon.create()
             val adapter = jspoon.adapter(c) // Unchecked but alright
             val data = adapter.fromHtml("<html>$html</html>").toContent(url)
