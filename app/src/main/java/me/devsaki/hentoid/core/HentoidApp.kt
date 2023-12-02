@@ -11,8 +11,6 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.google.firebase.analytics.FirebaseAnalytics
-import io.reactivex.exceptions.UndeliverableException
-import io.reactivex.plugins.RxJavaPlugins
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.SplashActivity
@@ -23,7 +21,6 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import timber.log.Timber
-import java.io.IOException
 import java.time.Instant
 
 /**
@@ -70,23 +67,6 @@ class HentoidApp : Application() {
 
         // Plug the lifecycle listener to handle locking
         ProcessLifecycleOwner.get().lifecycle.addObserver(LifeCycleListener())
-
-        // Set RxJava's default error handler for unprocessed network and IO errors
-        RxJavaPlugins.setErrorHandler { e: Throwable ->
-            var displayE = e
-            if (e is UndeliverableException) {
-                displayE = e.cause!!
-            }
-            if (e is IOException) {
-                // fine, irrelevant network problem or API that throws on cancellation
-                return@setErrorHandler
-            }
-            if (e is InterruptedException) {
-                // fine, some blocking code was interrupted by a dispose call
-                return@setErrorHandler
-            }
-            Timber.w(displayE, "Undeliverable exception received, not sure what to do")
-        }
 
         // Initialize WebView availability status and register the WebView Update Cycle Receiver
         WebkitPackageHelper.setWebViewAvailable()

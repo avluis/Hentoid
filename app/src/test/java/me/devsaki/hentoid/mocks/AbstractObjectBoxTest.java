@@ -17,11 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import io.objectbox.BoxStore;
 import io.objectbox.DebugFlags;
-import io.reactivex.Scheduler;
-import io.reactivex.android.plugins.RxAndroidPlugins;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.internal.schedulers.ExecutorScheduler;
-import io.reactivex.plugins.RxJavaPlugins;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import timber.log.Timber;
 
@@ -33,28 +28,6 @@ public abstract class AbstractObjectBoxTest {
 
     @Rule
     public TimberTestRule logAllAlwaysRule = TimberTestRule.logAllAlways();
-
-    @BeforeClass
-    public static void setUpRxSchedulers() {
-        Scheduler immediate = new Scheduler() {
-            @Override
-            public Disposable scheduleDirect(@NonNull Runnable run, long delay, @NonNull TimeUnit unit) {
-                // this prevents StackOverflowErrors when scheduling with a delay
-                return super.scheduleDirect(run, 0, unit);
-            }
-
-            @Override
-            public Scheduler.Worker createWorker() {
-                return new ExecutorScheduler.ExecutorWorker(Runnable::run, false);
-            }
-        };
-
-        RxJavaPlugins.setInitIoSchedulerHandler(scheduler -> immediate);
-        RxJavaPlugins.setInitComputationSchedulerHandler(scheduler -> immediate);
-        RxJavaPlugins.setInitNewThreadSchedulerHandler(scheduler -> immediate);
-        RxJavaPlugins.setInitSingleSchedulerHandler(scheduler -> immediate);
-        RxAndroidPlugins.setInitMainThreadSchedulerHandler(scheduler -> immediate);
-    }
 
     @BeforeClass
     public static void setUp() throws Exception {

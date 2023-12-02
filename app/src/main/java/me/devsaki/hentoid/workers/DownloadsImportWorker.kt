@@ -4,9 +4,10 @@ import android.content.Context
 import android.util.Log
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import io.reactivex.Completable
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -45,10 +46,6 @@ class DownloadsImportWorker(
     private var nbOK = 0
     private var nbKO = 0
 
-    private val notificationDisposables = CompositeDisposable()
-    private val compositeDisposable = CompositeDisposable()
-
-
     fun isRunning(context: Context): Boolean {
         return isRunning(context, R.id.downloads_import_service)
     }
@@ -58,13 +55,10 @@ class DownloadsImportWorker(
     }
 
     override fun onInterrupt() {
-        compositeDisposable.clear()
-        notificationDisposables.clear()
+        // Nothing
     }
 
     override fun onClear() {
-        notificationDisposables.clear()
-        compositeDisposable.clear()
         if (cfHelper != null) cfHelper!!.clear()
         if (dao != null) dao!!.cleanup()
     }
@@ -195,14 +189,11 @@ class DownloadsImportWorker(
     }
 
     private fun notifyProcessProgress(context: Context) {
-        notificationDisposables.add(Completable.fromRunnable {
-            doNotifyProcessProgress(
-                context
-            )
+        CoroutineScope(Dispatchers.Default).launch {
+            withContext(Dispatchers.Main) {
+                doNotifyProcessProgress(context)
+            }
         }
-            .subscribeOn(Schedulers.computation())
-            .subscribe { notificationDisposables.clear() }
-        )
     }
 
     private fun doNotifyProcessProgress(context: Context) {

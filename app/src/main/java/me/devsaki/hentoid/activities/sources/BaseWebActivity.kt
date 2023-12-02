@@ -1504,7 +1504,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
     }
 
-    override fun onDownloadDuplicate(@DuplicateDialogFragment.ActionMode actionMode: Int) {
+    override fun onDownloadDuplicate(actionMode: DuplicateDialogFragment.ActionMode) {
         processDownload(
             false,
             actionMode == DuplicateDialogFragment.ActionMode.DOWNLOAD_PLUS,
