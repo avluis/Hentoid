@@ -10,7 +10,7 @@ import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.lifecycle.lifecycleScope
-import com.annimon.stream.function.BiConsumer
+import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.util.Debouncer
 
 /**
@@ -44,7 +44,7 @@ open class VariableLongClickWebView : WebView {
     private fun init(longTapDebouncerThreshold: Long, activity: AppCompatActivity) {
         longTapDebouncer =
             Debouncer(activity.lifecycleScope, longTapDebouncerThreshold)
-            { point: Point -> onLongClickListener?.accept(point.x, point.y) }
+            { point: Point -> onLongClickListener?.invoke(point.x, point.y) }
     }
 
     fun setOnLongTapListener(onLongClickListener: BiConsumer<Int, Int>?) {

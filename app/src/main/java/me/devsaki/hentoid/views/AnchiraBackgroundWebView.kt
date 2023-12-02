@@ -4,10 +4,10 @@ import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import com.annimon.stream.function.Consumer
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.activities.sources.AnchiraActivity.AnchiraWebClient
 import me.devsaki.hentoid.activities.sources.WebResultConsumer
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.ContentParserFactory
@@ -54,7 +54,7 @@ class AnchiraBackgroundWebView(
             val jspoon = Jspoon.create()
             val adapter = jspoon.adapter(c) // Unchecked but alright
             val data = adapter.fromHtml("<html>$html</html>").toContent(url)
-            handler.accept(data)
+            handler.invoke(data)
         }
     }
 
