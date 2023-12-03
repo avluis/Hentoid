@@ -141,8 +141,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private lateinit var dao: CollectionDAO
 
     private val listener =
-        OnSharedPreferenceChangeListener { prefs: SharedPreferences, key: String? ->
-            onSharedPreferenceChanged(prefs, key)
+        OnSharedPreferenceChangeListener { _, key: String? ->
+            onSharedPreferenceChanged(key)
         }
 
     // === UI
@@ -1611,10 +1611,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     /**
      * Listener for preference changes (from the settings dialog)
      *
-     * @param prefs Shared preferences object
      * @param key   Key that has been changed
      */
-    private fun onSharedPreferenceChanged(prefs: SharedPreferences, key: String?) {
+    private fun onSharedPreferenceChanged(key: String?) {
         var reload = false
         if (Preferences.Key.BROWSER_DL_ACTION == key) {
             downloadIcon =
@@ -1670,7 +1669,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     // https://medium.com/@madmuc/intercept-all-network-traffic-in-webkit-on-android-9c56c9262c85
     class XhrHandler(private val handler: BiConsumer<String, String>) {
         @JavascriptInterface
-        @Suppress("unused")
+        @Suppress("unused", "UNUSED_PARAMETER")
         fun onXhrCall(method: String, url: String, body: String) {
             Timber.d("XHR Begin %s : %s", url, body)
             handler.invoke(url, body)

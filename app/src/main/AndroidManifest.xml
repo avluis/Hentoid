@@ -90,9 +90,6 @@
             android:name=".activities.sources.PorncomixActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".activities.sources.HbrowseActivity"
-            android:configChanges="orientation|screenSize" />
-        <activity
             android:name=".activities.sources.Hentai2ReadActivity"
             android:configChanges="orientation|screenSize" />
         <activity
