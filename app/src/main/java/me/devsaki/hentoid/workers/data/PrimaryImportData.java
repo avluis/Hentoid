@@ -1,8 +1,7 @@
 package me.devsaki.hentoid.workers.data;
 
+import androidx.annotation.NonNull;
 import androidx.work.Data;
-
-import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.util.StringHelper;
@@ -75,7 +74,7 @@ public class PrimaryImportData {
 
         private final Data data;
 
-        public Parser(@Nonnull Data data) {
+        public Parser(@NonNull Data data) {
             this.data = data;
         }
 

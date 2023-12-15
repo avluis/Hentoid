@@ -1,11 +1,9 @@
 package me.devsaki.hentoid.json.sources;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Collections;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
@@ -53,7 +51,7 @@ public class PixivUserMetadata {
     }
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
         content.setSite(Site.PIXIV);
 

@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Chapter;
@@ -252,7 +251,7 @@ public class EHentaiParser implements ImageListParser {
         return result;
     }
 
-    static void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
+    static void fetchPageUrls(@NonNull Document doc, List<String> pageUrls) {
         Elements imageLinks = doc.select(".gdtm a"); // Normal thumbs
         if (imageLinks.isEmpty())
             imageLinks = doc.select(".gdtl a"); // Large thumbs
@@ -261,7 +260,7 @@ public class EHentaiParser implements ImageListParser {
         for (Element e : imageLinks) pageUrls.add(e.attr("href"));
     }
 
-    static String getDisplayedImageUrl(@Nonnull Document doc) {
+    static String getDisplayedImageUrl(@NonNull Document doc) {
         Element element = doc.selectFirst("img#img");
         if (element != null) return ParseHelper.getImgSrc(element);
 
@@ -271,7 +270,7 @@ public class EHentaiParser implements ImageListParser {
         return "";
     }
 
-    static String getFullImageUrl(@Nonnull Document doc) {
+    static String getFullImageUrl(@NonNull Document doc) {
         Element element = doc.selectFirst("a[href*=fullimg]");
         if (element != null) return element.attr("href");
         return "";

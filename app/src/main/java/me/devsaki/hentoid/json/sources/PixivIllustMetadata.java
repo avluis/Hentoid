@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
 import com.annimon.stream.Stream;
@@ -12,9 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -286,7 +284,7 @@ public class PixivIllustMetadata {
     }
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
         content.setSite(Site.PIXIV);
 

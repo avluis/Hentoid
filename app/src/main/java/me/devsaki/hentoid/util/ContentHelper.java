@@ -45,8 +45,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ReaderActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
@@ -363,7 +361,7 @@ public final class ContentHelper {
      * @param updateReads             True to increment the reads counter and to set the last read date to now
      * @param markAsCompleted         True to mark as completed
      */
-    public static void updateContentReadStats(@NonNull Context context, @Nonnull CollectionDAO dao, @NonNull Content content, @NonNull List<ImageFile> images, int targetLastReadPageIndex, boolean updateReads, boolean markAsCompleted) {
+    public static void updateContentReadStats(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content, @NonNull List<ImageFile> images, int targetLastReadPageIndex, boolean updateReads, boolean markAsCompleted) {
         content.setLastReadPageIndex(targetLastReadPageIndex);
         if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         if (markAsCompleted) content.setCompleted(true);

@@ -2,9 +2,8 @@ package me.devsaki.hentoid.workers.data;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
 import androidx.work.Data;
-
-import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
@@ -49,7 +48,7 @@ public class DownloadsImportData {
 
         private final Data data;
 
-        public Parser(@Nonnull Data data) {
+        public Parser(@NonNull Data data) {
             this.data = data;
         }
 

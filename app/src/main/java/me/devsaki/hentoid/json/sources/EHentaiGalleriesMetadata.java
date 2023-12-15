@@ -7,8 +7,6 @@ import org.apache.commons.text.StringEscapeUtils;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
@@ -21,7 +19,7 @@ import me.devsaki.hentoid.util.StringHelper;
 public class EHentaiGalleriesMetadata {
     private List<EHentaiGalleryMetadata> gmetadata;
 
-    public Content update(@NonNull Content content, @Nonnull String url, @NonNull Site site, boolean updatePages) {
+    public Content update(@NonNull Content content, @NonNull String url, @NonNull Site site, boolean updatePages) {
         return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).update(content, url, site, updatePages) : new Content();
     }
 
@@ -37,7 +35,7 @@ public class EHentaiGalleriesMetadata {
         private List<String> tags;
 
 
-        public Content update(@NonNull Content content, @Nonnull String url, @NonNull Site site, boolean updatePages) {
+        public Content update(@NonNull Content content, @NonNull String url, @NonNull Site site, boolean updatePages) {
             content.setSite(site);
 
             String targetTitle = StringHelper.removeNonPrintableChars(title);

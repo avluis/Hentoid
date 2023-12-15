@@ -6,8 +6,6 @@ import org.jsoup.nodes.Element;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -54,7 +52,7 @@ public class NhentaiContent extends BaseContentParser {
     private List<Element> thumbs;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         content.setSite(Site.NHENTAI);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
 

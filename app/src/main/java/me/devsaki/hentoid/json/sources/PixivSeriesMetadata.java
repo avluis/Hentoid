@@ -3,13 +3,11 @@ package me.devsaki.hentoid.json.sources;
 import static me.devsaki.hentoid.util.ContentHelper.KEY_DL_PARAMS_NB_CHAPTERS;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -61,7 +59,7 @@ public class PixivSeriesMetadata {
     }
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
         content.setSite(Site.PIXIV);
 

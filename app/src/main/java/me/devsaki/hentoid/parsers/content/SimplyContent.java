@@ -7,8 +7,6 @@ import org.jsoup.nodes.Element;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -42,7 +40,7 @@ public class SimplyContent extends BaseContentParser {
     private List<Element> tags;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         content.setSite(Site.SIMPLY);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 

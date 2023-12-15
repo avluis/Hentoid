@@ -1,14 +1,12 @@
 package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Objects;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
@@ -92,18 +90,18 @@ public class Attribute {
         this.uniqueHash = data.uniqueHash;
     }
 
-    public Attribute(@Nonnull AttributeType type, @Nonnull String name) {
+    public Attribute(@NonNull AttributeType type, @NonNull String name) {
         this.type = type;
         this.name = name;
     }
 
-    public Attribute(@Nonnull AttributeType type, @Nonnull String name, @Nonnull String url, @Nonnull Site site) {
+    public Attribute(@NonNull AttributeType type, @NonNull String name, @NonNull String url, @NonNull Site site) {
         this.type = type;
         this.name = name;
         computeLocation(site, url);
     }
 
-    public Attribute(@Nonnull DataInputStream input) throws IOException {
+    public Attribute(@NonNull DataInputStream input) throws IOException {
         input.readInt(); // file version
         name = input.readUTF();
         type = AttributeType.Companion.searchByCode(input.readInt());
@@ -126,7 +124,7 @@ public class Attribute {
         return name;
     }
 
-    public void setName(@Nonnull String name) {
+    public void setName(@NonNull String name) {
         this.name = name;
     }
 
@@ -134,7 +132,7 @@ public class Attribute {
         return displayName.isEmpty() ? name : displayName;
     }
 
-    public void setDisplayName(@Nonnull String displayname) {
+    public void setDisplayName(@NonNull String displayname) {
         this.displayName = displayname;
     }
 
@@ -159,7 +157,7 @@ public class Attribute {
         isNew = aNew;
     }
 
-    public void setType(@Nonnull AttributeType type) {
+    public void setType(@NonNull AttributeType type) {
         this.type = type;
     }
 

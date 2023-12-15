@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.enums.AttributeType;
@@ -97,7 +96,7 @@ public class JsonHelper {
      * @param <K>    Type of the given object
      * @throws IOException If anything happens during file I/O
      */
-    public static <K> void updateJson(K object, Type type, @Nonnull OutputStream output) throws IOException {
+    public static <K> void updateJson(K object, Type type, @NonNull OutputStream output) throws IOException {
         byte[] bytes = serializeToJson(object, type).getBytes();
         output.write(bytes);
         if (output instanceof FileOutputStream) FileHelper.sync((FileOutputStream) output);

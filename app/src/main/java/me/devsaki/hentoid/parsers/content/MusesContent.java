@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,9 +10,6 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
@@ -48,7 +46,7 @@ public class MusesContent extends BaseContentParser {
     }
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         // Gallery pages are the only ones whose gallery links end with numbers
         // The others are album lists
         int nbImages = 0;

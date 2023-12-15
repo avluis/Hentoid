@@ -2,9 +2,8 @@ package me.devsaki.hentoid.workers.data;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.work.Data;
-
-import javax.annotation.Nonnull;
 
 /**
  * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.workers.UpdateDownloadWorker}
@@ -44,12 +43,12 @@ public class UpdateDownloadData {
         private final Data data;
         private final Bundle bundle;
 
-        public Parser(@Nonnull Data data) {
+        public Parser(@NonNull Data data) {
             this.data = data;
             this.bundle = null;
         }
 
-        public Parser(@Nonnull Bundle bundle) {
+        public Parser(@NonNull Bundle bundle) {
             this.bundle = bundle;
             this.data = null;
         }

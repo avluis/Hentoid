@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
 import org.jsoup.nodes.Document;
@@ -8,9 +9,6 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -27,7 +25,7 @@ import timber.log.Timber;
 public class SimplyApiContent extends BaseContentParser {
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         if (url.contains("api.simply-hentai.com") && !url.endsWith("/status")) { // Triggered by an API request
             List<Pair<String, String>> headers = new ArrayList<>();
             ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);

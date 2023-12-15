@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
@@ -48,7 +46,7 @@ public class PorncomixContent extends BaseContentParser {
     private List<Element> allPornComixTags;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         content.setSite(Site.PORNCOMIX);
 
         title = title.trim();

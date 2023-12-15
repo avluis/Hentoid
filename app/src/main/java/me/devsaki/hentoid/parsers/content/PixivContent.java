@@ -3,11 +3,9 @@ package me.devsaki.hentoid.parsers.content;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -24,7 +22,7 @@ import timber.log.Timber;
 public class PixivContent extends BaseContentParser {
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         String[] urlParts = url.split("/");
         String id = urlParts[urlParts.length - 1];
         if (id.contains("?")) {

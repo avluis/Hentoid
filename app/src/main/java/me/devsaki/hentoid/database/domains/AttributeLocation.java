@@ -1,10 +1,10 @@
 package me.devsaki.hentoid.database.domains;
 
+import androidx.annotation.NonNull;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import javax.annotation.Nonnull;
 
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
@@ -32,7 +32,7 @@ public class AttributeLocation {
         this.url = url;
     }
 
-    AttributeLocation(@Nonnull DataInputStream input) throws IOException {
+    AttributeLocation(@NonNull DataInputStream input) throws IOException {
         this.site = Site.searchByCode(input.readInt());
         this.url = input.readUTF();
     }

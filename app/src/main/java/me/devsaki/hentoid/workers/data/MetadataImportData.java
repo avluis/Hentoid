@@ -1,9 +1,8 @@
 package me.devsaki.hentoid.workers.data;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.work.Data;
-
-import javax.annotation.Nonnull;
 
 /**
  * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.workers.MetadataImportWorker}
@@ -65,7 +64,7 @@ public class MetadataImportData {
 
         private final Data data;
 
-        public Parser(@Nonnull Data data) {
+        public Parser(@NonNull Data data) {
             this.data = data;
         }
 

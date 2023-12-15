@@ -11,8 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.activities.sources.ToonilyActivity;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
@@ -48,7 +46,7 @@ public class ToonilyContent extends BaseContentParser {
     private List<Element> chapterImgs;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         content.setSite(Site.TOONILY);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
         content.setRawUrl(url);
@@ -57,7 +55,7 @@ public class ToonilyContent extends BaseContentParser {
         else return updateSingleChapter(content, url, updateImages);
     }
 
-    public Content updateSingleChapter(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content updateSingleChapter(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         String title = NO_TITLE;
         if (chapterTitle != null) title = StringHelper.removeNonPrintableChars(chapterTitle.text());
         content.setTitle(title);
@@ -78,7 +76,7 @@ public class ToonilyContent extends BaseContentParser {
         return content;
     }
 
-    public Content updateGallery(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+    public Content updateGallery(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         content.setCoverImageUrl(coverUrl);
         String title = NO_TITLE;
         if (breadcrumbs != null && !breadcrumbs.isEmpty()) {

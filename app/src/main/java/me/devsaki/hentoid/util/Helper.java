@@ -55,8 +55,6 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 import io.whitfin.siphash.SipHasher;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
@@ -210,7 +208,7 @@ public final class Helper {
      * @return List containing the given number of duplicated InputStreams
      * @throws IOException If anything goes wrong during the duplication
      */
-    public static List<InputStream> duplicateInputStream(@Nonnull InputStream stream, int numberDuplicates) throws IOException {
+    public static List<InputStream> duplicateInputStream(@NonNull InputStream stream, int numberDuplicates) throws IOException {
         List<InputStream> result = new ArrayList<>();
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {

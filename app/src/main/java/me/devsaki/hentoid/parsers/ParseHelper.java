@@ -23,8 +23,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Chapter;
@@ -198,7 +196,7 @@ public class ParseHelper {
      * See definition of the main method below
      */
     public static List<ImageFile> urlsToImageFiles(
-            @Nonnull List<String> imgUrls,
+            @NonNull List<String> imgUrls,
             @NonNull String coverUrl,
             @NonNull final StatusContent status
     ) {
@@ -209,7 +207,7 @@ public class ParseHelper {
      * See definition of the main method below
      */
     public static List<ImageFile> urlsToImageFiles(
-            @Nonnull List<String> imgUrls,
+            @NonNull List<String> imgUrls,
             @NonNull final StatusContent status,
             String coverUrl,
             final Chapter chapter
@@ -234,7 +232,7 @@ public class ParseHelper {
      * @return List of ImageFiles built using all given arguments
      */
     public static List<ImageFile> urlsToImageFiles(
-            @Nonnull List<String> imgUrls,
+            @NonNull List<String> imgUrls,
             int initialOrder,
             @NonNull final StatusContent status,
             int totalBookPages,
@@ -265,7 +263,7 @@ public class ParseHelper {
      * @return ImageFile built using all given arguments
      */
     public static ImageFile urlToImageFile(
-            @Nonnull String imgUrl,
+            @NonNull String imgUrl,
             int order,
             int totalBookPages,
             @NonNull final StatusContent status) {
@@ -283,7 +281,7 @@ public class ParseHelper {
      * @return ImageFile built using all given arguments
      */
     public static ImageFile urlToImageFile(
-            @Nonnull String imgUrl,
+            @NonNull String imgUrl,
             int order,
             int totalBookPages,
             @NonNull final StatusContent status,

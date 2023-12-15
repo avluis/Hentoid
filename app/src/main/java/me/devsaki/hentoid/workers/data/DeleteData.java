@@ -1,10 +1,9 @@
 package me.devsaki.hentoid.workers.data;
 
+import androidx.annotation.NonNull;
 import androidx.work.Data;
 
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.util.Helper;
 
@@ -83,7 +82,7 @@ public class DeleteData {
 
         private final Data data;
 
-        public Parser(@Nonnull Data data) {
+        public Parser(@NonNull Data data) {
             this.data = data;
         }
 
