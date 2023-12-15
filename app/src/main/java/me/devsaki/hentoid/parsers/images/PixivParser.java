@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.ContentHelper.KEY_DL_PARAMS_NB_CHAPTERS;
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 import android.webkit.URLUtil;
 
@@ -167,7 +166,7 @@ public class PixivParser extends BaseImageListParser {
         for (Chapter ch : extraChapters) {
             DownloadRateLimiter.INSTANCE.take();
             PixivIllustMetadata illustMetadata = PixivServer.api.getIllustMetadata(ch.getUniqueId(), cookieStr, acceptAll, userAgent).execute().body();
-            if (null == illustMetadata || illustMetadata.isError()) {
+            if (null == illustMetadata || illustMetadata.getError()) {
                 String message = "Unreachable illust";
                 if (illustMetadata != null)
                     message = illustMetadata.getMessage();
@@ -263,7 +262,7 @@ public class PixivParser extends BaseImageListParser {
                 throw new IllegalArgumentException(String.format("Unreachable illust : code=%s (%s) [%d - %d]", illustResp.code(), illustResp.message(), index, waited));
 
             PixivIllustMetadata illustMetadata = illustResp.body();
-            if (null == illustMetadata || illustMetadata.isError()) {
+            if (null == illustMetadata || illustMetadata.getError()) {
                 String message;
                 if (illustMetadata != null)
                     message = illustMetadata.getMessage();

@@ -47,20 +47,21 @@ class AnchiraContent : BaseContentParser() {
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.ANCHIRA)
         content.putAttributes(attributes)
         var nbPages = 0
-        for (e in extraData!!) {
-            var txt = e.text().lowercase(Locale.getDefault())
-            if (txt.contains("page")) {
-                txt = StringHelper.keepDigits(txt)
-                if (StringHelper.isNumeric(txt)) {
-                    nbPages = txt.toInt()
-                    break
+        extraData?.let {
+            for (e in it) {
+                var txt = e.text().lowercase(Locale.getDefault())
+                if (txt.contains("page")) {
+                    txt = StringHelper.keepDigits(txt)
+                    if (StringHelper.isNumeric(txt)) {
+                        nbPages = txt.toInt()
+                        break
+                    }
                 }
             }
         }
         content.qtyPages = nbPages
-        if (updateImages) {
-            content.setImageFiles(emptyList())
-        }
+        if (updateImages) content.setImageFiles(emptyList())
+
         return content
     }
 }

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.retrofit.sources
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import me.devsaki.hentoid.json.sources.*
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton
 import retrofit2.Call
@@ -15,6 +17,12 @@ object PixivServer {
 
     lateinit var api: Api
 
+    private val moshi: Moshi by lazy {
+        Moshi.Builder()
+            .addLast(KotlinJsonAdapterFactory())
+            .build()
+    }
+
     init {
         init()
     }
@@ -23,7 +31,7 @@ object PixivServer {
         api = Retrofit.Builder()
             .baseUrl(API_URL)
             .client(OkHttpClientSingleton.getInstance())
-            .addConverterFactory(MoshiConverterFactory.create().asLenient())
+            .addConverterFactory(MoshiConverterFactory.create(moshi).asLenient())
             .build()
             .create(Api::class.java)
     }

@@ -22,8 +22,7 @@ import timber.log.Timber
 // TODO - invisible init while loading
 class ChangelogFragment : Fragment(R.layout.fragment_about_changelog) {
 
-    private var _binding: FragmentAboutChangelogBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentAboutChangelogBinding? = null
 
     private val viewModel by viewModels<ChangelogViewModel>()
 
@@ -32,57 +31,59 @@ class ChangelogFragment : Fragment(R.layout.fragment_about_changelog) {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentAboutChangelogBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = FragmentAboutChangelogBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.changelogRecycler.setHasFixedSize(true)
+        binding?.apply {
+            changelogRecycler.setHasFixedSize(true)
 
-        // TODO - observe update availability through event bus instead of parsing changelog
-        viewModel.successValueLive.observe(viewLifecycleOwner) { releasesInfo ->
-            val releases: MutableList<GitHubReleaseItem> = ArrayList()
-            var latestTagName = ""
-            var latestApkUrl = ""
-            for (r in releasesInfo) {
-                if (r.isPublished) {
-                    val release = GitHubReleaseItem(r)
-                    if (release.isTagPrior(BuildConfig.VERSION_NAME)) releases.add(release)
-                    if (latestTagName.isEmpty()) {
-                        latestTagName = release.tagName
-                        latestApkUrl = release.apkUrl
+            // TODO - observe update availability through event bus instead of parsing changelog
+            viewModel.successValueLive.observe(viewLifecycleOwner) { releasesInfo ->
+                val releases: MutableList<GitHubReleaseItem> = ArrayList()
+                var latestTagName = ""
+                var latestApkUrl = ""
+                for (r in releasesInfo) {
+                    if (r.isPublished()) {
+                        val release = GitHubReleaseItem(r)
+                        if (release.isTagPrior(BuildConfig.VERSION_NAME)) releases.add(release)
+                        if (latestTagName.isEmpty()) {
+                            latestTagName = release.tagName
+                            latestApkUrl = release.apkUrl
+                        }
                     }
                 }
-            }
-            val itemAdapter = ItemAdapter<GitHubReleaseItem>()
-            itemAdapter.add(releases)
-            binding.changelogRecycler.adapter = FastAdapter.with(itemAdapter)
-            if (releasesInfo.size > releases.size) {
-                binding.changelogDownloadLatestText.text =
-                    getString(R.string.get_latest, latestTagName)
-                binding.changelogDownloadLatestText.visibility = View.VISIBLE
-                binding.changelogDownloadLatestButton.visibility = View.VISIBLE
+                val itemAdapter = ItemAdapter<GitHubReleaseItem>()
+                itemAdapter.add(releases)
+                changelogRecycler.adapter = FastAdapter.with(itemAdapter)
+                if (releasesInfo.size > releases.size) {
+                    changelogDownloadLatestText.text =
+                        getString(R.string.get_latest, latestTagName)
+                    changelogDownloadLatestText.visibility = View.VISIBLE
+                    changelogDownloadLatestButton.visibility = View.VISIBLE
 
-                // TODO these 2 should be in a container layout which should be used for click listeners
-                binding.changelogDownloadLatestText.setOnClickListener {
-                    onDownloadClick(
-                        view.context,
-                        latestApkUrl
-                    )
+                    // TODO these 2 should be in a container layout which should be used for click listeners
+                    changelogDownloadLatestText.setOnClickListener {
+                        onDownloadClick(
+                            view.context,
+                            latestApkUrl
+                        )
+                    }
+                    changelogDownloadLatestButton.setOnClickListener {
+                        onDownloadClick(
+                            view.context,
+                            latestApkUrl
+                        )
+                    }
                 }
-                binding.changelogDownloadLatestButton.setOnClickListener {
-                    onDownloadClick(
-                        view.context,
-                        latestApkUrl
-                    )
-                }
+                // TODO show RecyclerView
             }
-            // TODO show RecyclerView
         }
 
         viewModel.errorValueLive.observe(viewLifecycleOwner) { t ->

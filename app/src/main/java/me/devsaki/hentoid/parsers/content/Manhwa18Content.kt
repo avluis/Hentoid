@@ -43,7 +43,6 @@ class Manhwa18Content : BaseContentParser() {
         content.setRawUrl(url)
         return if (GALLERY_PATTERN.matcher(url).find()) updateGallery(
             content,
-            url,
             updateImages
         ) else updateSingleChapter(content, url, updateImages)
     }
@@ -79,7 +78,7 @@ class Manhwa18Content : BaseContentParser() {
         return content
     }
 
-    private fun updateGallery(content: Content, url: String, updateImages: Boolean): Content {
+    private fun updateGallery(content: Content, updateImages: Boolean): Content {
         cover = cover.replace("background-image:", "")
             .replace("url('", "")
             .replace("')", "")

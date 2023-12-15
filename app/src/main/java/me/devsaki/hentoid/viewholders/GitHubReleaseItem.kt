@@ -31,7 +31,7 @@ class GitHubReleaseItem(releaseStruct: GithubRelease) :
         name = releaseStruct.name
         description = releaseStruct.body
         creationDate = releaseStruct.creationDate
-        apkUrl = releaseStruct.apkAssetUrl
+        apkUrl = releaseStruct.getApkAssetUrl()
     }
 
     fun isTagPrior(tagName: String): Boolean {
