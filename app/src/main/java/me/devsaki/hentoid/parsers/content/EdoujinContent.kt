@@ -59,12 +59,9 @@ class EdoujinContent : BaseContentParser() {
         url: String,
         updateImages: Boolean
     ): Content {
-        var urlParts = url.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()
+        var urlParts = url.split("/")
         if (urlParts.size > 1) {
-            urlParts =
-                urlParts[urlParts.size - 1].split("-".toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()
+            urlParts = urlParts[urlParts.size - 1].split("-")
             if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 1]
         }
         title?.let {
@@ -75,7 +72,7 @@ class EdoujinContent : BaseContentParser() {
         try {
             val info = EdoujinParser.getDataFromScripts(scripts)
             if (info != null) {
-                val chapterImgs = info.images
+                val chapterImgs = info.getImages()
                 if (updateImages && chapterImgs.isNotEmpty()) {
                     val coverUrl = chapterImgs[0]
                     content.setImageFiles(
@@ -104,8 +101,7 @@ class EdoujinContent : BaseContentParser() {
                 if (titleStr.isNotEmpty()) StringHelper.removeNonPrintableChars(titleStr) else ""
         } ?: { content.title = NO_TITLE }
 
-        val urlParts = url.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()
+        val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 1]
 
         content.uploadDate = -1

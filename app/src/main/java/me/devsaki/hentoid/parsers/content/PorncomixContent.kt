@@ -73,8 +73,7 @@ class PorncomixContent : BaseContentParser() {
         }
         var artist = ""
         if (content.url.contains("/manga")) {
-            val titleParts = title.split("-".toRegex()).dropLastWhile { it.isEmpty() }
-                .toTypedArray()
+            val titleParts = title.split("-")
             artist = titleParts[0].trim { it <= ' ' }
         }
         val attributes = AttributeMap()

@@ -13,8 +13,7 @@ class ExhentaiContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         val mgr = CookieManager.getInstance()
         val cookiesStr = mgr.getCookie(".exhentai.org")
-        val galleryUrlParts = url.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()
+        val galleryUrlParts = url.split("/")
         if (galleryUrlParts.size > 5) {
             val query = EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5])
             try {

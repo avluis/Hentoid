@@ -61,8 +61,7 @@ class ManhwaContent : BaseContentParser() {
     ): Content {
         val title = StringHelper.removeNonPrintableChars(chapterTitle!!.text())
         content.setTitle(title)
-        val urlParts = url.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()
+        val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 2]
         else content.uniqueSiteId = urlParts[0]
         if (updateImages) {

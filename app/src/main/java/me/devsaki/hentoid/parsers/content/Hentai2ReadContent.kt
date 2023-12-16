@@ -52,8 +52,7 @@ class Hentai2ReadContent : BaseContentParser() {
         url: String,
         updateImages: Boolean
     ): Content {
-        val urlParts = url.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()
+        val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 2]
         else content.uniqueSiteId = urlParts[0]
         try {

@@ -106,8 +106,7 @@ class AnchiraActivity : BaseWebActivity() {
                 }
             }
             if (url.contains(AnchiraGalleryMetadata.IMG_HOST)) {
-                val parts = url.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()
+                val parts = url.split("/")
                 if (parts.size > 7) {
                     // TODO that's ugly; find a more suitable interface; e.g. onImagesReady
                     val c = Content()

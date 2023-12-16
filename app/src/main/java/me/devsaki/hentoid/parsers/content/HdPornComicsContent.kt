@@ -54,7 +54,7 @@ class HdPornComicsContent : BaseContentParser() {
                 "yyyy-MM-dd'T'HH:mm:ssXXX"
             )
         ) // e.g. 2021-08-08T20:53:49+00:00
-        var coverUrl: String? = ""
+        var coverUrl = ""
         cover?.let {
             coverUrl = ParseHelper.getImgSrc(it)
             content.setCoverImageUrl(coverUrl)
@@ -75,7 +75,7 @@ class HdPornComicsContent : BaseContentParser() {
                 content.setImageFiles(
                     ParseHelper.urlsToImageFiles(
                         imgs,
-                        coverUrl!!,
+                        coverUrl,
                         StatusContent.SAVED
                     )
                 )

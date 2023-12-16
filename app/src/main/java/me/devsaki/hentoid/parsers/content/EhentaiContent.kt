@@ -10,8 +10,7 @@ import java.io.IOException
 
 class EhentaiContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        val galleryUrlParts = url.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()
+        val galleryUrlParts = url.split("/")
         if (galleryUrlParts.size > 5) {
             val query = EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5])
             try {

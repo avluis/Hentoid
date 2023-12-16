@@ -31,7 +31,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
     override fun parseImageListImpl(
         onlineContent: Content,
         storedContent: Content?
-    ): List<ImageFile?> {
+    ): List<ImageFile> {
         val readerUrl = onlineContent.readerUrl
         processedUrl = onlineContent.galleryUrl
         require(URLUtil.isValidUrl(readerUrl)) { "Invalid gallery URL : $readerUrl" }
@@ -43,7 +43,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
             ParseHelper.setDownloadParams(result, onlineContent.site.url)
         } catch (e: Exception) {
             Helper.logException(e)
-            result = ArrayList()
+            result = emptyList()
         } finally {
             EventBus.getDefault().unregister(this)
             clear()
@@ -180,18 +180,18 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
         return false
     }
 
-    override fun parseImages(content: Content): List<String>? {
+    override fun parseImages(content: Content): List<String> {
         // We won't use that as parseImageListImpl is overriden directly
-        return null
+        return emptyList()
     }
 
     override fun parseImages(
         chapterUrl: String,
         downloadParams: String?,
-        headers: MutableList<Pair<String, String>>?
-    ): MutableList<String>? {
+        headers: List<Pair<String, String>>?
+    ): List<String> {
         // We won't use that as parseImageListImpl is overriden directly
-        return null
+        return emptyList()
     }
 
     override fun onContentReady(result: Content, quickDownload: Boolean) {

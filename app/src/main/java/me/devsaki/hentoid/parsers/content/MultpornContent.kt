@@ -50,8 +50,7 @@ class MultpornContent : BaseContentParser() {
         if (title.isNotEmpty()) {
             content.setTitle(StringHelper.removeNonPrintableChars(title))
         } else content.setTitle(NO_TITLE)
-        val shortlinkParts = shortlink.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()
+        val shortlinkParts = shortlink.split("/")
         content.uniqueSiteId = shortlinkParts[shortlinkParts.size - 1]
         if (publishingDate.isNotEmpty()) // e.g. 2018-11-12T20:04-05:00
             content.setUploadDate(

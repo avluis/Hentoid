@@ -77,7 +77,7 @@ public class AnchiraGalleryMetadata {
                 pageUrls.add(IMG_HOST + "/" + id + "/" + key + "/" + hash + "/b/" + page.n);
             }
             String coverUrl = IMG_HOST + "/" + id + "/" + key + "/s/" + data.get(0).n;
-            content.setImageFiles(ParseHelper.urlsToImageFiles(pageUrls, coverUrl, StatusContent.SAVED));
+            content.setImageFiles(ParseHelper.INSTANCE.urlsToImageFiles(pageUrls, coverUrl, StatusContent.SAVED));
             content.setCoverImageUrl(coverUrl);
         }
     }

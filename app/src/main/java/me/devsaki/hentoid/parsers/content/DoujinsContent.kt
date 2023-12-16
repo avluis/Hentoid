@@ -45,8 +45,7 @@ class DoujinsContent : BaseContentParser() {
                 for (e in ci) {
                     val txt = e.text().lowercase(Locale.getDefault())
                     if (txt.contains("•") && !txt.contains("translated")) { // e.g. March 16th, 2022 • 25 images
-                        val parts = e.text().split("•".toRegex()).dropLastWhile { it.isEmpty() }
-                            .toTypedArray()
+                        val parts = e.text().split("•")
                         content.uploadDate = Helper.parseDateToEpoch(parts[0], "MMMM d',' yyyy")
                         break
                     }

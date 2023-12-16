@@ -9,6 +9,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,6 +46,7 @@ public class JsonHelper {
             .add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new AttributeType.AttributeTypeAdapter())
             .add(new AndroidPairAdapterFactory())
+            .addLast(new KotlinJsonAdapterFactory())
             .build();
 
 

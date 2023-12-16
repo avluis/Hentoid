@@ -13,7 +13,7 @@ import java.io.IOException
 
 class PixivContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        val urlParts = url.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val urlParts = url.split("/")
         var id = urlParts[urlParts.size - 1]
         if (id.contains("?")) {
             id = id.substring(0, id.indexOf("?"))

@@ -632,7 +632,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Manually insert updated chapters
             dao.insertChapters(content.chaptersList)
         } else if (isCase1 || isCase2 || isCase3) {
-            val onlineImages = ContentHelper.fetchImageURLs(content, content.galleryUrl, targetImageStatus)
+            val onlineImages =
+                ContentHelper.fetchImageURLs(content, content.galleryUrl, targetImageStatus)
             // Cases 1 and 2 : Replace existing images with the parsed images
             if (isCase1 || isCase2) result = onlineImages
             // Case 3 : Replace images in ERROR state with the parsed images at the same position
@@ -1094,9 +1095,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.pageUrl)
             val parser = ContentParserFactory.getImageListParser(content.site)
             val pages = parser.parseImagePage(img.pageUrl, reqHeaders)
-            img.url = pages.left
+            img.url = pages.first
             // Set backup URL
-            if (pages.right.isPresent) img.backupUrl = pages.right.get()
+            if (pages.second != null) img.backupUrl = pages.second
             // Queue the picture
             requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content))
         } catch (e: UnsupportedOperationException) {
@@ -1275,7 +1276,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     content.qtyPages,
                     chp
                 )
-            processBackupImage(backupImg.orElse(null), img, dir, content)
+            processBackupImage(backupImg, img, dir, content)
         } catch (e: Exception) {
             updateImageProperties(img, false, "")
             logErrorRecord(

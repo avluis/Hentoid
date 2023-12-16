@@ -55,11 +55,9 @@ class Manhwa18Content : BaseContentParser() {
         var title = StringHelper.removeNonPrintableChars(chapterTitle)
         title = StringEscapeUtils.unescapeHtml4(title)
         content.setTitle(title)
-        val urlParts = url.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()
-        if (urlParts.size > 1) content.setUniqueSiteId(urlParts[urlParts.size - 2]) else content.setUniqueSiteId(
-            urlParts[0]
-        )
+        val urlParts = url.split("/")
+        if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 2]
+        else content.uniqueSiteId = urlParts[0]
         if (updateImages) {
             chapterImgs?.let {
                 val imgUrls = it.mapNotNull { e -> ParseHelper.getImgSrc(e) }
@@ -83,7 +81,7 @@ class Manhwa18Content : BaseContentParser() {
             .replace("url('", "")
             .replace("')", "")
             .replace(";", "")
-            .trim { it <= ' ' }
+            .trim()
         content.setCoverImageUrl(cover)
         var titleStr: String? = NO_TITLE
         title?.let {

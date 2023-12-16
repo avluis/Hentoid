@@ -564,14 +564,14 @@ class ReaderViewModel(
             }
             if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.isCompleted != markAsCompleted)
                 ContentHelper.updateContentReadStats(
-                getApplication(),
-                dao,
-                savedContent,
-                theImages,
-                indexToSet,
-                updateReads,
-                markAsCompleted
-            )
+                    getApplication(),
+                    dao,
+                    savedContent,
+                    theImages,
+                    indexToSet,
+                    updateReads,
+                    markAsCompleted
+                )
         } finally {
             dao.cleanup()
         }
@@ -1368,7 +1368,7 @@ class ReaderViewModel(
         val pageUrl = HttpHelper.fixUrl(img.pageUrl, site.url)
         val parser = ContentParserFactory.getImageListParser(content.site)
         val pages = parser.parseImagePage(pageUrl, requestHeaders)
-        img.url = pages.left
+        img.url = pages.first
         // Download the picture
         try {
             return DownloadHelper.downloadToFileCached(
@@ -1383,10 +1383,10 @@ class ReaderViewModel(
                 notifyDownloadProgress(f, pageIndex)
             }
         } catch (e: IOException) {
-            if (pages.right.isPresent) Timber.d("First download failed; trying backup URL") else throw e
+            if (pages.second != null) Timber.d("First download failed; trying backup URL") else throw e
         }
         // Trying with backup URL
-        img.url = pages.right.get()
+        img.url = pages.second
         return DownloadHelper.downloadToFileCached(
             getApplication(),
             content.site,

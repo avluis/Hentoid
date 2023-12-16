@@ -16,8 +16,8 @@ class DummyParser : BaseImageListParser() {
     @Throws(Exception::class)
     override fun parseImages(
         chapterUrl: String,
-        downloadParams: String,
-        headers: List<Pair<String, String>>
+        downloadParams: String?,
+        headers: List<Pair<String, String>>?
     ): List<String> {
         throw NotImplementedException()
     }

@@ -1760,17 +1760,17 @@ public final class ContentHelper {
             IOException, LimitReachedException, EmptyResultException, CloudflareHelper.CloudflareProtectedException {
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(site);
-        ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
-        img.setUrl(pages.left);
+        Pair<String, String> pages = parser.parseImagePage(pageUrl, requestHeaders);
+        img.setUrl(pages.first);
         // Download the picture
         try {
             return testDownloadPicture(site, img, requestHeaders);
         } catch (IOException | CloudflareHelper.CloudflareProtectedException e) {
-            if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
+            if (pages.second != null) Timber.d("First download failed; trying backup URL");
             else throw e;
         }
         // Trying with backup URL
-        img.setUrl(pages.right.get());
+        img.setUrl(pages.second);
         return testDownloadPicture(site, img, requestHeaders);
     }
 

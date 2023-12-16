@@ -14,8 +14,7 @@ object LanguageHelper {
     // label -> (language code, flag country code)
     private var languageCodes: MutableMap<String, Pair<String, String>> = HashMap()
 
-    init
-    {
+    init {
         val context: Context = getInstance()
         try {
             context.resources.openRawResource(R.raw.languages).use { `is` ->
@@ -54,10 +53,10 @@ object LanguageHelper {
      */
     fun getLocalNameFromLanguage(context: Context, language: String): String {
         if (language.isEmpty()) return ""
-        val languageClean = language.lowercase(Locale.getDefault()).split("/".toRegex())
-            .dropLastWhile { it.isEmpty() }
-            .toTypedArray()[0].split("\\(".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()[0].trim { it <= ' ' }
+        val languageClean = language.lowercase(Locale.getDefault())
+            .split("/")[0]
+            .split("(")[0]
+            .trim()
         val languageProps = languageCodes[languageClean]
         return if (null == languageProps) language else context.getString(
             context.resources.getIdentifier(
@@ -76,12 +75,12 @@ object LanguageHelper {
      */
     fun getCountryCodeFromLanguage(language: String): String {
         if (language.isEmpty()) return ""
-        val languageClean = language.lowercase(Locale.getDefault()).split("/".toRegex())
-            .dropLastWhile { it.isEmpty() }
-            .toTypedArray()[0].split("\\(".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()[0].trim { it <= ' ' }
+        val languageClean = language.lowercase(Locale.getDefault())
+            .split("/")[0]
+            .split("(")[0]
+            .trim()
         val languageProps = languageCodes[languageClean]
-        return if (null == languageProps) "" else languageProps.second
+        return languageProps?.second ?: ""
     }
 
     /**

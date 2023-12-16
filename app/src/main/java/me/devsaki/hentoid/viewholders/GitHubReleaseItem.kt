@@ -40,8 +40,7 @@ class GitHubReleaseItem(releaseStruct: GithubRelease) :
 
     private fun getIntFromTagName(tagName: String): Int {
         var result = 0
-        val parts = tagName.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()
+        val parts = tagName.split(".")
         if (parts.isNotEmpty()) result = 10000 * parts[0].replace(NOT_A_DIGIT, "").toInt()
         if (parts.size > 1) result += 100 * parts[1].replace(NOT_A_DIGIT, "").toInt()
         if (parts.size > 2) result += parts[2].replace(NOT_A_DIGIT, "")
@@ -76,8 +75,7 @@ class GitHubReleaseItem(releaseStruct: GithubRelease) :
             setTitle(item.name + " (" + dateFormat.format(item.creationDate) + ")")
             clearContent()
             // Parse content and add lines to the description
-            for (s in item.description.split("\\r\\n".toRegex()).dropLastWhile { it.isEmpty() }
-                .toTypedArray()) { // TODO - refactor this code with its copy in UpdateSuccessDialogFragment
+            for (s in item.description.split("\\r\\n")) { // TODO - refactor this code with its copy in UpdateSuccessDialogFragment
                 val des = s.trim { it <= ' ' }
                 if (des.startsWith("-")) addListContent(des) else addDescContent(des)
             }
@@ -87,15 +85,15 @@ class GitHubReleaseItem(releaseStruct: GithubRelease) :
             this.title.text = title
         }
 
-        fun clearContent() {
+        private fun clearContent() {
             itemAdapter.clear()
         }
 
-        fun addDescContent(text: String) {
+        private fun addDescContent(text: String) {
             itemAdapter.add(GitHubReleaseDescItem(text, GitHubReleaseDescItem.Type.DESCRIPTION))
         }
 
-        fun addListContent(text: String) {
+        private fun addListContent(text: String) {
             itemAdapter.add(GitHubReleaseDescItem(text, GitHubReleaseDescItem.Type.LIST_ITEM))
         }
 

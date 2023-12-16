@@ -126,10 +126,8 @@ open class CustomWebViewClient : WebViewClient {
         val CHECKMARK = ImageHelper.bitmapToWebp(
             ImageHelper.tintBitmap(
                 ImageHelper.getBitmapFromVectorDrawable(
-                    HentoidApp.getInstance(),
-                    R.drawable.ic_checked
-                ),
-                ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
+                    HentoidApp.getInstance(), R.drawable.ic_checked
+                ), ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
             )
         )
 
@@ -137,10 +135,8 @@ open class CustomWebViewClient : WebViewClient {
         val MERGED_MARK = ImageHelper.bitmapToWebp(
             ImageHelper.tintBitmap(
                 ImageHelper.getBitmapFromVectorDrawable(
-                    HentoidApp.getInstance(),
-                    R.drawable.ic_action_merge
-                ),
-                ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
+                    HentoidApp.getInstance(), R.drawable.ic_action_merge
+                ), ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
             )
         )
 
@@ -148,10 +144,8 @@ open class CustomWebViewClient : WebViewClient {
         val BLOCKED_MARK = ImageHelper.bitmapToWebp(
             ImageHelper.tintBitmap(
                 ImageHelper.getBitmapFromVectorDrawable(
-                    HentoidApp.getInstance(),
-                    R.drawable.ic_forbidden
-                ),
-                ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
+                    HentoidApp.getInstance(), R.drawable.ic_forbidden
+                ), ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
             )
         )
 
@@ -161,9 +155,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     constructor(
-        site: Site,
-        galleryUrl: Array<String>,
-        resConsumer: WebResultConsumer
+        site: Site, galleryUrl: Array<String>, resConsumer: WebResultConsumer
     ) {
         this.site = site
         activity = null
@@ -174,9 +166,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     constructor(
-        site: Site,
-        galleryUrl: Array<String>,
-        activity: CustomWebActivity
+        site: Site, galleryUrl: Array<String>, activity: CustomWebActivity
     ) {
         this.site = site
         this.activity = activity
@@ -327,8 +317,7 @@ open class CustomWebViewClient : WebViewClient {
      * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
      */
     private fun canUseSingleOkHttpRequest(): Boolean {
-        return (Preferences.isBrowserAugmented()
-                && (HttpHelper.getChromeVersion() < 45 || HttpHelper.getChromeVersion() > 71))
+        return (Preferences.isBrowserAugmented() && (HttpHelper.getChromeVersion() < 45 || HttpHelper.getChromeVersion() > 71))
     }
 
 
@@ -340,20 +329,17 @@ open class CustomWebViewClient : WebViewClient {
     @TargetApi(Build.VERSION_CODES.N)
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         return shouldOverrideUrlLoadingInternal(
-            view,
-            request.url.toString(),
-            request.requestHeaders
+            view, request.url.toString(), request.requestHeaders
         )
     }
 
     protected fun shouldOverrideUrlLoadingInternal(
-        view: WebView,
-        url: String,
-        requestHeaders: Map<String, String>?
+        view: WebView, url: String, requestHeaders: Map<String, String>?
     ): Boolean {
-        if (Preferences.isBrowserAugmented()
-            && adBlocker.isBlocked(url, requestHeaders)
-            || !url.startsWith("http")
+        if (Preferences.isBrowserAugmented() && adBlocker.isBlocked(
+                url,
+                requestHeaders
+            ) || !url.startsWith("http")
         ) return true
 
         // Download and open the torrent file
@@ -387,9 +373,7 @@ open class CustomWebViewClient : WebViewClient {
      */
     @Throws(IOException::class)
     private fun downloadFile(
-        context: Context,
-        url: String,
-        requestHeaders: Map<String, String>?
+        context: Context, url: String, requestHeaders: Map<String, String>?
     ): File {
         val requestHeadersList: List<Pair<String, String>> =
             HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
@@ -428,8 +412,7 @@ open class CustomWebViewClient : WebViewClient {
         isPageLoading.set(true)
 
         // Activate startup JS
-        for (s in jsStartupScripts)
-            view.loadUrl(getJsScript(view.context, s, jsReplacements))
+        for (s in jsStartupScripts) view.loadUrl(getJsScript(view.context, s, jsReplacements))
         activity?.onPageStarted(url, isGalleryPage(url), isHtmlLoaded.get(), true)
     }
 
@@ -444,8 +427,7 @@ open class CustomWebViewClient : WebViewClient {
      * Note : this method is called by a non-UI thread
      */
     override fun shouldInterceptRequest(
-        view: WebView,
-        request: WebResourceRequest
+        view: WebView, request: WebResourceRequest
     ): WebResourceResponse? {
         val url = request.url.toString()
 
@@ -468,53 +450,41 @@ open class CustomWebViewClient : WebViewClient {
      * null if vanilla processing should happen instead
      */
     private fun shouldInterceptRequestInternal(
-        url: String,
-        headers: Map<String, String>?
+        url: String, headers: Map<String, String>?
     ): WebResourceResponse? {
-        return if (Preferences.isBrowserAugmented()
-            && adBlocker.isBlocked(url, headers)
-            || !url.startsWith("http")
+        return if (Preferences.isBrowserAugmented() && adBlocker.isBlocked(
+                url,
+                headers
+            ) || !url.startsWith("http")
         ) {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
         } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {
             WebResourceResponse(
-                ImageHelper.MIME_IMAGE_WEBP,
-                "utf-8",
-                ByteArrayInputStream(CHECKMARK)
+                ImageHelper.MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(CHECKMARK)
             )
         } else if (isMarkMerged() && url.contains("hentoid-mergedmark")) {
             WebResourceResponse(
-                ImageHelper.MIME_IMAGE_WEBP,
-                "utf-8",
-                ByteArrayInputStream(MERGED_MARK)
+                ImageHelper.MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(MERGED_MARK)
             )
         } else if (url.contains("hentoid-blockedmark")) {
             WebResourceResponse(
-                ImageHelper.MIME_IMAGE_WEBP,
-                "utf-8",
-                ByteArrayInputStream(BLOCKED_MARK)
+                ImageHelper.MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(BLOCKED_MARK)
             )
         } else {
             if (isGalleryPage(url)) return parseResponse(
-                url,
-                headers,
-                analyzeForDownload = true,
-                quickDownload = false
+                url, headers, analyzeForDownload = true, quickDownload = false
             ) else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url)
 
             // If we're here to remove removable elements or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty() || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags()
-                        || activity != null && activity.customCss.isNotEmpty())
-                && (HttpHelper.getExtensionFromUri(url).isEmpty()
-                        || HttpHelper.getExtensionFromUri(url).equals("html", ignoreCase = true))
+            if ((removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty() || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || activity != null && activity.customCss.isNotEmpty()) && (HttpHelper.getExtensionFromUri(
+                    url
+                ).isEmpty() || HttpHelper.getExtensionFromUri(url)
+                    .equals("html", ignoreCase = true))
             ) {
                 val host = Uri.parse(url).host
                 if (host != null && !isHostNotInRestrictedDomains(host)) return parseResponse(
-                    url,
-                    headers,
-                    analyzeForDownload = false,
-                    quickDownload = false
+                    url, headers, analyzeForDownload = false, quickDownload = false
                 )
             }
             null
@@ -581,9 +551,7 @@ open class CustomWebViewClient : WebViewClient {
     ): WebResourceResponse? {
         Helper.assertNonUiThread()
         if (BuildConfig.DEBUG) Timber.v(
-            "WebView : parseResponse %s %s",
-            if (analyzeForDownload) "DL" else "",
-            urlStr
+            "WebView : parseResponse %s %s", if (analyzeForDownload) "DL" else "", urlStr
         )
 
         // If we're here for remove elements only, and can't use the OKHTTP request, it's no use going further
@@ -638,9 +606,7 @@ open class CustomWebViewClient : WebViewClient {
                     if (targetUrl.isEmpty()) targetUrl =
                         StringHelper.protect(response.header("Location"))
                     if (BuildConfig.DEBUG) Timber.v(
-                        "WebView : redirection from %s to %s",
-                        urlStr,
-                        targetUrl
+                        "WebView : redirection from %s to %s", urlStr, targetUrl
                     )
                     if (targetUrl.isNotEmpty()) browserLoadAsync(
                         HttpHelper.fixUrl(targetUrl, site.url)
@@ -692,20 +658,17 @@ open class CustomWebViewClient : WebViewClient {
                     result = HttpHelper.okHttpResponseToWebkitResponse(response, browserStream)
 
                     // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
-                    if (result.responseHeaders.containsKey("set-cookie")
-                        || result.responseHeaders.containsKey("Set-Cookie")
+                    if (result.responseHeaders.containsKey("set-cookie") || result.responseHeaders.containsKey(
+                            "Set-Cookie"
+                        )
                     ) {
                         var cookiesStr = result.responseHeaders["set-cookie"]
                         if (null == cookiesStr) cookiesStr = result.responseHeaders["Set-Cookie"]
                         if (cookiesStr != null) {
                             // Set-cookie might contain multiple cookies to set separated by a line feed (see HttpHelper.getValuesSeparatorFromHttpHeader)
-                            val cookieParts =
-                                cookiesStr.split("\n".toRegex()).dropLastWhile { it.isEmpty() }
-                                    .toTypedArray()
-                            for (cookie in cookieParts) if (cookie.isNotEmpty()) HttpHelper.setCookies(
-                                urlStr,
-                                cookie
-                            )
+                            val cookieParts = cookiesStr.split("\n")
+                            for (cookie in cookieParts)
+                                if (cookie.isNotEmpty()) HttpHelper.setCookies(urlStr, cookie)
                         }
                     }
                 } else {
@@ -892,8 +855,8 @@ open class CustomWebViewClient : WebViewClient {
                                 value.second // Linked images have priority over plain links
                             if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                                 var imgParent = markedElement.parent()
-                                for (i in 0 until site.bookCardDepth - 1)
-                                    if (imgParent != null) imgParent = imgParent!!.parent()
+                                for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
+                                    imgParent!!.parent()
                                 if (imgParent != null) markedElement = imgParent
                             } else { // Mark plain link
                                 markedElement = value.first
@@ -908,8 +871,8 @@ open class CustomWebViewClient : WebViewClient {
                                 value.second // Linked images have priority over plain links
                             if (markedElement != null) { // // Mark <site.bookCardDepth> levels above the image
                                 var imgParent = markedElement.parent()
-                                for (i in 0 until site.bookCardDepth - 1)
-                                    if (imgParent != null) imgParent = imgParent!!.parent()
+                                for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
+                                    imgParent!!.parent()
                                 if (imgParent != null) markedElement = imgParent
                             } else { // Mark plain link
                                 markedElement = value.first
@@ -947,19 +910,18 @@ open class CustomWebViewClient : WebViewClient {
                                     entry.key.childNode(0).toString()
                                 if (tag == null) break
                                 if (blockedTag.equals(
-                                        tag,
-                                        ignoreCase = true
+                                        tag, ignoreCase = true
                                     ) || StringHelper.isPresentAsWord(blockedTag, tag)
                                 ) {
                                     var imgParent = entry.key
                                     for (i in 0..site.galleryHeight) {
-                                        if (imgParent.parent() != null)
-                                            imgParent = imgParent.parent()!!
+                                        if (imgParent.parent() != null) imgParent =
+                                            imgParent.parent()!!
                                     }
                                     val imgs = imgParent.allElements.select("img")
                                     for (img in imgs) {
-                                        if (img.parent() != null)
-                                            img.parent()!!.addClass("watermarked-blocked")
+                                        if (img.parent() != null) img.parent()!!
+                                            .addClass("watermarked-blocked")
                                     }
                                     break
                                 }
@@ -982,9 +944,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     fun getJsScript(
-        context: Context,
-        assetName: String,
-        replacements: List<Pair<String, String>>?
+        context: Context, assetName: String, replacements: List<Pair<String, String>>?
     ): String {
         val sb = StringBuilder()
         sb.append("javascript:")
@@ -1003,10 +963,7 @@ open class CustomWebViewClient : WebViewClient {
 
         // CALLBACKS
         fun onPageStarted(
-            url: String?,
-            isGalleryPage: Boolean,
-            isHtmlLoaded: Boolean,
-            isBookmarkable: Boolean
+            url: String?, isGalleryPage: Boolean, isHtmlLoaded: Boolean, isBookmarkable: Boolean
         )
 
         fun onPageFinished(isResultsPage: Boolean, isGalleryPage: Boolean)

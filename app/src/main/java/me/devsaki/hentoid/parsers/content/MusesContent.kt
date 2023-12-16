@@ -114,7 +114,7 @@ class MusesContent : BaseContentParser() {
         }
         if (updateImages) {
             content.setQtyPages(nbImages) // Cover is duplicated in the code below; no need to decrease nbImages here
-            var thumbParts: Array<String>
+            var thumbParts: MutableList<String>
             var index = 0
             val images: MutableList<ImageFile> = ArrayList()
             // Cover
@@ -129,7 +129,7 @@ class MusesContent : BaseContentParser() {
             images.add(cover)
             // Images
             for (u in imagesUrls) {
-                thumbParts = u.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                thumbParts = u.split("/").toMutableList()
                 if (thumbParts.size > 3) {
                     thumbParts[2] =
                         "fl" // Large dimensions; there's also a medium variant available (fm)

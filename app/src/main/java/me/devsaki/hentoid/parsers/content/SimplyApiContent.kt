@@ -17,7 +17,7 @@ import java.io.IOException
 class SimplyApiContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         if (url.contains("api.simply-hentai.com") && !url.endsWith("/status")) { // Triggered by an API request
-            val headers: List<Pair<String, String>> = ArrayList()
+            val headers: MutableList<Pair<String, String>> = ArrayList()
             ParseHelper.addSavedCookiesToHeader(content.downloadParams, headers)
             try {
                 val doc = HttpHelper.getOnlineDocument(
