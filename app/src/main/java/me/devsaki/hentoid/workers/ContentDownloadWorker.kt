@@ -632,7 +632,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Manually insert updated chapters
             dao.insertChapters(content.chaptersList)
         } else if (isCase1 || isCase2 || isCase3) {
-            val onlineImages = ContentHelper.fetchImageURLs(content, targetImageStatus)
+            val onlineImages = ContentHelper.fetchImageURLs(content, content.galleryUrl, targetImageStatus)
             // Cases 1 and 2 : Replace existing images with the parsed images
             if (isCase1 || isCase2) result = onlineImages
             // Case 3 : Replace images in ERROR state with the parsed images at the same position

@@ -670,6 +670,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 val newImages =
                                     ContentHelper.fetchImageURLs(
                                         reparsedContent,
+                                        reparsedContent.galleryUrl,
                                         StatusContent.ONLINE
                                     )
                                 reparsedContent.setImageFiles(newImages)

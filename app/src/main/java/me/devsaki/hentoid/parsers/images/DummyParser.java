@@ -21,7 +21,7 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 public class DummyParser implements ImageListParser {
 
     @Override
-    public List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception {
+    public List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) {
         return parseImageList(onlineContent);
     }
 
@@ -31,7 +31,7 @@ public class DummyParser implements ImageListParser {
     }
 
     @Override
-    public List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) throws Exception {
+    public List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) {
         return new ArrayList<>(content.getImageList());
     }
 

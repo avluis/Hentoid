@@ -1302,18 +1302,20 @@ public final class ContentHelper {
      * Query source to fetch all image file names and URLs of a given book
      *
      * @param content           Book whose pages to retrieve
+     * @param url               Url from which to parse pages from (e.g. gallery or chapter)
      * @param targetImageStatus Target status to set on the fetched images
      * @return List of pages with original URLs and file name
      */
     public static List<ImageFile> fetchImageURLs(
             @NonNull Content content,
+            @NonNull String url,
             @NonNull StatusContent targetImageStatus) throws Exception {
         List<ImageFile> imgs;
 
         // If content doesn't have any download parameters, get them from the cookie manager
         String contentDownloadParamsStr = content.getDownloadParams();
         if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
-            String cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
+            String cookieStr = HttpHelper.getCookies(url);
             if (!cookieStr.isEmpty()) {
                 Map<String, String> downloadParams = new HashMap<>();
                 downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
@@ -1322,12 +1324,12 @@ public final class ContentHelper {
         }
 
         // Use ImageListParser to query the source
-        ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(content);
-        imgs = parser.parseImageList(content);
+        ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(content.getSite());
+        imgs = parser.parseImageList(content, url);
 
         // If no images found, or just the cover, image detection has failed
         if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
-            throw new EmptyResultException();
+            throw new EmptyResultException(url);
 
         // Add the content's download params to the images only if they have missing information
         contentDownloadParamsStr = content.getDownloadParams();
@@ -1350,70 +1352,11 @@ public final class ContentHelper {
             }
         }
 
-        // Cleanup generated objects
-        for (ImageFile img : imgs) {
-            img.setId(0);
-            img.setStatus(targetImageStatus);
-            img.setContentId(content.getId());
-        }
-
-        return imgs;
-    }
-
-    // TODO doc
-    public static List<ImageFile> fetchImageURLs(
-            @NonNull Content c,
-            @NonNull String url,
-            @NonNull StatusContent targetImageStatus) throws Exception {
-        List<ImageFile> imgs;
-
-        // If content doesn't have any download parameters, get them from the cookie manager
-        String contentDownloadParamsStr = c.getDownloadParams();
-        if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
-            String cookieStr = HttpHelper.getCookies(url);
-            if (!cookieStr.isEmpty()) {
-                Map<String, String> downloadParams = new HashMap<>();
-                downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
-                String params = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
-                c.setDownloadParams(params);
-            }
-        }
-
-        // Use ImageListParser to query the source
-        ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(c.getSite());
-        imgs = parser.parseImageList(c, url);
-
-        // If no images found, or just the cover, image detection has failed
-        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
-            throw new EmptyResultException(url);
-
-        // Add the content's download params to the images only if they have missing information
-        contentDownloadParamsStr = c.getDownloadParams();
-        if (contentDownloadParamsStr != null && contentDownloadParamsStr.length() > 2) {
-            Map<String, String> contentDownloadParams = ContentHelper.parseDownloadParams(contentDownloadParamsStr);
-            for (ImageFile i : imgs) {
-                if (i.getDownloadParams() != null && i.getDownloadParams().length() > 2) {
-                    Map<String, String> imageDownloadParams = ContentHelper.parseDownloadParams(i.getDownloadParams());
-                    // Content's params
-                    for (Map.Entry<String, String> entry : contentDownloadParams.entrySet())
-                        if (!imageDownloadParams.containsKey(entry.getKey()))
-                            imageDownloadParams.put(entry.getKey(), entry.getValue());
-                    // Referer, just in case
-                    if (!imageDownloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
-                        imageDownloadParams.put(HttpHelper.HEADER_REFERER_KEY, c.getSite().getUrl());
-                    }
-                    i.setDownloadParams(JsonHelper.serializeToJson(imageDownloadParams, JsonHelper.MAP_STRINGS));
-                } else {
-                    i.setDownloadParams(contentDownloadParamsStr);
-                }
-            }
-        }
-
         // Cleanup and enrich generated objects
         for (ImageFile img : imgs) {
             img.setId(0);
             img.setStatus(targetImageStatus);
-            img.setContentId(c.getId());
+            img.setContentId(content.getId());
         }
 
         return imgs;

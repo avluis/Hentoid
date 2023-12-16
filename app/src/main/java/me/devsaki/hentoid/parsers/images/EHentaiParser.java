@@ -153,7 +153,7 @@ public class EHentaiParser implements ImageListParser {
 
     @Override
     public List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) throws Exception {
-        return null;
+        return parseImageList(content);
     }
 
     private static EHentaiImageResponse getMpvImage(
