@@ -169,7 +169,7 @@ class AnchiraActivity : BaseWebActivity() {
                 } catch (e: Exception) {
                     Timber.w(e)
                 } finally {
-                    parser.destroy()
+                    parser.clear()
                 }
             }
             return null

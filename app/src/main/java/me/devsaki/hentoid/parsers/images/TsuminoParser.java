@@ -25,8 +25,7 @@ public class TsuminoParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {
-        List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
+        List<Pair<String, String>> headers = fetchHeaders(content);
 
         // Fetch the reader page
         Document doc = getOnlineDocument(content.getReaderUrl(), headers, Site.TSUMINO.useHentoidAgent(), Site.TSUMINO.useWebviewAgent());

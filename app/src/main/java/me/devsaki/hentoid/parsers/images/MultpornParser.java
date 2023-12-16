@@ -24,8 +24,7 @@ public class MultpornParser extends BaseImageListParser {
         List<String> result = new ArrayList<>();
         processedUrl = content.getGalleryUrl();
 
-        List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
+        List<Pair<String, String>> headers = fetchHeaders(content);
 
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.ALLPORNCOMIC.useHentoidAgent(), Site.ALLPORNCOMIC.useWebviewAgent());
         if (doc != null) {

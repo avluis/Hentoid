@@ -26,8 +26,7 @@ public class SimplyParser extends BaseImageListParser {
         List<String> result = new ArrayList<>();
         processedUrl = content.getGalleryUrl();
 
-        List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
+        List<Pair<String, String>> headers = fetchHeaders(content);
 
         // 1. Scan the gallery page for viewer URL (can't be deduced)
         String viewerUrl = null;

@@ -95,7 +95,7 @@ public class EHentaiParser implements ImageListParser {
         return parseImageList(onlineContent);
     }
 
-    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
+    private List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
         List<ImageFile> result = Collections.emptyList();
@@ -365,6 +365,11 @@ public class EHentaiParser implements ImageListParser {
     @Override
     public String getAltUrl(@NonNull String url) {
         return "";
+    }
+
+    @Override
+    public void clear() {
+        // No need for that here
     }
 
     static ImmutablePair<String, Optional<String>> parseImagePageMpv(@NonNull String json, @NonNull List<Pair<String, String>> requestHeaders, @NonNull final Site site) throws IOException, LimitReachedException, EmptyResultException {

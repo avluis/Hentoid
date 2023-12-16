@@ -23,8 +23,7 @@ public class PururinParser extends BaseImageListParser {
     protected List<String> parseImages(@NonNull Content content) throws Exception {
         List<String> result = new ArrayList<>();
 
-        List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
+        List<Pair<String, String>> headers = fetchHeaders(content);
 
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.PURURIN.useHentoidAgent(), Site.PURURIN.useWebviewAgent());
         if (doc != null) {

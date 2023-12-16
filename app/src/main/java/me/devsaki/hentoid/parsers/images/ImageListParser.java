@@ -18,8 +18,6 @@ import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 
 public interface ImageListParser {
-    List<ImageFile> parseImageList(@NonNull Content content) throws Exception;
-
     List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) throws Exception;
 
     List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception;
@@ -34,4 +32,6 @@ public interface ImageListParser {
             Chapter chapter) throws Exception;
 
     String getAltUrl(@NonNull String url);
+
+    void clear();
 }

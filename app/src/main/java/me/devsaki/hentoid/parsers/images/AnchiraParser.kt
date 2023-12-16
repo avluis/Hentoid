@@ -46,6 +46,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
             result = ArrayList()
         } finally {
             EventBus.getDefault().unregister(this)
+            clear()
         }
         return result
     }
@@ -158,7 +159,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
         }
     }
 
-    fun destroy() {
+    override fun clear() {
         val handler = Handler(Looper.getMainLooper())
         handler.post {
             anchiraWv?.destroy()

@@ -42,19 +42,43 @@ public abstract class BaseImageListParser implements ImageListParser {
 
     protected abstract List<String> parseImages(@NonNull String chapterUrl, String downloadParams, List<Pair<String, String>> headers) throws Exception;
 
+    @Override
     public List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception {
         return parseImageListImpl(onlineContent, storedContent);
     }
 
-    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
-        return parseImageListImpl(content, null);
-    }
-
+    @Override
     public List<ImageFile> parseImageList(@NonNull Content content, @NonNull String url) throws Exception {
         if (isChapterUrl(url)) return parseChapterImageListImpl(url, content);
         else return parseImageListImpl(content, null);
     }
 
+    @Override
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
+        // Default behaviour; this class does not use backup URLs
+        ImageFile img = ImageFile.fromImageUrl(order, url, StatusContent.SAVED, maxPages);
+        if (chapter != null) img.setChapter(chapter);
+        return Optional.of(img);
+    }
+
+    @Override
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+        throw new NotImplementedException("Parser does not implement parseImagePage");
+    }
+
+    @Override
+    public String getAltUrl(@NonNull String url) {
+        return "";
+    }
+
+    @Override
+    public void clear() {
+        // No default implementation
+    }
+
+    /**
+     * Default implementation for sources that don't enrich content over time by publishing extra chapters or pages
+     */
     protected List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         String readerUrl = onlineContent.getReaderUrl();
 
@@ -99,29 +123,11 @@ public abstract class BaseImageListParser implements ImageListParser {
         return result;
     }
 
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
-        // Default behaviour; this class does not use backup URLs
-        ImageFile img = ImageFile.fromImageUrl(order, url, StatusContent.SAVED, maxPages);
-        if (chapter != null) img.setChapter(chapter);
-        return Optional.of(img);
-    }
-
-    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
-        throw new NotImplementedException("Parser does not implement parseImagePage");
-    }
-
-    @Override
-    public String getAltUrl(@NonNull String url) {
-        return "";
-    }
-
     void progressStart(@NonNull Content onlineContent, @Nullable Content storedContent, int maxSteps) {
         if (progress.hasStarted()) return;
         long storedId = (storedContent != null) ? storedContent.getId() : -1;
         progress.start(onlineContent.getId(), storedId, maxSteps);
     }
-
-    // TODO method to free resources after caller decides work's done
 
     void progressPlus() {
         progress.advance();

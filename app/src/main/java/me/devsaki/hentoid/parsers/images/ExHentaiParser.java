@@ -43,7 +43,7 @@ public class ExHentaiParser implements ImageListParser {
         return parseImageList(onlineContent);
     }
 
-    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
+    private List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
         List<ImageFile> result = Collections.emptyList();
@@ -109,6 +109,11 @@ public class ExHentaiParser implements ImageListParser {
     @Override
     public String getAltUrl(@NonNull String url) {
         return "";
+    }
+
+    @Override
+    public void clear() {
+        // No need for that here
     }
 
     @Override

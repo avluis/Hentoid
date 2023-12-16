@@ -1753,7 +1753,7 @@ public final class ContentHelper {
      * @throws LimitReachedException If the site's download limit has been reached
      * @throws EmptyResultException  If no picture has been detected
      */
-    public static boolean testDownloadPictureFromPage(
+    private static boolean testDownloadPictureFromPage(
             @NonNull Site site,
             @NonNull ImageFile img,
             List<Pair<String, String>> requestHeaders) throws
@@ -1783,12 +1783,11 @@ public final class ContentHelper {
      * @return True if the given picture is downloadable; false if not
      * @throws IOException If something happens during the download attempt
      */
-    public static boolean testDownloadPicture(
+    private static boolean testDownloadPicture(
             @NonNull Site site,
             @NonNull ImageFile img,
             List<Pair<String, String>> requestHeaders) throws IOException, CloudflareHelper.CloudflareProtectedException {
-        String url = img.getUrl();
-        if (!url.startsWith("http")) url = HttpHelper.fixUrl(url, site.getUrl());
+        String url = HttpHelper.fixUrl(img.getUrl(), site.getUrl());
 
         Pair<ResponseBody, String> response = fetchBodyFast(url, site, requestHeaders, null);
         ResponseBody body = response.first;

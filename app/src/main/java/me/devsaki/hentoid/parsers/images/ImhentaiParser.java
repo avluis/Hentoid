@@ -25,18 +25,14 @@ public class ImhentaiParser extends BaseImageListParser {
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {
         List<String> result = new ArrayList<>();
-
-        List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
-
-        String url = content.getReaderUrl();
+        List<Pair<String, String>> headers = fetchHeaders(content);
 
         // The whole algorithm is in app.js
         // 1- Get image extension from gallery data (JSON on HTML body)
         // 2- Generate image URL from imagePath constant, gallery ID, page number and extension
 
         // 1- Get image extension from gallery data (JSON on HTML body)
-        Document doc = getOnlineDocument(url, headers, Site.IMHENTAI.useHentoidAgent(), Site.IMHENTAI.useWebviewAgent());
+        Document doc = getOnlineDocument(content.getReaderUrl(), headers, Site.IMHENTAI.useHentoidAgent(), Site.IMHENTAI.useWebviewAgent());
         if (doc != null) {
             List<Element> thumbs = doc.select(".gthumb img");
             List<Element> scripts = doc.select("body script");
