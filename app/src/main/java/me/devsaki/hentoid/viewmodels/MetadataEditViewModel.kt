@@ -293,7 +293,7 @@ class MetadataEditViewModel(
 
         // Save all JSONs
         val builder = UpdateJsonData.Builder()
-        builder.setContentIds(Helper.getPrimitiveArrayFromList(contentList.value?.map { c -> c.id }))
+        builder.setContentIds(contentList.value?.map { c -> c.id }?.toLongArray())
         builder.setUpdateGroups(true)
 
         val workManager = WorkManager.getInstance(getApplication())

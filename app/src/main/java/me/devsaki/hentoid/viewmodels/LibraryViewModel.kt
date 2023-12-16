@@ -808,7 +808,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun getGroupContents(group: Group): List<Content> {
-        return dao.selectContent(Helper.getPrimitiveArrayFromList(group.contentIds))
+        return dao.selectContent(group.contentIds.toLongArray())
     }
 
     fun newGroup(
@@ -864,7 +864,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
                         // Update all JSONs of the books inside the renamed group so that they refer to the correct name
                         val builder = UpdateJsonData.Builder()
-                        builder.setContentIds(Helper.getPrimitiveArrayFromList(group.contentIds))
+                        builder.setContentIds(group.contentIds.toLongArray())
                         builder.setUpdateGroups(true)
                         val workManager =
                             WorkManager.getInstance(getApplication())

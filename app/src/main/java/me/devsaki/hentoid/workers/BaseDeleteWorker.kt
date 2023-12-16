@@ -75,7 +75,7 @@ abstract class BaseDeleteWorker(
             dao.streamStoredContent(
                 false, -1, false
             ) { c -> if (!keptContentIds.contains(c.id)) deletedContentIds.add(c.id) }
-            askedContentIds = Helper.getPrimitiveLongArrayFromSet(deletedContentIds)
+            askedContentIds = deletedContentIds.toLongArray()
         }
         contentIds = askedContentIds
         deleteMax = contentIds.size + contentPurgeIds.size + groupIds.size + queueIds.size
@@ -215,11 +215,7 @@ abstract class BaseDeleteWorker(
         try {
             // Reassign group for contained items
             if (deleteGroupsOnly) {
-                val containedContentList = dao.selectContent(
-                    Helper.getPrimitiveArrayFromList(
-                        theGroup!!.contentIds
-                    )
-                )
+                val containedContentList = dao.selectContent(theGroup!!.contentIds.toLongArray())
                 for (c in containedContentList) {
                     val movedContent = GroupHelper.moveContentToCustomGroup(
                         c, null,
@@ -231,9 +227,7 @@ abstract class BaseDeleteWorker(
             } else if (theGroup!!.grouping == Grouping.DYNAMIC) { // Delete books from dynamic group
                 val bundle = ContentSearchBundle()
                 bundle.groupId = theGroup.id
-                val containedContentList = Helper.getPrimitiveArrayFromList(
-                    dao.searchBookIdsUniversal(bundle)
-                )
+                val containedContentList = dao.searchBookIdsUniversal(bundle).toLongArray()
                 removeContentList(containedContentList)
             }
             if (theGroup != null) {

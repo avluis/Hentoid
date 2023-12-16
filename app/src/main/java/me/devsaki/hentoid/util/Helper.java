@@ -151,6 +151,7 @@ public final class Helper {
      * @param input List of values to transform
      * @return Given values as an array of primitive types
      */
+    @kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin does it natively
     public static long[] getPrimitiveArrayFromList(List<Long> input) {
         long[] ret = new long[input.size()];
         Iterator<Long> iterator = input.iterator();
@@ -160,6 +161,7 @@ public final class Helper {
         return ret;
     }
 
+    @kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin does it natively
     public static int[] getPrimitiveArrayFromListInt(List<Integer> input) {
         int[] ret = new int[input.size()];
         Iterator<Integer> iterator = input.iterator();
@@ -169,6 +171,7 @@ public final class Helper {
         return ret;
     }
 
+    @kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin does it natively
     public static int[] getPrimitiveArrayFromSet(Set<Integer> input) {
         int[] ret = new int[input.size()];
         Iterator<Integer> iterator = input.iterator();
@@ -178,6 +181,7 @@ public final class Helper {
         return ret;
     }
 
+    @kotlin.SinceKotlin(version = "99999.0") // Java only; Kotlin does it natively
     public static long[] getPrimitiveLongArrayFromSet(Set<Long> input) {
         long[] ret = new long[input.size()];
         Iterator<Long> iterator = input.iterator();

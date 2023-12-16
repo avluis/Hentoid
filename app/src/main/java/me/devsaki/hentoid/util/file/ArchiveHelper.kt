@@ -306,8 +306,7 @@ object ArchiveHelper {
                             onExtract,
                             onComplete
                         )
-                    val indexes =
-                        Helper.getPrimitiveArrayFromSet(fileNames.keys)
+                    val indexes = fileNames.keys.toIntArray()
                     inArchive.extract(indexes, false, callback)
                 }
             }

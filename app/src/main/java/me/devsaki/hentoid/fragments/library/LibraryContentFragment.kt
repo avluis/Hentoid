@@ -603,7 +603,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 if (selectedIds.isNotEmpty()) {
                     val editMetaIntent = Intent(this.context, MetadataEditActivity::class.java)
                     val builder = MetaEditActivityBundle()
-                    builder.contentIds = Helper.getPrimitiveArrayFromList(selectedIds)
+                    builder.contentIds = selectedIds.toLongArray()
                     editMetaIntent.putExtras(builder.bundle)
                     requireContext().startActivity(editMetaIntent)
                 }
@@ -728,7 +728,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val bookIds = selectedItems.mapNotNull { ci -> ci.content }.map { c -> c.id }
             ChangeGroupDialogFragment.invoke(
                 this@LibraryContentFragment,
-                Helper.getPrimitiveArrayFromList(bookIds)
+                bookIds.toLongArray()
             )
         }
     }
