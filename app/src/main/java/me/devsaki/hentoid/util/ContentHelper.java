@@ -202,8 +202,8 @@ public final class ContentHelper {
 
         if (!WebkitPackageHelper.getWebViewAvailable()) {
             if (WebkitPackageHelper.getWebViewUpdating())
-                ToastHelper.toast(R.string.error_updating_webview);
-            else ToastHelper.toast(R.string.error_missing_webview);
+                ToastHelper.INSTANCE.toast(R.string.error_updating_webview);
+            else ToastHelper.INSTANCE.toast(R.string.error_missing_webview);
             return;
         }
 
@@ -1134,8 +1134,8 @@ public final class ContentHelper {
                                         @NonNull final String targetUrl) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
             if (WebkitPackageHelper.getWebViewUpdating())
-                ToastHelper.toast(R.string.error_updating_webview);
-            else ToastHelper.toast(R.string.error_missing_webview);
+                ToastHelper.INSTANCE.toast(R.string.error_updating_webview);
+            else ToastHelper.INSTANCE.toast(R.string.error_missing_webview);
             return;
         }
         Site targetSite = Site.searchByUrl(targetUrl);

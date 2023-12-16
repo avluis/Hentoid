@@ -567,7 +567,7 @@ public class FileHelper {
                     try {
                         openFileWithIntent(context, uri, "resource/folder");
                     } catch (ActivityNotFoundException e2) {
-                        ToastHelper.toast(R.string.select_file_manager);
+                        ToastHelper.INSTANCE.toast(R.string.select_file_manager);
                         openFileWithIntent(context, uri, "*/*");
                         // TODO if it also crashes after this call, tell the user to get DocumentsUI.apk ? (see #670)
                     }
@@ -576,7 +576,7 @@ public class FileHelper {
                 openFileWithIntent(context, uri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(fileName)));
         } catch (ActivityNotFoundException e) {
             Timber.e(e, "No activity found to open %s", uri.toString());
-            ToastHelper.toastLong(context, R.string.error_open, Toast.LENGTH_LONG);
+            ToastHelper.INSTANCE.toastLong(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
 
