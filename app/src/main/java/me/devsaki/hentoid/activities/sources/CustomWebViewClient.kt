@@ -82,7 +82,7 @@ open class CustomWebViewClient : WebViewClient {
     private var resultsUrlRewriter: ((Uri, Int) -> String)? = null
 
     // Adapter used to parse the HTML code of book gallery pages
-    private var htmlAdapter: HtmlAdapter<out ContentParser?>? = null
+    private val htmlAdapter: HtmlAdapter<out ContentParser>
 
     // Domain name for which link navigation is restricted
     private val restrictedDomainNames: MutableList<String> = ArrayList()
@@ -603,14 +603,12 @@ open class CustomWebViewClient : WebViewClient {
                 // NB2 : parsing alone won't cut it because the adblocker needs the new content on the new URL
                 if (response.code >= 300) {
                     var targetUrl = StringHelper.protect(response.header("location"))
-                    if (targetUrl.isEmpty()) targetUrl =
-                        StringHelper.protect(response.header("Location"))
-                    if (BuildConfig.DEBUG) Timber.v(
-                        "WebView : redirection from %s to %s", urlStr, targetUrl
-                    )
-                    if (targetUrl.isNotEmpty()) browserLoadAsync(
-                        HttpHelper.fixUrl(targetUrl, site.url)
-                    )
+                    if (targetUrl.isEmpty())
+                        targetUrl = StringHelper.protect(response.header("Location"))
+                    if (BuildConfig.DEBUG)
+                        Timber.v("WebView : redirection from %s to %s", urlStr, targetUrl)
+                    if (targetUrl.isNotEmpty())
+                        browserLoadAsync(HttpHelper.fixUrl(targetUrl, site.url))
                     return null
                 }
 
@@ -625,7 +623,7 @@ open class CustomWebViewClient : WebViewClient {
                 val parserStream: InputStream?
                 val result: WebResourceResponse?
                 if (canUseSingleOkHttpRequest()) {
-                    val browserStream: InputStream
+                    var browserStream: InputStream
                     if (analyzeForDownload) {
                         // Response body bytestream needs to be duplicated
                         // because Jsoup closes it, which makes it unavailable for the WebView to use
@@ -641,7 +639,7 @@ open class CustomWebViewClient : WebViewClient {
                     activity?.let {
                         val customCss = it.customCss
                         if (removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty() || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || customCss.isNotEmpty()) {
-                            ProcessHtml(
+                            browserStream = processHtml(
                                 browserStream,
                                 urlStr,
                                 customCss,
@@ -650,7 +648,7 @@ open class CustomWebViewClient : WebViewClient {
                                 it.allSiteUrls,
                                 it.allMergedBooksUrls,
                                 it.prefBlockedTags
-                            ) ?: return null
+                            )
                         }
                     }
 
@@ -658,9 +656,8 @@ open class CustomWebViewClient : WebViewClient {
                     result = HttpHelper.okHttpResponseToWebkitResponse(response, browserStream)
 
                     // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
-                    if (result.responseHeaders.containsKey("set-cookie") || result.responseHeaders.containsKey(
-                            "Set-Cookie"
-                        )
+                    if (result.responseHeaders.containsKey("set-cookie")
+                        || result.responseHeaders.containsKey("Set-Cookie")
                     ) {
                         var cookiesStr = result.responseHeaders["set-cookie"]
                         if (null == cookiesStr) cookiesStr = result.responseHeaders["Set-Cookie"]
@@ -677,7 +674,7 @@ open class CustomWebViewClient : WebViewClient {
                 }
                 if (analyzeForDownload) {
                     try {
-                        var content = htmlAdapter!!.fromInputStream(parserStream!!, URL(urlStr))!!
+                        var content = htmlAdapter.fromInputStream(parserStream!!, URL(urlStr))
                             .toContent(urlStr)
                         content = processContent(content, urlStr, quickDownload)
                         resConsumer.onContentReady(content, quickDownload)
@@ -775,7 +772,8 @@ open class CustomWebViewClient : WebViewClient {
      * @param blockedTags        Tags of the preference-browser-blocked tag option to visually mark as blocked
      * @return Stream containing the HTML document stripped from the elements to remove
      */
-    private fun ProcessHtml(
+    @Throws(IOException::class)
+    private fun processHtml(
         stream: InputStream,
         baseUri: String,
         customCss: String?,
@@ -784,158 +782,154 @@ open class CustomWebViewClient : WebViewClient {
         siteUrls: List<String>?,
         mergedSiteUrls: List<String>?,
         blockedTags: List<String>?
-    ): InputStream? {
-        return try {
-            val doc = Jsoup.parse(stream, null, baseUri)
+    ): InputStream {
+        val doc = Jsoup.parse(stream, null, baseUri)
 
-            // Add custom inline CSS to the main page only
-            if (customCss != null && baseUri == mainPageUrl) doc.head().appendElement("style")
-                .attr("type", "text/css").appendText(customCss)
+        // Add custom inline CSS to the main page only
+        if (customCss != null && baseUri == mainPageUrl) doc.head().appendElement("style")
+            .attr("type", "text/css").appendText(customCss)
 
-            // Remove ad spaces
-            if (removableElements != null) for (s in removableElements) for (e in doc.select(s)) {
-                Timber.d("[%s] Removing node %s", baseUri, e.toString())
-                e.remove()
-            }
-
-            // Remove scripts
-            if (jsContentBlacklist != null) {
-                for (e in doc.select("script")) {
-                    val scriptContent = e.toString().lowercase(Locale.getDefault())
-                    for (s in jsContentBlacklist) {
-                        if (scriptContent.contains(s.lowercase(Locale.getDefault()))) {
-                            Timber.d("[%s] Removing script %s", baseUri, e.toString())
-                            e.remove()
-                            break
-                        }
-                    }
-                }
-            }
-
-            // Mark downloaded books and merged books
-            if (siteUrls != null && mergedSiteUrls != null && (siteUrls.isNotEmpty() || mergedSiteUrls.isNotEmpty())) {
-                // Format elements
-                val plainLinks = doc.select("a")
-                val linkedImages = doc.select("a img")
-
-                // Key = simplified HREF
-                // Value.left = plain link ("a")
-                // Value.right = corresponding linked images ("a img"), if any
-                val elements: MutableMap<String, Pair<Element, Element?>> = HashMap()
-                for (link in plainLinks) {
-                    if (site.bookCardExcludedParentClasses.isNotEmpty()) {
-                        val isForbidden = link.parents().any { e: Element ->
-                            containsForbiddenClass(site, e.classNames())
-                        }
-                        if (isForbidden) continue
-                    }
-                    val aHref = HttpHelper.simplifyUrl(link.attr("href"))
-                    if (aHref.isNotEmpty() && !elements.containsKey(aHref)) // We only process the first match - usually the cover
-                        elements[aHref] = Pair(link, null)
-                }
-                for (linkedImage in linkedImages) {
-                    var parent = linkedImage.parent()
-                    while (parent != null && !parent.`is`("a")) parent = parent.parent()
-                    if (null == parent) break
-                    if (site.bookCardExcludedParentClasses.isNotEmpty()) {
-                        val isForbidden = parent.parents().any { e: Element ->
-                            containsForbiddenClass(site, e.classNames())
-                        }
-                        if (isForbidden) continue
-                    }
-                    val aHref = HttpHelper.simplifyUrl(parent.attr("href"))
-                    val elt = elements[aHref]
-                    if (elt != null && null == elt.second) // We only process the first match - usually the cover
-                        elements[aHref] = Pair(elt.first, linkedImage)
-                }
-                elements.forEach { (key, value) ->
-                    for (url in siteUrls) {
-                        if (key.endsWith(url)) {
-                            var markedElement =
-                                value.second // Linked images have priority over plain links
-                            if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
-                                var imgParent = markedElement.parent()
-                                for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
-                                    imgParent!!.parent()
-                                if (imgParent != null) markedElement = imgParent
-                            } else { // Mark plain link
-                                markedElement = value.first
-                            }
-                            markedElement!!.addClass("watermarked")
-                            break
-                        }
-                    }
-                    for (url in mergedSiteUrls) {
-                        if (key.endsWith(url)) {
-                            var markedElement =
-                                value.second // Linked images have priority over plain links
-                            if (markedElement != null) { // // Mark <site.bookCardDepth> levels above the image
-                                var imgParent = markedElement.parent()
-                                for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
-                                    imgParent!!.parent()
-                                if (imgParent != null) markedElement = imgParent
-                            } else { // Mark plain link
-                                markedElement = value.first
-                            }
-                            markedElement!!.addClass("watermarked-merged")
-                            break
-                        }
-                    }
-                }
-            }
-
-            // Mark books with blocked tags
-            if (!blockedTags.isNullOrEmpty()) {
-                val plainLinks = doc.select("a")
-
-                // Key= plain link ("a")
-                // Value = simplified HREF
-                val elements: MutableMap<Element, String> = HashMap()
-                for (link in plainLinks) {
-                    if (site.bookCardExcludedParentClasses.isNotEmpty()) {
-                        val isForbidden = link.parents().any { e: Element ->
-                            containsForbiddenClass(site, e.classNames())
-                        }
-                        if (isForbidden) continue
-                    }
-                    val aHref = HttpHelper.simplifyUrl(link.attr("href"))
-                    elements[link] = aHref
-                }
-                for (entry in elements.entries) {
-                    if (site.galleryHeight != -1) {
-                        for (blockedTag in blockedTags) {
-                            if (entry.value.contains("/tag/") || entry.value.contains("/category/")) {
-                                var tag: String? = null
-                                if (entry.key.childNodeSize() != 0) tag =
-                                    entry.key.childNode(0).toString()
-                                if (tag == null) break
-                                if (blockedTag.equals(
-                                        tag, ignoreCase = true
-                                    ) || StringHelper.isPresentAsWord(blockedTag, tag)
-                                ) {
-                                    var imgParent = entry.key
-                                    for (i in 0..site.galleryHeight) {
-                                        if (imgParent.parent() != null) imgParent =
-                                            imgParent.parent()!!
-                                    }
-                                    val imgs = imgParent.allElements.select("img")
-                                    for (img in imgs) {
-                                        if (img.parent() != null) img.parent()!!
-                                            .addClass("watermarked-blocked")
-                                    }
-                                    break
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            customHtmlRewriter?.invoke(doc)
-            ByteArrayInputStream(doc.toString().toByteArray(StandardCharsets.UTF_8))
-        } catch (e: IOException) {
-            Timber.e(e)
-            null
+        // Remove ad spaces
+        if (removableElements != null) for (s in removableElements) for (e in doc.select(s)) {
+            Timber.d("[%s] Removing node %s", baseUri, e.toString())
+            e.remove()
         }
+
+        // Remove scripts
+        if (jsContentBlacklist != null) {
+            for (e in doc.select("script")) {
+                val scriptContent = e.toString().lowercase(Locale.getDefault())
+                for (s in jsContentBlacklist) {
+                    if (scriptContent.contains(s.lowercase(Locale.getDefault()))) {
+                        Timber.d("[%s] Removing script %s", baseUri, e.toString())
+                        e.remove()
+                        break
+                    }
+                }
+            }
+        }
+
+        // Mark downloaded books and merged books
+        if (siteUrls != null && mergedSiteUrls != null && (siteUrls.isNotEmpty() || mergedSiteUrls.isNotEmpty())) {
+            // Format elements
+            val plainLinks = doc.select("a")
+            val linkedImages = doc.select("a img")
+
+            // Key = simplified HREF
+            // Value.left = plain link ("a")
+            // Value.right = corresponding linked images ("a img"), if any
+            val elements: MutableMap<String, Pair<Element, Element?>> = HashMap()
+            for (link in plainLinks) {
+                if (site.bookCardExcludedParentClasses.isNotEmpty()) {
+                    val isForbidden = link.parents().any { e: Element ->
+                        containsForbiddenClass(site, e.classNames())
+                    }
+                    if (isForbidden) continue
+                }
+                val aHref = HttpHelper.simplifyUrl(link.attr("href"))
+                if (aHref.isNotEmpty() && !elements.containsKey(aHref)) // We only process the first match - usually the cover
+                    elements[aHref] = Pair(link, null)
+            }
+            for (linkedImage in linkedImages) {
+                var parent = linkedImage.parent()
+                while (parent != null && !parent.`is`("a")) parent = parent.parent()
+                if (null == parent) break
+                if (site.bookCardExcludedParentClasses.isNotEmpty()) {
+                    val isForbidden = parent.parents().any { e: Element ->
+                        containsForbiddenClass(site, e.classNames())
+                    }
+                    if (isForbidden) continue
+                }
+                val aHref = HttpHelper.simplifyUrl(parent.attr("href"))
+                val elt = elements[aHref]
+                if (elt != null && null == elt.second) // We only process the first match - usually the cover
+                    elements[aHref] = Pair(elt.first, linkedImage)
+            }
+            elements.forEach { (key, value) ->
+                for (url in siteUrls) {
+                    if (key.endsWith(url)) {
+                        var markedElement =
+                            value.second // Linked images have priority over plain links
+                        if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
+                            var imgParent = markedElement.parent()
+                            for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
+                                imgParent!!.parent()
+                            if (imgParent != null) markedElement = imgParent
+                        } else { // Mark plain link
+                            markedElement = value.first
+                        }
+                        markedElement!!.addClass("watermarked")
+                        break
+                    }
+                }
+                for (url in mergedSiteUrls) {
+                    if (key.endsWith(url)) {
+                        var markedElement =
+                            value.second // Linked images have priority over plain links
+                        if (markedElement != null) { // // Mark <site.bookCardDepth> levels above the image
+                            var imgParent = markedElement.parent()
+                            for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
+                                imgParent!!.parent()
+                            if (imgParent != null) markedElement = imgParent
+                        } else { // Mark plain link
+                            markedElement = value.first
+                        }
+                        markedElement!!.addClass("watermarked-merged")
+                        break
+                    }
+                }
+            }
+        }
+
+        // Mark books with blocked tags
+        if (!blockedTags.isNullOrEmpty()) {
+            val plainLinks = doc.select("a")
+
+            // Key= plain link ("a")
+            // Value = simplified HREF
+            val elements: MutableMap<Element, String> = HashMap()
+            for (link in plainLinks) {
+                if (site.bookCardExcludedParentClasses.isNotEmpty()) {
+                    val isForbidden = link.parents().any { e: Element ->
+                        containsForbiddenClass(site, e.classNames())
+                    }
+                    if (isForbidden) continue
+                }
+                val aHref = HttpHelper.simplifyUrl(link.attr("href"))
+                elements[link] = aHref
+            }
+            for (entry in elements.entries) {
+                if (site.galleryHeight != -1) {
+                    for (blockedTag in blockedTags) {
+                        if (entry.value.contains("/tag/") || entry.value.contains("/category/")) {
+                            var tag: String? = null
+                            if (entry.key.childNodeSize() != 0) tag =
+                                entry.key.childNode(0).toString()
+                            if (tag == null) break
+                            if (blockedTag.equals(
+                                    tag, ignoreCase = true
+                                ) || StringHelper.isPresentAsWord(blockedTag, tag)
+                            ) {
+                                var imgParent = entry.key
+                                for (i in 0..site.galleryHeight) {
+                                    if (imgParent.parent() != null) imgParent =
+                                        imgParent.parent()!!
+                                }
+                                val imgs = imgParent.allElements.select("img")
+                                for (img in imgs) {
+                                    if (img.parent() != null) img.parent()!!
+                                        .addClass("watermarked-blocked")
+                                }
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        customHtmlRewriter?.invoke(doc)
+        return ByteArrayInputStream(doc.toString().toByteArray(StandardCharsets.UTF_8))
+
     }
 
     private fun containsForbiddenClass(s: Site, classNames: Set<String>): Boolean {
