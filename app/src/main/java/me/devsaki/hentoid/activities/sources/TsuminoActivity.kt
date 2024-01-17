@@ -28,7 +28,7 @@ class TsuminoActivity : BaseWebActivity() {
     }
 
     override fun onActionClick() {
-        if (ActionMode.DOWNLOAD === actionButtonMode) {
+        if (ActionMode.DOWNLOAD == actionButtonMode) {
             downloadFabPressed = true
             historyIndex = webView.copyBackForwardList().currentIndex
 
@@ -40,7 +40,7 @@ class TsuminoActivity : BaseWebActivity() {
         }
     }
 
-    private inner class TsuminoWebViewClient constructor(
+    private inner class TsuminoWebViewClient(
         site: Site,
         filter: Array<String>,
         activity: CustomWebActivity

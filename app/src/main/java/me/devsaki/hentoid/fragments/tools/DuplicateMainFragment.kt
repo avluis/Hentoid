@@ -192,7 +192,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         if (ProcessEvent.Type.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
             topPanel.dismiss()
-            ToastHelper.toast(requireContext(), R.string.duplicate_notif_complete_title)
+            ToastHelper.toastShort(requireContext(), R.string.duplicate_notif_complete_title)
         } else if (topPanel.isVisible() && DuplicateDetectorWorker.isRunning(
                 requireContext()
             )

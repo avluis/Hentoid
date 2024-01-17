@@ -315,8 +315,8 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
         if (1 == selectedItems.size && context != null) {
             val b = selectedItems.first().getObject()
             if (b != null && Helper.copyPlainTextToClipboard(context, b.url)) {
-                ToastHelper.toast(context, R.string.web_url_clipboard)
-                selectionToolbar!!.visibility = View.INVISIBLE
+                ToastHelper.toastShort(context, R.string.web_url_clipboard)
+                selectionToolbar?.visibility = View.INVISIBLE
             }
         }
     }
@@ -349,7 +349,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
                     dao.insertBookmark(b)
                     reloadBookmarks(dao)
                     fastAdapter.notifyAdapterDataSetChanged()
-                    selectionToolbar!!.visibility = View.INVISIBLE
+                    selectionToolbar?.visibility = View.INVISIBLE
                 } finally {
                     dao.cleanup()
                 }
@@ -378,7 +378,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
                     }
                     reloadBookmarks(dao)
                     fastAdapter.notifyAdapterDataSetChanged()
-                    selectionToolbar!!.visibility = View.INVISIBLE
+                    selectionToolbar?.visibility = View.INVISIBLE
                 } finally {
                     dao.cleanup()
                 }
@@ -410,7 +410,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
                     fastAdapter.notifyAdapterDataSetChanged()
                     selectExtension.selectOnLongClick = true
                     selectExtension.deselect(selectExtension.selections.toMutableSet())
-                    selectionToolbar!!.visibility = View.INVISIBLE
+                    selectionToolbar?.visibility = View.INVISIBLE
                 } finally {
                     dao.cleanup()
                 }

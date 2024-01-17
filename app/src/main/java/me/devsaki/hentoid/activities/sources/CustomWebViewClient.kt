@@ -353,7 +353,7 @@ open class CustomWebViewClient : WebViewClient {
                     }
                     FileHelper.openFile(view.context, uri)
                 } catch (t: Throwable) {
-                    ToastHelper.toast(R.string.torrent_dl_fail, t.message)
+                    ToastHelper.toast(R.string.torrent_dl_fail, StringHelper.protect(t.message))
                     Timber.w(t)
                 }
             }

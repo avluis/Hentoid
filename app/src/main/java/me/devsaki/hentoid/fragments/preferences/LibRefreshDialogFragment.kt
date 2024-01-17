@@ -192,7 +192,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             options.importGroups = false
             val uriStr = Preferences.getStorageUri(location)
             if (uriStr.isEmpty()) {
-                ToastHelper.toast(requireContext(), R.string.import_invalid_uri)
+                ToastHelper.toastShort(requireContext(), R.string.import_invalid_uri)
                 dismissAllowingStateLoss()
                 return
             }

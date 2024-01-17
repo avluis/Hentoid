@@ -55,10 +55,7 @@ class TsuminoParser : BaseImageListParser() {
     private fun buildImageUrls(imgTemplate: String, nbPages: Int): List<String> {
         val imgUrls: MutableList<String> = ArrayList()
         for (i in 0 until nbPages) imgUrls.add(
-            imgTemplate.replace(
-                "[PAGE]",
-                (i + 1).toString() + ""
-            )
+            imgTemplate.replace("[PAGE]", (i + 1).toString())
         )
         return imgUrls
     }
