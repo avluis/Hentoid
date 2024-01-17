@@ -141,7 +141,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     implementation 'androidx.core:core-ktx:1.12.0'
 
-    def android_work_version = '2.8.1'
+    def android_work_version = '2.9.0'
     implementation "androidx.work:work-runtime:$android_work_version"
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
