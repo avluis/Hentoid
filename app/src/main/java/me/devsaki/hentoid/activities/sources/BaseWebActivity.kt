@@ -2,7 +2,6 @@ package me.devsaki.hentoid.activities.sources
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.content.res.ColorStateList
 import android.content.res.Resources.NotFoundException
@@ -29,6 +28,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.skydoves.balloon.ArrowOrientation
@@ -105,6 +105,7 @@ import java.util.Locale
  */
 abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebActivity,
     BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {
+
     protected enum class ActionMode {
         // Download book
         DOWNLOAD,  // Download new pages
@@ -1583,6 +1584,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         get() = m_prefBlockedTags.toMutableList()
     override val customCss: String
         get() = computeCustomCss()
+    override val scope: LifecycleCoroutineScope
+        get() = lifecycleScope
 
     private fun computeCustomCss(): String {
         if (null == m_customCss) {

@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,6 +69,8 @@ open class CustomWebViewClient : WebViewClient {
 
     // Listener to the results of the page parser
     protected val activity: CustomWebActivity?
+
+    private val scope: CoroutineScope
 
     // Listener to the results of the page parser
     protected val resConsumer: WebResultConsumer
@@ -155,10 +158,13 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     constructor(
-        site: Site, galleryUrl: Array<String>, resConsumer: WebResultConsumer
+        site: Site,
+        galleryUrl: Array<String>,
+        resConsumer: WebResultConsumer
     ) {
         this.site = site
         activity = null
+        scope = CoroutineScope(Dispatchers.Default)
         this.resConsumer = resConsumer
         for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
         htmlAdapter = initJspoon(site)
@@ -166,10 +172,13 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     constructor(
-        site: Site, galleryUrl: Array<String>, activity: CustomWebActivity
+        site: Site,
+        galleryUrl: Array<String>,
+        activity: CustomWebActivity
     ) {
         this.site = site
         this.activity = activity
+        scope = activity.scope
         resConsumer = activity
         for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
         htmlAdapter = initJspoon(site)
@@ -682,8 +691,13 @@ open class CustomWebViewClient : WebViewClient {
                     try {
                         var content = htmlAdapter.fromInputStream(parserStream!!, URL(url))
                             .toContent(url)
-                        content = processContent(content, url, quickDownload)
-                        resConsumer.onContentReady(content, quickDownload)
+                        // ProcessContent needs to be called on a new thread as it may wait for browser loading to complete
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                content = processContent(content, url, quickDownload)
+                            }
+                            resConsumer.onContentReady(content, quickDownload)
+                        }
                     } catch (t: Throwable) {
                         Timber.e(t, "Error parsing content.")
                         parserStream?.close()
@@ -975,5 +989,6 @@ open class CustomWebViewClient : WebViewClient {
         val allMergedBooksUrls: List<String>
         val prefBlockedTags: List<String>
         val customCss: String
+        val scope : CoroutineScope
     }
 }

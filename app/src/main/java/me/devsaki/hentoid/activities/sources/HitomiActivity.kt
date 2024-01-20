@@ -188,11 +188,11 @@ class HitomiActivity : BaseWebActivity() {
         ): Content {
             // Wait until the page's resources are all loaded
             if (!quickDownload) {
-                Timber.v(">> not loading")
+                Timber.v(">> Hitomi : not loading ! %s", url)
                 while (!isLoading()) Helper.pause(20)
-                Timber.v(">> loading")
+                Timber.v(">> Hitomi : loading %s", url)
                 while (isLoading()) Helper.pause(100)
-                Timber.v(">> done")
+                Timber.v(">> Hitomi : done")
             }
             val parser = HitomiParser()
             try {
