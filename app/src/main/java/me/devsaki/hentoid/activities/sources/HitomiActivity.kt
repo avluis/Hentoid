@@ -156,7 +156,7 @@ class HitomiActivity : BaseWebActivity() {
         )
     }
 
-    private open inner class HitomiWebClient constructor(
+    private open inner class HitomiWebClient(
         site: Site,
         filter: Array<String>,
         activity: CustomWebActivity
@@ -196,10 +196,8 @@ class HitomiActivity : BaseWebActivity() {
             }
             val parser = HitomiParser()
             try {
-                parser.parseImageListWithWebview(
-                    content,
-                    webView
-                ) // Only fetch them when queue is processed
+                // Only fetch them when queue is processed
+                parser.parseImageListWithWebview(content, webView)
                 content.status = StatusContent.SAVED
             } catch (e: Exception) {
                 Helper.logException(e)

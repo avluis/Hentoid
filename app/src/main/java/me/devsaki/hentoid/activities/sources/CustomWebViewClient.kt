@@ -285,7 +285,7 @@ open class CustomWebViewClient : WebViewClient {
      * @param url URL to test
      * @return True if the given URL represents a results page
      */
-    fun isResultsPage(url: String): Boolean {
+    private fun isResultsPage(url: String): Boolean {
         if (resultsUrlPattern.isEmpty()) return false
         for (p in resultsUrlPattern) {
             val matcher = p.matcher(url)
@@ -333,7 +333,7 @@ open class CustomWebViewClient : WebViewClient {
         )
     }
 
-    protected fun shouldOverrideUrlLoadingInternal(
+    private fun shouldOverrideUrlLoadingInternal(
         view: WebView, url: String, requestHeaders: Map<String, String>?
     ): Boolean {
         if (Preferences.isBrowserAugmented() && adBlocker.isBlocked(
@@ -402,7 +402,6 @@ open class CustomWebViewClient : WebViewClient {
     /**
      * Important note
      *
-     *
      * Based on observation, for a given URL, onPageStarted seems to be called
      * - Before [shouldInterceptRequest] when the page is not cached (1st call)
      * - After [shouldInterceptRequest] when the page is cached (Nth call; N>1)
@@ -452,10 +451,8 @@ open class CustomWebViewClient : WebViewClient {
     private fun shouldInterceptRequestInternal(
         url: String, headers: Map<String, String>?
     ): WebResourceResponse? {
-        return if (Preferences.isBrowserAugmented() && adBlocker.isBlocked(
-                url,
-                headers
-            ) || !url.startsWith("http")
+        return if (Preferences.isBrowserAugmented() && adBlocker.isBlocked(url, headers)
+            || !url.startsWith("http")
         ) {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
         } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {
@@ -472,20 +469,29 @@ open class CustomWebViewClient : WebViewClient {
             )
         } else {
             if (isGalleryPage(url)) return parseResponse(
-                url, headers, analyzeForDownload = true, quickDownload = false
-            ) else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url)
+                url,
+                headers,
+                analyzeForDownload = true,
+                quickDownload = false
+            )
+            else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url)
 
             // If we're here to remove removable elements or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty() || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || activity != null && activity.customCss.isNotEmpty()) && (HttpHelper.getExtensionFromUri(
-                    url
-                ).isEmpty() || HttpHelper.getExtensionFromUri(url)
-                    .equals("html", ignoreCase = true))
+            if ((removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty()
+                        || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags()
+                        || activity != null && activity.customCss.isNotEmpty())
+                && (HttpHelper.getExtensionFromUri(url).isEmpty()
+                        || HttpHelper.getExtensionFromUri(url).equals("html", ignoreCase = true))
             ) {
                 val host = Uri.parse(url).host
-                if (host != null && !isHostNotInRestrictedDomains(host)) return parseResponse(
-                    url, headers, analyzeForDownload = false, quickDownload = false
-                )
+                if (host != null && !isHostNotInRestrictedDomains(host))
+                    return parseResponse(
+                        url,
+                        headers,
+                        analyzeForDownload = false,
+                        quickDownload = false
+                    )
             }
             null
         }
@@ -524,7 +530,7 @@ open class CustomWebViewClient : WebViewClient {
      *
      * @param url URL to load
      */
-    fun browserLoadAsync(url: String) {
+    private fun browserLoadAsync(url: String) {
         val handler = Handler(Looper.getMainLooper())
         handler.post {
             activity?.loadUrl(url)
@@ -534,7 +540,7 @@ open class CustomWebViewClient : WebViewClient {
     /**
      * Process the webpage at the given URL
      *
-     * @param urlStr             URL of the page to process
+     * @param url             URL of the page to process
      * @param requestHeaders     Request headers to use
      * @param analyzeForDownload True if the page has to be analyzed for potential downloads;
      * false if only ad removal should happen
@@ -544,26 +550,26 @@ open class CustomWebViewClient : WebViewClient {
      */
     @SuppressLint("NewApi")
     open fun parseResponse(
-        urlStr: String,
+        url: String,
         requestHeaders: Map<String, String>?,
         analyzeForDownload: Boolean,
         quickDownload: Boolean
     ): WebResourceResponse? {
         Helper.assertNonUiThread()
         if (BuildConfig.DEBUG) Timber.v(
-            "WebView : parseResponse %s %s", if (analyzeForDownload) "DL" else "", urlStr
+            "WebView : parseResponse %s %s", if (analyzeForDownload) "DL" else "", url
         )
 
         // If we're here for remove elements only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null
         if (analyzeForDownload && activity != null) activity.onGalleryPageStarted()
         val requestHeadersList =
-            HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, urlStr)
+            HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
         var response: Response? = null
         try {
             // Query resource here, using OkHttp
             response = HttpHelper.getOnlineResourceFast(
-                urlStr,
+                url,
                 requestHeadersList,
                 site.useMobileAgent(),
                 site.useHentoidAgent(),
@@ -571,13 +577,13 @@ open class CustomWebViewClient : WebViewClient {
                 false
             )
         } catch (e: MalformedURLException) {
-            Timber.e(e, "Malformed URL : %s", urlStr)
+            Timber.e(e, "Malformed URL : %s", url)
         } catch (e: SocketTimeoutException) {
             // If fast method occurred timeout, reconnect with non-fast method
-            Timber.d("Timeout; Reconnect with non-fast method : %s", urlStr)
+            Timber.d("Timeout; Reconnect with non-fast method : %s", url)
             try {
                 response = HttpHelper.getOnlineResource(
-                    urlStr,
+                    url,
                     requestHeadersList,
                     site.useMobileAgent(),
                     site.useHentoidAgent(),
@@ -606,7 +612,7 @@ open class CustomWebViewClient : WebViewClient {
                     if (targetUrl.isEmpty())
                         targetUrl = StringHelper.protect(response.header("Location"))
                     if (BuildConfig.DEBUG)
-                        Timber.v("WebView : redirection from %s to %s", urlStr, targetUrl)
+                        Timber.v("WebView : redirection from %s to %s", url, targetUrl)
                     if (targetUrl.isNotEmpty())
                         browserLoadAsync(HttpHelper.fixUrl(targetUrl, site.url))
                     return null
@@ -641,7 +647,7 @@ open class CustomWebViewClient : WebViewClient {
                         if (removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty() || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || customCss.isNotEmpty()) {
                             browserStream = processHtml(
                                 browserStream,
-                                urlStr,
+                                url,
                                 customCss,
                                 removableElements,
                                 jsContentBlacklist,
@@ -665,7 +671,7 @@ open class CustomWebViewClient : WebViewClient {
                             // Set-cookie might contain multiple cookies to set separated by a line feed (see HttpHelper.getValuesSeparatorFromHttpHeader)
                             val cookieParts = cookiesStr.split("\n")
                             for (cookie in cookieParts)
-                                if (cookie.isNotEmpty()) HttpHelper.setCookies(urlStr, cookie)
+                                if (cookie.isNotEmpty()) HttpHelper.setCookies(url, cookie)
                         }
                     }
                 } else {
@@ -674,9 +680,9 @@ open class CustomWebViewClient : WebViewClient {
                 }
                 if (analyzeForDownload) {
                     try {
-                        var content = htmlAdapter.fromInputStream(parserStream!!, URL(urlStr))
-                            .toContent(urlStr)
-                        content = processContent(content, urlStr, quickDownload)
+                        var content = htmlAdapter.fromInputStream(parserStream!!, URL(url))
+                            .toContent(url)
+                        content = processContent(content, url, quickDownload)
                         resConsumer.onContentReady(content, quickDownload)
                     } catch (t: Throwable) {
                         Timber.e(t, "Error parsing content.")

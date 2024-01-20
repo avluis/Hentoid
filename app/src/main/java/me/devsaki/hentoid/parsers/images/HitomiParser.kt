@@ -85,10 +85,7 @@ class HitomiParser : BaseImageListParser() {
         val handler = Handler(Looper.getMainLooper())
         if (null == webview) {
             handler.post {
-                hitomiWv = HitomiBackgroundWebView(
-                    getInstance(),
-                    Site.HITOMI
-                )
+                hitomiWv = HitomiBackgroundWebView(getInstance(), Site.HITOMI)
                 Timber.d(">> loading url %s", pageUrl)
 
                 hitomiWv?.apply {
