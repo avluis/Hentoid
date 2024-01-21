@@ -24,8 +24,6 @@ class SimplyActivity : BaseWebActivity() {
             "simply-hentai.com/[%\\w\\-]+/[%\\w\\-]+$",
             "api.simply-hentai.com/v3/[%\\w\\-]+/[%\\w\\-]+$"
         )
-        private val JS_CONTENT_BLACKLIST =
-            arrayOf("exodocumentprotocol", "exodynamicparams", "exoloader")
     }
 
 
@@ -36,7 +34,7 @@ class SimplyActivity : BaseWebActivity() {
     override fun createWebClient(): CustomWebViewClient {
         val client = SimplyViewClient(getStartSite(), GALLERY_FILTER, this, webView)
         client.restrictTo(DOMAIN_FILTER)
-        for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
+        client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
         return client
     }
 

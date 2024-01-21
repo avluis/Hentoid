@@ -10,8 +10,7 @@ class ToonilyActivity : BaseWebActivity() {
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "ch[%\\w]+-[0-9]+/$")
         private val REMOVABLE_ELEMENTS = arrayOf(".c-ads")
-        private val JS_CONTENT_BLACKLIST =
-            arrayOf("'iframe'", "'adsdomain'", "'closead'", "'plu_slider_frame'")
+        private val JS_CONTENT_BLACKLIST = arrayOf("'iframe'", "'plu_slider_frame'")
         private val BLOCKED_CONTENT = arrayOf(".cloudfront.net")
     }
 

@@ -22,6 +22,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.system.Os;
 import android.system.StructStatVfs;
+import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -1134,7 +1135,11 @@ public class FileHelper {
      * @throws IllegalArgumentException In case something horrible happens
      */
     public static String readStreamAsString(@NonNull final InputStream input) throws IOException, IllegalArgumentException {
-        StringBuilder result = new StringBuilder();
+        return TextUtils.join(" ", readStreamAsStrings(input));
+    }
+
+    public static List<String> readStreamAsStrings(@NonNull final InputStream input) throws IOException, IllegalArgumentException {
+        List<String> result = new ArrayList<>();
         String sCurrentLine;
         boolean isFirst = true;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input))) {
@@ -1145,10 +1150,10 @@ public class FileHelper {
                         sCurrentLine = sCurrentLine.substring(1);
                     isFirst = false;
                 }
-                result.append(sCurrentLine);
+                result.add(sCurrentLine);
             }
         }
-        return result.toString();
+        return result;
     }
 
     /**

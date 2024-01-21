@@ -36,7 +36,6 @@ class Hentai2ReadActivity : BaseWebActivity() {
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
         client.addJavascriptBlacklist(*JS_CONTENT_BLACKLIST)
         client.adBlocker.addToJsUrlWhitelist(*JS_WHITELIST)
-        for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
         return client
     }
 }

@@ -66,7 +66,7 @@ class HitomiActivity : BaseWebActivity() {
         private val JS_CONTENT_BLACKLIST = arrayOf(
             "exoloader",
             "popunder",
-            "da_etirw",
+            "da_etirw", // Specific to Hitomi
             "ad_trigger_class",
             "ad_popup_force",
             "exosrv.com",

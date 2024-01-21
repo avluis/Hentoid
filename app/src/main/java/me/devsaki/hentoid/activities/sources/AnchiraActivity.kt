@@ -25,9 +25,6 @@ class AnchiraActivity : BaseWebActivity() {
     companion object {
         private const val DOMAIN_FILTER = "anchira.to"
         private val JS_WHITELIST = arrayOf(DOMAIN_FILTER)
-
-        private val JS_CONTENT_BLACKLIST =
-            arrayOf("exoloader", "popunder", "adGuardBase", "adtrace.online", "Admanager")
         private val GALLERY_FILTER = arrayOf("//anchira.to/g/[\\w\\-]+/[\\w\\-]+$")
     }
 
@@ -38,7 +35,6 @@ class AnchiraActivity : BaseWebActivity() {
     override fun createWebClient(): CustomWebViewClient {
         val client = AnchiraWebClient(getStartSite(), GALLERY_FILTER, this)
         client.restrictTo(DOMAIN_FILTER)
-        for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
         client.adBlocker.addToJsUrlWhitelist(*JS_WHITELIST)
         webView.addJavascriptInterface(AnchiraJsContentInterface { s: Content ->
             client.jsHandler(s, false)
@@ -147,7 +143,7 @@ class AnchiraActivity : BaseWebActivity() {
         }
 
         override fun parseResponse(
-            urlStr: String,
+            url: String,
             requestHeaders: Map<String, String>?,
             analyzeForDownload: Boolean,
             quickDownload: Boolean
@@ -159,10 +155,10 @@ class AnchiraActivity : BaseWebActivity() {
                 // Use a background Wv to get book attributes when targeting another page (quick download)
                 val parser = AnchiraParser()
                 try {
-                    val content = parser.parseContentWithWebview(urlStr)
+                    val content = parser.parseContentWithWebview(url)
                     content.status = StatusContent.SAVED
                     activity?.onGalleryPageStarted()
-                    val contentFinal = super.processContent(content, urlStr, quickDownload)
+                    val contentFinal = super.processContent(content, url, quickDownload)
                     val handler = Handler(Looper.getMainLooper())
                     handler.post { resConsumer.onContentReady(contentFinal, true) }
                 } catch (e: Exception) {

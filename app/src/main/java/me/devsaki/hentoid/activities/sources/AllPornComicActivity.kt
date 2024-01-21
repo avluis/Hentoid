@@ -14,7 +14,6 @@ class AllPornComicActivity : BaseWebActivity() {
             "$DOMAIN_FILTER/cdn",
             "$DOMAIN_FILTER/wp"
         )
-        private val JS_CONTENT_BLACKLIST = arrayOf("var exoloader;", "popunder")
         private val AD_ELEMENTS = arrayOf("iframe", ".c-ads")
     }
 
@@ -28,7 +27,6 @@ class AllPornComicActivity : BaseWebActivity() {
         client.restrictTo(DOMAIN_FILTER)
         client.addRemovableElements(*AD_ELEMENTS)
         client.adBlocker.addToJsUrlWhitelist(*JS_WHITELIST)
-        for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
         return client
     }
 }

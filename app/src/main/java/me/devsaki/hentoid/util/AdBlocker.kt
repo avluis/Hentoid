@@ -5,6 +5,7 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.HttpHelper
 import timber.log.Timber
 import java.io.IOException
@@ -18,23 +19,36 @@ class AdBlocker(val site: Site) {
     // Universal lists (applied to all sites)
     private val universalUrlBlacklist: MutableSet<String> = HashSet()
     private val universalUrlWhitelist: MutableSet<String> = HashSet()
+    private val universalJsContentBlacklist: MutableSet<String> = HashSet()
 
     // Local lists (applied to current site)
     private val localUrlBlacklist = Collections.synchronizedSet(HashSet<String>())
     private val localUrlWhitelist = Collections.synchronizedSet(HashSet<String>())
+    private val localJsContentBlacklist = Collections.synchronizedSet(HashSet<String>())
     private val jsUrlPatternWhitelist = Collections.synchronizedSet(HashSet<Pattern>())
-    private val jsContentBlacklist = Collections.synchronizedSet(HashSet<String>())
 
     private val jsBlacklistCache = Collections.synchronizedSet(HashSet<String>())
 
 
     init {
-        val appUrlBlacklist =
-            HentoidApp.getInstance().resources.getStringArray(R.array.blocked_domains)
-        universalUrlBlacklist.addAll(appUrlBlacklist)
-        val appUrlWhitelist =
-            HentoidApp.getInstance().resources.getStringArray(R.array.allowed_domains)
-        universalUrlWhitelist.addAll(appUrlWhitelist)
+        // Populate universal keywords
+        HentoidApp.getInstance().resources.apply {
+            openRawResource(R.raw.adblocker_url_blacklist).use { input ->
+                universalUrlBlacklist.addAll(
+                    FileHelper.readStreamAsStrings(input)
+                        .map { s -> s.lowercase(Locale.getDefault()) })
+            }
+            openRawResource(R.raw.adblocker_url_whitelist).use { input ->
+                universalUrlWhitelist.addAll(
+                    FileHelper.readStreamAsStrings(input)
+                        .map { s -> s.lowercase(Locale.getDefault()) })
+            }
+            openRawResource(R.raw.adblocker_js_word_blacklist).use { input ->
+                universalJsContentBlacklist.addAll(
+                    FileHelper.readStreamAsStrings(input)
+                        .map { s -> s.lowercase(Locale.getDefault()) })
+            }
+        }
     }
 
 
@@ -71,7 +85,7 @@ class AdBlocker(val site: Site) {
      * Indicates if the given URL is whitelisted by the current content filters
      *
      * @param url URL to be examinated
-     * @return True if URL is whitelisted according to current filters; false if not
+     * @return True if the given URL is whitelisted according to current filters; false if not
      */
     private fun isUrlWhitelisted(url: String): Boolean {
         // First search into the local simple list...
@@ -101,6 +115,41 @@ class AdBlocker(val site: Site) {
                     )
                     return true
                 }
+            }
+        }
+        return false
+    }
+
+    /**
+     * Indicate if the given Javascript content is blacklisted by the current content filters
+     * If the URL is blacklisted, add it to jsBlacklistCache
+     *
+     * @param jsContent Contents of the Javascript file to be examinated
+     * @return True if the given content is blacklisted according to current filters; false if not
+     */
+    private fun isJsContentBlacklisted(jsContent: String, url: String): Boolean {
+        // First search into the local list...
+        synchronized(localJsContentBlacklist) {
+            for (s in localJsContentBlacklist) {
+                if (jsContent.contains(s)) {
+                    if (BuildConfig.DEBUG) Timber.v(
+                        "Blacklisted JS content blocked (local) : %s",
+                        jsContent
+                    )
+                    jsBlacklistCache.add(url)
+                    return true
+                }
+            }
+        }
+        // ...then into the universal list
+        for (s in universalJsContentBlacklist) {
+            if (jsContent.contains(s)) {
+                if (BuildConfig.DEBUG) Timber.v(
+                    "Blacklisted JS content blocked (global) : %s",
+                    jsContent
+                )
+                jsBlacklistCache.add(url)
+                return true
             }
         }
         return false
@@ -139,7 +188,7 @@ class AdBlocker(val site: Site) {
      * @param sequence Sequence to add to the Javascript content blacklist
      */
     fun addJsContentBlacklist(sequence: String) {
-        jsContentBlacklist.add(sequence.lowercase(Locale.getDefault()))
+        localJsContentBlacklist.add(sequence.lowercase(Locale.getDefault()))
     }
 
     /**
@@ -171,7 +220,7 @@ class AdBlocker(val site: Site) {
         if (!isJs) return false
 
         // If no grey list has been defined...
-        if (jsContentBlacklist.isEmpty()) {
+        if (universalJsContentBlacklist.isEmpty() && localJsContentBlacklist.isEmpty()) {
             // ...be lenient if there's no local whitelist set (vanilla adblocker); block instead as it has not been explicitly whitelisted
             return localUrlWhitelist.size + jsUrlPatternWhitelist.size > 0
         }
@@ -196,14 +245,9 @@ class AdBlocker(val site: Site) {
                 }
                 val body = response.body ?: throw IOException("Empty body")
                 Timber.d(">> grey file downloaded : %s", url)
+                // Handle "grey files" by analyzing its contents
                 val jsBody = body.string().lowercase(Locale.getDefault())
-                synchronized(jsContentBlacklist) {
-                    for (s in jsContentBlacklist) if (jsBody.contains(s)) {
-                        Timber.d(">> grey file %s BLOCKED", url)
-                        jsBlacklistCache.add(cleanUrl)
-                        return true
-                    }
-                }
+                if (isJsContentBlacklisted(jsBody, cleanUrl)) return true
             } catch (e: IOException) {
                 Timber.d(e, ">> I/O issue while retrieving %s", url)
             } catch (iae: IllegalArgumentException) {

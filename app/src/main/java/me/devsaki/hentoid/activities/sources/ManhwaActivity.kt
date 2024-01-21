@@ -10,8 +10,6 @@ class ManhwaActivity : BaseWebActivity() {
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "ch[%\\w]+-[0-9]+/$")
         private val REMOVABLE_ELEMENTS = arrayOf(".c-ads")
-        private val JS_CONTENT_BLACKLIST =
-            arrayOf("'iframe'", "'adsdomain'", "'closead'", "data-ad_", "Close Ad", "close ad")
         private val BLOCKED_CONTENT = arrayOf(".cloudfront.net")
     }
 
@@ -25,7 +23,6 @@ class ManhwaActivity : BaseWebActivity() {
         client.restrictTo(DOMAIN_FILTER)
         client.adBlocker.addToUrlBlacklist(*BLOCKED_CONTENT)
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
-        for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
         return client
     }

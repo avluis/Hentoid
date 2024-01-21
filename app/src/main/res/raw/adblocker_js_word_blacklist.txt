@@ -1,0 +1,22 @@
+exoloader
+exodocumentprotocol
+exodynamicparams
+popunder
+trackingurl
+adguardbase
+admanager
+adprovider
+'adsdomain'
+'closead'
+ad-provider
+ad_popup_force
+ad_trigger_class
+adtrace.online
+close ad
+data-ad
+data-exo
+exo_slider
+exojspop
+exoslider
+exosrv.com
+realsrv.com

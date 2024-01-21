@@ -10,7 +10,6 @@ class ASMHentaiActivity : BaseWebActivity() {
         private val REMOVABLE_ELEMENTS = arrayOf(".atop")
         private val blockedContent = arrayOf("f.js")
         private val JS_WHITELIST = arrayOf(DOMAIN_FILTER)
-        private val JS_CONTENT_BLACKLIST = arrayOf("data-ad", "exoloader", "popunder", "close ad")
     }
 
     override fun getStartSite(): Site {
@@ -23,7 +22,6 @@ class ASMHentaiActivity : BaseWebActivity() {
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
         client.adBlocker.addToUrlBlacklist(*blockedContent)
         client.adBlocker.addToJsUrlWhitelist(*JS_WHITELIST)
-        for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
         return client
     }
 }

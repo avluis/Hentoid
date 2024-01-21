@@ -17,6 +17,7 @@ class ImhentaiActivity : BaseWebActivity() {
         val client = CustomWebViewClient(getStartSite(), GALLERY_FILTER, this)
         client.restrictTo(DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
+        client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
         return client
     }
 }

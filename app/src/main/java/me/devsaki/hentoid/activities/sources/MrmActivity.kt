@@ -8,7 +8,6 @@ class MrmActivity : BaseWebActivity() {
         private const val DOMAIN_FILTER = "myreadingmanga.info"
         private val GALLERY_FILTER = arrayOf("myreadingmanga.info/[%\\w\\-]+/$")
         private val REMOVABLE_ELEMENTS = arrayOf("center.imgtop", "a[rel^='nofollow noopener']")
-        private val JS_CONTENT_BLACKLIST = arrayOf("exodynamicparams")
     }
 
     override fun getStartSite(): Site {
@@ -19,11 +18,11 @@ class MrmActivity : BaseWebActivity() {
         val client: CustomWebViewClient = MrmWebClient(getStartSite(), GALLERY_FILTER, this)
         client.restrictTo(DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
-        for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
+        client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
         return client
     }
 
-    private class MrmWebClient constructor(
+    private class MrmWebClient(
         site: Site,
         filter: Array<String>,
         activity: CustomWebActivity

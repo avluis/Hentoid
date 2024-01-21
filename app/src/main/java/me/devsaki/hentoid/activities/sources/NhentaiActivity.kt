@@ -16,7 +16,7 @@ class NhentaiActivity : BaseWebActivity() {
             "//nhentai.net/(character|artist|parody|tag|group)/"
         )
         private val BLOCKED_CONTENT = arrayOf("popunder")
-        private val AD_BLOCKS = arrayOf("section.advertisement")
+        private val REMOVABLE_ELEMENTS = arrayOf("section.advertisement")
     }
 
     override fun getStartSite(): Site {
@@ -31,8 +31,9 @@ class NhentaiActivity : BaseWebActivity() {
         client.setResultUrlRewriter { resultsUri: Uri, page: Int ->
             rewriteResultsUrl(resultsUri, page)
         }
-        client.addRemovableElements(*AD_BLOCKS)
+        client.addRemovableElements(*REMOVABLE_ELEMENTS)
         client.adBlocker.addToUrlBlacklist(*BLOCKED_CONTENT)
+        client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
         return client
     }
 
