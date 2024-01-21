@@ -29,6 +29,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.parsers.content.ContentParser
+import me.devsaki.hentoid.parsers.selectX
 import me.devsaki.hentoid.util.AdBlocker
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
@@ -810,7 +811,7 @@ open class CustomWebViewClient : WebViewClient {
             .attr("type", "text/css").appendText(customCss)
 
         // Remove ad spaces
-        if (removableElements != null) for (s in removableElements) for (e in doc.select(s)) {
+        if (removableElements != null) for (s in removableElements) for (e in doc.selectX(s)) {
             Timber.d("[%s] Removing node %s", baseUri, e.toString())
             e.remove()
         }
