@@ -2,20 +2,20 @@
 <resources>
     <string name="slide_01_header">Hentoid에 온 것을 환영합니다!</string>
     <string name="slide_01_text">Hentoid는 동인지\n&amp; H-망가 보관 앱입니다.</string>
-<string name="slide_02_header">권한</string>
+    <string name="slide_02_header">권한</string>
     <string name="slide_02_browser_mode_title">탐색 전용</string>
     <string name="slide_02_browser_mode_description">웹사이트를 탐색합니다.\n\n작품을 다운로드 하거나 라이브러리 관리가 불가능합니다.\n\n권한이 필요하지 않습니다.</string>
     <string name="slide_02_library_mode_title">탐색 및 다운로드</string>
     <string name="slide_02_library_mode_description">작품을 다운로드하고 라이브러리를 관리합니다.\n\n저장 공간 액세스 권한이 필요합니다.</string>
-<string name="slide_04_header">라이브러리</string>
+    <string name="slide_04_header">라이브러리</string>
     <string name="slide_04_text">Hentoid는 미디어를 저장하기 위한 전용 폴더가 필요합니다.</string>
     <string name="slide_04_skip">넘기기</string>
-<string name="slide_04_skip_title">넘기기</string>
+    <string name="slide_04_skip_title">넘기기</string>
     <string name="slide_04_skip_msg">이 단계를 건너뛰면 다운로드할 수 없습니다.\n다운로드를 위해서는 앱 설정을 통해 다운로드 폴더를 설정해야 합니다.</string>
     <string name="slide_05_header">테마</string>
     <string name="slide_05_text">테마를 선택해주세요.</string>
     <string name="slide_06_header">사이트</string>
-<string name="slide_06_text">다운로드에 사용할 사이트를 선택하세요.</string>
+    <string name="slide_06_text">다운로드에 사용할 사이트를 선택하세요.</string>
     <string name="slide_06_subtext">나중에 언제든지 왼쪽 메뉴의 편집 버튼을 사용하여 이 선택을 변경할 수 있습니다.</string>
     <string name="slide_end_header">설정 완료!</string>
     <string name="slide_end_text">모든 설정이 끝났습니다!\n마음껏 즐기세요.</string>
