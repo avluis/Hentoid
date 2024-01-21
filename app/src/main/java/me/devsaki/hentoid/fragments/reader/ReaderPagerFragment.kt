@@ -600,7 +600,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onBookSettingsClick() {
         currentImg?.let {
-            invoke(this, it.content.target.bookPreferences)
+            if (it.content.isReachable(it)) invoke(this, it.content.target.bookPreferences)
         }
     }
 
