@@ -24,6 +24,8 @@ class SimplyActivity : BaseWebActivity() {
             "simply-hentai.com/[%\\w\\-]+/[%\\w\\-]+$",
             "api.simply-hentai.com/v3/[%\\w\\-]+/[%\\w\\-]+$"
         )
+        private val JS_CONTENT_BLACKLIST =
+            arrayOf("exodocumentprotocol", "exodynamicparams", "exoloader")
     }
 
 
@@ -34,6 +36,7 @@ class SimplyActivity : BaseWebActivity() {
     override fun createWebClient(): CustomWebViewClient {
         val client = SimplyViewClient(getStartSite(), GALLERY_FILTER, this, webView)
         client.restrictTo(DOMAIN_FILTER)
+        for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
         return client
     }
 
@@ -66,20 +69,20 @@ class SimplyActivity : BaseWebActivity() {
 
         // Call the API without using BaseWebActivity.parseResponse
         override fun parseResponse(
-            urlStr: String,
+            url: String,
             requestHeaders: Map<String, String>?,
             analyzeForDownload: Boolean,
             quickDownload: Boolean
         ): WebResourceResponse? {
-            if (!urlStr.endsWith("/status") && !urlStr.endsWith("/home") && !urlStr.endsWith("/starting")) {
-                if (urlStr.contains("api.simply-hentai.com") && (analyzeForDownload || quickDownload)) {
+            if (!url.endsWith("/status") && !url.endsWith("/home") && !url.endsWith("/starting")) {
+                if (url.contains("api.simply-hentai.com") && (analyzeForDownload || quickDownload)) {
                     activity?.onGalleryPageStarted()
                     val contentParser: ContentParser = SimplyApiContent()
 
                     lifecycleScope.launch {
                         try {
                             var content = withContext(Dispatchers.IO) {
-                                contentParser.toContent(urlStr)
+                                contentParser.toContent(url)
                             }
                             content =
                                 super.processContent(content, content.galleryUrl, quickDownload)
@@ -92,7 +95,7 @@ class SimplyActivity : BaseWebActivity() {
                 }
                 // If calls something else than the API, use the standard parseResponse
                 return super.parseResponse(
-                    urlStr,
+                    url,
                     requestHeaders,
                     analyzeForDownload,
                     quickDownload
@@ -120,10 +123,9 @@ class SimplyActivity : BaseWebActivity() {
         }
 
         override fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
-            return if (webClient != null) webClient!!.shouldInterceptRequest(
-                webView!!,
-                request
-            ) else null
+            return if (webClient != null)
+                webClient!!.shouldInterceptRequest(webView!!, request)
+            else null
         }
     }
 }
