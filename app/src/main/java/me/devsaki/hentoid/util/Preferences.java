@@ -103,7 +103,7 @@ public final class Preferences {
 
     private static int getIntPref(@NonNull String key, int defaultValue) {
         if (null == sharedPreferences) return defaultValue;
-        return Integer.parseInt(sharedPreferences.getString(key, Integer.toString(defaultValue)) + "");
+        return Integer.parseInt(sharedPreferences.getString(key, Integer.toString(defaultValue)));
     }
 
     private static void setIntPref(@NonNull String key, int value) {
@@ -113,7 +113,7 @@ public final class Preferences {
 
     private static long getLongPref(@NonNull String key, long defaultValue) {
         if (null == sharedPreferences) return defaultValue;
-        return Long.parseLong(sharedPreferences.getString(key, Long.toString(defaultValue)) + "");
+        return Long.parseLong(sharedPreferences.getString(key, Long.toString(defaultValue)));
     }
 
     private static boolean getBoolPref(@NonNull String key, boolean defaultValue) {
@@ -273,36 +273,22 @@ public final class Preferences {
     }
 
     public static String getStorageUri(StorageLocation location) {
-        switch (location) {
-            case PRIMARY_1:
-                return getStorageUri();
-
-            case PRIMARY_2:
-                return getStorageUri2();
-
-            case EXTERNAL:
-                return getExternalLibraryUri();
-
-            default:
-                return "";
-        }
+        return switch (location) {
+            case PRIMARY_1 -> getStorageUri();
+            case PRIMARY_2 -> getStorageUri2();
+            case EXTERNAL -> getExternalLibraryUri();
+            default -> "";
+        };
     }
 
     public static void setStorageUri(StorageLocation location, String uri) {
         switch (location) {
-            case PRIMARY_1:
-                setStorageUri(uri);
-                break;
-
-            case PRIMARY_2:
-                setStorageUri2(uri);
-                break;
-
-            case EXTERNAL:
-                setExternalLibraryUri(uri);
-                break;
-            default:
+            case PRIMARY_1 -> setStorageUri(uri);
+            case PRIMARY_2 -> setStorageUri2(uri);
+            case EXTERNAL -> setExternalLibraryUri(uri);
+            default -> {
                 // Nothing
+            }
         }
     }
 
@@ -635,7 +621,7 @@ public final class Preferences {
     }
 
     public static List<Site> getActiveSites() {
-        String siteCodesStr = sharedPreferences.getString(Key.ACTIVE_SITES, Default.ACTIVE_SITES) + "";
+        String siteCodesStr = sharedPreferences.getString(Key.ACTIVE_SITES, Default.ACTIVE_SITES);
         if (siteCodesStr.isEmpty()) return Collections.emptyList();
 
         return Stream.of(siteCodesStr.split(",")).distinct().map(s -> Site.searchByCode(Long.parseLong(s))).toList();
@@ -766,10 +752,6 @@ public final class Preferences {
         return getIntPref(Key.DUPLICATE_BROWSER_SENSITIVITY, Default.DUPLICATE_BROWSER_SENSITIVITY);
     }
 
-    public static void setDuplicateBrowserSensitivity(int value) {
-        sharedPreferences.edit().putString(Key.DUPLICATE_BROWSER_SENSITIVITY, Integer.toString(value)).apply();
-    }
-
     public static boolean isDuplicateIgnoreChapters() {
         return getBoolPref(Key.DUPLICATE_IGNORE_CHAPTERS, Default.DUPLICATE_IGNORE_CHAPTERS);
     }
@@ -846,7 +828,6 @@ public final class Preferences {
         public static final String APP_PREVIEW = "pref_app_preview";
         static final String CHECK_UPDATES = "pref_check_updates";
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
-        public static final String REFRESH_LIBRARY = "pref_refresh_bookshelf";
         public static final String DELETE_ALL_EXCEPT_FAVS = "pref_delete_all_except_favs";
         static final String WELCOME_DONE = "pref_welcome_done";
         static final String REFRESH_JSON_1_DONE = "refresh_json_1_done";
@@ -875,9 +856,7 @@ public final class Preferences {
         public static final String EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete";
         public static final String EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library";
         static final String FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
-        public static final String PRIMARY_FOLDER = "folder";
         public static final String STORAGE_MANAGEMENT = "storage_mgt";
-        public static final String MEMORY_USAGE = "pref_memory_usage";
         public static final String MEMORY_ALERT = "pref_memory_alert";
         static final String WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
