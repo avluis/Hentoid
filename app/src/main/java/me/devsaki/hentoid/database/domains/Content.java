@@ -263,7 +263,7 @@ public class Content implements Serializable {
             case PURURIN:
                 return url.replace(HttpHelper.getHttpProtocol(url) + "://pururin.to/gallery", "");
             case NHENTAI:
-                return url.replace(site.getUrl(), "").replace("/g", "").replaceFirst("/1/$", "/");
+                return url.replace(site.getUrl(), "").replace("/g/", "/").replaceFirst("/1/$", "/");
             case MUSES:
                 return url.replace(site.getUrl(), "").replace("https://comics.8muses.com", "");
             case MRM:
@@ -273,7 +273,7 @@ public class Content implements Serializable {
             case MANHWA18:
             case IMHENTAI:
             case HENTAIFOX:
-                return url.replace(site.getUrl(), "").replace("/gallery", "").replace("/g", "");
+                return url.replace(site.getUrl(), "").replace("/gallery", "").replace("/g/", "/");
             case PIXIV:
                 return url.replace(site.getUrl(), "").replaceAll("^[a-z]{2}/", "");
             case ALLPORNCOMIC:
