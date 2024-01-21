@@ -55,7 +55,7 @@ import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.adapters.ImagePagerAdapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.database.isReachable
+import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
@@ -600,7 +600,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onBookSettingsClick() {
         currentImg?.let {
-            if (it.content.isReachable(it)) invoke(this, it.content.target.bookPreferences)
+            it.content.reach(it)?.apply {
+                invoke(this@ReaderPagerFragment, bookPreferences)
+            }
         }
     }
 
@@ -926,7 +928,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {
         currentImg?.let {
-            if (it.content.isReachable(it)) adjustDisplay(it.content.target.bookPreferences)
+            it.content.reach(it)?.apply {
+                adjustDisplay(bookPreferences)
+            }
         }
         viewModel.onPageChange(absImageIndex, scrollDirection)
     }
