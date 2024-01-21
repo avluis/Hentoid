@@ -39,6 +39,7 @@ import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.bundles.LibraryActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.core.snack
@@ -321,7 +322,7 @@ class LibraryActivity : BaseActivity() {
         initUI()
         updateToolbar()
         updateSelectionToolbar(0, 0, 0, 0, 0, 0)
-        onCreated()
+        onCreated(intent.extras)
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
     }
@@ -355,7 +356,7 @@ class LibraryActivity : BaseActivity() {
         super.onRestart()
     }
 
-    private fun onCreated() {
+    private fun onCreated(startBundle: Bundle?) {
         // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
         binding?.let {
             if (Preferences.isFirstRunProcessComplete()) TooltipHelper.showTooltip(
@@ -380,6 +381,31 @@ class LibraryActivity : BaseActivity() {
                         isVisible = false
                     }
                 }.submit(1)
+            }
+        }
+
+        // Reset search filters to those transmitted through the Activity start Intent
+        if (startBundle != null && !startBundle.isEmpty) {
+            LibraryActivityBundle(startBundle).apply {
+                contentSearchArgs?.let {
+                    ContentSearchBundle(it).apply {
+                        // Apply search filters
+                        if (filterBookFavourites) viewModel.setContentFavouriteFilter(true)
+                        if (filterBookNonFavourites) viewModel.setContentNonFavouriteFilter(true)
+                        if (filterBookCompleted) viewModel.setCompletedFilter(true)
+                        if (filterBookNotCompleted) viewModel.setNotCompletedFilter(true)
+                        if (filterRating > -1) viewModel.setContentRatingFilter(filterRating)
+                    }
+                }
+                groupSearchArgs?.let {
+                    GroupSearchBundle(it).apply {
+                        // Apply search filters
+                        if (filterFavourites) viewModel.setContentFavouriteFilter(true)
+                        if (filterNonFavourites) viewModel.setContentNonFavouriteFilter(true)
+                        if (filterRating > -1) viewModel.setContentRatingFilter(filterRating)
+                    }
+                }
+
             }
         }
     }
@@ -1283,6 +1309,16 @@ class LibraryActivity : BaseActivity() {
     private fun resetActivity() {
         val intent = Intent(this, LibraryActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+        val outBundle = LibraryActivityBundle()
+        contentSearchBundle?.let {
+            outBundle.contentSearchArgs = it
+        }
+        groupSearchBundle?.let {
+            outBundle.groupSearchArgs = it
+        }
+        intent.putExtras(outBundle.bundle)
+
         finish()
         startActivity(intent)
     }
@@ -1306,6 +1342,7 @@ class LibraryActivity : BaseActivity() {
     }
 
     companion object {
+        // == VALUES TO PASS ACROSS ACTIVITY RESET (that shouldn't be saved when closing the app)
         var hasChangedGridDisplay = false
 
         @StringRes

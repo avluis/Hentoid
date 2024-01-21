@@ -212,7 +212,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             stars[4] = filterRating4
             stars[5] = filterRating5
             for (i in 0..5) {
-                stars[i]!!.setOnClickListener { setRating(i, false) }
+                stars[i]?.setOnClickListener { setRating(i, false) }
             }
         }
     }
