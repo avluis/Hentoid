@@ -58,7 +58,7 @@ class AllPornComicParser : BaseImageListParser() {
 
         if (processedUrl.isEmpty()) processedUrl = chapterUrl
         val doc = HttpHelper.getOnlineDocument(
-            processedUrl,
+            chapterUrl,
             theHeaders,
             Site.ALLPORNCOMIC.useHentoidAgent(),
             Site.ALLPORNCOMIC.useWebviewAgent()
