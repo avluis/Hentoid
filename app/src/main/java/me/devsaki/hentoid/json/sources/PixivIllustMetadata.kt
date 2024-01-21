@@ -28,7 +28,7 @@ data class PixivIllustMetadata(
         private val UGOIRA_FRAME_TYPE: Type = Types.newParameterizedType(
             Pair::class.java,
             String::class.java,
-            Int::class.java
+            Integer::class.java
         )
         val UGOIRA_FRAMES_TYPE: Type = Types.newParameterizedType(
             MutableList::class.java, UGOIRA_FRAME_TYPE
@@ -196,7 +196,9 @@ data class PixivIllustMetadata(
 
 
     data class AuthorDetails(
+        @Json(name = "user_id")
         val id: String,
+        @Json(name = "user_name")
         val name: String
     )
 
