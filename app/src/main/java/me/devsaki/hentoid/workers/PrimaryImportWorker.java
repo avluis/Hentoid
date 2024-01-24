@@ -417,7 +417,7 @@ public class PrimaryImportWorker extends BaseWorker {
                         // Remove non-cover pages that have the cover URL (old issue about extra page downloads)
                         // (exclude the 1st page because it have a same url with the cover in some sites)
                         String coverUrl = content.getCoverImageUrl();
-                        List<ImageFile> coverImgs = Stream.of(contentImages).filterNot(i -> (i.getUrl().equals(coverUrl) && !i.isCover() && i.getOrder() != 1)).toList();
+                        List<ImageFile> coverImgs = Stream.of(contentImages).filterNot(i -> hasSameUrl(i, coverUrl) && !i.isCover() && i.getOrder() != 1).toList();
                         if (coverImgs.size() < contentImages.size()) {
                             contentImages = coverImgs;
                             int nbCovers = (int) Stream.of(contentImages).filter(ImageFile::isCover).count();
@@ -515,6 +515,11 @@ public class PrimaryImportWorker extends BaseWorker {
         String bookName = StringHelper.protect(bookFolder.getName());
         notificationManager.notify(new ImportProgressNotification(bookName, booksOK + booksKO, bookFolders.size() - nbFolders));
         eventProgress(STEP_3_BOOKS, bookFolders.size() - nbFolders, booksOK, booksKO);
+    }
+
+    private boolean hasSameUrl(ImageFile i1, String url) {
+        if (i1.getPageUrl().isEmpty()) return i1.getUrl().equals(url);
+        else return i1.getPageUrl().equals(url);
     }
 
     private LogHelper.LogInfo buildLogInfo(boolean cleanup, StorageLocation location, @NonNull List<LogHelper.LogEntry> log) {
