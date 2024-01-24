@@ -354,9 +354,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (!forceRefresh && group == currentGroup) return
 
         // Reset content sorting to TITLE when reaching the Ungrouped group with CUSTOM sorting (can't work)
-        if (!group.grouping.canReorderBooks || group.grouping == Grouping.CUSTOM && 1 == group.getSubtype()) Preferences.setContentSortField(
-            Preferences.Constant.ORDER_FIELD_TITLE
-        )
+        if (Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField() && (!group.grouping.canReorderBooks || group.isUngroupedGroup))
+            Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_TITLE)
         this.group.postValue(group)
         contentSearchManager.setGroup(group)
         newContentSearch.value = true
@@ -852,7 +851,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             localGroups.filter { g -> g.name.equals(newGroupName, ignoreCase = true) }
         if (groupMatchingName.isNotEmpty()) { // Existing group with the same name
             onFail.invoke(R.string.group_name_exists)
-        } else if (group.grouping == Grouping.CUSTOM && 1 == group.getSubtype()) { // "Ungrouped" group can't be renamed because it stops to work (TODO investgate that)
+        } else if (group.isUngroupedGroup) { // "Ungrouped" group can't be renamed because it stops to work (TODO investgate that)
             onFail.invoke(R.string.group_rename_forbidden)
         } else {
             group.name = newGroupName

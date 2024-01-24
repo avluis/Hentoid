@@ -707,7 +707,7 @@ class LibraryActivity : BaseActivity() {
 
             R.id.action_sort_filter -> LibraryBottomSortFilterFragment.invoke(
                 this, this.supportFragmentManager, isGroupDisplayed(),
-                group != null && group!!.grouping == Grouping.CUSTOM && 1 == group!!.getSubtype()
+                group != null && group!!.isUngroupedGroup
             )
 
             else -> return false

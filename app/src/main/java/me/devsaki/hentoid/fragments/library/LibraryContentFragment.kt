@@ -1874,13 +1874,13 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val c = adapter.getAdapterItem(position).content ?: return ""
         val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd", Locale.ENGLISH)
         return when (Preferences.getContentSortField()) {
-            Preferences.Constant.ORDER_FIELD_TITLE -> if (c.title.isEmpty()) "" else (c.title[0].toString() + "").uppercase(
-                Locale.getDefault()
-            )
+            Preferences.Constant.ORDER_FIELD_TITLE ->
+                if (c.title.isEmpty()) ""
+                else (c.title[0].toString() + "").uppercase(Locale.getDefault())
 
-            Preferences.Constant.ORDER_FIELD_ARTIST -> if (c.author.isEmpty()) "" else (c.author[0].toString() + "").uppercase(
-                Locale.getDefault()
-            )
+            Preferences.Constant.ORDER_FIELD_ARTIST ->
+                if (c.author.isEmpty()) ""
+                else (c.author[0].toString() + "").uppercase(Locale.getDefault())
 
             Preferences.Constant.ORDER_FIELD_NB_PAGES -> c.qtyPages.toLong().toString()
             Preferences.Constant.ORDER_FIELD_READS -> c.reads.toString()
