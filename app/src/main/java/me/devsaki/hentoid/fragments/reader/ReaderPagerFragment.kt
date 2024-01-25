@@ -1241,9 +1241,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * @param absPageNum Asbolute page number to go to (1-indexed; book-scale)
      */
     override fun goToPage(absPageNum: Int) {
-        val index = adapter.currentList.indexOfFirst { i -> i.order == absPageNum }
+        val index = indexFromPageNum(absPageNum)
         if (index == absImageIndex || index < 0) return
         seekToIndex(index)
+    }
+
+    override fun indexFromPageNum(pageNum : Int) : Int {
+        return adapter.currentList.indexOfFirst { i -> i.order == pageNum }
     }
 
     /**

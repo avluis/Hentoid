@@ -48,10 +48,10 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
                 if (fromUser) {
                     var offset = 0
                     if (Preferences.isReaderChapteredNavigation()) {
-                        val chap = getCurrentChapter()
-                        if (chap != null) {
-                            val chapImgs = chap.readableImageFiles
-                            if (chapImgs.isNotEmpty()) offset = chapImgs[0].order - 1
+                        getCurrentChapter()?.apply {
+                            val chapImgs = readableImageFiles
+                            if (chapImgs.isNotEmpty()) offset =
+                                pager.indexFromPageNum(chapImgs[0].order)
                         }
                     }
                     pager.seekToIndex(0.coerceAtLeast(offset + value.toInt()))
@@ -284,6 +284,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
     interface Pager {
         fun goToPage(absPageNum: Int)
         fun seekToIndex(absIndex: Int)
+        fun indexFromPageNum(pageNum: Int): Int
         fun nextBook(): Boolean
         fun previousBook(): Boolean
         val currentImg: ImageFile?
