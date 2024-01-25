@@ -42,6 +42,7 @@ import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.core.requireById
+import me.devsaki.hentoid.core.setMiddleEllipsis
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.QueueRecord
@@ -178,11 +179,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     }
 
     val title: String
-        get() =
-            if (content != null) content.title
-            else if (queueRecord != null) queueRecord.content.target.title
-            else if (chapter != null) chapter.name
-            else ""
+        get() = if (content != null) content.title
+        else if (queueRecord != null) queueRecord.content.target.title
+        else if (chapter != null) chapter.name
+        else ""
 
 
     /**
@@ -208,16 +208,16 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 pb.visibility = View.VISIBLE
 
                 val color: Int = if (isQueueReady && isIndividual) ThemeHelper.getColor(
-                    pb.context,
-                    R.color.secondary_light
+                    pb.context, R.color.secondary_light
                 ) else ContextCompat.getColor(pb.context, R.color.medium_gray)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    pb.progressDrawable.colorFilter =
-                        BlendModeColorFilter(color, BlendMode.SRC_IN)
+                    pb.progressDrawable.colorFilter = BlendModeColorFilter(color, BlendMode.SRC_IN)
                 } else {
-                    @Suppress("DEPRECATION")
-                    pb.progressDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN)
+                    @Suppress("DEPRECATION") pb.progressDrawable.setColorFilter(
+                        color,
+                        PorterDuff.Mode.SRC_IN
+                    )
                 }
 
                 if (content.bookSizeEstimate > 0 && tvPages != null && View.VISIBLE == tvPages.visibility) {
@@ -240,8 +240,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     }
 
     class ViewHolder internal constructor(view: View, viewType: ViewType) :
-        FastAdapter.ViewHolder<ContentItem>(view), IDraggableViewHolder,
-        IDrawerSwipeableViewHolder,
+        FastAdapter.ViewHolder<ContentItem>(view), IDraggableViewHolder, IDrawerSwipeableViewHolder,
         ISwipeableViewHolder {
         // Common elements
         private val baseLayout: View = view.requireById(R.id.item)
@@ -355,14 +354,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
             attachButtons(item, isGrid)
             item.updateProgress(
-                this,
-                isPausedEvent = false,
-                isIndividual = true
+                this, isPausedEvent = false, isIndividual = true
             )
-            @Suppress("UNCHECKED_CAST")
-            if (ivReorder != null) bindDragHandle(
-                this,
-                item as IExtendedDraggable<RecyclerView.ViewHolder>
+            @Suppress("UNCHECKED_CAST") if (ivReorder != null) bindDragHandle(
+                this, item as IExtendedDraggable<RecyclerView.ViewHolder>
             )
         }
 
@@ -370,10 +365,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             baseLayout.isVisible = !item.isEmpty
             selectionBorder?.isVisible = item.isSelected
 
-            if (item.content != null && item.content.isBeingProcessed)
-                baseLayout.startAnimation(
-                    BlinkAnimation(500, 250)
-                ) else baseLayout.clearAnimation()
+            if (item.content != null && item.content.isBeingProcessed) baseLayout.startAnimation(
+                BlinkAnimation(500, 250)
+            ) else baseLayout.clearAnimation()
 
             if (item.isSelected && BuildConfig.DEBUG) Timber.d("SELECTED " + item.title)
 
@@ -407,8 +401,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 }
             } else  // From stored picture
                 Glide.with(ivCover).load(Uri.parse(thumbLocation))
-                    .signature(ObjectKey(content.uniqueHash()))
-                    .apply(glideRequestOptions).into(ivCover)
+                    .signature(ObjectKey(content.uniqueHash())).apply(glideRequestOptions)
+                    .into(ivCover)
         }
 
         private fun attachChapterCover(chapter: Chapter) {
@@ -417,12 +411,16 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 ivCover.visibility = View.VISIBLE
                 val glideRequest = Glide.with(ivCover)
 
-                val builder = if (thumbLocation.startsWith("http"))
-                    glideRequest.load(ContentHelper.bindOnlineCover(thumbLocation, null))
+                val builder = if (thumbLocation.startsWith("http")) glideRequest.load(
+                    ContentHelper.bindOnlineCover(
+                        thumbLocation,
+                        null
+                    )
+                )
                 else glideRequest.load(Uri.parse(thumbLocation))
 
-                builder.signature(ObjectKey(chapter.uniqueHash()))
-                    .apply(glideRequestOptions).into(ivCover)
+                builder.signature(ObjectKey(chapter.uniqueHash())).apply(glideRequestOptions)
+                    .into(ivCover)
             } else {
                 ivCover.visibility = View.INVISIBLE
             }
@@ -441,10 +439,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         }
 
         private fun attachTitle(
-            content: Content?,
-            queueRecord: QueueRecord?,
-            chapter: Chapter?,
-            isGrid: Boolean
+            content: Content?, queueRecord: QueueRecord?, chapter: Chapter?, isGrid: Boolean
         ) {
             tvTitle.isVisible = (!isGrid || Settings.libraryDisplayGridTitle)
             if (!tvTitle.isVisible) return
@@ -458,6 +453,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
 
             tvTitle.text = title
+            tvTitle.post {
+                tvTitle.setMiddleEllipsis()
+            }
+
             var colorId: Int = R.color.card_title_light
             if (queueRecord != null && queueRecord.isFrozen) colorId = R.color.frozen_blue
             if (isGrid) colorId = R.color.white_opacity_87
@@ -500,9 +499,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         }
 
         private fun attachMetrics(
-            content: Content?,
-            chapter: Chapter?,
-            viewType: ViewType
+            content: Content?, chapter: Chapter?, viewType: ViewType
         ) {
             tvPages ?: return // Mandatory
 
@@ -520,9 +517,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     val nbMissingPages = qtyPages - content!!.nbDownloadedPages
                     if (nbMissingPages > 0) {
                         val missingStr = " " + context.resources.getQuantityString(
-                            R.plurals.work_pages_missing,
-                            nbMissingPages.toInt(),
-                            nbMissingPages
+                            R.plurals.work_pages_missing, nbMissingPages.toInt(), nbMissingPages
                         )
                         context.resources.getString(R.string.work_pages_queue, nbPages, missingStr)
                     } else context.resources.getString(R.string.work_pages_queue, nbPages, "")

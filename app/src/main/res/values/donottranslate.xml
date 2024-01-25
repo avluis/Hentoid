@@ -451,7 +451,7 @@
     <string name="error_log_header" translatable="false">Error log for <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>@<x:g id="site_name">%3$s</x:g>]: <x:g example="2" id="error_count">%4$d</x:g> errors</string>
     <string name="error_log_header_queue" translatable="false">Error log for queue</string>
     <!-- Strings: Main: Library fragment -->
-    <string name="book_title" translatable="false">This is a rather long title, just because we need it to be. Long, very long</string>
+    <string name="book_title" translatable="false">This is a rather long title, just because we need it to be. Long, very very very very super duper long</string>
     <string name="book_series" translatable="false">Series: Name</string>
     <string name="book_artist" translatable="false">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
     <string name="book_pages_queue" translatable="false">Pages: 1234; estimated 125 MB</string>
