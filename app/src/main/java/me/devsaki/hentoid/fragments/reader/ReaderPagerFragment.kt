@@ -999,7 +999,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             }
             adapter.notifyDataSetChanged() // NB : will re-run onBindViewHolder for all displayed pictures
         }
-        seekToPosition(absImageIndex)
+        seekToIndex(absImageIndex)
     }
 
     private fun onUpdatePageNumDisplay() {
@@ -1188,7 +1188,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      *
      * @param absIndex Index to go to (0-indexed; books-scale)
      */
-    override fun seekToPosition(absIndex: Int) {
+    override fun seekToIndex(absIndex: Int) {
         // Hide pending micro-menus
         hidePendingMicroMenus()
         binding?.apply {
@@ -1241,9 +1241,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * @param absPageNum Asbolute page number to go to (1-indexed; book-scale)
      */
     override fun goToPage(absPageNum: Int) {
-        val position = absPageNum - 1
-        if (position == absImageIndex || position < 0 || position > adapter.itemCount - 1) return
-        seekToPosition(position)
+        val index = adapter.currentList.indexOfFirst { i -> i.order == absPageNum }
+        if (index == absImageIndex || index < 0) return
+        seekToIndex(index)
     }
 
     /**

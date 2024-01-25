@@ -48,13 +48,13 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
                 if (fromUser) {
                     var offset = 0
                     if (Preferences.isReaderChapteredNavigation()) {
-                        val currentChapter = getCurrentChapter()
-                        if (currentChapter != null) {
-                            val chapImgs = currentChapter.readableImageFiles
+                        val chap = getCurrentChapter()
+                        if (chap != null) {
+                            val chapImgs = chap.readableImageFiles
                             if (chapImgs.isNotEmpty()) offset = chapImgs[0].order - 1
                         }
                     }
-                    pager.seekToPosition(0.coerceAtLeast(offset + value.toInt()))
+                    pager.seekToIndex(0.coerceAtLeast(offset + value.toInt()))
                 }
             }
             it.pageSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
@@ -283,7 +283,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
 
     interface Pager {
         fun goToPage(absPageNum: Int)
-        fun seekToPosition(absIndex: Int)
+        fun seekToIndex(absIndex: Int)
         fun nextBook(): Boolean
         fun previousBook(): Boolean
         val currentImg: ImageFile?
