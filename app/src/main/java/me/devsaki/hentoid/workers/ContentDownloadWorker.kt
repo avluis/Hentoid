@@ -1155,6 +1155,16 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 "Page " + img.name,
                 "No images have been found. Error = " + ere.message
             )
+        } catch (e: Exception) { // Where "the rest" is caught
+            Timber.i(e, "An unexpected error occured while parsing %s", content.title)
+            updateImageProperties(img, false, "")
+            logErrorRecord(
+                content.id,
+                ErrorType.UNDEFINED,
+                img.pageUrl,
+                "Page " + img.name,
+                "No images have been found. Error = " + e.message
+            )
         }
     }
 
