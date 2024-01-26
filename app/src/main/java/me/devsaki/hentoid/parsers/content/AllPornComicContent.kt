@@ -25,8 +25,8 @@ class AllPornComicContent : BaseContentParser() {
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
     private lateinit var coverUrl: String
 
-    @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
-    private lateinit var title: String
+    @Selector(value = "head title")
+    private var title: Element? = null
 
     @Selector(value = "head script.yoast-schema-graph")
     private var metadata: Element? = null
@@ -52,9 +52,14 @@ class AllPornComicContent : BaseContentParser() {
         if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
         content.setRawUrl(url)
         content.coverImageUrl = coverUrl
-        if (title.isNotEmpty()) {
-            content.title = StringHelper.removeNonPrintableChars(title)
-        } else content.title = NO_TITLE
+
+        title?.let {
+            content.title =
+                StringHelper.removeNonPrintableChars(it.text())
+                    .replace(" - AllPornComic", "")
+                    .replace(" Porn Comic", "")
+        } ?: { content.title = NO_TITLE }
+
         metadata?.apply {
             if (childNodeSize() > 0) {
                 try {
