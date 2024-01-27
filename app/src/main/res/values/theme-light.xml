@@ -87,7 +87,7 @@
     <!-- Dialog themes -->
 
     <style name="Theme.Light.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="colorPrimary">@color/secondary_light</item>
+        <item name="colorPrimary">@color/primary_light</item>
         <item name="colorSecondary">@color/secondary_light</item>
         <!-- colorSurface is the actual dialog background -->
         <item name="colorSurface">@color/window_background_light</item>

@@ -80,7 +80,7 @@
     <!-- Dialog themes -->
 
     <style name="Theme.Dark.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="colorPrimary">@color/secondary_dark</item>
+        <item name="colorPrimary">@color/primary_dark</item>
         <item name="colorSecondary">@color/secondary_dark</item>
         <!-- colorSurface is the actual dialog background -->
         <item name="colorSurface">@color/window_background_dark</item>

@@ -81,7 +81,7 @@
 
     <style name="Theme.Black.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="elevationOverlayColor">@color/primary_black</item>
-        <item name="colorPrimary">@color/secondary_black</item>
+        <item name="colorPrimary">@color/primary_black</item>
         <item name="colorSecondary">@color/secondary_black</item>
         <!-- colorSurface is the actual dialog background -->
         <item name="colorSurface">@color/surface_black</item>
