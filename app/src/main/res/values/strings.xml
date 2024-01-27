@@ -52,6 +52,7 @@
     <string name="edit_generic">Edit</string>
     <string name="remove_generic">Remove</string>
     <string name="invalid_selection_generic">Invalid selection</string>
+    <string name="user_generic">User</string>
 
 
     <!-- Activities -->

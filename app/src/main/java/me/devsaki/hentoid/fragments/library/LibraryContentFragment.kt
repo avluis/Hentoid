@@ -1444,6 +1444,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         // Shouldn't trigger for a new download
         if (newSearch) activity.get()!!.updateSearchBarOnResults(!result.isEmpty())
         val query = getQuery()
+
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
         if (newSearch && StringHelper.isNumeric(query)) {
@@ -1458,19 +1459,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                         BaseTransientBottomBar.LENGTH_LONG
                     )
                     snackbar.setAction(R.string.menu_search) {
-                        invoke(
-                            requireContext(),
-                            parentFragmentManager,
-                            query,
-                            siteCodes
-                        )
+                        invoke(parentFragmentManager, query, siteCodes)
                     }
                     snackbar.show()
                 }
-            } else invoke(
-                requireContext(),
-                parentFragmentManager, query, siteCodes
-            )
+            } else invoke(parentFragmentManager, query, siteCodes)
         }
 
         if (newSearch && query.trim().equals(

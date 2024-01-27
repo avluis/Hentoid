@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.library
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +29,6 @@ class SearchContentIdDialogFragment : DialogFragment() {
         private const val FOUND_SITES = "FOUND_SITES"
 
         operator fun invoke(
-            context: Context,
             fragmentManager: FragmentManager,
             id: String,
             siteCodes: List<Int>
@@ -61,29 +59,43 @@ class SearchContentIdDialogFragment : DialogFragment() {
         val title: TextView = rootView.requireById(R.id.search_bookid_title)
         title.text = getString(R.string.search_bookid_label, bookId)
 
-        // Only possible for sites queryable with an unique book ID
-        val sites: MutableList<Site> = ArrayList()
-        requireArguments().getIntegerArrayList(FOUND_SITES)?.apply {
-            Preferences.getActiveSites().forEach {
-                if (!contains(it.code) && it.hasUniqueBookId()) sites.add(it)
+        val foundSites = requireArguments().getIntegerArrayList(FOUND_SITES) ?: return
+        val sites = Preferences.getActiveSites()
+            .filter { it.hasUniqueBookId() }
+            .filterNot { foundSites.contains(it.code) }
+            .sortedBy { it.name }
+
+        val itemAdapter = ItemAdapter<DrawerItem>()
+        val items: MutableList<DrawerItem> = ArrayList()
+        val userTxt = resources.getString(R.string.user_generic).lowercase()
+        sites.forEach {
+            items.add(DrawerItem.fromSite(it))
+            if (it == Site.PIXIV) {
+                val item = DrawerItem(
+                    it.description.uppercase() + " ($userTxt)",
+                    it.ico,
+                    Content.getWebActivityClass(it),
+                    it.code.toLong()
+                )
+                item.site = it
+                item.tag = 1 // Specific value
+                items.add(item)
             }
         }
-        // TODO PIXIV
-        val itemAdapter = ItemAdapter<DrawerItem>()
-        itemAdapter.set(sites.map { s -> DrawerItem.fromSite(s) })
+        itemAdapter.set(items)
 
         // Item click listener
         val fastAdapter: FastAdapter<DrawerItem> = FastAdapter.with(itemAdapter)
-        fastAdapter.onClickListener = { _, _, i, _ -> onItemSelected(i.site) }
+        fastAdapter.onClickListener = { _, _, i, _ -> onItemSelected(i.site, i.tag as Int?) }
         val sitesRecycler =
             ViewCompat.requireViewById<RecyclerView>(rootView, R.id.select_sites)
         sitesRecycler.adapter = fastAdapter
     }
 
-    private fun onItemSelected(s: Site?): Boolean {
+    private fun onItemSelected(s: Site?, altCode: Int?): Boolean {
         if (null == s) return false
         ContentHelper.launchBrowserFor(
-            requireContext(), Content.getGalleryUrlFromId(s, bookId)
+            requireContext(), Content.getGalleryUrlFromId(s, bookId, altCode ?: 0)
         )
         dismiss()
         return true

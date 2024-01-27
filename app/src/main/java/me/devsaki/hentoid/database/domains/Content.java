@@ -490,6 +490,10 @@ public class Content implements Serializable {
     }
 
     public static String getGalleryUrlFromId(@NonNull Site site, @NonNull String id) {
+        return getGalleryUrlFromId(site, id, 0);
+    }
+
+    public static String getGalleryUrlFromId(@NonNull Site site, @NonNull String id, int altCode) {
         switch (site) {
             case HITOMI:
                 return site.getUrl() + "/galleries/" + id + ".html";
@@ -511,7 +515,8 @@ public class Content implements Serializable {
             case HBROWSE:
                 return site.getUrl() + id + "/c00001";
             case PIXIV:
-                return site.getUrl() + "artworks/" + id;
+                if (1 == altCode) return site.getUrl() + "users/" + id;
+                else return site.getUrl() + "artworks/" + id;
             case MULTPORN:
                 return site.getUrl() + "node/" + id;
             case HDPORNCOMICS:
