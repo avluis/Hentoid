@@ -4,6 +4,7 @@
       "useMobileAgent": false,
       "comment": "Hitomi needs a desktop agent to properly display gallery images on some devices",
       "useWebviewAgent": false,
+      "hasUniqueBookId": true,
       "requestsCapPerSecond": 2,
       "parallelDownloadCap": 2,
       "galleryHeight": 7
@@ -11,16 +12,20 @@
     "NHENTAI": {
       "useHentoidAgent": false,
       "useWebviewAgent": false,
+      "hasUniqueBookId": true,
       "useCloudflare": true
     },
     "TSUMINO": {
-      "useHentoidAgent": true
+      "useHentoidAgent": true,
+      "hasUniqueBookId": true
     },
     "ASMHENTAI": {
-      "useHentoidAgent": true
+      "useHentoidAgent": true,
+      "hasUniqueBookId": true
     },
     "ASMHENTAI_COMICS": {
-      "useHentoidAgent": true
+      "useHentoidAgent": true,
+      "hasUniqueBookId": true
     },
     "EHENTAI": {
       "useHentoidAgent": true,
@@ -32,6 +37,12 @@
     },
     "EXHENTAI": {
       "hasBackupURLs": true
+    },
+    "LUSCIOUS": {
+      "hasUniqueBookId": true
+    },
+    "HENTAIFOX": {
+      "hasUniqueBookId": true
     },
     "MANHWA": {
       "hasCoverBasedPageUpdates": true,
@@ -46,11 +57,13 @@
     "PIXIV": {
       "useWebviewAgent": false,
       "requestsCapPerSecond": 3,
-      "parallelDownloadCap": 3
+      "parallelDownloadCap": 3,
+      "hasUniqueBookId": true
     },
     "IMHENTAI": {
       "requestsCapPerSecond": 1,
-      "parallelDownloadCap": 2
+      "parallelDownloadCap": 2,
+      "hasUniqueBookId": true
     },
     "PURURIN": {
       "bookCardDepth": 1,
@@ -59,13 +72,15 @@
       ]
     },
     "HDPORNCOMICS": {
-      "galleryHeight": 3
+      "galleryHeight": 3,
+      "hasUniqueBookId": true
     },
     "HENTAI2READ": {
       "galleryHeight": 4
     },
     "MULTPORN": {
-      "galleryHeight": 2
+      "galleryHeight": 2,
+      "hasUniqueBookId": true
     },
     "ANCHIRA": {
       "useWebviewAgent": false,

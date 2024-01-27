@@ -14,6 +14,7 @@ public class JsonSiteSettings {
         public Boolean hasBackupURLs = null;
         public Boolean hasCoverBasedPageUpdates = null;
         public Boolean useCloudflare = null;
+        public Boolean hasUniqueBookId = null;
         public Integer parallelDownloadCap = null;
         public Integer requestsCapPerSecond = null;
         public Integer bookCardDepth = null;

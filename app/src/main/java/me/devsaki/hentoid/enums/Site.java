@@ -78,6 +78,7 @@ public enum Site {
     private boolean hasBackupURLs = false;
     private boolean hasCoverBasedPageUpdates = false;
     private boolean useCloudflare = false;
+    private boolean hasUniqueBookId = false;
     private int requestsCapPerSecond = -1;
     private int parallelDownloadCap = 0;
     // Controls for "Mark downloaded/merged" in browser
@@ -166,6 +167,10 @@ public enum Site {
         return useCloudflare;
     }
 
+    public boolean hasUniqueBookId() {
+        return hasUniqueBookId;
+    }
+
     public int getRequestsCapPerSecond() {
         return requestsCapPerSecond;
     }
@@ -214,6 +219,8 @@ public enum Site {
             hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates;
         if (jsonSite.useCloudflare != null)
             useCloudflare = jsonSite.useCloudflare;
+        if (jsonSite.hasUniqueBookId != null)
+            hasUniqueBookId = jsonSite.hasUniqueBookId;
         if (jsonSite.parallelDownloadCap != null)
             parallelDownloadCap = jsonSite.parallelDownloadCap;
         if (jsonSite.requestsCapPerSecond != null)
