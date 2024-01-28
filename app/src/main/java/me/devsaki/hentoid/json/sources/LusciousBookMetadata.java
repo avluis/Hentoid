@@ -34,6 +34,7 @@ public class LusciousBookMetadata {
         private CoverInfo cover;
         private LanguageInfo language;
         private List<TagInfo> tags;
+        private Boolean is_manga;
     }
 
     private static class CoverInfo {
@@ -87,6 +88,10 @@ public class LusciousBookMetadata {
             Attribute attribute = new Attribute(type, name, RELATIVE_URL_PREFIX + tag.url, Site.LUSCIOUS);
             attributes.add(attribute);
         }
+
+        Attribute attribute = new Attribute(AttributeType.CATEGORY, info.is_manga ? "manga" : "picture set", "", Site.LUSCIOUS);
+        attributes.add(attribute);
+
         content.putAttributes(attributes);
 
         if (updateImages) {
