@@ -45,9 +45,7 @@ class DuplicateDialogFragment : DialogFragment() {
 
         val centerInside: Transformation<Bitmap> = CenterInside()
 
-        val glideRequestOptions = RequestOptions()
-            .optionalTransform(centerInside)
-            .error(d)
+        val glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
 
         fun invoke(
             parent: FragmentActivity,
@@ -104,9 +102,7 @@ class DuplicateDialogFragment : DialogFragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View {
         binding = DialogWebDuplicateBinding.inflate(inflater, container, false)
         return binding!!.root
@@ -132,21 +128,12 @@ class DuplicateDialogFragment : DialogFragment() {
                 ivCover.visibility = View.VISIBLE
                 ivCover.setOnClickListener {
                     ContentHelper.openReader(
-                        context,
-                        libraryContent,
-                        -1,
-                        null,
-                        false,
-                        true
+                        context, libraryContent, -1, null, false, true
                     )
                 }
-                if (thumbLocation.startsWith("http")) Glide.with(ivCover)
-                    .load(thumbLocation)
-                    .apply(glideRequestOptions)
-                    .into(ivCover) else Glide.with(ivCover)
-                    .load(Uri.parse(thumbLocation))
-                    .apply(glideRequestOptions)
-                    .into(ivCover)
+                if (thumbLocation.startsWith("http")) Glide.with(ivCover).load(thumbLocation)
+                    .apply(glideRequestOptions).into(ivCover) else Glide.with(ivCover)
+                    .load(Uri.parse(thumbLocation)).apply(glideRequestOptions).into(ivCover)
             }
             @DrawableRes val resId = ContentHelper.getFlagResourceId(context, libraryContent)
             if (resId != 0) {
@@ -163,9 +150,11 @@ class DuplicateDialogFragment : DialogFragment() {
             tvPagesLibrary.text = resources.getString(stringRes, libraryContent.qtyPages)
             tvPagesSource.visibility = if (0 == onlineContentPages) View.INVISIBLE else View.VISIBLE
             tvPagesSource.text = resources.getString(
-                R.string.work_pages_duplicate_dialog_source,
-                onlineContentPages
+                R.string.work_pages_duplicate_dialog_source, onlineContentPages
             )
+            tvStatus.text =
+                if (ContentHelper.isInQueue(libraryContent.status)) resources.getString(R.string.duplicate_in_queue)
+                else resources.getString(R.string.duplicate_in_library)
 
             // Buttons
             val site = libraryContent.site
@@ -186,8 +175,7 @@ class DuplicateDialogFragment : DialogFragment() {
 
             // Similarity score
             tvScore.text = context.getString(
-                R.string.duplicate_alert_similarity,
-                similarity * 100
+                R.string.duplicate_alert_similarity, similarity * 100
             )
             cancelBtn.setOnClickListener { dismissAllowingStateLoss() }
             replaceBtn.setOnClickListener { submit(ActionMode.REPLACE) }

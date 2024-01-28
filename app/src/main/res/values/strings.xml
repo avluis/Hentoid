@@ -918,6 +918,8 @@
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
     <string name="duplicate_wait_index">Indexing…</string>
+    <string name="duplicate_in_library">In library</string>
+    <string name="duplicate_in_queue">In queue</string>
 
     <!-- Metadata editor -->
     <string name="meta_cover_multiple_warning">Cover cannot be changed for multiple books</string>

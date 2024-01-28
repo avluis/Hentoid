@@ -187,9 +187,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/barrier" />
 
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textStyle="italic"
+        android:textColor="@color/card_tags_light"
+        android:textSize="@dimen/caption"
+        app:layout_constraintEnd_toEndOf="@id/ivCover"
+        app:layout_constraintStart_toStartOf="@id/ivCover"
+        app:layout_constraintTop_toBottomOf="@id/ivCover"
+        tools:text="In library" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/replace_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -202,7 +215,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/download_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/duplicate_alert_download_book"
@@ -214,7 +227,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/download_plus_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/duplicate_alert_download_pages"
@@ -224,9 +237,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/download_btn" />
 
+    <CheckBox
+        android:id="@+id/ch_always_download"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/duplicate_alert_always_download"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/download_plus_btn" />
+
+    <CheckBox
+        android:id="@+id/ch_never_extra_on_dupes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/duplicate_alert_never_extra_on_dupes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ch_always_download" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/cancel_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/cancel"
@@ -234,25 +265,6 @@
         app:icon="@drawable/ic_close"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/download_plus_btn" />
-
-    <CheckBox
-        android:id="@+id/ch_always_download"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:checked="false"
-        android:text="@string/duplicate_alert_always_download"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cancel_btn" />
-
-    <CheckBox
-        android:id="@+id/ch_never_extra_on_dupes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:checked="false"
-        android:text="@string/duplicate_alert_never_extra_on_dupes"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ch_always_download" />
-
+        app:layout_constraintTop_toBottomOf="@id/ch_never_extra_on_dupes" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
