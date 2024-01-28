@@ -1737,7 +1737,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         refreshIfNeeded()
     }
 
-    override fun onChangeGroupSuccess() {
+    override fun onChangeGroupSuccess(nbItems : Int) {
+        snack(resources.getQuantityString(R.plurals.notif_process_complete_details, nbItems, nbItems))
         refreshIfNeeded()
     }
 

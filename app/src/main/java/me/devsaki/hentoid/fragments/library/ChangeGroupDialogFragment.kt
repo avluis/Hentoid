@@ -145,7 +145,7 @@ class ChangeGroupDialogFragment : DialogFragment() {
         if (existingRadio.isChecked) {
             if (existingSpin.index > -1) {
                 viewModel.moveContentsToCustomGroup(bookIds, customGroups[existingSpin.index]) {
-                    getParent()?.onChangeGroupSuccess()
+                    getParent()?.onChangeGroupSuccess(bookIds.size)
                     dismissAllowingStateLoss()
                 }
 
@@ -154,7 +154,7 @@ class ChangeGroupDialogFragment : DialogFragment() {
             }
         } else if (detachRadio.isChecked) {
             viewModel.moveContentsToCustomGroup(bookIds, null) {
-                getParent()?.onChangeGroupSuccess()
+                getParent()?.onChangeGroupSuccess(bookIds.size)
                 dismissAllowingStateLoss()
             }
         } else newNameTxt.editText?.let { edit -> // New group
@@ -163,11 +163,9 @@ class ChangeGroupDialogFragment : DialogFragment() {
                 val groupMatchingName =
                     customGroups.filter { g -> g.name.equals(newNameStr, ignoreCase = true) }
                 if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
-                    viewModel.moveContentsToNewCustomGroup(
-                        bookIds, newNameStr
-                    )
+                    viewModel.moveContentsToNewCustomGroup(bookIds, newNameStr)
                     {
-                        getParent()?.onChangeGroupSuccess()
+                        getParent()?.onChangeGroupSuccess(bookIds.size)
                         dismissAllowingStateLoss()
                     }
                 } else {
@@ -184,6 +182,6 @@ class ChangeGroupDialogFragment : DialogFragment() {
     }
 
     interface Parent {
-        fun onChangeGroupSuccess()
+        fun onChangeGroupSuccess(nbItems: Int)
     }
 }

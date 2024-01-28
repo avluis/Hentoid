@@ -992,7 +992,7 @@
     <string name="notif_delete_title">Content deletion</string>
     <string name="notif_delete_complete">Deletion complete</string>
     <string name="notif_delete_prepurge_complete">Redownload/Stream pre-purge complete</string>
-    <plurals name="notif_delete_complete_details">
+    <plurals name="notif_process_complete_details">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> book processed successfully</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> books processed successfully</item>
     </plurals>

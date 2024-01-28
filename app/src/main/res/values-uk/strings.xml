@@ -854,7 +854,7 @@
     <string name="notif_archive_title">Архівування контенту</string>
     <string name="notif_delete_title">Видалення контенту</string>
     <string name="notif_delete_complete">Видалення завершено</string>
-    <plurals name="notif_delete_complete_details">
+    <plurals name="notif_process_complete_details">
         <item quantity="one">Видалено: <x:g id="number" example="1">%d</x:g></item>
         <item quantity="few">Видалено: <x:g id="number" example="1">%d</x:g></item>
         <item quantity="many">Видалено: <x:g id="number" example="1">%d</x:g></item>

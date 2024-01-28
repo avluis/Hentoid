@@ -25,7 +25,7 @@ class DeleteCompleteNotification(
             nbError
         )
         else context.resources.getQuantityString(
-            R.plurals.notif_delete_complete_details,
+            R.plurals.notif_process_complete_details,
             books,
             books
         )
