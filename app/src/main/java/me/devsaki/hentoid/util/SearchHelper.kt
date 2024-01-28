@@ -15,14 +15,16 @@ object SearchHelper {
     )
 
     data class AdvancedSearchCriteria(
-        var attributes: MutableList<Attribute> = ArrayList(),
+        // From universal search
         var query: String = "",
+        // From advanced search
+        var attributes: MutableList<Attribute> = ArrayList(),
         @ContentHelper.Location var location: Int = ContentHelper.Location.ANY,
         @ContentHelper.Type var contentType: Int = ContentHelper.Type.ANY
     ) {
         fun clear() {
-            attributes.clear()
             query = ""
+            attributes.clear()
             location = ContentHelper.Location.ANY
             contentType = ContentHelper.Type.ANY
         }
@@ -65,6 +67,9 @@ object SearchHelper {
         }
 
         fun toString(context: Context): String {
+            // Universal search
+            if (query.isNotEmpty()) return query
+            // Advanced search
             val labelElts: MutableList<String> =
                 attributes.map { a -> formatAttribute(a, context.resources) }.toMutableList()
             if (location != ContentHelper.Location.ANY) labelElts.add(

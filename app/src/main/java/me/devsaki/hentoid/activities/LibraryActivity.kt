@@ -162,9 +162,9 @@ class LibraryActivity : BaseActivity() {
 
     // Current metadata search query; one per tab
     private val advSearchCriteria = mutableListOf(
-        AdvancedSearchCriteria(ArrayList(), "", ContentHelper.Location.ANY, ContentHelper.Type.ANY),
+        AdvancedSearchCriteria("", ArrayList(), ContentHelper.Location.ANY, ContentHelper.Type.ANY),
         AdvancedSearchCriteria(
-            ArrayList(), "", ContentHelper.Location.ANY, ContentHelper.Type.ANY
+            "", ArrayList(), ContentHelper.Location.ANY, ContentHelper.Type.ANY
         )
     )
 
@@ -757,23 +757,23 @@ class LibraryActivity : BaseActivity() {
             )
             searchHistory = powerMenuBuilder.build()
             searchHistory?.apply {
-                setOnMenuItemClickListener { _: Int, (_, _, _, _, _, tag): PowerMenuItem ->
+                setOnMenuItemClickListener { _, (_, _, _, _, _, tag): PowerMenuItem ->
                     if (tag != null) { // Tap on search record
-                        val record = tag as SearchRecord?
-                        val searchUri = Uri.parse(record!!.searchString)
-                        var targetQuery = searchUri.path
-                        if (targetQuery!!.isNotEmpty()) targetQuery =
-                            targetQuery.substring(1) // Remove the leading '/'
-                        setQuery(targetQuery)
-                        setAdvancedSearchCriteria(SearchActivityBundle.parseSearchUri(searchUri))
-                        if (getAdvSearchCriteria().isEmpty()) { // Universal search
-                            if (getQuery().isNotEmpty()) viewModel.searchContentUniversal(getQuery())
-                        } else { // Advanced search
-                            viewModel.searchContent(
-                                getQuery(),
-                                getAdvSearchCriteria(),
-                                searchUri
-                            )
+                        (tag as SearchRecord?)?.let {
+                            val searchUri = Uri.parse(it.searchString)
+                            val crits = SearchActivityBundle.parseSearchUri(searchUri)
+                            setQuery(crits.query)
+                            setAdvancedSearchCriteria(crits)
+                            if (getAdvSearchCriteria().isEmpty()) { // Universal search
+                                if (getQuery().isNotEmpty())
+                                    viewModel.searchContentUniversal(getQuery())
+                            } else { // Advanced search
+                                viewModel.searchContent(
+                                    getQuery(),
+                                    getAdvSearchCriteria(),
+                                    searchUri
+                                )
+                            }
                         }
                     } else { // Clear history
                         val builder = MaterialAlertDialogBuilder(this@LibraryActivity)

@@ -79,35 +79,34 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
             }
         }
 
-        fun parseSearchUri(uri: Uri?): SearchHelper.AdvancedSearchCriteria {
+        fun parseSearchUri(uri: Uri): SearchHelper.AdvancedSearchCriteria {
             val attrs: MutableList<Attribute> = ArrayList()
             var location = 0
             var contentType = 0
-            var query = ""
-            if (uri != null) {
-                query = StringHelper.protect(uri.path)
-                for (typeStr in uri.queryParameterNames) {
-                    val type = AttributeType.searchByName(typeStr)
-                    if (type != null) { // Parameter is an Attribute
-                        for (attrStr in uri.getQueryParameters(typeStr)) {
-                            val attrParams = attrStr.split(";").toTypedArray()
-                            if (3 == attrParams.size) {
-                                attrs.add(
-                                    Attribute(type, attrParams[1])
-                                        .setId(attrParams[0].toLong())
-                                        .setExcluded(attrParams[2].toBoolean())
-                                )
-                            }
+            var query = StringHelper.protect(uri.path)
+            // Remove the leading '/'
+            if (query.isNotEmpty()) query = query.substring(1)
+            for (typeStr in uri.queryParameterNames) {
+                val type = AttributeType.searchByName(typeStr)
+                if (type != null) { // Parameter is an Attribute
+                    for (attrStr in uri.getQueryParameters(typeStr)) {
+                        val attrParams = attrStr.split(";").toTypedArray()
+                        if (3 == attrParams.size) {
+                            attrs.add(
+                                Attribute(type, attrParams[1])
+                                    .setId(attrParams[0].toLong())
+                                    .setExcluded(attrParams[2].toBoolean())
+                            )
                         }
-                    } else {
-                        if ("location" == typeStr) location =
-                            uri.getQueryParameters(typeStr)[0].toInt()
-                        if ("contentType" == typeStr) contentType =
-                            uri.getQueryParameters(typeStr)[0].toInt()
                     }
+                } else {
+                    if ("location" == typeStr) location =
+                        uri.getQueryParameters(typeStr)[0].toInt()
+                    if ("contentType" == typeStr) contentType =
+                        uri.getQueryParameters(typeStr)[0].toInt()
                 }
             }
-            return SearchHelper.AdvancedSearchCriteria(attrs, query, location, contentType)
+            return SearchHelper.AdvancedSearchCriteria(query, attrs, location, contentType)
         }
     }
 }

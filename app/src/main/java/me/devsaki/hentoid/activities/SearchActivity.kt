@@ -180,7 +180,7 @@ class SearchActivity : BaseActivity() {
         excludeClicked = savedInstanceState.getBoolean("exclude")
         val searchUri = Uri.parse(SearchActivityBundle(savedInstanceState).uri)
         if (searchUri != null) {
-            val (attributes, _, location, contentType) = parseSearchUri(searchUri)
+            val (_, attributes, location, contentType) = parseSearchUri(searchUri)
             if (attributes.isNotEmpty()) viewModel.setSelectedAttributes(attributes)
             binding?.apply {
                 if (location > 0) {

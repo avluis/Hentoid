@@ -116,18 +116,12 @@ class ContentSearchManager(val dao: CollectionDAO) {
         val tags = parseSearchUri(Uri.parse(values.attributes)).attributes
         return when {
             // Universal search
-            values.query.isNotEmpty() -> dao.searchBooksUniversal(
-                values
-            )
+            values.query.isNotEmpty() -> dao.searchBooksUniversal(values)
             // Advanced search
-            tags.isNotEmpty() || values.location > 0 || values.contentType > 0 -> dao.searchBooks(
-                values,
-                tags
-            )
+            tags.isNotEmpty() || values.location > 0 || values.contentType > 0 ->
+                dao.searchBooks(values, tags)
             // Default search (display recent)
-            else -> dao.selectRecentBooks(
-                values
-            )
+            else -> dao.selectRecentBooks(values)
         }
     }
 
