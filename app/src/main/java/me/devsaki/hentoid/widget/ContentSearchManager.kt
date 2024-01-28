@@ -195,7 +195,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
         }
 
         companion object {
-            fun fromSearchCriteria(data: SearchHelper.AdvancedSearchCriteria): ContentSearchBundle {
+            fun fromSearchCriteria(data: SearchHelper.SearchCriteria): ContentSearchBundle {
                 val result = ContentSearchBundle()
 
                 result.apply {

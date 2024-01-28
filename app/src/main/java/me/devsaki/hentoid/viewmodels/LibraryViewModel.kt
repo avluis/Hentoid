@@ -38,7 +38,7 @@ import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.RandomSeed
-import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
+import me.devsaki.hentoid.util.SearchHelper.SearchCriteria
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
@@ -186,7 +186,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param query    Query to use for the search
      * @param metadata Metadata to use for the search
      */
-    fun searchContent(query: String, metadata: AdvancedSearchCriteria, searchUri: Uri) {
+    fun searchContent(query: String, metadata: SearchCriteria, searchUri: Uri) {
         contentSearchManager.setQuery(query)
         contentSearchManager.setTags(metadata.attributes)
         contentSearchManager.setLocation(metadata.location)

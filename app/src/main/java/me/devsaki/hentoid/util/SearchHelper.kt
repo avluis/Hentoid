@@ -14,7 +14,7 @@ object SearchHelper {
         val totalSelectedAttributes: Long
     )
 
-    data class AdvancedSearchCriteria(
+    data class SearchCriteria(
         // From universal search
         var query: String = "",
         // From advanced search

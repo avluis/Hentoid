@@ -33,14 +33,14 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
     // Helper methods
     companion object {
         fun buildSearchUri(
-            advancedSearchCriteria: SearchHelper.AdvancedSearchCriteria,
+            searchCriteria: SearchHelper.SearchCriteria,
             query: String? = null
         ): Uri {
             return buildSearchUri(
-                advancedSearchCriteria.attributes,
-                query ?: advancedSearchCriteria.query,
-                advancedSearchCriteria.location,
-                advancedSearchCriteria.contentType
+                searchCriteria.attributes,
+                query ?: searchCriteria.query,
+                searchCriteria.location,
+                searchCriteria.contentType
             )
         }
 
@@ -79,7 +79,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
             }
         }
 
-        fun parseSearchUri(uri: Uri): SearchHelper.AdvancedSearchCriteria {
+        fun parseSearchUri(uri: Uri): SearchHelper.SearchCriteria {
             val attrs: MutableList<Attribute> = ArrayList()
             var location = 0
             var contentType = 0
@@ -106,7 +106,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
                         uri.getQueryParameters(typeStr)[0].toInt()
                 }
             }
-            return SearchHelper.AdvancedSearchCriteria(query, attrs, location, contentType)
+            return SearchHelper.SearchCriteria(query, attrs, location, contentType)
         }
     }
 }

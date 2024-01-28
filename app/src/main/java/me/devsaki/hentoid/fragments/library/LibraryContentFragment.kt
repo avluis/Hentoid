@@ -84,7 +84,7 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
+import me.devsaki.hentoid.util.SearchHelper.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper
@@ -263,11 +263,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private var excludeClicked = false
 
     // Launches the search activity according to the returned result
-    private val advancedSearchReturnLauncher = registerForActivityResult<Intent, ActivityResult>(
+    private val advancedSearchReturnLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
-        advancedSearchReturnResult(result)
-    }
+    ) { result: ActivityResult -> advancedSearchReturnResult(result) }
 
     /**
      * Diff calculation rules for contents
@@ -466,16 +464,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         return activity.get()!!.getQuery()
     }
 
-    private fun setQuery(query: String?) {
-        activity.get()!!.setQuery(query)
+    private fun getMetadata(): SearchCriteria {
+        return activity.get()!!.getSearchCriteria()
     }
 
-    private fun getMetadata(): AdvancedSearchCriteria {
-        return activity.get()!!.getAdvSearchCriteria()
-    }
-
-    private fun setMetadata(criteria: AdvancedSearchCriteria) {
-        activity.get()!!.setAdvancedSearchCriteria(criteria)
+    private fun setMetadata(criteria: SearchCriteria) {
+        activity.get()?.setAdvancedSearchCriteria(criteria)
     }
 
     private fun enterEditMode() {
@@ -1118,7 +1112,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val searchUri = Uri.parse(parser.uri)
             if (searchUri != null) {
                 excludeClicked = parser.excludeMode
-                setQuery(searchUri.path)
                 setMetadata(parseSearchUri(searchUri))
                 viewModel.searchContent(getQuery(), getMetadata(), searchUri)
             }

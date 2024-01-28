@@ -19,7 +19,7 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.ActivitySearchBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment.Companion.invoke
-import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
+import me.devsaki.hentoid.util.SearchHelper.SearchCriteria
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.viewmodels.SearchViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -47,7 +47,7 @@ class SearchActivity : BaseActivity() {
         setContentView(binding!!.root)
 
         val intent = intent
-        var preSelectedCriteria: AdvancedSearchCriteria? = null
+        var preSelectedCriteria: SearchCriteria? = null
         if (intent != null && intent.extras != null) {
             val parser = SearchActivityBundle(intent.extras!!)
             val searchUri = Uri.parse(parser.uri)

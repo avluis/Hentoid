@@ -656,7 +656,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     private List<GroupItem> selectGroupItemsByQuery(@NonNull final Group group) {
-        SearchHelper.AdvancedSearchCriteria criteria = SearchActivityBundle.Companion.parseSearchUri(Uri.parse(group.searchUri));
+        SearchHelper.SearchCriteria criteria = SearchActivityBundle.Companion.parseSearchUri(Uri.parse(group.searchUri));
         ContentSearchManager.ContentSearchBundle bundle = ContentSearchManager.ContentSearchBundle.Companion.fromSearchCriteria(criteria);
         List<Long> contentResult = ContentSearchManager.Companion.searchContentIds(bundle, this);
         return Stream.of(contentResult).map(c -> new GroupItem(c, group, -1)).toList();

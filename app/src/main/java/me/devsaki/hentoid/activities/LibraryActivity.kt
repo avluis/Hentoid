@@ -66,7 +66,7 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.SearchHelper.AdvancedSearchCriteria
+import me.devsaki.hentoid.util.SearchHelper.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.TooltipHelper
@@ -156,14 +156,10 @@ class LibraryActivity : BaseActivity() {
     // True if display settings have been changed
     private var hasChangedDisplaySettings = false
 
-
-    // Current text search query; one per tab
-    private val query = mutableListOf<String?>("", "")
-
-    // Current metadata search query; one per tab
-    private val advSearchCriteria = mutableListOf(
-        AdvancedSearchCriteria("", ArrayList(), ContentHelper.Location.ANY, ContentHelper.Type.ANY),
-        AdvancedSearchCriteria(
+    // Current search criteria; one per tab
+    private val searchCriteria = mutableListOf(
+        SearchCriteria("", ArrayList(), ContentHelper.Location.ANY, ContentHelper.Type.ANY),
+        SearchCriteria(
             "", ArrayList(), ContentHelper.Location.ANY, ContentHelper.Type.ANY
         )
     )
@@ -196,23 +192,23 @@ class LibraryActivity : BaseActivity() {
     }
 
     fun getQuery(): String {
-        return query[getCurrentFragmentIndex()] ?: ""
+        return getSearchCriteria().query
     }
 
-    fun setQuery(query: String?) {
-        this.query[getCurrentFragmentIndex()] = query
+    fun setQuery(query: String) {
+        getSearchCriteria().query = query
     }
 
-    fun getAdvSearchCriteria(): AdvancedSearchCriteria {
-        return advSearchCriteria[getCurrentFragmentIndex()]
+    fun getSearchCriteria(): SearchCriteria {
+        return searchCriteria[getCurrentFragmentIndex()]
     }
 
-    fun setAdvancedSearchCriteria(criteria: AdvancedSearchCriteria) {
-        advSearchCriteria[getCurrentFragmentIndex()] = criteria
+    fun setAdvancedSearchCriteria(criteria: SearchCriteria) {
+        searchCriteria[getCurrentFragmentIndex()] = criteria
     }
 
     private fun clearAdvancedSearchCriteria() {
-        advSearchCriteria[getCurrentFragmentIndex()] = AdvancedSearchCriteria()
+        searchCriteria[getCurrentFragmentIndex()] = SearchCriteria()
     }
 
     fun isEditMode(): Boolean {
@@ -470,7 +466,6 @@ class LibraryActivity : BaseActivity() {
 
             // Clear search
             searchClearBtn.setOnClickListener {
-                setQuery("")
                 clearAdvancedSearchCriteria()
                 actionSearchView!!.setQuery("", false)
                 hideSearchSubBar()
@@ -616,7 +611,7 @@ class LibraryActivity : BaseActivity() {
                 // Change display when text query is typed
                 setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(s: String): Boolean {
-                        setQuery(s.trim { it <= ' ' })
+                        setQuery(s.trim())
                         signalCurrentFragment(CommunicationEvent.Type.SEARCH, query.toString())
                         clearFocus()
                         return true
@@ -636,8 +631,7 @@ class LibraryActivity : BaseActivity() {
     }
 
     private fun clearSearch() {
-        setQuery("")
-        getAdvSearchCriteria().query = ""
+        getSearchCriteria().query = ""
         signalCurrentFragment(CommunicationEvent.Type.SEARCH, getQuery())
         binding?.advancedSearch?.apply {
             searchClearBtn.visibility = View.GONE
@@ -671,13 +665,13 @@ class LibraryActivity : BaseActivity() {
                 }
                 showSearchSubBar(
                     !isGroupDisplayed(),
-                    true,
-                    !getAdvSearchCriteria().isEmpty(),
-                    false
+                    showClear = true,
+                    showSaveSearch = true,
+                    showSearchHistory = false
                 )
             } else {
                 collapseSearchMenu()
-                if (it.query.isNotEmpty()) actionSearchView!!.setQuery("", false)
+                if (it.query.isNotEmpty()) actionSearchView?.setQuery("", false)
                 hideSearchSubBar()
             }
         }
@@ -761,16 +755,14 @@ class LibraryActivity : BaseActivity() {
                     if (tag != null) { // Tap on search record
                         (tag as SearchRecord?)?.let {
                             val searchUri = Uri.parse(it.searchString)
-                            val crits = SearchActivityBundle.parseSearchUri(searchUri)
-                            setQuery(crits.query)
-                            setAdvancedSearchCriteria(crits)
-                            if (getAdvSearchCriteria().isEmpty()) { // Universal search
+                            setAdvancedSearchCriteria(SearchActivityBundle.parseSearchUri(searchUri))
+                            if (getSearchCriteria().isEmpty()) { // Universal search
                                 if (getQuery().isNotEmpty())
                                     viewModel.searchContentUniversal(getQuery())
                             } else { // Advanced search
                                 viewModel.searchContent(
                                     getQuery(),
-                                    getAdvSearchCriteria(),
+                                    getSearchCriteria(),
                                     searchUri
                                 )
                             }
@@ -952,7 +944,7 @@ class LibraryActivity : BaseActivity() {
      * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
     fun isSearchQueryActive(): Boolean {
-        return getQuery().isNotEmpty() || !getAdvSearchCriteria().isEmpty()
+        return getQuery().isNotEmpty() || !getSearchCriteria().isEmpty()
     }
 
     private fun fixPermissions() {
@@ -1043,7 +1035,6 @@ class LibraryActivity : BaseActivity() {
 
     fun isFilterActive(): Boolean {
         if (isSearchQueryActive()) {
-            setQuery("")
             clearAdvancedSearchCriteria()
             collapseSearchMenu()
             hideSearchSubBar()
@@ -1276,7 +1267,7 @@ class LibraryActivity : BaseActivity() {
     }
 
     private fun saveSearchAsGroup() {
-        val criteria = getAdvSearchCriteria()
+        val criteria = getSearchCriteria()
         InputDialog.invokeInputDialog(
             this,
             R.string.group_new_name_dynamic,
