@@ -47,6 +47,7 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.core.BiConsumer
+import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
@@ -320,6 +321,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             R.id.web_menu_bookmark -> onBookmarkClick()
             R.id.web_menu_refresh_stop -> onRefreshStopClick()
             R.id.web_menu_copy -> onCopyClick()
+            R.id.web_menu_open_ext_browser -> onExternalBrowser()
             R.id.web_menu_settings -> onSettingsClick()
             R.id.web_menu_about -> onAboutClick()
             else -> {
@@ -777,11 +779,15 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * Handler for the "copy URL to clipboard" button
      */
     private fun onCopyClick() {
-        if (Helper.copyPlainTextToClipboard(
-                this,
-                StringHelper.protect(webView.url)
-            )
-        ) ToastHelper.toast(R.string.web_url_clipboard)
+        if (Helper.copyPlainTextToClipboard(this, StringHelper.protect(webView.url)))
+            ToastHelper.toast(R.string.web_url_clipboard)
+    }
+
+    /**
+     * Handler for the "open in external browser" button
+     */
+    private fun onExternalBrowser() {
+        startBrowserActivity(StringHelper.protect(webView.url))
     }
 
     /**
