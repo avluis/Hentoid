@@ -81,7 +81,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/drawer_app_queue_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -107,7 +107,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/drawer_about_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"

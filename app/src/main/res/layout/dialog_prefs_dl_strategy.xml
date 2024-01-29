@@ -22,7 +22,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/choice_balance"
-            style="@style/HentoidButtonOutlinedStyle"
+            style="@style/HentoidCheckButtonOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight=".5"
@@ -32,7 +32,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/choice_fallover"
-            style="@style/HentoidButtonOutlinedStyle"
+            style="@style/HentoidCheckButtonOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight=".5"

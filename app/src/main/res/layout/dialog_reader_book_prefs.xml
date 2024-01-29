@@ -55,7 +55,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/book_prefs_app_prefs_btn"
-            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+            style="@style/Widget.Material3.Button.TextButton.Dialog"
             android:layout_width="wrap_content"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_marginTop="40dp"
@@ -66,7 +66,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/HentoidMaterialButtonOutlinedStyle"
             android:layout_width="96dp"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_marginTop="40dp"

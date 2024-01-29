@@ -60,14 +60,14 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/artist_display_artists"
-            style="@style/HentoidButtonOutlinedStyle"
+            style="@style/HentoidCheckButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/display_artists" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/artist_display_groups"
-            style="@style/HentoidButtonOutlinedStyle"
+            style="@style/HentoidCheckButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/display_groups" />

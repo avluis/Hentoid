@@ -46,7 +46,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_select_file_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_marginTop="16dp"
@@ -137,7 +137,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_run_btn"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_margin="8dp"

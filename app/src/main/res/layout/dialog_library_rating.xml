@@ -100,7 +100,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/clear_rating_btn"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="?android:attr/actionBarSize"
         android:text="@string/clear_rating"

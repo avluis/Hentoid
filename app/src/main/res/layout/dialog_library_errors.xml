@@ -44,7 +44,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/open_log_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -57,7 +57,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/share_log_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/redownload_share_log"
@@ -69,10 +69,9 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/redownload_btn"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:text="@string/redownload_action"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_download"

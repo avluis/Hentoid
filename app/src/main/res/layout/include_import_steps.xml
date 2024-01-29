@@ -64,7 +64,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/import_step1_button"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.Material3.Button.TextButton"
             android:backgroundTint="?colorSecondary"
             android:layout_width="0dp"
             android:layout_height="?android:attr/actionBarSize"
