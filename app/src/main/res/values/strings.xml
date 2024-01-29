@@ -703,7 +703,7 @@
     <string name="web_forward">Forward</string>
     <string name="web_bookmarks">Bookmarks</string>
     <string name="web_refresh_stop">Refresh/stop</string>
-    <string name="web_copy_url">Get link</string>
+    <string name="web_url">Use link</string>
     <string name="web_open_ext_browser">External browser</string>
     <string name="web_download">Download</string>
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>

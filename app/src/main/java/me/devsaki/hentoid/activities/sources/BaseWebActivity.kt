@@ -47,7 +47,6 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.core.BiConsumer
-import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
@@ -67,6 +66,7 @@ import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.fragments.web.BookmarksDialogFragment
 import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment
+import me.devsaki.hentoid.fragments.web.UrlDialogFragment
 import me.devsaki.hentoid.json.core.UpdateInfo.SourceAlert
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.ui.InputDialog.invokeNumberInputDialog
@@ -320,8 +320,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         when (item.itemId) {
             R.id.web_menu_bookmark -> onBookmarkClick()
             R.id.web_menu_refresh_stop -> onRefreshStopClick()
-            R.id.web_menu_copy -> onCopyClick()
-            R.id.web_menu_open_ext_browser -> onExternalBrowser()
+            R.id.web_menu_url -> onManageLinkClick()
             R.id.web_menu_settings -> onSettingsClick()
             R.id.web_menu_about -> onAboutClick()
             else -> {
@@ -749,7 +748,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      *
      * @param pageNum Page number to go to (1-indexed)
      */
-    fun goToPage(pageNum: Int) {
+    private fun goToPage(pageNum: Int) {
         val url = webView.url
         if (pageNum < 1 || null == url) return
         val newUrl = webClient.seekResultsUrl(url, pageNum)
@@ -776,18 +775,13 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     /**
-     * Handler for the "copy URL to clipboard" button
+     * Handler for the "Manage link" button
      */
-    private fun onCopyClick() {
-        if (Helper.copyPlainTextToClipboard(this, StringHelper.protect(webView.url)))
+    private fun onManageLinkClick() {
+        val url = StringHelper.protect(webView.url)
+        if (Helper.copyPlainTextToClipboard(this, url))
             ToastHelper.toast(R.string.web_url_clipboard)
-    }
-
-    /**
-     * Handler for the "open in external browser" button
-     */
-    private fun onExternalBrowser() {
-        startBrowserActivity(StringHelper.protect(webView.url))
+        UrlDialogFragment.invoke(this, url)
     }
 
     /**

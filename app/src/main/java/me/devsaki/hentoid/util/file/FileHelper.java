@@ -695,7 +695,6 @@ public class FileHelper {
      * @param title   Title of the user dialog
      */
     public static void shareFile(final @NonNull Context context, final @NonNull Uri fileUri, final @NonNull String title) {
-
         shareFile(context, fileUri, title, "text/*");
     }
 

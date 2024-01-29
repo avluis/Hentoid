@@ -905,13 +905,7 @@ public final class ContentHelper {
         String subject = (1 == items.size()) ? items.get(0).getTitle() : "";
         String text = StringUtils.join(Stream.of(items).map(Content::getGalleryUrl).toList(), System.getProperty("line.separator"));
 
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-        intent.putExtra(Intent.EXTRA_TEXT, text);
-
-        context.startActivity(Intent.createChooser(intent, context.getString(R.string.send_to)));
+        Helper.shareText(context, subject, text);
     }
 
     /**

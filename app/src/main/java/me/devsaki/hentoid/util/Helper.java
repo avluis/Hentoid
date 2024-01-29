@@ -8,6 +8,7 @@ import android.app.ActivityManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Point;
@@ -239,6 +240,23 @@ public final class Helper {
             clipboard.setPrimaryClip(clip);
             return true;
         } else return false;
+    }
+
+    /**
+     * Share the given text titled with the given subject
+     *
+     * @param context Context to be used
+     * @param subject Share subject
+     * @param text    Text to share
+     */
+    public static void shareText(@NonNull Context context, @NonNull String subject, @NonNull String text) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, text);
+
+        context.startActivity(Intent.createChooser(intent, context.getString(R.string.send_to)));
     }
 
     /**
