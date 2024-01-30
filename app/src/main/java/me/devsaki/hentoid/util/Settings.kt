@@ -67,6 +67,9 @@ object Settings {
     var isArchiveOverwrite: Boolean by BoolSetting("ARCHIVE_OVERWRITE", true)
     var isArchiveDeleteOnSuccess: Boolean by BoolSetting("ARCHIVE_DELETE_ON_SUCCESS", false)
 
+    // WEB
+    var isBrowserAugmented: Boolean by BoolSetting(Key.WEB_AUGMENTED_BROWSER, true)
+    var isAdBlockerOn: Boolean by BoolSetting(Key.WEB_ADBLOCKER, true)
 
     // READER
     var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)
@@ -144,6 +147,8 @@ object Settings {
         const val LIBRARY_GRID_CARD_WIDTH = "grid_card_width"
         const val ACHIEVEMENTS = "achievements"
         const val ACHIEVEMENTS_NB_AI_RESCALE = "ach_nb_ai_rescale"
+        const val WEB_AUGMENTED_BROWSER = "pref_browser_augmented"
+        const val WEB_ADBLOCKER = "WEB_ADBLOCKER"
     }
 
     object Value {

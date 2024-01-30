@@ -35,6 +35,7 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
@@ -327,7 +328,7 @@ open class CustomWebViewClient : WebViewClient {
      * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
      */
     private fun canUseSingleOkHttpRequest(): Boolean {
-        return (Preferences.isBrowserAugmented() && (HttpHelper.getChromeVersion() < 45 || HttpHelper.getChromeVersion() > 71))
+        return (Settings.isBrowserAugmented && (HttpHelper.getChromeVersion() < 45 || HttpHelper.getChromeVersion() > 71))
     }
 
 
@@ -346,10 +347,9 @@ open class CustomWebViewClient : WebViewClient {
     private fun shouldOverrideUrlLoadingInternal(
         view: WebView, url: String, requestHeaders: Map<String, String>?
     ): Boolean {
-        if (Preferences.isBrowserAugmented() && adBlocker.isBlocked(
-                url,
-                requestHeaders
-            ) || !url.startsWith("http")
+        if (Settings.isBrowserAugmented
+            && adBlocker.isBlocked(url, requestHeaders)
+            || !url.startsWith("http")
         ) return true
 
         // Download and open the torrent file
@@ -461,7 +461,7 @@ open class CustomWebViewClient : WebViewClient {
     private fun shouldInterceptRequestInternal(
         url: String, headers: Map<String, String>?
     ): WebResourceResponse? {
-        return if (Preferences.isBrowserAugmented() && adBlocker.isBlocked(url, headers)
+        return if (Settings.isBrowserAugmented && adBlocker.isBlocked(url, headers)
             || !url.startsWith("http")
         ) {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
@@ -807,17 +807,19 @@ open class CustomWebViewClient : WebViewClient {
         val doc = Jsoup.parse(stream, null, baseUri)
 
         // Add custom inline CSS to the main page only
-        if (customCss != null && baseUri == mainPageUrl) doc.head().appendElement("style")
-            .attr("type", "text/css").appendText(customCss)
+        if (customCss != null && baseUri == mainPageUrl)
+            doc.head().appendElement("style").attr("type", "text/css").appendText(customCss)
 
         // Remove ad spaces
-        if (removableElements != null) for (s in removableElements) for (e in doc.selectX(s)) {
-            Timber.d("[%s] Removing node %s", baseUri, e.toString())
-            e.remove()
-        }
+        if (Settings.isAdBlockerOn && removableElements != null)
+            for (s in removableElements)
+                for (e in doc.selectX(s)) {
+                    Timber.d("[%s] Removing node %s", baseUri, e.toString())
+                    e.remove()
+                }
 
         // Remove scripts
-        if (jsContentBlacklist != null) {
+        if (Settings.isAdBlockerOn && jsContentBlacklist != null) {
             for (e in doc.select("script")) {
                 val scriptContent = e.toString().lowercase(Locale.getDefault())
                 for (s in jsContentBlacklist) {
@@ -990,6 +992,6 @@ open class CustomWebViewClient : WebViewClient {
         val allMergedBooksUrls: List<String>
         val prefBlockedTags: List<String>
         val customCss: String
-        val scope : CoroutineScope
+        val scope: CoroutineScope
     }
 }

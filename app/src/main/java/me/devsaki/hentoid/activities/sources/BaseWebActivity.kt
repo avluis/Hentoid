@@ -77,6 +77,7 @@ import me.devsaki.hentoid.util.DuplicateHelper.getCoverBitmapFromStream
 import me.devsaki.hentoid.util.DuplicateHelper.getHashEngine
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper.getColor
 import me.devsaki.hentoid.util.ToastHelper
@@ -156,6 +157,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     // Top toolbar buttons
     private var refreshStopMenu: MenuItem? = null
     private var bookmarkMenu: MenuItem? = null
+    private var adblockMenu: MenuItem? = null
 
     @DrawableRes
     private var downloadIcon = 0
@@ -193,7 +195,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     protected var actionButtonMode: ActionMode? = null
 
     // Indicates which mode the seek button is in
-    protected var seekButtonMode: SeekMode? = null
+    private var seekButtonMode: SeekMode? = null
 
     // Alert to be displayed
     private var alert: SourceAlert? = null
@@ -201,8 +203,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     // Handler for fetch interceptor
     protected var fetchHandler: BiConsumer<String, String>? = null
     protected var xhrHandler: BiConsumer<String, String>? = null
-    protected var jsInterceptorScript: String? = null
-    protected var m_customCss: String? = null
+    private var jsInterceptorScript: String? = null
+    private var m_customCss: String? = null
 
 
     protected abstract fun createWebClient(): CustomWebViewClient
@@ -238,6 +240,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
         refreshStopMenu = toolbar.menu.findItem(R.id.web_menu_refresh_stop)
         bookmarkMenu = toolbar.menu.findItem(R.id.web_menu_bookmark)
+        adblockMenu = toolbar.menu.findItem(R.id.web_menu_adblocker)
         languageFilterButton = findViewById(R.id.language_filter_button)
         binding?.apply {
             bottomNavigation.setOnMenuItemClickListener { item ->
@@ -272,6 +275,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         if (Preferences.isBrowserMode()) downloadIcon = R.drawable.ic_forbidden_disabled
         binding?.actionButton?.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon))
         displayTopAlertBanner()
+        updateAdblockButton(Settings.isAdBlockerOn)
 
         addCustomBackControl()
     }
@@ -320,8 +324,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         when (item.itemId) {
             R.id.web_menu_bookmark -> onBookmarkClick()
             R.id.web_menu_refresh_stop -> onRefreshStopClick()
-            R.id.web_menu_url -> onManageLinkClick()
             R.id.web_menu_settings -> onSettingsClick()
+            R.id.web_menu_adblocker -> onAdblockClick()
+            R.id.web_menu_url -> onManageLinkClick()
             R.id.web_menu_about -> onAboutClick()
             else -> {
                 return false
@@ -711,7 +716,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     /**
      * Handler for the close icon of the bottom alert banner
      */
-    fun onBottomAlertCloseClick() {
+    private fun onBottomAlertCloseClick() {
         binding?.bottomAlert?.visibility = View.GONE
     }
 
@@ -775,6 +780,13 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     /**
+     * Handler for the "Adblocker" button
+     */
+    private fun onAdblockClick() {
+        Settings.isAdBlockerOn = !Settings.isAdBlockerOn
+    }
+
+    /**
      * Handler for the "Manage link" button
      */
     private fun onManageLinkClick() {
@@ -809,6 +821,13 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     override fun updateBookmarkButton(newValue: Boolean) {
         if (newValue) bookmarkMenu?.setIcon(R.drawable.ic_bookmark_full)
         else bookmarkMenu?.setIcon(R.drawable.ic_bookmark)
+    }
+
+    private fun updateAdblockButton(targetValue: Boolean) {
+        val targetTxt = if (targetValue) R.string.web_adblocker_on else R.string.web_adblocker_off
+        val targetIco = if (targetValue) R.drawable.ic_shield_on else R.drawable.ic_shield_off
+        adblockMenu?.icon = ContextCompat.getDrawable(this, targetIco)
+        adblockMenu?.title = resources.getString(targetTxt)
     }
 
     /**
@@ -1602,7 +1621,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             if (getStartSite() == Site.KSK) FileHelper.getAssetAsString(
                 assets, "ksk.css", sb
             )
-            if (getStartSite() == Site.PIXIV && Preferences.isBrowserAugmented()) FileHelper.getAssetAsString(
+            if (getStartSite() == Site.PIXIV && Settings.isBrowserAugmented) FileHelper.getAssetAsString(
                 assets, "pixiv.css", sb
             )
             m_customCss = sb.toString()
@@ -1652,6 +1671,12 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             } else webView.setOnLongTapListener(null)
         } else if (Preferences.Key.BROWSER_QUICK_DL_THRESHOLD == key) {
             webView.setLongClickThreshold(Preferences.getBrowserQuickDlThreshold())
+        } else if (Settings.Key.WEB_ADBLOCKER == key) {
+            if (Settings.isAdBlockerOn && !Settings.isBrowserAugmented)
+                Settings.isBrowserAugmented = true
+            updateAdblockButton(Settings.isAdBlockerOn)
+            webClient.adBlocker.setActive(Settings.isAdBlockerOn)
+            webView.reload()
         }
         if (reload && !webClient.isLoading()) webView.reload()
     }

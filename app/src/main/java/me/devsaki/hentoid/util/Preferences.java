@@ -344,10 +344,6 @@ public final class Preferences {
         return getBoolPref(Key.BROWSER_RESUME_LAST, Default.BROWSER_RESUME_LAST);
     }
 
-    public static boolean isBrowserAugmented() {
-        return getBoolPref(Key.BROWSER_AUGMENTED, Default.BROWSER_AUGMENTED);
-    }
-
     public static boolean isBrowserMarkDownloaded() {
         return getBoolPref(Key.BROWSER_MARK_DOWNLOADED, Default.BROWSER_MARK_DOWNLOADED);
     }
@@ -861,7 +857,6 @@ public final class Preferences {
         static final String WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String BROWSER_RESUME_LAST = "pref_browser_resume_last";
-        static final String BROWSER_AUGMENTED = "pref_browser_augmented";
         public static final String BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded";
         public static final String BROWSER_MARK_MERGED = "browser_mark_merged";
         public static final String BROWSER_MARK_BLOCKED = "browser_mark_blocked";
@@ -981,7 +976,6 @@ public final class Preferences {
         static final boolean WEBVIEW_OVERRIDE_OVERVIEW = false;
         public static final int WEBVIEW_INITIAL_ZOOM = 20;
         static final boolean BROWSER_RESUME_LAST = false;
-        static final boolean BROWSER_AUGMENTED = true;
         static final boolean BROWSER_MARK_DOWNLOADED = false;
         static final boolean BROWSER_MARK_MERGED = false;
         static final boolean BROWSER_MARK_BLOCKED = false;

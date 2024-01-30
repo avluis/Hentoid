@@ -11,6 +11,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.Collections
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 
 class AdBlocker(val site: Site) {
@@ -28,6 +29,8 @@ class AdBlocker(val site: Site) {
     private val jsUrlPatternWhitelist = Collections.synchronizedSet(HashSet<Pattern>())
 
     private val jsBlacklistCache = Collections.synchronizedSet(HashSet<String>())
+
+    private val isActive = AtomicBoolean(true)
 
 
     init {
@@ -191,6 +194,10 @@ class AdBlocker(val site: Site) {
         localJsContentBlacklist.add(sequence.lowercase(Locale.getDefault()))
     }
 
+    fun setActive(value: Boolean) {
+        isActive.set(value)
+    }
+
     /**
      * Indicate if the resource at the given URL is blocked by the current adblock settings
      *
@@ -199,6 +206,8 @@ class AdBlocker(val site: Site) {
      * @return True if the resource is blocked; false if not
      */
     fun isBlocked(url: String, headers: Map<String, String>?): Boolean {
+        if (!isActive.get()) return false
+
         val cleanUrl = url.lowercase(Locale.getDefault())
 
         // 1- Accept whitelisted JS files
@@ -207,10 +216,8 @@ class AdBlocker(val site: Site) {
         // 2- Process usual blacklist and cached dynamic blacklist
         if (isUrlBlacklisted(cleanUrl)) return true
         if (jsBlacklistCache.contains(cleanUrl)) {
-            if (BuildConfig.DEBUG) Timber.v(
-                "Blacklisted file BLOCKED (jsBlacklistCache) : %s",
-                cleanUrl
-            )
+            if (BuildConfig.DEBUG)
+                Timber.v("Blacklisted file BLOCKED (jsBlacklistCache) : %s", cleanUrl)
             return true
         }
 

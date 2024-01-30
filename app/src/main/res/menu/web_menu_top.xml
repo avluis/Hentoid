@@ -30,6 +30,12 @@
             android:visible="true"
             app:showAsAction="never" />
         <item
+            android:id="@+id/web_menu_adblocker"
+            android:icon="@drawable/ic_shield_on"
+            android:title="@string/web_adblocker_on"
+            android:tooltipText="@string/web_adblocker_on"
+            app:showAsAction="never" />
+        <item
             android:id="@+id/web_menu_url"
             android:icon="@drawable/ic_link"
             android:title="@string/web_url"

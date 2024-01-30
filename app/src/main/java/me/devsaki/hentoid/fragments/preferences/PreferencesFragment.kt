@@ -36,6 +36,7 @@ import me.devsaki.hentoid.retrofit.sources.EHentaiServer
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
@@ -126,6 +127,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
             Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
+            Settings.Key.WEB_AUGMENTED_BROWSER -> onAugmentedBrowserChanged()
         }
     }
 
@@ -164,7 +166,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             else -> super.onPreferenceTreeClick(preference)
         }
 
-    fun navigateToScreen(manager : FragmentManager, screenKey: String): PreferencesFragment {
+    fun navigateToScreen(manager: FragmentManager, screenKey: String): PreferencesFragment {
         val preferenceFragment = PreferencesFragment().withArguments {
             putString(ARG_PREFERENCE_ROOT, screenKey)
         }
@@ -266,5 +268,9 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 showSnackBar(caption)
             }
         }
+    }
+
+    private fun onAugmentedBrowserChanged() {
+        Settings.isAdBlockerOn = Settings.isBrowserAugmented
     }
 }
