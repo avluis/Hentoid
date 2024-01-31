@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
-import android.webkit.CookieManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
@@ -42,12 +41,10 @@ import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
-import kotlin.properties.Delegates
 
 
 class PreferencesFragment : PreferenceFragmentCompat(),
@@ -242,6 +239,8 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onClearCookies() {
+        CookiesDialogFragment.invoke(this)
+        /*
         fun showSnackBar(caption: Int) {
             val snack = Snackbar.make(
                 listView,
@@ -268,6 +267,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 showSnackBar(caption)
             }
         }
+         */
     }
 
     private fun onAugmentedBrowserChanged() {

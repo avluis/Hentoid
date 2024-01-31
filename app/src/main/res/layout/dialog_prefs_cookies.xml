@@ -20,7 +20,7 @@
         app:title="@string/pref_browser_clear_cookies_site" />
 
     <TextView
-        android:id="@+id/book_count"
+        android:id="@+id/cookies_list"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -37,12 +37,11 @@
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_marginTop="8dp"
-        android:enabled="false"
         android:text="@string/pref_browser_clear_cookies"
         android:textColor="?colorSecondary"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_delete"
         app:iconTint="?colorSecondary"
-        app:layout_constraintTop_toBottomOf="@id/book_count" />
+        app:layout_constraintTop_toBottomOf="@id/cookies_list" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
