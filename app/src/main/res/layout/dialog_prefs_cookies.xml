@@ -26,10 +26,13 @@
         android:gravity="center"
         android:padding="8dp"
         android:text=" "
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbars="vertical"
+        android:maxHeight="200dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/site_picker"
-        tools:text="Keep 546 books" />
+        tools:text="Stuff" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_button"

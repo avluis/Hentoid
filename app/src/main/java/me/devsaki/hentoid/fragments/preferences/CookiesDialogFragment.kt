@@ -24,14 +24,8 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
     private var binding: DialogPrefsCookiesBinding? = null
 
     // === VARIABLES
-//    private var parent: Parent? = null
     private lateinit var sites: List<Site>
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-//        parent = parentFragment as Parent
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,7 +37,6 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
     }
 
     override fun onDestroyView() {
-        //      parent = null
         binding = null
         super.onDestroyView()
     }
@@ -82,7 +75,10 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
                 val site = sites[sitePicker.index - 1]
                 cookies = HttpHelper.parseCookies(HttpHelper.getCookies(site.url))
             }
-            cookiesList.text = TextUtils.join("\n", cookies.keys)
+            if (cookies.keys.isNotEmpty())
+                cookiesList.text = TextUtils.join("\n", cookies.keys)
+            else
+                cookiesList.text = resources.getString(R.string.pref_browser_clear_cookies_ko)
         }
     }
 
