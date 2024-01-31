@@ -5,6 +5,7 @@ import android.webkit.URLUtil
 import androidx.core.util.Pair
 import com.squareup.moshi.Json
 import com.squareup.moshi.Types
+import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -16,6 +17,7 @@ import me.devsaki.hentoid.json.sources.EHentaiImageQuery
 import me.devsaki.hentoid.json.sources.EHentaiImageResponse
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.LogHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
@@ -294,7 +296,8 @@ class EHentaiParser : ImageListParser {
             headers: List<Pair<String, String>>,
             useHentoidAgent: Boolean,
             useWebviewAgent: Boolean,
-            progress: ParseProgress
+            progress: ParseProgress,
+            log: LogHelper.LogInfo?
         ): List<ImageFile> {
             // A.1- Detect the number of pages of the gallery
             val elements = galleryDoc.select("table.ptt a")
@@ -303,6 +306,11 @@ class EHentaiParser : ImageListParser {
             val tabId = if (1 == elements.size) 0 else elements.size - 2
             val nbGalleryPages = elements[tabId].text().toInt()
             progress.start(content.id, -1, nbGalleryPages)
+
+            log?.let {
+                it.addEntry("Table OK $nbGalleryPages")
+                LogHelper.writeLog(HentoidApp.getInstance(), it)
+            }
 
             // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
             val pageUrls: MutableList<String> = ArrayList()
@@ -323,6 +331,11 @@ class EHentaiParser : ImageListParser {
             }
             if (pageUrls.isEmpty()) throw ParseException("No picture pages have been found on the gallery")
 
+            log?.let {
+                it.addEntry("Pages OK ${pageUrls.size}")
+                LogHelper.writeLog(HentoidApp.getInstance(), it)
+            }
+
             // 3- Open all pages and
             //    - grab the URL of the displayed image
             //    - grab the alternate URL of the "Click here if the image fails loading" link
@@ -339,6 +352,12 @@ class EHentaiParser : ImageListParser {
                     )
                 )
             }
+
+            log?.let {
+                it.addEntry("Results OK ${result.size}")
+                LogHelper.writeLog(HentoidApp.getInstance(), it)
+            }
+
             return result
         }
 
@@ -434,7 +453,7 @@ class EHentaiParser : ImageListParser {
     }
 
     @Throws(java.lang.Exception::class)
-    private fun parseImageList(content: Content): List<ImageFile> {
+    private fun parseImageList(content: Content, log: LogHelper.LogInfo?): List<ImageFile> {
         EventBus.getDefault().register(this)
         var result: List<ImageFile> = emptyList()
         try {
@@ -460,6 +479,12 @@ class EHentaiParser : ImageListParser {
              */
             val useHentoidAgent = Site.EHENTAI.useHentoidAgent()
             val useWebviewAgent = Site.EHENTAI.useWebviewAgent()
+
+            log?.let {
+                it.addEntry("Get gallery from ${content.galleryUrl}...")
+                LogHelper.writeLog(HentoidApp.getInstance(), it)
+            }
+
             val galleryDoc = HttpHelper.getOnlineDocument(
                 content.galleryUrl,
                 headers,
@@ -467,6 +492,10 @@ class EHentaiParser : ImageListParser {
                 useWebviewAgent
             ) ?: throw ParseException("Unreachable gallery page")
 
+            log?.let {
+                it.addEntry("Gallery OK")
+                LogHelper.writeLog(HentoidApp.getInstance(), it)
+            }
             //result = loadMpv("https://e-hentai.org/mpv/530350/8b3c7e4a21/", headers, useHentoidAgent, useWebviewAgent);
 
             // Detect if multipage viewer is on
@@ -474,6 +503,10 @@ class EHentaiParser : ImageListParser {
             val elements = galleryDoc.select(MPV_LINK_CSS)
             result = if (!elements.isEmpty()) {
                 val mpvUrl = elements[0].attr("href")
+                log?.let {
+                    it.addEntry("Trying MPV at $mpvUrl...")
+                    LogHelper.writeLog(HentoidApp.getInstance(), it)
+                }
                 try {
                     loadMpv(
                         mpvUrl,
@@ -483,24 +516,36 @@ class EHentaiParser : ImageListParser {
                         progress
                     )
                 } catch (e: EmptyResultException) {
+                    log?.let {
+                        it.addEntry("Fallback to classic...")
+                        LogHelper.writeLog(HentoidApp.getInstance(), it)
+                    }
                     loadClassic(
                         content,
                         galleryDoc,
                         headers,
                         useHentoidAgent,
                         useWebviewAgent,
-                        progress
+                        progress, log
                     )
                 }
             } else {
+                log?.let {
+                    it.addEntry("Trying classic...")
+                    LogHelper.writeLog(HentoidApp.getInstance(), it)
+                }
                 loadClassic(
                     content,
                     galleryDoc,
                     headers,
                     useHentoidAgent,
                     useWebviewAgent,
-                    progress
+                    progress, log
                 )
+            }
+            log?.let {
+                it.addEntry("Parsing done")
+                LogHelper.writeLog(HentoidApp.getInstance(), it)
             }
             progress.complete()
 
@@ -513,12 +558,16 @@ class EHentaiParser : ImageListParser {
     }
 
 
-    override fun parseImageList(content: Content, url: String): List<ImageFile> {
-        return parseImageList(content)
+    override fun parseImageList(
+        content: Content,
+        url: String,
+        log: LogHelper.LogInfo
+    ): List<ImageFile> {
+        return parseImageList(content, log)
     }
 
     override fun parseImageList(onlineContent: Content, storedContent: Content): List<ImageFile> {
-        return parseImageList(onlineContent)
+        return parseImageList(onlineContent, null)
     }
 
     override fun parseImagePage(

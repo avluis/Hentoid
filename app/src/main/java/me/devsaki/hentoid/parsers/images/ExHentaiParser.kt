@@ -6,6 +6,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.DownloadCommandEvent
+import me.devsaki.hentoid.util.LogHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
@@ -17,12 +18,16 @@ class ExHentaiParser : ImageListParser {
 
     private val progress = ParseProgress()
 
-    override fun parseImageList(content: Content, url: String): List<ImageFile> {
-        return parseImageList(content)
+    override fun parseImageList(
+        content: Content,
+        url: String,
+        log: LogHelper.LogInfo
+    ): List<ImageFile> {
+        return parseImageList(content, log)
     }
 
     override fun parseImageList(onlineContent: Content, storedContent: Content): List<ImageFile> {
-        return parseImageList(onlineContent)
+        return parseImageList(onlineContent, null)
     }
 
     override fun parseImagePage(
@@ -58,7 +63,7 @@ class ExHentaiParser : ImageListParser {
     }
 
     @Throws(Exception::class)
-    private fun parseImageList(content: Content): List<ImageFile> {
+    private fun parseImageList(content: Content, log : LogHelper.LogInfo?): List<ImageFile> {
         EventBus.getDefault().register(this)
         var result = emptyList<ImageFile>()
         try {

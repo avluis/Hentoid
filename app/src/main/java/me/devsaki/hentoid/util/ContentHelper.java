@@ -1303,7 +1303,8 @@ public final class ContentHelper {
     public static List<ImageFile> fetchImageURLs(
             @NonNull Content content,
             @NonNull String url,
-            @NonNull StatusContent targetImageStatus) throws Exception {
+            @NonNull StatusContent targetImageStatus,
+            LogHelper.LogInfo log) throws Exception {
         List<ImageFile> imgs;
 
         // If content doesn't have any download parameters, get them from the cookie manager
@@ -1319,7 +1320,7 @@ public final class ContentHelper {
 
         // Use ImageListParser to query the source
         ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(content.getSite());
-        imgs = parser.parseImageList(content, url);
+        imgs = parser.parseImageList(content, url, log);
 
         // If no images found, or just the cover, image detection has failed
         if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))

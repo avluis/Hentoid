@@ -618,7 +618,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     forgedContent.qtyPages = ch.imageList.size
                     forgedContent.setRawUrl(ch.url)
                     val onlineImages =
-                        ContentHelper.fetchImageURLs(forgedContent, ch.url, targetImageStatus)
+                        ContentHelper.fetchImageURLs(forgedContent, ch.url, targetImageStatus, log)
 
                     // Link the chapter to the found pages
                     for (img in onlineImages) img.chapterId = ch.id
@@ -659,7 +659,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 LogHelper.writeLog(applicationContext, it)
             }
             val onlineImages =
-                ContentHelper.fetchImageURLs(content, content.galleryUrl, targetImageStatus)
+                ContentHelper.fetchImageURLs(content, content.galleryUrl, targetImageStatus, log)
             log?.let {
                 it.addEntry("Images fetched : ${onlineImages.size}")
                 LogHelper.writeLog(applicationContext, it)
