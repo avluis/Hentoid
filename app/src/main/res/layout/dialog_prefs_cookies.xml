@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/dialog_width"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:clipToPadding="false"
+    android:padding="8dp"
+    tools:context=".activities.PrefsActivity">
+
+    <me.devsaki.hentoid.views.ListPickerView
+        android:id="@+id/site_picker"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="@string/pref_browser_clear_cookies_site" />
+
+    <TextView
+        android:id="@+id/book_count"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text=" "
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/site_picker"
+        tools:text="Keep 546 books" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_button"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginTop="8dp"
+        android:enabled="false"
+        android:text="@string/pref_browser_clear_cookies"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_action_delete"
+        app:iconTint="?colorSecondary"
+        app:layout_constraintTop_toBottomOf="@id/book_count" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
