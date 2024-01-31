@@ -7,6 +7,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.util.exception.EmptyResultException
+import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.greenrobot.eventbus.EventBus
@@ -88,31 +89,21 @@ class ExHentaiParser : ImageListParser {
                 headers,
                 useHentoidAgent,
                 useWebviewAgent
-            )
-            if (galleryDoc != null) {
-                // Detect if multipage viewer is on
-                val elements = galleryDoc.select(EHentaiParser.MPV_LINK_CSS)
-                result = if (!elements.isEmpty()) {
-                    val mpvUrl = elements[0].attr("href")
-                    try {
-                        EHentaiParser.loadMpv(
-                            mpvUrl,
-                            headers,
-                            useHentoidAgent,
-                            useWebviewAgent,
-                            progress
-                        )
-                    } catch (e: EmptyResultException) {
-                        EHentaiParser.loadClassic(
-                            content,
-                            galleryDoc,
-                            headers,
-                            useHentoidAgent,
-                            useWebviewAgent,
-                            progress
-                        )
-                    }
-                } else {
+            ) ?: throw ParseException("Unreachable gallery page")
+
+            // Detect if multipage viewer is on
+            val elements = galleryDoc.select(EHentaiParser.MPV_LINK_CSS)
+            result = if (!elements.isEmpty()) {
+                val mpvUrl = elements[0].attr("href")
+                try {
+                    EHentaiParser.loadMpv(
+                        mpvUrl,
+                        headers,
+                        useHentoidAgent,
+                        useWebviewAgent,
+                        progress
+                    )
+                } catch (e: EmptyResultException) {
                     EHentaiParser.loadClassic(
                         content,
                         galleryDoc,
@@ -122,6 +113,15 @@ class ExHentaiParser : ImageListParser {
                         progress
                     )
                 }
+            } else {
+                EHentaiParser.loadClassic(
+                    content,
+                    galleryDoc,
+                    headers,
+                    useHentoidAgent,
+                    useWebviewAgent,
+                    progress
+                )
             }
             progress.complete()
 

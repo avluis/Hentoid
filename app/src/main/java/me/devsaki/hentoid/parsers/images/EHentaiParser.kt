@@ -19,6 +19,7 @@ import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
+import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.greenrobot.eventbus.EventBus
@@ -297,7 +298,7 @@ class EHentaiParser : ImageListParser {
         ): List<ImageFile> {
             // A.1- Detect the number of pages of the gallery
             val elements = galleryDoc.select("table.ptt a")
-            if (elements.isEmpty()) throw EmptyResultException("No exploitable data has been found on the gallery")
+            if (elements.isEmpty()) throw ParseException("No exploitable data has been found on the gallery")
 
             val tabId = if (1 == elements.size) 0 else elements.size - 2
             val nbGalleryPages = elements[tabId].text().toInt()
@@ -320,7 +321,7 @@ class EHentaiParser : ImageListParser {
                     i++
                 }
             }
-            if (pageUrls.isEmpty()) throw EmptyResultException("No picture pages have been found on the gallery")
+            if (pageUrls.isEmpty()) throw ParseException("No picture pages have been found on the gallery")
 
             // 3- Open all pages and
             //    - grab the URL of the displayed image
@@ -464,34 +465,24 @@ class EHentaiParser : ImageListParser {
                 headers,
                 useHentoidAgent,
                 useWebviewAgent
-            )
-            if (galleryDoc != null) {
-                //result = loadMpv("https://e-hentai.org/mpv/530350/8b3c7e4a21/", headers, useHentoidAgent, useWebviewAgent);
+            ) ?: throw ParseException("Unreachable gallery page")
 
-                // Detect if multipage viewer is on
-                // NB : right now, the code detects if the MPV is present, even if e-h settings have it disabled
-                val elements = galleryDoc.select(MPV_LINK_CSS)
-                result = if (!elements.isEmpty()) {
-                    val mpvUrl = elements[0].attr("href")
-                    try {
-                        loadMpv(
-                            mpvUrl,
-                            headers,
-                            useHentoidAgent,
-                            useWebviewAgent,
-                            progress
-                        )
-                    } catch (e: EmptyResultException) {
-                        loadClassic(
-                            content,
-                            galleryDoc,
-                            headers,
-                            useHentoidAgent,
-                            useWebviewAgent,
-                            progress
-                        )
-                    }
-                } else {
+            //result = loadMpv("https://e-hentai.org/mpv/530350/8b3c7e4a21/", headers, useHentoidAgent, useWebviewAgent);
+
+            // Detect if multipage viewer is on
+            // NB : right now, the code detects if the MPV is present, even if e-h settings have it disabled
+            val elements = galleryDoc.select(MPV_LINK_CSS)
+            result = if (!elements.isEmpty()) {
+                val mpvUrl = elements[0].attr("href")
+                try {
+                    loadMpv(
+                        mpvUrl,
+                        headers,
+                        useHentoidAgent,
+                        useWebviewAgent,
+                        progress
+                    )
+                } catch (e: EmptyResultException) {
                     loadClassic(
                         content,
                         galleryDoc,
@@ -501,6 +492,15 @@ class EHentaiParser : ImageListParser {
                         progress
                     )
                 }
+            } else {
+                loadClassic(
+                    content,
+                    galleryDoc,
+                    headers,
+                    useHentoidAgent,
+                    useWebviewAgent,
+                    progress
+                )
             }
             progress.complete()
 
