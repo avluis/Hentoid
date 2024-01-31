@@ -19,6 +19,7 @@ import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
+import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.greenrobot.eventbus.EventBus
@@ -297,7 +298,7 @@ class EHentaiParser : ImageListParser {
         ): List<ImageFile> {
             // A.1- Detect the number of pages of the gallery
             val elements = galleryDoc.select("table.ptt a")
-            if (elements.isEmpty()) throw EmptyResultException("No exploitable data has been found on the gallery")
+            if (elements.isEmpty()) throw ParseException("No exploitable data has been found on the gallery")
 
             val tabId = if (1 == elements.size) 0 else elements.size - 2
             val nbGalleryPages = elements[tabId].text().toInt()
@@ -320,7 +321,7 @@ class EHentaiParser : ImageListParser {
                     i++
                 }
             }
-            if (pageUrls.isEmpty()) throw EmptyResultException("No picture pages have been found on the gallery")
+            if (pageUrls.isEmpty()) throw ParseException("No picture pages have been found on the gallery")
 
             // 3- Open all pages and
             //    - grab the URL of the displayed image
@@ -338,6 +339,7 @@ class EHentaiParser : ImageListParser {
                     )
                 )
             }
+
             return result
         }
 
@@ -392,50 +394,51 @@ class EHentaiParser : ImageListParser {
         ): MpvInfo? {
             var result: MpvInfo? = null
             val doc = HttpHelper.getOnlineDocument(url, headers, useHentoidAgent, useWebviewAgent)
-            if (doc != null) {
-                val scripts: List<Element> = doc.select("script")
-                for (script in scripts) {
-                    val scriptStr = script.toString()
-                    if (scriptStr.contains("pagecount")) {
-                        result = MpvInfo()
-                        val scriptLines = scriptStr.split("\\n")
-                        for (line in scriptLines) {
-                            val parts = line.replace("  ", " ").replace(";", "").trim().split("=")
-                            if (parts.size > 1) {
-                                if (parts[0].contains("var gid")) {
-                                    result.gid =
-                                        parts[1].replace("\"", "").trim().toInt()
-                                } else if (parts[0].contains("var pagecount")) {
-                                    result.pagecount =
-                                        parts[1].replace("\"", "").trim().toInt()
-                                } else if (parts[0].contains("var mpvkey")) {
-                                    result.mpvkey = parts[1].replace("\"", "").trim()
-                                } else if (parts[0].contains("var api_url")) {
-                                    result.apiUrl = parts[1].replace("\"", "").trim()
-                                } else if (parts[0].contains("var imagelist")) {
-                                    val imgs: MutableList<EHentaiImageMetadata>? =
-                                        JsonHelper.jsonToObject(
-                                            parts[1].trim(), Types.newParameterizedType(
-                                                MutableList::class.java,
-                                                EHentaiImageMetadata::class.java
-                                            )
+                ?: throw ParseException("Unreachable MPV")
+
+            val scripts: List<Element> = doc.select("script")
+            for (script in scripts) {
+                val scriptStr = script.toString()
+                if (scriptStr.contains("pagecount")) {
+                    result = MpvInfo()
+                    val scriptLines = scriptStr.split("\n")
+                    for (line in scriptLines) {
+                        val parts = line.replace("  ", " ").replace(";", "").trim().split("=")
+                        if (parts.size > 1) {
+                            if (parts[0].contains("var gid")) {
+                                result.gid =
+                                    parts[1].replace("\"", "").trim().toInt()
+                            } else if (parts[0].contains("var pagecount")) {
+                                result.pagecount =
+                                    parts[1].replace("\"", "").trim().toInt()
+                            } else if (parts[0].contains("var mpvkey")) {
+                                result.mpvkey = parts[1].replace("\"", "").trim()
+                            } else if (parts[0].contains("var api_url")) {
+                                result.apiUrl = parts[1].replace("\"", "").trim()
+                            } else if (parts[0].contains("var imagelist")) {
+                                val imgs: MutableList<EHentaiImageMetadata>? =
+                                    JsonHelper.jsonToObject(
+                                        parts[1].trim(), Types.newParameterizedType(
+                                            MutableList::class.java,
+                                            EHentaiImageMetadata::class.java
                                         )
-                                    result.images = imgs ?: emptyList()
-                                }
+                                    )
+                                result.images = imgs ?: emptyList()
                             }
                         }
-                        break
                     }
+                    break
                 }
             }
             return result
         }
-    }
+
+    } // End of Companion Object
 
     @Throws(java.lang.Exception::class)
     private fun parseImageList(content: Content): List<ImageFile> {
         EventBus.getDefault().register(this)
-        var result: List<ImageFile> = emptyList()
+        val result: List<ImageFile>
         try {
             // Retrieve and set cookies (optional; e-hentai can work without cookies even though certain galleries are unreachable)
             val cookieStr = getCookieStr(content)
@@ -459,39 +462,29 @@ class EHentaiParser : ImageListParser {
              */
             val useHentoidAgent = Site.EHENTAI.useHentoidAgent()
             val useWebviewAgent = Site.EHENTAI.useWebviewAgent()
+
             val galleryDoc = HttpHelper.getOnlineDocument(
                 content.galleryUrl,
                 headers,
                 useHentoidAgent,
                 useWebviewAgent
-            )
-            if (galleryDoc != null) {
-                //result = loadMpv("https://e-hentai.org/mpv/530350/8b3c7e4a21/", headers, useHentoidAgent, useWebviewAgent);
+            ) ?: throw ParseException("Unreachable gallery page")
+            //result = loadMpv("https://e-hentai.org/mpv/530350/8b3c7e4a21/", headers, useHentoidAgent, useWebviewAgent);
 
-                // Detect if multipage viewer is on
-                // NB : right now, the code detects if the MPV is present, even if e-h settings have it disabled
-                val elements = galleryDoc.select(MPV_LINK_CSS)
-                result = if (!elements.isEmpty()) {
-                    val mpvUrl = elements[0].attr("href")
-                    try {
-                        loadMpv(
-                            mpvUrl,
-                            headers,
-                            useHentoidAgent,
-                            useWebviewAgent,
-                            progress
-                        )
-                    } catch (e: EmptyResultException) {
-                        loadClassic(
-                            content,
-                            galleryDoc,
-                            headers,
-                            useHentoidAgent,
-                            useWebviewAgent,
-                            progress
-                        )
-                    }
-                } else {
+            // Detect if multipage viewer is on
+            // NB : right now, the code detects if the MPV is present, even if e-h settings have it disabled
+            val elements = galleryDoc.select(MPV_LINK_CSS)
+            result = if (!elements.isEmpty()) {
+                val mpvUrl = elements[0].attr("href")
+                try {
+                    loadMpv(
+                        mpvUrl,
+                        headers,
+                        useHentoidAgent,
+                        useWebviewAgent,
+                        progress
+                    )
+                } catch (e: EmptyResultException) {
                     loadClassic(
                         content,
                         galleryDoc,
@@ -501,6 +494,15 @@ class EHentaiParser : ImageListParser {
                         progress
                     )
                 }
+            } else {
+                loadClassic(
+                    content,
+                    galleryDoc,
+                    headers,
+                    useHentoidAgent,
+                    useWebviewAgent,
+                    progress
+                )
             }
             progress.complete()
 
@@ -513,7 +515,10 @@ class EHentaiParser : ImageListParser {
     }
 
 
-    override fun parseImageList(content: Content, url: String): List<ImageFile> {
+    override fun parseImageList(
+        content: Content,
+        url: String
+    ): List<ImageFile> {
         return parseImageList(content)
     }
 

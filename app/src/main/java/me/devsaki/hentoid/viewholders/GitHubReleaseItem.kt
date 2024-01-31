@@ -75,7 +75,7 @@ class GitHubReleaseItem(releaseStruct: GithubRelease) :
             setTitle(item.name + " (" + dateFormat.format(item.creationDate) + ")")
             clearContent()
             // Parse content and add lines to the description
-            for (s in item.description.split("\\r\\n")) { // TODO - refactor this code with its copy in UpdateSuccessDialogFragment
+            for (s in item.description.split("\r\n")) { // TODO - refactor this code with its copy in UpdateSuccessDialogFragment
                 val des = s.trim { it <= ' ' }
                 if (des.startsWith("-")) addListContent(des) else addDescContent(des)
             }

@@ -32,7 +32,10 @@ abstract class BaseImageListParser : ImageListParser {
         headers: List<Pair<String, String>>?
     ): List<String>
 
-    override fun parseImageList(content: Content, url: String): List<ImageFile> {
+    override fun parseImageList(
+        content: Content,
+        url: String
+    ): List<ImageFile> {
         return if (isChapterUrl(url)) parseChapterImageListImpl(url, content)
         else parseImageListImpl(content, null)
     }
