@@ -75,13 +75,12 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
                 sites.forEach { s ->
                     val siteCookies = HttpHelper.parseCookies(HttpHelper.getCookies(s.url))
                     siteCookies.forEach {
-                        if (it.value.isNotEmpty()) cookies[it.key] = it.value
+                        cookies[it.key] = it.value
                     }
                 }
             } else {
                 val site = sites[sitePicker.index - 1]
                 cookies = HttpHelper.parseCookies(HttpHelper.getCookies(site.url))
-                    .filter { c -> c.value.isNotEmpty() }
             }
             cookiesList.text = TextUtils.join("\n", cookies.keys)
         }
@@ -101,13 +100,7 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
         siteCookies.forEach {
             val cookieName = it.key
             CookieManager.getInstance()
-                .setCookie(domain, "$cookieName=") { b -> Timber.v("$cookieName $b") }
-            /*HttpHelper.setCookies(
-                domain,
-                "$cookieName=;Max-Age=0"
-            ) // TODO check if one needs to explicitely set COOKIES_STANDARD_ATTRS
-
-             */
+                .setCookie(domain, "$cookieName=;Max-Age=0") { b -> Timber.v("$cookieName $b") }
         }
         (activity as AppCompatActivity).shortSnack(R.string.pref_browser_clear_cookies_ok)
     }
