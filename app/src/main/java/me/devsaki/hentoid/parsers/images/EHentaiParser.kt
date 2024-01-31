@@ -295,11 +295,10 @@ class EHentaiParser : ImageListParser {
             useWebviewAgent: Boolean,
             progress: ParseProgress
         ): List<ImageFile> {
-            val result: MutableList<ImageFile> = ArrayList()
-
             // A.1- Detect the number of pages of the gallery
             val elements = galleryDoc.select("table.ptt a")
-            if (elements.isEmpty()) return result
+            if (elements.isEmpty()) throw EmptyResultException("No exploitable data has been found on the gallery")
+
             val tabId = if (1 == elements.size) 0 else elements.size - 2
             val nbGalleryPages = elements[tabId].text().toInt()
             progress.start(content.id, -1, nbGalleryPages)
@@ -321,10 +320,12 @@ class EHentaiParser : ImageListParser {
                     i++
                 }
             }
+            if (pageUrls.isEmpty()) throw EmptyResultException("No picture pages have been found on the gallery")
 
             // 3- Open all pages and
             //    - grab the URL of the displayed image
             //    - grab the alternate URL of the "Click here if the image fails loading" link
+            val result: MutableList<ImageFile> = ArrayList()
             result.add(ImageFile.newCover(content.coverImageUrl, StatusContent.SAVED))
             var order = 1
             for (pageUrl in pageUrls) {
