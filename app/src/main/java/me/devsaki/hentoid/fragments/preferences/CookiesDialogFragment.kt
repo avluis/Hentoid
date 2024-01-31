@@ -16,6 +16,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import timber.log.Timber
 
 class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
 
@@ -50,7 +51,7 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        sites = Preferences.getActiveSites().filter { s -> s.isVisible }
+        sites = Preferences.getActiveSites().filter { s -> s.isVisible }.sortedBy { s -> s.name }
 
         binding?.apply {
             val siteLbls: MutableList<String> = sites.map { s -> s.description }.toMutableList()
@@ -62,6 +63,10 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
         refreshCookieList()
     }
 
+    /**
+     * Display the cookie list for the selected site
+     * NB : Cookies set with an empty value do not count
+     */
     private fun refreshCookieList() {
         binding?.apply {
             val cookies: Map<String, String>
@@ -70,12 +75,13 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
                 sites.forEach { s ->
                     val siteCookies = HttpHelper.parseCookies(HttpHelper.getCookies(s.url))
                     siteCookies.forEach {
-                        cookies[it.key] = it.value
+                        if (it.value.isNotEmpty()) cookies[it.key] = it.value
                     }
                 }
             } else {
                 val site = sites[sitePicker.index - 1]
                 cookies = HttpHelper.parseCookies(HttpHelper.getCookies(site.url))
+                    .filter { c -> c.value.isNotEmpty() }
             }
             cookiesList.text = TextUtils.join("\n", cookies.keys)
         }
@@ -94,11 +100,16 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
         val domain = "." + HttpHelper.getDomainFromUri(site.url)
         siteCookies.forEach {
             val cookieName = it.key
-            HttpHelper.setCookies(
+            CookieManager.getInstance()
+                .setCookie(domain, "$cookieName=") { b -> Timber.v("$cookieName $b") }
+            /*HttpHelper.setCookies(
                 domain,
                 "$cookieName=;Max-Age=0"
             ) // TODO check if one needs to explicitely set COOKIES_STANDARD_ATTRS
+
+             */
         }
+        (activity as AppCompatActivity).shortSnack(R.string.pref_browser_clear_cookies_ok)
     }
 
     private fun onActionClick() {
