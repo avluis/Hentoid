@@ -63,7 +63,7 @@ class ExHentaiParser : ImageListParser {
     }
 
     @Throws(Exception::class)
-    private fun parseImageList(content: Content, log : LogHelper.LogInfo?): List<ImageFile> {
+    private fun parseImageList(content: Content, log: LogHelper.LogInfo?): List<ImageFile> {
         EventBus.getDefault().register(this)
         var result = emptyList<ImageFile>()
         try {
@@ -115,7 +115,7 @@ class ExHentaiParser : ImageListParser {
                         headers,
                         useHentoidAgent,
                         useWebviewAgent,
-                        progress
+                        progress, null
                     )
                 }
             } else {
@@ -125,7 +125,7 @@ class ExHentaiParser : ImageListParser {
                     headers,
                     useHentoidAgent,
                     useWebviewAgent,
-                    progress
+                    progress, null
                 )
             }
             progress.complete()
