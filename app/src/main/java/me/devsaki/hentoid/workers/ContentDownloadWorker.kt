@@ -49,6 +49,7 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.LogHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager
@@ -187,6 +188,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     private fun downloadFirstInQueue(): ImmutablePair<QueuingResult, Content> {
         val contentPartImageList = "Image list"
         val context = applicationContext
+        val log = LogHelper.LogInfo("download")
 
         // Check if queue has been paused
         if (isQueuePaused) {
@@ -244,6 +246,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             notificationManager.notify(DownloadErrorNotification(content))
             return ImmutablePair(QueuingResult.CONTENT_SKIPPED, null)
         }
+        log.addEntry("Content OK : ${content.title}")
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null))
 
@@ -299,10 +302,15 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val isCase4 =
             content.isManuallyMerged && content.chaptersList.any { c -> c.imageList.all { img -> img.status == StatusContent.ERROR } }
 
+        log.addEntry("preparation OK $isCase1 $isCase2 $isCase3 $isCase4")
+        LogHelper.writeLog(applicationContext, log)
+
         if (isCase1 || isCase2 || isCase3 || isCase4) {
             EventBus.getDefault()
                 .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.FETCH_IMG, content))
             try {
+                log.addEntry("parsing...")
+                LogHelper.writeLog(applicationContext, log)
                 images = parseMissingImages(
                     content,
                     images,
@@ -310,7 +318,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     isCase2,
                     isCase3,
                     isCase4,
-                    targetImageStatus
+                    targetImageStatus, log
                 )
             } catch (cpe: CaptchaException) {
                 Timber.i(
@@ -362,6 +370,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 downloadInterrupted.set(true)
                 // not an error
             } catch (ere: EmptyResultException) {
+                log.addEntry("EmptyResultException ${ere.message}")
+                LogHelper.writeLog(applicationContext, log)
                 Timber.i(
                     ere,
                     "No images have been found while parsing %s. Download aborted.",
@@ -376,6 +386,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
                 hasError = true
             } catch (e: Exception) {
+                log.addEntry("Exception ${e.message}")
+                LogHelper.writeLog(applicationContext, log)
                 Timber.w(
                     e,
                     "An exception has occurred while parsing %s. Download aborted.",
@@ -392,6 +404,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
         } else if (nbErrors > 0) {
             // Other cases : Reset ERROR status of images to mark them as "to be downloaded" (in DB and in memory)
+            log.addEntry("errors > 0")
+            LogHelper.writeLog(applicationContext, log)
             dao.updateImageContentStatus(content.id, StatusContent.ERROR, targetImageStatus)
         } else {
             if (downloadMode == DownloadMode.STREAM) dao.updateImageContentStatus(
@@ -400,6 +414,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 StatusContent.ONLINE
             )
         }
+
+        log.addEntry("Parsing done")
+        LogHelper.writeLog(applicationContext, log)
 
         // Get updated Content with the udpated ID and status of new images
         content = dao.selectContent(content.id)
@@ -572,13 +589,18 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         isCase2: Boolean,
         isCase3: Boolean,
         isCase4: Boolean,
-        targetImageStatus: StatusContent
+        targetImageStatus: StatusContent,
+        log: LogHelper.LogInfo?
     ): MutableList<ImageFile> {
         var result = storedImages.toMutableList()
 
         // Case 4 : Reparse chapters whose pages are all in ERROR state
         // NB : exclusive to the other cases
         if (isCase4) {
+            log?.let {
+                it.addEntry("Fetching chapters...")
+                LogHelper.writeLog(applicationContext, it)
+            }
             content.chaptersList.forEachIndexed { idx, ch ->
                 if (ch.imageList.all { img -> img.status == StatusContent.ERROR }) {
                     /* There are two very different cases to consider
@@ -632,8 +654,16 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Manually insert updated chapters
             dao.insertChapters(content.chaptersList)
         } else if (isCase1 || isCase2 || isCase3) {
+            log?.let {
+                it.addEntry("Fetching images from ${content.galleryUrl}...")
+                LogHelper.writeLog(applicationContext, it)
+            }
             val onlineImages =
                 ContentHelper.fetchImageURLs(content, content.galleryUrl, targetImageStatus)
+            log?.let {
+                it.addEntry("Images fetched : ${onlineImages.size}")
+                LogHelper.writeLog(applicationContext, it)
+            }
             // Cases 1 and 2 : Replace existing images with the parsed images
             if (isCase1 || isCase2) result = onlineImages
             // Case 3 : Replace images in ERROR state with the parsed images at the same position
