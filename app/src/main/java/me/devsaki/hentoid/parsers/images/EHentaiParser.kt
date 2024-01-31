@@ -412,45 +412,46 @@ class EHentaiParser : ImageListParser {
         ): MpvInfo? {
             var result: MpvInfo? = null
             val doc = HttpHelper.getOnlineDocument(url, headers, useHentoidAgent, useWebviewAgent)
-            if (doc != null) {
-                val scripts: List<Element> = doc.select("script")
-                for (script in scripts) {
-                    val scriptStr = script.toString()
-                    if (scriptStr.contains("pagecount")) {
-                        result = MpvInfo()
-                        val scriptLines = scriptStr.split("\\n")
-                        for (line in scriptLines) {
-                            val parts = line.replace("  ", " ").replace(";", "").trim().split("=")
-                            if (parts.size > 1) {
-                                if (parts[0].contains("var gid")) {
-                                    result.gid =
-                                        parts[1].replace("\"", "").trim().toInt()
-                                } else if (parts[0].contains("var pagecount")) {
-                                    result.pagecount =
-                                        parts[1].replace("\"", "").trim().toInt()
-                                } else if (parts[0].contains("var mpvkey")) {
-                                    result.mpvkey = parts[1].replace("\"", "").trim()
-                                } else if (parts[0].contains("var api_url")) {
-                                    result.apiUrl = parts[1].replace("\"", "").trim()
-                                } else if (parts[0].contains("var imagelist")) {
-                                    val imgs: MutableList<EHentaiImageMetadata>? =
-                                        JsonHelper.jsonToObject(
-                                            parts[1].trim(), Types.newParameterizedType(
-                                                MutableList::class.java,
-                                                EHentaiImageMetadata::class.java
-                                            )
+                ?: throw ParseException("Unreachable MPV")
+
+            val scripts: List<Element> = doc.select("script")
+            for (script in scripts) {
+                val scriptStr = script.toString()
+                if (scriptStr.contains("pagecount")) {
+                    result = MpvInfo()
+                    val scriptLines = scriptStr.split("\n")
+                    for (line in scriptLines) {
+                        val parts = line.replace("  ", " ").replace(";", "").trim().split("=")
+                        if (parts.size > 1) {
+                            if (parts[0].contains("var gid")) {
+                                result.gid =
+                                    parts[1].replace("\"", "").trim().toInt()
+                            } else if (parts[0].contains("var pagecount")) {
+                                result.pagecount =
+                                    parts[1].replace("\"", "").trim().toInt()
+                            } else if (parts[0].contains("var mpvkey")) {
+                                result.mpvkey = parts[1].replace("\"", "").trim()
+                            } else if (parts[0].contains("var api_url")) {
+                                result.apiUrl = parts[1].replace("\"", "").trim()
+                            } else if (parts[0].contains("var imagelist")) {
+                                val imgs: MutableList<EHentaiImageMetadata>? =
+                                    JsonHelper.jsonToObject(
+                                        parts[1].trim(), Types.newParameterizedType(
+                                            MutableList::class.java,
+                                            EHentaiImageMetadata::class.java
                                         )
-                                    result.images = imgs ?: emptyList()
-                                }
+                                    )
+                                result.images = imgs ?: emptyList()
                             }
                         }
-                        break
                     }
+                    break
                 }
             }
             return result
         }
-    }
+
+    } // End of Companion Object
 
     @Throws(java.lang.Exception::class)
     private fun parseImageList(content: Content, log: LogHelper.LogInfo?): List<ImageFile> {
