@@ -6,7 +6,6 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.DownloadCommandEvent
-import me.devsaki.hentoid.util.LogHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
@@ -20,14 +19,13 @@ class ExHentaiParser : ImageListParser {
 
     override fun parseImageList(
         content: Content,
-        url: String,
-        log: LogHelper.LogInfo
+        url: String
     ): List<ImageFile> {
-        return parseImageList(content, log)
+        return parseImageList(content)
     }
 
     override fun parseImageList(onlineContent: Content, storedContent: Content): List<ImageFile> {
-        return parseImageList(onlineContent, null)
+        return parseImageList(onlineContent)
     }
 
     override fun parseImagePage(
@@ -63,9 +61,9 @@ class ExHentaiParser : ImageListParser {
     }
 
     @Throws(Exception::class)
-    private fun parseImageList(content: Content, log: LogHelper.LogInfo?): List<ImageFile> {
+    private fun parseImageList(content: Content): List<ImageFile> {
         EventBus.getDefault().register(this)
-        var result = emptyList<ImageFile>()
+        val result: List<ImageFile>
         try {
             // Retrieve and set cookies (optional; e-hentai can work without cookies even though certain galleries are unreachable)
             val cookieStr: String = EHentaiParser.getCookieStr(content)
@@ -115,7 +113,7 @@ class ExHentaiParser : ImageListParser {
                         headers,
                         useHentoidAgent,
                         useWebviewAgent,
-                        progress, null
+                        progress
                     )
                 }
             } else {
@@ -125,7 +123,7 @@ class ExHentaiParser : ImageListParser {
                     headers,
                     useHentoidAgent,
                     useWebviewAgent,
-                    progress, null
+                    progress
                 )
             }
             progress.complete()

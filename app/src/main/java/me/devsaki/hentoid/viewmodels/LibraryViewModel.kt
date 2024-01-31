@@ -670,7 +670,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                     ContentHelper.fetchImageURLs(
                                         reparsedContent,
                                         reparsedContent.galleryUrl,
-                                        StatusContent.ONLINE, null
+                                        StatusContent.ONLINE
                                     )
                                 reparsedContent.setImageFiles(newImages)
                                 // Associate new pages' cover with current cover file (that won't be deleted)

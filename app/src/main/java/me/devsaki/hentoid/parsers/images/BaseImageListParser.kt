@@ -8,7 +8,6 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.parsers.ParseHelper
-import me.devsaki.hentoid.util.LogHelper
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.apache.commons.lang3.NotImplementedException
 import org.greenrobot.eventbus.EventBus
@@ -35,8 +34,7 @@ abstract class BaseImageListParser : ImageListParser {
 
     override fun parseImageList(
         content: Content,
-        url: String,
-        log: LogHelper.LogInfo
+        url: String
     ): List<ImageFile> {
         return if (isChapterUrl(url)) parseChapterImageListImpl(url, content)
         else parseImageListImpl(content, null)
