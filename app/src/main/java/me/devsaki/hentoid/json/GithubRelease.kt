@@ -13,7 +13,7 @@ data class GithubRelease(
     val body: String,
     @Json(name = "created_at")
     val creationDate: Date,
-    val assets: List<GithubAssetK>,
+    val assets: List<GithubAsset>,
     val prerelease: Boolean,
     val draft: Boolean
 ) {
@@ -31,7 +31,8 @@ data class GithubRelease(
     }
 
 
-    data class GithubAssetK(
+    @JsonClass(generateAdapter = true)
+    data class GithubAsset(
         @Json(name = "browser_download_url")
         val browserDownloadUrl: String,
         @Json(name = "content_type")
