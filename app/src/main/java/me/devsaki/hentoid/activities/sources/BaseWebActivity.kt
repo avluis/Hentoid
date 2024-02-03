@@ -77,6 +77,7 @@ import me.devsaki.hentoid.util.DuplicateHelper.getCoverBitmapFromStream
 import me.devsaki.hentoid.util.DuplicateHelper.getHashEngine
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Preferences.Constant
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper.getColor
@@ -504,7 +505,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         webSettings.builtInZoomControls = true
         webSettings.displayZoomControls = false
         Timber.i("%s : using user-agent %s", getStartSite().name, getStartSite().userAgent)
-        webSettings.setUserAgentString(getStartSite().userAgent)
+        webSettings.userAgentString = getStartSite().userAgent
         webSettings.domStorageEnabled = true
         webSettings.useWideViewPort = true
         webSettings.javaScriptEnabled = true
@@ -517,6 +518,10 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             XhrHandler(xhrHandler!!),
             "xhrHandler"
         )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            webSettings.isAlgorithmicDarkeningAllowed =
+                (Preferences.getColorTheme() != Constant.COLOR_THEME_LIGHT)
+        }
     }
 
     private fun initSwipeLayout() {
