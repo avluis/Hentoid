@@ -193,7 +193,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.i("Queue is paused. Download aborted.")
             return ImmutablePair(QueuingResult.QUEUE_END, null)
         }
-        @Connectivity val connectivity = NetworkHelper.getConnectivity(context)
+        val connectivity = NetworkHelper.getConnectivity(context)
         // Check for network connectivity
         if (Connectivity.NO_INTERNET == connectivity) {
             Timber.i("No internet connection available. Queue paused.")
@@ -789,9 +789,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 (estimateBookSizeMB > Preferences.getDownloadLargeOnlyWifiThresholdMB()
                         || totalPages > Preferences.getDownloadLargeOnlyWifiThresholdPages())
             ) {
-                @Connectivity val connectivity = NetworkHelper.getConnectivity(
-                    applicationContext
-                )
+                val connectivity = NetworkHelper.getConnectivity(applicationContext)
                 if (Connectivity.WIFI != connectivity) {
                     // Move the book to the errors queue and signal it as skipped
                     logErrorRecord(content.id, ErrorType.WIFI, content.url, "Book", "")
