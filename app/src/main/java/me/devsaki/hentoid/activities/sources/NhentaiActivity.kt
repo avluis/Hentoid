@@ -39,7 +39,7 @@ class NhentaiActivity : BaseWebActivity() {
 
     private fun rewriteResultsUrl(resultsUri: Uri, page: Int): String {
         val builder = resultsUri.buildUpon()
-        val params = HttpHelper.parseParameters(resultsUri)
+        val params = HttpHelper.parseParameters(resultsUri).toMutableMap()
         params["page"] = page.toString() + ""
         builder.clearQuery()
         params.forEach { (key, value) ->

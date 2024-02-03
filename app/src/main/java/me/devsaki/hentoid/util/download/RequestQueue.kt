@@ -141,7 +141,7 @@ class RequestQueue(
     ): Optional<Triple<Int, Uri, String>> {
         Helper.assertNonUiThread()
 
-        val requestHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url)
+        val requestHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url).toMutableList()
         requestHeaders.add(
             androidx.core.util.Pair(
                 HttpHelper.HEADER_ACCEPT_KEY,

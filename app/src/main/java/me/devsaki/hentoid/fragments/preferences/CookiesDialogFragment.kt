@@ -9,6 +9,8 @@ import android.webkit.CookieManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.webkit.CookieManagerCompat
+import androidx.webkit.WebViewFeature
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.shortSnack
 import me.devsaki.hentoid.databinding.DialogPrefsCookiesBinding
@@ -91,14 +93,30 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
     }
 
     private fun deleteCookiesFrom(site: Site) {
-        val siteCookies = HttpHelper.parseCookies(HttpHelper.getCookies(site.url))
+        val mgr = CookieManager.getInstance()
+        val siteCookies: List<String> =
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.GET_COOKIE_INFO)) {
+                CookieManagerCompat.getCookieInfo(mgr, site.url)
+            } else {
+                mgr.getCookie(site.url).split("; ")
+            }
+        siteCookies.forEach {
+            Timber.i(it)
+        }
+        /*
         val domain = "." + HttpHelper.getDomainFromUri(site.url)
         siteCookies.forEach {
             val cookieName = it.key
-            CookieManager.getInstance()
-                .setCookie(domain, "$cookieName=;Max-Age=0") { b -> Timber.v("$cookieName $b") }
+            val cookieString = "$cookieName=; Max-Age=1; path=/"
+            mgr.setCookie(domain, cookieString) { b -> Timber.v("$cookieName $domain $b") }
+            mgr.setCookie(
+                "wwww.$domain",
+                cookieString
+            ) { b -> Timber.v("$cookieName www.$domain $b") }
+            mgr.flush()
         }
         (activity as AppCompatActivity).shortSnack(R.string.pref_browser_clear_cookies_ok)
+         */
     }
 
     private fun onActionClick() {

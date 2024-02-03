@@ -94,7 +94,7 @@ class ExHentaiActivity : BaseWebActivity() {
 
         // We call the API without using BaseWebActivity.parseResponse
         override fun parseResponse(
-            urlStr: String,
+            url: String,
             requestHeaders: Map<String, String>?,
             analyzeForDownload: Boolean,
             quickDownload: Boolean
@@ -106,9 +106,9 @@ class ExHentaiActivity : BaseWebActivity() {
                 lifecycleScope.launch {
                     try {
                         var content = withContext(Dispatchers.IO) {
-                            contentParser.toContent(urlStr)
+                            contentParser.toContent(url)
                         }
-                        content = super.processContent(content, urlStr, quickDownload)
+                        content = super.processContent(content, url, quickDownload)
                         resConsumer.onContentReady(content, quickDownload)
                     } catch (t: Throwable) {
                         Timber.w(t)
@@ -116,7 +116,7 @@ class ExHentaiActivity : BaseWebActivity() {
                 }
             }
             return if (isMarkDownloaded() || isMarkMerged()) super.parseResponse(
-                urlStr,
+                url,
                 requestHeaders,
                 analyzeForDownload = false,
                 quickDownload = false

@@ -200,8 +200,8 @@ public final class ContentHelper {
         if (content.getSite().equals(Site.NONE)) return;
         if (!content.getSite().isVisible()) return; // Support is dropped
 
-        if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating())
+        if (!WebkitPackageHelper.INSTANCE.getWebViewAvailable()) {
+            if (WebkitPackageHelper.INSTANCE.getWebViewUpdating())
                 ToastHelper.INSTANCE.toast(R.string.error_updating_webview);
             else ToastHelper.INSTANCE.toast(R.string.error_missing_webview);
             return;
@@ -1126,8 +1126,8 @@ public final class ContentHelper {
      */
     public static void launchBrowserFor(@NonNull final Context context,
                                         @NonNull final String targetUrl) {
-        if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating())
+        if (!WebkitPackageHelper.INSTANCE.getWebViewAvailable()) {
+            if (WebkitPackageHelper.INSTANCE.getWebViewUpdating())
                 ToastHelper.INSTANCE.toast(R.string.error_updating_webview);
             else ToastHelper.INSTANCE.toast(R.string.error_missing_webview);
             return;
@@ -1268,11 +1268,11 @@ public final class ContentHelper {
         } else {
             requestHeadersList = requestHeaders;
         }
-        String cookieStr = HttpHelper.getCookies(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        String cookieStr = HttpHelper.INSTANCE.getCookies(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         if (!cookieStr.isEmpty())
             requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
 
-        Response response = HttpHelper.getOnlineResourceFast(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        Response response = HttpHelper.INSTANCE.getOnlineResourceFast(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
 
         // Raise exception if blocked by Cloudflare
         if (503 == response.code() && site.isUseCloudflare())
@@ -1284,7 +1284,7 @@ public final class ContentHelper {
 
         // Scram if the response content-type is something else than the target type
         if (targetContentType != null) {
-            Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE, "")));
+            Pair<String, String> contentType = HttpHelper.INSTANCE.cleanContentType(StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE, "")));
             if (!contentType.first.isEmpty() && !contentType.first.equalsIgnoreCase(targetContentType))
                 throw new IOException("Not an HTML resource " + url);
         }
@@ -1309,7 +1309,7 @@ public final class ContentHelper {
         // If content doesn't have any download parameters, get them from the cookie manager
         String contentDownloadParamsStr = content.getDownloadParams();
         if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
-            String cookieStr = HttpHelper.getCookies(url);
+            String cookieStr = HttpHelper.INSTANCE.getCookies(url);
             if (!cookieStr.isEmpty()) {
                 Map<String, String> downloadParams = new HashMap<>();
                 downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
@@ -1549,7 +1549,7 @@ public final class ContentHelper {
     @Nullable
     public static GlideUrl bindOnlineCover(@NonNull final String imageUrl,
                                            @Nullable final Content content) {
-        if (WebkitPackageHelper.getWebViewAvailable()) {
+        if (WebkitPackageHelper.INSTANCE.getWebViewAvailable()) {
             String cookieStr = null;
             String referer = null;
             LazyHeaders.Builder builder = new LazyHeaders.Builder();
@@ -1563,7 +1563,7 @@ public final class ContentHelper {
                     referer = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
                 }
                 if (null == cookieStr)
-                    cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
+                    cookieStr = HttpHelper.INSTANCE.getCookies(content.getGalleryUrl());
                 if (null == referer) referer = content.getGalleryUrl();
                 builder = builder.addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr).addHeader(HttpHelper.HEADER_REFERER_KEY, referer).addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
             }
@@ -1666,18 +1666,19 @@ public final class ContentHelper {
         try {
             if (img.needsPageParsing()) {
                 // Get cookies from the app jar
-                String cookieStr = HttpHelper.getCookies(img.getPageUrl());
+                String cookieStr = HttpHelper.INSTANCE.getCookies(img.getPageUrl());
                 // If nothing found, peek from the site
-                if (cookieStr.isEmpty()) cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                if (cookieStr.isEmpty())
+                    cookieStr = HttpHelper.INSTANCE.peekCookies(img.getPageUrl());
                 if (!cookieStr.isEmpty())
                     headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPictureFromPage(content.getSite(), img, headers);
             } else {
                 // Get cookies from the app jar
-                String cookieStr = HttpHelper.getCookies(img.getUrl());
+                String cookieStr = HttpHelper.INSTANCE.getCookies(img.getUrl());
                 // If nothing found, peek from the site
                 if (cookieStr.isEmpty())
-                    cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+                    cookieStr = HttpHelper.INSTANCE.peekCookies(content.getGalleryUrl());
                 if (!cookieStr.isEmpty())
                     headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPicture(content.getSite(), img, headers);
@@ -1713,18 +1714,19 @@ public final class ContentHelper {
         try {
             if (img.needsPageParsing()) {
                 // Get cookies from the app jar
-                String cookieStr = HttpHelper.getCookies(img.getPageUrl());
+                String cookieStr = HttpHelper.INSTANCE.getCookies(img.getPageUrl());
                 // If nothing found, peek from the site
-                if (cookieStr.isEmpty()) cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                if (cookieStr.isEmpty())
+                    cookieStr = HttpHelper.INSTANCE.peekCookies(img.getPageUrl());
                 if (!cookieStr.isEmpty())
                     headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPictureFromPage(content.getSite(), img, headers);
             } else {
                 // Get cookies from the app jar
-                String cookieStr = HttpHelper.getCookies(img.getUrl());
+                String cookieStr = HttpHelper.INSTANCE.getCookies(img.getUrl());
                 // If nothing found, peek from the site
                 if (cookieStr.isEmpty())
-                    cookieStr = HttpHelper.peekCookies(chapter.getUrl());
+                    cookieStr = HttpHelper.INSTANCE.peekCookies(chapter.getUrl());
                 if (!cookieStr.isEmpty())
                     headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPicture(content.getSite(), img, headers);
@@ -1752,7 +1754,7 @@ public final class ContentHelper {
             @NonNull ImageFile img,
             List<Pair<String, String>> requestHeaders) throws
             IOException, LimitReachedException, EmptyResultException, CloudflareHelper.CloudflareProtectedException {
-        String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
+        String pageUrl = HttpHelper.INSTANCE.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(site);
         Pair<String, String> pages = parser.parseImagePage(pageUrl, requestHeaders);
         img.setUrl(pages.first);
@@ -1781,7 +1783,7 @@ public final class ContentHelper {
             @NonNull Site site,
             @NonNull ImageFile img,
             List<Pair<String, String>> requestHeaders) throws IOException, CloudflareHelper.CloudflareProtectedException {
-        String url = HttpHelper.fixUrl(img.getUrl(), site.getUrl());
+        String url = HttpHelper.INSTANCE.fixUrl(img.getUrl(), site.getUrl());
 
         Pair<ResponseBody, String> response = fetchBodyFast(url, site, requestHeaders, null);
         ResponseBody body = response.first;
@@ -1884,7 +1886,7 @@ public final class ContentHelper {
         try {
             // Set cover
             if (isInLibrary(coverPic.getStatus())) {
-                String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
+                String extension = HttpHelper.INSTANCE.getExtensionFromUri(firstCover.getFileUri());
                 Uri newUri = FileHelper.copyFile(context, Uri.parse(firstCover.getFileUri()), targetFolder.getUri(), firstCover.getMimeType(), firstCover.getName() + "." + extension);
                 if (newUri != null) coverPic.setFileUri(newUri.toString());
                 else Timber.w("Could not move file %s", firstCover.getFileUri());
@@ -1923,7 +1925,7 @@ public final class ContentHelper {
 
                     // If exists, move the picture to the merged books' folder
                     if (isInLibrary(newImg.getStatus())) {
-                        String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
+                        String extension = HttpHelper.INSTANCE.getExtensionFromUri(img.getFileUri());
                         Uri newUri = FileHelper.copyFile(context, Uri.parse(img.getFileUri()), targetFolder.getUri(), newImg.getMimeType(), newImg.getName() + "." + extension);
                         if (newUri != null) newImg.setFileUri(newUri.toString());
                         else Timber.w("Could not move file %s", img.getFileUri());

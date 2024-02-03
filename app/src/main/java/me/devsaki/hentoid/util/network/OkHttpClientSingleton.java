@@ -111,7 +111,7 @@ public class OkHttpClientSingleton {
         Request.Builder builder = chain.request().newBuilder();
         // If not specified, all requests are done with the device's mobile user-agent, without the Hentoid string
         if (null == chain.request().header("User-Agent") && null == chain.request().header("user-agent"))
-            builder.header(HttpHelper.HEADER_USER_AGENT, HttpHelper.getMobileUserAgent(false, true));
+            builder.header(HttpHelper.HEADER_USER_AGENT, HttpHelper.INSTANCE.getMobileUserAgent(false, true));
         return chain.proceed(builder.build());
     }
 }

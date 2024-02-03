@@ -261,7 +261,7 @@ public class Content implements Serializable {
             case TSUMINO:
                 return url.replace("/Read/Index", "");
             case PURURIN:
-                return url.replace(HttpHelper.getHttpProtocol(url) + "://pururin.to/gallery", "");
+                return url.replace(HttpHelper.INSTANCE.getHttpProtocol(url) + "://pururin.to/gallery", "");
             case NHENTAI:
                 return url.replace(site.getUrl(), "").replace("/g/", "/").replaceFirst("/1/$", "/");
             case MUSES:

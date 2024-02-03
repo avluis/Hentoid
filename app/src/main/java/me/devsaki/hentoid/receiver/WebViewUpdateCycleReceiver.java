@@ -40,20 +40,20 @@ public class WebViewUpdateCycleReceiver extends BroadcastReceiver {
         if (packageName.equals("com.android.webview") || packageName.equals("com.android.chrome") || packageName.equals("com.google.android.webview")
                 || packageName.equals("com.google.android.apps.chrome") || packageName.equals("com.google.android.webview.debug") || packageName.equals("org.bromite.webview")
                 || packageName.equals("app.vanadium.webview") || packageName.equals("app.vanadium.trichromelibrary") || packageName.equals("com.google.android.trichromelibrary")) {
-            WebkitPackageHelper.setWebViewAvailable();
+            WebkitPackageHelper.INSTANCE.setWebViewAvailable();
             if (intent.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
-                if (!WebkitPackageHelper.getWebViewAvailable()) { // If some other WebView provider is available, then we shouldn't care
+                if (!WebkitPackageHelper.INSTANCE.getWebViewAvailable()) { // If some other WebView provider is available, then we shouldn't care
                     Timber.w("The last WebView provider (package %s) has been removed, hoping it is an update", packageName);
-                    WebkitPackageHelper.setWebViewUpdating(true);
+                    WebkitPackageHelper.INSTANCE.setWebViewUpdating(true);
                 } else
                     Timber.i("A WebView provider has been removed (package %s), but another implementation is available", packageName);
 
             } else if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED) || intent.getAction().equals(Intent.ACTION_PACKAGE_REPLACED)) {
-                if (WebkitPackageHelper.getWebViewAvailable()) { // ...but does the system recognize it as a WebView provider?
+                if (WebkitPackageHelper.INSTANCE.getWebViewAvailable()) { // ...but does the system recognize it as a WebView provider?
                     Timber.i("Got WebView back! Implementation now provided by package %s", packageName);
-                    WebkitPackageHelper.setWebViewUpdating(false);
+                    WebkitPackageHelper.INSTANCE.setWebViewUpdating(false);
                 } else {
-                    if (WebkitPackageHelper.getWebViewUpdating())
+                    if (WebkitPackageHelper.INSTANCE.getWebViewUpdating())
                         Timber.w("WebView provider candidate (package %s) has installed, but there is still no implementation available", packageName);
                 }
             }

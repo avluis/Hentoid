@@ -100,20 +100,20 @@ class PixivActivity : BaseWebActivity() {
 
         // Call the API without using BaseWebActivity.parseResponse
         override fun parseResponse(
-            urlStr: String,
+            url: String,
             requestHeaders: Map<String, String>?,
             analyzeForDownload: Boolean,
             quickDownload: Boolean
         ): WebResourceResponse? {
             if (analyzeForDownload || quickDownload) {
                 activity?.onGalleryPageStarted()
-                if (BuildConfig.DEBUG) Timber.v("WebView : parseResponse Pixiv %s", urlStr)
+                if (BuildConfig.DEBUG) Timber.v("WebView : parseResponse Pixiv %s", url)
                 val contentParser: ContentParser = PixivContent()
 
                 lifecycleScope.launch {
                     try {
                         var content = withContext(Dispatchers.IO) {
-                            contentParser.toContent(urlStr)
+                            contentParser.toContent(url)
                         }
                         content = super.processContent(content, content.galleryUrl, quickDownload)
                         resConsumer.onContentReady(content, quickDownload)

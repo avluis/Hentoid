@@ -131,7 +131,7 @@ class HitomiActivity : BaseWebActivity() {
                 .contains("search")
         ) builder.fragment(page.toString() + "") // https://hitomi.la/search.html?<searchTerm>#<page>
         else {
-            val params = HttpHelper.parseParameters(resultsUri)
+            val params = HttpHelper.parseParameters(resultsUri).toMutableMap()
             params["page"] = page.toString() + ""
             builder.clearQuery()
             params.forEach { (key, value) ->

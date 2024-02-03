@@ -121,7 +121,7 @@ public enum Site {
         }
 
         for (Site s : Site.values())
-            if (s.code > 0 && HttpHelper.getDomainFromUri(url).equalsIgnoreCase(HttpHelper.getDomainFromUri(s.url)))
+            if (s.code > 0 && HttpHelper.INSTANCE.getDomainFromUri(url).equalsIgnoreCase(HttpHelper.INSTANCE.getDomainFromUri(s.url)))
                 return s;
 
         return Site.NONE;
@@ -205,9 +205,9 @@ public enum Site {
 
     public String getUserAgent() {
         if (useMobileAgent())
-            return HttpHelper.getMobileUserAgent(useHentoidAgent(), useWebviewAgent());
+            return HttpHelper.INSTANCE.getMobileUserAgent(useHentoidAgent(), useWebviewAgent());
         else
-            return HttpHelper.getDesktopUserAgent(useHentoidAgent(), useWebviewAgent());
+            return HttpHelper.INSTANCE.getDesktopUserAgent(useHentoidAgent(), useWebviewAgent());
     }
 
     public void updateFrom(@NonNull final JsonSiteSettings.JsonSite jsonSite) {
