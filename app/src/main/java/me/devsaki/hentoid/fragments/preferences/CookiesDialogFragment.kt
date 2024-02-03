@@ -101,8 +101,6 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
                 mgr.getCookie(site.url).split("; ")
             }
         siteCookies.forEach {
-            Timber.v(it)
-
             HttpHelper.Cookie.parse(it).let { ck ->
                 // For some reason, we have to use an empty domain when the cookie's domain doesn't start with .
                 val domain = if (ck.domain.startsWith(".")) ck.domain else ""
