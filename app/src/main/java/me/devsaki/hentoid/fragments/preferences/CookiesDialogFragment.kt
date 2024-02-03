@@ -18,6 +18,8 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import okhttp3.Cookie
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import timber.log.Timber
 
 class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
@@ -101,22 +103,24 @@ class CookiesDialogFragment : DialogFragment(R.layout.dialog_prefs_cookies) {
                 mgr.getCookie(site.url).split("; ")
             }
         siteCookies.forEach {
-            Timber.i(it)
-        }
-        /*
-        val domain = "." + HttpHelper.getDomainFromUri(site.url)
-        siteCookies.forEach {
-            val cookieName = it.key
-            val cookieString = "$cookieName=; Max-Age=1; path=/"
-            mgr.setCookie(domain, cookieString) { b -> Timber.v("$cookieName $domain $b") }
-            mgr.setCookie(
-                "wwww.$domain",
-                cookieString
-            ) { b -> Timber.v("$cookieName www.$domain $b") }
-            mgr.flush()
+            Timber.v(it)
+
+            Cookie.parse(site.url.toHttpUrl(), it)?.let { ck ->
+                val domain = if (ck.domain.startsWith("www")) ck.domain else "." + ck.domain
+                //val domain = if (ck.domain.startsWith("www")) ck.domain.substring(3) else "." + ck.domain
+                val cookieParts: MutableList<String> = ArrayList()
+                cookieParts.add("${ck.name}=")
+                cookieParts.add("domain=$domain")
+                cookieParts.add("path=${ck.path}")
+                cookieParts.add("Max-Age=-999")
+                if (ck.secure) cookieParts.add("secure")
+                if (ck.httpOnly) cookieParts.add("httponly")
+                val cookieString = TextUtils.join("; ", cookieParts)
+
+                mgr.setCookie(site.url, cookieString) { b -> Timber.v("$cookieString $b") }
+            }
         }
         (activity as AppCompatActivity).shortSnack(R.string.pref_browser_clear_cookies_ok)
-         */
     }
 
     private fun onActionClick() {

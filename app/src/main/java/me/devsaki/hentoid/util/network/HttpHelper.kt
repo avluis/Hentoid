@@ -40,9 +40,6 @@ object HttpHelper {
 
     const val POST_MIME_TYPE = "application/x-www-form-urlencoded"
 
-    private val COOKIES_STANDARD_ATTRS =
-        setOf("expires", "max-age", "domain", "path", "secure", "httponly", "samesite")
-
     // To display sites with desktop layouts
     private const val DESKTOP_USER_AGENT_PATTERN =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) %s Safari/537.36"
@@ -482,37 +479,19 @@ object HttpHelper {
     /**
      * Parse the given cookie String
      *
-     * @param cookiesStr Cookie string, as set in HTTP headers
+     * @param cookiesStr Cookie string, as set in HTTP request headers
      * @return Parsed cookies (key and value of each cookie; key only if there's no value)
      */
     fun parseCookies(cookiesStr: String): Map<String, String> {
         val result: MutableMap<String, String> = HashMap()
-        val cookiesParts = cookiesStr.split(";")
+        val cookiesParts = cookiesStr.split(";").map { s -> s.trim() }
         for (part in cookiesParts) {
-            val cookie = part.trim { it <= ' ' }
             // Don't use split as the value of the cookie may contain an '='
-            val equalsIndex = cookie.indexOf('=')
-            if (equalsIndex > -1) result[cookie.substring(0, equalsIndex)] =
-                cookie.substring(equalsIndex + 1) else result[cookie] = ""
+            val equalsIndex = part.indexOf('=')
+            if (equalsIndex > -1) result[part.substring(0, equalsIndex)] =
+                part.substring(equalsIndex + 1) else result[part] = ""
         }
         return result
-    }
-
-    /**
-     * Strip the given cookie string from the standard parameters
-     * i.e. only return the cookie values
-     *
-     * @param cookieStr The cookie as a string, using the format of the 'Set-Cookie' HTTP response header
-     * @return Cookie string without the standard parameters
-     */
-    private fun stripParams(cookieStr: String): String {
-        val cookies = parseCookies(cookieStr)
-        val namesToSet: MutableList<String> = ArrayList()
-        for ((key, value) in cookies) {
-            if (!COOKIES_STANDARD_ATTRS.contains(key.lowercase(Locale.getDefault())))
-                namesToSet.add("$key=$value")
-        }
-        return TextUtils.join("; ", namesToSet)
     }
 
     /**
@@ -533,7 +512,7 @@ object HttpHelper {
         val paramsToSet: MutableList<String> = ArrayList()
         val namesToSet: MutableList<String?> = ArrayList()
         for ((key, value) in cookies) {
-            if (COOKIES_STANDARD_ATTRS.contains(key.lowercase(Locale.getDefault()))) {
+            if (Cookie.STANDARD_ATTRS.contains(key.lowercase(Locale.getDefault()))) {
                 if (value.isEmpty()) paramsToSet.add(key) else paramsToSet.add("$key=$value")
             } else names[key] = value
         }
@@ -602,7 +581,7 @@ object HttpHelper {
      */
     fun getCookies(url: String): String {
         val result = CookieManager.getInstance().getCookie(url)
-        return if (result != null) stripParams(result) else ""
+        return if (result != null) Cookie.stripParams(result) else ""
     }
 
     /**
@@ -813,6 +792,76 @@ object HttpHelper {
             return true
         }
         return false
+    }
+
+    data class Cookie(
+        val name: String,
+        val value: String,
+        val domain: String,
+        val path: String,
+        val isSecure: Boolean = false
+    ) {
+        companion object {
+            private const val DOMAIN = "domain"
+            private const val PATH = "path"
+            private const val SECURE = "secure"
+
+            val STANDARD_ATTRS =
+                setOf("expires", "max-age", DOMAIN, PATH, SECURE, "httponly", "samesite")
+
+            /**
+             * Parse a cookie from an RFC6265 string
+             */
+            fun fromRfc(str: String): Cookie {
+                val parts = str.split(";").map { s -> s.trim() }
+
+                var cookieName = ""
+                var cookieValue = ""
+                var cookieDomain = ""
+                var cookiePath = "/"
+                var isSecure = false
+
+                parts.forEachIndexed { index, s ->
+                    // Don't use split as the value of the cookie may contain an '='
+                    val equalsIndex = s.indexOf('=')
+                    val key = if (equalsIndex > -1) s.substring(0, equalsIndex) else s
+                    val value = if (equalsIndex > -1) s.substring(equalsIndex + 1) else ""
+
+                    if (0 == index) {
+                        cookieName = key
+                        cookieValue = value
+                    } else {
+                        when (key.lowercase()) {
+                            DOMAIN -> cookieDomain = value
+                            PATH -> cookiePath = value
+                            SECURE -> isSecure = true
+                            else -> { // Nothing }
+                            }
+                        }
+                    }
+                }
+
+                return Cookie(cookieName, cookieValue, cookieDomain, cookiePath, isSecure)
+            }
+
+
+            /**
+             * Strip the given cookie string from the standard parameters
+             * i.e. only return the cookie values
+             *
+             * @param cookieStr The cookie as a string, using the format of the 'Set-Cookie' HTTP response header
+             * @return Cookie string without the standard parameters
+             */
+            fun stripParams(cookieStr: String): String {
+                val cookies = parseCookies(cookieStr)
+                val namesToSet: MutableList<String> = ArrayList()
+                for ((key, value) in cookies) {
+                    if (!STANDARD_ATTRS.contains(key.lowercase(Locale.getDefault())))
+                        namesToSet.add("$key=$value")
+                }
+                return TextUtils.join("; ", namesToSet)
+            }
+        }
     }
 
     /**
