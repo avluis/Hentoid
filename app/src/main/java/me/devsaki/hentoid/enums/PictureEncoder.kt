@@ -10,7 +10,7 @@ enum class PictureEncoder(val value: Int, val mimeType: String) {
 
     companion object {
         fun fromValue(data: Int): PictureEncoder? {
-            return values().firstOrNull { e -> data == e.value }
+            return entries.firstOrNull { e -> data == e.value }
         }
     }
 }

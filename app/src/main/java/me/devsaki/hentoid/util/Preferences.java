@@ -19,6 +19,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.enums.Theme;
+import me.devsaki.hentoid.util.network.DnsOverHttpsProviders;
 import timber.log.Timber;
 
 /**
@@ -982,7 +983,7 @@ public final class Preferences {
         static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
         static final boolean BROWSER_QUICK_DL = true;
         static final int BROWSER_QUICK_DL_THRESHOLD = 1500; // 1.5s
-        static final int BROWSER_DNS_OVER_HTTPS = -1; // No DNS
+        static final int BROWSER_DNS_OVER_HTTPS = DnsOverHttpsProviders.Source.NONE.getValue(); // No DNS
         static final boolean BROWSER_NHENTAI_INVISIBLE_BLACKLIST = false;
         static final boolean BROWSER_LANGUAGE_FILTER = false;
         static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
