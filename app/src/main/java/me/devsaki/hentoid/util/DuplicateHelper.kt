@@ -249,7 +249,7 @@ object DuplicateHelper {
         return if (preCoverScore >= COVER_THRESHOLDS[sensitivity]) preCoverScore else 0f
     }
 
-    private fun computeTitleScore(
+    fun computeTitleScore(
         textComparator: StringSimilarity,
         reference: DuplicateCandidate,
         candidate: DuplicateCandidate,

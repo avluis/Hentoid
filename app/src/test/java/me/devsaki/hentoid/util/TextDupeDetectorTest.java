@@ -71,7 +71,7 @@ public class TextDupeDetectorTest {
                 DuplicateHelper.DuplicateCandidate dc2 = new DuplicateHelper.DuplicateCandidate(c2, true, false, false, false, ignoreChapters, Long.MIN_VALUE);
                 //String s2c = StringHelper.cleanup(s2);
                 //Triple<String, Integer, Integer> s2cp = DuplicateHelper.Companion.sanitizeTitle(s2c);
-                double score = DuplicateHelper.Companion.computeTitleScore(c, dc1, dc2, ignoreChapters, sensitivity);
+                double score = DuplicateHelper.INSTANCE.computeTitleScore(c, dc1, dc2, ignoreChapters, sensitivity);
                 if (score > 0) {
                     System.out.printf("[%.4f] %s > %s\n", score, dc1.getTitleCleanup(), dc2.getTitleCleanup());
                     /*
