@@ -799,20 +799,22 @@ object HttpHelper {
         val value: String,
         val domain: String,
         val path: String,
-        val isSecure: Boolean = false
+        val isSecure: Boolean = false,
+        val isHttpOnly: Boolean = false
     ) {
         companion object {
             private const val DOMAIN = "domain"
             private const val PATH = "path"
             private const val SECURE = "secure"
+            private const val HTTPONLY = "httponly"
 
             val STANDARD_ATTRS =
-                setOf("expires", "max-age", DOMAIN, PATH, SECURE, "httponly", "samesite")
+                setOf("expires", "max-age", DOMAIN, PATH, SECURE, HTTPONLY, "samesite")
 
             /**
              * Parse a cookie from an RFC6265 string
              */
-            fun fromRfc(str: String): Cookie {
+            fun parse(str: String): Cookie {
                 val parts = str.split(";").map { s -> s.trim() }
 
                 var cookieName = ""
@@ -820,6 +822,7 @@ object HttpHelper {
                 var cookieDomain = ""
                 var cookiePath = "/"
                 var isSecure = false
+                var isHttpOnly = false
 
                 parts.forEachIndexed { index, s ->
                     // Don't use split as the value of the cookie may contain an '='
@@ -835,13 +838,21 @@ object HttpHelper {
                             DOMAIN -> cookieDomain = value
                             PATH -> cookiePath = value
                             SECURE -> isSecure = true
+                            HTTPONLY -> isHttpOnly = true
                             else -> { // Nothing }
                             }
                         }
                     }
                 }
 
-                return Cookie(cookieName, cookieValue, cookieDomain, cookiePath, isSecure)
+                return Cookie(
+                    cookieName,
+                    cookieValue,
+                    cookieDomain,
+                    cookiePath,
+                    isSecure,
+                    isHttpOnly
+                )
             }
 
 
