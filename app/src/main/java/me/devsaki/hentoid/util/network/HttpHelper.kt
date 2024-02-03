@@ -21,6 +21,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 import java.util.Locale
+import kotlin.math.min
 
 /**
  * Helper for HTTP protocol operations
@@ -504,7 +505,7 @@ object HttpHelper {
      * @param cookieStr The cookie as a string, using the format of the 'Set-Cookie' HTTP response header
      * @return Cookie string without the standard parameters
      */
-    fun stripParams(cookieStr: String): String {
+    private fun stripParams(cookieStr: String): String {
         val cookies = parseCookies(cookieStr)
         val namesToSet: MutableList<String> = ArrayList()
         for ((key, value) in cookies) {
@@ -653,7 +654,7 @@ object HttpHelper {
      * @param useWebviewAgent True if webview user agent should be used
      * @return Raw cookies string for the given URL
      */
-    fun peekCookies(
+    private fun peekCookies(
         url: String,
         headers: List<Pair<String, String>>?,
         useMobileAgent: Boolean,
@@ -733,7 +734,7 @@ object HttpHelper {
      * @param withWebview True if the user-agent has to mention the use of a webview
      * @return The app's default user agent
      */
-    fun getDefaultUserAgent(withHentoid: Boolean, withWebview: Boolean): String {
+    private fun getDefaultUserAgent(withHentoid: Boolean, withWebview: Boolean): String {
         var result = defaultUserAgent ?: throw RuntimeException(AGENT_INIT_ISSUE)
         if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME
         if (!withWebview) result = cleanWebViewAgent(result)
@@ -753,7 +754,7 @@ object HttpHelper {
             val closeIndex = result.indexOf(")", buildIndex)
             val separatorIndex = result.indexOf(";", buildIndex)
             var firstIndex = closeIndex
-            if (separatorIndex > -1) firstIndex = Math.min(closeIndex, separatorIndex)
+            if (separatorIndex > -1) firstIndex = min(closeIndex, separatorIndex)
             result = result.substring(0, buildIndex) + result.substring(firstIndex)
         }
         val versionIndex = result.indexOf(" Version/")
@@ -818,11 +819,11 @@ object HttpHelper {
      * Class to parse and manipulate Uri parts
      */
     class UriParts(uri: String, lowercase: Boolean) {
-        lateinit var path: String
-        lateinit var fileNameNoExt: String
-        lateinit var extension: String
-        lateinit var query: String
-        private lateinit var fragment: String
+        var path: String
+        var fileNameNoExt: String
+        var extension: String
+        var query: String
+        private var fragment: String
 
         init {
             var uriNoParams = if (lowercase) uri.lowercase(Locale.getDefault()) else uri
