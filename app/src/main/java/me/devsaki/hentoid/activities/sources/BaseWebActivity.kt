@@ -771,9 +771,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun onBookmarkClick() {
         BookmarksDialogFragment.invoke(
             this,
-            getStartSite(), StringHelper.protect(webView.title), StringHelper.protect(
-                webView.url
-            )
+            getStartSite(),
+            StringHelper.protect(webView.title),
+            StringHelper.protect(webView.url)
         )
     }
 
@@ -1028,7 +1028,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Check if the tag blocker applies here
         val blockedTagsLocal = ContentHelper.getBlockedTags(currentContent!!)
         if (blockedTagsLocal.isNotEmpty()) {
-            if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
+            if (Preferences.getTagBlockingBehaviour() == Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
                 ToastHelper.toast(R.string.blocked_tag, blockedTagsLocal[0])
             } else { // Insert directly as an error
                 val errors: MutableList<ErrorRecord> = ArrayList()
@@ -1053,7 +1053,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
         val replacementTitleFinal = replacementTitle
         // No reason to block or ignore -> actually add to the queue
-        if (Preferences.getQueueNewDownloadPosition() == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Preferences.getBrowserDlAction() == Preferences.Constant.DL_ACTION_ASK) {
+        if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Preferences.getBrowserDlAction() == Constant.DL_ACTION_ASK) {
             show(
                 this, webView, this
             ) { position1, _ ->
@@ -1070,7 +1070,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     }, null
                 )
             }
-        } else if (Preferences.getQueueNewDownloadPosition() == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+        } else if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             show(
                 this, webView, this
             ) { position, _ ->
@@ -1081,7 +1081,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     replacementTitleFinal
                 )
             }
-        } else if (Preferences.getBrowserDlAction() == Preferences.Constant.DL_ACTION_ASK) {
+        } else if (Preferences.getBrowserDlAction() == Constant.DL_ACTION_ASK) {
             show(
                 this,
                 webView, this,
