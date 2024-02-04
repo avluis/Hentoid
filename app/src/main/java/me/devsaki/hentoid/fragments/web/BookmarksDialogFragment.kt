@@ -9,15 +9,12 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.button.MaterialButton
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -33,6 +30,7 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.SiteBookmark
+import me.devsaki.hentoid.databinding.DialogWebBookmarksBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.ui.InputDialog.invokeInputDialog
 import me.devsaki.hentoid.util.Helper
@@ -65,17 +63,15 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
     }
 
     // === UI
-    private var selectionToolbar: Toolbar? = null
+    private var binding: DialogWebBookmarksBinding? = null
     private var editMenu: MenuItem? = null
     private var copyMenu: MenuItem? = null
     private var homeMenu: MenuItem? = null
-    private var recyclerView: RecyclerView? = null
-    private var bookmarkCurrentBtn: MaterialButton? = null
 
     private val itemAdapter = ItemAdapter<TextItem<SiteBookmark>>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
     private lateinit var selectExtension: SelectExtension<TextItem<SiteBookmark>>
-    private var touchHelper: ItemTouchHelper? = null
+    private lateinit var touchHelper: ItemTouchHelper
 
     // === VARIABLES
     private var parent: Parent? = null
@@ -123,16 +119,17 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.dialog_web_bookmarks, container, false)
+    ): View {
+        binding = DialogWebBookmarksBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
-        val homepage =
-            ViewCompat.requireViewById<MaterialButton>(rootView, R.id.bookmark_homepage_btn)
-        homepage.icon = ContextCompat.getDrawable(requireContext(), site.ico)
-        homepage.setOnClickListener { parent?.loadUrl(site.url) }
+        binding?.apply {
+            bookmarkHomepageBtn.icon = ContextCompat.getDrawable(requireContext(), site.ico)
+            bookmarkHomepageBtn.setOnClickListener { parent?.loadUrl(site.url) }
+        }
         val bookmarks = reloadBookmarks()
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
@@ -159,42 +156,42 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
         fastAdapter.onPreLongClickListener =
             { _, _, _, position: Int -> helper.onPreLongClickListener(position) }
 
-        recyclerView = ViewCompat.requireViewById(rootView, R.id.bookmarks_list)
-
         // Activate drag & drop
         val dragCallback = SimpleDragCallback(this)
         dragCallback.notifyAllDrops = true
         touchHelper = ItemTouchHelper(dragCallback)
-        touchHelper!!.attachToRecyclerView(recyclerView)
-        recyclerView!!.adapter = fastAdapter
-        fastAdapter.onClickListener =
-            { _, _, i: TextItem<SiteBookmark>, _ -> onItemClick(i) }
 
-        fastAdapter.addEventHook(
-            TextItem.DragHandlerTouchEvent { position: Int? ->
-                val vh =
-                    recyclerView!!.findViewHolderForAdapterPosition(
-                        position!!
-                    )
-                if (vh != null) touchHelper!!.startDrag(vh)
-            }
-        )
-        selectionToolbar = ViewCompat.requireViewById(rootView, R.id.toolbar)
-        selectionToolbar!!.setOnMenuItemClickListener { menuItem: MenuItem ->
-            selectionToolbarOnItemClicked(
-                menuItem
+        binding?.apply {
+            touchHelper.attachToRecyclerView(recyclerview)
+            recyclerview.adapter = fastAdapter
+            fastAdapter.onClickListener =
+                { _, _, i: TextItem<SiteBookmark>, _ -> onItemClick(i) }
+
+            fastAdapter.addEventHook(
+                TextItem.DragHandlerTouchEvent { position ->
+                    val vh =
+                        recyclerview.findViewHolderForAdapterPosition(position)
+                    if (vh != null) touchHelper.startDrag(vh)
+                }
             )
+            selectionToolbar.setOnMenuItemClickListener { menuItem: MenuItem ->
+                selectionToolbarOnItemClicked(
+                    menuItem
+                )
+            }
+            editMenu = selectionToolbar.menu.findItem(R.id.action_edit)
+            copyMenu = selectionToolbar.menu.findItem(R.id.action_copy)
+            homeMenu = selectionToolbar.menu.findItem(R.id.action_home)
+            val currentBookmark =
+                bookmarks.firstOrNull { b -> SiteBookmark.urlsAreSame(b.url, url) }
+            if (currentBookmark != null) bookmarkId = currentBookmark.id
         }
-        editMenu = selectionToolbar!!.menu.findItem(R.id.action_edit)
-        copyMenu = selectionToolbar!!.menu.findItem(R.id.action_copy)
-        homeMenu = selectionToolbar!!.menu.findItem(R.id.action_home)
-        bookmarkCurrentBtn =
-            ViewCompat.requireViewById(rootView, R.id.bookmark_current_btn)
-        val currentBookmark = bookmarks.firstOrNull { b: SiteBookmark ->
-            SiteBookmark.urlsAreSame(b.url, url)
-        }
-        if (currentBookmark != null) bookmarkId = currentBookmark.id
         updateBookmarkButton()
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     private fun reloadBookmarks(): List<SiteBookmark> {
@@ -229,25 +226,27 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
      */
     private fun onSelectionChanged() {
         val selectedCount = selectExtension.selectedItems.size
-        if (0 == selectedCount) {
-            selectionToolbar!!.visibility = View.GONE
-            selectExtension.selectOnLongClick = true
-            invalidateNextBookClick = true
-            Handler(Looper.getMainLooper()).postDelayed({
-                invalidateNextBookClick = false
-            }, 200)
-        } else {
-            editMenu!!.isVisible = 1 == selectedCount
-            copyMenu!!.isVisible = 1 == selectedCount
-            homeMenu!!.isVisible = 1 == selectedCount
-            selectionToolbar!!.visibility = View.VISIBLE
+        binding?.apply {
+            if (0 == selectedCount) {
+                selectionToolbar.visibility = View.GONE
+                selectExtension.selectOnLongClick = true
+                invalidateNextBookClick = true
+                Handler(Looper.getMainLooper()).postDelayed({
+                    invalidateNextBookClick = false
+                }, 200)
+            } else {
+                editMenu?.isVisible = 1 == selectedCount
+                copyMenu?.isVisible = 1 == selectedCount
+                homeMenu?.isVisible = 1 == selectedCount
+                selectionToolbar.visibility = View.VISIBLE
+            }
         }
     }
 
     private fun updateBookmarkButton() {
-        bookmarkCurrentBtn?.apply {
+        binding?.bookmarkCurrentBtn?.apply {
             if (bookmarkId > -1) {
-                bookmarkCurrentBtn!!.icon = ContextCompat.getDrawable(
+                icon = ContextCompat.getDrawable(
                     context,
                     R.drawable.ic_bookmark_full
                 )
@@ -255,7 +254,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
                 setOnClickListener { onBookmarkBtnClickedRemove() }
                 this@BookmarksDialogFragment.parent!!.updateBookmarkButton(true)
             } else {
-                bookmarkCurrentBtn!!.icon = ContextCompat.getDrawable(
+                icon = ContextCompat.getDrawable(
                     context,
                     R.drawable.ic_bookmark
                 )
@@ -267,7 +266,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
     }
 
     private fun onBookmarkBtnClickedAdd() {
-        val dao: CollectionDAO = ObjectBoxDAO(bookmarkCurrentBtn!!.context)
+        val dao: CollectionDAO = ObjectBoxDAO(activity)
         try {
             bookmarkId = dao.insertBookmark(SiteBookmark(site, title, url))
             reloadBookmarks(dao)
@@ -279,7 +278,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
     }
 
     private fun onBookmarkBtnClickedRemove() {
-        val dao: CollectionDAO = ObjectBoxDAO(bookmarkCurrentBtn!!.context)
+        val dao: CollectionDAO = ObjectBoxDAO(activity)
         try {
             dao.deleteBookmark(bookmarkId)
             bookmarkId = -1
@@ -299,7 +298,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
             R.id.action_delete -> purgeSelectedItems()
             R.id.action_home -> toggleHomeSelectedItem()
             else -> {
-                selectionToolbar!!.visibility = View.GONE
+                binding?.selectionToolbar?.visibility = View.GONE
                 return false
             }
         }
@@ -316,7 +315,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
             val b = selectedItems.first().getObject()
             if (b != null && Helper.copyPlainTextToClipboard(context, b.url)) {
                 ToastHelper.toastShort(context, R.string.web_url_clipboard)
-                selectionToolbar?.visibility = View.INVISIBLE
+                binding?.selectionToolbar?.visibility = View.INVISIBLE
             }
         }
     }
@@ -349,7 +348,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
                     dao.insertBookmark(b)
                     reloadBookmarks(dao)
                     fastAdapter.notifyAdapterDataSetChanged()
-                    selectionToolbar?.visibility = View.INVISIBLE
+                    binding?.selectionToolbar?.visibility = View.INVISIBLE
                 } finally {
                     dao.cleanup()
                 }
@@ -378,7 +377,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
                     }
                     reloadBookmarks(dao)
                     fastAdapter.notifyAdapterDataSetChanged()
-                    selectionToolbar?.visibility = View.INVISIBLE
+                    binding?.selectionToolbar?.visibility = View.INVISIBLE
                 } finally {
                     dao.cleanup()
                 }
@@ -410,7 +409,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
                     fastAdapter.notifyAdapterDataSetChanged()
                     selectExtension.selectOnLongClick = true
                     selectExtension.deselect(selectExtension.selections.toMutableSet())
-                    selectionToolbar?.visibility = View.INVISIBLE
+                    binding?.selectionToolbar?.visibility = View.INVISIBLE
                 } finally {
                     dao.cleanup()
                 }
@@ -433,9 +432,11 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
 
     override fun itemTouchDropped(oldPosition: Int, newPosition: Int) {
         // Update  visuals
-        val vh = recyclerView!!.findViewHolderForAdapterPosition(newPosition)
-        if (vh is IDraggableViewHolder) {
-            (vh as IDraggableViewHolder).onDropped()
+        binding?.apply {
+            val vh = recyclerview.findViewHolderForAdapterPosition(newPosition)
+            if (vh is IDraggableViewHolder) {
+                (vh as IDraggableViewHolder).onDropped()
+            }
         }
 
         // Update DB

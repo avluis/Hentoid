@@ -22,7 +22,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
-        android:id="@+id/bookmarks_list"
+        android:id="@+id/recyclerview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
@@ -47,10 +47,10 @@
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_bookmark"
         app:iconTint="?colorSecondary"
-        app:layout_constraintTop_toBottomOf="@id/bookmarks_list" />
+        app:layout_constraintTop_toBottomOf="@id/recyclerview" />
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+        android:id="@+id/selection_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_marginTop="8dp"
@@ -58,7 +58,7 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:gravity="center_vertical"
         android:visibility="invisible"
-        app:layout_constraintTop_toBottomOf="@id/bookmarks_list"
+        app:layout_constraintTop_toBottomOf="@id/recyclerview"
         app:layout_scrollFlags="scroll|enterAlways"
         app:menu="@menu/web_bookmarks_selection_menu"
         tools:visibility="visible" />
