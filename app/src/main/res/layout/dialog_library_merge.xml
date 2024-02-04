@@ -27,6 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/new_title"
+        app:endIconMode="clear_text"
         app:layout_constraintTop_toBottomOf="@id/list">
 
         <com.google.android.material.textfield.TextInputEditText
