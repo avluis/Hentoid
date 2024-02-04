@@ -264,7 +264,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
                 )
                 setText(R.string.unbookmark_current)
                 setOnClickListener { onBookmarkBtnClickedRemove() }
-                this@BookmarksDialogFragment.parent!!.updateBookmarkButton(true)
+                this@BookmarksDialogFragment.parent?.updateBookmarkButton(true)
             } else {
                 icon = ContextCompat.getDrawable(
                     context,
@@ -272,21 +272,23 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
                 )
                 setText(R.string.bookmark_current)
                 setOnClickListener { onBookmarkBtnClickedAdd() }
-                this@BookmarksDialogFragment.parent!!.updateBookmarkButton(false)
+                this@BookmarksDialogFragment.parent?.updateBookmarkButton(false)
             }
         }
     }
 
     private fun onBookmarkBtnClickedAdd() {
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
-        try {
-            bookmarkId = dao.insertBookmark(SiteBookmark(site, title, url))
-            reloadBookmarks(dao)
-            fastAdapter.notifyAdapterDataSetChanged()
-        } finally {
-            dao.cleanup()
-        }
-        updateBookmarkButton()
+        invokeInputDialog(requireContext(), R.string.bookmark_edit_title, {
+            val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+            try {
+                bookmarkId = dao.insertBookmark(SiteBookmark(site, it, url))
+                reloadBookmarks(dao)
+                fastAdapter.notifyAdapterDataSetChanged()
+            } finally {
+                dao.cleanup()
+            }
+            updateBookmarkButton()
+        }, title)
     }
 
     private fun onBookmarkBtnClickedRemove() {
@@ -370,8 +372,8 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
             if (b != null) invokeInputDialog(
                 requireActivity(),
                 R.string.bookmark_edit_title,
-                b.title,
-                { s -> onEditTitle(s) }
+                { s -> onEditTitle(s) },
+                b.title
             ) { selectExtension.deselect(selectExtension.selections.toMutableSet()) }
         }
     }

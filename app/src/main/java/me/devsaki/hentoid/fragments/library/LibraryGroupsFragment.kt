@@ -328,13 +328,14 @@ class LibraryGroupsFragment : Fragment(),
 
     private fun newGroupPrompt() {
         InputDialog.invokeInputDialog(
-            requireActivity(), R.string.new_group_name
-        ) { groupName: String ->
-            viewModel.newGroup(
-                Preferences.getGroupingDisplay(),
-                groupName, null
-            ) { onNewGroupNameExists() }
-        }
+            requireActivity(), R.string.new_group_name,
+            { groupName: String ->
+                viewModel.newGroup(
+                    Preferences.getGroupingDisplay(),
+                    groupName, null
+                ) { onNewGroupNameExists() }
+            }
+        )
     }
 
     private fun onNewGroupNameExists() {
@@ -567,8 +568,11 @@ class LibraryGroupsFragment : Fragment(),
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         val g = selectedItems.firstNotNullOfOrNull { gi -> gi.group }
         if (g != null) {
-            InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, g.name,
-                { newName: String -> onEditName(newName) }
+            InputDialog.invokeInputDialog(
+                requireActivity(),
+                R.string.group_edit_name,
+                { newName: String -> onEditName(newName) },
+                g.name
             ) { leaveSelectionMode() }
         }
     }

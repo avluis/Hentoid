@@ -44,20 +44,12 @@ object InputDialog {
     fun invokeInputDialog(
         context: Context,
         @StringRes message: Int,
-        onResult: Consumer<String>
-    ) {
-        invokeInputDialog(context, message, null, onResult, null)
-    }
-
-    fun invokeInputDialog(
-        context: Context,
-        @StringRes message: Int,
-        text: String?,
         onResult: Consumer<String>,
-        onCancelled: Runnable?
+        text: String = "",
+        onCancelled: Runnable? = null
     ) {
         val input = EditText(context)
-        if (text != null) input.setText(text)
+        if (text.isNotEmpty()) input.setText(text)
         input.inputType = InputType.TYPE_CLASS_TEXT
         input.imeOptions = EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING
         val onOk = DialogInterface.OnClickListener { _, _ ->
