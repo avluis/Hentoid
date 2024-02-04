@@ -20,7 +20,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/action_show_favorite_pages"
-        android:icon="@drawable/ic_filter_favs_off"
+        android:icon="@drawable/ic_filter_fav_off"
         android:title="@string/viewer_filter_favourite_off"
         android:tooltipText="@string/viewer_filter_favourite_help"
         app:showAsAction="ifRoom" />

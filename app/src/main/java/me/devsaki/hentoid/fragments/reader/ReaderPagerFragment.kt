@@ -629,10 +629,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun updateShowFavouriteDisplay(showFavouritePages: Boolean) {
         showFavoritePagesMenu.isChecked = showFavouritePages
         if (showFavouritePages) {
-            showFavoritePagesMenu.setIcon(R.drawable.ic_filter_favs_on)
+            showFavoritePagesMenu.setIcon(R.drawable.ic_filter_fav)
             showFavoritePagesMenu.setTitle(R.string.viewer_filter_favourite_on)
         } else {
-            showFavoritePagesMenu.setIcon(R.drawable.ic_filter_favs_off)
+            showFavoritePagesMenu.setIcon(R.drawable.ic_filter_fav_off)
             showFavoritePagesMenu.setTitle(R.string.viewer_filter_favourite_off)
         }
     }
@@ -1246,7 +1246,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         seekToIndex(index)
     }
 
-    override fun indexFromPageNum(pageNum : Int) : Int {
+    override fun indexFromPageNum(pageNum: Int): Int {
         return adapter.currentList.indexOfFirst { i -> i.order == pageNum }
     }
 

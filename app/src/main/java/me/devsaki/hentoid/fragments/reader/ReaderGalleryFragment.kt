@@ -665,7 +665,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     }
 
     private fun updateFavouriteDisplay(showFavouritePages: Boolean) {
-        showFavouritePagesMenu.setIcon(if (showFavouritePages) R.drawable.ic_filter_favs_on else R.drawable.ic_filter_favs_off)
+        showFavouritePagesMenu.setIcon(if (showFavouritePages) R.drawable.ic_filter_fav else R.drawable.ic_filter_fav_off)
         updateToolbar()
     }
 

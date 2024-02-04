@@ -7,7 +7,7 @@
     tools:targetApi="o">
     <item
         android:id="@+id/action_show_favorite_pages"
-        android:icon="@drawable/ic_filter_favs_off"
+        android:icon="@drawable/ic_filter_fav_off"
         android:title="@string/menu_fav"
         android:tooltipText="@string/menu_fav"
         app:showAsAction="always" />
