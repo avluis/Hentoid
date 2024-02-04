@@ -213,7 +213,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 }
             }
         }
-        val helper = FastAdapterPreClickSelectHelper(selectExtension)
+        val helper = FastAdapterPreClickSelectHelper(fastAdapter, selectExtension)
         fastAdapter.onPreClickListener = { _, _, _, pos -> helper.onPreClickListener(pos) }
         fastAdapter.onPreLongClickListener = { _, _, _, pos -> helper.onPreLongClickListener(pos) }
 

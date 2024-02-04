@@ -717,6 +717,7 @@
     <string name="unbookmark_current">Remove bookmark on current page</string>
     <string name="bookmark_copy_url">Copy bookmark URL to clipboard</string>
     <string name="bookmark_toggle_welcome">Toggle bookmark URL as welcome page</string>
+    <string name="bookmark_change_site">Change site</string>
     <string name="bookmark_edit_title">Edit bookmark title</string>
     <string name="alert_unwanted_tags">This book is tagged with <x:g example="bad" id="tag">%s</x:g></string>
     <string name="bookmark_homepage">Homepage</string>

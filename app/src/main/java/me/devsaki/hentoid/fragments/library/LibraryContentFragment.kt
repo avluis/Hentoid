@@ -73,10 +73,10 @@ import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment.Companion.invoke
+import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryTransformDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
-import me.devsaki.hentoid.fragments.library.SearchContentIdDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
@@ -122,6 +122,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     SplitDialogFragment.Parent,
     RatingDialogFragment.Parent,
     LibraryTransformDialogFragment.Parent,
+    SelectSiteDialogFragment.Parent,
     PopupTextProvider,
     ItemTouchCallback,
     SimpleSwipeDrawerCallback.ItemSwipeCallback {
@@ -1269,7 +1270,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                         onSelectionChanged()
                     }
                 }
-            val helper = FastAdapterPreClickSelectHelper(this)
+            val helper = FastAdapterPreClickSelectHelper(fastAdapter!!, this)
             fastAdapter!!.onPreClickListener =
                 { _, _, _, position -> helper.onPreClickListener(position) }
             fastAdapter!!.onPreLongClickListener =
@@ -1317,8 +1318,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      */
     private fun loadBookshelf(iLibrary: PagedList<Content>) {
         if (iLibrary.isEmpty()) {
-            itemAdapter!!.set(emptyList())
-            fastAdapter!!.notifyDataSetChanged()
+            itemAdapter?.set(emptyList())
+            fastAdapter?.notifyDataSetChanged()
         } else {
             val bounds = getShelfBound(pager.getCurrentPageNumber(), iLibrary.size)
             val minIndex = bounds.getLeft()
@@ -1441,6 +1442,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
         if (newSearch && StringHelper.isNumeric(query)) {
+            val dialogTitle = getString(R.string.search_bookid_label, query)
             val siteCodes = result.toList()
                 .filter { content -> query == content.uniqueSiteId }
                 .map { obj -> obj.site.code }
@@ -1452,11 +1454,21 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                         BaseTransientBottomBar.LENGTH_LONG
                     )
                     snackbar.setAction(R.string.menu_search) {
-                        invoke(parentFragmentManager, query, siteCodes)
+                        SelectSiteDialogFragment.invoke(
+                            childFragmentManager,
+                            dialogTitle,
+                            siteCodes,
+                            true
+                        )
                     }
                     snackbar.show()
                 }
-            } else invoke(parentFragmentManager, query, siteCodes)
+            } else SelectSiteDialogFragment.invoke(
+                childFragmentManager,
+                dialogTitle,
+                siteCodes,
+                true
+            )
         }
 
         if (newSearch && query.trim().equals(
@@ -1737,8 +1749,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         refreshIfNeeded()
     }
 
-    override fun onChangeGroupSuccess(nbItems : Int) {
-        snack(resources.getQuantityString(R.plurals.notif_process_complete_details, nbItems, nbItems))
+    override fun onChangeGroupSuccess(nbItems: Int) {
+        snack(
+            resources.getQuantityString(
+                R.plurals.notif_process_complete_details,
+                nbItems,
+                nbItems
+            )
+        )
         refreshIfNeeded()
     }
 
@@ -1905,5 +1923,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             Preferences.Constant.ORDER_FIELD_NONE, Preferences.Constant.ORDER_FIELD_CUSTOM, Preferences.Constant.ORDER_FIELD_RANDOM -> ""
             else -> ""
         }
+    }
+
+    override fun onSiteSelected(site: Site, altCode: Int) {
+        ContentHelper.launchBrowserFor(
+            requireContext(), Content.getGalleryUrlFromId(site, getQuery(), altCode)
+        )
     }
 }

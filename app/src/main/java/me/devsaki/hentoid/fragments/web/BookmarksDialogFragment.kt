@@ -32,14 +32,17 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.databinding.DialogWebBookmarksBinding
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.InputDialog.invokeInputDialog
+import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 
-class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
+class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
+    SelectSiteDialogFragment.Parent {
 
     companion object {
         private const val KEY_SITE = "site"
@@ -75,6 +78,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
 
     // === VARIABLES
     private var parent: Parent? = null
+    private lateinit var initialSite: Site
     private lateinit var site: Site
     private lateinit var title: String
     private lateinit var url: String
@@ -92,6 +96,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
 
         arguments?.apply {
             site = Site.searchByCode(getInt(KEY_SITE).toLong())
+            initialSite = site
             title = getString(KEY_TITLE, "")
             url = getString(KEY_URL, "")
         }
@@ -126,11 +131,6 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
-        binding?.apply {
-            bookmarkHomepageBtn.icon = ContextCompat.getDrawable(requireContext(), site.ico)
-            bookmarkHomepageBtn.setOnClickListener { parent?.loadUrl(site.url) }
-        }
-        val bookmarks = reloadBookmarks()
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension::class.java)!!
@@ -149,7 +149,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
                 }
             }
         val helper = FastAdapterPreClickSelectHelper(
-            selectExtension
+            fastAdapter, selectExtension
         )
         fastAdapter.onPreClickListener =
             { _, _, _, position: Int -> helper.onPreClickListener(position) }
@@ -160,6 +160,12 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
         val dragCallback = SimpleDragCallback(this)
         dragCallback.notifyAllDrops = true
         touchHelper = ItemTouchHelper(dragCallback)
+
+        val bookmarks = reloadBookmarks()
+        val currentBookmark =
+            bookmarks.firstOrNull { b -> SiteBookmark.urlsAreSame(b.url, url) }
+        if (currentBookmark != null && currentBookmark.id > 0) bookmarkId = currentBookmark.id
+        updateBookmarkButton()
 
         binding?.apply {
             touchHelper.attachToRecyclerView(recyclerview)
@@ -174,19 +180,22 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
                     if (vh != null) touchHelper.startDrag(vh)
                 }
             )
-            selectionToolbar.setOnMenuItemClickListener { menuItem: MenuItem ->
-                selectionToolbarOnItemClicked(
-                    menuItem
-                )
+
+            // Top toolbar
+            toolbar.setOnMenuItemClickListener { menuItem ->
+                toolbarOnItemClicked(menuItem)
+            }
+            toolbar.menu.findItem(R.id.action_home).icon =
+                ContextCompat.getDrawable(requireContext(), site.ico)
+
+            // Selection toolbar
+            selectionToolbar.setOnMenuItemClickListener { menuItem ->
+                selectionToolbarOnItemClicked(menuItem)
             }
             editMenu = selectionToolbar.menu.findItem(R.id.action_edit)
             copyMenu = selectionToolbar.menu.findItem(R.id.action_copy)
             homeMenu = selectionToolbar.menu.findItem(R.id.action_home)
-            val currentBookmark =
-                bookmarks.firstOrNull { b -> SiteBookmark.urlsAreSame(b.url, url) }
-            if (currentBookmark != null) bookmarkId = currentBookmark.id
         }
-        updateBookmarkButton()
     }
 
     override fun onDestroyView() {
@@ -206,16 +215,19 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
     }
 
     private fun reloadBookmarks(dao: CollectionDAO): List<SiteBookmark> {
-        val bookmarks: List<SiteBookmark> = dao.selectBookmarks(site)
-        itemAdapter.set(bookmarks.map { b: SiteBookmark ->
+        val bookmarks = dao.selectBookmarks(site).toMutableList()
+        // Add site home as 1st bookmark
+        bookmarks.add(0, SiteBookmark(site, getString(R.string.bookmark_homepage), site.url))
+        itemAdapter.set(bookmarks.mapIndexed { index, b ->
             TextItem(
                 b.title,
                 b,
-                draggable = true,
+                draggable = index > 0,
                 reformatCase = true,
                 isHighlighted = b.isHomepage,
                 centered = false,
-                touchHelper = touchHelper
+                touchHelper = touchHelper,
+                index > 0
             )
         })
         return bookmarks
@@ -266,7 +278,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
     }
 
     private fun onBookmarkBtnClickedAdd() {
-        val dao: CollectionDAO = ObjectBoxDAO(activity)
+        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
         try {
             bookmarkId = dao.insertBookmark(SiteBookmark(site, title, url))
             reloadBookmarks(dao)
@@ -278,7 +290,7 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
     }
 
     private fun onBookmarkBtnClickedRemove() {
-        val dao: CollectionDAO = ObjectBoxDAO(activity)
+        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
         try {
             dao.deleteBookmark(bookmarkId)
             bookmarkId = -1
@@ -288,6 +300,34 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
             dao.cleanup()
         }
         updateBookmarkButton()
+    }
+
+    override fun onSiteSelected(site: Site, altCode: Int) {
+        this.site = site
+
+        val bookmarks = reloadBookmarks()
+        val currentBookmark =
+            bookmarks.firstOrNull { b -> SiteBookmark.urlsAreSame(b.url, url) }
+        if (currentBookmark != null && currentBookmark.id > 0) bookmarkId = currentBookmark.id
+        updateBookmarkButton()
+
+        binding?.apply {
+            toolbar.menu.findItem(R.id.action_home).icon =
+                ContextCompat.getDrawable(requireContext(), site.ico)
+        }
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    private fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
+            R.id.action_home -> {
+                SelectSiteDialogFragment.invoke(
+                    childFragmentManager,
+                    getString(R.string.bookmark_change_site)
+                )
+            }
+        }
+        return true
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -420,7 +460,9 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback {
     private fun onItemClick(item: TextItem<SiteBookmark>): Boolean {
         if (selectExtension.selectedItems.isEmpty()) {
             if (!invalidateNextBookClick && item.getObject() != null) {
-                parent!!.loadUrl(item.getObject()!!.url)
+                val url = item.getObject()!!.url
+                if (site == initialSite) parent?.loadUrl(url)
+                else ContentHelper.launchBrowserFor(requireActivity(), url)
                 dismiss()
             } else invalidateNextBookClick = false
             return true

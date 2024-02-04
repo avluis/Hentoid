@@ -497,8 +497,7 @@ class LibraryActivity : BaseActivity() {
                     draggable = false,
                     reformatCase = false,
                     isHighlighted = values[index] == gridSizePref,
-                    centered = true,
-                    touchHelper = null
+                    centered = true
                 )
                 item.isSimple = true
                 item.isSelected = item.isHighlighted

@@ -7,19 +7,15 @@
     android:layout_gravity="center"
     android:clipToPadding="false">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/bookmark_homepage_btn"
-        style="@style/Widget.Material3.Button.TextButton"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="start|center_vertical"
-        android:text="@string/bookmark_homepage"
-        android:textColor="@color/white_opacity_87"
-        android:textSize="@dimen/text_body_1"
-        app:backgroundTint="?colorPrimary"
-        app:icon="@drawable/ic_site_nhentai"
-        app:iconTint="@color/white_opacity_87"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/web_bookmarks_menu" />
 
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/recyclerview"
@@ -32,7 +28,7 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/bookmark_homepage_btn"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:maxHeight="@dimen/dialog_max_height"
         tools:listitem="@layout/item_text" />
 

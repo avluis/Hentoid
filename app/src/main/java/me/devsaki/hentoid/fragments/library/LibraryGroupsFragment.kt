@@ -679,7 +679,7 @@ class LibraryGroupsFragment : Fragment(),
                         onSelectionChanged()
                     }
                 }
-            val helper = FastAdapterPreClickSelectHelper(this)
+            val helper = FastAdapterPreClickSelectHelper(fastAdapter, this)
             fastAdapter.onPreClickListener =
                 { _, _, _, position -> helper.onPreClickListener(position) }
             fastAdapter.onPreLongClickListener =

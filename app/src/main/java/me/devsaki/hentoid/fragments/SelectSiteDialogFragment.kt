@@ -1,65 +1,83 @@
-package me.devsaki.hentoid.fragments.library
+package me.devsaki.hentoid.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.databinding.DialogSelectSiteBinding
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DrawerItem
 
 /**
- * Launcher dialog for the "reach book page by launch code" feature
+ * Dialog to select a site
  */
-class SearchContentIdDialogFragment : DialogFragment() {
+class SelectSiteDialogFragment : DialogFragment() {
+
+    // UI
+    private var binding: DialogSelectSiteBinding? = null
+
+    // VARIABLES
+    private var parent: Parent? = null
+
 
     companion object {
-        private const val ID = "ID"
-        private const val FOUND_SITES = "FOUND_SITES"
+        private const val EXCLUDED_SITES = "EXCLUDED_SITES"
+        private const val ALT_SITES = "ALT_SITES"
+        private const val TITLE = "TITLE"
 
         operator fun invoke(
             fragmentManager: FragmentManager,
-            id: String,
-            siteCodes: List<Int>
+            title: String,
+            excludedSiteCodes: List<Int> = emptyList(),
+            showAltSites: Boolean = false
         ) {
             val args = Bundle()
-            args.putString(ID, id)
-            args.putIntegerArrayList(FOUND_SITES, ArrayList(siteCodes))
-            val fragment = SearchContentIdDialogFragment()
+            args.putIntegerArrayList(EXCLUDED_SITES, ArrayList(excludedSiteCodes))
+            args.putBoolean(ALT_SITES, showAltSites)
+            args.putString(TITLE, title)
+            val fragment = SelectSiteDialogFragment()
             fragment.arguments = args
             fragment.isCancelable = true
             fragment.show(fragmentManager, null)
         }
     }
 
-    private lateinit var bookId: String
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        parent = parentFragment as Parent?
+    }
+
+    override fun onDestroy() {
+        parent = null
+        super.onDestroy()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.dialog_library_search_id, container, false)
+    ): View {
+        binding = DialogSelectSiteBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
-        bookId = requireArguments().getString(ID, "")
-        val title: TextView = rootView.requireById(R.id.search_bookid_title)
-        title.text = getString(R.string.search_bookid_label, bookId)
 
-        val foundSites = requireArguments().getIntegerArrayList(FOUND_SITES) ?: return
+        val showAltSites = requireArguments().getBoolean(ALT_SITES, false)
+        binding?.title?.text = requireArguments().getString(TITLE, "")
+
+        //title.text = getString(R.string.search_bookid_label, bookId)
+
+        val foundSites = requireArguments().getIntegerArrayList(EXCLUDED_SITES) ?: return
         val sites = Preferences.getActiveSites()
             .filter { it.hasUniqueBookId() }
             .filterNot { foundSites.contains(it.code) }
@@ -70,7 +88,7 @@ class SearchContentIdDialogFragment : DialogFragment() {
         val userTxt = resources.getString(R.string.user_generic).lowercase()
         sites.forEach {
             items.add(DrawerItem.fromSite(it))
-            if (it == Site.PIXIV) {
+            if (showAltSites && it == Site.PIXIV) {
                 val item = DrawerItem(
                     it.description.uppercase() + " ($userTxt)",
                     it.ico,
@@ -87,17 +105,17 @@ class SearchContentIdDialogFragment : DialogFragment() {
         // Item click listener
         val fastAdapter: FastAdapter<DrawerItem> = FastAdapter.with(itemAdapter)
         fastAdapter.onClickListener = { _, _, i, _ -> onItemSelected(i.site, i.tag as Int?) }
-        val sitesRecycler =
-            ViewCompat.requireViewById<RecyclerView>(rootView, R.id.select_sites)
-        sitesRecycler.adapter = fastAdapter
+        binding?.recyclerview?.adapter = fastAdapter
     }
 
     private fun onItemSelected(s: Site?, altCode: Int?): Boolean {
         if (null == s) return false
-        ContentHelper.launchBrowserFor(
-            requireContext(), Content.getGalleryUrlFromId(s, bookId, altCode ?: 0)
-        )
+        parent?.onSiteSelected(s, altCode ?: 0)
         dismiss()
         return true
+    }
+
+    interface Parent {
+        fun onSiteSelected(site: Site, altCode: Int = 0)
     }
 }

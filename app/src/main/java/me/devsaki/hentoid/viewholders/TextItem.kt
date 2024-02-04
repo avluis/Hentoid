@@ -68,7 +68,8 @@ class TextItem<T> : AbstractItem<TextItem.ViewHolder<T>>,
         reformatCase: Boolean,
         isHighlighted: Boolean,
         centered: Boolean,
-        touchHelper: ItemTouchHelper?
+        touchHelper: ItemTouchHelper? = null,
+        selectable : Boolean = true
     ) : super() {
         this.text = text
         this.mTag = tag
@@ -77,7 +78,7 @@ class TextItem<T> : AbstractItem<TextItem.ViewHolder<T>>,
         this.touchHelper = touchHelper
         this.reformatCase = reformatCase
         this.highlighted = isHighlighted
-        isSelectable = true
+        isSelectable = selectable
     }
 
     fun getObject(): T? {

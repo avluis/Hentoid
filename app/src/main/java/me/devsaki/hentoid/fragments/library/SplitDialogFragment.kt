@@ -91,7 +91,7 @@ class SplitDialogFragment : DialogFragment() {
             }
         }
 
-        val helper = FastAdapterPreClickSelectHelper(selectExtension)
+        val helper = FastAdapterPreClickSelectHelper(fastAdapter, selectExtension)
         fastAdapter.onPreClickListener =
             { _, _, _, position: Int -> helper.onPreClickListener(position) }
         fastAdapter.onPreLongClickListener =

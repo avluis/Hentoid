@@ -353,7 +353,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                         }
                     }
                 }
-                val helper = FastAdapterPreClickSelectHelper(selectExtension)
+                val helper = FastAdapterPreClickSelectHelper(fastAdapter, selectExtension)
                 fastAdapter.onPreClickListener =
                     { _, _, _, position -> helper.onPreClickListener(position) }
                 fastAdapter.onPreLongClickListener =
