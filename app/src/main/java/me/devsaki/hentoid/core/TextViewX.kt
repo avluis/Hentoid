@@ -5,6 +5,7 @@ import android.text.TextWatcher
 import android.widget.TextView
 import androidx.lifecycle.LifecycleCoroutineScope
 import me.devsaki.hentoid.util.Debouncer
+import kotlin.math.max
 import kotlin.math.min
 
 fun TextView.setOnTextChangedListener(
@@ -43,15 +44,14 @@ fun TextView.setOnTextChangedListener(
 }
 
 
-// Careful : behaviour unknown on 3+ lines views
 fun TextView.setMiddleEllipsis() {
-    val lineEndIndex: Int = layout.getLineEnd(0)
-    if (lineEndIndex < text.lastIndex) {
-        val lines = min(lineCount, maxLines)
-        val partLength = lineEndIndex / (lines + 1)
-        val part1 = text.substring(0, partLength)
-        val part2 =
-            text.substring(text.lastIndex - partLength + (2 * lines))
-        text = "$part1…$part2"
+    if (maxLines > 0 && maxLines < Int.MAX_VALUE) {
+        val lineEndIndex = layout.getLineEnd(min(lineCount, maxLines) - 1)
+        if (lineEndIndex < text.lastIndex) {
+            val partLength = max(0, (lineEndIndex / 2) - (2 * lineCount - 1))
+            val part1 = text.substring(0, partLength)
+            val part2 = text.substring(text.lastIndex - partLength)
+            text = "$part1…$part2"
+        }
     }
 }

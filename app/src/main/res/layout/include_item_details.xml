@@ -44,6 +44,7 @@
         android:textColor="?card_title"
         android:textSize="@dimen/text_subtitle_1"
         android:textStyle="bold"
+        android:maxLines="3"
         app:layout_constraintEnd_toStartOf="@id/reading_progress"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/pbDownload"
