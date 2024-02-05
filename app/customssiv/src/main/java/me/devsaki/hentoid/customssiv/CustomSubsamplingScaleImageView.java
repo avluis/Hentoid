@@ -37,6 +37,7 @@ import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -52,6 +53,8 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.exceptions.UndeliverableException;
+import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.customssiv.R.styleable;
 import me.devsaki.hentoid.customssiv.decoder.ImageDecoder;
@@ -395,6 +398,24 @@ public class CustomSubsamplingScaleImageView extends View {
     private final CompositeDisposable loadDisposable = new CompositeDisposable();
     // GPUImage instance to use to smoothen images; sharp mode will be used if not set
     private GPUImage glEsRenderer;
+
+    static {
+        // Set RxJava's default error handler for unprocessed network and IO errors
+        RxJavaPlugins.setErrorHandler(e -> {
+            if (e instanceof UndeliverableException) {
+                e = e.getCause();
+            }
+            if (e instanceof IOException) {
+                // fine, irrelevant network problem or API that throws on cancellation
+                return;
+            }
+            if (e instanceof InterruptedException) {
+                // fine, some blocking code was interrupted by a dispose call
+                return;
+            }
+            Timber.w(e, "Undeliverable exception received, not sure what to do");
+        });
+    }
 
 
     public CustomSubsamplingScaleImageView(@NonNull Context context, @Nullable AttributeSet attr) {
