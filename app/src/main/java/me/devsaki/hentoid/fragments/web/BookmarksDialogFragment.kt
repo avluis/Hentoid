@@ -233,6 +233,16 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
         return bookmarks
     }
 
+    private fun getUnbookmarkedSites(): List<Site> {
+        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        try {
+            val bookmarkedSites = dao.selectAllBookmarks().groupBy { it.site }.keys
+            return Site.entries.filterNot { bookmarkedSites.contains(it) }
+        } finally {
+            dao.cleanup()
+        }
+    }
+
     /**
      * Callback for any selection change (item added to or removed from selection)
      */
@@ -325,7 +335,8 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
             R.id.action_home -> {
                 SelectSiteDialogFragment.invoke(
                     childFragmentManager,
-                    getString(R.string.bookmark_change_site)
+                    getString(R.string.bookmark_change_site),
+                    getUnbookmarkedSites().map { it.code }
                 )
             }
         }

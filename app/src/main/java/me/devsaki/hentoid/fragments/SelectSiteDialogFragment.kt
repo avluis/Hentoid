@@ -75,12 +75,10 @@ class SelectSiteDialogFragment : DialogFragment() {
         val showAltSites = requireArguments().getBoolean(ALT_SITES, false)
         binding?.title?.text = requireArguments().getString(TITLE, "")
 
-        //title.text = getString(R.string.search_bookid_label, bookId)
-
-        val foundSites = requireArguments().getIntegerArrayList(EXCLUDED_SITES) ?: return
+        val excludedSites = requireArguments().getIntegerArrayList(EXCLUDED_SITES)?.toSet() ?: return
         val sites = Preferences.getActiveSites()
             .filter { it.hasUniqueBookId() }
-            .filterNot { foundSites.contains(it.code) }
+            .filterNot { excludedSites.contains(it.code) }
             .sortedBy { it.name }
 
         val itemAdapter = ItemAdapter<DrawerItem>()
