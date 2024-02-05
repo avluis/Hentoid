@@ -1556,26 +1556,22 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     /**
      * Format the message to display for the given source alert
      *
-     * @param alert Source alert
+     * @param theAlert Source alert
      * @return Message to be displayed for the user for the given source alert
      */
-    private fun formatAlertMessage(alert: SourceAlert): String {
-        var result = ""
-
+    private fun formatAlertMessage(theAlert: SourceAlert): String {
         // Main message body
-        if (alert.status == AlertStatus.ORANGE) {
-            result = resources.getString(R.string.alert_orange)
-        } else if (alert.status == AlertStatus.RED) {
-            result = resources.getString(R.string.alert_red)
-        } else if (alert.status == AlertStatus.GREY) {
-            result = resources.getString(R.string.alert_grey)
-        } else if (alert.status == AlertStatus.BLACK) {
-            result = resources.getString(R.string.alert_black)
+        var result = when (theAlert.status) {
+            AlertStatus.ORANGE -> resources.getString(R.string.alert_orange)
+            AlertStatus.RED -> resources.getString(R.string.alert_red)
+            AlertStatus.GREY -> resources.getString(R.string.alert_grey)
+            AlertStatus.BLACK -> resources.getString(R.string.alert_black)
+            else -> resources.getString(R.string.alert_orange)
         }
 
         // End of message
         result =
-            if (alert.fixedByBuild < Int.MAX_VALUE) result.replace(
+            if (theAlert.fixedByBuild < Int.MAX_VALUE) result.replace(
                 "%s",
                 resources.getString(R.string.alert_fix_available)
             ) else result.replace("%s", resources.getString(R.string.alert_wip))
@@ -1608,6 +1604,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         get() = m_prefBlockedTags.toMutableList()
     override val customCss: String
         get() = computeCustomCss()
+    override val alertStatus : AlertStatus
+        get() = alert?.status?:AlertStatus.NONE
     override val scope: LifecycleCoroutineScope
         get() = lifecycleScope
 

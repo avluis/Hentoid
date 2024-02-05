@@ -25,6 +25,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.enums.AlertStatus
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.ContentParserFactory
@@ -572,7 +573,7 @@ open class CustomWebViewClient : WebViewClient {
 
         // If we're here for remove elements only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null
-        if (analyzeForDownload && activity != null) activity.onGalleryPageStarted()
+        if (analyzeForDownload) activity?.onGalleryPageStarted()
         val requestHeadersList =
             HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
         var response: Response? = null
@@ -688,7 +689,9 @@ open class CustomWebViewClient : WebViewClient {
                     parserStream = body.byteStream()
                     result = null // Default webview behaviour
                 }
-                if (analyzeForDownload) {
+                // If there's a red alert ongoing, don't try parsing the page
+                val alert = activity?.alertStatus ?: AlertStatus.NONE
+                if (analyzeForDownload && alert != AlertStatus.RED) {
                     try {
                         var content = htmlAdapter.fromInputStream(parserStream!!, URL(url))
                             .toContent(url)
@@ -993,5 +996,6 @@ open class CustomWebViewClient : WebViewClient {
         val prefBlockedTags: List<String>
         val customCss: String
         val scope: CoroutineScope
+        val alertStatus: AlertStatus
     }
 }
