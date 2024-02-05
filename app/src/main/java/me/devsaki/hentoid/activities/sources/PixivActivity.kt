@@ -43,6 +43,7 @@ class PixivActivity : BaseWebActivity() {
 
     override fun createWebClient(): CustomWebViewClient {
         val client = PixivWebClient(getStartSite(), GALLERY_FILTER, this)
+        client.restrictTo(DOMAIN_FILTER)
         client.adBlocker.addToUrlBlacklist(*BLOCKED_CONTENT)
         client.adBlocker.addToJsUrlWhitelist(*JS_WHITELIST)
         client.setJsStartupScripts("pixiv.js")
@@ -50,7 +51,7 @@ class PixivActivity : BaseWebActivity() {
         return client
     }
 
-    private inner class PixivWebClient constructor(
+    private inner class PixivWebClient(
         site: Site,
         filter: Array<String>,
         activity: CustomWebActivity
