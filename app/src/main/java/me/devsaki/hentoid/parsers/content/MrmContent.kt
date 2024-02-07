@@ -43,12 +43,11 @@ class MrmContent : BaseContentParser() {
             title = StringHelper.removeNonPrintableChars(title.trim { it <= ' ' })
             content.setTitle(title)
         } else content.setTitle(NO_TITLE)
-        content.setUploadDate(
-            Helper.parseDatetimeToEpoch(
-                uploadDate,
-                "yyyy-MM-dd'T'HH:mm:ssXXX"
-            )
-        ) // e.g. 2022-03-20T00:09:43+07:00
+
+        if (uploadDate.isNotEmpty())
+            content.setUploadDate(
+                Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
+            ) // e.g. 2022-03-20T00:09:43+07:00
 
         images?.let {
             if (it.isNotEmpty())
