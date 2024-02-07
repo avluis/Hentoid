@@ -24,7 +24,7 @@ import java.io.IOException
 class ExHentaiActivity : BaseWebActivity() {
 
     companion object {
-        private val DOMAIN_FILTER = arrayOf("exhentai.org", "ehtracker.org")
+        private val DOMAIN_FILTER = arrayOf("exhentai.org", "e-hentai.org", "ehtracker.org")
         private const val DOMAIN = ".exhentai.org"
         private val GALLERY_FILTER = arrayOf("exhentai.org/g/[0-9]+/[\\w\\-]+")
     }
@@ -37,7 +37,7 @@ class ExHentaiActivity : BaseWebActivity() {
         val client: CustomWebViewClient = ExHentaiWebClient(getStartSite(), GALLERY_FILTER, this)
         // Show thumbs in results page ("extended display")
         CookieManager.getInstance().setCookie(DOMAIN, "sl=dm_2")
-        // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
+        // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)ehe
         CookieManager.getInstance().setCookie(DOMAIN, "nw=1")
         client.restrictTo(*DOMAIN_FILTER)
         // ExH serves images through hosts that use http connections, which is detected as "mixed content" by the app
