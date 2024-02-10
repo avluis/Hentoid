@@ -124,8 +124,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
         images[imageIndex].let {
             image = it
             var filePath: String
-            val isArchive = it.content.target.isArchive
-            if (isArchive) {
+            if (it.isArchived) {
                 filePath = it.url
                 val lastSeparator = filePath.lastIndexOf('/')
                 val archiveUri = filePath.substring(0, lastSeparator)
@@ -172,7 +171,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
                 binding.imgActionShare.isEnabled = false
             }
             // Don't allow deleting the image if it is archived
-            if (isArchive) {
+            if (it.isArchived) {
                 binding.imgActionDelete.imageTintList = ColorStateList.valueOf(grayColor)
                 binding.imgActionDelete.isEnabled = false
             } else {

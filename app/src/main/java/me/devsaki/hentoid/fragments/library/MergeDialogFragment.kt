@@ -14,11 +14,13 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.drag.SimpleDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
+import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryMergeBinding
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
@@ -58,6 +60,7 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
     private lateinit var contentIds: LongArray
     private var deleteDefault = false
     private var initialTitle = ""
+    private var sortAsc = true
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,29 +98,36 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
-        val contentList = loadContentList()
-        if (contentList.isEmpty()) return
+
+        val contentList = load()
         val isExternal = contentList[0].status == StatusContent.EXTERNAL
-        itemAdapter.set(contentList.map { c ->
-            ContentItem(c, touchHelper, ContentItem.ViewType.MERGE)
-        })
 
         // Activate drag & drop
         val dragCallback = SimpleDragCallback(this)
         dragCallback.notifyAllDrops = true
         touchHelper = ItemTouchHelper(dragCallback)
         binding?.apply {
+            // Toolbar
+            toolbar.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.action_sort -> {
+                        load(sortAsc)
+                        sortAsc = !sortAsc
+                    }
+                }
+                return@setOnMenuItemClickListener true
+            }
+
+            // Recyclerview
             touchHelper?.attachToRecyclerView(list)
             fastAdapter.addEventHook(
                 ContentItem.DragHandlerTouchEvent { position ->
                     val vh = list.findViewHolderForAdapterPosition(position)
-                    if (vh != null) touchHelper!!.startDrag(vh)
+                    if (vh != null) touchHelper?.startDrag(vh)
                 }
             )
             list.adapter = fastAdapter
 
-            initialTitle = contentList[0].title
-            titleNew.editText?.setText(initialTitle)
             if (isExternal) {
                 mergeDeleteSwitch.isEnabled = Preferences.isDeleteExternalLibrary()
                 mergeDeleteSwitch.isChecked = Preferences.isDeleteExternalLibrary() && deleteDefault
@@ -127,6 +137,27 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
             }
             actionButton.setOnClickListener { onActionClick() }
         }
+    }
+
+    private fun load(sortAsc: Boolean? = null): List<Content> {
+        var contentList = loadContentList()
+        if (contentList.isEmpty()) return emptyList()
+
+        contentList = contentList.sortedWith(ContentHelper.InnerNameNumberContentComparator())
+        sortAsc?.let { if (!it) contentList = contentList.reversed() }
+
+        itemAdapter.set(contentList.map { c ->
+            ContentItem(c, touchHelper, ContentItem.ViewType.MERGE)
+        })
+
+        binding?.titleNew?.editText?.apply {
+            if (text.toString() == initialTitle) {
+                initialTitle = contentList[0].title
+                setText(initialTitle)
+            }
+        }
+
+        return contentList
     }
 
     private fun loadContentList(): List<Content> {

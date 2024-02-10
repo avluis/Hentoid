@@ -257,7 +257,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Webview
         initWebview()
         initSwipeLayout()
-        webView.loadUrl(getStartUrl()!!)
+        webView.loadUrl(getStartUrl())
         if (!Preferences.getRecentVisibility()) {
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
@@ -285,7 +285,10 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         callback?.remove()
         callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (!webView.canGoBack()) goHome()
+                if (!webView.canGoBack()) {
+                    callback?.remove()
+                    onBackPressedDispatcher.onBackPressed()
+                }
             }
         }
         onBackPressedDispatcher.addCallback(this, callback!!)
@@ -299,7 +302,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      *
      * @return URL to load at startup
      */
-    private fun getStartUrl(): String? {
+    private fun getStartUrl(): String {
         // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
         if (intent.extras != null) {
             val bundle = BaseWebActivityBundle(intent.extras!!)
@@ -1226,7 +1229,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     val onlineCover = HttpHelper.getOnlineResourceFast(
                         HttpHelper.fixUrl(
                             onlineContent.coverImageUrl,
-                            getStartUrl()!!
+                            getStartUrl()
                         ),
                         requestHeadersList,
                         getStartSite().useMobileAgent(),

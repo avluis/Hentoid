@@ -7,6 +7,16 @@
     android:layout_gravity="center"
     android:clipToPadding="false">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/library_merge_menu" />
+
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"
@@ -18,7 +28,7 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:maxHeight="350dp"
         tools:listitem="@layout/item_library_merge_split" />
 

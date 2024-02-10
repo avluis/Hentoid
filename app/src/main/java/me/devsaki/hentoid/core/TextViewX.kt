@@ -48,7 +48,7 @@ fun TextView.setMiddleEllipsis() {
     if (maxLines > 0 && maxLines < Int.MAX_VALUE) {
         layout?.let {
             val lineEndIndex = it.getLineEnd(min(lineCount, maxLines) - 1)
-            if (lineEndIndex < text.lastIndex) {
+            if (lineEndIndex < text.lastIndex || lineCount > maxLines) {
                 val partLength = max(0, (lineEndIndex / 2) - (2 * lineCount - 1))
                 val part1 = text.substring(0, partLength)
                 val part2 = text.substring(text.lastIndex - partLength)
