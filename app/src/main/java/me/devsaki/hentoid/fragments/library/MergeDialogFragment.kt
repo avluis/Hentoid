@@ -143,7 +143,7 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
         var contentList = loadContentList()
         if (contentList.isEmpty()) return emptyList()
 
-        contentList.sortedWith(ContentHelper.InnerNameNumberContentComparator())
+        contentList = contentList.sortedWith(ContentHelper.InnerNameNumberContentComparator())
         sortAsc?.let { if (!it) contentList = contentList.reversed() }
 
         itemAdapter.set(contentList.map { c ->
