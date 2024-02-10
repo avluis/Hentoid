@@ -103,7 +103,7 @@ class HitomiActivity : BaseWebActivity() {
     }
 
     override fun onPageFinished(isResultsPage: Boolean, isGalleryPage: Boolean) {
-        if (Preferences.isLanguageFilterButton() && isUrlFilterable(webView.url))
+        if (Preferences.isLanguageFilterButton() && isUrlFilterable(webView.url ?: ""))
             languageFilterButton?.visibility = View.VISIBLE
         else languageFilterButton?.visibility = View.INVISIBLE
         super.onPageFinished(isResultsPage, isGalleryPage)
@@ -149,11 +149,10 @@ class HitomiActivity : BaseWebActivity() {
         ) else webView.loadUrl(webView.url + "index-" + temp)
     }
 
-    private fun isUrlFilterable(url: String?): Boolean {
+    private fun isUrlFilterable(url: String): Boolean {
         //only works on 1st page
-        return url == "https://hitomi.la/" || url == "https://hitomi.la/?page=1" || url!!.endsWith("-all.html") || url.endsWith(
-            "-all.html?page=1"
-        )
+        return url == "https://hitomi.la/" || url == "https://hitomi.la/?page=1"
+                || url.endsWith("-all.html") || url.endsWith("-all.html?page=1")
     }
 
     private open inner class HitomiWebClient(
