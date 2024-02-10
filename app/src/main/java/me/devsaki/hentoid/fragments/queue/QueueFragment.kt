@@ -412,6 +412,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             override fun onClick(
                 v: View, position: Int, fastAdapter: FastAdapter<ContentItem>, item: ContentItem
             ) {
+                if (selectExtension.selections.isNotEmpty()) return
                 val c = item.content
                 if (c != null) ContentHelper.viewContentGalleryPage(v.context, c)
             }
@@ -428,6 +429,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             override fun onClick(
                 v: View, position: Int, fastAdapter: FastAdapter<ContentItem>, item: ContentItem
             ) {
+                if (selectExtension.selections.isNotEmpty()) return
                 processMove(listOf(position)) { relativePositions: List<Int> ->
                     viewModel.moveTop(relativePositions)
                 }
@@ -445,6 +447,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             override fun onClick(
                 v: View, position: Int, fastAdapter: FastAdapter<ContentItem>, item: ContentItem
             ) {
+                if (selectExtension.selections.isNotEmpty()) return
                 processMove(listOf(position)) { relativePositions: List<Int> ->
                     viewModel.moveBottom(relativePositions)
                 }
