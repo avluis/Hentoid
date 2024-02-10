@@ -2001,4 +2001,14 @@ public final class ContentHelper {
             return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(o1.getPath(), o2.getPath());
         }
     }
+
+    /**
+     * Comparator to be used to sort Contents according to their titles
+     */
+    public static class InnerNameNumberContentComparator implements Comparator<Content> {
+        @Override
+        public int compare(@NonNull Content c1, @NonNull Content c2) {
+            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(c1.getTitle(), c2.getTitle());
+        }
+    }
 }
