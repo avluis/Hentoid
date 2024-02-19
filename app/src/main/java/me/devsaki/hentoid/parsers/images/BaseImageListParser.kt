@@ -46,7 +46,7 @@ abstract class BaseImageListParser : ImageListParser {
 
     override fun parseImagePage(
         url: String,
-        requestHeaders: List<Pair<String, String>>
+        headers: List<Pair<String, String>>
     ): Pair<String, String?> {
         throw NotImplementedException("Parser does not implement parseImagePage")
     }
@@ -81,7 +81,7 @@ abstract class BaseImageListParser : ImageListParser {
         storedContent: Content?
     ): List<ImageFile> {
         val readerUrl = onlineContent.readerUrl
-        require(URLUtil.isValidUrl(readerUrl)) { "Invalid gallery URL : $readerUrl" }
+        require(URLUtil.isValidUrl(readerUrl)) { "Invalid URL : $readerUrl" }
         Timber.d("Gallery URL: %s", readerUrl)
         processedUrl = onlineContent.galleryUrl
         EventBus.getDefault().register(this)
@@ -102,8 +102,11 @@ abstract class BaseImageListParser : ImageListParser {
     }
 
     @Throws(Exception::class)
-    protected open fun parseChapterImageListImpl(url: String, content: Content): List<ImageFile> {
-        require(URLUtil.isValidUrl(url)) { "Invalid gallery URL : $url" }
+    protected open fun parseChapterImageListImpl(
+        url: String,
+        content: Content
+    ): List<ImageFile> {
+        require(URLUtil.isValidUrl(url)) { "Invalid URL : $url" }
         Timber.d("Chapter URL: %s", url)
         processedUrl = url
         EventBus.getDefault().register(this)

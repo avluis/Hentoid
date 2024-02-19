@@ -852,8 +852,10 @@ public final class ContentHelper {
      * @return Download directory of the given Site
      */
     @Nullable
-    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context
-                                                                  context, @NonNull StorageLocation location, @NonNull Site site) {
+    public static DocumentFile getOrCreateSiteDownloadDir(
+            @NonNull Context context,
+            @NonNull StorageLocation location,
+            @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri(location);
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for location %s", location.name());

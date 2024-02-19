@@ -6,6 +6,7 @@ import me.devsaki.hentoid.parsers.content.ASMHentaiContent
 import me.devsaki.hentoid.parsers.content.AllPornComicContent
 import me.devsaki.hentoid.parsers.content.AnchiraContent
 import me.devsaki.hentoid.parsers.content.ContentParser
+import me.devsaki.hentoid.parsers.content.DeviantArtContent
 import me.devsaki.hentoid.parsers.content.DoujinsContent
 import me.devsaki.hentoid.parsers.content.DummyContent
 import me.devsaki.hentoid.parsers.content.EdoujinContent
@@ -32,6 +33,7 @@ import me.devsaki.hentoid.parsers.content.TsuminoContent
 import me.devsaki.hentoid.parsers.images.ASMHentaiParser
 import me.devsaki.hentoid.parsers.images.AllPornComicParser
 import me.devsaki.hentoid.parsers.images.AnchiraParser
+import me.devsaki.hentoid.parsers.images.DeviantArtParser
 import me.devsaki.hentoid.parsers.images.DoujinsParser
 import me.devsaki.hentoid.parsers.images.DummyParser
 import me.devsaki.hentoid.parsers.images.EHentaiParser
@@ -86,6 +88,7 @@ object ContentParserFactory {
             Site.HDPORNCOMICS -> HdPornComicsContent::class.java
             Site.EDOUJIN -> EdoujinContent::class.java
             Site.ANCHIRA -> AnchiraContent::class.java
+            Site.DEVIANTART -> DeviantArtContent::class.java
             else -> DummyContent::class.java
         }
     }
@@ -121,6 +124,7 @@ object ContentParserFactory {
             Site.HDPORNCOMICS -> HdPornComicsParser()
             Site.EDOUJIN -> EdoujinParser()
             Site.ANCHIRA -> AnchiraParser()
+            Site.DEVIANTART -> DeviantArtParser()
             else -> DummyParser()
         }
     }

@@ -36,6 +36,7 @@ import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.sources.AllPornComicActivity;
 import me.devsaki.hentoid.activities.sources.AnchiraActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
+import me.devsaki.hentoid.activities.sources.DeviantArtActivity;
 import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.EdoujinActivity;
@@ -339,6 +340,7 @@ public class Content implements Serializable {
             case MULTPORN:
             case EDOUJIN:
             case SIMPLY:
+            case DEVIANTART:
                 // Last part of the URL
                 paths = url.split("/");
                 return paths[paths.length - 1];
@@ -415,6 +417,8 @@ public class Content implements Serializable {
                 return EdoujinActivity.class;
             case ANCHIRA:
                 return AnchiraActivity.class;
+            case DEVIANTART:
+                return DeviantArtActivity.class;
             default:
                 return BaseWebActivity.class;
         }
