@@ -27,16 +27,16 @@ object LanguageHelper {
                 for (entry in langSettings.languages) {
                     val properties =
                         Pair(
-                            entry.lang_code,
-                            entry.flag_country_code
+                            entry.langCode,
+                            entry.flagCountryCode
                         )
                     // Create one entry for the local name
-                    languageCodes[entry.local_name] = properties
+                    languageCodes[entry.localName] = properties
                     // Create one entry for the english name (as most sites refer to the language in english)
-                    languageCodes[entry.english_name] = properties
+                    languageCodes[entry.englishName] = properties
                     // Create one entry for the translated name in the current locale
                     val stringId = context.resources
-                        .getIdentifier("lang_" + entry.lang_code, "string", context.packageName)
+                        .getIdentifier("lang_" + entry.langCode, "string", context.packageName)
                     languageCodes[context.getString(stringId)] = properties
                 }
             }
