@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.json.sources
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
@@ -9,17 +10,21 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.StringHelper
 
+@JsonClass(generateAdapter = true)
 data class LusciousBookMetadata(
     val data: BookData
 ) {
+    @JsonClass(generateAdapter = true)
     data class BookData(
         val album: BookInfoContainer
     )
 
+    @JsonClass(generateAdapter = true)
     data class BookInfoContainer(
         val get: AlbumInfo?
     )
 
+    @JsonClass(generateAdapter = true)
     data class AlbumInfo(
         val id: String,
         val title: String?,
@@ -34,15 +39,18 @@ data class LusciousBookMetadata(
         val isManga: Boolean
     )
 
+    @JsonClass(generateAdapter = true)
     data class CoverInfo(
         val url: String
     )
 
+    @JsonClass(generateAdapter = true)
     data class LanguageInfo(
         val title: String,
         val url: String
     )
 
+    @JsonClass(generateAdapter = true)
     data class TagInfo(
         val text: String,
         val url: String

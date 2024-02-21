@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.json.core
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import me.devsaki.hentoid.enums.AlertStatus
 import me.devsaki.hentoid.enums.AlertStatus.Companion.searchByName
 import me.devsaki.hentoid.enums.Site
@@ -9,6 +10,7 @@ import me.devsaki.hentoid.enums.Site
  * Structure to describe Hentoid update informations
  * Original source is stored on app/update.json
  */
+@JsonClass(generateAdapter = true)
 data class UpdateInfo(
     @Json(name = "updateURL")
     val updateUrl: String,
@@ -22,10 +24,11 @@ data class UpdateInfo(
     @Json(name = "sourceAlerts.beta")
     val sourceAlertsDebug: List<SourceAlert>?
 ) {
+    @JsonClass(generateAdapter = true)
     data class SourceAlert(
-        private val sourceName: String,
-        private val status: String,
-        private val fixedByBuild: String?
+        val sourceName: String,
+        val status: String,
+        val fixedByBuild: String?
     ) {
         fun getSite(): Site {
             return Site.searchByName(sourceName)

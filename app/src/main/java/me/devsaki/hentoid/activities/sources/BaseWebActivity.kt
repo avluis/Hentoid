@@ -1698,9 +1698,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     class XhrHandler(private val handler: BiConsumer<String, String>) {
         @JavascriptInterface
         @Suppress("unused", "UNUSED_PARAMETER")
-        fun onXhrCall(method: String, url: String, body: String) {
+        fun onXhrCall(method: String, url: String, body: String?) {
             Timber.d("XHR Begin %s : %s", url, body)
-            handler.invoke(url, body)
+            handler.invoke(url, body ?: "")
         }
     }
 }
