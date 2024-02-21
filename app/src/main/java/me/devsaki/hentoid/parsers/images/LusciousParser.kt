@@ -83,8 +83,8 @@ class LusciousParser : BaseImageListParser() {
                     return
                 }
                 imageFiles.addAll(metadata.toImageFileList(imageFiles.size - 1)) // Don't count cover in the offset
-                if (metadata.nbPages > pageNumber) {
-                    progressStart(content, null, metadata.nbPages)
+                if (metadata.getNbPages() > pageNumber) {
+                    progressStart(content, null, metadata.getNbPages())
                     progressPlus()
                     getPages(content, bookId, pageNumber + 1, isManga, imageFiles)
                 } else {
