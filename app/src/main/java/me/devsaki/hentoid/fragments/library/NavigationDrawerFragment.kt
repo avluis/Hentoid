@@ -27,7 +27,7 @@ import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.UpdateEvent
-import me.devsaki.hentoid.json.core.UpdateInfo.SourceAlert
+import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
@@ -186,12 +186,12 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
         }
     }
 
-    private fun showFlagAlerts(alerts: Map<Site, SourceAlert>) {
+    private fun showFlagAlerts(alerts: Map<Site, UpdateInfo.SourceAlert>) {
         for ((index, menuItem) in itemAdapter.adapterItems.withIndex()) {
             if (alerts.containsKey(menuItem.site)) {
                 val alert = alerts[menuItem.site]
                 if (alert != null) {
-                    menuItem.alertStatus = alert.status
+                    menuItem.alertStatus = alert.getStatus()
                     fastAdapter.notifyItemChanged(index)
                 }
             }
