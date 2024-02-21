@@ -18,7 +18,7 @@ class DeviantArtContent : BaseContentParser() {
     @Selector(value = "body")
     private lateinit var body: Element
 
-    @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
+    @Selector(value = "meta[property='og:title']", attr = "content", defValue = "")
     private lateinit var title: String
 
     @Selector(value = "time", attr = "datetime", defValue = "") // Gets the first element
