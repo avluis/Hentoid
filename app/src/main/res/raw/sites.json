@@ -87,6 +87,11 @@
       "requestsCapPerSecond": 2,
       "parallelDownloadCap": 2,
       "hasBackupURLs": true
+    },
+    "DEVIANTART": {
+      "requestsCapPerSecond": 2,
+      "parallelDownloadCap": 2,
+      "hasBackupURLs": true
     }
   }
 }

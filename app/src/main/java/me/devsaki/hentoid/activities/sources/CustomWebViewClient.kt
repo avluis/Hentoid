@@ -79,6 +79,7 @@ open class CustomWebViewClient : WebViewClient {
     protected val resConsumer: WebResultConsumer
 
     // List of the URL patterns identifying a parsable book gallery page
+    // TODO differentiate API call URLs and HTML gallery URLs
     private val galleryUrlPattern: MutableList<Pattern> = ArrayList()
 
     // List of the URL patterns identifying a parsable book gallery page

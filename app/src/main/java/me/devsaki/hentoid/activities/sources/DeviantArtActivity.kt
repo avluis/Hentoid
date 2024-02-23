@@ -1,12 +1,17 @@
 package me.devsaki.hentoid.activities.sources
 
-import android.net.Uri
+import android.graphics.Bitmap
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.parsers.ParseHelper
-import me.devsaki.hentoid.retrofit.DeviantArtServer
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.parsers.content.DeviantArtContent
 import timber.log.Timber
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
 
 class DeviantArtActivity : BaseWebActivity() {
     companion object {
@@ -14,19 +19,9 @@ class DeviantArtActivity : BaseWebActivity() {
         private val GALLERY_FILTER = arrayOf(
             "deviantart.com/[\\w\\-]+/gallery/",  // User gallery; multiple suffixes may be added
             "deviantart.com/[\\w\\-]+/art/[\\w\\-]+",  // Art page
-            "deviantart.com/_puppy/dadeviation/init\\?deviationid=" // Art page loaded using XHR call
-            /*
-            "pixiv.net/touch/ajax/illust/series_content/",  // Manga/series page (anthology) / load using fetch call
-            "pixiv.net/touch/ajax/user/details\\?",  // User page / load using fetch call
-            "pixiv.net/[\\w\\-]+/artworks/[0-9]+$",  // Illustrations page (single gallery)
-            "pixiv.net/user/[0-9]+/series/[0-9]+$",  // Manga/series page (anthology)
-            "pixiv.net/users/[0-9]+$" // User page
-             */
+            "deviantart.com/_puppy/dadeviation/init\\?deviationid=" // Art page info loaded using XHR call
         )
         private val JS_WHITELIST = arrayOf(DOMAIN_FILTER)
-
-        private val NAVIGATION_QUERIES =
-            arrayOf("/details?", "/search/illusts?", "ajax/pages/top?", "/tag_stories?")
     }
 
 
@@ -39,7 +34,7 @@ class DeviantArtActivity : BaseWebActivity() {
         client.restrictTo(DOMAIN_FILTER)
         client.adBlocker.addToJsUrlWhitelist(*JS_WHITELIST)
 
-        xhrHandler = { url: String, body: String -> client.onXhrCall(url, body) }
+        xhrHandler = { url: String, _: String -> client.onXhrCall(url) }
         return client
     }
 
@@ -47,35 +42,39 @@ class DeviantArtActivity : BaseWebActivity() {
         site: Site,
         filter: Array<String>,
         activity: CustomWebActivity
-    ) :
-        CustomWebViewClient(site, filter, activity) {
-        fun onXhrCall(url: String, body: String) {
-            // TODO only react to the very first call for every page load
+    ) : CustomWebViewClient(site, filter, activity) {
+        // Flag to only process the first XHR call of a given page
+        var loadedNavUrl = ""
+
+        override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+            super.onPageStarted(view, url, favicon)
+            loadedNavUrl = url
+        }
+
+        fun onXhrCall(url: String) {
             if (!isGalleryPage(url)) return
             try {
-                val uri = Uri.parse(url)
-                val cookieStr = HttpHelper.getCookies(
-                    url,
-                    null,
-                    getStartSite().useMobileAgent(),
-                    getStartSite().useHentoidAgent(),
-                    getStartSite().useHentoidAgent()
-                )
-                val call = DeviantArtServer.API.getDeviation(
-                    uri.getQueryParameter("deviationid") ?: "",
-                    uri.getQueryParameter("username") ?: "",
-                    uri.getQueryParameter("type") ?: "",
-                    uri.getQueryParameter("include_session") ?: "",
-                    uri.getQueryParameter("csrf_token") ?: "",
-                    uri.getQueryParameter("expand") ?: "",
-                    uri.getQueryParameter("da_minor_version") ?: "",
-                    cookieStr,
-                    ParseHelper.getUserAgent(Site.DEVIANTART)
-                )
-                val response = call.execute()
-                if (response.isSuccessful) {
-                    response.body()?.apply {
-                        Timber.v("title=${deviation.title}")
+                lifecycleScope.launch {
+                    var skip = false
+                    withContext(Dispatchers.Main) {
+                        synchronized(DOMAIN_FILTER) {
+                            if (loadedNavUrl != webView.url.toString())
+                                loadedNavUrl = webView.url.toString()
+                            else skip = true
+                            Timber.v(">>> $skip $loadedNavUrl ${webView.url.toString()}")
+                        }
+                    }
+                    if (skip) return@launch
+                    val contentParser = DeviantArtContent()
+                    try {
+                        var content = withContext(Dispatchers.IO) {
+                            contentParser.toContent(url)
+                        }
+                        Timber.v(">>> title : ${content.title}")
+                        content = super.processContent(content, content.galleryUrl, false)
+                        resConsumer.onContentReady(content, false)
+                    } catch (t: Throwable) {
+                        Timber.w(t)
                     }
                 }
             } catch (e: IOException) {
@@ -83,30 +82,15 @@ class DeviantArtActivity : BaseWebActivity() {
             }
         }
 
-        /*
-        // Call the API without using BaseWebActivity.parseResponse
         override fun parseResponse(
             url: String,
             requestHeaders: Map<String, String>?,
             analyzeForDownload: Boolean,
             quickDownload: Boolean
         ): WebResourceResponse? {
-            activity?.onGalleryPageStarted()
-            val contentParser: ContentParser = DeviantArtContent()
-
-            lifecycleScope.launch {
-                try {
-                    var content = withContext(Dispatchers.IO) {
-                        contentParser.toContent(url)
-                    }
-                    content = super.processContent(content, content.galleryUrl, quickDownload)
-                    resConsumer.onContentReady(content, quickDownload)
-                } catch (t: Throwable) {
-                    Timber.w(t)
-                }
-            }
-            return null
+            // Don't process XHR calls
+            return if (url.contains("/_puppy/")) null
+            else super.parseResponse(url, requestHeaders, analyzeForDownload, quickDownload)
         }
-         */
     }
 }

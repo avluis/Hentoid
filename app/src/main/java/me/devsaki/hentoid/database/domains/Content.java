@@ -286,6 +286,7 @@ public class Content implements Serializable {
             case TOONILY:
             case SIMPLY:
             case HDPORNCOMICS:
+            case DEVIANTART:
                 return url.replace(site.getUrl(), "");
             case EHENTAI:
             case EXHENTAI:

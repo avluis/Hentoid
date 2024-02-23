@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
+import android.net.Uri
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
@@ -9,10 +10,14 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.parsers.images.DeviantArtParser
+import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.network.HttpHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
+import timber.log.Timber
+import java.io.IOException
 
 class DeviantArtContent : BaseContentParser() {
     @Selector(value = "body")
@@ -30,6 +35,12 @@ class DeviantArtContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         content.setSite(Site.DEVIANTART)
         if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+
+        return if (url.contains("/_puppy/")) parseXhrDeviation(content, url, updateImages)
+        else parseHtmlDeviation(content, url, updateImages)
+    }
+
+    private fun parseHtmlDeviation(content: Content, url: String, updateImages: Boolean): Content {
         content.setRawUrl(url)
         if (title.isNotEmpty()) {
             title = StringHelper.removeNonPrintableChars(title.trim())
@@ -68,6 +79,39 @@ class DeviantArtContent : BaseContentParser() {
             val img = ImageFile.fromPageUrl(1, url, StatusContent.SAVED, 1)
             content.setImageFiles(listOf(img))
             content.setQtyPages(1)
+        }
+        return content
+    }
+
+    private fun parseXhrDeviation(content: Content, url: String, updateImages: Boolean): Content {
+        try {
+            val uri = Uri.parse(url)
+            val cookieStr = HttpHelper.getCookies(
+                url,
+                null,
+                Site.DEVIANTART.useMobileAgent(),
+                Site.DEVIANTART.useHentoidAgent(),
+                Site.DEVIANTART.useHentoidAgent()
+            )
+            val call = DeviantArtServer.API.getDeviation(
+                uri.getQueryParameter("deviationid") ?: "",
+                uri.getQueryParameter("username") ?: "",
+                uri.getQueryParameter("type") ?: "",
+                uri.getQueryParameter("include_session") ?: "",
+                uri.getQueryParameter("csrf_token") ?: "",
+                uri.getQueryParameter("expand") ?: "",
+                uri.getQueryParameter("da_minor_version") ?: "",
+                cookieStr,
+                ParseHelper.getUserAgent(Site.DEVIANTART)
+            )
+            val response = call.execute()
+            if (response.isSuccessful) {
+                response.body()?.update(content, updateImages)
+            } else {
+                content.status = StatusContent.IGNORED
+            }
+        } catch (e: IOException) {
+            Timber.e(e, "Error parsing content.")
         }
         return content
     }
