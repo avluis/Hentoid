@@ -10,7 +10,7 @@ import me.devsaki.hentoid.database.domains.Attribute
 object SearchHelper {
 
     data class AttributeQueryResult(
-        val attributes: List<Attribute>,
+        val attributes: Set<Attribute>,
         val totalSelectedAttributes: Long
     )
 

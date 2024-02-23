@@ -44,6 +44,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ReaderActivity;
@@ -532,7 +533,7 @@ public final class ContentHelper {
                         int nbGroups = (int) dao.countGroupsFor(g);
                         AttributeMap attrs = content.getAttributeMap();
                         List<Attribute> artists = new ArrayList<>();
-                        List<Attribute> sublist = attrs.get(AttributeType.ARTIST);
+                        Set<Attribute> sublist = attrs.get(AttributeType.ARTIST);
                         if (sublist != null) artists.addAll(sublist);
                         sublist = attrs.get(AttributeType.CIRCLE);
                         if (sublist != null) artists.addAll(sublist);
@@ -825,15 +826,19 @@ public final class ContentHelper {
         String result = "";
         AttributeMap attrMap = content.getAttributeMap();
         // Try and get first Artist
-        List<Attribute> artistAttributes = attrMap.get(AttributeType.ARTIST);
-        if (artistAttributes != null && !artistAttributes.isEmpty())
-            result = artistAttributes.get(0).getName();
+        Set<Attribute> artistAttributes = attrMap.get(AttributeType.ARTIST);
+        if (artistAttributes != null && !artistAttributes.isEmpty()) {
+            Optional<Attribute> attr = Stream.of(artistAttributes).findFirst();
+            if (attr.isPresent()) result = attr.get().getName();
+        }
 
         // If no Artist found, try and get first Circle
         if (null == result || result.isEmpty()) {
-            List<Attribute> circleAttributes = attrMap.get(AttributeType.CIRCLE);
-            if (circleAttributes != null && !circleAttributes.isEmpty())
-                result = circleAttributes.get(0).getName();
+            Set<Attribute> circleAttributes = attrMap.get(AttributeType.CIRCLE);
+            if (circleAttributes != null && !circleAttributes.isEmpty()) {
+                Optional<Attribute> attr = Stream.of(circleAttributes).findFirst();
+                if (attr.isPresent()) result = attr.get().getName();
+            }
         }
 
         return StringHelper.protect(result);
@@ -1447,7 +1452,7 @@ public final class ContentHelper {
      * @return Given Content's tags formatted for display
      */
     public static String formatTagsForDisplay(@NonNull final Content content) {
-        List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
+        Set<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes == null) return "";
 
         List<String> allTags = Stream.of(tagsAttributes).map(Attribute::getName).sorted().limit(30).toList();
@@ -1464,7 +1469,7 @@ public final class ContentHelper {
      */
     public static @DrawableRes int getFlagResourceId(@NonNull final Context context,
                                                      @NonNull final Content content) {
-        List<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
+        Set<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
         if (langAttributes != null && !langAttributes.isEmpty())
             for (Attribute lang : langAttributes) {
                 @DrawableRes int resId = LanguageHelper.INSTANCE.getFlagFromLanguage(context, lang.getName());
@@ -1501,9 +1506,9 @@ public final class ContentHelper {
                                                 @NonNull final Content content) {
         List<Attribute> attributes = new ArrayList<>();
 
-        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
+        Set<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
         if (artistAttributes != null) attributes.addAll(artistAttributes);
-        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
+        Set<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
         if (circleAttributes != null) attributes.addAll(circleAttributes);
 
         if (attributes.isEmpty()) {
@@ -1527,7 +1532,7 @@ public final class ContentHelper {
      */
     public static String formatSeriesForDisplay(@NonNull final Context context,
                                                 @NonNull final Content content) {
-        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
+        Set<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
         if (seriesAttributes == null || seriesAttributes.isEmpty()) {
             return "";
         } else {

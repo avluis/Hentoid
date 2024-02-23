@@ -18,6 +18,7 @@ object LusciousServer {
         init()
     }
 
+    // Must have a public init method to reset the connexion pool when updating DoH settings
     fun init() {
         api = Retrofit.Builder()
             .baseUrl(API_URL)

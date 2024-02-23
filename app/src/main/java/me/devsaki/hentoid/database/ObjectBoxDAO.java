@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -141,7 +142,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             @NonNull List<AttributeType> types,
             String filter,
             long groupId,
-            List<Attribute> attrs,
+            Set<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
             boolean includeFreeAttrs,
@@ -154,7 +155,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public SparseIntArray countAttributesPerType(
             long groupId,
-            List<Attribute> filter,
+            Set<Attribute> filter,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType) {
         return countAttributes(groupId, getDynamicGroupContent(groupId), filter, location, contentType);
@@ -872,14 +873,14 @@ public class ObjectBoxDAO implements CollectionDAO {
             String filter,
             long groupId,
             long[] dynamicGroupContentIds,
-            List<Attribute> attrs,
+            Set<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
             boolean includeFreeAttrs,
             int sortOrder,
             int pageNum,
             int itemPerPage) {
-        List<Attribute> attributes = new ArrayList<>();
+        Set<Attribute> attributes = new HashSet<>();
         long totalSelectedAttributes = 0;
 
         if (!attrTypes.isEmpty()) {
@@ -900,7 +901,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     private SparseIntArray countAttributes(long groupId,
                                            long[] dynamicGroupContentIds,
-                                           List<Attribute> filter,
+                                           Set<Attribute> filter,
                                            @ContentHelper.Location int location,
                                            @ContentHelper.Type int contentType) {
         SparseIntArray result;

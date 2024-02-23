@@ -36,7 +36,7 @@ class LusciousParser : BaseImageListParser() {
         val result: MutableList<ImageFile> = ArrayList()
 
         val cats = onlineContent.attributeMap[AttributeType.CATEGORY]
-        val isManga = (!cats.isNullOrEmpty() && cats[0].name.equals("manga"))
+        val isManga = (!cats.isNullOrEmpty() && cats.first().name.equals("manga"))
 
         result.add(ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED))
         getPages(

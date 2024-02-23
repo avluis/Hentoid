@@ -19,16 +19,13 @@ object UpdateServer {
             .build()
     }
 
-    val api: Api
-
-    init {
-        api = Retrofit.Builder()
-            .baseUrl(BuildConfig.UPDATE_URL)
-            .client(OkHttpClientSingleton.getInstance())
-            .addConverterFactory(MoshiConverterFactory.create(moshi).asLenient())
-            .build()
-            .create(Api::class.java)
-    }
+    val api: Api = Retrofit.Builder()
+        .baseUrl(BuildConfig.UPDATE_URL)
+        .client(OkHttpClientSingleton.getInstance())
+        .addConverterFactory(MoshiConverterFactory.create(moshi).asLenient())
+        .build()
+        .create(Api::class.java)
+    
 
     interface Api {
         @get:GET("update.json")

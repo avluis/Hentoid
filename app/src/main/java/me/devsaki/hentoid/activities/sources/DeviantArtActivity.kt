@@ -11,15 +11,15 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.content.DeviantArtContent
 import timber.log.Timber
 import java.io.IOException
-import java.util.concurrent.atomic.AtomicBoolean
 
 class DeviantArtActivity : BaseWebActivity() {
     companion object {
         private const val DOMAIN_FILTER = ".deviantart.com"
         private val GALLERY_FILTER = arrayOf(
-            "deviantart.com/[\\w\\-]+/gallery/",  // User gallery; multiple suffixes may be added
-            "deviantart.com/[\\w\\-]+/art/[\\w\\-]+",  // Art page
-            "deviantart.com/_puppy/dadeviation/init\\?deviationid=" // Art page info loaded using XHR call
+            "deviantart.com/[\\w\\-]+/art/[\\w\\-]+",  // Deviation page
+            "deviantart.com/[\\w\\-]+/gallery$",  // User gallery page; mobile version only contains the first 10 deviations and uses XHR for dynamically loading the rest
+            "deviantart.com/_puppy/dadeviation/init\\?", // Art page info loaded using XHR call
+            "deviantart.com/_puppy/dashared/gallection/contents\\?" // User gallery info loaded using XHR call
         )
         private val JS_WHITELIST = arrayOf(DOMAIN_FILTER)
     }
@@ -39,9 +39,7 @@ class DeviantArtActivity : BaseWebActivity() {
     }
 
     private inner class DeviantArtWebClient(
-        site: Site,
-        filter: Array<String>,
-        activity: CustomWebActivity
+        site: Site, filter: Array<String>, activity: CustomWebActivity
     ) : CustomWebViewClient(site, filter, activity) {
         // Flag to only process the first XHR call of a given page
         var loadedNavUrl = ""
@@ -58,10 +56,9 @@ class DeviantArtActivity : BaseWebActivity() {
                     var skip = false
                     withContext(Dispatchers.Main) {
                         synchronized(DOMAIN_FILTER) {
-                            if (loadedNavUrl != webView.url.toString())
-                                loadedNavUrl = webView.url.toString()
+                            if (loadedNavUrl != webView.url.toString()) loadedNavUrl =
+                                webView.url.toString()
                             else skip = true
-                            Timber.v(">>> $skip $loadedNavUrl ${webView.url.toString()}")
                         }
                     }
                     if (skip) return@launch
@@ -70,7 +67,6 @@ class DeviantArtActivity : BaseWebActivity() {
                         var content = withContext(Dispatchers.IO) {
                             contentParser.toContent(url)
                         }
-                        Timber.v(">>> title : ${content.title}")
                         content = super.processContent(content, content.galleryUrl, false)
                         resConsumer.onContentReady(content, false)
                     } catch (t: Throwable) {
@@ -88,8 +84,7 @@ class DeviantArtActivity : BaseWebActivity() {
             analyzeForDownload: Boolean,
             quickDownload: Boolean
         ): WebResourceResponse? {
-            // Don't process XHR calls
-            return if (url.contains("/_puppy/")) null
+            return if (url.contains("/_puppy/")) null // Don't process XHR calls
             else super.parseResponse(url, requestHeaders, analyzeForDownload, quickDownload)
         }
     }

@@ -268,7 +268,7 @@ public interface CollectionDAO {
             @NonNull List<AttributeType> types,
             String filter,
             long groupId,
-            List<Attribute> attrs,
+            Set<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
             boolean includeFreeAttrs,
@@ -278,7 +278,7 @@ public interface CollectionDAO {
 
     SparseIntArray countAttributesPerType(
             long groupId,
-            List<Attribute> filter,
+            Set<Attribute> filter,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType);
 

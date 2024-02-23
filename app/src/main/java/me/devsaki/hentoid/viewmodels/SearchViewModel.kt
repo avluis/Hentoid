@@ -86,7 +86,7 @@ class SearchViewModel(
                     attributeTypes!!,
                     query,
                     selectedGroup,
-                    selectedAttributes.value,
+                    selectedAttributes.value!!.toSet(),
                     location,
                     contentType,
                     false,
@@ -169,7 +169,7 @@ class SearchViewModel(
             val result = withContext(Dispatchers.IO) {
                 dao.countAttributesPerType(
                     selectedGroup,
-                    selectedAttributes.value,
+                    selectedAttributes.value!!.toSet(),
                     location,
                     contentType
                 )

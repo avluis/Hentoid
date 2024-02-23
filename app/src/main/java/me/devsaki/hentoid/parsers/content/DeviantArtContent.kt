@@ -36,8 +36,13 @@ class DeviantArtContent : BaseContentParser() {
         content.setSite(Site.DEVIANTART)
         if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
 
-        return if (url.contains("/_puppy/")) parseXhrDeviation(content, url, updateImages)
-        else parseHtmlDeviation(content, url, updateImages)
+        return if (url.contains("/_puppy/")) {
+            if (url.contains("dadeviation/init")) parseXhrDeviation(content, url, updateImages)
+            else parseXhrGallection(content, url, updateImages)
+        } else {
+            if (url.contains("/art/")) parseHtmlDeviation(content, url, updateImages)
+            else parseHtmlGallection(content, url, updateImages)
+        }
     }
 
     private fun parseHtmlDeviation(content: Content, url: String, updateImages: Boolean): Content {
@@ -83,6 +88,62 @@ class DeviantArtContent : BaseContentParser() {
         return content
     }
 
+    private fun parseHtmlGallection(content: Content, url: String, updateImages: Boolean): Content {
+        val scripts = body.select("script")
+        scripts.forEach {
+            val str = it.toString()
+            if (str.length > 50000) {
+                str.lines().forEach { line ->
+                    if (line.contains("INITIAL_STATE", true)) {
+                        return parseLine(line, content, updateImages)
+                    }
+                }
+            }
+        }
+        return Content().setStatus(StatusContent.IGNORED)
+    }
+
+    private fun parseLine(
+        line: String,
+        content: Content,
+        updateImages: Boolean
+    ): Content {
+        /*
+        val startIdx = line.indexOf("parse(\"") + 7
+        val endIdx = line.lastIndexOf("\");")
+        val json = line.substring(startIdx, endIdx)
+            /*
+            .replace("\\\"","\"")
+            .replace("\\\\u002F","/")
+            .replace("\\\\u003C","<")
+            .replace("\\\\u003E",">")
+             */
+         */
+        val tokenStartIdx = line.indexOf("\\\"csrfToken\\\":\\\"") + 16
+        val tokenEndIdx = line.indexOf("\\\",", tokenStartIdx)
+        val token = line.substring(tokenStartIdx, tokenEndIdx)
+
+        val foldIdStartIdx = line.indexOf("\\\"folderId\\\":") + 13
+        val foldIdEndIdx = line.indexOf(",", foldIdStartIdx)
+        val folderId = line.substring(foldIdStartIdx, foldIdEndIdx)
+
+        val userNameStartIdx = line.indexOf("\\\"username\\\":\\\"", foldIdEndIdx) + 15
+        val userNameEndIdx = line.indexOf("\\\",", userNameStartIdx)
+        val userName = line.substring(userNameStartIdx, userNameEndIdx)
+
+        Timber.i(">>> $token $folderId $userName")
+
+        return parseXhrGallection(
+            content,
+            updateImages,
+            userName,
+            "gallery",
+            folderId,
+            token,
+            "20230710"
+        )
+    }
+
     private fun parseXhrDeviation(content: Content, url: String, updateImages: Boolean): Content {
         try {
             val uri = Uri.parse(url)
@@ -101,6 +162,63 @@ class DeviantArtContent : BaseContentParser() {
                 uri.getQueryParameter("csrf_token") ?: "",
                 uri.getQueryParameter("expand") ?: "",
                 uri.getQueryParameter("da_minor_version") ?: "",
+                cookieStr,
+                ParseHelper.getUserAgent(Site.DEVIANTART)
+            )
+            val response = call.execute()
+            if (response.isSuccessful) {
+                response.body()?.update(content, updateImages)
+            } else {
+                content.status = StatusContent.IGNORED
+            }
+        } catch (e: IOException) {
+            Timber.e(e, "Error parsing content.")
+        }
+        return content
+    }
+
+    private fun parseXhrGallection(content: Content, url: String, updateImages: Boolean): Content {
+        val uri = Uri.parse(url)
+        parseXhrGallection(
+            content, updateImages,
+            uri.getQueryParameter("username") ?: "",
+            uri.getQueryParameter("type") ?: "",
+            uri.getQueryParameter("folderid") ?: "",
+            uri.getQueryParameter("csrf_token") ?: "",
+            uri.getQueryParameter("da_minor_version") ?: ""
+        )
+        return content
+    }
+
+    private fun parseXhrGallection(
+        content: Content,
+        updateImages: Boolean,
+        username: String,
+        type: String,
+        folderId: String,
+        token: String,
+        daMinorVersion: String
+    ): Content {
+        content.title = username
+        content.status = StatusContent.SAVED
+        content.url = "$username/gallery"
+        try {
+            val cookieStr = HttpHelper.getCookies(
+                Site.DEVIANTART.url,
+                null,
+                Site.DEVIANTART.useMobileAgent(),
+                Site.DEVIANTART.useHentoidAgent(),
+                Site.DEVIANTART.useHentoidAgent()
+            )
+            // TODO iterate
+            val call = DeviantArtServer.API.getUserGallection(
+                username,
+                type,
+                "0",
+                "50",
+                folderId,
+                token,
+                daMinorVersion,
                 cookieStr,
                 ParseHelper.getUserAgent(Site.DEVIANTART)
             )

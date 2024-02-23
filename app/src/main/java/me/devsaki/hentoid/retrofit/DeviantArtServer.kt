@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.retrofit
 
 import me.devsaki.hentoid.json.sources.DeviantArtDeviation
+import me.devsaki.hentoid.json.sources.DeviantArtGallection
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -10,14 +11,23 @@ import retrofit2.http.Header
 import retrofit2.http.Query
 
 object DeviantArtServer {
-    private val SERVER_URL = "https://www.deviantart.com/"
+    private const val SERVER_URL = "https://www.deviantart.com/"
 
-    val API = Retrofit.Builder()
-        .baseUrl(SERVER_URL)
-        .client(OkHttpClientSingleton.getInstance())
-        .addConverterFactory(MoshiConverterFactory.create())
-        .build()
-        .create(Api::class.java)
+    lateinit var API: Api
+
+    init {
+        init()
+    }
+
+    // Must have a public init method to reset the connexion pool when updating DoH settings
+    fun init() {
+        API = Retrofit.Builder()
+            .baseUrl(SERVER_URL)
+            .client(OkHttpClientSingleton.getInstance())
+            .addConverterFactory(MoshiConverterFactory.create())
+            .build()
+            .create(Api::class.java)
+    }
 
 
     interface Api {
@@ -34,13 +44,17 @@ object DeviantArtServer {
             @Header("user-agent") userAgent: String,
         ): Call<DeviantArtDeviation>
 
-        /*
-                @GET("user/{username}/saved")
-                fun getUserSavedPosts(
-                    @Path("username") username: String?,
-                    @Header("Authorization") authorization: String?
-                ): RedditUserSavedPosts
-                 */
+        @GET("_puppy/dashared/gallection/contents")
+        fun getUserGallection(
+            @Query("username") username: String,
+            @Query("type") type: String,
+            @Query("offset") offset: String,
+            @Query("limit") limit: String,
+            @Query("folderid") folderid: String,
+            @Query("csrf_token") token: String,
+            @Query("da_minor_version") daMinorVersion: String,
+            @Header("cookie") cookieStr: String,
+            @Header("user-agent") userAgent: String,
+        ): Call<DeviantArtGallection>
     }
-
 }
