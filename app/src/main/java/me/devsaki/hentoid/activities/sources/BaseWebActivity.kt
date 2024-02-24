@@ -1391,8 +1391,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Attach chapters to stored images if they don't have any (old downloads made with versions of the app that didn't detect chapters)
         val storedChapters: List<Chapter>? = storedContent.chapters
         if (positionMap.isNotEmpty() && minOnlineImageOrder < maxStoredImageOrder && storedChapters.isNullOrEmpty()) {
-            var storedImages: List<ImageFile>? = storedContent.imageFiles
-            if (null == storedImages) storedImages = emptyList()
+            val storedImages = storedContent.imageList
             for (img in storedImages) {
                 if (null == img.linkedChapter) {
                     val targetChapter = positionMap[img.order]

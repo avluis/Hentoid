@@ -19,7 +19,8 @@ class DeviantArtActivity : BaseWebActivity() {
             "deviantart.com/[\\w\\-]+/art/[\\w\\-]+",  // Deviation page
             "deviantart.com/[\\w\\-]+/gallery$",  // User gallery page; mobile version only contains the first 10 deviations and uses XHR for dynamically loading the rest
             "deviantart.com/_puppy/dadeviation/init\\?", // Art page info loaded using XHR call
-            "deviantart.com/_puppy/dashared/gallection/contents\\?" // User gallery info loaded using XHR call
+            "deviantart.com/_puppy/dashared/gallection/contents\\?", // User gallery info loaded using XHR call
+            "deviantart.com/_puppy/dauserprofile/init/gallery\\?" // User info loaded using XHR call
         )
         private val JS_WHITELIST = arrayOf(DOMAIN_FILTER)
     }

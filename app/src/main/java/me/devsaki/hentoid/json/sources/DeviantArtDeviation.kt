@@ -73,23 +73,29 @@ data class DeviantArtDeviation(
             content.putAttributes(attributes)
 
             if (updateImages) {
-                val downloadUrl = extended?.download?.url?.replace("\\/", "/") ?: ""
-                val pictureUrl = media.getPictureUrl()
-                val picture = if (downloadUrl.isNotEmpty()) {
-                    val img = ImageFile.fromImageUrl(1, downloadUrl, StatusContent.SAVED, 1000)
-                    img.backupUrl = pictureUrl
-                    img
-                } else ImageFile.fromImageUrl(1, pictureUrl, StatusContent.SAVED, 1000)
-
-                val result = ArrayList<ImageFile>()
-                if (media.getThumbUrl().isNotEmpty()) result.add(
-                    ImageFile.newCover(media.getThumbUrl(), StatusContent.SAVED)
-                )
-                result.add(picture)
-                content.setImageFiles(result)
+                val imgs = getImages()
+                content.setImageFiles(imgs)
+                content.setQtyPages(imgs.count { it.isReadable })
             }
 
             return content
+        }
+
+        fun getImages(): List<ImageFile> {
+            val downloadUrl = extended?.download?.url?.replace("\\/", "/") ?: ""
+            val pictureUrl = media.getPictureUrl()
+            val picture = if (downloadUrl.isNotEmpty()) {
+                val img = ImageFile.fromImageUrl(1, downloadUrl, StatusContent.SAVED, 1000)
+                img.backupUrl = pictureUrl
+                img
+            } else ImageFile.fromImageUrl(1, pictureUrl, StatusContent.SAVED, 1000)
+
+            val result = ArrayList<ImageFile>()
+            if (media.getThumbUrl().isNotEmpty()) result.add(
+                ImageFile.newCover(media.getThumbUrl(), StatusContent.SAVED)
+            )
+            result.add(picture)
+            return result
         }
     }
 
@@ -168,6 +174,6 @@ data class DeviantArtDeviation(
     }
 
     companion object {
-        private const val RELATIVE_URL_PREFIX = "https://www.deviantart.com/"
+        const val RELATIVE_URL_PREFIX = "https://www.deviantart.com/"
     }
 }

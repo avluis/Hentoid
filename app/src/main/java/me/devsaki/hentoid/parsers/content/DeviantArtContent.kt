@@ -8,11 +8,13 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.json.sources.DeviantArtDeviation
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.parsers.images.DeviantArtParser
 import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -38,10 +40,12 @@ class DeviantArtContent : BaseContentParser() {
 
         return if (url.contains("/_puppy/")) {
             if (url.contains("dadeviation/init")) parseXhrDeviation(content, url, updateImages)
-            else parseXhrGallection(content, url, updateImages)
+            else if (url.contains("/dashared/gallection/")) parseXhrGallection(content, url)
+            else if (url.contains("/dauserprofile/init/gallery")) parseXhrUserProfile(content, url)
+            else Content().setStatus(StatusContent.IGNORED)
         } else {
             if (url.contains("/art/")) parseHtmlDeviation(content, url, updateImages)
-            else parseHtmlGallection(content, url, updateImages)
+            else parseHtmlGallection()
         }
     }
 
@@ -88,60 +92,19 @@ class DeviantArtContent : BaseContentParser() {
         return content
     }
 
-    private fun parseHtmlGallection(content: Content, url: String, updateImages: Boolean): Content {
+    private fun parseHtmlGallection(): Content {
         val scripts = body.select("script")
         scripts.forEach {
             val str = it.toString()
             if (str.length > 50000) {
                 str.lines().forEach { line ->
                     if (line.contains("INITIAL_STATE", true)) {
-                        return parseLine(line, content, updateImages)
+                        return DeviantArtParser.parseGalleryLine(line)
                     }
                 }
             }
         }
         return Content().setStatus(StatusContent.IGNORED)
-    }
-
-    private fun parseLine(
-        line: String,
-        content: Content,
-        updateImages: Boolean
-    ): Content {
-        /*
-        val startIdx = line.indexOf("parse(\"") + 7
-        val endIdx = line.lastIndexOf("\");")
-        val json = line.substring(startIdx, endIdx)
-            /*
-            .replace("\\\"","\"")
-            .replace("\\\\u002F","/")
-            .replace("\\\\u003C","<")
-            .replace("\\\\u003E",">")
-             */
-         */
-        val tokenStartIdx = line.indexOf("\\\"csrfToken\\\":\\\"") + 16
-        val tokenEndIdx = line.indexOf("\\\",", tokenStartIdx)
-        val token = line.substring(tokenStartIdx, tokenEndIdx)
-
-        val foldIdStartIdx = line.indexOf("\\\"folderId\\\":") + 13
-        val foldIdEndIdx = line.indexOf(",", foldIdStartIdx)
-        val folderId = line.substring(foldIdStartIdx, foldIdEndIdx)
-
-        val userNameStartIdx = line.indexOf("\\\"username\\\":\\\"", foldIdEndIdx) + 15
-        val userNameEndIdx = line.indexOf("\\\",", userNameStartIdx)
-        val userName = line.substring(userNameStartIdx, userNameEndIdx)
-
-        Timber.i(">>> $token $folderId $userName")
-
-        return parseXhrGallection(
-            content,
-            updateImages,
-            userName,
-            "gallery",
-            folderId,
-            token,
-            "20230710"
-        )
     }
 
     private fun parseXhrDeviation(content: Content, url: String, updateImages: Boolean): Content {
@@ -177,60 +140,69 @@ class DeviantArtContent : BaseContentParser() {
         return content
     }
 
-    private fun parseXhrGallection(content: Content, url: String, updateImages: Boolean): Content {
+    private fun parseXhrGallection(content: Content, url: String): Content {
         val uri = Uri.parse(url)
-        parseXhrGallection(
-            content, updateImages,
-            uri.getQueryParameter("username") ?: "",
-            uri.getQueryParameter("type") ?: "",
-            uri.getQueryParameter("folderid") ?: "",
+        val userName = uri.getQueryParameter("username") ?: ""
+        content.title = userName
+        content.url = "$userName/gallery"
+
+        val imgs = DeviantArtParser.parseXhrGallection(
+            userName,
+            uri.getQueryParameter("type") ?: "gallery",
+            uri.getQueryParameter("folderid")?.toInt() ?: -1,
             uri.getQueryParameter("csrf_token") ?: "",
             uri.getQueryParameter("da_minor_version") ?: ""
         )
-        return content
+        return content.setImageFiles(imgs)
     }
 
-    private fun parseXhrGallection(
-        content: Content,
-        updateImages: Boolean,
-        username: String,
-        type: String,
-        folderId: String,
-        token: String,
-        daMinorVersion: String
-    ): Content {
-        content.title = username
-        content.status = StatusContent.SAVED
-        content.url = "$username/gallery"
-        try {
-            val cookieStr = HttpHelper.getCookies(
-                Site.DEVIANTART.url,
-                null,
-                Site.DEVIANTART.useMobileAgent(),
-                Site.DEVIANTART.useHentoidAgent(),
-                Site.DEVIANTART.useHentoidAgent()
-            )
-            // TODO iterate
-            val call = DeviantArtServer.API.getUserGallection(
-                username,
-                type,
-                "0",
-                "50",
-                folderId,
-                token,
-                daMinorVersion,
-                cookieStr,
-                ParseHelper.getUserAgent(Site.DEVIANTART)
-            )
-            val response = call.execute()
-            if (response.isSuccessful) {
-                response.body()?.update(content, updateImages)
-            } else {
-                content.status = StatusContent.IGNORED
+    private fun parseXhrUserProfile(content: Content, url: String): Content {
+        val uri = Uri.parse(url)
+        val userName = uri.getQueryParameter("username") ?: ""
+
+        val cookieStr = HttpHelper.getCookies(
+            Site.DEVIANTART.url,
+            null,
+            Site.DEVIANTART.useMobileAgent(),
+            Site.DEVIANTART.useHentoidAgent(),
+            Site.DEVIANTART.useHentoidAgent()
+        )
+
+        val call = DeviantArtServer.API.getUserProfile(
+            userName,
+            uri.getQueryParameter("deviations_limit")?.toInt() ?: 24,
+            uri.getQueryParameter("with_subfolders")?.toBoolean() ?: true,
+            uri.getQueryParameter("csrf_token") ?: "",
+            uri.getQueryParameter("da_minor_version") ?: "",
+            cookieStr,
+            ParseHelper.getUserAgent(Site.DEVIANTART)
+        )
+        val response = call.execute()
+        if (response.isSuccessful) {
+            response.body()?.let { user ->
+                content.title = userName
+                content.url = "$userName/gallery"
+                val artist = Attribute(
+                    AttributeType.ARTIST,
+                    userName,
+                    DeviantArtDeviation.RELATIVE_URL_PREFIX + userName,
+                    Site.DEVIANTART
+                )
+                content.addAttributes(listOf(artist))
+
+                val imgs = DeviantArtParser.parseXhrGallection(
+                    userName,
+                    uri.getQueryParameter("type") ?: "gallery",
+                    user.getDeviationFolderId(),
+                    uri.getQueryParameter("csrf_token") ?: "",
+                    uri.getQueryParameter("da_minor_version") ?: ""
+                )
+                content.qtyPages = imgs.count { it.isReadable }
+                return content.setImageFiles(imgs)
             }
-        } catch (e: IOException) {
-            Timber.e(e, "Error parsing content.")
+        } else {
+            throw ParseException("Call to getUserProfile failed $userName")
         }
-        return content
+        return Content().setStatus(StatusContent.IGNORED)
     }
 }
