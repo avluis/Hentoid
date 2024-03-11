@@ -367,7 +367,7 @@ public final class ContentHelper {
         if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         if (markAsCompleted) content.setCompleted(true);
         dao.replaceImageList(content.getId(), images);
-        dao.insertContent(content);
+        dao.insertContentCore(content);
         persistJson(context, content);
     }
 
