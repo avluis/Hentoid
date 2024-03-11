@@ -887,7 +887,7 @@ class ObjectBoxDB {
             useCachedSourceQuery = true;
         } else { // On-demand query
             QueryCondition<Content> qc = Content_.status.oneOf(libraryStatus);
-            qc.and(Content_.site.equal(1));
+            qc = qc.and(Content_.site.equal(1));
 
             qc = applyContentLocationFilter(qc, location);
             qc = applyContentTypeFilter(qc, contentType);
