@@ -1746,11 +1746,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * - when the current grouping is not flat (because the app needs to refresh the display when moving books out of/into the currently displayed group)
      */
     private fun refreshIfNeeded() {
-        Timber.v(
-            ">> refreshIfNeeded %s %s",
-            Preferences.getGroupingDisplay(),
-            Preferences.getContentSortField()
-        )
         if (Grouping.FLAT != Preferences.getGroupingDisplay() || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
             viewModel.searchContent(false)
     }
@@ -1760,7 +1755,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private fun differEndCallback() {
-        Timber.v(">> differEndCallback %s", topItemPosition)
         if (topItemPosition > -1) {
             val targetPos = topItemPosition
             listRefreshDebouncer.submit(targetPos)
@@ -1773,11 +1767,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * Activated when all _displayed_ items are placed on their definitive position
      */
     private fun onRecyclerUpdated(topItemPosition: Int) {
-        Timber.v(">> onRecyclerUpdated")
         val currentPosition = getTopItemPosition()
         // Used to restore position after activity has been stopped and recreated
         if (currentPosition != topItemPosition) {
-            Timber.v(">> onRecyclerUpdated %s => %s", currentPosition, topItemPosition)
             llm!!.scrollToPositionWithOffset(topItemPosition, 0)
         }
     }

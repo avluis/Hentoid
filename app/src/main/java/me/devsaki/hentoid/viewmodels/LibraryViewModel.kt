@@ -146,7 +146,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     private fun doSearchContent() {
         // Update search properties set directly through Preferences
-        Timber.v(">> doSearchContent")
         contentSearchManager.setContentSortField(Preferences.getContentSortField())
         contentSearchManager.setContentSortDesc(Preferences.isContentSortDesc())
         if (Preferences.getGroupingDisplay() == Grouping.FLAT) contentSearchManager.setGroup(null)
@@ -216,7 +215,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     private fun doSearchGroup() {
-        Timber.v(">> doSearchGroup")
         // Update search properties set directly through Preferences
         groupSearchManager.setSortField(Preferences.getGroupSortField())
         groupSearchManager.setSortDesc(Preferences.isGroupSortDesc())
@@ -345,7 +343,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun searchContent(active : Boolean = true) {
-        Timber.v(">> searchContent")
         newContentSearch.value = active
         doSearchContent()
     }
@@ -735,7 +732,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (contents.isNotEmpty()) builder.setContentIds(contents.map { c -> c.id })
         if (groups.isNotEmpty()) builder.setGroupIds(groups.map { g -> g.getId() })
         builder.setDeleteGroupsOnly(deleteGroupsOnly)
-        Timber.v(">> DELETE 1")
         val workManager = WorkManager.getInstance(getApplication())
         val request: WorkRequest =
             OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()
