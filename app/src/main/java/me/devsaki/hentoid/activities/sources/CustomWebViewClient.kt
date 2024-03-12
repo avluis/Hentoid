@@ -875,12 +875,12 @@ open class CustomWebViewClient : WebViewClient {
             elements.forEach { (key, value) ->
                 for (url in siteUrls) {
                     if (key.endsWith(url)) {
-                        var markedElement =
-                            value.second // Linked images have priority over plain links
+                        // Linked images have priority over plain links
+                        var markedElement = value.second
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
-                            for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
-                                imgParent!!.parent()
+                            for (i in 0 until site.bookCardDepth - 1)
+                                if (imgParent != null) imgParent = imgParent!!.parent()
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
@@ -891,9 +891,9 @@ open class CustomWebViewClient : WebViewClient {
                 }
                 for (url in mergedSiteUrls) {
                     if (key.endsWith(url)) {
-                        var markedElement =
-                            value.second // Linked images have priority over plain links
-                        if (markedElement != null) { // // Mark <site.bookCardDepth> levels above the image
+                        // Linked images have priority over plain links
+                        var markedElement = value.second
+                        if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
                             for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
                                 imgParent!!.parent()
