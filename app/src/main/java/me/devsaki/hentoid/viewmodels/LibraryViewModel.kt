@@ -345,6 +345,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun searchContent() {
+        Timber.v(">> searchContent")
         newContentSearch.value = true
         doSearchContent()
     }
@@ -734,6 +735,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (contents.isNotEmpty()) builder.setContentIds(contents.map { c -> c.id })
         if (groups.isNotEmpty()) builder.setGroupIds(groups.map { g -> g.getId() })
         builder.setDeleteGroupsOnly(deleteGroupsOnly)
+        Timber.v(">> DELETE 1")
         val workManager = WorkManager.getInstance(getApplication())
         val request: WorkRequest =
             OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()
