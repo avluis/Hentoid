@@ -344,9 +344,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         doSearchContent()
     }
 
-    fun searchContent() {
+    fun searchContent(active : Boolean = true) {
         Timber.v(">> searchContent")
-        newContentSearch.value = true
+        newContentSearch.value = active
         doSearchContent()
     }
 
