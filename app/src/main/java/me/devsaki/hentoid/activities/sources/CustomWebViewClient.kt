@@ -956,7 +956,6 @@ open class CustomWebViewClient : WebViewClient {
         }
         customHtmlRewriter?.invoke(doc)
         return ByteArrayInputStream(doc.toString().toByteArray(StandardCharsets.UTF_8))
-
     }
 
     private fun containsForbiddenClass(s: Site, classNames: Set<String>): Boolean {

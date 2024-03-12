@@ -115,12 +115,13 @@ class ExHentaiActivity : BaseWebActivity() {
                     }
                 }
             }
-            return if (isMarkDownloaded() || isMarkMerged()) super.parseResponse(
-                url,
-                requestHeaders,
-                analyzeForDownload = false,
-                quickDownload = false
-            ) // Rewrite HTML
+            return if (isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags())
+                super.parseResponse(
+                    url,
+                    requestHeaders,
+                    analyzeForDownload = false,
+                    quickDownload = false
+                ) // Rewrite HTML
             else null
         }
     }
