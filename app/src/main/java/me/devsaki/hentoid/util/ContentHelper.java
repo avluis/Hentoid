@@ -1603,8 +1603,8 @@ public final class ContentHelper {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted(Comparator.comparingInt(String::length)).findLast();
-        if (longestWord.isEmpty() || longestWord.get().length() < 2)
-            return null; // Too many resources consumed if the longest word is 1 character long
+        // Too many resources consumed if the longest word is 1 character long
+        if (longestWord.isEmpty() || longestWord.get().length() < 2) return null;
 
         int[] contentStatuses = ArrayUtils.addAll(libraryStatus, queueTabStatus);
         List<Content> roughCandidates = dao.searchTitlesWith(longestWord.get(), contentStatuses);
