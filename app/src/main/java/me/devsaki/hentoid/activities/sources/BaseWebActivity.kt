@@ -517,7 +517,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         xhrHandler?.let { webView.addJavascriptInterface(XhrHandler(it), "xhrHandler") }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             webSettings.isAlgorithmicDarkeningAllowed =
-                (Preferences.getColorTheme() != Constant.COLOR_THEME_LIGHT)
+                (!Settings.isBrowserForceLightMode && Preferences.getColorTheme() != Constant.COLOR_THEME_LIGHT)
         }
     }
 

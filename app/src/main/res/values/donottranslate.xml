@@ -506,6 +506,7 @@
     <string name="pref_browser_mark_downloaded_default" translatable="false">false</string>
     <string name="pref_browser_mark_merged_default" translatable="false">false</string>
     <string name="pref_browser_mark_blocked_default" translatable="false">false</string>
+    <string name="pref_browser_force_lightmode_default" translatable="false">false</string>
     <string name="pref_browser_override_overview_default" translatable="false">false</string>
     <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
     <string name="pref_browser_dns_default" translatable="false">-1</string>
