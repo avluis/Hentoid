@@ -55,7 +55,14 @@ import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.*
+import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.Debouncer
+import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.TooltipHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
@@ -74,7 +81,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.lang.ref.WeakReference
-import java.util.*
 import kotlin.math.max
 
 /**
@@ -663,6 +669,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 }
 
                 // Update information bar
+                bottomBarBinding.queueStatus.text =
+                    resources.getString(R.string.queue_dl, content.title)
+
                 val message = StringBuilder()
                 val processedPagesFmt =
                     StringHelper.formatIntAsStr(pagesOKDisplay, totalPagesDisplay.toString().length)
@@ -693,9 +702,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     }
 
     private fun isPaused(): Boolean {
-        return ContentQueueManager.isQueuePaused || !ContentQueueManager.isQueueActive(
-            requireActivity()
-        )
+        return ContentQueueManager.isQueuePaused
+                || !ContentQueueManager.isQueueActive(requireActivity())
     }
 
     private fun isEmpty(): Boolean {
