@@ -278,8 +278,9 @@ class QueueActivity : BaseActivity() {
                     nbSuccess, nbSuccess, contentList.size
                 )
                 binding?.let {
-                    Snackbar.make(it.root, message, BaseTransientBottomBar.LENGTH_LONG)
-                        .setAnchorView(it.snackbarLocation).show()
+                    val snack = Snackbar.make(it.root, message, BaseTransientBottomBar.LENGTH_LONG)
+                    snack.setAction(R.string.view_queue) { binding?.queuePager?.currentItem = 0 }
+                    snack.setAnchorView(it.snackbarLocation).show()
                 }
             }, { t: Throwable -> Timber.i(t) }
         )
