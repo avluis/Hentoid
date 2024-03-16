@@ -18,6 +18,8 @@ class CommunicationEvent(val type: Type, val recipient: Recipient, val message: 
         ALL,
         GROUPS,
         CONTENTS,
+        QUEUE,
+        ERRORS,
         DRAWER,
         DUPLICATE_MAIN,
         DUPLICATE_DETAILS,

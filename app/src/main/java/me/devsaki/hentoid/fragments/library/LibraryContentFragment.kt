@@ -251,7 +251,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     // TODO doc
     private var group: Group? = null
 
-    // TODO doc
+    // Indicate whether this tab is enabled (active on screen) or not
     private var enabled = true
 
     // TODO doc
@@ -1447,7 +1447,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                             childFragmentManager,
                             dialogTitle,
                             siteCodes,
-                            true
+                            uniqueIdOnly = true,
+                            showAltSites = true
                         )
                     }
                     snackbar.show()
@@ -1456,7 +1457,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 childFragmentManager,
                 dialogTitle,
                 siteCodes,
-                true
+                uniqueIdOnly = true,
+                showAltSites = true
             )
         }
 

@@ -135,9 +135,8 @@ class SearchActivity : BaseActivity() {
                 onBooksCounted(count)
             }
             if (preSelectedCriteria != null) {
-                if (preSelectedCriteria.attributes.isNotEmpty()) viewModel.setSelectedAttributes(
-                    preSelectedCriteria.attributes
-                )
+                if (preSelectedCriteria.attributes.isNotEmpty())
+                    viewModel.setSelectedAttributes(preSelectedCriteria.attributes.toList())
                 if (preSelectedCriteria.location > 0) viewModel.setLocation(preSelectedCriteria.location)
                 locationPicker.index = preSelectedCriteria.location
                 if (preSelectedCriteria.contentType > 0) viewModel.setContentType(
@@ -165,7 +164,7 @@ class SearchActivity : BaseActivity() {
         binding?.apply {
             val builder = SearchActivityBundle()
             builder.uri = buildSearchUri(
-                selectedAttributeAdapter.currentList,
+                selectedAttributeAdapter.currentList.toSet(),
                 "",
                 locationPicker.index,
                 typePicker.index
@@ -181,7 +180,7 @@ class SearchActivity : BaseActivity() {
         val searchUri = Uri.parse(SearchActivityBundle(savedInstanceState).uri)
         if (searchUri != null) {
             val (_, attributes, location, contentType) = parseSearchUri(searchUri)
-            if (attributes.isNotEmpty()) viewModel.setSelectedAttributes(attributes)
+            if (attributes.isNotEmpty()) viewModel.setSelectedAttributes(attributes.toList())
             binding?.apply {
                 if (location > 0) {
                     viewModel.setLocation(location)
@@ -306,7 +305,7 @@ class SearchActivity : BaseActivity() {
     private fun searchBooks() {
         binding?.apply {
             val searchUri = buildSearchUri(
-                selectedAttributeAdapter.currentList,
+                selectedAttributeAdapter.currentList.toSet(),
                 "",
                 locationPicker.index,
                 typePicker.index

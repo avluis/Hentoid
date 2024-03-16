@@ -199,7 +199,7 @@ class SearchViewModel(
             selectedContentCount.removeSource(it)
         }
         currentSelectedContentCountInternal =
-            dao.countBooks(selectedGroup, selectedAttributes.value, location, contentType)
+            dao.countBooks(selectedGroup, selectedAttributes.value?.toSet(), location, contentType)
         selectedContentCount.addSource(currentSelectedContentCountInternal!!)
         { value -> selectedContentCount.setValue(value) }
     }

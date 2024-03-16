@@ -158,9 +158,9 @@ class LibraryActivity : BaseActivity() {
 
     // Current search criteria; one per tab
     private val searchCriteria = mutableListOf(
-        SearchCriteria("", ArrayList(), ContentHelper.Location.ANY, ContentHelper.Type.ANY),
+        SearchCriteria("", HashSet(), ContentHelper.Location.ANY, ContentHelper.Type.ANY),
         SearchCriteria(
-            "", ArrayList(), ContentHelper.Location.ANY, ContentHelper.Type.ANY
+            "", HashSet(), ContentHelper.Location.ANY, ContentHelper.Type.ANY
         )
     )
 
@@ -467,7 +467,7 @@ class LibraryActivity : BaseActivity() {
             // Clear search
             searchClearBtn.setOnClickListener {
                 clearAdvancedSearchCriteria()
-                actionSearchView!!.setQuery("", false)
+                actionSearchView?.setQuery("", false)
                 hideSearchSubBar()
                 signalCurrentFragment(CommunicationEvent.Type.SEARCH, "")
             }
@@ -573,15 +573,13 @@ class LibraryActivity : BaseActivity() {
                     // Without that handler the view displays with an empty value
                         Handler(Looper.getMainLooper()).postDelayed({
                             invalidateNextQueryTextChange = true
-                            actionSearchView!!.setQuery(getQuery(), false)
+                            actionSearchView?.setQuery(getQuery(), false)
                         }, 100)
                     return true
                 }
 
                 override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                    if (!isSearchQueryActive()) {
-                        hideSearchSubBar()
-                    }
+                    if (!isSearchQueryActive()) hideSearchSubBar()
                     invalidateNextQueryTextChange = true
                     return true
                 }

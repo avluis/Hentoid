@@ -113,17 +113,17 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public List<Long> selectRecentBookIds(ContentSearchManager.ContentSearchBundle searchBundle) {
-        return contentIdSearch(false, searchBundle, Collections.emptyList());
+        return contentIdSearch(false, searchBundle, Collections.emptySet());
     }
 
     @Override
-    public List<Long> searchBookIds(ContentSearchManager.ContentSearchBundle searchBundle, List<Attribute> metadata) {
+    public List<Long> searchBookIds(ContentSearchManager.ContentSearchBundle searchBundle, Set<Attribute> metadata) {
         return contentIdSearch(false, searchBundle, metadata);
     }
 
     @Override
     public List<Long> searchBookIdsUniversal(ContentSearchManager.ContentSearchBundle searchBundle) {
-        return contentIdSearch(true, searchBundle, Collections.emptyList());
+        return contentIdSearch(true, searchBundle, Collections.emptySet());
     }
 
     @Override
@@ -170,9 +170,15 @@ public class ObjectBoxDAO implements CollectionDAO {
         return new ObjectBoxLiveData<>(db.selectErrorContentQ());
     }
 
-    public LiveData<List<Content>> selectErrorContentLive(String query) {
+    @Override
+    public LiveData<List<Content>> selectErrorContentLive(String query, Site source) {
         ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle();
         bundle.setQuery(query);
+
+        Set<Attribute> sourceAttr = new HashSet<>();
+        sourceAttr.add(new Attribute(source));
+        bundle.setAttributes(SearchActivityBundle.Companion.buildSearchUri(sourceAttr, "", 0, 0).toString());
+
         bundle.setSortField(Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE);
         return new ObjectBoxLiveData<>(db.selectContentUniversalQ(bundle, new long[0], new int[]{StatusContent.ERROR.getCode()}));
     }
@@ -192,9 +198,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
+    @Override
     public LiveData<Integer> countBooks(
             long groupId,
-            List<Attribute> metadata,
+            Set<Attribute> metadata,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType) {
         // This is not optimal because it fetches all the content and returns its size only
@@ -206,7 +213,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         bundle.setContentType(contentType);
         bundle.setSortField(Preferences.Constant.ORDER_FIELD_NONE);
 
-        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.selectContentSearchContentQ(bundle, getDynamicGroupContent(groupId), metadata));
+        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.selectContentSearchContentQ(bundle, getDynamicGroupContent(groupId), metadata, ObjectBoxDB.libraryStatus));
 
         MediatorLiveData<Integer> result = new MediatorLiveData<>();
         result.addSource(livedata, v -> result.setValue(v.size()));
@@ -215,17 +222,17 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public LiveData<PagedList<Content>> selectRecentBooks(ContentSearchManager.ContentSearchBundle searchBundle) {
-        return getPagedContent(false, searchBundle, Collections.emptyList());
+        return getPagedContent(false, searchBundle, Collections.emptySet());
     }
 
     @Override
-    public LiveData<PagedList<Content>> searchBooks(ContentSearchManager.ContentSearchBundle searchBundle, List<Attribute> metadata) {
+    public LiveData<PagedList<Content>> searchBooks(ContentSearchManager.ContentSearchBundle searchBundle, Set<Attribute> metadata) {
         return getPagedContent(false, searchBundle, metadata);
     }
 
     @Override
     public LiveData<PagedList<Content>> searchBooksUniversal(ContentSearchManager.ContentSearchBundle searchBundle) {
-        return getPagedContent(true, searchBundle, Collections.emptyList());
+        return getPagedContent(true, searchBundle, Collections.emptySet());
     }
 
     public LiveData<PagedList<Content>> selectNoContent() {
@@ -236,7 +243,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     private LiveData<PagedList<Content>> getPagedContent(
             boolean isUniversal,
             ContentSearchManager.ContentSearchBundle searchBundle,
-            List<Attribute> metadata) {
+            Set<Attribute> metadata) {
         boolean isCustomOrder = (searchBundle.getSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM);
 
         ImmutablePair<Long, DataSource.Factory<Integer, Content>> contentRetrieval;
@@ -260,14 +267,14 @@ public class ObjectBoxDAO implements CollectionDAO {
     private ImmutablePair<Long, DataSource.Factory<Integer, Content>> getPagedContentByQuery(
             boolean isUniversal,
             ContentSearchManager.ContentSearchBundle searchBundle,
-            List<Attribute> metadata) {
+            Set<Attribute> metadata) {
         boolean isRandom = (searchBundle.getSortField() == Preferences.Constant.ORDER_FIELD_RANDOM);
 
         Query<Content> query;
         if (isUniversal) {
             query = db.selectContentUniversalQ(searchBundle, getDynamicGroupContent(searchBundle.getGroupId()));
         } else {
-            query = db.selectContentSearchContentQ(searchBundle, getDynamicGroupContent(searchBundle.getGroupId()), metadata);
+            query = db.selectContentSearchContentQ(searchBundle, getDynamicGroupContent(searchBundle.getGroupId()), metadata, ObjectBoxDB.libraryStatus);
         }
 
         if (isRandom) {
@@ -279,7 +286,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     private ImmutablePair<Long, DataSource.Factory<Integer, Content>> getPagedContentByList(
             boolean isUniversal,
             ContentSearchManager.ContentSearchBundle searchBundle,
-            List<Attribute> metadata) {
+            Set<Attribute> metadata) {
         long[] ids;
 
         if (isUniversal) {
@@ -827,7 +834,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     private void insertQueueAndRenumber(long contentId, int order) {
-        List<QueueRecord> queue = DBHelper.safeFind(db.selectQueueRecordsQ(null));
+        List<QueueRecord> queue = DBHelper.safeFind(db.selectQueueRecordsQ());
         QueueRecord newRecord = new QueueRecord(contentId, order);
 
         // Put in the right place
@@ -856,14 +863,14 @@ public class ObjectBoxDAO implements CollectionDAO {
     private List<Long> contentIdSearch(
             boolean isUniversal,
             ContentSearchManager.ContentSearchBundle searchBundle,
-            List<Attribute> metadata) {
+            Set<Attribute> metadata) {
         if (isUniversal) {
             return Helper.getListFromPrimitiveArray(
-                    db.selectContentUniversalId(searchBundle, getDynamicGroupContent(searchBundle.getGroupId()), ContentHelper.getLibraryStatuses())
+                    db.selectContentUniversalId(searchBundle, getDynamicGroupContent(searchBundle.getGroupId()), ObjectBoxDB.libraryStatus)
             );
         } else {
             return Helper.getListFromPrimitiveArray(
-                    db.selectContentSearchId(searchBundle, getDynamicGroupContent(searchBundle.getGroupId()), metadata)
+                    db.selectContentSearchId(searchBundle, getDynamicGroupContent(searchBundle.getGroupId()), metadata, ObjectBoxDB.libraryStatus)
             );
         }
     }
@@ -917,17 +924,17 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public LiveData<List<QueueRecord>> selectQueueLive() {
-        return new ObjectBoxLiveData<>(db.selectQueueRecordsQ(null));
+        return new ObjectBoxLiveData<>(db.selectQueueRecordsQ());
     }
 
     @Override
-    public LiveData<List<QueueRecord>> selectQueueLive(String query) {
-        return new ObjectBoxLiveData<>(db.selectQueueRecordsQ(query));
+    public LiveData<List<QueueRecord>> selectQueueLive(String query, Site source) {
+        return new ObjectBoxLiveData<>(db.selectQueueRecordsQ(query, source));
     }
 
     @Override
     public List<QueueRecord> selectQueue() {
-        return DBHelper.safeFind(db.selectQueueRecordsQ(null));
+        return DBHelper.safeFind(db.selectQueueRecordsQ());
     }
 
     public void updateQueue(@NonNull List<QueueRecord> queue) {

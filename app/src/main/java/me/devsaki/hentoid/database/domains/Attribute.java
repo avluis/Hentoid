@@ -90,6 +90,12 @@ public class Attribute {
         this.uniqueHash = data.uniqueHash;
     }
 
+    public Attribute(Site site) {
+        this.id = site.getCode();
+        this.type = AttributeType.SOURCE;
+        this.name = site.getDescription();
+    }
+
     public Attribute(@NonNull AttributeType type, @NonNull String name) {
         this.type = type;
         this.name = name;

@@ -336,7 +336,8 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
                 SelectSiteDialogFragment.invoke(
                     childFragmentManager,
                     getString(R.string.bookmark_change_site),
-                    getUnbookmarkedSites().map { it.code }
+                    getUnbookmarkedSites().map { it.code },
+                    showAltSites = false
                 )
             }
         }

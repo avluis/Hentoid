@@ -29,19 +29,25 @@ class SelectSiteDialogFragment : DialogFragment() {
 
     companion object {
         private const val EXCLUDED_SITES = "EXCLUDED_SITES"
+        private const val UNIQUE_ID_ONLY = "UNIQUE_ID_ONLY"
         private const val ALT_SITES = "ALT_SITES"
         private const val TITLE = "TITLE"
+        private const val PARENT_IS_ACTIVITY = "PARENT_IS_ACTIVITY"
 
         operator fun invoke(
             fragmentManager: FragmentManager,
             title: String,
             excludedSiteCodes: List<Int> = emptyList(),
-            showAltSites: Boolean = false
+            uniqueIdOnly: Boolean = false,
+            showAltSites: Boolean = false,
+            parentIsActivity: Boolean = false,
         ) {
             val args = Bundle()
             args.putIntegerArrayList(EXCLUDED_SITES, ArrayList(excludedSiteCodes))
+            args.putBoolean(UNIQUE_ID_ONLY, uniqueIdOnly)
             args.putBoolean(ALT_SITES, showAltSites)
             args.putString(TITLE, title)
+            args.putBoolean(PARENT_IS_ACTIVITY, parentIsActivity)
             val fragment = SelectSiteDialogFragment()
             fragment.arguments = args
             fragment.isCancelable = true
@@ -49,11 +55,6 @@ class SelectSiteDialogFragment : DialogFragment() {
         }
     }
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        parent = parentFragment as Parent?
-    }
 
     override fun onDestroy() {
         parent = null
@@ -72,12 +73,17 @@ class SelectSiteDialogFragment : DialogFragment() {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
+        val showUniqueIdsOnly = requireArguments().getBoolean(UNIQUE_ID_ONLY, false)
         val showAltSites = requireArguments().getBoolean(ALT_SITES, false)
         binding?.title?.text = requireArguments().getString(TITLE, "")
 
-        val excludedSites = requireArguments().getIntegerArrayList(EXCLUDED_SITES)?.toSet() ?: return
+        parent = if (requireArguments().getBoolean(PARENT_IS_ACTIVITY, false)) activity as Parent?
+        else parentFragment as Parent?
+
+        val excludedSites =
+            requireArguments().getIntegerArrayList(EXCLUDED_SITES)?.toSet() ?: return
         val sites = Preferences.getActiveSites()
-            .filter { it.hasUniqueBookId() }
+            .filter { !showUniqueIdsOnly || it.hasUniqueBookId() }
             .filterNot { excludedSites.contains(it.code) }
             .sortedBy { it.name }
 

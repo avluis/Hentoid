@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.queue
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,9 +14,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.annotation.StringRes
-import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
-import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -41,17 +40,23 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.QueueRecord
+import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.databinding.FragmentQueueBinding
 import me.devsaki.hentoid.databinding.IncludeQueueBottomBarBinding
+import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
+import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
@@ -90,10 +95,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     // == UI
-    private var _binding: FragmentQueueBinding? = null
-    private val binding get() = _binding!!
-    private var _bottomBarBinding: IncludeQueueBottomBarBinding? = null
-    private val bottomBarBinding get() = _bottomBarBinding!!
+    private var binding: FragmentQueueBinding? = null
+    private var bottomBarBinding: IncludeQueueBottomBarBinding? = null
 
     private lateinit var llm: LinearLayoutManager
 
@@ -123,14 +126,11 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
 
     // === VARIABLES
+    // Indicate whether this tab is enabled (active on screen) or not
+    private var enabled = true
+
     // Currenty content ID
     private var contentId = -1L
-
-    // Current text search query
-    private var query = ""
-
-    // Used to ignore native calls to onQueryTextChange
-    private var invalidateNextQueryTextChange = false
 
     // Used to show a given item at first display
     private var contentHashToDisplayFirst: Long = 0
@@ -138,9 +138,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     // Used to start processing when the recyclerView has finished updating
     private lateinit var listRefreshDebouncer: Debouncer<Int>
     private var itemToRefreshIndex = -1
-
-    // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
-    private lateinit var searchClearDebouncer: Debouncer<Int>
 
     // Used to keep scroll position when moving items
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
@@ -150,6 +147,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     // True when a new search has been performed and its results have not been handled yet
     // False when the refresh is passive (i.e. not from a direct user action)
     private var newSearch = false
+
+    // Set of sources of all unfiltered queue items
+    private val unfilteredSources = HashSet<Site>()
 
 
     override fun onAttach(context: Context) {
@@ -162,12 +162,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
         listRefreshDebouncer = Debouncer(lifecycleScope, 75)
         { topItemPosition: Int -> this.onRecyclerUpdated(topItemPosition) }
-
-        searchClearDebouncer = Debouncer(lifecycleScope, 1500)
-        {
-            query = ""
-            viewModel.searchQueueUniversal(query)
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -192,12 +186,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentQueueBinding.inflate(inflater, container, false)
+        binding = FragmentQueueBinding.inflate(inflater, container, false)
         // We need to manually bind the merged view - it won't work at runtime with the main view alone
-        _bottomBarBinding = IncludeQueueBottomBarBinding.bind(binding.root)
+        bottomBarBinding = IncludeQueueBottomBarBinding.bind(binding!!.root)
 
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
-        bottomBarBinding.actionButton.setOnClickListener {
+        bottomBarBinding?.actionButton?.setOnClickListener {
             if (isPaused()) viewModel.unpauseQueue()
             else EventBus.getDefault()
                 .post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE))
@@ -223,23 +217,31 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         fastAdapter.onPreClickListener = { _, _, _, pos -> helper.onPreClickListener(pos) }
         fastAdapter.onPreLongClickListener = { _, _, _, pos -> helper.onPreLongClickListener(pos) }
 
-        binding.queueList.adapter = fastAdapter
-        binding.queueList.setHasFixedSize(true)
-        llm = binding.queueList.layoutManager as LinearLayoutManager
+        binding?.apply {
+            queueList.adapter = fastAdapter
+            queueList.setHasFixedSize(true)
+            llm = queueList.layoutManager as LinearLayoutManager
 
-        // Fast scroller
-        FastScrollerBuilder(binding.queueList).build()
+            // Fast scroller
+            FastScrollerBuilder(queueList).build()
 
-        // Drag, drop & swiping
-        val dragSwipeCallback = SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
-            .withSwipeLeft(Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list))
-            .withSensitivity(1.5f)
-            .withSurfaceThreshold(0.3f)
-            .withNotifyAllDrops(true)
-        dragSwipeCallback.setIsDragEnabled(false) // Despite its name, that's actually to disable drag on long tap
+            // Drag, drop & swiping
+            val dragSwipeCallback = SimpleSwipeDrawerDragCallback(
+                this@QueueFragment,
+                ItemTouchHelper.LEFT,
+                this@QueueFragment
+            )
+                .withSwipeLeft(
+                    Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list)
+                )
+                .withSensitivity(1.5f)
+                .withSurfaceThreshold(0.3f)
+                .withNotifyAllDrops(true)
+            dragSwipeCallback.setIsDragEnabled(false) // Despite its name, that's actually to disable drag on long tap
 
-        touchHelper = ItemTouchHelper(dragSwipeCallback)
-        touchHelper.attachToRecyclerView(binding.queueList)
+            touchHelper = ItemTouchHelper(dragSwipeCallback)
+            touchHelper.attachToRecyclerView(queueList)
+        }
 
         // Item click listener
         fastAdapter.onClickListener = { _, _, i, _ -> onItemClick(i) }
@@ -250,7 +252,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
         addCustomBackControl()
 
-        return binding.root
+        return binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -291,55 +293,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     private fun initToolbar() {
         activity.get()?.getToolbar()?.let {
-            val searchMenu = it.menu.findItem(R.id.action_search)
-            val mainSearchView = searchMenu?.actionView as SearchView?
-            mainSearchView?.findViewById<View>(androidx.appcompat.R.id.search_close_btn)
-                ?.setOnClickListener {
-                    invalidateNextQueryTextChange = true
-                    mainSearchView.setQuery("", false)
-                    mainSearchView.isIconified = true
-                    viewModel.searchQueueUniversal("")
-                }
-            searchMenu.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-                override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                    invalidateNextQueryTextChange = true
-
-                    // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
-                    if (query.isNotEmpty()) // Use of handler allows to set the value _after_ the UI has auto-cleared it
-                    // Without that handler the view displays with an empty value
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            invalidateNextQueryTextChange = true
-                            mainSearchView?.setQuery(query, false)
-                        }, 100)
-                    return true
-                }
-
-                override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                    invalidateNextQueryTextChange = true
-                    return true
-                }
-            })
-            mainSearchView?.imeOptions = EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING
-            mainSearchView?.setIconifiedByDefault(true)
-            mainSearchView?.queryHint = getString(R.string.library_search_hint)
-            // Change display when text query is typed
-            mainSearchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(s: String): Boolean {
-                    query = s.trim()
-                    viewModel.searchQueueUniversal(query)
-                    mainSearchView.clearFocus()
-                    return true
-                }
-
-                override fun onQueryTextChange(s: String): Boolean {
-                    if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
-                        invalidateNextQueryTextChange = false
-                    } else if (s.isEmpty()) {
-                        searchClearDebouncer.submit(1)
-                    } else searchClearDebouncer.clear()
-                    return true
-                }
-            })
             val cancelAllMenu = it.menu.findItem(R.id.action_cancel_all)
             cancelAllMenu.setOnMenuItemClickListener {
                 // Don't do anything if the queue is empty
@@ -409,7 +362,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView)
         }
         consumer.invoke(positions)
-        if (query.isEmpty()) recordMoveFromFirstPos(positions)
+        activity.get()?.let { act ->
+            if (!act.isSearchActive()) recordMoveFromFirstPos(positions)
+        }
     }
 
     private fun attachButtons(fastAdapter: FastAdapter<ContentItem>) {
@@ -502,12 +457,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
             DownloadEvent.Type.EV_SKIPPED -> {
                 // Books switch / display handled directly by the adapter
-                bottomBarBinding.queueInfo.text = ""
-                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.INVISIBLE
+                bottomBarBinding?.queueInfo?.text = ""
+                bottomBarBinding?.queueDownloadPreparationProgressBar?.visibility = View.INVISIBLE
             }
 
             DownloadEvent.Type.EV_COMPLETE -> {
-                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.INVISIBLE
+                bottomBarBinding?.queueDownloadPreparationProgressBar?.visibility = View.INVISIBLE
                 if (0 == itemAdapter.adapterItemCount) errorStatsMenu?.isVisible = false
                 updateControlBar()
             }
@@ -515,7 +470,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             DownloadEvent.Type.EV_PAUSED, DownloadEvent.Type.EV_CANCELED, DownloadEvent.Type.EV_CONTENT_INTERRUPTED -> {
                 // Don't update the UI if it is in the process of canceling all items
                 if (isCancelingAll) return
-                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.INVISIBLE
+                bottomBarBinding?.queueDownloadPreparationProgressBar?.visibility = View.INVISIBLE
                 if (null == event.content) updateProgress(true)
                 else updateProgress(event.content, true)
                 updateControlBar()
@@ -523,7 +478,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
             else -> {
                 if (isCancelingAll) return
-                bottomBarBinding.queueDownloadPreparationProgressBar.visibility = View.INVISIBLE
+                bottomBarBinding?.queueDownloadPreparationProgressBar?.visibility = View.INVISIBLE
                 if (null == event.content) updateProgress(true)
                 else updateProgress(event.content, true)
                 updateControlBar()
@@ -534,19 +489,16 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     private fun displayMotive(event: DownloadEvent) {
         // Display motive, if any
         @StringRes val motiveMsg: Int
+        var message: String? = null
         when (event.motive) {
             DownloadEvent.Motive.NO_INTERNET -> motiveMsg = R.string.paused_no_internet
             DownloadEvent.Motive.NO_WIFI -> motiveMsg = R.string.paused_no_wifi
             DownloadEvent.Motive.NO_STORAGE -> {
+                motiveMsg = -1
                 val spaceLeft = FileHelper.formatHumanReadableSize(
                     event.downloadedSizeB, resources
                 )
-                Snackbar.make(
-                    binding.root,
-                    getString(R.string.paused_no_storage, spaceLeft),
-                    BaseTransientBottomBar.LENGTH_SHORT
-                ).setAnchorView(bottomBarBinding.backgroundBottomBar).show()
-                return
+                message = getString(R.string.paused_no_storage, spaceLeft)
             }
 
             DownloadEvent.Motive.NO_DOWNLOAD_FOLDER -> motiveMsg = R.string.paused_no_dl_folder
@@ -568,9 +520,16 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
             DownloadEvent.Motive.NONE -> motiveMsg = -1
         }
-        if (motiveMsg != -1) Snackbar.make(
-            binding.root, getString(motiveMsg), BaseTransientBottomBar.LENGTH_SHORT
-        ).setAnchorView(bottomBarBinding.backgroundBottomBar).show()
+        if (motiveMsg != -1) message = getString(motiveMsg)
+        if (message != null) {
+            binding?.let {
+                bottomBarBinding?.let { bb ->
+                    Snackbar.make(
+                        it.root, message, BaseTransientBottomBar.LENGTH_SHORT
+                    ).setAnchorView(bb.backgroundBottomBar).show()
+                }
+            }
+        }
     }
 
     private fun formatStep(step: DownloadEvent.Step, log: String?): String {
@@ -602,10 +561,10 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPrepDownloadEvent(event: DownloadPreparationEvent) {
-        bottomBarBinding.queueDownloadPreparationProgressBar.apply {
+        bottomBarBinding?.queueDownloadPreparationProgressBar?.apply {
             if (!isShown && !event.isCompleted() && !isPaused() && !isEmpty()) {
                 visibility = View.VISIBLE
-                bottomBarBinding.queueInfo.setText(R.string.queue_preparing)
+                bottomBarBinding?.queueInfo?.setText(R.string.queue_preparing)
                 isPreparingDownload = true
                 updateProgress(false)
             } else if (isShown && event.isCompleted()) {
@@ -617,6 +576,35 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             else
                 100
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onActivityEvent(event: CommunicationEvent) {
+        if (event.recipient != CommunicationEvent.Recipient.QUEUE && event.recipient != CommunicationEvent.Recipient.ALL) return
+        when (event.type) {
+            CommunicationEvent.Type.SEARCH -> searchQueue(event.message)
+            CommunicationEvent.Type.ADVANCED_SEARCH -> onFilterSourcesClick()
+            CommunicationEvent.Type.ENABLE -> onEnable()
+            CommunicationEvent.Type.DISABLE -> onDisable()
+            else -> {}
+        }
+    }
+
+    private fun searchQueue(uri: String) {
+        val searchArgs = SearchActivityBundle.parseSearchUri(Uri.parse(uri))
+        val sourceAttr = searchArgs.attributes.firstOrNull { a -> AttributeType.SOURCE == a.type }
+        val site = if (sourceAttr != null) Site.searchByName(sourceAttr.name) else null
+        viewModel.searchQueueUniversal(searchArgs.query, site)
+    }
+
+    private fun onEnable() {
+        enabled = true
+        callback?.isEnabled = true
+    }
+
+    private fun onDisable() {
+        enabled = false
+        callback?.isEnabled = false
     }
 
     /**
@@ -669,7 +657,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 }
 
                 // Update information bar
-                bottomBarBinding.queueStatus.text =
+                bottomBarBinding?.queueStatus?.text =
                     resources.getString(R.string.queue_dl, content.title)
 
                 val message = StringBuilder()
@@ -695,7 +683,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 val avgSpeedKbps = getAvgSpeedKbps().toInt()
                 if (avgSpeedKbps > 0) message.append(" @ ")
                     .append(resources.getString(R.string.queue_bottom_bar_speed, avgSpeedKbps))
-                bottomBarBinding.queueInfo.text = message.toString()
+                bottomBarBinding?.queueInfo?.text = message.toString()
                 isPreparingDownload = false
             }
         }
@@ -718,28 +706,40 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         if (isCancelingAll && !empty) return
 
         // Update list visibility
-        binding.queueEmptyTxt.visibility = if (empty) View.VISIBLE else View.GONE
+        binding?.queueEmptyTxt?.visibility = if (empty) View.VISIBLE else View.GONE
 
-        // Update displayed books
-        val contentItems = result.mapIndexed { i, c ->
-            ContentItem(c, query.isNotEmpty(), touchHelper, 0 == i)
-            { item -> onCancelSwipedBook(item) }
-        }.distinct()
+        activity.get()?.let { act ->
+            // Save sources list if queue is unfiltered
+            if (!act.isSearchActive()) {
+                unfilteredSources.clear()
+                unfilteredSources.addAll(
+                    result.mapNotNull { c -> c.content.reach(c) }.map { c -> c.site }
+                )
+            }
 
-        if (newSearch) itemAdapter.setNewList(contentItems, false)
-        else set(itemAdapter, contentItems, LibraryContentFragment.CONTENT_ITEM_DIFF_CALLBACK)
+            // Update displayed books
+            val contentItems = result.mapIndexed { i, c ->
+                ContentItem(c, act.isSearchActive(), touchHelper, 0 == i)
+                { item -> onCancelSwipedBook(item) }
+            }.distinct()
+
+            if (newSearch) itemAdapter.setNewList(contentItems, false)
+            else set(itemAdapter, contentItems, LibraryContentFragment.CONTENT_ITEM_DIFF_CALLBACK)
+        }
 
         Handler(Looper.getMainLooper()).postDelayed({ differEndCallback() }, 150)
         updateControlBar()
 
         // Signal swipe-to-cancel though a tooltip
-        if (!empty) TooltipHelper.showTooltip(
-            requireContext(),
-            R.string.help_swipe_cancel,
-            ArrowOrientation.BOTTOM,
-            binding.queueList,
-            viewLifecycleOwner
-        )
+        binding?.let {
+            if (!empty) TooltipHelper.showTooltip(
+                requireContext(),
+                R.string.help_swipe_cancel,
+                ArrowOrientation.BOTTOM,
+                it.queueList,
+                viewLifecycleOwner
+            )
+        }
         newSearch = false
     }
 
@@ -792,10 +792,10 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         )
 
         // Update list visibility
-        binding.queueEmptyTxt.visibility = if (isEmpty()) View.VISIBLE else View.GONE
+        binding?.queueEmptyTxt?.visibility = if (isEmpty()) View.VISIBLE else View.GONE
 
         // Update control bar status
-        bottomBarBinding.apply {
+        bottomBarBinding?.apply {
             if (isPreparingDownload && !isEmpty()) {
                 queueInfo.setText(R.string.queue_preparing)
             } else {
@@ -856,7 +856,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         isIndividual: Boolean = true
     ) {
         if (null == content) return
-        binding.queueList.findViewHolderForItemId(content.uniqueHash())?.let {
+        binding?.queueList?.findViewHolderForItemId(content.uniqueHash())?.let {
             fastAdapter.getItemById(content.uniqueHash())?.first?.updateProgress(
                 it,
                 isPausedevent,
@@ -973,7 +973,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         // be calculated (if not, it might return null under certain circumstances)
         Handler(Looper.getMainLooper()).postDelayed({
             val vh: RecyclerView.ViewHolder? =
-                binding.queueList.findViewHolderForAdapterPosition(newPosition)
+                binding?.queueList?.findViewHolderForAdapterPosition(newPosition)
             if (vh is IDraggableViewHolder) {
                 (vh as IDraggableViewHolder).onDropped()
             }
@@ -992,7 +992,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     override fun itemSwiped(position: Int, direction: Int) {
         val vh: RecyclerView.ViewHolder? =
-            binding.queueList.findViewHolderForAdapterPosition(position)
+            binding?.queueList?.findViewHolderForAdapterPosition(position)
         if (vh is ISwipeableViewHolder) {
             (vh as ISwipeableViewHolder).onSwiped()
         }
@@ -1000,7 +1000,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     override fun itemUnswiped(position: Int) {
         val vh: RecyclerView.ViewHolder? =
-            binding.queueList.findViewHolderForAdapterPosition(position)
+            binding?.queueList?.findViewHolderForAdapterPosition(position)
         if (vh is ISwipeableViewHolder) {
             (vh as ISwipeableViewHolder).onUnswiped()
         }
@@ -1057,15 +1057,17 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }
 
             R.id.action_change_mode -> {
-                val menu = build(requireContext(), requireActivity())
-                show(menu,
-                    binding.queueList,
-                    { position: Int, _: PowerMenuItem? ->
-                        onNewModeSelected(position)
-                        menu.dismiss()
-                    },
-                    { leaveSelectionMode() }
-                )
+                binding?.let {
+                    val menu = build(requireContext(), requireActivity())
+                    show(menu,
+                        it.queueList,
+                        { position: Int, _: PowerMenuItem? ->
+                            onNewModeSelected(position)
+                            menu.dismiss()
+                        },
+                        { leaveSelectionMode() }
+                    )
+                }
             }
 
             R.id.action_freeze -> {
@@ -1207,5 +1209,16 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 }
                 updateSelectionToolbarVis(false)
             }.create().show()
+    }
+
+    private fun onFilterSourcesClick() {
+        val excludedSources =
+            Site.entries.filterNot { e -> unfilteredSources.contains(e) }.map { s -> s.code }
+        SelectSiteDialogFragment.invoke(
+            childFragmentManager,
+            getString(R.string.filter_by_source),
+            excludedSources,
+            parentIsActivity = true
+        )
     }
 }

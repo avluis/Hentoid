@@ -19,6 +19,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.enums.ErrorType
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
@@ -93,20 +94,20 @@ class QueueViewModel(
         searchErrorContentUniversal()
     }
 
-    fun searchQueueUniversal(query: String? = null) {
+    fun searchQueueUniversal(query: String? = null, source : Site? = null) {
         if (currentQueueSource != null) queue.removeSource(currentQueueSource!!)
         currentQueueSource =
-            if (query.isNullOrEmpty()) dao.selectQueueLive()
-            else dao.selectQueueLive(query)
+            if (query.isNullOrEmpty() && (null == source || Site.NONE == source)) dao.selectQueueLive()
+            else dao.selectQueueLive(query, source)
         queue.addSource(currentQueueSource!!) { value -> queue.setValue(value) }
         newSearch.value = true
     }
 
-    fun searchErrorContentUniversal(query: String? = null) {
+    fun searchErrorContentUniversal(query: String? = null, source : Site? = null) {
         if (currentErrorsSource != null) errors.removeSource(currentErrorsSource!!)
         currentErrorsSource =
-            if (query.isNullOrEmpty()) dao.selectErrorContentLive()
-            else dao.selectErrorContentLive(query)
+            if (query.isNullOrEmpty() && (null == source || Site.NONE == source)) dao.selectErrorContentLive()
+            else dao.selectErrorContentLive(query, source)
         errors.addSource(currentErrorsSource!!) { value -> errors.setValue(value) }
         newSearch.value = true
     }
