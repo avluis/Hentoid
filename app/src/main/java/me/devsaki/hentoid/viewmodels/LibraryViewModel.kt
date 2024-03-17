@@ -146,7 +146,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     private fun doSearchContent() {
         // Update search properties set directly through Preferences
-        Timber.v(">> doSearchContent")
         contentSearchManager.setContentSortField(Preferences.getContentSortField())
         contentSearchManager.setContentSortDesc(Preferences.isContentSortDesc())
         if (Preferences.getGroupingDisplay() == Grouping.FLAT) contentSearchManager.setGroup(null)
@@ -216,7 +215,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     private fun doSearchGroup() {
-        Timber.v(">> doSearchGroup")
         // Update search properties set directly through Preferences
         groupSearchManager.setSortField(Preferences.getGroupSortField())
         groupSearchManager.setSortDesc(Preferences.isGroupSortDesc())
@@ -344,8 +342,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         doSearchContent()
     }
 
-    fun searchContent() {
-        newContentSearch.value = true
+    fun searchContent(active : Boolean = true) {
+        newContentSearch.value = active
         doSearchContent()
     }
 

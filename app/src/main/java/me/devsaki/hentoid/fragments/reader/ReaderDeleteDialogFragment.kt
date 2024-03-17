@@ -4,19 +4,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.databinding.DialogReaderDeleteBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 
-class ReaderDeleteDialogFragment : DialogFragment() {
+class ReaderDeleteDialogFragment : BaseDialogFragment<ReaderDeleteDialogFragment.Parent>() {
+
+    companion object {
+        const val KEY_DELETE_PAGE_ALLOWED = "delete_page_allowed"
+
+        fun invoke(parent: Fragment, isDeletePageAllowed: Boolean) {
+            val args = Bundle()
+            args.putBoolean(KEY_DELETE_PAGE_ALLOWED, isDeletePageAllowed)
+            invoke(parent, ReaderDeleteDialogFragment(), args)
+        }
+    }
+
 
     // UI
-    private var _binding: DialogReaderDeleteBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogReaderDeleteBinding? = null
 
     // === VARIABLES
-    private var parent: Parent? = null
     private var isDeletePageAllowed = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +33,6 @@ class ReaderDeleteDialogFragment : DialogFragment() {
 
         requireNotNull(arguments) { "No arguments found" }
         isDeletePageAllowed = requireArguments().getBoolean(KEY_DELETE_PAGE_ALLOWED, false)
-        parent = parentFragment as Parent?
     }
 
     override fun onCreateView(
@@ -32,43 +40,30 @@ class ReaderDeleteDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedState: Bundle?
     ): View {
-        _binding = DialogReaderDeleteBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogReaderDeleteBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onDestroyView() {
-        parent = null
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        binding.deleteWhat.index = 0
+        binding?.apply {
+            deleteWhat.index = 0
 
-        if (!isDeletePageAllowed) binding.deleteModePage.isEnabled = false
+            if (!isDeletePageAllowed) deleteModePage.isEnabled = false
 
-        binding.actionButton.setOnClickListener {
-            if (!binding.deleteModePage.isChecked && !binding.deleteModeBook.isChecked) return@setOnClickListener
-            Preferences.setReaderDeleteAskMode(binding.deleteWhat.index)
-            Preferences.setReaderDeleteTarget(if (binding.deleteModePage.isChecked) Preferences.Constant.VIEWER_DELETE_TARGET_PAGE else Preferences.Constant.VIEWER_DELETE_TARGET_BOOK)
-            parent?.onDeleteElement(binding.deleteModePage.isChecked)
-            dismiss()
-        }
-    }
-
-    companion object {
-        const val KEY_DELETE_PAGE_ALLOWED = "delete_page_allowed"
-
-        fun invoke(parent: Fragment, isDeletePageAllowed: Boolean) {
-            val fragment = ReaderDeleteDialogFragment()
-
-            val args = Bundle()
-            args.putBoolean(KEY_DELETE_PAGE_ALLOWED, isDeletePageAllowed)
-            fragment.arguments = args
-
-            fragment.show(parent.childFragmentManager, null)
+            actionButton.setOnClickListener {
+                if (!deleteModePage.isChecked && !deleteModeBook.isChecked) return@setOnClickListener
+                Preferences.setReaderDeleteAskMode(deleteWhat.index)
+                Preferences.setReaderDeleteTarget(if (deleteModePage.isChecked) Preferences.Constant.VIEWER_DELETE_TARGET_PAGE else Preferences.Constant.VIEWER_DELETE_TARGET_BOOK)
+                parent?.onDeleteElement(deleteModePage.isChecked)
+                dismiss()
+            }
         }
     }
 

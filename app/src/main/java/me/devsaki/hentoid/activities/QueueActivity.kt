@@ -5,12 +5,17 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.inputmethod.EditorInfoCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.badge.BadgeDrawable
@@ -18,19 +23,23 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import com.google.firebase.analytics.FirebaseAnalytics
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.databinding.ActivityQueueBinding
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadReviveEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
+import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.queue.ErrorsFragment
 import me.devsaki.hentoid.fragments.queue.QueueFragment
+import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
@@ -50,7 +59,7 @@ import kotlin.concurrent.timer
 import kotlin.math.roundToInt
 
 
-class QueueActivity : BaseActivity() {
+class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
 
     // == Communication
     private lateinit var viewModel: QueueViewModel
@@ -64,6 +73,16 @@ class QueueActivity : BaseActivity() {
     private var cloudflareHelper: CloudflareHelper? = null
     private var reviveTimer: Timer? = null
 
+    // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
+    private lateinit var searchClearDebouncer: Debouncer<Int>
+
+    // Current search criteria
+    private var query = ""
+    private var sourceFilter: Site? = null
+
+    // Used to ignore native calls to onQueryTextChange
+    private var invalidateNextQueryTextChange = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,9 +91,18 @@ class QueueActivity : BaseActivity() {
         binding = ActivityQueueBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
+        searchClearDebouncer = Debouncer(lifecycleScope, 1500)
+        {
+            query = ""
+            signalCurrentFragment(CommunicationEvent.Type.SEARCH, buildSearchQuery())
+            binding?.apply {
+                searchClearBtn.visibility = View.GONE
+            }
+        }
+
         binding?.let {
-            Helper.tryShowMenuIcons(this, it.queueToolbar.menu)
-            it.queueToolbar.setNavigationOnClickListener { finish() }
+            Helper.tryShowMenuIcons(this, it.toolbar.menu)
+            it.toolbar.setNavigationOnClickListener { finish() }
             it.downloadReviveCancel.setOnClickListener { clearReviveDownload() }
 
             // Instantiate a ViewPager and a PagerAdapter.
@@ -114,10 +142,103 @@ class QueueActivity : BaseActivity() {
             )
         }
 
+        // Link to search source filter dialog
+        binding?.searchSourceBtn?.setOnClickListener {
+            signalCurrentFragment(CommunicationEvent.Type.ADVANCED_SEARCH, "")
+        }
+
+        initToolbar()
+
         val intent = intent
         if (intent?.extras != null) processIntent(intent.extras!!)
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
+    }
+
+    private fun initToolbar() {
+        binding?.toolbar?.let {
+            val searchMenu = it.menu.findItem(R.id.action_search)
+            val actionSearchView = searchMenu?.actionView as SearchView?
+            actionSearchView?.findViewById<View>(androidx.appcompat.R.id.search_close_btn)
+                ?.setOnClickListener {
+                    invalidateNextQueryTextChange = true
+                    actionSearchView.setQuery("", false)
+                    actionSearchView.isIconified = true
+                    query = ""
+                    signalCurrentFragment(CommunicationEvent.Type.SEARCH, buildSearchQuery())
+                }
+            searchMenu.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+                override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                    showSearchSubBar()
+                    invalidateNextQueryTextChange = true
+
+                    // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
+                    if (query.isNotEmpty()) // Use of handler allows to set the value _after_ the UI has auto-cleared it
+                    // Without that handler the view displays with an empty value
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            invalidateNextQueryTextChange = true
+                            actionSearchView?.setQuery(query, false)
+                        }, 100)
+                    return true
+                }
+
+                override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                    if (!isSearchActive()) hideSearchSubBar()
+                    invalidateNextQueryTextChange = true
+                    return true
+                }
+            })
+            actionSearchView?.imeOptions = EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING
+            actionSearchView?.setIconifiedByDefault(true)
+            actionSearchView?.queryHint = getString(R.string.library_search_hint)
+            // Change display when text query is typed
+            actionSearchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(s: String): Boolean {
+                    query = s.trim()
+                    signalCurrentFragment(CommunicationEvent.Type.SEARCH, buildSearchQuery())
+                    actionSearchView.clearFocus()
+                    return true
+                }
+
+                override fun onQueryTextChange(s: String): Boolean {
+                    if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
+                        invalidateNextQueryTextChange = false
+                    } else if (s.isEmpty()) {
+                        searchClearDebouncer.submit(1)
+                    } else searchClearDebouncer.clear()
+                    return true
+                }
+            })
+
+            // Clear search
+            binding?.searchClearBtn?.setOnClickListener {
+                query = ""
+                sourceFilter = null
+                actionSearchView?.setQuery("", false)
+                hideSearchSubBar()
+                signalCurrentFragment(CommunicationEvent.Type.SEARCH, buildSearchQuery())
+            }
+        }
+    }
+
+    private fun showSearchSubBar(
+        site: Site? = null,
+        showClear: Boolean? = null
+    ) {
+        binding?.apply {
+            if (null == site) searchSourceBtn.text = getString(R.string.filter_by_source)
+            else searchSourceBtn.text = site.description
+
+            if (showClear != null) searchClearBtn.isVisible = showClear
+            searchSourceBar.isVisible = true
+        }
+    }
+
+    fun hideSearchSubBar() {
+        binding?.apply {
+            searchSourceBar.visibility = View.GONE
+            searchClearBtn.visibility = View.GONE
+        }
     }
 
     override fun onDestroy() {
@@ -151,35 +272,34 @@ class QueueActivity : BaseActivity() {
 
     private fun onTabSelected(binding: ActivityQueueBinding, position: Int) {
         // Update permanent toolbar
-        binding.queueToolbar.menu.let {
-            it.findItem(R.id.action_invert_queue).isVisible = (0 == position)
-            it.findItem(R.id.action_import_downloads).isVisible = (0 == position)
-            it.findItem(R.id.action_cancel_all).isVisible = (0 == position)
-            it.findItem(R.id.action_cancel_all_errors).isVisible = (1 == position)
-            it.findItem(R.id.action_redownload_all).isVisible = (1 == position)
+        binding.toolbar.menu.apply {
+            findItem(R.id.action_invert_queue).isVisible = (0 == position)
+            findItem(R.id.action_import_downloads).isVisible = (0 == position)
+            findItem(R.id.action_cancel_all).isVisible = (0 == position)
+            findItem(R.id.action_cancel_all_errors).isVisible = (1 == position)
+            findItem(R.id.action_redownload_all).isVisible = (1 == position)
             // NB : That doesn't mean it should be visible at all times on tab 0 !
-            if (1 == position) it.findItem(R.id.action_error_stats).isVisible = false
+            if (1 == position) findItem(R.id.action_error_stats).isVisible = false
         }
 
         // Update selection toolbar
-        binding.queueSelectionToolbar.visibility = View.GONE
-        binding.queueSelectionToolbar.menu.clear()
-        if (0 == position) binding.queueSelectionToolbar.inflateMenu(R.menu.queue_queue_selection_menu)
-        else binding.queueSelectionToolbar.inflateMenu(R.menu.queue_error_selection_menu)
-        Helper.tryShowMenuIcons(this, binding.queueSelectionToolbar.menu)
+        binding.selectionToolbar.apply {
+            visibility = View.GONE
+            menu.clear()
+            if (0 == position) inflateMenu(R.menu.queue_queue_selection_menu)
+            else inflateMenu(R.menu.queue_error_selection_menu)
+            Helper.tryShowMenuIcons(this@QueueActivity, menu)
+        }
 
-        // Log the view of the tab
-        val bundle = Bundle()
-        bundle.putInt("tag", position)
-        FirebaseAnalytics.getInstance(this).logEvent("view_queue_tab", bundle)
+        enableCurrentFragment()
     }
 
     fun getToolbar(): Toolbar? {
-        return binding?.queueToolbar
+        return binding?.toolbar
     }
 
     fun getSelectionToolbar(): Toolbar? {
-        return binding?.queueSelectionToolbar
+        return binding?.selectionToolbar
     }
 
     private fun onQueueChanged(result: List<QueueRecord>) {
@@ -267,7 +387,7 @@ class QueueActivity : BaseActivity() {
             return
         }
         if (reparseContent || reparseImages) ProgressDialogFragment.invoke(
-            supportFragmentManager,
+            this,
             resources.getString(R.string.redownload_queue_progress),
             R.plurals.book
         )
@@ -278,8 +398,9 @@ class QueueActivity : BaseActivity() {
                     nbSuccess, nbSuccess, contentList.size
                 )
                 binding?.let {
-                    Snackbar.make(it.root, message, BaseTransientBottomBar.LENGTH_LONG)
-                        .setAnchorView(it.snackbarLocation).show()
+                    val snack = Snackbar.make(it.root, message, BaseTransientBottomBar.LENGTH_LONG)
+                    snack.setAction(R.string.view_queue) { binding?.queuePager?.currentItem = 0 }
+                    snack.setAnchorView(it.snackbarLocation).show()
                 }
             }, { t: Throwable -> Timber.i(t) }
         )
@@ -350,5 +471,65 @@ class QueueActivity : BaseActivity() {
         changeReviveUIVisibility(false)
         reviveTimer?.cancel()
         cloudflareHelper?.clear()
+    }
+
+    fun isSearchActive(): Boolean {
+        return getQuery().isNotEmpty() || sourceFilter != null
+    }
+
+    private fun getQuery(): String {
+        return query
+    }
+
+    fun buildSearchQuery(): String {
+        val attrs = if (sourceFilter != null) setOf(Attribute(sourceFilter)) else emptySet()
+        return SearchActivityBundle.buildSearchUri(attrs, query).toString()
+    }
+
+    override fun onSiteSelected(site: Site, altCode: Int) {
+        sourceFilter = site
+        showSearchSubBar(site, showClear = true)
+        signalCurrentFragment(CommunicationEvent.Type.SEARCH, buildSearchQuery())
+    }
+
+    private fun enableCurrentFragment() {
+        binding?.apply {
+            enableFragment(queuePager.currentItem)
+        }
+    }
+
+    private fun enableFragment(fragmentIndex: Int) {
+        EventBus.getDefault().post(
+            CommunicationEvent(
+                CommunicationEvent.Type.ENABLE,
+                if (0 == fragmentIndex) CommunicationEvent.Recipient.QUEUE else CommunicationEvent.Recipient.ERRORS
+            )
+        )
+        EventBus.getDefault().post(
+            CommunicationEvent(
+                CommunicationEvent.Type.DISABLE,
+                if (0 == fragmentIndex) CommunicationEvent.Recipient.ERRORS else CommunicationEvent.Recipient.QUEUE
+            )
+        )
+    }
+
+    private fun signalCurrentFragment(eventType: CommunicationEvent.Type, message: String = "") {
+        binding?.apply {
+            signalFragment(queuePager.currentItem, eventType, message)
+        }
+    }
+
+    private fun signalFragment(
+        fragmentIndex: Int,
+        eventType: CommunicationEvent.Type,
+        message: String
+    ) {
+        EventBus.getDefault().post(
+            CommunicationEvent(
+                eventType,
+                if (0 == fragmentIndex) CommunicationEvent.Recipient.QUEUE else CommunicationEvent.Recipient.ERRORS,
+                message
+            )
+        )
     }
 }

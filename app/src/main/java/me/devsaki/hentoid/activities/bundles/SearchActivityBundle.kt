@@ -45,7 +45,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
         }
 
         fun buildSearchUri(
-            attributes: List<Attribute>?,
+            attributes: Set<Attribute>?,
             query: String = "",
             location: Int = 0,
             contentType: Int = 0
@@ -67,7 +67,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
             return searchUri.build()
         }
 
-        private fun enrichAttrs(attributes: List<Attribute>, uri: Uri.Builder) {
+        private fun enrichAttrs(attributes: Set<Attribute>, uri: Uri.Builder) {
             val metadataMap = AttributeMap()
             metadataMap.addAll(attributes)
 
@@ -79,8 +79,12 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
             }
         }
 
+        fun parseSearchUri(uri: String): SearchHelper.SearchCriteria {
+            return parseSearchUri(Uri.parse(uri))
+        }
+
         fun parseSearchUri(uri: Uri): SearchHelper.SearchCriteria {
-            val attrs: MutableList<Attribute> = ArrayList()
+            val attrs: MutableSet<Attribute> = HashSet()
             var location = 0
             var contentType = 0
             var query = StringHelper.protect(uri.path)

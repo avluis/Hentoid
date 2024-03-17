@@ -632,10 +632,13 @@ public class PrimaryImportWorker extends BaseWorker {
         for (Group g : groups) {
             // Only add if it isn't a duplicate
             Group duplicate = dao.selectGroupByName(Grouping.CUSTOM.getId(), g.name);
-            if (null == duplicate) dao.insertGroup(g);
-            else { // If it is, unflag existing group
+            if (null == duplicate) {
+                dao.insertGroup(g);
+                trace(Log.INFO, STEP_GROUPS, log, "Import OK : %s", g.name);
+            } else { // If it is, unflag existing group
                 duplicate.setFlaggedForDeletion(false);
                 dao.insertGroup(duplicate);
+                trace(Log.INFO, STEP_GROUPS, log, "Import KO (duplicate) : %s", duplicate.name);
             }
             eventProgress(STEP_GROUPS, groups.size(), count++, 0);
         }

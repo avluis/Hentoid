@@ -5,22 +5,43 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.databinding.DialogReaderBookPrefsBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 
-class ReaderPrefsDialogFragment : DialogFragment() {
+class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.Parent>() {
+    companion object {
+
+        const val RENDERING_MODE = "render_mode"
+        const val BROWSE_MODE = "browse_mode"
+        const val DISPLAY_MODE = "display_mode"
+
+        fun invoke(parent: Fragment, bookPrefs: Map<String, String>) {
+            val args = Bundle()
+            if (bookPrefs.containsKey(Preferences.Key.VIEWER_RENDERING)) args.putInt(
+                RENDERING_MODE,
+                if (Preferences.isContentSmoothRendering(bookPrefs)) 1 else 0
+            )
+            if (bookPrefs.containsKey(Preferences.Key.VIEWER_BROWSE_MODE)) args.putInt(
+                BROWSE_MODE,
+                Preferences.getContentBrowseMode(bookPrefs)
+            )
+            if (bookPrefs.containsKey(Preferences.Key.VIEWER_IMAGE_DISPLAY)) args.putInt(
+                DISPLAY_MODE,
+                Preferences.getContentDisplayMode(bookPrefs)
+            )
+            invoke(parent, ReaderPrefsDialogFragment(), args)
+        }
+    }
 
     // UI
-    private var _binding: DialogReaderBookPrefsBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogReaderBookPrefsBinding? = null
 
     // === VARIABLES
-    private var parent: Parent? = null
     private var renderingMode = 0
     private var browseMode = 0
     private var displayMode = 0
@@ -32,7 +53,6 @@ class ReaderPrefsDialogFragment : DialogFragment() {
         renderingMode = requireArguments().getInt(RENDERING_MODE, -1)
         browseMode = requireArguments().getInt(BROWSE_MODE, -1)
         displayMode = requireArguments().getInt(DISPLAY_MODE, -1)
-        parent = parentFragment as Parent?
     }
 
     override fun onCreateView(
@@ -40,13 +60,12 @@ class ReaderPrefsDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedState: Bundle?
     ): View {
-        _binding = DialogReaderBookPrefsBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogReaderBookPrefsBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onDestroyView() {
-        parent = null
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
@@ -68,9 +87,10 @@ class ReaderPrefsDialogFragment : DialogFragment() {
         // Available prefs
         browseItems.addAll(listOf(*browseModes))
 
-        binding.browsePicker.entries = browseItems
-        binding.browsePicker.index = browseMode + 1
-
+        binding?.apply {
+            browsePicker.entries = browseItems
+            browsePicker.index = browseMode + 1
+        }
 
         val renderingModes = resources.getStringArray(R.array.pref_viewer_rendering_entries)
         val renderingItems: MutableList<String> = ArrayList()
@@ -92,10 +112,10 @@ class ReaderPrefsDialogFragment : DialogFragment() {
                 )
             )
         }
-
-        binding.renderingPicker.entries = renderingItems
-        binding.renderingPicker.index = renderingMode + 1
-
+        binding?.apply {
+            renderingPicker.entries = renderingItems
+            renderingPicker.index = renderingMode + 1
+        }
 
         val displayModes = resources.getStringArray(R.array.pref_viewer_display_mode_entries)
         val displayItems: MutableList<String> = ArrayList()
@@ -110,9 +130,10 @@ class ReaderPrefsDialogFragment : DialogFragment() {
         for (mode in displayModes) {
             displayItems.add(mode.replace(" (" + getString(R.string._default) + ")", ""))
         }
-
-        binding.displayPicker.entries = displayItems
-        binding.displayPicker.index = displayMode + 1
+        binding?.apply {
+            displayPicker.entries = displayItems
+            displayPicker.index = displayMode + 1
+        }
 
         // == Bottom buttons
         val appSettingsBtn = rootView.findViewById<View>(R.id.book_prefs_app_prefs_btn)
@@ -126,42 +147,17 @@ class ReaderPrefsDialogFragment : DialogFragment() {
 
         val okBtn = rootView.findViewById<View>(R.id.action_button)
         okBtn.setOnClickListener {
-            val newPrefs: MutableMap<String, String> =
-                HashMap()
-            if (binding.renderingPicker.index > 0) newPrefs[Preferences.Key.VIEWER_RENDERING] =
-                (binding.renderingPicker.index - 1).toString() + ""
-            if (binding.browsePicker.index > 0) newPrefs[Preferences.Key.VIEWER_BROWSE_MODE] =
-                (binding.browsePicker.index - 1).toString() + ""
-            if (binding.displayPicker.index > 0) newPrefs[Preferences.Key.VIEWER_IMAGE_DISPLAY] =
-                (binding.displayPicker.index - 1).toString() + ""
+            val newPrefs: MutableMap<String, String> = HashMap()
+            binding?.apply {
+                if (renderingPicker.index > 0) newPrefs[Preferences.Key.VIEWER_RENDERING] =
+                    (renderingPicker.index - 1).toString() + ""
+                if (browsePicker.index > 0) newPrefs[Preferences.Key.VIEWER_BROWSE_MODE] =
+                    (browsePicker.index - 1).toString() + ""
+                if (displayPicker.index > 0) newPrefs[Preferences.Key.VIEWER_IMAGE_DISPLAY] =
+                    (displayPicker.index - 1).toString() + ""
+            }
             parent?.onBookPreferenceChanged(newPrefs)
             dismiss()
-        }
-    }
-
-    companion object {
-
-        const val RENDERING_MODE = "render_mode"
-        const val BROWSE_MODE = "browse_mode"
-        const val DISPLAY_MODE = "display_mode"
-
-        fun invoke(parent: Fragment, bookPrefs: Map<String, String>) {
-            val fragment = ReaderPrefsDialogFragment()
-            val args = Bundle()
-            if (bookPrefs.containsKey(Preferences.Key.VIEWER_RENDERING)) args.putInt(
-                RENDERING_MODE,
-                if (Preferences.isContentSmoothRendering(bookPrefs)) 1 else 0
-            )
-            if (bookPrefs.containsKey(Preferences.Key.VIEWER_BROWSE_MODE)) args.putInt(
-                BROWSE_MODE,
-                Preferences.getContentBrowseMode(bookPrefs)
-            )
-            if (bookPrefs.containsKey(Preferences.Key.VIEWER_IMAGE_DISPLAY)) args.putInt(
-                DISPLAY_MODE,
-                Preferences.getContentDisplayMode(bookPrefs)
-            )
-            fragment.arguments = args
-            fragment.show(parent.childFragmentManager, null)
         }
     }
 

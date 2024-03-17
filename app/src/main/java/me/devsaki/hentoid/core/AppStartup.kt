@@ -160,9 +160,9 @@ object AppStartup {
                     siteSettingsStr, JsonSiteSettings::class.java
                 )
                 for ((key, value) in siteSettings.sites) {
-                    for (site in Site.values()) {
+                    for (site in Site.entries) {
                         if (site.name.equals(key, ignoreCase = true)) {
-                            site.updateFrom(value!!)
+                            site.updateFrom(value)
                             break
                         }
                     }

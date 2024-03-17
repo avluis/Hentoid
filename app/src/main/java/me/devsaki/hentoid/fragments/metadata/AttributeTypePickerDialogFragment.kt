@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
@@ -13,21 +12,31 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.DialogMetaNewAttributeBinding
 import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.viewholders.AttributeItem
 
 /**
  * Dialog to pick a picture in a content gallery
  */
-class AttributeTypePickerDialogFragment : DialogFragment() {
+class AttributeTypePickerDialogFragment :
+    BaseDialogFragment<AttributeTypePickerDialogFragment.Parent>() {
+
+    companion object {
+        const val KEY_NAME = "name"
+
+        fun invoke(parent: FragmentActivity, newAttrName: String) {
+            val args = Bundle()
+            args.putString(KEY_NAME, newAttrName)
+            invoke(parent, AttributeTypePickerDialogFragment(), args)
+        }
+    }
 
     // UI
-    private var _binding: DialogMetaNewAttributeBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogMetaNewAttributeBinding? = null
     private val itemAdapter = ItemAdapter<AttributeItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
 
     // === VARIABLES
-    private var parent: Parent? = null
     private lateinit var newAttrName: String
 
 
@@ -38,8 +47,6 @@ class AttributeTypePickerDialogFragment : DialogFragment() {
         require(!newName.isNullOrEmpty()) { "No images provided" }
 
         newAttrName = newName
-
-        parent = activity as Parent
     }
 
     override fun onCreateView(
@@ -47,20 +54,19 @@ class AttributeTypePickerDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedState: Bundle?
     ): View {
-        _binding = DialogMetaNewAttributeBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogMetaNewAttributeBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onDestroyView() {
-        parent = null
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        binding.title.text = resources.getString(R.string.meta_choose_type, newAttrName)
+        binding?.title?.text = resources.getString(R.string.meta_choose_type, newAttrName)
 
         itemAdapter.set(
             listOf(
@@ -86,7 +92,7 @@ class AttributeTypePickerDialogFragment : DialogFragment() {
                 onItemClick(i)
             }
 
-        binding.recyclerView.adapter = fastAdapter
+        binding?.recyclerView?.adapter = fastAdapter
     }
 
     /**
@@ -98,20 +104,6 @@ class AttributeTypePickerDialogFragment : DialogFragment() {
         parent?.onNewAttributeSelected(newAttrName, item.attribute.type)
         dismissAllowingStateLoss()
         return true
-    }
-
-    companion object {
-        const val KEY_NAME = "name"
-
-        fun invoke(parent: FragmentActivity, newAttrName: String) {
-            val fragment = AttributeTypePickerDialogFragment()
-
-            val args = Bundle()
-            args.putString(KEY_NAME, newAttrName)
-            fragment.arguments = args
-
-            fragment.show(parent.supportFragmentManager, null)
-        }
     }
 
     interface Parent {

@@ -4,8 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentActivity
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -13,21 +12,30 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.DialogMetaGalleryBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.viewholders.ImageFileItem
 
 /**
  * Dialog to pick a picture in a content gallery
  */
-class GalleryPickerDialogFragment : DialogFragment() {
+class GalleryPickerDialogFragment : BaseDialogFragment<GalleryPickerDialogFragment.Parent>() {
+
+    companion object {
+        const val KEY_IMGS = "image_ids"
+
+        fun invoke(activity: FragmentActivity, images: List<ImageFile>) {
+            val args = Bundle()
+            args.putLongArray(KEY_IMGS, images.map { i -> i.id }.toLongArray())
+            invoke(activity, GalleryPickerDialogFragment(), args)
+        }
+    }
 
     // UI
-    private var _binding: DialogMetaGalleryBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogMetaGalleryBinding? = null
     private val itemAdapter = ItemAdapter<ImageFileItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
 
     // === VARIABLES
-    private var parent: Parent? = null
     private lateinit var imageIds: LongArray
 
 
@@ -39,7 +47,6 @@ class GalleryPickerDialogFragment : DialogFragment() {
         require(imgs.isNotEmpty()) { "No images provided" }
 
         imageIds = imgs
-        parent = activity as Parent
     }
 
     override fun onCreateView(
@@ -47,13 +54,12 @@ class GalleryPickerDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedState: Bundle?
     ): View {
-        _binding = DialogMetaGalleryBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogMetaGalleryBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onDestroyView() {
-        parent = null
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
@@ -67,7 +73,7 @@ class GalleryPickerDialogFragment : DialogFragment() {
                 onItemClick(i.getImage().order)
             }
 
-        binding.recyclerView.adapter = fastAdapter
+        binding?.recyclerView?.adapter = fastAdapter
     }
 
     private fun loadImages(): List<ImageFile> {
@@ -90,20 +96,6 @@ class GalleryPickerDialogFragment : DialogFragment() {
         parent?.onPageSelected(pageOrder)
         dismissAllowingStateLoss()
         return true
-    }
-
-    companion object {
-        const val KEY_IMGS = "image_ids"
-
-        fun invoke(fragmentManager: FragmentManager, images: List<ImageFile>) {
-            val fragment = GalleryPickerDialogFragment()
-
-            val args = Bundle()
-            args.putLongArray(KEY_IMGS, images.map { i -> i.id }.toLongArray())
-            fragment.arguments = args
-
-            fragment.show(fragmentManager, null)
-        }
     }
 
     interface Parent {

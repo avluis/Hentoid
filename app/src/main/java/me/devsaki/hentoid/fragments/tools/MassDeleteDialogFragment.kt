@@ -5,8 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,20 +13,19 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogToolsMassDeleteBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 
-class MassDeleteFragment : DialogFragment(R.layout.dialog_tools_mass_delete) {
+class MassDeleteDialogFragment : BaseDialogFragment<MassDeleteDialogFragment.Parent>() {
+
+    companion object {
+        fun invoke(fragment: Fragment) {
+            invoke(fragment, MassDeleteDialogFragment())
+        }
+    }
 
     // == UI
     private var binding: DialogToolsMassDeleteBinding? = null
 
-    // === VARIABLES
-    private var parent: Parent? = null
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        parent = parentFragment as Parent
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,7 +37,6 @@ class MassDeleteFragment : DialogFragment(R.layout.dialog_tools_mass_delete) {
     }
 
     override fun onDestroyView() {
-        parent = null
         binding = null
         super.onDestroyView()
     }
@@ -90,15 +87,7 @@ class MassDeleteFragment : DialogFragment(R.layout.dialog_tools_mass_delete) {
         dismissAllowingStateLoss()
     }
 
-
-    companion object {
-        fun invoke(fragmentManager: FragmentManager) {
-            val fragment = MassDeleteFragment()
-            fragment.show(fragmentManager, null)
-        }
-
-        interface Parent {
-            fun onMassDelete(keepBookPrefs: Boolean, keepGroupPrefs: Boolean)
-        }
+    interface Parent {
+        fun onMassDelete(keepBookPrefs: Boolean, keepGroupPrefs: Boolean)
     }
 }

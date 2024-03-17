@@ -89,14 +89,14 @@ class ContentSearchManager(val dao: CollectionDAO) {
         if (value != null) values.groupId = value.id else values.groupId = -1
     }
 
-    fun setTags(tags: List<Attribute>?) {
+    fun setTags(tags: Set<Attribute>?) {
         if (tags != null) {
             values.attributes = SearchActivityBundle.buildSearchUri(tags).toString()
         } else clearSelectedSearchTags()
     }
 
     fun clearSelectedSearchTags() {
-        values.attributes = SearchActivityBundle.buildSearchUri(Collections.emptyList()).toString()
+        values.attributes = SearchActivityBundle.buildSearchUri(Collections.emptySet()).toString()
     }
 
     fun clearFilters() {

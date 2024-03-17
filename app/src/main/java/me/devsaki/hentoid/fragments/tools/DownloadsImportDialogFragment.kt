@@ -9,8 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
@@ -27,6 +26,7 @@ import me.devsaki.hentoid.databinding.DialogQueueDownloadsImportBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.ImportHelper.PickFileContract
@@ -46,10 +46,34 @@ import java.io.InputStreamReader
 /**
  * Dialog for the downloads list import feature
  */
-class DownloadsImportDialogFragment : DialogFragment() {
+class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
 
-    private var _binding: DialogQueueDownloadsImportBinding? = null
-    private val binding get() = _binding!!
+    companion object {
+        fun invoke(fragment: Fragment) {
+            invoke(fragment, DownloadsImportDialogFragment())
+        }
+
+        fun readFile(context: Context, file: DocumentFile): List<String> {
+            var lines: List<String>
+            FileHelper.getInputStream(context, file).use { inputStream ->
+                InputStreamReader(inputStream).use {
+                    lines = it.readLines()
+                }
+            }
+            return lines
+                .map { s -> s.trim().lowercase() }
+                .filterNot { s -> s.isEmpty() }
+                .filter { s ->
+                    StringHelper.isNumeric(s) ||
+                            (s.startsWith("http")
+                                    && Site.searchByUrl(s) != Site.NONE
+                                    )
+                }
+        }
+    }
+
+
+    private var binding: DialogQueueDownloadsImportBinding? = null
 
     private var isServiceGracefulClose = false
 
@@ -68,78 +92,81 @@ class DownloadsImportDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedState: Bundle?
     ): View {
-        _binding = DialogQueueDownloadsImportBinding.inflate(inflater, container, false)
+        binding = DialogQueueDownloadsImportBinding.inflate(inflater, container, false)
         EventBus.getDefault().register(this)
-        return binding.root
+        return binding!!.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         EventBus.getDefault().unregister(this)
-        _binding = null
+        binding = null
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
-
-        binding.importSelectFileBtn.setOnClickListener { pickFile.launch(0) }
+        binding?.importSelectFileBtn?.setOnClickListener { pickFile.launch(0) }
     }
 
     private fun onFilePickerResult(resultCode: Int, uri: Uri) {
-        when (resultCode) {
-            ImportHelper.PickerResult.OK -> {
-                // File selected
-                val doc = DocumentFile.fromSingleUri(requireContext(), uri) ?: return
-                binding.importSelectFileBtn.visibility = View.GONE
-                checkFile(doc)
+        binding?.apply {
+            when (resultCode) {
+                ImportHelper.PickerResult.OK -> {
+                    // File selected
+                    val doc = DocumentFile.fromSingleUri(requireContext(), uri) ?: return
+                    importSelectFileBtn.visibility = View.GONE
+                    checkFile(doc)
+                }
+
+                ImportHelper.PickerResult.KO_CANCELED -> Snackbar.make(
+                    root,
+                    R.string.import_canceled,
+                    BaseTransientBottomBar.LENGTH_LONG
+                ).show()
+
+                ImportHelper.PickerResult.KO_NO_URI -> Snackbar.make(
+                    root,
+                    R.string.import_invalid,
+                    BaseTransientBottomBar.LENGTH_LONG
+                ).show()
+
+                ImportHelper.PickerResult.KO_OTHER -> Snackbar.make(
+                    root,
+                    R.string.import_other,
+                    BaseTransientBottomBar.LENGTH_LONG
+                ).show()
             }
-
-            ImportHelper.PickerResult.KO_CANCELED -> Snackbar.make(
-                binding.root,
-                R.string.import_canceled,
-                BaseTransientBottomBar.LENGTH_LONG
-            ).show()
-
-            ImportHelper.PickerResult.KO_NO_URI -> Snackbar.make(
-                binding.root,
-                R.string.import_invalid,
-                BaseTransientBottomBar.LENGTH_LONG
-            ).show()
-
-            ImportHelper.PickerResult.KO_OTHER -> Snackbar.make(
-                binding.root,
-                R.string.import_other,
-                BaseTransientBottomBar.LENGTH_LONG
-            ).show()
         }
     }
 
     private fun checkFile(file: DocumentFile) {
-        // Display indeterminate progress bar while file is being deserialized
-        binding.importProgressText.setText(R.string.checking_file)
-        binding.importProgressBar.isIndeterminate = true
-        binding.importProgressText.visibility = View.VISIBLE
-        binding.importProgressBar.visibility = View.VISIBLE
+        binding?.apply {
+            // Display indeterminate progress bar while file is being deserialized
+            importProgressText.setText(R.string.checking_file)
+            importProgressBar.isIndeterminate = true
+            importProgressText.visibility = View.VISIBLE
+            importProgressBar.visibility = View.VISIBLE
 
-        lifecycleScope.launch {
-            var errorFileName = ""
-            val result = withContext(Dispatchers.IO) {
-                try {
-                    return@withContext readFile(requireContext(), file)
-                } catch (e: Exception) {
-                    Timber.w(e)
-                    errorFileName = StringHelper.protect(file.name)
+            lifecycleScope.launch {
+                var errorFileName = ""
+                val result = withContext(Dispatchers.IO) {
+                    try {
+                        return@withContext readFile(requireContext(), file)
+                    } catch (e: Exception) {
+                        Timber.w(e)
+                        errorFileName = StringHelper.protect(file.name)
+                    }
+                    return@withContext emptyList<String>()
                 }
-                return@withContext emptyList<String>()
-            }
-            coroutineScope {
-                if (errorFileName.isEmpty()) onFileRead(result, file)
-                else {
-                    binding.importProgressText.text = resources.getString(
-                        R.string.import_file_invalid,
-                        errorFileName
-                    )
-                    binding.importProgressBar.visibility = View.INVISIBLE
+                coroutineScope {
+                    if (errorFileName.isEmpty()) onFileRead(result, file)
+                    else {
+                        importProgressText.text = resources.getString(
+                            R.string.import_file_invalid,
+                            errorFileName
+                        )
+                        importProgressBar.visibility = View.INVISIBLE
+                    }
                 }
             }
         }
@@ -149,7 +176,7 @@ class DownloadsImportDialogFragment : DialogFragment() {
         downloadsList: List<String>,
         jsonFile: DocumentFile
     ) {
-        binding.apply {
+        binding?.apply {
             importProgressText.visibility = View.GONE
             importProgressBar.visibility = View.GONE
             if (downloadsList.isEmpty()) {
@@ -177,15 +204,17 @@ class DownloadsImportDialogFragment : DialogFragment() {
     private fun askRun(fileUri: Uri) {
         val queuePosition = Preferences.getQueueNewDownloadPosition()
         if (queuePosition == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
-            AddQueueMenu.show(
-                requireContext(),
-                binding.root,
-                this
-            ) { position, _ ->
-                runImport(
-                    fileUri,
-                    if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
-                )
+            binding?.let { bdg ->
+                AddQueueMenu.show(
+                    requireContext(),
+                    bdg.root,
+                    this
+                ) { position, _ ->
+                    runImport(
+                        fileUri,
+                        if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+                    )
+                }
             }
         } else {
             runImport(fileUri, queuePosition)
@@ -196,25 +225,28 @@ class DownloadsImportDialogFragment : DialogFragment() {
         fileUri: Uri,
         queuePosition: Int
     ) {
-        binding.importRunBtn.visibility = View.GONE
-        binding.importStreamed.isEnabled = false
         isCancelable = false
-        val builder = DownloadsImportData.Builder()
-        builder.setFileUri(fileUri)
-        builder.setQueuePosition(queuePosition)
-        builder.setImportAsStreamed(binding.importStreamed.isChecked)
-        ImportNotificationChannel.init(requireContext())
-        binding.importProgressText.setText(R.string.starting_import)
-        binding.importProgressBar.isIndeterminate = true
-        binding.importProgressText.visibility = View.VISIBLE
-        binding.importProgressBar.visibility = View.VISIBLE
-        val workManager = WorkManager.getInstance(requireContext())
-        workManager.enqueueUniqueWork(
-            R.id.downloads_import_service.toString(),
-            ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(DownloadsImportWorker::class.java).setInputData(builder.data)
-                .addTag(WORK_CLOSEABLE).build()
-        )
+        binding?.apply {
+            importRunBtn.visibility = View.GONE
+            importStreamed.isEnabled = false
+            val builder = DownloadsImportData.Builder()
+            builder.setFileUri(fileUri)
+            builder.setQueuePosition(queuePosition)
+            builder.setImportAsStreamed(importStreamed.isChecked)
+            ImportNotificationChannel.init(requireContext())
+            importProgressText.setText(R.string.starting_import)
+            importProgressBar.isIndeterminate = true
+            importProgressText.visibility = View.VISIBLE
+            importProgressBar.visibility = View.VISIBLE
+            val workManager = WorkManager.getInstance(requireContext())
+            workManager.enqueueUniqueWork(
+                R.id.downloads_import_service.toString(),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                OneTimeWorkRequest.Builder(DownloadsImportWorker::class.java)
+                    .setInputData(builder.data)
+                    .addTag(WORK_CLOSEABLE).build()
+            )
+        }
     }
 
 
@@ -224,26 +256,29 @@ class DownloadsImportDialogFragment : DialogFragment() {
         if (ProcessEvent.Type.PROGRESS == event.eventType) {
             val progress = event.elementsOK + event.elementsKO
             val itemTxt = resources.getQuantityString(R.plurals.item, progress)
-            binding.importProgressText.text =
-                resources.getString(
-                    R.string.generic_progress,
-                    progress,
-                    event.elementsTotal,
-                    itemTxt
-                )
-            binding.importProgressBar.max = event.elementsTotal
-            binding.importProgressBar.progress = progress
-            binding.importProgressBar.isIndeterminate = false
+            binding?.apply {
+                importProgressText.text =
+                    resources.getString(
+                        R.string.generic_progress,
+                        progress,
+                        event.elementsTotal,
+                        itemTxt
+                    )
+                importProgressBar.max = event.elementsTotal
+                importProgressBar.progress = progress
+                importProgressBar.isIndeterminate = false
+            }
         } else if (ProcessEvent.Type.COMPLETE == event.eventType) {
             isServiceGracefulClose = true
-            binding.importProgressBar.progress = event.elementsTotal
-            binding.importProgressText.text =
-                resources.getQuantityString(
+            binding?.apply {
+                importProgressBar.progress = event.elementsTotal
+                importProgressText.text = resources.getQuantityString(
                     R.plurals.import_result,
                     event.elementsOK,
                     event.elementsOK,
                     event.elementsTotal
                 )
+            }
             // Dismiss after 3s, for the user to be able to see the ending message
             Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 2500)
         }
@@ -255,14 +290,15 @@ class DownloadsImportDialogFragment : DialogFragment() {
         if (ProcessEvent.Type.COMPLETE == event.eventType) {
             EventBus.getDefault().removeStickyEvent(event)
             isServiceGracefulClose = true
-            binding.importProgressBar.progress = event.elementsTotal
-            binding.importProgressText.text =
-                resources.getQuantityString(
+            binding?.apply {
+                importProgressBar.progress = event.elementsTotal
+                importProgressText.text = resources.getQuantityString(
                     R.plurals.import_result,
                     event.elementsOK,
                     event.elementsOK,
                     event.elementsTotal
                 )
+            }
             // Dismiss after 3s, for the user to be able to see the ending message
             Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 2500)
         }
@@ -277,37 +313,14 @@ class DownloadsImportDialogFragment : DialogFragment() {
     fun onServiceDestroyed(event: ServiceDestroyedEvent) {
         if (event.service != R.id.downloads_import_service) return
         if (!isServiceGracefulClose) {
-            Snackbar.make(
-                binding.root,
-                R.string.import_unexpected,
-                BaseTransientBottomBar.LENGTH_LONG
-            ).show()
-            Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 3000)
-        }
-    }
-
-    companion object {
-        fun invoke(fragmentManager: FragmentManager) {
-            val fragment = DownloadsImportDialogFragment()
-            fragment.show(fragmentManager, null)
-        }
-
-        fun readFile(context: Context, file: DocumentFile): List<String> {
-            var lines: List<String>
-            FileHelper.getInputStream(context, file).use { inputStream ->
-                InputStreamReader(inputStream).use {
-                    lines = it.readLines()
-                }
+            binding?.let { bdg ->
+                Snackbar.make(
+                    bdg.root,
+                    R.string.import_unexpected,
+                    BaseTransientBottomBar.LENGTH_LONG
+                ).show()
             }
-            return lines
-                .map { s -> s.trim().lowercase() }
-                .filterNot { s -> s.isEmpty() }
-                .filter { s ->
-                    StringHelper.isNumeric(s) ||
-                            (s.startsWith("http")
-                                    && Site.searchByUrl(s) != Site.NONE
-                                    )
-                }
+            Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 3000)
         }
     }
 }

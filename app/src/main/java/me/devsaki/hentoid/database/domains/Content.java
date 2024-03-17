@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.annimon.stream.Collectors;
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
@@ -36,6 +38,7 @@ import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.sources.AllPornComicActivity;
 import me.devsaki.hentoid.activities.sources.AnchiraActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
+import me.devsaki.hentoid.activities.sources.DeviantArtActivity;
 import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.EdoujinActivity;
@@ -221,8 +224,8 @@ public class Content implements Serializable {
 
     public Content addAttributes(@NonNull AttributeMap attrs) {
         if (attributes != null) {
-            for (Map.Entry<AttributeType, List<Attribute>> entry : attrs.entrySet()) {
-                List<Attribute> attrList = entry.getValue();
+            for (Map.Entry<AttributeType, Set<Attribute>> entry : attrs.entrySet()) {
+                Set<Attribute> attrList = entry.getValue();
                 if (attrList != null)
                     addAttributes(attrList);
             }
@@ -230,7 +233,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    public Content addAttributes(@NonNull List<Attribute> attrs) {
+    public Content addAttributes(@NonNull Collection<Attribute> attrs) {
         if (attributes != null) attributes.addAll(attrs);
         return this;
     }
@@ -285,6 +288,7 @@ public class Content implements Serializable {
             case TOONILY:
             case SIMPLY:
             case HDPORNCOMICS:
+            case DEVIANTART:
                 return url.replace(site.getUrl(), "");
             case EHENTAI:
             case EXHENTAI:
@@ -339,6 +343,7 @@ public class Content implements Serializable {
             case MULTPORN:
             case EDOUJIN:
             case SIMPLY:
+            case DEVIANTART:
                 // Last part of the URL
                 paths = url.split("/");
                 return paths[paths.length - 1];
@@ -415,6 +420,8 @@ public class Content implements Serializable {
                 return EdoujinActivity.class;
             case ANCHIRA:
                 return AnchiraActivity.class;
+            case DEVIANTART:
+                return DeviantArtActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -556,13 +563,13 @@ public class Content implements Serializable {
             return url.substring(1, url.lastIndexOf('/'));
         } else {
             if (attributes != null) {
-                List<Attribute> attributesList = getAttributeMap().get(AttributeType.CATEGORY);
-                if (attributesList != null && !attributesList.isEmpty()) {
-                    return attributesList.get(0).getName();
+                Set<Attribute> attrs = getAttributeMap().get(AttributeType.CATEGORY);
+                if (attrs != null && !attrs.isEmpty()) {
+                    Optional<Attribute> attr = Stream.of(attrs).findFirst();
+                    if (attr.isPresent()) return attr.get().getName();
                 }
             }
         }
-
         return null;
     }
 

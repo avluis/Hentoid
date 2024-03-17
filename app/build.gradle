@@ -1,5 +1,5 @@
 plugins {
-    id("com.google.devtools.ksp").version("1.9.10-1.0.13") // Or latest version of KSP
+    id("com.google.devtools.ksp").version("1.9.22-1.0.17")
 }
 
 apply plugin: 'com.android.application'
@@ -38,7 +38,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 34
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.19.3'
+        versionName '1.19.4'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -263,7 +263,7 @@ dependencies {
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
-    def objectbox_version = "3.7.1"
+    def objectbox_version = "3.8.0"
     if (includeObjectBoxBrowser.toBoolean()) {
         debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
         releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"

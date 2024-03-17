@@ -141,7 +141,7 @@ class MetadataEditViewModel(
                     attributeTypes.value!!,
                     query,
                     -1,
-                    emptyList(),
+                    emptySet(),
                     ContentHelper.Location.ANY,
                     ContentHelper.Type.ANY,
                     true,

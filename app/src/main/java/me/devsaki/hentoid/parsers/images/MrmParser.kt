@@ -65,15 +65,14 @@ class MrmParser : BaseImageListParser() {
         if (processedUrl.isEmpty()) processedUrl = chapterUrl
 
         val doc = HttpHelper.getOnlineDocument(
-            processedUrl,
+            chapterUrl,
             headers ?: fetchHeaders(chapterUrl, downloadParams),
             Site.MRM.useHentoidAgent(),
             Site.MRM.useWebviewAgent()
         )
         if (doc != null) {
             val images: List<Element> = doc.select(".entry-content img").filterNotNull()
-            return images.mapNotNull { e -> ParseHelper.getImgSrc(e) }
-                .filterNot { s -> s.isEmpty() }
+            return images.map { e -> ParseHelper.getImgSrc(e) }.filterNot { s -> s.isEmpty() }
         }
         return emptyList()
     }

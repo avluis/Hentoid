@@ -45,7 +45,7 @@ import java.nio.charset.StandardCharsets
 
 
 @Suppress("PrivatePropertyName")
-class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.Parent {
+class ToolsFragment : PreferenceFragmentCompat(), MassDeleteDialogFragment.Parent {
 
     private val DUPLICATE_DETECTOR_KEY = "tools_duplicate_detector"
     private val EXPORT_LIBRARY = "export_library"
@@ -88,17 +88,17 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.P
             }
 
             Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
-                MassDeleteFragment.invoke(this.childFragmentManager)
+                MassDeleteDialogFragment.invoke(this)
                 true
             }
 
             EXPORT_LIBRARY -> {
-                MetaExportDialogFragment.invoke(parentFragmentManager)
+                MetaExportDialogFragment.invoke(this)
                 true
             }
 
             IMPORT_LIBRARY -> {
-                MetaImportDialogFragment.invoke(parentFragmentManager)
+                MetaImportDialogFragment.invoke(this)
                 true
             }
 
@@ -108,7 +108,7 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.P
             }
 
             IMPORT_SETTINGS -> {
-                SettingsImportDialogFragment.invoke(parentFragmentManager)
+                SettingsImportDialogFragment.invoke(this)
                 true
             }
 
@@ -177,7 +177,7 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.P
             }
 
             ACCESS_LATEST_LOGS -> {
-                LogsDialogFragment.invoke(parentFragmentManager)
+                LogsDialogFragment.invoke(this)
                 true
             }
 
@@ -274,7 +274,7 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteFragment.Companion.P
 
     override fun onMassDelete(keepBookPrefs: Boolean, keepGroupPrefs: Boolean) {
         ProgressDialogFragment.invoke(
-            parentFragmentManager,
+            this,
             resources.getString(R.string.delete_title),
             R.plurals.book
         )

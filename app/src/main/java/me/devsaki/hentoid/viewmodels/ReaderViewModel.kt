@@ -966,9 +966,7 @@ class ReaderViewModel(
         val theContent = getContent().value ?: return
         val isArchive = theContent.isArchive
         val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1).filter { i ->
-            isPictureNeedsProcessing(
-                i, viewerImagesInternal
-            )
+            isPictureNeedsProcessing(i, viewerImagesInternal)
         }.toSet()
         if (picturesLeftToProcess.isEmpty()) return
 
@@ -984,9 +982,9 @@ class ReaderViewModel(
                 (viewerImagesInternal.size - 1).toFloat()
             )
         ).toInt()
-        for (i in 0 until quantity) if (picturesLeftToProcess.contains(initialIndex + increment * i)) indexesToLoad.add(
-            initialIndex + increment * i
-        )
+        for (i in 0 until quantity)
+            if (picturesLeftToProcess.contains(initialIndex + increment * i))
+                indexesToLoad.add(initialIndex + increment * i)
 
         // Only run extraction when there's at least 1/3rd of the extract range to fetch
         // (prevents calling extraction for one single picture at every page turn)
@@ -1007,8 +1005,9 @@ class ReaderViewModel(
         val indexesByArchive = indexesToLoad.filter { viewerImagesInternal[it].isArchived }
             .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
         indexesByArchive.keys.forEach {
-            val archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), it)
-            if (archiveFile != null) extractPics(indexesByArchive[it]!!, archiveFile)
+            FileHelper.getFileFromSingleUriString(getApplication(), it)?.let { archiveFile ->
+                extractPics(indexesByArchive[it]!!, archiveFile)
+            }
         }
 
         val onlineIndexes =

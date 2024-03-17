@@ -1051,6 +1051,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 } else {
                     zoomFrame.disable()
                     recyclerView.setLongTapZoomEnabled(!Preferences.isReaderHoldToZoom())
+                    seekToIndex(absImageIndex)
                 }
                 pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation)
             }

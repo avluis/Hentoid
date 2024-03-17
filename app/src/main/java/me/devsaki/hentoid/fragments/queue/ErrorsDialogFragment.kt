@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
@@ -13,6 +12,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.databinding.DialogLibraryErrorsBinding
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.LogHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
@@ -20,21 +20,26 @@ import me.devsaki.hentoid.util.file.FileHelper
 /**
  * Info dialog for download errors details
  */
-class ErrorsDialogFragment : DialogFragment(R.layout.dialog_library_errors) {
+class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
 
-    // == UI
-    private var _binding: DialogLibraryErrorsBinding? = null
-    private val binding get() = _binding!!
+    companion object {
+        const val ID = "ID"
 
-    private lateinit var parent: Parent
+        fun invoke(parentFragment: Fragment, id: Long) {
+            val args = Bundle()
+            args.putLong(ID, id)
+            invoke(parentFragment, ErrorsDialogFragment(), args)
+        }
+    }
+
+    private var binding: DialogLibraryErrorsBinding? = null
 
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View {
-        _binding = DialogLibraryErrorsBinding.inflate(inflater, container, false)
-        parent = parentFragment as Parent
-        return binding.root
+        binding = DialogLibraryErrorsBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
@@ -54,9 +59,11 @@ class ErrorsDialogFragment : DialogFragment(R.layout.dialog_library_errors) {
 
         updateStats(content)
 
-        binding.redownloadBtn.setOnClickListener { redownload(content) }
-        binding.openLogBtn.setOnClickListener { showErrorLog(content) }
-        binding.shareLogBtn.setOnClickListener { shareErrorLog(content) }
+        binding?.apply {
+            redownloadBtn.setOnClickListener { redownload(content) }
+            openLogBtn.setOnClickListener { showErrorLog(content) }
+            shareLogBtn.setOnClickListener { shareErrorLog(content) }
+        }
     }
 
     private fun updateStats(content: Content) {
@@ -71,7 +78,7 @@ class ErrorsDialogFragment : DialogFragment(R.layout.dialog_library_errors) {
                 imgErrors = images
             }
         }
-        binding.let {
+        binding?.let {
             it.redownloadDetail.text = context.getString(
                 R.string.redownload_dialog_message, images, images - imgErrors, imgErrors
             )
@@ -122,22 +129,8 @@ class ErrorsDialogFragment : DialogFragment(R.layout.dialog_library_errors) {
     }
 
     private fun redownload(content: Content) {
-        parent.redownloadContent(content)
+        parent?.redownloadContent(content)
         dismiss()
-    }
-
-    companion object {
-        const val ID = "ID"
-
-        fun invoke(parentFragment: Fragment, id: Long) {
-            val fragment = ErrorsDialogFragment()
-
-            val args = Bundle()
-            args.putLong(ID, id)
-            fragment.arguments = args
-
-            fragment.show(parentFragment.childFragmentManager, null)
-        }
     }
 
     interface Parent {

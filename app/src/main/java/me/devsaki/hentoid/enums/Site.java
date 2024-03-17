@@ -50,6 +50,7 @@ public enum Site {
     EDOUJIN(29, "Edoujin", "https://edoujin.net/", R.drawable.ic_site_edoujin),
     KSK(30, "Koushoku", "https://ksk.moe", R.drawable.ic_site_ksk),
     ANCHIRA(31, "Anchira", "https://anchira.to", R.drawable.ic_site_anchira),
+    DEVIANTART(32, "DeviantArt", "https://www.deviantart.com/", R.drawable.ic_site_deviantart),
     NONE(98, "none", "", R.drawable.ic_attribute_source), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_site_panda); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
@@ -211,26 +212,26 @@ public enum Site {
     }
 
     public void updateFrom(@NonNull final JsonSiteSettings.JsonSite jsonSite) {
-        if (jsonSite.useMobileAgent != null) useMobileAgent = jsonSite.useMobileAgent;
-        if (jsonSite.useHentoidAgent != null) useHentoidAgent = jsonSite.useHentoidAgent;
-        if (jsonSite.useWebviewAgent != null) useWebviewAgent = jsonSite.useWebviewAgent;
-        if (jsonSite.hasBackupURLs != null) hasBackupURLs = jsonSite.hasBackupURLs;
-        if (jsonSite.hasCoverBasedPageUpdates != null)
-            hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates;
-        if (jsonSite.useCloudflare != null)
-            useCloudflare = jsonSite.useCloudflare;
-        if (jsonSite.hasUniqueBookId != null)
-            hasUniqueBookId = jsonSite.hasUniqueBookId;
-        if (jsonSite.parallelDownloadCap != null)
-            parallelDownloadCap = jsonSite.parallelDownloadCap;
-        if (jsonSite.requestsCapPerSecond != null)
-            requestsCapPerSecond = jsonSite.requestsCapPerSecond;
-        if (jsonSite.bookCardDepth != null)
-            bookCardDepth = jsonSite.bookCardDepth;
-        if (jsonSite.bookCardExcludedParentClasses != null)
-            bookCardExcludedParentClasses = new HashSet<>(jsonSite.bookCardExcludedParentClasses);
-        if (jsonSite.galleryHeight != null)
-            galleryHeight = jsonSite.galleryHeight;
+        if (jsonSite.getUseMobileAgent() != null) useMobileAgent = jsonSite.getUseMobileAgent();
+        if (jsonSite.getUseHentoidAgent() != null) useHentoidAgent = jsonSite.getUseHentoidAgent();
+        if (jsonSite.getUseWebviewAgent() != null) useWebviewAgent = jsonSite.getUseWebviewAgent();
+        if (jsonSite.getHasBackupURLs() != null) hasBackupURLs = jsonSite.getHasBackupURLs();
+        if (jsonSite.getHasCoverBasedPageUpdates() != null)
+            hasCoverBasedPageUpdates = jsonSite.getHasCoverBasedPageUpdates();
+        if (jsonSite.getUseCloudflare() != null)
+            useCloudflare = jsonSite.getUseCloudflare();
+        if (jsonSite.getHasUniqueBookId() != null)
+            hasUniqueBookId = jsonSite.getHasUniqueBookId();
+        if (jsonSite.getParallelDownloadCap() != null)
+            parallelDownloadCap = jsonSite.getParallelDownloadCap();
+        if (jsonSite.getRequestsCapPerSecond() != null)
+            requestsCapPerSecond = jsonSite.getRequestsCapPerSecond();
+        if (jsonSite.getBookCardDepth() != null)
+            bookCardDepth = jsonSite.getBookCardDepth();
+        if (jsonSite.getBookCardExcludedParentClasses() != null)
+            bookCardExcludedParentClasses = new HashSet<>(jsonSite.getBookCardExcludedParentClasses());
+        if (jsonSite.getGalleryHeight() != null)
+            galleryHeight = jsonSite.getGalleryHeight();
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {

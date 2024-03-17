@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
@@ -18,46 +18,53 @@ import me.devsaki.hentoid.viewholders.DrawerItem
 /**
  * Dialog to select a site
  */
-class SelectSiteDialogFragment : DialogFragment() {
+class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Parent>() {
 
     // UI
     private var binding: DialogSelectSiteBinding? = null
 
-    // VARIABLES
-    private var parent: Parent? = null
-
-
     companion object {
         private const val EXCLUDED_SITES = "EXCLUDED_SITES"
+        private const val UNIQUE_ID_ONLY = "UNIQUE_ID_ONLY"
         private const val ALT_SITES = "ALT_SITES"
         private const val TITLE = "TITLE"
 
-        operator fun invoke(
-            fragmentManager: FragmentManager,
+        fun invoke(
+            activity: FragmentActivity,
             title: String,
             excludedSiteCodes: List<Int> = emptyList(),
+            uniqueIdOnly: Boolean = false,
             showAltSites: Boolean = false
         ) {
+            val args = getArgs(title, excludedSiteCodes, uniqueIdOnly, showAltSites)
+            invoke(activity, SelectSiteDialogFragment(), args)
+        }
+
+        fun invoke(
+            fragment: Fragment,
+            title: String,
+            excludedSiteCodes: List<Int> = emptyList(),
+            uniqueIdOnly: Boolean = false,
+            showAltSites: Boolean = false,
+            parentIsActivity: Boolean = false,
+        ) {
+            val args = getArgs(title, excludedSiteCodes, uniqueIdOnly, showAltSites)
+            invoke(fragment, SelectSiteDialogFragment(), args, parentIsActivity = parentIsActivity)
+        }
+
+        private fun getArgs(
+            title: String,
+            excludedSiteCodes: List<Int> = emptyList(),
+            uniqueIdOnly: Boolean = false,
+            showAltSites: Boolean = false
+        ): Bundle {
             val args = Bundle()
             args.putIntegerArrayList(EXCLUDED_SITES, ArrayList(excludedSiteCodes))
+            args.putBoolean(UNIQUE_ID_ONLY, uniqueIdOnly)
             args.putBoolean(ALT_SITES, showAltSites)
             args.putString(TITLE, title)
-            val fragment = SelectSiteDialogFragment()
-            fragment.arguments = args
-            fragment.isCancelable = true
-            fragment.show(fragmentManager, null)
+            return args
         }
-    }
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        parent = parentFragment as Parent?
-    }
-
-    override fun onDestroy() {
-        parent = null
-        super.onDestroy()
     }
 
     override fun onCreateView(
@@ -72,12 +79,14 @@ class SelectSiteDialogFragment : DialogFragment() {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
+        val showUniqueIdsOnly = requireArguments().getBoolean(UNIQUE_ID_ONLY, false)
         val showAltSites = requireArguments().getBoolean(ALT_SITES, false)
         binding?.title?.text = requireArguments().getString(TITLE, "")
 
-        val excludedSites = requireArguments().getIntegerArrayList(EXCLUDED_SITES)?.toSet() ?: return
+        val excludedSites =
+            requireArguments().getIntegerArrayList(EXCLUDED_SITES)?.toSet() ?: return
         val sites = Preferences.getActiveSites()
-            .filter { it.hasUniqueBookId() }
+            .filter { !showUniqueIdsOnly || it.hasUniqueBookId() }
             .filterNot { excludedSites.contains(it.code) }
             .sortedBy { it.name }
 

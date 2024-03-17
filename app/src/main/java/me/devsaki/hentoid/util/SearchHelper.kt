@@ -10,7 +10,7 @@ import me.devsaki.hentoid.database.domains.Attribute
 object SearchHelper {
 
     data class AttributeQueryResult(
-        val attributes: List<Attribute>,
+        val attributes: Set<Attribute>,
         val totalSelectedAttributes: Long
     )
 
@@ -18,7 +18,7 @@ object SearchHelper {
         // From universal search
         var query: String = "",
         // From advanced search
-        var attributes: MutableList<Attribute> = ArrayList(),
+        var attributes: MutableSet<Attribute> = HashSet(),
         @ContentHelper.Location var location: Int = ContentHelper.Location.ANY,
         @ContentHelper.Type var contentType: Int = ContentHelper.Type.ANY
     ) {

@@ -15,6 +15,9 @@ interface ImageListParser {
     @Throws(Exception::class)
     fun parseImageList(onlineContent: Content, storedContent: Content): List<ImageFile>
 
+    /**
+     * Returns URL and backup URL
+     */
     @Throws(IOException::class, LimitReachedException::class, EmptyResultException::class)
     fun parseImagePage(
         url: String,

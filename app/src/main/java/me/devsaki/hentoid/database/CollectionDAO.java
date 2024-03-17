@@ -168,28 +168,28 @@ public interface CollectionDAO {
 
     List<Long> selectRecentBookIds(ContentSearchManager.ContentSearchBundle searchBundle);
 
-    List<Long> searchBookIds(ContentSearchManager.ContentSearchBundle searchBundle, List<Attribute> metadata);
+    List<Long> searchBookIds(ContentSearchManager.ContentSearchBundle searchBundle, Set<Attribute> metadata);
 
     List<Long> searchBookIdsUniversal(ContentSearchManager.ContentSearchBundle searchBundle);
 
 
     LiveData<PagedList<Content>> selectRecentBooks(ContentSearchManager.ContentSearchBundle searchBundle);
 
-    LiveData<PagedList<Content>> searchBooks(ContentSearchManager.ContentSearchBundle searchBundle, List<Attribute> metadata);
+    LiveData<PagedList<Content>> searchBooks(ContentSearchManager.ContentSearchBundle searchBundle, Set<Attribute> metadata);
 
     LiveData<PagedList<Content>> searchBooksUniversal(ContentSearchManager.ContentSearchBundle searchBundle);
 
 
     LiveData<List<Content>> selectErrorContentLive();
 
-    LiveData<List<Content>> selectErrorContentLive(String query);
+    LiveData<List<Content>> selectErrorContentLive(String query, Site source);
 
     List<Content> selectErrorContent();
 
 
     LiveData<Integer> countBooks(
             long groupId,
-            List<Attribute> metadata,
+            Set<Attribute> metadata,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType);
 
@@ -237,7 +237,7 @@ public interface CollectionDAO {
 
     LiveData<List<QueueRecord>> selectQueueLive();
 
-    LiveData<List<QueueRecord>> selectQueueLive(String query);
+    LiveData<List<QueueRecord>> selectQueueLive(String query, Site source);
 
     void addContentToQueue(
             @NonNull final Content content,
@@ -268,7 +268,7 @@ public interface CollectionDAO {
             @NonNull List<AttributeType> types,
             String filter,
             long groupId,
-            List<Attribute> attrs,
+            Set<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
             boolean includeFreeAttrs,
@@ -278,7 +278,7 @@ public interface CollectionDAO {
 
     SparseIntArray countAttributesPerType(
             long groupId,
-            List<Attribute> filter,
+            Set<Attribute> filter,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType);
 

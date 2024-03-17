@@ -23,6 +23,7 @@ object EHentaiServer {
         init()
     }
 
+    // Must have a public init method to reset the connexion pool when updating DoH settings
     fun init() {
         ehentaiApi = Retrofit.Builder()
             .baseUrl(EHENTAI_URL)

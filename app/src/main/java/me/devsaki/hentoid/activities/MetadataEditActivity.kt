@@ -333,7 +333,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
                             if (imgs != null) {
                                 b2.titleNew.visibility = View.GONE
                                 b2.tagsFab.visibility = View.GONE
-                                GalleryPickerDialogFragment.invoke(supportFragmentManager, imgs)
+                                GalleryPickerDialogFragment.invoke(this, imgs)
                             }
                         }
                     }

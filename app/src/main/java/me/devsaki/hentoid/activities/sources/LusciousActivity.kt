@@ -35,21 +35,21 @@ class LusciousActivity : BaseWebActivity() {
         client.setJsStartupScripts("luscious_adblock.js")
 
         // Init fetch handler here for convenience
-        fetchHandler = { url: String?, body: String? -> client.onFetchCall(url, body) }
+        fetchHandler = { url: String, body: String -> client.onFetchCall(url, body) }
         return client
     }
 
-    private inner class LusciousWebClient constructor(
-        site: Site?,
-        filter: Array<String>?,
-        activity: CustomWebActivity?
+    private inner class LusciousWebClient(
+        site: Site,
+        filter: Array<String>,
+        activity: CustomWebActivity
     ) :
-        CustomWebViewClient(site!!, filter!!, activity!!) {
-        fun onFetchCall(url: String?, body: String?) {
-            if (!isGalleryPage(url!!)) return
+        CustomWebViewClient(site, filter, activity) {
+        fun onFetchCall(url: String, body: String) {
+            if (!isGalleryPage(url)) return
             try {
                 val query = JsonHelper.jsonToObject(body, LusciousQuery::class.java)
-                val id = query.idVariable
+                val id = query.getIdVariable()
                 if (id.isNotEmpty()) parseResponse(
                     id, null,
                     analyzeForDownload = true,

@@ -154,7 +154,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
      */
     fun updatePageControls() {
         val img = pager.currentImg ?: return
-        var pageNum = if (isContentDynamic) img.displayOrder + 1 else img.order
+        var pageNum = img.displayOrder + 1
         var pageOffset = 0
         if (Preferences.isReaderChapteredNavigation() && !isContentDynamic) {
             val newChap = getCurrentChapter()

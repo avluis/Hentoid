@@ -251,7 +251,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     // TODO doc
     private var group: Group? = null
 
-    // TODO doc
+    // Indicate whether this tab is enabled (active on screen) or not
     private var enabled = true
 
     // TODO doc
@@ -322,9 +322,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         super.onAttach(context)
         check(requireActivity() is LibraryActivity) { "Parent activity has to be a LibraryActivity" }
         activity = WeakReference(requireActivity() as LibraryActivity)
-        listRefreshDebouncer = Debouncer(lifecycleScope, 75) { topItemPosition: Int ->
-            onRecyclerUpdated(topItemPosition)
-        }
+        listRefreshDebouncer = Debouncer(lifecycleScope, 75) { onRecyclerUpdated(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -360,13 +358,13 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.newContentSearch.observe(viewLifecycleOwner) { b -> onNewSearch(b) }
+        viewModel.newContentSearch.observe(viewLifecycleOwner) { value -> newSearch = value }
 
         viewModel.libraryPaged.observe(viewLifecycleOwner) { result -> onLibraryChanged(result) }
 
         viewModel.totalContent.observe(viewLifecycleOwner) { count -> onTotalContentChanged(count) }
 
-        viewModel.group.observe(viewLifecycleOwner) { group -> onGroupChanged(group) }
+        viewModel.group.observe(viewLifecycleOwner) { value -> group = value }
 
         viewModel.contentSearchBundle.observe(viewLifecycleOwner) { b -> contentSearchBundle = b }
 
@@ -1393,15 +1391,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     /**
-     * LiveData callback when a new search takes place
-     *
-     * @param b Unused parameter (always set to true)
-     */
-    private fun onNewSearch(b: Boolean) {
-        newSearch = b
-    }
-
-    /**
      * LiveData callback when the library changes
      * - Either because a new search has been performed
      * - Or because a book has been downloaded, deleted, updated
@@ -1455,19 +1444,21 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     )
                     snackbar.setAction(R.string.menu_search) {
                         SelectSiteDialogFragment.invoke(
-                            childFragmentManager,
+                            this,
                             dialogTitle,
                             siteCodes,
-                            true
+                            uniqueIdOnly = true,
+                            showAltSites = true
                         )
                     }
                     snackbar.show()
                 }
             } else SelectSiteDialogFragment.invoke(
-                childFragmentManager,
+                this,
                 dialogTitle,
                 siteCodes,
-                true
+                uniqueIdOnly = true,
+                showAltSites = true
             )
         }
 
@@ -1511,15 +1502,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 activity.get()!!.updateTitle(it.size.toLong(), totalContentCount.toLong())
             }
         }
-    }
-
-    /**
-     * LiveData callback when the selected group changes (when zooming on a group)
-     *
-     * @param group Currently selected group
-     */
-    private fun onGroupChanged(group: Group) {
-        this.group = group
     }
 
     /**
@@ -1719,7 +1701,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         deleteAfterMerging: Boolean
     ) {
         leaveSelectionMode()
-        invoke(parentFragmentManager, resources.getString(R.string.merge_progress), R.plurals.page)
+        invoke(this, resources.getString(R.string.merge_progress), R.plurals.page)
         viewModel.mergeContents(
             contentList, newTitle, deleteAfterMerging
         ) { onMergeSuccess() }
@@ -1733,7 +1715,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     override fun splitContent(content: Content, chapters: List<Chapter>) {
         leaveSelectionMode()
         viewModel.splitContent(content, chapters) { onSplitSuccess() }
-        invoke(parentFragmentManager, resources.getString(R.string.split_progress), R.plurals.page)
+        invoke(this, resources.getString(R.string.split_progress), R.plurals.page)
     }
 
     private fun onSplitSuccess() {
@@ -1766,7 +1748,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * - when the current grouping is not flat (because the app needs to refresh the display when moving books out of/into the currently displayed group)
      */
     private fun refreshIfNeeded() {
-        if (Grouping.FLAT != Preferences.getGroupingDisplay() || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM) viewModel.searchContent()
+        if (Grouping.FLAT != Preferences.getGroupingDisplay() || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
+            viewModel.searchContent(false)
     }
 
     /**
@@ -1774,7 +1757,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private fun differEndCallback() {
-        Timber.v(">> differEndCallback")
         if (topItemPosition > -1) {
             val targetPos = topItemPosition
             listRefreshDebouncer.submit(targetPos)
@@ -1789,7 +1771,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun onRecyclerUpdated(topItemPosition: Int) {
         val currentPosition = getTopItemPosition()
         // Used to restore position after activity has been stopped and recreated
-        if (currentPosition != topItemPosition) llm!!.scrollToPositionWithOffset(topItemPosition, 0)
+        if (currentPosition != topItemPosition) {
+            llm!!.scrollToPositionWithOffset(topItemPosition, 0)
+        }
     }
 
     /**

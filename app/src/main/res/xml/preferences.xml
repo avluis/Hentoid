@@ -349,6 +349,13 @@
                 android:summary="@string/pref_browser_initial_zoom_summary"
                 android:title="@string/pref_browser_initial_zoom_title"
                 app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_force_lightmode_default"
+                android:key="WEB_FORCE_LIGHTMODE"
+                android:summaryOff="@string/pref_browser_force_lightmode_off"
+                android:summaryOn="@string/pref_browser_force_lightmode_on"
+                android:title="@string/pref_browser_force_lightmode_title"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_misc"

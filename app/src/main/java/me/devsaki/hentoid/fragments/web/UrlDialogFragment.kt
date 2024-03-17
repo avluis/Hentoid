@@ -4,16 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.databinding.DialogWebUrlBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Helper
 
 /**
  * Dialog for URL operations
  */
-class UrlDialogFragment : DialogFragment() {
+class UrlDialogFragment : BaseDialogFragment<Nothing>() {
 
     companion object {
         private const val URL = "URL"
@@ -21,9 +21,7 @@ class UrlDialogFragment : DialogFragment() {
         operator fun invoke(parent: FragmentActivity, url: String) {
             val args = Bundle()
             args.putString(URL, url)
-            val dialogFragment = UrlDialogFragment()
-            dialogFragment.arguments = args
-            dialogFragment.show(parent.supportFragmentManager, null)
+            invoke(parent, UrlDialogFragment(), args)
         }
     }
 

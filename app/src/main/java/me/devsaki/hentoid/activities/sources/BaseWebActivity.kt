@@ -67,7 +67,7 @@ import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.fragments.web.BookmarksDialogFragment
 import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment
 import me.devsaki.hentoid.fragments.web.UrlDialogFragment
-import me.devsaki.hentoid.json.core.UpdateInfo.SourceAlert
+import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.ui.InputDialog.invokeNumberInputDialog
 import me.devsaki.hentoid.util.ContentHelper
@@ -199,7 +199,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private var seekButtonMode: SeekMode? = null
 
     // Alert to be displayed
-    private var alert: SourceAlert? = null
+    private var alert: UpdateInfo.SourceAlert? = null
 
     // Handler for fetch interceptor
     protected var fetchHandler: BiConsumer<String, String>? = null
@@ -513,17 +513,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         webSettings.useWideViewPort = true
         webSettings.javaScriptEnabled = true
         webSettings.loadWithOverviewMode = true
-        if (fetchHandler != null) webView.addJavascriptInterface(
-            FetchHandler(fetchHandler!!),
-            "fetchHandler"
-        )
-        if (xhrHandler != null) webView.addJavascriptInterface(
-            XhrHandler(xhrHandler!!),
-            "xhrHandler"
-        )
+        fetchHandler?.let { webView.addJavascriptInterface(FetchHandler(it), "fetchHandler") }
+        xhrHandler?.let { webView.addJavascriptInterface(XhrHandler(it), "xhrHandler") }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             webSettings.isAlgorithmicDarkeningAllowed =
-                (Preferences.getColorTheme() != Constant.COLOR_THEME_LIGHT)
+                (!Settings.isBrowserForceLightMode && Preferences.getColorTheme() != Constant.COLOR_THEME_LIGHT)
         }
     }
 
@@ -696,7 +690,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun displayTopAlertBanner() {
         alert?.let {
             binding?.apply {
-                topAlertIcon.setImageResource(it.status.icon)
+                topAlertIcon.setImageResource(it.getStatus().icon)
                 topAlertTxt.text = formatAlertMessage(it)
                 topAlert.visibility = View.VISIBLE
             }
@@ -1397,8 +1391,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Attach chapters to stored images if they don't have any (old downloads made with versions of the app that didn't detect chapters)
         val storedChapters: List<Chapter>? = storedContent.chapters
         if (positionMap.isNotEmpty() && minOnlineImageOrder < maxStoredImageOrder && storedChapters.isNullOrEmpty()) {
-            var storedImages: List<ImageFile>? = storedContent.imageFiles
-            if (null == storedImages) storedImages = emptyList()
+            val storedImages = storedContent.imageList
             for (img in storedImages) {
                 if (null == img.linkedChapter) {
                     val targetChapter = positionMap[img.order]
@@ -1562,9 +1555,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * @param theAlert Source alert
      * @return Message to be displayed for the user for the given source alert
      */
-    private fun formatAlertMessage(theAlert: SourceAlert): String {
+    private fun formatAlertMessage(theAlert: UpdateInfo.SourceAlert): String {
         // Main message body
-        var result = when (theAlert.status) {
+        var result = when (theAlert.getStatus()) {
             AlertStatus.ORANGE -> resources.getString(R.string.alert_orange)
             AlertStatus.RED -> resources.getString(R.string.alert_red)
             AlertStatus.GREY -> resources.getString(R.string.alert_grey)
@@ -1574,7 +1567,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
         // End of message
         result =
-            if (theAlert.fixedByBuild < Int.MAX_VALUE) result.replace(
+            if (theAlert.getFixedByBuild() < Int.MAX_VALUE) result.replace(
                 "%s",
                 resources.getString(R.string.alert_fix_available)
             ) else result.replace("%s", resources.getString(R.string.alert_wip))
@@ -1607,8 +1600,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         get() = m_prefBlockedTags.toMutableList()
     override val customCss: String
         get() = computeCustomCss()
-    override val alertStatus : AlertStatus
-        get() = alert?.status?:AlertStatus.NONE
+    override val alertStatus: AlertStatus
+        get() = alert?.getStatus() ?: AlertStatus.NONE
     override val scope: LifecycleCoroutineScope
         get() = lifecycleScope
 
@@ -1704,9 +1697,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     class XhrHandler(private val handler: BiConsumer<String, String>) {
         @JavascriptInterface
         @Suppress("unused", "UNUSED_PARAMETER")
-        fun onXhrCall(method: String, url: String, body: String) {
+        fun onXhrCall(method: String, url: String, body: String?) {
             Timber.d("XHR Begin %s : %s", url, body)
-            handler.invoke(url, body)
+            handler.invoke(url, body ?: "")
         }
     }
 }

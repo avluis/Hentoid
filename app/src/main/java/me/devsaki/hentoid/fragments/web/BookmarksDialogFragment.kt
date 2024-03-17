@@ -10,7 +10,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -32,6 +31,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.databinding.DialogWebBookmarksBinding
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.InputDialog.invokeInputDialog
 import me.devsaki.hentoid.util.ContentHelper
@@ -41,7 +41,8 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 
-class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
+class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Parent>(),
+    ItemTouchCallback,
     SelectSiteDialogFragment.Parent {
 
     companion object {
@@ -55,13 +56,11 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
             title: String,
             url: String
         ) {
-            val fragment = BookmarksDialogFragment()
             val args = Bundle()
             args.putInt(KEY_SITE, site.code)
             args.putString(KEY_TITLE, title)
             args.putString(KEY_URL, url)
-            fragment.arguments = args
-            fragment.show(parent.supportFragmentManager, null)
+            invoke(parent, BookmarksDialogFragment(), args)
         }
     }
 
@@ -77,7 +76,6 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
     private lateinit var touchHelper: ItemTouchHelper
 
     // === VARIABLES
-    private var parent: Parent? = null
     private lateinit var initialSite: Site
     private lateinit var site: Site
     private lateinit var title: String
@@ -100,12 +98,9 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
             title = getString(KEY_TITLE, "")
             url = getString(KEY_URL, "")
         }
-        parent = activity as Parent
     }
 
     override fun onDestroy() {
-        parent = null
-
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 val dao: CollectionDAO = ObjectBoxDAO(HentoidApp.getInstance())
@@ -116,7 +111,6 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
                 }
             }
         }
-
         super.onDestroy()
     }
 
@@ -334,9 +328,10 @@ class BookmarksDialogFragment : DialogFragment(), ItemTouchCallback,
         when (menuItem.itemId) {
             R.id.action_home -> {
                 SelectSiteDialogFragment.invoke(
-                    childFragmentManager,
+                    this,
                     getString(R.string.bookmark_change_site),
-                    getUnbookmarkedSites().map { it.code }
+                    getUnbookmarkedSites().map { it.code },
+                    showAltSites = false
                 )
             }
         }

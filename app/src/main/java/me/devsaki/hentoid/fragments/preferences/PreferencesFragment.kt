@@ -30,6 +30,7 @@ import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.activities.StoragePreferenceActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
+import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
@@ -234,6 +235,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 EHentaiServer.init()
                 LusciousServer.init()
                 PixivServer.init()
+                DeviantArtServer.init()
             }
         }
     }

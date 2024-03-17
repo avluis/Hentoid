@@ -8,23 +8,28 @@ import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogPrefsStorageBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import org.apache.commons.lang3.tuple.ImmutablePair
 
-class StorageUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_storage) {
+class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
+    companion object {
+        fun invoke(activity: FragmentActivity) {
+            invoke(activity, StorageUsageDialogFragment())
+        }
+    }
+
     // == UI
-    private var _binding: DialogPrefsStorageBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogPrefsStorageBinding? = null
 
     private var rowPadding = 0
 
@@ -32,8 +37,8 @@ class StorageUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_storage)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View {
-        _binding = DialogPrefsStorageBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogPrefsStorageBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
@@ -66,7 +71,7 @@ class StorageUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_storage)
         val primaryUsageBytes = primaryMemUsage.map { e -> e.value.right }.sum()
         val externalUsageBytes = externalMemUsage.map { e -> e.value.right }.sum()
 
-        binding.apply {
+        binding?.apply {
             graphDevice.progress = (100 - deviceFreeBytes * 100f / deviceTotalBytes).toInt()
             graphExternal.progress = (externalUsageBytes * 100f / deviceTotalBytes).toInt()
             graphPrimary.progress = (primaryUsageBytes * 100f / deviceTotalBytes).toInt()
@@ -91,38 +96,38 @@ class StorageUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_storage)
                 R.string.memory_hentoid_ext,
                 FileHelper.formatHumanReadableSize(externalUsageBytes, resources)
             )
-        }
 
-        val table = binding.memoryDetailsTable
-        addRow(
-            table,
-            resources.getString(R.string.memory_details_source),
-            resources.getString(R.string.memory_details_books),
-            resources.getString(R.string.memory_details_size)
-        )
-
-        // Sort sources by largest size
-        val sitesBySize = primaryMemUsage.toList().sortedBy { e -> -e.second.right }
-        sitesBySize.forEach {
+            val table = memoryDetailsTable
             addRow(
-                binding.memoryDetailsTable,
-                it.first.description,
-                it.second.left.toString() + "",
-                FileHelper.formatHumanReadableSize(it.second.right, resources)
+                table,
+                resources.getString(R.string.memory_details_source),
+                resources.getString(R.string.memory_details_books),
+                resources.getString(R.string.memory_details_size)
             )
+
+            // Sort sources by largest size
+            val sitesBySize = primaryMemUsage.toList().sortedBy { e -> -e.second.right }
+            sitesBySize.forEach {
+                addRow(
+                    memoryDetailsTable,
+                    it.first.description,
+                    it.second.left.toString() + "",
+                    FileHelper.formatHumanReadableSize(it.second.right, resources)
+                )
+            }
+
+            // Make details fold/unfold
+            memoryDetails.setOnClickListener { onDetailsClick() }
+
+            val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
+            memoryDb.text =
+                resources.getString(
+                    R.string.memory_database, FileHelper.formatHumanReadableSize(
+                        dao.dbSizeBytes,
+                        resources
+                    ), dao.dbSizeBytes * 100 / 1024f / dbMaxSizeKb
+                )
         }
-
-        // Make details fold/unfold
-        binding.memoryDetails.setOnClickListener { onDetailsClick() }
-
-        val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
-        binding.memoryDb.text =
-            resources.getString(
-                R.string.memory_database, FileHelper.formatHumanReadableSize(
-                    dao.dbSizeBytes,
-                    resources
-                ), dao.dbSizeBytes * 100 / 1024f / dbMaxSizeKb
-            )
     }
 
     private fun getStats(location: StorageLocation): Pair<Long, Long> {
@@ -138,12 +143,14 @@ class StorageUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_storage)
     }
 
     private fun onDetailsClick() {
-        if (View.VISIBLE == binding.memoryDetailsTable.visibility) {
-            binding.memoryDetailsIcon.setImageResource(R.drawable.ic_drop_down)
-            binding.memoryDetailsTable.visibility = View.GONE
-        } else {
-            binding.memoryDetailsIcon.setImageResource(R.drawable.ic_drop_up)
-            binding.memoryDetailsTable.visibility = View.VISIBLE
+        binding?.apply {
+            if (View.VISIBLE == memoryDetailsTable.visibility) {
+                memoryDetailsIcon.setImageResource(R.drawable.ic_drop_down)
+                memoryDetailsTable.visibility = View.GONE
+            } else {
+                memoryDetailsIcon.setImageResource(R.drawable.ic_drop_up)
+                memoryDetailsTable.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -164,12 +171,5 @@ class StorageUsageDialogFragment : DialogFragment(R.layout.dialog_prefs_storage)
             tableRow.addView(textView)
         }
         table.addView(tableRow)
-    }
-
-    companion object {
-        fun invoke(fragmentManager: FragmentManager) {
-            val fragment = StorageUsageDialogFragment()
-            fragment.show(fragmentManager, null)
-        }
     }
 }

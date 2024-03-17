@@ -841,7 +841,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             expandableItemAdapter.adapterItems.mapNotNull { c -> c.tag }.map { ch -> ch as Chapter }
         )
         ProgressDialogFragment.invoke(
-            parentFragmentManager,
+            this,
             resources.getString(R.string.renaming_progress), R.plurals.file
         )
         isReorderingChapters = false

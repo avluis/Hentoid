@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
@@ -24,13 +23,14 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogWebDuplicateBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper.getColor
 import me.devsaki.hentoid.util.image.ImageHelper.tintBitmap
 import org.greenrobot.eventbus.EventBus
 
-class DuplicateDialogFragment : DialogFragment() {
+class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Parent>() {
 
     companion object {
         private const val KEY_CONTENT_ID = "contentId"
@@ -54,14 +54,12 @@ class DuplicateDialogFragment : DialogFragment() {
             similarity: Float,
             isDownloadPlus: Boolean
         ) {
-            val fragment = DuplicateDialogFragment()
             val args = Bundle()
             args.putLong(KEY_CONTENT_ID, libraryContentId)
             args.putInt(KEY_ONLINE_CONTENT_PAGES, onlineContentNbPages)
             args.putFloat(KEY_CONTENT_SIMILARITY, similarity)
             args.putBoolean(KEY_IS_DOWNLOAD_PLUS, isDownloadPlus)
-            fragment.arguments = args
-            fragment.show(parent.supportFragmentManager, null)
+            invoke(parent, DuplicateDialogFragment(), args, isCancelable = false)
         }
     }
 
@@ -74,7 +72,6 @@ class DuplicateDialogFragment : DialogFragment() {
     }
 
     // === VARIABLES
-    private var parent: Parent? = null
     private var contentId: Long = 0
     private var onlineContentPages = 0
     private var similarity = 0f
@@ -90,14 +87,12 @@ class DuplicateDialogFragment : DialogFragment() {
             onlineContentPages = getInt(KEY_ONLINE_CONTENT_PAGES)
             similarity = getFloat(KEY_CONTENT_SIMILARITY)
             isDownloadPlus = getBoolean(KEY_IS_DOWNLOAD_PLUS, false)
-            parent = activity as Parent?
         }
     }
 
     override fun onDestroyView() {
         EventBus.getDefault().unregister(this)
         super.onDestroyView()
-        parent = null
         binding = null
     }
 

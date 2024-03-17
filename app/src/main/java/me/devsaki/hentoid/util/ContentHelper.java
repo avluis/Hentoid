@@ -44,6 +44,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ReaderActivity;
@@ -366,7 +367,7 @@ public final class ContentHelper {
         if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         if (markAsCompleted) content.setCompleted(true);
         dao.replaceImageList(content.getId(), images);
-        dao.insertContent(content);
+        dao.insertContentCore(content);
         persistJson(context, content);
     }
 
@@ -532,7 +533,7 @@ public final class ContentHelper {
                         int nbGroups = (int) dao.countGroupsFor(g);
                         AttributeMap attrs = content.getAttributeMap();
                         List<Attribute> artists = new ArrayList<>();
-                        List<Attribute> sublist = attrs.get(AttributeType.ARTIST);
+                        Set<Attribute> sublist = attrs.get(AttributeType.ARTIST);
                         if (sublist != null) artists.addAll(sublist);
                         sublist = attrs.get(AttributeType.CIRCLE);
                         if (sublist != null) artists.addAll(sublist);
@@ -825,15 +826,19 @@ public final class ContentHelper {
         String result = "";
         AttributeMap attrMap = content.getAttributeMap();
         // Try and get first Artist
-        List<Attribute> artistAttributes = attrMap.get(AttributeType.ARTIST);
-        if (artistAttributes != null && !artistAttributes.isEmpty())
-            result = artistAttributes.get(0).getName();
+        Set<Attribute> artistAttributes = attrMap.get(AttributeType.ARTIST);
+        if (artistAttributes != null && !artistAttributes.isEmpty()) {
+            Optional<Attribute> attr = Stream.of(artistAttributes).findFirst();
+            if (attr.isPresent()) result = attr.get().getName();
+        }
 
         // If no Artist found, try and get first Circle
         if (null == result || result.isEmpty()) {
-            List<Attribute> circleAttributes = attrMap.get(AttributeType.CIRCLE);
-            if (circleAttributes != null && !circleAttributes.isEmpty())
-                result = circleAttributes.get(0).getName();
+            Set<Attribute> circleAttributes = attrMap.get(AttributeType.CIRCLE);
+            if (circleAttributes != null && !circleAttributes.isEmpty()) {
+                Optional<Attribute> attr = Stream.of(circleAttributes).findFirst();
+                if (attr.isPresent()) result = attr.get().getName();
+            }
         }
 
         return StringHelper.protect(result);
@@ -852,8 +857,10 @@ public final class ContentHelper {
      * @return Download directory of the given Site
      */
     @Nullable
-    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context
-                                                                  context, @NonNull StorageLocation location, @NonNull Site site) {
+    public static DocumentFile getOrCreateSiteDownloadDir(
+            @NonNull Context context,
+            @NonNull StorageLocation location,
+            @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri(location);
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for location %s", location.name());
@@ -1445,7 +1452,7 @@ public final class ContentHelper {
      * @return Given Content's tags formatted for display
      */
     public static String formatTagsForDisplay(@NonNull final Content content) {
-        List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
+        Set<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes == null) return "";
 
         List<String> allTags = Stream.of(tagsAttributes).map(Attribute::getName).sorted().limit(30).toList();
@@ -1462,7 +1469,7 @@ public final class ContentHelper {
      */
     public static @DrawableRes int getFlagResourceId(@NonNull final Context context,
                                                      @NonNull final Content content) {
-        List<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
+        Set<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
         if (langAttributes != null && !langAttributes.isEmpty())
             for (Attribute lang : langAttributes) {
                 @DrawableRes int resId = LanguageHelper.INSTANCE.getFlagFromLanguage(context, lang.getName());
@@ -1499,9 +1506,9 @@ public final class ContentHelper {
                                                 @NonNull final Content content) {
         List<Attribute> attributes = new ArrayList<>();
 
-        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
+        Set<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
         if (artistAttributes != null) attributes.addAll(artistAttributes);
-        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
+        Set<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
         if (circleAttributes != null) attributes.addAll(circleAttributes);
 
         if (attributes.isEmpty()) {
@@ -1525,7 +1532,7 @@ public final class ContentHelper {
      */
     public static String formatSeriesForDisplay(@NonNull final Context context,
                                                 @NonNull final Content content) {
-        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
+        Set<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
         if (seriesAttributes == null || seriesAttributes.isEmpty()) {
             return "";
         } else {
@@ -1596,8 +1603,8 @@ public final class ContentHelper {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted(Comparator.comparingInt(String::length)).findLast();
-        if (longestWord.isEmpty() || longestWord.get().length() < 2)
-            return null; // Too many resources consumed if the longest word is 1 character long
+        // Too many resources consumed if the longest word is 1 character long
+        if (longestWord.isEmpty() || longestWord.get().length() < 2) return null;
 
         int[] contentStatuses = ArrayUtils.addAll(libraryStatus, queueTabStatus);
         List<Content> roughCandidates = dao.searchTitlesWith(longestWord.get(), contentStatuses);

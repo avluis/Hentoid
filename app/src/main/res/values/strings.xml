@@ -199,6 +199,7 @@
     <string name="mode_stream">Streaming</string>
     <string name="redl_scratch">Redownload from scratch</string>
     <string name="redl_refresh">Update metadata only</string>
+    <string name="filter_by_source">Filter by source</string>
 
     <!-- Import downloads -->
     <string name="import_downloads_title">Import downloads</string>

@@ -8,6 +8,7 @@ import android.util.SparseIntArray;
 import androidx.annotation.NonNull;
 
 import com.annimon.stream.Collectors;
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -35,6 +36,7 @@ import io.objectbox.query.QueryBuilder;
 import io.objectbox.query.QueryCondition;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
@@ -73,6 +75,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeed;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle;
@@ -364,19 +367,30 @@ class ObjectBoxDB {
 
     List<Content> selectQueueContents() {
         List<Content> result = new ArrayList<>();
-        List<QueueRecord> queueRecords = DBHelper.safeFind(selectQueueRecordsQ(null));
+        List<QueueRecord> queueRecords = DBHelper.safeFind(selectQueueRecordsQ());
         for (QueueRecord q : queueRecords) result.add(q.getContent().getTarget());
         return result;
     }
 
-    Query<QueueRecord> selectQueueRecordsQ(String query) {
+    Query<QueueRecord> selectQueueRecordsQ() {
+        return selectQueueRecordsQ(null, null);
+    }
+
+    Query<QueueRecord> selectQueueRecordsQ(@Nullable String query, @Nullable Site source) {
         QueryBuilder<QueueRecord> qb = store.boxFor(QueueRecord.class).query();
-        // Universal search inside contents
-        if (query != null && !query.isEmpty()) {
+
+        if (query != null && !query.isEmpty() || (source != null && source != Site.NONE)) {
             ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle();
-            bundle.setQuery(query);
+            bundle.setQuery(StringHelper.protect(query));
+
+            if (source != null && source != Site.NONE) {
+                Set<Attribute> sourceAttr = new HashSet<>();
+                sourceAttr.add(new Attribute(source));
+                bundle.setAttributes(SearchActivityBundle.Companion.buildSearchUri(sourceAttr, "", 0, 0).toString());
+            }
+
             bundle.setSortField(Preferences.Constant.ORDER_FIELD_NONE);
-            long[] contentIds = selectContentUniversalId(bundle, new long[0], ContentHelper.getQueueTabStatuses());
+            long[] contentIds = selectContentHybridSearchId(bundle, new long[0], ContentHelper.getQueueTabStatuses());
             qb.in(QueueRecord_.contentId, contentIds);
         }
         return qb.order(QueueRecord_.rank).build();
@@ -406,7 +420,7 @@ class ObjectBoxDB {
     }
 
     void deleteQueueRecords(int queueIndex) {
-        store.boxFor(QueueRecord.class).remove(DBHelper.safeFind(selectQueueRecordsQ(null)).get(queueIndex).id);
+        store.boxFor(QueueRecord.class).remove(DBHelper.safeFind(selectQueueRecordsQ()).get(queueIndex).id);
     }
 
     void deleteQueueRecords() {
@@ -428,7 +442,7 @@ class ObjectBoxDB {
     Query<Content> selectVisibleContentQ() {
         ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle();
         bundle.setSortField(Preferences.Constant.ORDER_FIELD_NONE);
-        return selectContentSearchContentQ(bundle, new long[0], Collections.emptyList());
+        return selectContentSearchContentQ(bundle, new long[0], Collections.emptySet(), libraryStatus);
     }
 
     @Nullable
@@ -480,10 +494,11 @@ class ObjectBoxDB {
         return DBHelper.safeFindFirst(queryBuilder.build());
     }
 
-    private long[] getIdsFromAttributes(@NonNull List<Attribute> attrs) {
+    private long[] getIdsFromAttributes(@NonNull Set<Attribute> attrs) {
         if (attrs.isEmpty()) return new long[0];
 
-        if (attrs.get(0).isExcluded()) {
+        Optional<Attribute> firstAttr = Stream.of(attrs).findFirst();
+        if (firstAttr.isPresent() && firstAttr.get().isExcluded()) {
             long[] filteredBooks = selectFilteredContent(attrs);
 
             // Find all content positively matching the given attributes
@@ -565,7 +580,7 @@ class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.id, -1).build();
     }
 
-    Query<Content> selectContentSearchContentQ(ContentSearchBundle searchBundle, long[] dynamicGroupContentIds, List<Attribute> metadata) {
+    Query<Content> selectContentSearchContentQ(ContentSearchBundle searchBundle, long[] dynamicGroupContentIds, Set<Attribute> metadata, int[] statuses) {
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == searchBundle.getSortField())
             return store.boxFor(Content.class).query().build();
 
@@ -573,21 +588,21 @@ class ObjectBoxDB {
         metadataMap.addAll(metadata);
 
         boolean hasTitleFilter = (!searchBundle.getQuery().isEmpty());
-        List<Attribute> sources = metadataMap.get(AttributeType.SOURCE);
+        Set<Attribute> sources = metadataMap.get(AttributeType.SOURCE);
         boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE) && (sources != null) && !(sources.isEmpty());
         boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter ? 1 : 0);
 
-        QueryCondition<Content> qc = initContentQC(searchBundle, dynamicGroupContentIds, libraryStatus);
+        QueryCondition<Content> qc = initContentQC(searchBundle, dynamicGroupContentIds, statuses);
         if (hasSiteFilter) qc = qc.and(Content_.site.oneOf(getIdsFromAttributes(sources)));
 
         if (hasTitleFilter)
             qc = qc.and(Content_.title.contains(searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE));
 
         if (hasTagFilter) {
-            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
+            for (Map.Entry<AttributeType, Set<Attribute>> entry : metadataMap.entrySet()) {
                 AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = entry.getValue();
+                    Set<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty()) {
                         qc = qc.and(Content_.id.oneOf(selectFilteredContent(attrs)));
                     }
@@ -606,7 +621,7 @@ class ObjectBoxDB {
         return query.build();
     }
 
-    long[] selectContentSearchContentByGroupItem(ContentSearchBundle searchBundle, long[] dynamicGroupContentIds, List<Attribute> metadata) {
+    long[] selectContentSearchContentByGroupItem(ContentSearchBundle searchBundle, long[] dynamicGroupContentIds, Set<Attribute> metadata) {
         if (searchBundle.getSortField() != Preferences.Constant.ORDER_FIELD_CUSTOM)
             return new long[]{};
 
@@ -614,7 +629,7 @@ class ObjectBoxDB {
         metadataMap.addAll(metadata);
 
         boolean hasTitleFilter = (!searchBundle.getQuery().isEmpty());
-        List<Attribute> sources = metadataMap.get(AttributeType.SOURCE);
+        Set<Attribute> sources = metadataMap.get(AttributeType.SOURCE);
         boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE) && (sources != null) && !(sources.isEmpty());
         boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter ? 1 : 0);
 
@@ -646,10 +661,10 @@ class ObjectBoxDB {
         if (hasTitleFilter)
             contentQuery.contains(Content_.title, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (hasTagFilter) {
-            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
+            for (Map.Entry<AttributeType, Set<Attribute>> entry : metadataMap.entrySet()) {
                 AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = entry.getValue();
+                    Set<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty()) {
                         contentQuery.in(Content_.id, selectFilteredContent(attrs));
                     }
@@ -801,9 +816,10 @@ class ObjectBoxDB {
         return Helper.getPrimitiveArrayFromList(Stream.of(shuffledSet).toList());
     }
 
-    long[] selectContentSearchId(ContentSearchManager.ContentSearchBundle searchBundle, long[] dynamicGroupContentIds, List<Attribute> metadata) {
+    // TODO use searchBundle to pass metadata instead of a separate argument (see selectContentHybridSearchId)
+    long[] selectContentSearchId(ContentSearchManager.ContentSearchBundle searchBundle, long[] dynamicGroupContentIds, Set<Attribute> metadata, int[] statuses) {
         long[] result;
-        try (Query<Content> query = selectContentSearchContentQ(searchBundle, dynamicGroupContentIds, metadata)) {
+        try (Query<Content> query = selectContentSearchContentQ(searchBundle, dynamicGroupContentIds, metadata, statuses)) {
             if (searchBundle.getSortField() != Preferences.Constant.ORDER_FIELD_RANDOM) {
                 result = query.findIds();
             } else {
@@ -828,6 +844,26 @@ class ObjectBoxDB {
         return result;
     }
 
+    long[] selectContentHybridSearchId(
+            ContentSearchManager.ContentSearchBundle searchBundle,
+            long[] dynamicGroupContentIds,
+            int[] statuses) {
+        // Start with full text if query exists, as it has better chances of narrowing down results
+        String query = searchBundle.getQuery();
+        long[] idsFullText = (!query.isEmpty()) ? selectContentUniversalId(searchBundle, dynamicGroupContentIds, statuses) : new long[0];
+        Set<Attribute> metadata = SearchActivityBundle.Companion.parseSearchUri(searchBundle.getAttributes()).getAttributes();
+        long[] idsAttrs = (!metadata.isEmpty()) ? selectContentSearchId(searchBundle, dynamicGroupContentIds, metadata, statuses) : new long[0];
+        // Intersect if needed
+        if (idsFullText.length > 0 && idsAttrs.length > 0) {
+            Set<Long> fullTextSet = Helper.getSetFromPrimitiveArray(idsFullText);
+            Set<Long> attrsSet = Helper.getSetFromPrimitiveArray(idsAttrs);
+            fullTextSet.retainAll(attrsSet);
+            return Helper.getPrimitiveLongArrayFromSet(fullTextSet);
+        } else {
+            return (idsFullText.length > 0) ? idsFullText : idsAttrs;
+        }
+    }
+
     private long[] selectFilteredContent(long groupId) {
         if (groupId < 1) return new long[0];
 
@@ -836,12 +872,12 @@ class ObjectBoxDB {
         return DBHelper.safeFindIds(qb);
     }
 
-    private long[] selectFilteredContent(List<Attribute> attrs) {
+    private long[] selectFilteredContent(Set<Attribute> attrs) {
         return selectFilteredContent(-1, new long[0], attrs, ContentHelper.Location.ANY, ContentHelper.Type.ANY);
     }
 
-    private long[] selectFilteredContent(long groupId, long[] dynamicGroupContentIds, List<Attribute> attributesFilter, @ContentHelper.Location int location, @ContentHelper.Type int contentType) {
-        List<Attribute> attrs = (null == attributesFilter) ? Collections.emptyList() : attributesFilter;
+    private long[] selectFilteredContent(long groupId, long[] dynamicGroupContentIds, Set<Attribute> attributesFilter, @ContentHelper.Location int location, @ContentHelper.Type int contentType) {
+        Set<Attribute> attrs = (null == attributesFilter) ? Collections.emptySet() : attributesFilter;
         if (attrs.isEmpty() && groupId < 1 && ContentHelper.Location.ANY == location && ContentHelper.Type.ANY == contentType)
             return new long[0];
 
@@ -885,7 +921,7 @@ class ObjectBoxDB {
             useCachedSourceQuery = true;
         } else { // On-demand query
             QueryCondition<Content> qc = Content_.status.oneOf(libraryStatus);
-            qc.and(Content_.site.equal(1));
+            qc = qc.and(Content_.site.equal(1));
 
             qc = applyContentLocationFilter(qc, location);
             qc = applyContentTypeFilter(qc, contentType);
@@ -898,7 +934,8 @@ class ObjectBoxDB {
         // Prepare first iteration for exclusion mode
         // If first tag is to be excluded, start with the whole database and _remove_ IDs (inverse logic)
         List<Long> idsFull = Collections.emptyList();
-        if (!attrs.isEmpty() && attrs.get(0).isExcluded()) {
+        Optional<Attribute> firstAttr = Stream.of(attrs).findFirst();
+        if (firstAttr.isPresent() && firstAttr.get().isExcluded()) {
             final QueryBuilder<Content> contentFromAttributesQueryBuilder1 = store.boxFor(Content.class).query();
             contentFromAttributesQueryBuilder1.in(Content_.status, libraryStatus);
             idsFull = Helper.getListFromPrimitiveArray(DBHelper.safeFindIds(contentFromAttributesQueryBuilder1));
@@ -928,7 +965,8 @@ class ObjectBoxDB {
                     List<Long> idsAsList = Helper.getListFromPrimitiveArray(ids);
                     // Remove ids that fit the attribute from results
                     if (attr.isExcluded()) results.removeAll(idsAsList);
-                    else results.retainAll(idsAsList); // Careful with retainAll performance
+                    else
+                        results.retainAll(idsAsList); // Careful with retainAll performance when using List instead of Set
                 }
             }
         } finally {
@@ -947,7 +985,7 @@ class ObjectBoxDB {
         return selectAvailableSources(-1, new long[0], null, ContentHelper.Location.ANY, ContentHelper.Type.ANY, false);
     }
 
-    List<Attribute> selectAvailableSources(long groupId, long[] dynamicGroupContentIds, List<Attribute> filter, @ContentHelper.Location int location, @ContentHelper.Type int contentType, boolean includeFreeAttrs) {
+    List<Attribute> selectAvailableSources(long groupId, long[] dynamicGroupContentIds, Set<Attribute> filter, @ContentHelper.Location int location, @ContentHelper.Type int contentType, boolean includeFreeAttrs) {
         List<Attribute> result = new ArrayList<>();
 
         QueryCondition<Content> qc = Content_.status.oneOf(libraryStatus);
@@ -956,14 +994,14 @@ class ObjectBoxDB {
             AttributeMap metadataMap = new AttributeMap();
             metadataMap.addAll(filter);
 
-            List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
+            Set<Attribute> params = metadataMap.get(AttributeType.SOURCE);
             if (params != null && !params.isEmpty())
                 qc = qc.and(Content_.site.oneOf(getIdsFromAttributes(params)));
 
-            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
+            for (Map.Entry<AttributeType, Set<Attribute>> entry : metadataMap.entrySet()) {
                 AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = entry.getValue();
+                    Set<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty() && !includeFreeAttrs)
                         qc = qc.and(Content_.id.oneOf(selectFilteredContent(attrs)));
                 }
@@ -986,7 +1024,7 @@ class ObjectBoxDB {
             for (Map.Entry<Site, List<Content>> entry : map.entrySet()) {
                 Site site = entry.getKey();
                 int size = (null == entry.getValue()) ? 0 : entry.getValue().size();
-                result.add(new Attribute(AttributeType.SOURCE, site.getDescription()).setExternalId(site.getCode()).setCount(size));
+                result.add(new Attribute(site).setExternalId(site.getCode()).setCount(size));
             }
         }
         // Order by count desc
@@ -1049,14 +1087,14 @@ class ObjectBoxDB {
         return query.build();
     }
 
-    long countAvailableAttributes(AttributeType type, long groupId, long[] dynamicGroupContentIds, List<Attribute> attributeFilter, @ContentHelper.Location int location, @ContentHelper.Type int contentType, boolean includeFreeAttrs, String filter) {
+    long countAvailableAttributes(AttributeType type, long groupId, long[] dynamicGroupContentIds, Set<Attribute> attributeFilter, @ContentHelper.Location int location, @ContentHelper.Type int contentType, boolean includeFreeAttrs, String filter) {
         long[] filteredContent = (includeFreeAttrs ? new long[0] : selectFilteredContent(groupId, dynamicGroupContentIds, attributeFilter, location, contentType));
         return DBHelper.safeCount(queryAvailableAttributesQ(type, filter, filteredContent, includeFreeAttrs));
     }
 
     @SuppressWarnings("squid:S2184")
         // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
-    List<Attribute> selectAvailableAttributes(@NonNull AttributeType type, long groupId, long[] dynamicGroupContentIds, List<Attribute> attributeFilter, @ContentHelper.Location int location, @ContentHelper.Type int contentType, boolean includeFreeAttrs, String filter, int sortOrder, int page, int itemsPerPage) {
+    List<Attribute> selectAvailableAttributes(@NonNull AttributeType type, long groupId, long[] dynamicGroupContentIds, Set<Attribute> attributeFilter, @ContentHelper.Location int location, @ContentHelper.Type int contentType, boolean includeFreeAttrs, String filter, int sortOrder, int page, int itemsPerPage) {
         long[] filteredContent = (includeFreeAttrs ? new long[0] : selectFilteredContent(groupId, dynamicGroupContentIds, attributeFilter, location, contentType));
         if (filteredContent.length == 0 && attributeFilter != null && !attributeFilter.isEmpty() && !includeFreeAttrs)
             return Collections.emptyList();
@@ -1094,7 +1132,7 @@ class ObjectBoxDB {
         return countAvailableAttributesPerType(-1, new long[0], null, ContentHelper.Location.ANY, ContentHelper.Type.ANY);
     }
 
-    SparseIntArray countAvailableAttributesPerType(long groupId, long[] dynamicGroupContentIds, List<Attribute> attributeFilter, @ContentHelper.Location int location, @ContentHelper.Type int contentType) {
+    SparseIntArray countAvailableAttributesPerType(long groupId, long[] dynamicGroupContentIds, Set<Attribute> attributeFilter, @ContentHelper.Location int location, @ContentHelper.Type int contentType) {
         // Get Content filtered by current selection
         long[] filteredContent = selectFilteredContent(groupId, dynamicGroupContentIds, attributeFilter, location, contentType);
         // Get available attributes of the resulting content list

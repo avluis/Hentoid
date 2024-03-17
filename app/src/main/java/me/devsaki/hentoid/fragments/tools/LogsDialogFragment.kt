@@ -7,8 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -22,6 +21,7 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogToolsAppLogsBinding
 import me.devsaki.hentoid.enums.StorageLocation
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
@@ -30,7 +30,13 @@ import timber.log.Timber
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-class LogsDialogFragment : DialogFragment(R.layout.dialog_tools_app_logs) {
+class LogsDialogFragment : BaseDialogFragment<Nothing>() {
+
+    companion object {
+        fun invoke(fragment: Fragment) {
+            invoke(fragment, LogsDialogFragment())
+        }
+    }
 
     // == UI
     private var binding: DialogToolsAppLogsBinding? = null
@@ -143,12 +149,5 @@ class LogsDialogFragment : DialogFragment(R.layout.dialog_tools_app_logs) {
         powerMenu.setIconColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87))
         powerMenu.showAtCenter(binding?.root)
         return true
-    }
-
-    companion object {
-        fun invoke(fragmentManager: FragmentManager) {
-            val fragment = LogsDialogFragment()
-            fragment.show(fragmentManager, null)
-        }
     }
 }

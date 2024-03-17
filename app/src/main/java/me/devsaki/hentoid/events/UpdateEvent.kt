@@ -1,12 +1,12 @@
 package me.devsaki.hentoid.events
 
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.json.core.UpdateInfo.SourceAlert
+import me.devsaki.hentoid.json.core.UpdateInfo
 
-class UpdateEvent(val hasNewVersion: Boolean, sourceAlerts: List<SourceAlert>) {
-    val sourceAlerts = HashMap<Site, SourceAlert>()
+class UpdateEvent(val hasNewVersion: Boolean, sourceAlerts: List<UpdateInfo.SourceAlert>) {
+    val sourceAlerts = HashMap<Site, UpdateInfo.SourceAlert>()
 
     init {
-        for (alert in sourceAlerts) this.sourceAlerts[alert.site] = alert
+        for (alert in sourceAlerts) this.sourceAlerts[alert.getSite()] = alert
     }
 }

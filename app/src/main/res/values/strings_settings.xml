@@ -118,6 +118,9 @@
     <string name="pref_browser_override_overview_title">Disable Page Overview</string>
     <string name="pref_browser_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below</string>
     <string name="pref_browser_override_overview_summary_on">Tweak the setting below to set your initial zoom level\nNote: Only affects hitomi and e-hentai</string>
+    <string name="pref_browser_force_lightmode_title">Force light mode</string>
+    <string name="pref_browser_force_lightmode_off">Browser decides whether it displays pages using dark or light mode, according to the app\'s theme</string>
+    <string name="pref_browser_force_lightmode_on">Browser always uses light mode</string>
     <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
     <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load\nCurrently: <x:g example="20%" id="percentage">%s%%</x:g></string>
     <string name="pref_browser_dns_title">DNS over HTTPS</string>
