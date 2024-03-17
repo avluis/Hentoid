@@ -6,17 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Debouncer
 
 /**
  * Dialog to assign a rating
  */
-class RatingDialogFragment : DialogFragment() {
+class RatingDialogFragment : BaseDialogFragment<RatingDialogFragment.Parent>() {
 
     companion object {
         private const val RATING = "RATING"
@@ -26,9 +26,7 @@ class RatingDialogFragment : DialogFragment() {
             val args = Bundle()
             args.putInt(RATING, initialRating)
             args.putLongArray(ITEM_IDS, itemIds)
-            val dialogFragment = RatingDialogFragment()
-            dialogFragment.arguments = args
-            dialogFragment.show(parent.childFragmentManager, null)
+            invoke(parent, RatingDialogFragment(), args)
         }
     }
 
@@ -36,7 +34,6 @@ class RatingDialogFragment : DialogFragment() {
     private val stars = mutableListOf<ImageView>()
 
     // === VARIABLES
-    private var parent: Parent? = null
     private var initialRating = 0
     private var itemIds: LongArray? = null
     private var closeDebouncer: Debouncer<Int>? = null
@@ -45,7 +42,6 @@ class RatingDialogFragment : DialogFragment() {
         super.onCreate(savedInstanceState)
         initialRating = requireArguments().getInt(RATING)
         itemIds = requireArguments().getLongArray(ITEM_IDS)
-        parent = parentFragment as Parent?
     }
 
     override fun onCreateView(
@@ -88,7 +84,6 @@ class RatingDialogFragment : DialogFragment() {
     }
 
     override fun onDestroy() {
-        parent = null
         closeDebouncer?.clear()
         super.onDestroy()
     }

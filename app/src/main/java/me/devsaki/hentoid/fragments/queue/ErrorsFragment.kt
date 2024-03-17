@@ -472,7 +472,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         if (c.size > 2) {
             isDeletingAll = true
             ProgressDialogFragment.invoke(
-                parentFragmentManager,
+                this,
                 resources.getString(R.string.cancel_queue_progress),
                 R.plurals.book
             )
@@ -483,7 +483,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     private fun doCancelAll() {
         isDeletingAll = true
         ProgressDialogFragment.invoke(
-            parentFragmentManager,
+            this,
             resources.getString(R.string.cancel_queue_progress),
             R.plurals.book
         )
@@ -760,7 +760,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         val excludedSources =
             Site.entries.filterNot { e -> unfilteredSources.contains(e) }.map { s -> s.code }
         SelectSiteDialogFragment.invoke(
-            childFragmentManager,
+            this,
             getString(R.string.filter_by_source),
             excludedSources,
             parentIsActivity = true

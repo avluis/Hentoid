@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.databinding.DialogLibraryUpdateSuccessBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.GithubRelease
 import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem
@@ -22,11 +22,20 @@ import timber.log.Timber
 /**
  * "update success" dialog
  */
-class UpdateSuccessDialogFragment : DialogFragment() {
+class UpdateSuccessDialogFragment : BaseDialogFragment<Nothing>() {
+
+    companion object {
+        fun invoke(parent: Fragment) {
+            invoke(parent, UpdateSuccessDialogFragment())
+        }
+
+        fun invoke(parent: FragmentActivity) {
+            invoke(parent, UpdateSuccessDialogFragment())
+        }
+    }
 
     // UI
-    private var _binding: DialogLibraryUpdateSuccessBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogLibraryUpdateSuccessBinding? = null
 
     // === VARIABLES
     private val itemAdapter: ItemAdapter<GitHubReleaseItem> = ItemAdapter()
@@ -35,16 +44,16 @@ class UpdateSuccessDialogFragment : DialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View {
-        _binding = DialogLibraryUpdateSuccessBinding.inflate(inflater, container, false)
+        binding = DialogLibraryUpdateSuccessBinding.inflate(inflater, container, false)
 
         val releaseItemAdapter = FastAdapter.with(itemAdapter)
-        binding.recyclerView.adapter = releaseItemAdapter
+        binding?.recyclerView?.adapter = releaseItemAdapter
 
-        return binding.root
+        return binding!!.root
     }
 
     override fun onDestroyView() {
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
@@ -76,17 +85,5 @@ class UpdateSuccessDialogFragment : DialogFragment() {
 
     private fun onCheckError(t: Throwable) {
         Timber.w(t, "Error fetching GitHub latest release data")
-    }
-
-    companion object {
-        fun invoke(parent: Fragment) {
-            val fragment = UpdateSuccessDialogFragment()
-            fragment.show(parent.childFragmentManager, null)
-        }
-
-        fun invoke(parent: FragmentActivity) {
-            val fragment = UpdateSuccessDialogFragment()
-            fragment.show(parent.supportFragmentManager, null)
-        }
     }
 }

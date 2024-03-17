@@ -14,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Data
@@ -43,6 +42,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryTransformBinding
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.file.FileHelper
@@ -56,15 +56,24 @@ import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.max
 
-class LibraryTransformDialogFragment : DialogFragment() {
+class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialogFragment.Parent>() {
+    companion object {
+        const val KEY_CONTENTS = "contents"
+
+        fun invoke(parent: Fragment, contentList: List<Content>) {
+            val args = Bundle()
+            args.putLongArray(
+                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
+            )
+            invoke(parent, LibraryTransformDialogFragment(), args)
+        }
+    }
 
     // UI
-    private var _binding: DialogLibraryTransformBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogLibraryTransformBinding? = null
 
     // === VARIABLES
     private lateinit var contentIds: LongArray
-    private var parent: Parent? = null
     private val content: Content? by lazy {
         val dao = ObjectBoxDAO(requireContext())
         try {
@@ -99,19 +108,17 @@ class LibraryTransformDialogFragment : DialogFragment() {
         val contentIdArg = arguments?.getLongArray(KEY_CONTENTS)
         require(!(null == contentIdArg || contentIdArg.isEmpty())) { "No content IDs" }
         contentIds = contentIdArg!!
-
-        parent = parentFragment as Parent?
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
-    ): View {
-        _binding = DialogLibraryTransformBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View? {
+        binding = DialogLibraryTransformBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onDestroyView() {
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
@@ -121,7 +128,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
         refreshControls(true)
         refreshThumb()
 
-        binding.apply {
+        binding?.apply {
             resizeSwitch.setOnCheckedChangeListener { _, isChecked ->
                 Settings.isResizeEnabled = isChecked
                 refreshControls()
@@ -209,7 +216,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
     }
 
     private fun refreshControls(applyValues: Boolean = false) {
-        binding.apply {
+        binding?.apply {
             val isAiUpscale = (3 == Settings.resizeMethod) && Settings.isResizeEnabled
 
             // Resize
@@ -303,7 +310,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
         val rawData = rawSourceBitmap.second
         val picName = rawSourceBitmap.first
 
-        binding.previewProgress.isVisible = true
+        binding?.previewProgress?.isVisible = true
 
         lifecycleScope.launch {
             val isLossless = ImageHelper.isImageLossless(rawData)
@@ -327,7 +334,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
                 ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
             val targetName = picName + "." + FileHelper.getExtensionFromMimeType(targetMime)
 
-            binding.apply {
+            binding?.apply {
                 if (unchanged) {
                     previewName.text = resources.getText(R.string.transform_unsupported)
                     previewDims.text = "${sourceDims.x} x ${sourceDims.y}"
@@ -363,7 +370,7 @@ class LibraryTransformDialogFragment : DialogFragment() {
     }
 
     private fun buildParams(): ImageTransform.Params {
-        binding.apply {
+        binding!!.apply {
             return ImageTransform.Params(
                 resizeSwitch.isChecked,
                 resizeMethod.index,
@@ -382,32 +389,34 @@ class LibraryTransformDialogFragment : DialogFragment() {
 
     private fun onActionClick(params: ImageTransform.Params) {
         // Check if no dialog is in error state
-        val nbError = binding.container.children
-            .filter { c -> c is TextInputLayout }
-            .map { c -> c as TextInputLayout }
-            .count { til -> til.isErrorEnabled }
+        binding?.apply {
+            val nbError = container.children
+                .filter { c -> c is TextInputLayout }
+                .map { c -> c as TextInputLayout }
+                .count { til -> til.isErrorEnabled }
 
-        if (nbError > 0) return
+            if (nbError > 0) return
 
-        val moshi = Moshi.Builder()
-            .addLast(KotlinJsonAdapterFactory())
-            .build()
+            val moshi = Moshi.Builder()
+                .addLast(KotlinJsonAdapterFactory())
+                .build()
 
-        val serializedParams = moshi.adapter(ImageTransform.Params::class.java).toJson(params)
+            val serializedParams = moshi.adapter(ImageTransform.Params::class.java).toJson(params)
 
-        val myData: Data = workDataOf(
-            "IDS" to contentIds,
-            "PARAMS" to serializedParams
-        )
+            val myData: Data = workDataOf(
+                "IDS" to contentIds,
+                "PARAMS" to serializedParams
+            )
 
-        val workManager = WorkManager.getInstance(requireContext())
-        workManager.enqueueUniqueWork(
-            R.id.transform_service.toString(),
-            ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(TransformWorker::class.java)
-                .setInputData(myData)
-                .addTag(WORK_CLOSEABLE).build()
-        )
+            val workManager = WorkManager.getInstance(requireContext())
+            workManager.enqueueUniqueWork(
+                R.id.transform_service.toString(),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                OneTimeWorkRequest.Builder(TransformWorker::class.java)
+                    .setInputData(myData)
+                    .addTag(WORK_CLOSEABLE).build()
+            )
+        }
         parent?.leaveSelectionMode()
         dismissAllowingStateLoss()
     }
@@ -431,21 +440,6 @@ class LibraryTransformDialogFragment : DialogFragment() {
         text.isErrorEnabled = false
         text.error = null
         return true
-    }
-
-    companion object {
-
-        const val KEY_CONTENTS = "contents"
-
-        fun invoke(parent: Fragment, contentList: List<Content>) {
-            val fragment = LibraryTransformDialogFragment()
-            val args = Bundle()
-            args.putLongArray(
-                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
-            )
-            fragment.arguments = args
-            fragment.show(parent.childFragmentManager, null)
-        }
     }
 
     interface Parent {

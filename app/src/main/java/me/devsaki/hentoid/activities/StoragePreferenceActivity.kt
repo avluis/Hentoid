@@ -130,11 +130,11 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             }
 
             strategyPanel.setOnClickListener {
-                DownloadStrategyDialogFragment.invoke(supportFragmentManager)
+                DownloadStrategyDialogFragment.invoke(this@StoragePreferenceActivity)
             }
 
             statsPanel.setOnClickListener {
-                StorageUsageDialogFragment.invoke(supportFragmentManager)
+                StorageUsageDialogFragment.invoke(this@StoragePreferenceActivity)
             }
         }
     }
@@ -441,7 +441,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             .setMessage(resources.getString(R.string.storage_merge_ask, nbBooks))
             .setPositiveButton(R.string.yes) { dialog1: DialogInterface, _: Int ->
                 val fragment = ProgressDialogFragment.invoke(
-                    supportFragmentManager,
+                    this,
                     resources.getString(R.string.storage_merge_progress),
                     R.plurals.book
                 )

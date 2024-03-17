@@ -7,8 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -27,6 +26,7 @@ import me.devsaki.hentoid.databinding.DialogToolsMetaExportBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StorageLocation
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
@@ -37,7 +37,13 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 
-class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_export) {
+class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
+
+    companion object {
+        fun invoke(fragment: Fragment) {
+            invoke(fragment, MetaExportDialogFragment(), isCancelable = false)
+        }
+    }
 
     // == UI
     private var binding: DialogToolsMetaExportBinding? = null
@@ -192,8 +198,6 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
         exportQueue: Boolean,
         exportBookmarks: Boolean
     ) {
-        isCancelable = false
-
         binding?.let {
             it.exportFileLibraryChk.isEnabled = false
             it.exportFileQueueChk.isEnabled = false
@@ -346,12 +350,5 @@ class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_expor
         dao.cleanup()
         // Dismiss after 3s, for the user to be able to see and use the snackbar
         Handler(Looper.getMainLooper()).postDelayed({ this.dismissAllowingStateLoss() }, 3000)
-    }
-
-    companion object {
-        fun invoke(fragmentManager: FragmentManager) {
-            val fragment = MetaExportDialogFragment()
-            fragment.show(fragmentManager, null)
-        }
     }
 }

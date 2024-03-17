@@ -1444,7 +1444,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     )
                     snackbar.setAction(R.string.menu_search) {
                         SelectSiteDialogFragment.invoke(
-                            childFragmentManager,
+                            this,
                             dialogTitle,
                             siteCodes,
                             uniqueIdOnly = true,
@@ -1454,7 +1454,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     snackbar.show()
                 }
             } else SelectSiteDialogFragment.invoke(
-                childFragmentManager,
+                this,
                 dialogTitle,
                 siteCodes,
                 uniqueIdOnly = true,
@@ -1701,7 +1701,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         deleteAfterMerging: Boolean
     ) {
         leaveSelectionMode()
-        invoke(parentFragmentManager, resources.getString(R.string.merge_progress), R.plurals.page)
+        invoke(this, resources.getString(R.string.merge_progress), R.plurals.page)
         viewModel.mergeContents(
             contentList, newTitle, deleteAfterMerging
         ) { onMergeSuccess() }
@@ -1715,7 +1715,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     override fun splitContent(content: Content, chapters: List<Chapter>) {
         leaveSelectionMode()
         viewModel.splitContent(content, chapters) { onSplitSuccess() }
-        invoke(parentFragmentManager, resources.getString(R.string.split_progress), R.plurals.page)
+        invoke(this, resources.getString(R.string.split_progress), R.plurals.page)
     }
 
     private fun onSplitSuccess() {

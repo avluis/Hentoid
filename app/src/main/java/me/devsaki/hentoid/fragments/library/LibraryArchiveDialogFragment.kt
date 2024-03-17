@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.work.Data
@@ -22,6 +21,7 @@ import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryArchiveBinding
 import me.devsaki.hentoid.enums.StorageLocation
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
@@ -29,15 +29,34 @@ import me.devsaki.hentoid.util.file.PermissionHelper
 import me.devsaki.hentoid.workers.ArchiveWorker
 import org.apache.commons.lang3.tuple.ImmutablePair
 
-class LibraryArchiveDialogFragment : DialogFragment() {
+class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFragment.Parent>() {
+    companion object {
+
+        const val KEY_CONTENTS = "contents"
+
+        fun invoke(parent: Fragment, contentList: List<Content>) {
+            invoke(parent, LibraryArchiveDialogFragment(), getArgs(contentList))
+        }
+
+        fun invoke(parent: FragmentActivity, contentList: List<Content>) {
+            invoke(parent, LibraryArchiveDialogFragment(), getArgs(contentList))
+        }
+
+        private fun getArgs(contentList: List<Content>): Bundle {
+            val args = Bundle()
+            args.putLongArray(
+                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
+            )
+            return args
+        }
+    }
+
 
     // UI
-    private var _binding: DialogLibraryArchiveBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogLibraryArchiveBinding? = null
 
     // === VARIABLES
     private lateinit var contentIds: LongArray
-    private var parent: Parent? = null
 
     private val pickFolder =
         registerForActivityResult(ImportHelper.PickFolderContract()) { result: ImmutablePair<Int, Uri> ->
@@ -52,19 +71,17 @@ class LibraryArchiveDialogFragment : DialogFragment() {
         val contentIdArg = arguments?.getLongArray(KEY_CONTENTS)
         require(!(null == contentIdArg || contentIdArg.isEmpty())) { "No content IDs" }
         contentIds = contentIdArg!!
-
-        parent = parentFragment as Parent?
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View {
-        _binding = DialogLibraryArchiveBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogLibraryArchiveBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onDestroyView() {
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
@@ -73,7 +90,7 @@ class LibraryArchiveDialogFragment : DialogFragment() {
 
         refreshControls(true)
 
-        binding.apply {
+        binding?.apply {
             targetFolder.setOnIndexChangeListener { index ->
                 when (index) {
                     0 -> Settings.archiveTargetFolder =
@@ -111,7 +128,7 @@ class LibraryArchiveDialogFragment : DialogFragment() {
     }
 
     private fun refreshControls(applyValues: Boolean = false) {
-        binding.apply {
+        binding?.apply {
             if (applyValues) {
                 val entries = mutableListOf(
                     resources.getString(R.string.folder_device_downloads),
@@ -168,7 +185,7 @@ class LibraryArchiveDialogFragment : DialogFragment() {
     }
 
     private fun buildWorkerParams(): ArchiveWorker.Params {
-        binding.apply {
+        binding!!.apply {
             return ArchiveWorker.Params(
                 Settings.archiveTargetFolder,
                 targetFormat.index,
@@ -179,60 +196,37 @@ class LibraryArchiveDialogFragment : DialogFragment() {
     }
 
     private fun onActionClick(params: ArchiveWorker.Params) {
-        // Check if no dialog is in error state
-        val nbError = binding.container.children
-            .filter { c -> c is TextInputLayout }
-            .map { c -> c as TextInputLayout }
-            .count { til -> til.isErrorEnabled }
+        binding?.apply {
+            // Check if no dialog is in error state
+            val nbError = container.children
+                .filter { c -> c is TextInputLayout }
+                .map { c -> c as TextInputLayout }
+                .count { til -> til.isErrorEnabled }
 
-        if (nbError > 0) return
+            if (nbError > 0) return
 
-        val moshi = Moshi.Builder()
-            .addLast(KotlinJsonAdapterFactory())
-            .build()
+            val moshi = Moshi.Builder()
+                .addLast(KotlinJsonAdapterFactory())
+                .build()
 
-        val serializedParams = moshi.adapter(ArchiveWorker.Params::class.java).toJson(params)
+            val serializedParams = moshi.adapter(ArchiveWorker.Params::class.java).toJson(params)
 
-        val myData: Data = workDataOf(
-            "IDS" to contentIds,
-            "PARAMS" to serializedParams
-        )
+            val myData: Data = workDataOf(
+                "IDS" to contentIds,
+                "PARAMS" to serializedParams
+            )
 
-        val workManager = WorkManager.getInstance(requireContext())
-        workManager.enqueueUniqueWork(
-            R.id.archive_service.toString(),
-            ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(ArchiveWorker::class.java)
-                .setInputData(myData)
-                .addTag(WORK_CLOSEABLE).build()
-        )
+            val workManager = WorkManager.getInstance(requireContext())
+            workManager.enqueueUniqueWork(
+                R.id.archive_service.toString(),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                OneTimeWorkRequest.Builder(ArchiveWorker::class.java)
+                    .setInputData(myData)
+                    .addTag(WORK_CLOSEABLE).build()
+            )
+        }
         parent?.leaveSelectionMode()
         dismissAllowingStateLoss()
-    }
-
-    companion object {
-
-        const val KEY_CONTENTS = "contents"
-
-        fun invoke(parent: Fragment, contentList: List<Content>) {
-            val fragment = LibraryArchiveDialogFragment()
-            val args = Bundle()
-            args.putLongArray(
-                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
-            )
-            fragment.arguments = args
-            fragment.show(parent.childFragmentManager, null)
-        }
-
-        fun invoke(parent: FragmentActivity, contentList: List<Content>) {
-            val fragment = LibraryArchiveDialogFragment()
-            val args = Bundle()
-            args.putLongArray(
-                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
-            )
-            fragment.arguments = args
-            fragment.show(parent.supportFragmentManager, null)
-        }
     }
 
     interface Parent {

@@ -302,7 +302,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             activity.get()?.goBackToMain()
         }
         ProgressDialogFragment.invoke(
-            parentFragmentManager,
+            this,
             resources.getString(R.string.merge_progress),
             R.plurals.page
         )

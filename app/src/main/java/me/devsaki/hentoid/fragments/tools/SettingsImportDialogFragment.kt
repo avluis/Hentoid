@@ -8,8 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
@@ -18,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogToolsSettingsImportBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.ImportHelper.PickFileContract
@@ -30,7 +30,13 @@ import java.io.IOException
 /**
  * Dialog for the settings metadata import feature
  */
-class SettingsImportDialogFragment : DialogFragment() {
+class SettingsImportDialogFragment : BaseDialogFragment<Nothing>() {
+    companion object {
+        fun invoke(fragment: Fragment) {
+            invoke(fragment, SettingsImportDialogFragment())
+        }
+    }
+
     private var binding: DialogToolsSettingsImportBinding? = null
     private var dismissHandler: Handler? = null
 
@@ -160,12 +166,5 @@ class SettingsImportDialogFragment : DialogFragment() {
         // Dismiss after 3s, for the user to be able to see the snackbar
         dismissHandler = Handler(Looper.getMainLooper())
         dismissHandler!!.postDelayed({ dismiss() }, 3000)
-    }
-
-    companion object {
-        fun invoke(fragmentManager: FragmentManager) {
-            val fragment = SettingsImportDialogFragment()
-            fragment.show(fragmentManager, null)
-        }
     }
 }

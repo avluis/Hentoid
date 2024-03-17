@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -20,12 +19,13 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryMergeBinding
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 
-class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
+class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), ItemTouchCallback {
 
     companion object {
         private const val KEY_CONTENTS = "contents"
@@ -36,15 +36,13 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
             contentList: List<Content>,
             deleteDefault: Boolean
         ) {
-            val fragment = MergeDialogFragment()
             val args = Bundle()
             args.putLongArray(
                 KEY_CONTENTS,
                 contentList.map { obj: Content -> obj.id }.toLongArray()
             )
             args.putBoolean(KEY_DELETE_DEFAULT, deleteDefault)
-            fragment.arguments = args
-            fragment.show(parent.childFragmentManager, null)
+            invoke(parent, MergeDialogFragment(), args)
         }
     }
 
@@ -56,7 +54,6 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
     private var touchHelper: ItemTouchHelper? = null
 
     // === VARIABLES
-    private var parent: Parent? = null
     private lateinit var contentIds: LongArray
     private var deleteDefault = false
     private var initialTitle = ""
@@ -69,12 +66,6 @@ class MergeDialogFragment : DialogFragment(), ItemTouchCallback {
         require(contentIdsVal != null && contentIdsVal.isNotEmpty()) { "No content IDs" }
         contentIds = contentIdsVal
         deleteDefault = requireArguments().getBoolean(KEY_DELETE_DEFAULT, false)
-        parent = parentFragment as Parent?
-    }
-
-    override fun onDestroy() {
-        parent = null
-        super.onDestroy()
     }
 
     override fun onCancel(dialog: DialogInterface) {

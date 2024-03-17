@@ -6,26 +6,25 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsDlStrategyBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 
-class DownloadStrategyDialogFragment : DialogFragment() {
+class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialogFragment.Parent>() {
+    companion object {
+        fun invoke(activity: FragmentActivity) {
+            invoke(activity, DownloadStrategyDialogFragment())
+        }
+    }
 
-    // UI
-    private var _binding: DialogPrefsDlStrategyBinding? = null
-    private val binding get() = _binding!!
-
-    // === VARIABLES
-    private var parent: Parent? = null
+    private var binding: DialogPrefsDlStrategyBinding? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        parent = activity as Parent
     }
 
     override fun onCreateView(
@@ -33,45 +32,44 @@ class DownloadStrategyDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedState: Bundle?
     ): View {
-        _binding = DialogPrefsDlStrategyBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogPrefsDlStrategyBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onDestroyView() {
-        parent = null
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        binding.selector.apply {
-            addOnButtonCheckedListener { _, checkedId, isChecked ->
+        binding?.apply {
+            selector.addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (!isChecked) return@addOnButtonCheckedListener
-                if (checkedId == binding.choiceBalance.id) {
-                    binding.description.text =
+                if (checkedId == choiceBalance.id) {
+                    description.text =
                         resources.getString(R.string.storage_strategy_balance_desc)
-                    binding.threshold.isVisible = false
+                    threshold.isVisible = false
                 } else {
-                    binding.description.text = String.format(
+                    description.text = String.format(
                         resources.getString(R.string.storage_strategy_fallover_desc),
                         Preferences.getStorageSwitchThresholdPc()
                     )
-                    binding.threshold.isVisible = true
+                    threshold.isVisible = true
                 }
             }
-            check(
+            selector.check(
                 when (Preferences.getStorageDownloadStrategy()) {
-                    Preferences.Constant.STORAGE_FILL_BALANCE_FREE -> binding.choiceBalance.id
-                    else -> binding.choiceFallover.id
+                    Preferences.Constant.STORAGE_FILL_BALANCE_FREE -> choiceBalance.id
+                    else -> choiceFallover.id
                 }
             )
         }
-        binding.threshold.editText?.apply {
+        binding?.threshold?.editText?.apply {
             addTextChangedListener { text ->
                 if (!text.isNullOrEmpty()) {
-                    binding.description.text = String.format(
+                    binding?.description?.text = String.format(
                         resources.getString(R.string.storage_strategy_fallover_desc),
                         text.toString().toInt()
                     )
@@ -79,34 +77,28 @@ class DownloadStrategyDialogFragment : DialogFragment() {
             }
             setText(Preferences.getStorageSwitchThresholdPc().toString())
         }
-        binding.actionButton.setOnClickListener { onOkClick() }
+        binding?.actionButton?.setOnClickListener { onOkClick() }
     }
 
     private fun onOkClick() {
-        binding.threshold.editText?.apply {
+        binding?.threshold?.editText?.apply {
             if (text.isEmpty()) return
             Preferences.setStorageSwitchThresholdPc(
                 Helper.coerceIn(text.toString().toFloat(), 0f, 100f).toInt()
             )
         }
 
-        Preferences.setStorageDownloadStrategy(
-            when (binding.selector.checkedButtonId) {
-                binding.choiceBalance.id -> Preferences.Constant.STORAGE_FILL_BALANCE_FREE
-                else -> Preferences.Constant.STORAGE_FILL_FALLOVER
-            }
-        )
+        binding?.apply {
+            Preferences.setStorageDownloadStrategy(
+                when (selector.checkedButtonId) {
+                    choiceBalance.id -> Preferences.Constant.STORAGE_FILL_BALANCE_FREE
+                    else -> Preferences.Constant.STORAGE_FILL_FALLOVER
+                }
+            )
+        }
 
         parent?.onStrategySelected()
         dismissAllowingStateLoss()
-    }
-
-
-    companion object {
-        fun invoke(fragmentManager: FragmentManager) {
-            val fragment = DownloadStrategyDialogFragment()
-            fragment.show(fragmentManager, null)
-        }
     }
 
     interface Parent {

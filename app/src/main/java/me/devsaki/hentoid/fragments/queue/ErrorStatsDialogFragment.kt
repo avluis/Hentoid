@@ -5,8 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -15,6 +14,7 @@ import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.databinding.DialogQueueErrorsBinding
 import me.devsaki.hentoid.enums.ErrorType
 import me.devsaki.hentoid.events.DownloadEvent
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.LogHelper
 import me.devsaki.hentoid.util.LogHelper.LogEntry
 import me.devsaki.hentoid.util.LogHelper.LogInfo
@@ -28,10 +28,18 @@ import java.util.EnumMap
 /**
  * Info dialog for download errors details
  */
-class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
+class ErrorStatsDialogFragment : BaseDialogFragment<Nothing>() {
+    companion object {
+        const val ID = "ID"
+        fun invoke(fragment: Fragment, id: Long) {
+            val args = Bundle()
+            args.putLong(ID, id)
+            invoke(fragment, ErrorStatsDialogFragment(), args)
+        }
+    }
+
     // == UI
-    private var _binding: DialogQueueErrorsBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogQueueErrorsBinding? = null
 
     private var previousNbErrors = 0
     private var currentId: Long = 0
@@ -40,8 +48,8 @@ class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View {
-        _binding = DialogQueueErrorsBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogQueueErrorsBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,7 +66,7 @@ class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
         super.onViewCreated(rootView, savedInstanceState)
 
         arguments?.let {
-            binding.statsDetails.setText(R.string.downloads_loading)
+            binding?.statsDetails?.setText(R.string.downloads_loading)
             previousNbErrors = 0
             val id = it.getLong(ID, 0)
             currentId = id
@@ -97,16 +105,16 @@ class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
             detailsStr.append(it.value)
             detailsStr.append(System.getProperty("line.separator"))
         }
-        binding.statsDetails.text = detailsStr.toString()
+        binding?.statsDetails?.text = detailsStr.toString()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDownloadEvent(event: DownloadEvent) {
         if (event.eventType == DownloadEvent.Type.EV_COMPLETE) {
-            binding.statsDetails.setText(R.string.download_complete)
+            binding?.statsDetails?.setText(R.string.download_complete)
             previousNbErrors = 0
         } else if (event.eventType == DownloadEvent.Type.EV_CANCELED) {
-            binding.statsDetails.setText(R.string.download_cancelled)
+            binding?.statsDetails?.setText(R.string.download_cancelled)
             previousNbErrors = 0
         } else if (event.eventType == DownloadEvent.Type.EV_PROGRESS
             && event.pagesKO > previousNbErrors
@@ -163,18 +171,5 @@ class ErrorStatsDialogFragment : DialogFragment(R.layout.dialog_queue_errors) {
             logFile.uri,
             resources.getString(R.string.error_log_header_queue)
         )
-    }
-
-    companion object {
-        const val ID = "ID"
-        fun invoke(fragmentManager: FragmentManager, id: Long) {
-            val fragment = ErrorStatsDialogFragment()
-
-            val args = Bundle()
-            args.putLong(ID, id)
-            fragment.arguments = args
-
-            fragment.show(fragmentManager, null)
-        }
     }
 }

@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -26,6 +25,7 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.ImportHelper.ImportOptions
 import me.devsaki.hentoid.util.ImportHelper.PickFolderContract
 import me.devsaki.hentoid.util.ImportHelper.PickerResult
@@ -49,7 +49,7 @@ import timber.log.Timber
  * - Set/replace download folder
  * - Library refresh
  */
-class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
+class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Parent>() {
     // == UI
     private var _binding1: DialogPrefsRefreshBinding? = null
     private val binding1 get() = _binding1!!
@@ -62,7 +62,6 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
     private var chooseFolder = false
     private var location = StorageLocation.NONE
 
-    private var parent: Parent? = null
     private var isServiceGracefulClose = false
 
     private val pickFolder =
@@ -70,11 +69,6 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             onFolderPickerResult(result.left, result.right)
         }
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        parent = activity as Parent
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
@@ -84,7 +78,10 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         arguments?.apply {
             showOptions = getBoolean(SHOW_OPTIONS, false)
             chooseFolder = getBoolean(CHOOSE_FOLDER, false)
-            location = StorageLocation.values()[getInt(LOCATION, StorageLocation.NONE.ordinal)]
+            location = StorageLocation.entries.toTypedArray()[getInt(
+                LOCATION,
+                StorageLocation.NONE.ordinal
+            )]
         }
 
         EventBus.getDefault().register(this)
@@ -93,7 +90,6 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
 
     override fun onDestroyView() {
         EventBus.getDefault().unregister(this)
-        parent = null
         _binding1 = null
         _binding2 = null
         super.onDestroyView()

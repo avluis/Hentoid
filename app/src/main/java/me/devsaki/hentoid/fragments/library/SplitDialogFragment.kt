@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.ISelectionListener
@@ -15,6 +14,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibrarySplitBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.widget.DragSelectTouchListener
 import me.devsaki.hentoid.widget.DragSelectTouchListener.OnDragSelectListener
@@ -22,16 +22,14 @@ import me.devsaki.hentoid.widget.DragSelectionProcessor
 import me.devsaki.hentoid.widget.DragSelectionProcessor.ISelectionHandler
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 
-class SplitDialogFragment : DialogFragment() {
+class SplitDialogFragment : BaseDialogFragment<SplitDialogFragment.Parent>() {
     companion object {
         private const val KEY_CONTENT = "content"
 
         operator fun invoke(parent: Fragment, content: Content) {
-            val fragment = SplitDialogFragment()
             val args = Bundle()
             args.putLong(KEY_CONTENT, content.id)
-            fragment.arguments = args
-            fragment.show(parent.childFragmentManager, null)
+            invoke(parent, SplitDialogFragment(), args)
         }
     }
 
@@ -45,7 +43,6 @@ class SplitDialogFragment : DialogFragment() {
     private var mDragSelectTouchListener: DragSelectTouchListener? = null
 
     // === VARIABLES
-    private var parent: Parent? = null
     private var contentId: Long = 0
     private var content: Content? = null
 
@@ -53,12 +50,6 @@ class SplitDialogFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         contentId = requireArguments().getLong(KEY_CONTENT)
-        parent = parentFragment as Parent?
-    }
-
-    override fun onDestroy() {
-        parent = null
-        super.onDestroy()
     }
 
     override fun onCreateView(

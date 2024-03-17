@@ -387,7 +387,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
             return
         }
         if (reparseContent || reparseImages) ProgressDialogFragment.invoke(
-            supportFragmentManager,
+            this,
             resources.getString(R.string.redownload_queue_progress),
             R.plurals.book
         )

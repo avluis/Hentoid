@@ -323,7 +323,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 true
             }
             it.menu.findItem(R.id.action_import_downloads).setOnMenuItemClickListener {
-                invoke(parentFragmentManager)
+                invoke(this)
                 true
             }
             it.menu.findItem(R.id.action_error_stats).setOnMenuItemClickListener {
@@ -840,7 +840,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     private fun showErrorStats() {
         if (itemAdapter.adapterItemCount > 0) {
-            if (contentId > -1) ErrorStatsDialogFragment.invoke(parentFragmentManager, contentId)
+            if (contentId > -1) ErrorStatsDialogFragment.invoke(this, contentId)
         }
     }
 
@@ -902,7 +902,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         if (c.size > 2) {
             isCancelingAll = true
             ProgressDialogFragment.invoke(
-                parentFragmentManager,
+                this,
                 resources.getString(R.string.cancel_queue_progress),
                 R.plurals.book
             )
@@ -913,7 +913,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     private fun onCancelAll() {
         isCancelingAll = true
         ProgressDialogFragment.invoke(
-            parentFragmentManager,
+            this,
             resources.getString(R.string.cancel_queue_progress),
             R.plurals.book
         )
@@ -1215,7 +1215,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         val excludedSources =
             Site.entries.filterNot { e -> unfilteredSources.contains(e) }.map { s -> s.code }
         SelectSiteDialogFragment.invoke(
-            childFragmentManager,
+            this,
             getString(R.string.filter_by_source),
             excludedSources,
             parentIsActivity = true

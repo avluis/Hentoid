@@ -4,24 +4,33 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.DialogMetaRenameBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 
 /**
  * Dialog to rename an attribute
  */
-class MetaRenameDialogFragment : DialogFragment() {
+class MetaRenameDialogFragment : BaseDialogFragment<MetaRenameDialogFragment.Parent>() {
+
+    companion object {
+        const val KEY_ID = "id"
+
+        fun invoke(parent: FragmentActivity, attrId: Long) {
+            val args = Bundle()
+            args.putLong(KEY_ID, attrId)
+            invoke(parent, MetaRenameDialogFragment(), args)
+        }
+    }
+
 
     // UI
-    private var _binding: DialogMetaRenameBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogMetaRenameBinding? = null
 
     // === VARIABLES
-    private var parent: Parent? = null
     private var attrId: Long = 0
 
 
@@ -29,9 +38,6 @@ class MetaRenameDialogFragment : DialogFragment() {
         super.onCreate(savedInstanceState)
 
         attrId = requireArguments().getLong(KEY_ID)
-
-        //parent = parentFragment as Parent
-        parent = activity as Parent
     }
 
     override fun onCreateView(
@@ -39,13 +45,12 @@ class MetaRenameDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedState: Bundle?
     ): View {
-        _binding = DialogMetaRenameBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogMetaRenameBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onDestroyView() {
-        parent = null
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
@@ -58,17 +63,20 @@ class MetaRenameDialogFragment : DialogFragment() {
             return
         }
 
-        binding.name.editText?.setText(attr.displayName)
-
-        binding.actionButton.setOnClickListener { onValidate() }
+        binding?.apply {
+            name.editText?.setText(attr.displayName)
+            actionButton.setOnClickListener { onValidate() }
+        }
     }
 
     private fun onValidate() {
-        parent?.onRenameAttribute(
-            binding.name.editText?.text.toString(),
-            attrId,
-            binding.mergeDeleteSwitch.isChecked
-        )
+        binding?.apply {
+            parent?.onRenameAttribute(
+                name.editText?.text.toString(),
+                attrId,
+                mergeDeleteSwitch.isChecked
+            )
+        }
         dismissAllowingStateLoss()
     }
 
@@ -78,32 +86,6 @@ class MetaRenameDialogFragment : DialogFragment() {
             return dao.selectAttribute(attrId)
         } finally {
             dao.cleanup()
-        }
-    }
-
-    companion object {
-        const val KEY_ID = "id"
-
-        /*
-        fun invoke(parentFragment: Fragment, newAttrName: String) {
-            val fragment = AttributeTypePickerDialogFragment()
-
-            val args = Bundle()
-            args.putString(KEY_NAME, newAttrName)
-            fragment.arguments = args
-
-            fragment.show(parentFragment.childFragmentManager, null)
-        }
-         */
-
-        fun invoke(parent: FragmentActivity, attrId: Long) {
-            val fragment = MetaRenameDialogFragment()
-
-            val args = Bundle()
-            args.putLong(KEY_ID, attrId)
-            fragment.arguments = args
-
-            fragment.show(parent.supportFragmentManager, null)
         }
     }
 

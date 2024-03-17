@@ -4,53 +4,49 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.databinding.DialogReaderBrowseModeChooserBinding
+import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 
-class ReaderBrowseModeDialogFragment : DialogFragment() {
+class ReaderBrowseModeDialogFragment : BaseDialogFragment<ReaderBrowseModeDialogFragment.Parent>() {
+    companion object {
+        fun invoke(parent: Fragment) {
+            invoke(parent, ReaderBrowseModeDialogFragment())
+        }
+    }
 
     // UI
-    private var _binding: DialogReaderBrowseModeChooserBinding? = null
-    private val binding get() = _binding!!
+    private var binding: DialogReaderBrowseModeChooserBinding? = null
 
-    // === VARIABLES
-    private var parent: Parent? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        parent = parentFragment as Parent?
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
     ): View {
-        _binding = DialogReaderBrowseModeChooserBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = DialogReaderBrowseModeChooserBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     override fun onDestroyView() {
-        parent = null
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        binding.chooseHorizontalLtr.setOnClickListener {
-            chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_LTR)
-        }
-
-        binding.chooseHorizontalRtl.setOnClickListener {
-            chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_RTL)
-        }
-
-        binding.chooseVertical.setOnClickListener {
-            chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_TTB)
+        binding?.apply {
+            chooseHorizontalLtr.setOnClickListener {
+                chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_LTR)
+            }
+            chooseHorizontalRtl.setOnClickListener {
+                chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_RTL)
+            }
+            chooseVertical.setOnClickListener {
+                chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_TTB)
+            }
         }
     }
 
@@ -58,13 +54,6 @@ class ReaderBrowseModeDialogFragment : DialogFragment() {
         Preferences.setReaderBrowseMode(browseMode)
         parent?.onBrowseModeChange()
         dismiss()
-    }
-
-    companion object {
-        fun invoke(parent: Fragment) {
-            val fragment = ReaderBrowseModeDialogFragment()
-            fragment.show(parent.childFragmentManager, null)
-        }
     }
 
     interface Parent {
