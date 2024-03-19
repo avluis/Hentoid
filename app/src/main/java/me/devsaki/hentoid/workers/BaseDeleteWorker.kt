@@ -5,12 +5,16 @@ import android.util.Log
 import androidx.annotation.IdRes
 import androidx.work.Data
 import androidx.work.WorkerParameters
+import com.annimon.stream.Optional
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
+import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Grouping
+import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.delete.DeleteCompleteNotification
 import me.devsaki.hentoid.notification.delete.DeleteProgressNotification
@@ -21,6 +25,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import me.devsaki.hentoid.workers.data.DeleteData
 import org.greenrobot.eventbus.EventBus
@@ -37,16 +42,17 @@ abstract class BaseDeleteWorker(
 ) :
     BaseWorker(context, parameters, serviceId, "delete") {
 
-    private var contentIds: LongArray
-    private var contentPurgeIds: LongArray
-    private var contentPurgeKeepCovers = false
-    private var groupIds: LongArray
-    private var queueIds: LongArray
-    private var isDeleteAllQueueRecords = false
-    private var deleteMax = 0
-    private var isDeleteGroupsOnly = false
-    private var isDownloadPrepurge = false
+    private val contentIds: LongArray
+    private val contentPurgeIds: LongArray
+    private val contentPurgeKeepCovers: Boolean
+    private val groupIds: LongArray
+    private val queueIds: LongArray
+    private val isDeleteAllQueueRecords: Boolean
+    private val isDeleteGroupsOnly: Boolean
+    private val isDownloadPrepurge: Boolean
+    private val operation: ToolsActivity.MassOperation
 
+    private var deleteMax = 0
     private var deleteProgress = 0
     private var nbError = 0
 
@@ -62,20 +68,32 @@ abstract class BaseDeleteWorker(
         isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly
         isDownloadPrepurge = inputData.isDownloadPrepurge
+        operation =
+            if (1 == inputData.massOperation) ToolsActivity.MassOperation.STREAM else ToolsActivity.MassOperation.DELETE
         dao = ObjectBoxDAO(context)
 
         // Queried here to avoid serialization hard-limit of androidx.work.Data.Builder
         // when passing a large long[] through DeleteData
-        if (inputData.isDeleteAllContentExceptFavsBooks || inputData.isDeleteAllContentExceptFavsGroups) {
-            val keptContentIds = dao.selectStoredFavContentIds(
-                inputData.isDeleteAllContentExceptFavsBooks,
-                inputData.isDeleteAllContentExceptFavsGroups
-            )
-            val deletedContentIds: MutableSet<Long> = HashSet()
-            dao.streamStoredContent(
-                false, -1, false
-            ) { c -> if (!keptContentIds.contains(c.id)) deletedContentIds.add(c.id) }
-            askedContentIds = deletedContentIds.toLongArray()
+        val csb = ContentSearchBundle(inputData.massFilter)
+        if (inputData.massOperation > -1) {
+            val currentFilterContent =
+                ContentSearchManager.searchContentIds(csb, dao).toSet()
+
+            val scope = if (inputData.isMassInvertScope) {
+                val processedContentIds: MutableSet<Long> = HashSet()
+                dao.streamStoredContent(false, -1, false)
+                { c -> if (!currentFilterContent.contains(c.id)) processedContentIds.add(c.id) }
+                processedContentIds
+            } else {
+                currentFilterContent
+            }
+
+            askedContentIds = if (inputData.isMassKeepFavGroups) {
+                val favGroupsContent = dao.selectStoredFavContentIds(false, true).toSet()
+                scope.filterNot { e -> favGroupsContent.contains(e) }.toLongArray()
+            } else {
+                scope.toLongArray()
+            }
         }
         contentIds = askedContentIds
         deleteMax = contentIds.size + contentPurgeIds.size + groupIds.size + queueIds.size
@@ -98,7 +116,7 @@ abstract class BaseDeleteWorker(
         nbError = 0
 
         // First chain contents, then groups (to be sure to delete empty groups only)
-        if (contentIds.isNotEmpty()) removeContentList(contentIds)
+        if (contentIds.isNotEmpty()) processContentList(contentIds, operation)
         if (contentPurgeIds.isNotEmpty()) purgeContentList(contentPurgeIds, contentPurgeKeepCovers)
         if (groupIds.isNotEmpty()) removeGroups(groupIds, isDeleteGroupsOnly)
 
@@ -109,21 +127,23 @@ abstract class BaseDeleteWorker(
         progressDone()
     }
 
-    private fun removeContentList(ids: LongArray) {
+    private fun processContentList(ids: LongArray, operation: ToolsActivity.MassOperation) {
         // Process the list 50 by 50 items
         val nbPackets = ceil((ids.size / 50f).toDouble()).toInt()
         for (i in 0 until nbPackets) {
             val minIndex = i * 50
             val maxIndex = ((i + 1) * 50).coerceAtMost(ids.size)
-            // Flag the content as "being deleted" (triggers blink animation; lock operations)
+            // Flag the content as "being processed" (triggers blink animation; lock operations)
             for (id in minIndex until maxIndex) {
                 if (ids[id] > 0) dao.updateContentProcessedFlag(ids[id], true)
                 if (isStopped) break
             }
-            // Delete it
+            // Process it
             for (id in minIndex until maxIndex) {
-                val c = dao.selectContent(ids[id])
-                c?.let { deleteContent(it) }
+                dao.selectContent(ids[id])?.let {
+                    if (operation == ToolsActivity.MassOperation.DELETE) deleteContent(it)
+                    else streamContent(it)
+                }
                 if (isStopped) break
             }
         }
@@ -154,6 +174,59 @@ abstract class BaseDeleteWorker(
                 Helper.getStackTraceString(e)
             )
             dao.updateContentProcessedFlag(content.id, false)
+        }
+    }
+
+    private fun streamContent(content: Content) {
+        Timber.d("Checking pages availability")
+        // Reparse content from scratch if images KO
+        val res = if (!ContentHelper.isDownloadable(content)) {
+            trace(Log.INFO, "Pages unreachable; reparsing content %s", content.title)
+            // Reparse content itself
+            val newContent = ContentHelper.reparseFromScratch(content)
+            if (newContent.isEmpty) {
+                dao.updateContentProcessedFlag(content.id, false)
+                newContent
+            } else {
+                val reparsedContent = newContent.get()
+                // Reparse pages
+                val newImages =
+                    ContentHelper.fetchImageURLs(
+                        reparsedContent,
+                        reparsedContent.galleryUrl,
+                        StatusContent.ONLINE
+                    )
+                reparsedContent.setImageFiles(newImages)
+                // Associate new pages' cover with current cover file (that won't be deleted)
+                reparsedContent.cover.setStatus(StatusContent.DOWNLOADED).fileUri =
+                    content.cover.fileUri
+                // Save everything
+                dao.replaceImageList(reparsedContent.id, newImages)
+                Optional.of<Content>(reparsedContent)
+            }
+        } else Optional.of<Content>(content)
+
+        if (res.isPresent) {
+            dao.selectContent(res.get().id)?.let {
+                ContentHelper.purgeFiles(applicationContext, it, false, false)
+                // Update content folder and JSON Uri's after purging
+                it.downloadMode = Content.DownloadMode.STREAM
+                dao.insertContentCore(it)
+                val imgs: List<ImageFile> = it.imageList
+                for (img in imgs) {
+                    img.fileUri = ""
+                    img.size = 0
+                    img.status = StatusContent.ONLINE
+                }
+                dao.insertImageFiles(imgs)
+                it.forceSize(0)
+                it.setIsBeingProcessed(false)
+                dao.insertContent(it)
+                ContentHelper.updateJson(applicationContext, it)
+            }
+            trace(Log.INFO, "Streaming succeeded for %s", content.title)
+        } else {
+            trace(Log.WARN, "Streaming failed for %s", content.title)
         }
     }
 
@@ -228,7 +301,7 @@ abstract class BaseDeleteWorker(
                 val bundle = ContentSearchBundle()
                 bundle.groupId = theGroup.id
                 val containedContentList = dao.searchBookIdsUniversal(bundle).toLongArray()
-                removeContentList(containedContentList)
+                processContentList(containedContentList, ToolsActivity.MassOperation.DELETE)
             }
             if (theGroup != null) {
                 if (!theGroup.items.isEmpty()) {

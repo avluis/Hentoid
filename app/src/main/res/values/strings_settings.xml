@@ -68,8 +68,8 @@
     <string name="pref_cat_advanced">Advanced</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
-    <string name="pref_delete_all_except_favs_title">Delete all books except favourites</string>
-    <string name="pref_delete_all_except_favs_summary">Purge the library; keep favourite books only\nNB: Does not apply to the external library</string>
+    <string name="mass_operations_title">Mass operations</string>
+    <string name="mass_operations_summary">Mass operations on the library</string>
     <plurals name="pref_ask_delete_all_except_favs">
         <item quantity="one">Delete <x:g example="1" id="count">%d</x:g> book\?</item>
         <item quantity="other">Delete <x:g example="2" id="count">%d</x:g> books\?</item>

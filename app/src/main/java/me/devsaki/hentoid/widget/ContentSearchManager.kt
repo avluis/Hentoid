@@ -136,10 +136,8 @@ class ContentSearchManager(val dao: CollectionDAO) {
                 // Universal search
                 data.query.isNotEmpty() -> dao.searchBookIdsUniversal(data)
                 // Advanced search
-                tags.isNotEmpty() || data.location > 0 || data.contentType > 0 -> dao.searchBookIds(
-                    data,
-                    tags
-                )
+                tags.isNotEmpty() || data.location > 0 || data.contentType > 0 ->
+                    dao.searchBookIds(data, tags)
                 // Default search (display recent)
                 else -> dao.selectRecentBookIds(data)
             }

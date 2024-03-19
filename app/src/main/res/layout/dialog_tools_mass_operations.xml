@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/dialog_width"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:clipToPadding="false"
+    android:padding="8dp"
+    tools:context=".activities.PrefsActivity">
+
+    <me.devsaki.hentoid.views.ListPickerView
+        android:id="@+id/mass_operation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        app:entries="@array/mass_operations_entries"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="@string/mass_operation" />
+
+    <me.devsaki.hentoid.views.ListPickerView
+        android:id="@+id/mass_operation_scope"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        app:entries="@array/mass_operations_scope_entries"
+        app:layout_constraintTop_toBottomOf="@id/mass_operation"
+        app:title="@string/mass_operation_scope" />
+
+    <TextView
+        android:id="@+id/external_txt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@color/white_opacity_25"
+        android:gravity="start"
+        android:padding="8dp"
+        android:text="@string/mass_external_tip"
+        android:textSize="@dimen/caption"
+        android:textStyle="italic"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/mass_operation_scope"
+        tools:visibility="visible" />
+
+    <CheckBox
+        android:id="@+id/keep_fav_groups"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/keep_fav_groups"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/external_txt" />
+
+    <TextView
+        android:id="@+id/book_count"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text=" "
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/keep_fav_groups"
+        tools:text="Delete 5464 books - Keep 4894 books" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/mass_delete_confirm"
+        app:layout_constraintTop_toBottomOf="@id/book_count" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_button"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginTop="8dp"
+        android:enabled="true"
+        android:text="@string/mass_delete_action"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_action_delete"
+        app:layout_constraintTop_toBottomOf="@id/confirm" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

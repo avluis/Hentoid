@@ -7,6 +7,7 @@ import androidx.fragment.app.commit
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.bundles.ToolsBundle
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.tools.ToolsFragment
 import me.devsaki.hentoid.util.file.FileHelper
@@ -15,12 +16,19 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 class ToolsActivity : BaseActivity() {
+    enum class MassOperation {
+        DELETE, STREAM
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val intent = intent
+        require(!(null == intent || null == intent.extras)) { "Required init arguments not found" }
+        val parser = ToolsBundle(intent.extras!!)
+
         supportFragmentManager.commit {
-            replace(android.R.id.content, ToolsFragment.newInstance())
+            replace(android.R.id.content, ToolsFragment(parser.contentSearchBundle))
         }
     }
 

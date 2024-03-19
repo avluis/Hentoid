@@ -44,9 +44,9 @@
             android:title="@string/tools_duplicate_detector_title"
             app:iconSpaceReserved="false" />
         <Preference
-            android:key="pref_delete_all_except_favs"
-            android:summary="@string/pref_delete_all_except_favs_summary"
-            android:title="@string/pref_delete_all_except_favs_title"
+            android:key="mass_operations"
+            android:summary="@string/mass_operations_summary"
+            android:title="@string/mass_operations_title"
             app:iconSpaceReserved="false" />
     </PreferenceScreen>
     <PreferenceScreen

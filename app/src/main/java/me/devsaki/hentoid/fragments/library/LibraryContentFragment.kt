@@ -254,7 +254,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     // Indicate whether this tab is enabled (active on screen) or not
     private var enabled = true
 
-    // TODO doc
+    // Search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
     private var contentSearchBundle: Bundle? = null
 
     // Used to start processing when the recyclerView has finished updating

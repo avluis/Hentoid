@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util
 
 import android.os.Bundle
+import android.os.Parcel
 import android.util.Size
 import android.util.SizeF
 import kotlin.properties.ReadWriteProperty
@@ -229,4 +230,21 @@ fun Bundle.string() = object : ReadWriteProperty<Any, String?> {
             remove(property.name)
         else
             putString(property.name, value)
+}
+
+fun Bundle.toByteArray(): ByteArray {
+    val parcel = Parcel.obtain()
+    parcel.writeBundle(this)
+    val bytes = parcel.marshall()
+    parcel.recycle()
+    return bytes
+}
+
+fun Bundle.fromByteArray(data: ByteArray): Bundle {
+    val parcel = Parcel.obtain()
+    parcel.unmarshall(data, 0, data.size)
+    parcel.setDataPosition(0)
+    val bundle = parcel.readBundle(this.classLoader)
+    parcel.recycle()
+    return bundle ?: Bundle()
 }

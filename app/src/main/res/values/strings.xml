@@ -286,15 +286,30 @@
     <string name="refresh_options_remove_2">Remove folders where no image has been downloaded</string>
     <string name="refresh_options_remove_or">or</string>
 
-    <!-- Delete all except favs -->
-    <string name="delete_title">Delete all except favourites</string>
-    <string name="keep_fav_books">Keep favourite books</string>
-    <string name="keep_fav_groups">Keep favourite groups</string>
+    <!-- Mass operations -->
+    <string name="mass_operation">Operation</string>
+    <string name="mass_operation_1">Delete</string>
+    <string name="mass_operation_2">Switch to streaming</string>
+    <string name="mass_operation_scope">Scope</string>
+    <string name="mass_operation_scope_1">Current filter of the library screen</string>
+    <string name="mass_operation_scope_2">All books except current filter of the library screen</string>
+    <string name="mass_external_tip">Note : External books will be deleted by this operation</string>
+    <string name="keep_fav_groups">Do not process books inside favourite groups</string>
     <plurals name="book_keep">
         <item quantity="one">Keep <x:g example="1" id="number">%1$d</x:g> book</item>
         <item quantity="other">Keep <x:g example="2" id="number">%1$d</x:g> books</item>
     </plurals>
+    <plurals name="book_delete">
+        <item quantity="one">Delete <x:g example="1" id="number">%1$d</x:g> book</item>
+        <item quantity="other">Delete <x:g example="2" id="number">%1$d</x:g> books</item>
+    </plurals>
+    <plurals name="book_stream">
+        <item quantity="one">Switch <x:g example="1" id="number">%1$d</x:g> book to streaming</item>
+        <item quantity="other">Switch <x:g example="2" id="number">%1$d</x:g> books to streaming</item>
+    </plurals>
+    <string name="mass_delete_confirm">I know what I\'m doing</string>
     <string name="mass_delete_action">Mass delete</string>
+    <string name="mass_stream_action">Mass switch to stream</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>
     <plurals name="book_progress">
         <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> book</item>

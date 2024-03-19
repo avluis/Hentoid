@@ -22,6 +22,7 @@ import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
+import me.devsaki.hentoid.activities.bundles.ToolsBundle
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
 import me.devsaki.hentoid.enums.Site
@@ -42,11 +43,8 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     private val favBookId = Long.MAX_VALUE
 
-    // ======== COMMUNICATION
-    // Viewmodel
+    // === COMMUNICATION
     private lateinit var viewModel: LibraryViewModel
-
-    // Activity
     private lateinit var activity: WeakReference<LibraryActivity>
 
     // === UI
@@ -56,6 +54,10 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     private val fastAdapter = FastAdapter.with(itemAdapter)
 
     private var updateInfo: UpdateEvent? = null
+
+    // === VARS
+    // Content search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
+    private var contentSearchBundle: Bundle? = null
 
     // Settings listener
     private val prefsListener =
@@ -105,11 +107,9 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
         super.onViewCreated(view, savedInstanceState)
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
-        viewModel.totalQueue.observe(viewLifecycleOwner)
-        { totalQueue: Int -> onTotalQueueChanged(totalQueue) }
-        viewModel.favPages.observe(viewLifecycleOwner)
-        { favPages: Int -> onFavPagesChanged(favPages) }
-
+        viewModel.totalQueue.observe(viewLifecycleOwner) { tq -> onTotalQueueChanged(tq) }
+        viewModel.favPages.observe(viewLifecycleOwner) { fp -> onFavPagesChanged(fp) }
+        viewModel.contentSearchBundle.observe(viewLifecycleOwner) { b -> contentSearchBundle = b }
         updateItems()
     }
 
@@ -140,8 +140,9 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     }
 
     @Suppress("DEPRECATION")
-    private fun launchActivity(activityClass: Class<*>) {
+    private fun launchActivity(activityClass: Class<*>, bundle: Bundle? = null) {
         val intent = Intent(activity.get(), activityClass)
+        if (bundle != null) intent.putExtras(bundle)
         ContextCompat.startActivity(requireContext(), intent, null)
         activity.get()?.apply {
             if (Build.VERSION.SDK_INT >= 34) {
@@ -229,7 +230,9 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     }
 
     private fun onToolsClick() {
-        launchActivity(ToolsActivity::class.java)
+        val toolsBuilder = ToolsBundle()
+        toolsBuilder.contentSearchBundle = contentSearchBundle
+        launchActivity(ToolsActivity::class.java, toolsBuilder.bundle)
     }
 
     private fun onQueueClick() {

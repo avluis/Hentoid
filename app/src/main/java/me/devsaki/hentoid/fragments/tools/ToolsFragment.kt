@@ -22,6 +22,7 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
 import me.devsaki.hentoid.activities.RenamingRulesActivity
+import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.core.clearAppCache
 import me.devsaki.hentoid.core.clearWebviewCache
 import me.devsaki.hentoid.core.startLocalActivity
@@ -45,7 +46,8 @@ import java.nio.charset.StandardCharsets
 
 
 @Suppress("PrivatePropertyName")
-class ToolsFragment : PreferenceFragmentCompat(), MassDeleteDialogFragment.Parent {
+class ToolsFragment(private val contentSearchBundle: Bundle?) : PreferenceFragmentCompat(),
+    MassOperationsDialogFragment.Parent {
 
     private val DUPLICATE_DETECTOR_KEY = "tools_duplicate_detector"
     private val EXPORT_LIBRARY = "export_library"
@@ -57,14 +59,10 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteDialogFragment.Paren
     private val ACCESS_LATEST_LOGS = "tools_latest_logs"
     private val CLEAR_BROWSER_CACHE = "cache_browser"
     private val CLEAR_APP_CACHE = "cache_app"
+    private val MASS_OPERATIONS = "mass_operations"
+
 
     private var rootView: View? = null
-
-    companion object {
-        fun newInstance(): ToolsFragment {
-            return ToolsFragment()
-        }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -87,8 +85,8 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteDialogFragment.Paren
                 true
             }
 
-            Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
-                MassDeleteDialogFragment.invoke(this)
+            MASS_OPERATIONS -> {
+                MassOperationsDialogFragment.invoke(this, contentSearchBundle)
                 true
             }
 
@@ -185,7 +183,7 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteDialogFragment.Paren
         }
 
     override fun onNavigateToScreen(preferenceScreen: PreferenceScreen) {
-        val preferenceFragment = ToolsFragment().withArguments {
+        val preferenceFragment = ToolsFragment(contentSearchBundle).withArguments {
             putString(ARG_PREFERENCE_ROOT, preferenceScreen.key)
         }
 
@@ -272,16 +270,22 @@ class ToolsFragment : PreferenceFragmentCompat(), MassDeleteDialogFragment.Paren
         }
     }
 
-    override fun onMassDelete(keepBookPrefs: Boolean, keepGroupPrefs: Boolean) {
+    override fun onMassProcess(
+        operation: ToolsActivity.MassOperation,
+        invertScope: Boolean,
+        keepGroupPrefs: Boolean
+    ) {
         ProgressDialogFragment.invoke(
             this,
-            resources.getString(R.string.delete_title),
+            resources.getString(R.string.mass_operations_title),
             R.plurals.book
         )
 
         val builder = DeleteData.Builder()
-        builder.setDeleteAllContentExceptFavsBooks(keepBookPrefs)
-        builder.setDeleteAllContentExceptFavsGroups(keepGroupPrefs)
+        builder.setMassFilter(contentSearchBundle ?: Bundle())
+        builder.setMassOperation(operation.ordinal)
+        builder.setMassInvertScope(invertScope)
+        builder.setMassKeepFavGroups(keepGroupPrefs)
 
         val workManager = WorkManager.getInstance(requireContext())
         workManager.enqueueUniqueWork(

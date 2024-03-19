@@ -435,6 +435,16 @@
         <item>@string/lock_type_biometric</item>
     </string-array>
 
+    <!-- Mass operations dialog -->
+    <string-array name="mass_operations_entries" translatable="false">
+        <item>@string/mass_operation_1</item>
+        <item>@string/mass_operation_2</item>
+    </string-array>
+    <string-array name="mass_operations_scope_entries" translatable="false">
+        <item>@string/mass_operation_scope_1</item>
+        <item>@string/mass_operation_scope_2</item>
+    </string-array>
+
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>
     <string name="error" translatable="false">Error</string>

@@ -35,6 +35,10 @@ object Settings {
     // LOCK
     var lockType: Int by IntSetting(Key.LOCK_TYPE, 0)
 
+    // MASS OPERATIONS
+    var massOperation : Int by IntSetting("MASS_OPERATION", 0)
+    var massOperationScope : Int by IntSetting("MASS_SCOPE", 0)
+
     // TRANSFORM
     var isResizeEnabled: Boolean by BoolSetting("TRANSFORM_RESIZE_ENABLED", false)
     var resizeMethod: Int by IntSetting("TRANSFORM_RESIZE_METHOD", 0)

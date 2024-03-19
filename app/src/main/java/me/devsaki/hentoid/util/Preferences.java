@@ -825,7 +825,6 @@ public final class Preferences {
         public static final String APP_PREVIEW = "pref_app_preview";
         static final String CHECK_UPDATES = "pref_check_updates";
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
-        public static final String DELETE_ALL_EXCEPT_FAVS = "pref_delete_all_except_favs";
         static final String WELCOME_DONE = "pref_welcome_done";
         static final String REFRESH_JSON_1_DONE = "refresh_json_1_done";
         static final String VERSION_KEY = "prefs_version";
