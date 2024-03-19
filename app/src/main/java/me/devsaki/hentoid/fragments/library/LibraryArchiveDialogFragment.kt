@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
@@ -33,10 +32,6 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
     companion object {
 
         const val KEY_CONTENTS = "contents"
-
-        fun invoke(parent: Fragment, contentList: List<Content>) {
-            invoke(parent, LibraryArchiveDialogFragment(), getArgs(contentList))
-        }
 
         fun invoke(parent: FragmentActivity, contentList: List<Content>) {
             invoke(parent, LibraryArchiveDialogFragment(), getArgs(contentList))

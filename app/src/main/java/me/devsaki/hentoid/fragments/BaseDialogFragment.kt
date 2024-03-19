@@ -59,7 +59,7 @@ abstract class BaseDialogFragment<T> : DialogFragment() {
     var parent: T? = null
         private set
 
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST") // Can't check against a generic type because of Kotlin type erasure
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 

@@ -993,6 +993,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             CommunicationEvent.Type.ADVANCED_SEARCH -> onAdvancedSearchButtonClick()
             CommunicationEvent.Type.ENABLE -> onEnable()
             CommunicationEvent.Type.DISABLE -> onDisable()
+            CommunicationEvent.Type.UNSELECT -> leaveSelectionMode()
             CommunicationEvent.Type.UPDATE_EDIT_MODE -> setPagingMethod(
                 Preferences.getEndlessScroll(), activity.get()!!.isEditMode()
             )

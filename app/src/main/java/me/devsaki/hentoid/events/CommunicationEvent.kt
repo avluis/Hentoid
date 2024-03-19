@@ -9,6 +9,7 @@ class CommunicationEvent(val type: Type, val recipient: Recipient, val message: 
         CLOSED,
         ENABLE,
         DISABLE,
+        UNSELECT,
         BROADCAST,
         UPDATE_EDIT_MODE,
         SCROLL_TOP

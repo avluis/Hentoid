@@ -82,7 +82,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 
-class LibraryActivity : BaseActivity() {
+class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     // ======== COMMUNICATION
     // Viewmodel
@@ -1220,6 +1220,10 @@ class LibraryActivity : BaseActivity() {
         }
         selectExtension.deselect(selectExtension.selections.toMutableSet())
         LibraryArchiveDialogFragment.invoke(this, items)
+    }
+
+    override fun leaveSelectionMode() {
+        signalCurrentFragment(CommunicationEvent.Type.UNSELECT)
     }
 
     private fun signalCurrentFragment(eventType: CommunicationEvent.Type, message: String = "") {
