@@ -336,21 +336,21 @@ open class CustomWebViewClient : WebViewClient {
 
     @Deprecated("kept for API23", ReplaceWith("shouldOverrideUrlLoadingInternal(view, url, null)"))
     override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-        return shouldOverrideUrlLoadingInternal(view, url, null)
+        return shouldOverrideUrlLoadingInternal(view, url, null, false)
     }
 
     @TargetApi(Build.VERSION_CODES.N)
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         return shouldOverrideUrlLoadingInternal(
-            view, request.url.toString(), request.requestHeaders
+            view, request.url.toString(), request.requestHeaders, request.isForMainFrame
         )
     }
 
     private fun shouldOverrideUrlLoadingInternal(
-        view: WebView, url: String, requestHeaders: Map<String, String>?
+        view: WebView, url: String, headers: Map<String, String>?, isMainPage: Boolean
     ): Boolean {
         if (Settings.isBrowserAugmented
-            && adBlocker.isBlocked(url, requestHeaders)
+            && (!isMainPage && adBlocker.isBlocked(url, headers)) // Don't block the main page
             || !url.startsWith("http")
         ) return true
 
@@ -361,7 +361,7 @@ open class CustomWebViewClient : WebViewClient {
             view.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
                 try {
                     val uri = withContext(Dispatchers.IO) {
-                        downloadFile(view.context, url, requestHeaders)
+                        downloadFile(view.context, url, headers)
                     }
                     FileHelper.openFile(view.context, uri)
                 } catch (t: Throwable) {
@@ -448,7 +448,8 @@ open class CustomWebViewClient : WebViewClient {
             return sendRequest(request)
         }
         if (request.isForMainFrame) mainPageUrl = url
-        val result = shouldInterceptRequestInternal(url, request.requestHeaders)
+        val result =
+            shouldInterceptRequestInternal(url, request.requestHeaders, request.isForMainFrame)
         return result ?: sendRequest(request)
     }
 
@@ -461,9 +462,10 @@ open class CustomWebViewClient : WebViewClient {
      * null if vanilla processing should happen instead
      */
     private fun shouldInterceptRequestInternal(
-        url: String, headers: Map<String, String>?
+        url: String, headers: Map<String, String>?, isMainPage: Boolean
     ): WebResourceResponse? {
-        return if (Settings.isBrowserAugmented && adBlocker.isBlocked(url, headers)
+        return if (Settings.isBrowserAugmented
+            && (!isMainPage && adBlocker.isBlocked(url, headers)) // Don't block the main page
             || !url.startsWith("http")
         ) {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
