@@ -23,6 +23,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
 import me.devsaki.hentoid.activities.RenamingRulesActivity
 import me.devsaki.hentoid.activities.ToolsActivity
+import me.devsaki.hentoid.activities.bundles.ToolsBundle
 import me.devsaki.hentoid.core.clearAppCache
 import me.devsaki.hentoid.core.clearWebviewCache
 import me.devsaki.hentoid.core.startLocalActivity
@@ -46,7 +47,7 @@ import java.nio.charset.StandardCharsets
 
 
 @Suppress("PrivatePropertyName")
-class ToolsFragment(private val contentSearchBundle: Bundle?) : PreferenceFragmentCompat(),
+class ToolsFragment : PreferenceFragmentCompat(),
     MassOperationsDialogFragment.Parent {
 
     private val DUPLICATE_DETECTOR_KEY = "tools_duplicate_detector"
@@ -63,9 +64,16 @@ class ToolsFragment(private val contentSearchBundle: Bundle?) : PreferenceFragme
 
 
     private var rootView: View? = null
+    private var contentSearchBundle: Bundle? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        activity?.intent?.extras?.let { extras ->
+            val parser = ToolsBundle(extras)
+            contentSearchBundle = parser.contentSearchBundle
+        }
+
         rootView = view
     }
 
@@ -183,7 +191,7 @@ class ToolsFragment(private val contentSearchBundle: Bundle?) : PreferenceFragme
         }
 
     override fun onNavigateToScreen(preferenceScreen: PreferenceScreen) {
-        val preferenceFragment = ToolsFragment(contentSearchBundle).withArguments {
+        val preferenceFragment = ToolsFragment().withArguments {
             putString(ARG_PREFERENCE_ROOT, preferenceScreen.key)
         }
 

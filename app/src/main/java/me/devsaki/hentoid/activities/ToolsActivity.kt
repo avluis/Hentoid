@@ -23,12 +23,8 @@ class ToolsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val intent = intent
-        require(!(null == intent || null == intent.extras)) { "Required init arguments not found" }
-        val parser = ToolsBundle(intent.extras!!)
-
         supportFragmentManager.commit {
-            replace(android.R.id.content, ToolsFragment(parser.contentSearchBundle))
+            replace(android.R.id.content, ToolsFragment())
         }
     }
 
