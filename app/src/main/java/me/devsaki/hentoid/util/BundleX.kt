@@ -2,235 +2,84 @@ package me.devsaki.hentoid.util
 
 import android.os.Bundle
 import android.os.Parcel
-import android.util.Size
-import android.util.SizeF
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-fun Bundle.boolean(default: Boolean) = object : ReadWriteProperty<Any, Boolean> {
+/**
+ * Creates a property delegate that uses the property name as the key to get and set [Bundle]
+ * values. The property will return [default] if the key is not present in the [Bundle].
+ */
+private fun <T> property(
+    default: T,
+    get: (String, T) -> T,
+    put: (String, T) -> Unit
+) = object : ReadWriteProperty<Any, T> {
     override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getBoolean(property.name, default)
+        get(property.name, default)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Boolean) =
-        putBoolean(property.name, value)
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) =
+        put(property.name, value)
 }
 
-fun Bundle.bundle() = object : ReadWriteProperty<Any, Bundle?> {
+/**
+ * Creates a property delegate that uses the property name as the key to get and set [Bundle]
+ * values. The property will return null if the key is not present in the [Bundle]
+ * and the value is removed from the [Bundle] when the property is set to null.
+ */
+private fun <T> Bundle.nullableProperty(
+    get: (String) -> T,
+    put: (String, T) -> Unit
+) = object : ReadWriteProperty<Any, T?> {
     override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getBundle(property.name)
+        if (containsKey(property.name)) get(property.name) else null
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Bundle?) =
-        putBundle(property.name, value)
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T?) =
+        if (value == null) remove(property.name) else put(property.name, value)
 }
 
-fun Bundle.byte(default: Byte) = object : ReadWriteProperty<Any, Byte> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getByte(property.name, default)
+fun Bundle.boolean(default: Boolean) = property(default, ::getBoolean, ::putBoolean)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Byte) =
-        putByte(property.name, value)
-}
+fun Bundle.boolean() = nullableProperty(::getBoolean, ::putBoolean)
 
-fun Bundle.char(default: Char) = object : ReadWriteProperty<Any, Char> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getChar(property.name, default)
+fun Bundle.byte(default: Byte) = property(default, ::getByte, ::putByte)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Char) =
-        putChar(property.name, value)
-}
+fun Bundle.byte() = nullableProperty(::getByte, ::putByte)
 
-fun Bundle.short(default: Short) = object : ReadWriteProperty<Any, Short> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getShort(property.name, default)
+fun Bundle.short(default: Short) = property(default, ::getShort, ::putShort)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Short) =
-        putShort(property.name, value)
-}
+fun Bundle.short() = nullableProperty(::getShort, ::putShort)
 
-fun Bundle.int(default: Int) = object : ReadWriteProperty<Any, Int> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getInt(property.name, default)
+fun Bundle.int(default: Int) = property(default, ::getInt, ::putInt)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Int) =
-        putInt(property.name, value)
-}
+fun Bundle.int() = nullableProperty(::getInt, ::putInt)
 
-fun Bundle.long(default: Long) = object : ReadWriteProperty<Any, Long> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getLong(property.name, default)
+fun Bundle.long(default: Long) = property(default, ::getLong, ::putLong)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Long) =
-        putLong(property.name, value)
-}
+fun Bundle.long() = nullableProperty(::getLong, ::putLong)
 
-fun Bundle.float(default: Float) = object : ReadWriteProperty<Any, Float> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getFloat(property.name, default)
+fun Bundle.float(default: Float) = property(default, ::getFloat, ::putFloat)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Float) =
-        putFloat(property.name, value)
-}
+fun Bundle.float() = nullableProperty(::getFloat, ::putFloat)
 
-fun Bundle.string(default: String) = object : ReadWriteProperty<Any, String> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getString(property.name, default)
+fun Bundle.char(default: Char) = property(default, ::getChar, ::putChar)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: String) =
-        putString(property.name, value)
-}
+fun Bundle.char() = nullableProperty(::getChar, ::putChar)
 
-fun Bundle.sizeI() = object : ReadWriteProperty<Any, Size?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getSize(property.name)
+fun Bundle.string(default: String) = property(default, ::getString, ::putString)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Size?) =
-        putSize(property.name, value)
-}
+fun Bundle.string() = nullableProperty(::getString, ::putString)
 
-fun Bundle.sizeF() = object : ReadWriteProperty<Any, SizeF?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getSizeF(property.name)
+fun Bundle.sizeI() = nullableProperty(::getSize, ::putSize)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: SizeF?) =
-        putSizeF(property.name, value)
-}
+fun Bundle.sizeF() = nullableProperty(::getSizeF, ::putSizeF)
 
-fun Bundle.intArray() = object : ReadWriteProperty<Any, IntArray?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getIntArray(property.name)
+fun Bundle.intArray() = nullableProperty(::getIntArray, ::putIntArray)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: IntArray?) =
-        putIntArray(property.name, value)
-}
+fun Bundle.longArray() = nullableProperty(::getLongArray, ::putLongArray)
 
-fun Bundle.longArray() = object : ReadWriteProperty<Any, LongArray?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getLongArray(property.name)
+fun Bundle.intArrayList() = nullableProperty(::getIntegerArrayList, ::putIntegerArrayList)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: LongArray?) =
-        putLongArray(property.name, value)
-}
-
-fun Bundle.intArrayList() = object : ReadWriteProperty<Any, ArrayList<Int>?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        getIntegerArrayList(property.name)
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: ArrayList<Int>?) =
-        putIntegerArrayList(property.name, value)
-}
-
-fun Bundle.boolean() = object : ReadWriteProperty<Any, Boolean?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        if (containsKey(property.name))
-            getBoolean(property.name)
-        else
-            null
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Boolean?) {
-        if (value == null)
-            remove(property.name)
-        else
-            putBoolean(property.name, value)
-    }
-}
-
-fun Bundle.byte() = object : ReadWriteProperty<Any, Byte?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        if (containsKey(property.name))
-            getByte(property.name)
-        else
-            null
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Byte?) =
-        if (value == null)
-            remove(property.name)
-        else
-            putByte(property.name, value)
-}
-
-fun Bundle.char() = object : ReadWriteProperty<Any, Char?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        if (containsKey(property.name))
-            getChar(property.name)
-        else
-            null
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Char?) =
-        if (value == null)
-            remove(property.name)
-        else
-            putChar(property.name, value)
-}
-
-fun Bundle.short() = object : ReadWriteProperty<Any, Short?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        if (containsKey(property.name))
-            getShort(property.name)
-        else
-            null
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Short?) =
-        if (value == null)
-            remove(property.name)
-        else
-            putShort(property.name, value)
-}
-
-fun Bundle.int() = object : ReadWriteProperty<Any, Int?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        if (containsKey(property.name))
-            getInt(property.name)
-        else
-            null
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Int?) =
-        if (value == null)
-            remove(property.name)
-        else
-            putInt(property.name, value)
-}
-
-fun Bundle.long() = object : ReadWriteProperty<Any, Long?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        if (containsKey(property.name))
-            getLong(property.name)
-        else
-            null
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Long?) =
-        if (value == null)
-            remove(property.name)
-        else
-            putLong(property.name, value)
-}
-
-fun Bundle.float() = object : ReadWriteProperty<Any, Float?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        if (containsKey(property.name))
-            getFloat(property.name)
-        else
-            null
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: Float?) =
-        if (value == null)
-            remove(property.name)
-        else
-            putFloat(property.name, value)
-}
-
-fun Bundle.string() = object : ReadWriteProperty<Any, String?> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        if (containsKey(property.name))
-            getString(property.name)
-        else
-            null
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: String?) =
-        if (value == null)
-            remove(property.name)
-        else
-            putString(property.name, value)
-}
+fun Bundle.bundle() = nullableProperty(::getBundle, ::putBundle)
 
 fun Bundle.toByteArray(): ByteArray {
     val parcel = Parcel.obtain()
