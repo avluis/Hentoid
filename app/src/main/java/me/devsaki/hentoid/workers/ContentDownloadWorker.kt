@@ -74,11 +74,12 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageHelper.assembleGif
+import me.devsaki.hentoid.util.network.Connectivity
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.addSampleNow
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.util.network.HttpHelper
-import me.devsaki.hentoid.util.network.NetworkHelper
-import me.devsaki.hentoid.util.network.NetworkHelper.Connectivity
+import me.devsaki.hentoid.util.network.getConnectivity
+import me.devsaki.hentoid.util.network.getIncomingNetworkUsage
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -193,7 +194,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.i("Queue is paused. Download aborted.")
             return ImmutablePair(QueuingResult.QUEUE_END, null)
         }
-        val connectivity = NetworkHelper.getConnectivity(context)
+        val connectivity = context.getConnectivity()
         // Check for network connectivity
         if (Connectivity.NO_INTERNET == connectivity) {
             Timber.i("No internet connection available. Queue paused.")
@@ -726,7 +727,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
 
             // Download speed and size estimation
-            val networkBytesNow = NetworkHelper.getIncomingNetworkUsage(applicationContext)
+            val networkBytesNow = applicationContext.getIncomingNetworkUsage()
             deltaNetworkBytes = networkBytesNow - networkBytes
             if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD * refreshDelayMs / 1000f && firstPageDownloaded) nbDeltaLowNetwork++ // LOW_NETWORK_THRESHOLD KBps threshold once download has started
             else nbDeltaLowNetwork = 0
@@ -789,7 +790,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 (estimateBookSizeMB > Preferences.getDownloadLargeOnlyWifiThresholdMB()
                         || totalPages > Preferences.getDownloadLargeOnlyWifiThresholdPages())
             ) {
-                val connectivity = NetworkHelper.getConnectivity(applicationContext)
+                val connectivity = applicationContext.getConnectivity()
                 if (Connectivity.WIFI != connectivity) {
                     // Move the book to the errors queue and signal it as skipped
                     logErrorRecord(content.id, ErrorType.WIFI, content.url, "Book", "")
