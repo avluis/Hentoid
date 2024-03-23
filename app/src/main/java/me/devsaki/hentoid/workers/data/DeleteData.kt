@@ -11,20 +11,20 @@ import me.devsaki.hentoid.util.toByteArray
  * <p>
  * Use Builder class to set data; use Parser class to get data
  */
-object DeleteData {
-    private const val KEY_CONTENT_IDS = "contentIds"
-    private const val KEY_CONTENT_PURGE_IDS = "contentPurgeIds"
-    private const val KEY_CONTENT_PURGE_KEEPCOVERS = "contentPurgeKeepCovers"
-    private const val KEY_GROUP_IDS = "groupIds"
-    private const val KEY_QUEUE_IDS = "queueIds"
-    private const val KEY_DELETE_ALL_QUEUE_RECORDS = "deleteAllQueueRecords"
-    private const val KEY_DELETE_GROUPS_ONLY = "deleteGroupsOnly"
-    private const val KEY_MASS_OPERATION = "massOperation"
-    private const val KEY_MASS_FILTER = "massFilter"
-    private const val KEY_MASS_INVERT_SCOPE = "massInvertScope"
-    private const val KEY_MASS_KEEP_FAV_GROUPS = "massKeepFavGroups"
-    private const val KEY_DL_PREPURGE = "downloadPrepurge"
+private const val KEY_CONTENT_IDS = "contentIds"
+private const val KEY_CONTENT_PURGE_IDS = "contentPurgeIds"
+private const val KEY_CONTENT_PURGE_KEEPCOVERS = "contentPurgeKeepCovers"
+private const val KEY_GROUP_IDS = "groupIds"
+private const val KEY_QUEUE_IDS = "queueIds"
+private const val KEY_DELETE_ALL_QUEUE_RECORDS = "deleteAllQueueRecords"
+private const val KEY_DELETE_GROUPS_ONLY = "deleteGroupsOnly"
+private const val KEY_MASS_OPERATION = "massOperation"
+private const val KEY_MASS_FILTER = "massFilter"
+private const val KEY_MASS_INVERT_SCOPE = "massInvertScope"
+private const val KEY_MASS_KEEP_FAV_GROUPS = "massKeepFavGroups"
+private const val KEY_DL_PREPURGE = "downloadPrepurge"
 
+class DeleteData {
     class Builder {
         private val builder = Data.Builder()
         fun setContentIds(value: List<Long>) {
