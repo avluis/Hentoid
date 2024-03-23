@@ -55,7 +55,9 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.util.LogEntry;
+import me.devsaki.hentoid.util.LogHelperKt;
+import me.devsaki.hentoid.util.LogInfo;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
@@ -141,11 +143,11 @@ public class PrimaryImportWorker extends BaseWorker {
         EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.Type.COMPLETE, R.id.import_primary, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, Object... t) {
+    private void trace(int priority, int chapter, List<LogEntry> memoryLog, String s, Object... t) {
         s = String.format(s, t);
         Timber.log(priority, s);
         boolean isError = (priority > Log.INFO);
-        if (null != memoryLog) memoryLog.add(new LogHelper.LogEntry(s, chapter, isError));
+        if (null != memoryLog) memoryLog.add(new LogEntry(s, chapter, isError));
     }
 
 
@@ -171,7 +173,7 @@ public class PrimaryImportWorker extends BaseWorker {
         booksOK = 0;
         booksKO = 0;
         nbFolders = 0;
-        List<LogHelper.LogEntry> log = new ArrayList<>();
+        List<LogEntry> log = new ArrayList<>();
         Context context = getApplicationContext();
 
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
@@ -282,7 +284,7 @@ public class PrimaryImportWorker extends BaseWorker {
             Thread.currentThread().interrupt();
         } finally {
             // Write log in root folder
-            DocumentFile logFile = LogHelper.INSTANCE.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, location, log));
+            DocumentFile logFile = LogHelperKt.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, location, log));
 
             if (!isStopped()) { // Should only be done when things have run properly
                 CollectionDAO dao = new ObjectBoxDAO(context);
@@ -306,7 +308,7 @@ public class PrimaryImportWorker extends BaseWorker {
             @NonNull final CollectionDAO dao,
             @NonNull final List<DocumentFile> bookFolders,
             @NonNull final DocumentFile bookFolder,
-            @NonNull final List<LogHelper.LogEntry> log,
+            @NonNull final List<LogEntry> log,
             boolean rename,
             boolean renumberPages,
             boolean cleanNoJSON,
@@ -522,8 +524,8 @@ public class PrimaryImportWorker extends BaseWorker {
         else return i1.getPageUrl().equals(url);
     }
 
-    private LogHelper.LogInfo buildLogInfo(boolean cleanup, StorageLocation location, @NonNull List<LogHelper.LogEntry> log) {
-        LogHelper.LogInfo logInfo = new LogHelper.LogInfo((cleanup ? "cleanup_log_" : "import_log_") + location.name());
+    private LogInfo buildLogInfo(boolean cleanup, StorageLocation location, @NonNull List<LogEntry> log) {
+        LogInfo logInfo = new LogInfo((cleanup ? "cleanup_log_" : "import_log_") + location.name());
         logInfo.setHeaderName(cleanup ? "Cleanup" : "Import");
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);
@@ -547,7 +549,7 @@ public class PrimaryImportWorker extends BaseWorker {
         return false;
     }
 
-    private void renumberPages(@NonNull final Context context, @NonNull Content content, @NonNull List<ImageFile> contentImages, @NonNull final List<LogHelper.LogEntry> log) {
+    private void renumberPages(@NonNull final Context context, @NonNull Content content, @NonNull List<ImageFile> contentImages, @NonNull final List<LogEntry> log) {
         int naturalOrder = 0;
         int nbRenumbered = 0;
         List<ImageFile> orderedImages = Stream.of(contentImages).sortBy(ImageFile::getOrder).filter(ImageFile::isReadable).toList();
@@ -577,7 +579,7 @@ public class PrimaryImportWorker extends BaseWorker {
         }
     }
 
-    private void importQueue(@NonNull final Context context, @NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+    private void importQueue(@NonNull final Context context, @NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogEntry> log) {
         trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Queue JSON found");
         eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseCollectionJson(context, queueFile);
@@ -610,7 +612,7 @@ public class PrimaryImportWorker extends BaseWorker {
         }
     }
 
-    private void importGroups(@NonNull final Context context, @NonNull DocumentFile groupsFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+    private void importGroups(@NonNull final Context context, @NonNull DocumentFile groupsFile, @NonNull CollectionDAO dao, @NonNull List<LogEntry> log) {
         trace(Log.INFO, STEP_GROUPS, log, "Groups JSON found");
         eventProgress(STEP_GROUPS, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseCollectionJson(context, groupsFile);
@@ -624,7 +626,7 @@ public class PrimaryImportWorker extends BaseWorker {
         }
     }
 
-    private void importCustomGroups(JsonContentCollection contentCollection, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+    private void importCustomGroups(JsonContentCollection contentCollection, @NonNull CollectionDAO dao, @NonNull List<LogEntry> log) {
         List<Group> groups = contentCollection.getGroups(Grouping.CUSTOM);
         eventProgress(STEP_GROUPS, groups.size(), 0, 0);
         trace(Log.INFO, STEP_GROUPS, log, "%s custom groups detected", groups.size() + "");
@@ -645,7 +647,7 @@ public class PrimaryImportWorker extends BaseWorker {
         trace(Log.INFO, STEP_GROUPS, log, "Import custom groups succeeded");
     }
 
-    private void importEditedGroups(JsonContentCollection contentCollection, Grouping grouping, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+    private void importEditedGroups(JsonContentCollection contentCollection, Grouping grouping, @NonNull CollectionDAO dao, @NonNull List<LogEntry> log) {
         List<Group> editedArtistGroups = contentCollection.getGroups(grouping);
         trace(Log.INFO, STEP_GROUPS, log, "%d edited %s groups detected", editedArtistGroups.size(), grouping.getDisplayName());
         for (Group g : editedArtistGroups) {
@@ -661,7 +663,7 @@ public class PrimaryImportWorker extends BaseWorker {
         trace(Log.INFO, STEP_GROUPS, log, "Import edited %s groups succeeded", grouping.getDisplayName());
     }
 
-    private void importBookmarks(@NonNull final Context context, @NonNull DocumentFile bookmarksFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+    private void importBookmarks(@NonNull final Context context, @NonNull DocumentFile bookmarksFile, @NonNull CollectionDAO dao, @NonNull List<LogEntry> log) {
         trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Bookmarks JSON found");
         eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseCollectionJson(context, bookmarksFile);
@@ -676,7 +678,7 @@ public class PrimaryImportWorker extends BaseWorker {
         }
     }
 
-    private void importRenamingRules(@NonNull final Context context, @NonNull DocumentFile rulesFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+    private void importRenamingRules(@NonNull final Context context, @NonNull DocumentFile rulesFile, @NonNull CollectionDAO dao, @NonNull List<LogEntry> log) {
         trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Renaming rules JSON found");
         eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseCollectionJson(context, rulesFile);

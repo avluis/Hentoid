@@ -13,9 +13,11 @@ import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.databinding.DialogLibraryErrorsBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.LogHelper
+import me.devsaki.hentoid.util.LogEntry
+import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.writeLog
 
 /**
  * Info dialog for download errors details
@@ -99,16 +101,16 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
         }
     }
 
-    private fun createLog(content: Content): LogHelper.LogInfo {
-        val log: MutableList<LogHelper.LogEntry> = ArrayList()
-        val errorLogInfo = LogHelper.LogInfo("error_log" + content.id)
+    private fun createLog(content: Content): LogInfo {
+        val log: MutableList<LogEntry> = ArrayList()
+        val errorLogInfo = LogInfo("error_log" + content.id)
         errorLogInfo.setHeaderName("Error")
         errorLogInfo.setNoDataMessage("No error detected.")
         errorLogInfo.setEntries(log)
         val errorLog: List<ErrorRecord>? = content.errorLog
         if (errorLog != null) {
             errorLogInfo.setHeader("Error log for " + content.title + " [" + content.uniqueSiteId + "@" + content.site.description + "] : " + errorLog.size + " errors")
-            for (e in errorLog) log.add(LogHelper.LogEntry(e.timestamp, e.toString()))
+            for (e in errorLog) log.add(LogEntry(e.timestamp, e.toString()))
         }
         return errorLogInfo
     }
@@ -116,13 +118,13 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
     private fun showErrorLog(content: Content) {
         activity?.toast(R.string.redownload_generating_log_file)
         val logInfo = createLog(content)
-        val logFile = LogHelper.writeLog(requireContext(), logInfo)
+        val logFile = requireContext().writeLog(logInfo)
         if (logFile != null) FileHelper.openFile(requireContext(), logFile)
     }
 
     private fun shareErrorLog(content: Content) {
         val logInfo = createLog(content)
-        val logFile = LogHelper.writeLog(requireContext(), logInfo)
+        val logFile = requireContext().writeLog(logInfo)
         if (logFile != null) FileHelper.shareFile(
             requireContext(), logFile.uri, "Error log for book ID " + content.uniqueSiteId
         )

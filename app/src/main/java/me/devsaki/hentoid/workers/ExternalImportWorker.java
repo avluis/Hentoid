@@ -40,7 +40,9 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.util.LogEntry;
+import me.devsaki.hentoid.util.LogHelperKt;
+import me.devsaki.hentoid.util.LogInfo;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
@@ -101,11 +103,11 @@ public class ExternalImportWorker extends BaseWorker {
         EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.Type.COMPLETE, R.id.import_external, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, String... t) {
+    private void trace(int priority, int chapter, List<LogEntry> memoryLog, String s, String... t) {
         s = String.format(s, (Object[]) t);
         Timber.log(priority, s);
         boolean isError = (priority > Log.INFO);
-        if (null != memoryLog) memoryLog.add(new LogHelper.LogEntry(s, chapter, isError));
+        if (null != memoryLog) memoryLog.add(new LogEntry(s, chapter, isError));
     }
 
 
@@ -115,7 +117,7 @@ public class ExternalImportWorker extends BaseWorker {
     private void startImport(@NonNull final Context context) {
         int booksOK = 0;                        // Number of books imported
         int booksKO = 0;                        // Number of folders found with no valid book inside
-        List<LogHelper.LogEntry> log = new ArrayList<>();
+        List<LogEntry> log = new ArrayList<>();
 
         DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri());
         if (null == rootFolder) {
@@ -201,14 +203,14 @@ public class ExternalImportWorker extends BaseWorker {
             Timber.w(e);
             Helper.logException(e);
         } finally {
-            logFile = LogHelper.INSTANCE.writeLog(context, buildLogInfo(log));
+            logFile = LogHelperKt.writeLog(context, buildLogInfo(log));
             eventComplete(PrimaryImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
         }
     }
 
-    private LogHelper.LogInfo buildLogInfo(@NonNull List<LogHelper.LogEntry> log) {
-        LogHelper.LogInfo logInfo = new LogHelper.LogInfo("import_external_log");
+    private LogInfo buildLogInfo(@NonNull List<LogEntry> log) {
+        LogInfo logInfo = new LogInfo("import_external_log");
         logInfo.setHeaderName("Import external");
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);
@@ -222,7 +224,7 @@ public class ExternalImportWorker extends BaseWorker {
             @NonNull final List<String> parentNames,
             @NonNull final List<Content> library,
             @NonNull final CollectionDAO dao,
-            @NonNull final List<LogHelper.LogEntry> log) {
+            @NonNull final List<LogEntry> log) {
         if (parentNames.size() > 4) return; // We've descended too far
 
         String rootName = (null == root.getName()) ? "" : root.getName();

@@ -9,11 +9,11 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
-import me.devsaki.hentoid.util.LogHelper.LogEntry
-import me.devsaki.hentoid.util.LogHelper.LogInfo
-import me.devsaki.hentoid.util.LogHelper.writeLog
+import me.devsaki.hentoid.util.LogEntry
+import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
+import me.devsaki.hentoid.util.writeLog
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 
@@ -123,7 +123,7 @@ abstract class BaseWorker(
         val logInfo = LogInfo(logName)
         logInfo.setHeaderName(logName)
         logInfo.setEntries(logs!!)
-        writeLog(applicationContext, logInfo)
+        applicationContext.writeLog(logInfo)
     }
 
     protected abstract fun getStartNotification(): BaseNotification?

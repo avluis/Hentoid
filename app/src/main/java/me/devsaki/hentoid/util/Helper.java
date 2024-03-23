@@ -553,14 +553,14 @@ public final class Helper {
     }
 
     public static void logException(Throwable t) {
-        List<LogHelper.LogEntry> log = new ArrayList<>();
-        log.add(new LogHelper.LogEntry(StringHelper.protect(t.getMessage())));
-        log.add(new LogHelper.LogEntry(Helper.getStackTraceString(t)));
+        List<LogEntry> log = new ArrayList<>();
+        log.add(new LogEntry(StringHelper.protect(t.getMessage())));
+        log.add(new LogEntry(Helper.getStackTraceString(t)));
 
-        LogHelper.LogInfo logInfo = new LogHelper.LogInfo("latest-crash");
+        LogInfo logInfo = new LogInfo("latest-crash");
         logInfo.setEntries(log);
         logInfo.setHeaderName("latest-crash");
-        LogHelper.INSTANCE.writeLog(HentoidApp.Companion.getInstance(), logInfo);
+        LogHelperKt.writeLog(HentoidApp.Companion.getInstance(), logInfo);
     }
 
     public static String getStackTraceString(Throwable t) {
