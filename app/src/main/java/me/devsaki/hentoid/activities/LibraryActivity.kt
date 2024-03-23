@@ -42,6 +42,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.LibraryActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.core.convertLocaleToEnglish
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -58,7 +59,7 @@ import me.devsaki.hentoid.fragments.library.LibraryBottomGroupsFragment
 import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment
-import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
+import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
@@ -332,7 +333,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     fun onAppUpdated(event: AppUpdatedEvent) {
         EventBus.getDefault().removeStickyEvent(event)
         // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) invoke(this)
+        if (!BuildConfig.DEBUG) show(UpdateSuccessDialogFragment())
     }
 
     override fun onDestroy() {

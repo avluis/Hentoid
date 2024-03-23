@@ -61,6 +61,7 @@ import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.parseSearchUri
 import me.devsaki.hentoid.core.Consumer
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
@@ -77,7 +78,6 @@ import me.devsaki.hentoid.fragments.library.LibraryTransformDialogFragment.Compa
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
-import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
@@ -967,7 +967,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     fun onAppUpdated(event: AppUpdatedEvent) {
         EventBus.getDefault().removeStickyEvent(event)
         // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) invoke(this)
+        if (!BuildConfig.DEBUG) show(UpdateSuccessDialogFragment())
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
