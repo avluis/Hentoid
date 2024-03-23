@@ -63,15 +63,13 @@ public final class ImageHelper {
     public static boolean isImageAnimated(byte[] data) {
         if (data.length < 400) return false;
 
-        switch (getMimeTypeFromPictureBinary(data)) {
-            case MIME_IMAGE_APNG:
-                return true;
-            case MIME_IMAGE_GIF:
-                return FileHelper.findSequencePosition(data, 0, "NETSCAPE".getBytes(CHARSET_LATIN_1), 400) > -1;
-            case MIME_IMAGE_WEBP:
-                return FileHelper.findSequencePosition(data, 0, "ANIM".getBytes(CHARSET_LATIN_1), 400) > -1;
-            default:
-                return false;
-        }
+        return switch (getMimeTypeFromPictureBinary(data)) {
+            case MIME_IMAGE_APNG -> true;
+            case MIME_IMAGE_GIF ->
+                    FileHelper.findSequencePosition(data, 0, "NETSCAPE".getBytes(CHARSET_LATIN_1), 400) > -1;
+            case MIME_IMAGE_WEBP ->
+                    FileHelper.findSequencePosition(data, 0, "ANIM".getBytes(CHARSET_LATIN_1), 400) > -1;
+            default -> false;
+        };
     }
 }

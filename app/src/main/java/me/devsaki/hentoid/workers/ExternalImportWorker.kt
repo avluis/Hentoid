@@ -288,7 +288,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         val logInfo = LogInfo("import_external_log")
         logInfo.setHeaderName("Import external")
         logInfo.setNoDataMessage("No content detected.")
-        logInfo.setEntries(log.toMutableList())
+        logInfo.setEntries(log)
         return logInfo
     }
 

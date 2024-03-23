@@ -68,18 +68,16 @@ class LogInfo(// Log file name, without the extension
 ) {
 
     // Display name of the log, for use in its header
-    var logName = ""
-        private set
+    private var logName = ""
 
     // Message to show when the log contains no data (to avoid creating a totally empty log file)
-    var noDataMessage = "no data"
-        private set
+    private var noDataMessage = "no data"
 
     // Message to display at the very beginning of the log
     var header = ""
         private set
-    var entries: MutableList<LogEntry> = ArrayList()
-        private set
+
+    private var entries: MutableList<LogEntry> = ArrayList()
 
     /**
      * Set the log file name, without the extension
@@ -129,8 +127,9 @@ class LogInfo(// Log file name, without the extension
      *
      * @param entries Log entries
      */
-    fun setEntries(entries: MutableList<LogEntry>) {
-        this.entries = entries
+    fun setEntries(entries: List<LogEntry>) {
+        this.entries.clear()
+        this.entries.addAll(entries)
     }
 
     /**

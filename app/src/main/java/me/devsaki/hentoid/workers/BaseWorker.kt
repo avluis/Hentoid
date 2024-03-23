@@ -120,10 +120,12 @@ abstract class BaseWorker(
     }
 
     private fun dumpLog() {
-        val logInfo = LogInfo(logName)
-        logInfo.setHeaderName(logName)
-        logInfo.setEntries(logs!!)
-        applicationContext.writeLog(logInfo)
+        logs?.let {
+            val logInfo = LogInfo(logName)
+            logInfo.setHeaderName(logName)
+            logInfo.setEntries(it)
+            applicationContext.writeLog(logInfo)
+        }
     }
 
     protected abstract fun getStartNotification(): BaseNotification?
