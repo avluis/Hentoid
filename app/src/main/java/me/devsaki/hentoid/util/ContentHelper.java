@@ -1619,10 +1619,10 @@ public final class ContentHelper {
         // Refine by running the actual duplicate detection algorithm against the rough candidates
         List<DuplicateEntry> entries = new ArrayList<>();
         StringSimilarity cosine = new Cosine();
-        DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useLanguage, useCover, true, pHash);
-        List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, useTitle, useArtist, useLanguage, useCover, true, Long.MIN_VALUE)).toList();
-        for (DuplicateHelper.DuplicateCandidate candidate : candidates) {
-            DuplicateEntry entry = DuplicateHelper.INSTANCE.processContent(reference, candidate, useTitle, useCover, useArtist, useLanguage, true, sensitivity, cosine);
+        DuplicateCandidate reference = new DuplicateCandidate(content, useTitle, useArtist, useLanguage, useCover, true, pHash);
+        List<DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateCandidate(c, useTitle, useArtist, useLanguage, useCover, true, Long.MIN_VALUE)).toList();
+        for (DuplicateCandidate candidate : candidates) {
+            DuplicateEntry entry = DuplicateHelperKt.processContent(reference, candidate, useTitle, useCover, useArtist, useLanguage, true, sensitivity, cosine);
             if (entry != null) entries.add(entry);
         }
         // Sort by similarity and size (unfortunately, Comparator.comparing is API24...)
@@ -1645,8 +1645,8 @@ public final class ContentHelper {
      */
     public static void computeAndSaveCoverHash(@NonNull final Context context,
                                                @NonNull final Content content, @NonNull final CollectionDAO dao) {
-        Bitmap coverBitmap = DuplicateHelper.INSTANCE.getCoverBitmapFromContent(context, content);
-        long pHash = DuplicateHelper.INSTANCE.calcPhash(DuplicateHelper.INSTANCE.getHashEngine(), coverBitmap);
+        Bitmap coverBitmap = DuplicateHelperKt.getCoverBitmapFromContent(context, content);
+        long pHash = DuplicateHelperKt.calcPhash(DuplicateHelperKt.getHashEngine(), coverBitmap);
         if (coverBitmap != null) coverBitmap.recycle();
         content.getCover().setImageHash(pHash);
         dao.insertImageFile(content.getCover());

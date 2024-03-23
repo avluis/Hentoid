@@ -20,11 +20,11 @@ import me.devsaki.hentoid.notification.duplicates.DuplicateCompleteNotification
 import me.devsaki.hentoid.notification.duplicates.DuplicateProgressNotification
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.DuplicateHelper.DuplicateCandidate
-import me.devsaki.hentoid.util.DuplicateHelper.indexCovers
-import me.devsaki.hentoid.util.DuplicateHelper.processContent
+import me.devsaki.hentoid.util.DuplicateCandidate
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.indexCovers
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.processContent
 import me.devsaki.hentoid.util.string_similarity.Cosine
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import me.devsaki.hentoid.workers.data.DuplicateData
