@@ -3,6 +3,7 @@ package me.devsaki.hentoid.core
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dev.skomlach.biometric.compat.AuthenticationFailureReason
@@ -15,6 +16,10 @@ import dev.skomlach.biometric.compat.BiometricPromptCompat
 import dev.skomlach.biometric.compat.BiometricType
 import dev.skomlach.biometric.compat.utils.logging.BiometricLoggerImpl
 import me.devsaki.hentoid.R
+
+fun Fragment.show(dialogFragment: DialogFragment) {
+    dialogFragment.show(childFragmentManager, null)
+}
 
 fun <T : Fragment> T.withArguments(bundleBlock: Bundle.() -> Unit): T {
     arguments = Bundle().apply(bundleBlock)

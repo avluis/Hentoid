@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.mikepenz.fastadapter.FastAdapter
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.databinding.DialogToolsAppLogsBinding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
@@ -30,13 +32,7 @@ import timber.log.Timber
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-class LogsDialogFragment : BaseDialogFragment<Nothing>() {
-
-    companion object {
-        fun invoke(fragment: Fragment) {
-            invoke(fragment, LogsDialogFragment())
-        }
-    }
+class LogsDialogFragment : DialogFragment() {
 
     // == UI
     private var binding: DialogToolsAppLogsBinding? = null
