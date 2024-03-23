@@ -46,6 +46,7 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.core.BiConsumer
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
@@ -799,7 +800,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         val url = StringHelper.protect(webView.url)
         if (Helper.copyPlainTextToClipboard(this, url))
             toast(R.string.web_url_clipboard)
-        UrlDialogFragment.invoke(this, url)
+        show(UrlDialogFragment(url))
     }
 
     /**
