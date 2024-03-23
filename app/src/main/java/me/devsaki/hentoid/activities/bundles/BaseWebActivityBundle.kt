@@ -9,5 +9,5 @@ import me.devsaki.hentoid.util.string
  */
 class BaseWebActivityBundle(val bundle: Bundle = Bundle()) {
 
-    var url by bundle.string(default = "")
+    var url: String by bundle.string(default = "")
 }

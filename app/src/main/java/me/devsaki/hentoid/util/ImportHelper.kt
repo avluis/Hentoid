@@ -602,7 +602,7 @@ fun scanBookFolder(
     dao: CollectionDAO,
     imageFiles: List<DocumentFile>?,
     jsonFile: DocumentFile?
-): Content? {
+): Content {
     Timber.d(">>>> scan book folder %s", bookFolder.uri)
     var result: Content? = null
     if (jsonFile != null) {
@@ -701,7 +701,7 @@ fun scanChapterFolders(
     parentNames: List<String>,
     dao: CollectionDAO,
     jsonFile: DocumentFile?
-): Content? {
+): Content {
     Timber.d(">>>> scan chapter folder %s", parent.uri)
     var result: Content? = null
     if (jsonFile != null) {
@@ -863,8 +863,8 @@ fun scanForArchives(
     explorer: FileExplorer,
     parentNames: List<String>,
     dao: CollectionDAO
-): List<Content?> {
-    val result: MutableList<Content?> = ArrayList()
+): List<Content> {
+    val result: MutableList<Content> = ArrayList()
     for (subfolder in subFolders) {
         val files = explorer.listFiles(context, subfolder, null)
         val archives: MutableList<DocumentFile> = ArrayList()
@@ -916,7 +916,7 @@ fun scanArchive(
     targetStatus: StatusContent,
     dao: CollectionDAO,
     jsonFile: DocumentFile?
-): Content? {
+): Content {
     var result: Content? = null
     if (jsonFile != null) {
         try {
