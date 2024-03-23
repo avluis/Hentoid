@@ -44,6 +44,7 @@ import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
@@ -54,7 +55,6 @@ import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
-import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
@@ -605,7 +605,7 @@ class LibraryGroupsFragment : Fragment(),
     fun onAppUpdated(event: AppUpdatedEvent) {
         EventBus.getDefault().removeStickyEvent(event)
         // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) invoke(this)
+        if (!BuildConfig.DEBUG) show(UpdateSuccessDialogFragment())
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

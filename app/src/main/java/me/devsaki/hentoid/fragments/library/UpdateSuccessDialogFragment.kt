@@ -4,8 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -13,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.databinding.DialogLibraryUpdateSuccessBinding
-import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.GithubRelease
 import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem
@@ -22,17 +20,7 @@ import timber.log.Timber
 /**
  * "update success" dialog
  */
-class UpdateSuccessDialogFragment : BaseDialogFragment<Nothing>() {
-
-    companion object {
-        fun invoke(parent: Fragment) {
-            invoke(parent, UpdateSuccessDialogFragment())
-        }
-
-        fun invoke(parent: FragmentActivity) {
-            invoke(parent, UpdateSuccessDialogFragment())
-        }
-    }
+class UpdateSuccessDialogFragment : DialogFragment() {
 
     // UI
     private var binding: DialogLibraryUpdateSuccessBinding? = null
