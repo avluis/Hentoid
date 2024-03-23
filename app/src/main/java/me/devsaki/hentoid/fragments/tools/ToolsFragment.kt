@@ -33,10 +33,10 @@ import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import okhttp3.internal.format
@@ -120,7 +120,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
 
             CLEAR_BROWSER_CACHE -> {
                 context?.clearWebviewCache {
-                    ToastHelper.toast(
+                    activity?.toast(
                         if (it) R.string.tools_cache_browser_success else
                             if (WebkitPackageHelper.getWebViewUpdating()) R.string.tools_cache_browser_updating_webview
                             else R.string.tools_cache_browser_missing_webview
@@ -137,7 +137,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
                             DiskCache.init(this)
                         }
                     }
-                    ToastHelper.toast(R.string.tools_cache_app_success)
+                    activity?.toast(R.string.tools_cache_app_success)
                 }
                 true
             }

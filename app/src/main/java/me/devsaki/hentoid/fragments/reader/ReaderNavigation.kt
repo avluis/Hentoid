@@ -13,7 +13,7 @@ import me.devsaki.hentoid.databinding.IncludeReaderControlsOverlayBinding
 import me.devsaki.hentoid.ui.InputDialog
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.toast
 import java.util.Locale
 
 class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerBinding) {
@@ -110,7 +110,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
     }
 
     private fun onChapterChanged(chapter: Chapter) {
-        ToastHelper.toast(chapter.name)
+        pageCurrentNumber?.context?.toast(chapter.name)
         updateNextPrevButtonsChapter(chapter)
     }
 

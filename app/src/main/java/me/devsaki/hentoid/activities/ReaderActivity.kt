@@ -12,8 +12,8 @@ import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.fragments.reader.ReaderGalleryFragment
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.ReaderKeyListener
@@ -60,7 +60,7 @@ open class ReaderActivity : BaseActivity() {
             ) &&
             Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
         ) {
-            ToastHelper.toast(R.string.storage_permission_denied)
+            toast(R.string.storage_permission_denied)
             return
         }
 

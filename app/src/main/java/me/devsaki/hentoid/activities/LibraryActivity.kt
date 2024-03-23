@@ -68,10 +68,10 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.SearchCriteria
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
 import me.devsaki.hentoid.util.file.StorageHelper
 import me.devsaki.hentoid.util.showTooltip
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -1283,7 +1283,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun onNewSearchGroupNameExists() {
-        ToastHelper.toast(R.string.group_name_exists)
+        toast(R.string.group_name_exists)
         saveSearchAsGroup()
     }
 

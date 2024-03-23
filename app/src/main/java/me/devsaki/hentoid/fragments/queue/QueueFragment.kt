@@ -66,12 +66,12 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.util.showTooltip
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
@@ -869,7 +869,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             var c = item.content
             // Process the click
             if (null == c) {
-                ToastHelper.toast(R.string.err_no_content)
+                activity.get()?.toast(R.string.err_no_content)
                 return false
             }
             // Retrieve the latest version of the content if storage URI is unknown
@@ -879,7 +879,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 if (!ContentHelper.openReader(
                         requireContext(), c, -1, null, false, false
                     )
-                ) ToastHelper.toast(R.string.err_no_content)
+                ) activity.get()?.toast(R.string.err_no_content)
                 true
             } else false
         }

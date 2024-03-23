@@ -21,7 +21,7 @@ import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.toastShort
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -192,7 +192,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         if (ProcessEvent.Type.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
             topPanel.dismiss()
-            ToastHelper.toastShort(requireContext(), R.string.duplicate_notif_complete_title)
+            activity.get()?.toastShort(R.string.duplicate_notif_complete_title)
         } else if (topPanel.isVisible() && DuplicateDetectorWorker.isRunning(
                 requireContext()
             )

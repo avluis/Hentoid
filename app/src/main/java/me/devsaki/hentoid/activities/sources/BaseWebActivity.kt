@@ -81,7 +81,6 @@ import me.devsaki.hentoid.util.Preferences.Constant
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper.getColor
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.FileHelper
@@ -90,6 +89,7 @@ import me.devsaki.hentoid.util.file.PermissionHelper.requestExternalStorageReadW
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.showTooltip
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.views.NestedScrollWebView
 import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
@@ -452,7 +452,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun checkPermissions() {
         if (Preferences.isBrowserMode()) return
         if (!requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
-            ToastHelper.toast(R.string.web_storage_permission_denied)
+            toast(R.string.web_storage_permission_denied)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -794,7 +794,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun onManageLinkClick() {
         val url = StringHelper.protect(webView.url)
         if (Helper.copyPlainTextToClipboard(this, url))
-            ToastHelper.toast(R.string.web_url_clipboard)
+            toast(R.string.web_url_clipboard)
         UrlDialogFragment.invoke(this, url)
     }
 
@@ -963,7 +963,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         if (currentContent!!.id > 0) currentContent = dao.selectContent(currentContent!!.id)
         if (null == currentContent) return
         if (!isDownloadPlus && StatusContent.DOWNLOADED == currentContent!!.status) {
-            ToastHelper.toast(R.string.already_downloaded)
+            toast(R.string.already_downloaded)
             if (!quickDownload) setActionMode(ActionMode.READ)
             return
         }
@@ -1026,7 +1026,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         val blockedTagsLocal = ContentHelper.getBlockedTags(currentContent!!)
         if (blockedTagsLocal.isNotEmpty()) {
             if (Preferences.getTagBlockingBehaviour() == Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
-                ToastHelper.toast(R.string.blocked_tag, blockedTagsLocal[0])
+                toast(R.string.blocked_tag, blockedTagsLocal[0])
             } else { // Insert directly as an error
                 val errors: MutableList<ErrorRecord> = ArrayList()
                 errors.add(
@@ -1043,7 +1043,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 currentContent!!.status = StatusContent.ERROR
                 if (isReplaceDuplicate) currentContent!!.setContentIdToReplace(duplicateId)
                 dao.insertContent(currentContent!!)
-                ToastHelper.toast(R.string.blocked_tag_queued, blockedTagsLocal[0])
+                toast(R.string.blocked_tag_queued, blockedTagsLocal[0])
                 setActionMode(ActionMode.VIEW_QUEUE)
             }
             return
@@ -1323,12 +1323,12 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
 
             ContentStatus.IN_COLLECTION -> {
-                if (quickDownload) ToastHelper.toast(R.string.already_downloaded)
+                if (quickDownload) toast(R.string.already_downloaded)
                 setActionMode(ActionMode.READ)
             }
 
             ContentStatus.IN_QUEUE -> {
-                if (quickDownload) ToastHelper.toast(R.string.already_queued)
+                if (quickDownload) toast(R.string.already_queued)
                 setActionMode(ActionMode.VIEW_QUEUE)
             }
         }
@@ -1340,7 +1340,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     override fun onResultFailed() {
-        runOnUiThread { ToastHelper.toast(R.string.web_unparsable) }
+        runOnUiThread { toast(R.string.web_unparsable) }
     }
 
     private fun searchForExtraImages(storedContent: Content, onlineContent: Content) {

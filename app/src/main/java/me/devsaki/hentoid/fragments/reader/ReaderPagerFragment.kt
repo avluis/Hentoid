@@ -68,11 +68,24 @@ import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.i
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.Preferences.Constant.*
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_BROWSE_NONE
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_BROWSE_RTL
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_BROWSE_TTB
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_DELETE_ASK_AGAIN
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_DELETE_TARGET_PAGE
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_DIRECTION_LTR
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_DIRECTION_RTL
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_ORIENTATION_VERTICAL
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_05
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_1
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_16
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_4
+import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.views.ZoomableRecyclerView
@@ -719,13 +732,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     private fun onPageFavouriteSuccess(newState: Boolean) {
-        ToastHelper.toast(if (newState) R.string.page_favourite_success else R.string.page_unfavourite_success)
+        activity?.toast(if (newState) R.string.page_favourite_success else R.string.page_unfavourite_success)
         isPageFavourite = newState
         updateFavouriteButtonIcon()
     }
 
     private fun onBookFavouriteSuccess(newState: Boolean) {
-        ToastHelper.toast(if (newState) R.string.book_favourite_success else R.string.book_unfavourite_success)
+        activity?.toast(if (newState) R.string.book_favourite_success else R.string.book_unfavourite_success)
         isContentFavourite = newState
         updateFavouriteButtonIcon()
     }
@@ -1460,12 +1473,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             else -> 2f
         }
         if (showToast) {
-            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) ToastHelper.toast(
+            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) activity?.toast(
                 R.string.slideshow_start_vertical,
                 resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)[convertPrefsDelayToSliderPosition(
                     delayPref
                 )]
-            ) else ToastHelper.toast(R.string.slideshow_start, factor)
+            ) else activity?.toast(R.string.slideshow_start, factor)
         }
         scrollListener.disableScroll()
         if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) {
@@ -1513,7 +1526,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         isSlideshowActive = false
         scrollListener.enableScroll()
-        ToastHelper.toast(R.string.slideshow_stop)
+        activity?.toast(R.string.slideshow_stop)
     }
 
     private fun displayZoomLevel(value: Float) {

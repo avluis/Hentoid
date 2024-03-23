@@ -34,9 +34,9 @@ import me.devsaki.hentoid.util.ImportHelper.setAndScanExternalFolder
 import me.devsaki.hentoid.util.ImportHelper.setAndScanPrimaryFolder
 import me.devsaki.hentoid.util.ImportHelper.showExistingLibraryDialog
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.util.toastShort
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.greenrobot.eventbus.EventBus
@@ -188,7 +188,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
             options.importGroups = false
             val uriStr = Preferences.getStorageUri(location)
             if (uriStr.isEmpty()) {
-                ToastHelper.toastShort(requireContext(), R.string.import_invalid_uri)
+                activity?.toastShort(R.string.import_invalid_uri)
                 dismissAllowingStateLoss()
                 return
             }

@@ -36,7 +36,7 @@ import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.InputDialog.invokeInputDialog
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.toastShort
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
@@ -362,7 +362,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         if (1 == selectedItems.size && context != null) {
             val b = selectedItems.first().getObject()
             if (b != null && Helper.copyPlainTextToClipboard(context, b.url)) {
-                ToastHelper.toastShort(context, R.string.web_url_clipboard)
+                activity?.toastShort(R.string.web_url_clipboard)
                 binding?.selectionToolbar?.visibility = View.INVISIBLE
             }
         }

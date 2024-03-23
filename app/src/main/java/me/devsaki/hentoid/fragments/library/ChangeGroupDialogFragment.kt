@@ -14,7 +14,7 @@ import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.databinding.DialogLibraryChangeGroupBinding
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 
@@ -152,7 +152,7 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                     }
 
                 } else {
-                    ToastHelper.toast(R.string.group_not_selected)
+                    requireActivity().toast(R.string.group_not_selected)
                 }
             } else if (detachRadio.isChecked) {
                 viewModel.moveContentsToCustomGroup(bookIds, null) {
@@ -171,10 +171,10 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                             dismissAllowingStateLoss()
                         }
                     } else {
-                        ToastHelper.toast(R.string.group_name_exists)
+                        requireActivity().toast(R.string.group_name_exists)
                     }
                 } else {
-                    ToastHelper.toast(R.string.group_name_empty)
+                    requireActivity().toast(R.string.group_name_empty)
                 }
             }
         }

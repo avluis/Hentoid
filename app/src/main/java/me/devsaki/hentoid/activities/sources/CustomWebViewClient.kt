@@ -38,10 +38,10 @@ import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.toast
 import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -365,7 +365,7 @@ open class CustomWebViewClient : WebViewClient {
                     }
                     FileHelper.openFile(view.context, uri)
                 } catch (t: Throwable) {
-                    ToastHelper.toast(R.string.torrent_dl_fail, StringHelper.protect(t.message))
+                    view.context.toast(R.string.torrent_dl_fail, StringHelper.protect(t.message))
                     Timber.w(t)
                 }
             }

@@ -43,10 +43,10 @@ import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.notification.NotificationManager
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.QueueViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
@@ -382,8 +382,8 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
     ) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
             if (WebkitPackageHelper.getWebViewUpdating())
-                ToastHelper.toast(R.string.redownloaded_updating_webview)
-            else ToastHelper.toast(R.string.redownloaded_missing_webview)
+                toast(R.string.redownloaded_updating_webview)
+            else toast(R.string.redownloaded_missing_webview)
             return
         }
         if (reparseContent || reparseImages) ProgressDialogFragment.invoke(
@@ -429,9 +429,8 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
     private fun reviveDownload(revivedSite: Site, oldCookie: String) {
         Timber.d(">> REVIVAL ASKED @ %s", revivedSite.url)
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.revive_updating_webview) else ToastHelper.toast(
-                R.string.revive_missing_webview
-            )
+            if (WebkitPackageHelper.getWebViewUpdating()) toast(R.string.revive_updating_webview)
+            else toast(R.string.revive_missing_webview)
             return
         }
 

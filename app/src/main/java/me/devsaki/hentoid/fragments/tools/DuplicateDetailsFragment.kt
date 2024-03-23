@@ -30,7 +30,7 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -212,12 +212,12 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
         val c: Content? = item.content
         // Process the click
         if (null == c) {
-            ToastHelper.toast(R.string.err_no_content)
+            activity.get()?.toast(R.string.err_no_content)
             return
         }
 
         if (!ContentHelper.openReader(requireContext(), c, -1, null, false, true))
-            ToastHelper.toast(R.string.err_no_content)
+            activity.get()?.toast(R.string.err_no_content)
     }
 
     private fun onBookChoice(item: Content?, choice: Boolean) {
@@ -298,7 +298,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             newTitle,
             deleteAfterMerging,
         ) {
-            ToastHelper.toast(R.string.merge_success)
+            activity.get()?.toast(R.string.merge_success)
             activity.get()?.goBackToMain()
         }
         ProgressDialogFragment.invoke(

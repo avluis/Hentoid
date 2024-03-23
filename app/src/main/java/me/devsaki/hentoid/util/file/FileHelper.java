@@ -57,7 +57,7 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
-import me.devsaki.hentoid.util.ToastHelper;
+import me.devsaki.hentoid.util.ToastHelperKt;
 import timber.log.Timber;
 
 /**
@@ -568,7 +568,7 @@ public class FileHelper {
                     try {
                         openFileWithIntent(context, uri, "resource/folder");
                     } catch (ActivityNotFoundException e2) {
-                        ToastHelper.INSTANCE.toast(R.string.select_file_manager);
+                        ToastHelperKt.toast(context, R.string.select_file_manager);
                         openFileWithIntent(context, uri, "*/*");
                         // TODO if it also crashes after this call, tell the user to get DocumentsUI.apk ? (see #670)
                     }
@@ -577,7 +577,7 @@ public class FileHelper {
                 openFileWithIntent(context, uri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(fileName)));
         } catch (ActivityNotFoundException e) {
             Timber.e(e, "No activity found to open %s", uri.toString());
-            ToastHelper.INSTANCE.toastLong(context, R.string.error_open, Toast.LENGTH_LONG);
+            ToastHelperKt.toastLong(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
 

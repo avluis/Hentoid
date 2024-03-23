@@ -34,8 +34,8 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ExternalImportWorker
@@ -96,15 +96,15 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             toolbar.setOnMenuItemClickListener { i -> onMenuItemSelected(i) }
 
             addPrimary1.setOnClickListener {
-                if (PrimaryImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
+                if (PrimaryImportWorker.isRunning(baseContext)) toast(R.string.pref_import_running)
                 else importLocation(StorageLocation.PRIMARY_1)
             }
             addPrimary2.setOnClickListener {
-                if (PrimaryImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
+                if (PrimaryImportWorker.isRunning(baseContext)) toast(R.string.pref_import_running)
                 else importLocation(StorageLocation.PRIMARY_2)
             }
             addExternal.setOnClickListener {
-                if (ExternalImportWorker.isRunning(baseContext)) ToastHelper.toast(R.string.pref_import_running)
+                if (ExternalImportWorker.isRunning(baseContext)) toast(R.string.pref_import_running)
                 else importLocation(StorageLocation.EXTERNAL)
             }
 
@@ -317,7 +317,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             when (item.tag) {
                 2 -> { // Replace with
                     if (PrimaryImportWorker.isRunning(baseContext)) {
-                        ToastHelper.toast(R.string.pref_import_running)
+                        toast(R.string.pref_import_running)
                     } else {
                         importLocation(location)
                     }
@@ -325,7 +325,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
                 0 -> { // Refresh
                     if (PrimaryImportWorker.isRunning(baseContext)) {
-                        ToastHelper.toast(R.string.pref_import_running)
+                        toast(R.string.pref_import_running)
                     } else {
                         LibRefreshDialogFragment.invoke(
                             supportFragmentManager,
@@ -379,7 +379,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                 dialog1.dismiss()
                 viewModel.detach(location)
                 refreshDisplay()
-                ToastHelper.toast(R.string.storage_remove_complete)
+                toast(R.string.storage_remove_complete)
             }
             .setNegativeButton(R.string.no) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
             .create()
@@ -450,7 +450,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     viewModel.merge2to1(nbBooks.toInt())
                     refreshDisplay()
                     fragment.dismissAllowingStateLoss()
-                    ToastHelper.toast(R.string.storage_merge_complete)
+                    toast(R.string.storage_merge_complete)
                 }
             }
             .setNegativeButton(R.string.no) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }

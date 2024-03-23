@@ -9,7 +9,7 @@ import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.toast
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -84,7 +84,7 @@ class PrefsActivity : BaseActivity(), SearchPreferenceResultListener {
         if (event.recipient != CommunicationEvent.Recipient.PREFS || event.type != CommunicationEvent.Type.BROADCAST || event.message.isEmpty()) return
         // Make sure current activity is active (=eligible to display that toast)
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
-        ToastHelper.toast(event.message)
+        toast(event.message)
     }
 
     override fun onSearchResultClicked(result: SearchPreferenceResult) {

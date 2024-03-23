@@ -43,7 +43,7 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
 import me.devsaki.hentoid.viewmodels.QueueViewModel
@@ -450,7 +450,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                     false,
                     false
                 )
-            ) ToastHelper.toast(R.string.err_no_content)
+            ) activity.get()?.toast(R.string.err_no_content)
             return true
         }
         return false

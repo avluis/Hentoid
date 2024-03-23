@@ -27,7 +27,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings.lockType
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.toast
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -78,7 +78,7 @@ abstract class BaseActivity : AppCompatActivity {
         if (event.recipient != CommunicationEvent.Recipient.ALL || event.type != CommunicationEvent.Type.BROADCAST || event.message.isEmpty()) return
         // Make sure current activity is active (=eligible to display that event)
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
-        ToastHelper.toast(event.message)
+        toast(event.message)
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)

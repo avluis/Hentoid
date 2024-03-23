@@ -14,8 +14,8 @@ import me.devsaki.hentoid.databinding.DialogLibraryErrorsBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.LogHelper
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.toast
 
 /**
  * Info dialog for download errors details
@@ -114,7 +114,7 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
     }
 
     private fun showErrorLog(content: Content) {
-        ToastHelper.toast(R.string.redownload_generating_log_file)
+        activity?.toast(R.string.redownload_generating_log_file)
         val logInfo = createLog(content)
         val logFile = LogHelper.writeLog(requireContext(), logInfo)
         if (logFile != null) FileHelper.openFile(requireContext(), logFile)

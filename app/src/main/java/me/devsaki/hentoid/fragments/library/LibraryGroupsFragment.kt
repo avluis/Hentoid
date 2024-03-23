@@ -62,7 +62,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.GroupDisplayItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
@@ -339,7 +339,7 @@ class LibraryGroupsFragment : Fragment(),
     }
 
     private fun onNewGroupNameExists() {
-        ToastHelper.toast(R.string.group_name_exists)
+        activity.get()?.toast(R.string.group_name_exists)
         newGroupPrompt()
     }
 
@@ -582,7 +582,7 @@ class LibraryGroupsFragment : Fragment(),
         val g = selectedItems.firstNotNullOfOrNull { gi -> gi.group }
         if (g != null) {
             viewModel.renameGroup(g, newName, { stringIntRes ->
-                ToastHelper.toast(stringIntRes)
+                activity.get()?.toast(stringIntRes)
                 editSelectedItemName()
             }) { selectExtension!!.selectOnLongClick = true }
         }
@@ -657,7 +657,7 @@ class LibraryGroupsFragment : Fragment(),
                     onBackPressedDispatcher.onBackPressed()
                 } else {
                     backButtonPressed = SystemClock.elapsedRealtime()
-                    ToastHelper.toast(R.string.press_back_again)
+                    toast(R.string.press_back_again)
                     llm!!.scrollToPositionWithOffset(0, 0)
                 }
             }

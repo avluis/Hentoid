@@ -18,9 +18,9 @@ import androidx.work.WorkManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.views.NestedScrollWebView
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import me.devsaki.hentoid.workers.data.UpdateDownloadData
@@ -38,7 +38,7 @@ fun Context.startBrowserActivity(url: String) {
         startActivity(intent)
     } catch (e: ActivityNotFoundException) {
         Timber.e(e, "No activity found to open $url")
-        ToastHelper.toast(this, R.string.error_browser, Toast.LENGTH_LONG)
+        toast(R.string.error_browser, Toast.LENGTH_LONG)
     }
 }
 

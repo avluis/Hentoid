@@ -88,8 +88,8 @@ import me.devsaki.hentoid.util.SearchHelper.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
@@ -736,7 +736,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val item = selectedItems.firstOrNull() ?: return
             val c = item.content ?: return
             if (c.storageUri.isEmpty()) {
-                ToastHelper.toast(R.string.folder_undefined)
+                context.toast(R.string.folder_undefined)
                 return
             }
             val folder =
@@ -1041,7 +1041,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     onBackPressedDispatcher.onBackPressed()
                 } else {
                     backButtonPressed = SystemClock.elapsedRealtime()
-                    ToastHelper.toast(R.string.press_back_again)
+                    toast(R.string.press_back_again)
                     llm!!.scrollToPositionWithOffset(0, 0)
                 }
             }
@@ -1709,7 +1709,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     private fun onMergeSuccess() {
-        ToastHelper.toast(R.string.merge_success)
+        activity.get()?.toast(R.string.merge_success)
         refreshIfNeeded()
     }
 
@@ -1720,7 +1720,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     private fun onSplitSuccess() {
-        ToastHelper.toast(R.string.split_success)
+        activity.get()?.toast(R.string.split_success)
         refreshIfNeeded()
     }
 
