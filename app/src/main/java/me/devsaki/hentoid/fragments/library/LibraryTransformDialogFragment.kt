@@ -47,7 +47,11 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
-import me.devsaki.hentoid.util.image.ImageTransform
+import me.devsaki.hentoid.util.image.TransformParams
+import me.devsaki.hentoid.util.image.determineEncoder
+import me.devsaki.hentoid.util.image.screenHeight
+import me.devsaki.hentoid.util.image.screenWidth
+import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.workers.TransformWorker
 import okio.use
@@ -148,8 +152,8 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             resizeMethod2MaxWidth.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(
                         resizeMethod2MaxWidth,
-                        ImageTransform.screenWidth,
-                        ImageTransform.screenWidth * 10
+                        screenWidth,
+                        screenWidth * 10
                     )
                 ) {
                     Settings.resizeMethod2Width = value.toInt()
@@ -159,8 +163,8 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             resizeMethod2MaxHeight.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(
                         resizeMethod2MaxHeight,
-                        ImageTransform.screenHeight,
-                        ImageTransform.screenHeight * 10
+                        screenHeight,
+                        screenHeight * 10
                     )
                 ) {
                     Settings.resizeMethod2Height = value.toInt()
@@ -228,12 +232,12 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             if (applyValues) resizeMethod1Ratio.editText?.setText(Settings.resizeMethod1Ratio.toString())
             resizeMethod2MaxWidth.isVisible = (1 == resizeMethod.index && resizeMethod.isVisible)
             if (applyValues) {
-                val value = max(Settings.resizeMethod2Width, ImageTransform.screenWidth)
+                val value = max(Settings.resizeMethod2Width, screenWidth)
                 resizeMethod2MaxWidth.editText?.setText(value.toString())
             }
             resizeMethod2MaxHeight.isVisible = (1 == resizeMethod.index && resizeMethod.isVisible)
             if (applyValues) {
-                val value = max(Settings.resizeMethod2Height, ImageTransform.screenHeight)
+                val value = max(Settings.resizeMethod2Height, screenHeight)
                 resizeMethod2MaxHeight.editText?.setText(value.toString())
             }
             resizeMethod3Ratio.isVisible = (2 == resizeMethod.index && resizeMethod.isVisible)
@@ -323,15 +327,14 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             val sourceName = picName + "." + FileHelper.getExtensionFromMimeType(sourceMime)
             val params = buildParams()
             val targetData = withContext(Dispatchers.IO) {
-                return@withContext ImageTransform.transform(rawData, params, true)
+                return@withContext transform(rawData, params, true)
             }
             val unchanged = targetData == rawData
 
             val targetSize = FileHelper.formatHumanReadableSize(targetData.size.toLong(), resources)
             BitmapFactory.decodeByteArray(targetData, 0, targetData.size, options)
             val targetDims = Point(options.outWidth, options.outHeight)
-            val targetMime =
-                ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
+            val targetMime = determineEncoder(isLossless, targetDims, params).mimeType
             val targetName = picName + "." + FileHelper.getExtensionFromMimeType(targetMime)
 
             binding?.apply {
@@ -369,9 +372,9 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         return null
     }
 
-    private fun buildParams(): ImageTransform.Params {
+    private fun buildParams(): TransformParams {
         binding!!.apply {
-            return ImageTransform.Params(
+            return TransformParams(
                 resizeSwitch.isChecked,
                 resizeMethod.index,
                 resizeMethod1Ratio.editText!!.text.toString().toInt(),
@@ -387,7 +390,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         }
     }
 
-    private fun onActionClick(params: ImageTransform.Params) {
+    private fun onActionClick(params: TransformParams) {
         // Check if no dialog is in error state
         binding?.apply {
             val nbError = container.children
@@ -401,7 +404,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                 .addLast(KotlinJsonAdapterFactory())
                 .build()
 
-            val serializedParams = moshi.adapter(ImageTransform.Params::class.java).toJson(params)
+            val serializedParams = moshi.adapter(TransformParams::class.java).toJson(params)
 
             val myData: Data = workDataOf(
                 "IDS" to contentIds,

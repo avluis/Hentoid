@@ -39,8 +39,9 @@ import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.image.ImageTransform
 import me.devsaki.hentoid.util.image.SmartRotateTransformation
+import me.devsaki.hentoid.util.image.screenHeight
+import me.devsaki.hentoid.util.image.screenWidth
 import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -412,7 +413,7 @@ class ImagePagerAdapter(val context: Context) :
                 Timber.d("Using Glide")
                 val centerInside: Transformation<Bitmap> = CenterInside()
                 val smartRotate90 = if (autoRotate) SmartRotateTransformation(
-                    90f, ImageTransform.screenWidth, ImageTransform.screenHeight
+                    90f, screenWidth, screenHeight
                 ) else UnitTransformation.get()
                 Glide.with(view).load(uri)
                     .optionalTransform(MultiTransformation(centerInside, smartRotate90))
@@ -483,7 +484,7 @@ class ImagePagerAdapter(val context: Context) :
             rootView.layoutParams = layoutParams
             var targetImgHeight = imgHeight
             // If we display a picture smaller than the screen dimensions, we have to zoom it
-            if (resizeSmallPics && imgHeight < ImageTransform.screenHeight && imgWidth < ImageTransform.screenWidth) {
+            if (resizeSmallPics && imgHeight < screenHeight && imgWidth < screenWidth) {
                 targetImgHeight =
                     (imgHeight * getTargetScale(imgWidth, imgHeight, displayMode)).roundToInt()
                 val imgLayoutParams = imgView.layoutParams
@@ -499,13 +500,13 @@ class ImagePagerAdapter(val context: Context) :
             return if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
                 if (imgHeight > imgWidth) {
                     // Fit to width
-                    ImageTransform.screenWidth / imgWidth.toFloat()
+                    screenWidth / imgWidth.toFloat()
                 } else {
-                    if (ImageTransform.screenHeight > ImageTransform.screenWidth) ImageTransform.screenHeight / imgHeight.toFloat() // Fit to height when in portrait mode
-                    else ImageTransform.screenWidth / imgWidth.toFloat() // Fit to width when in landscape mode
+                    if (screenHeight > screenWidth) screenHeight / imgHeight.toFloat() // Fit to height when in portrait mode
+                    else screenWidth / imgWidth.toFloat() // Fit to width when in landscape mode
                 }
             } else { // Fit screen
-                (ImageTransform.screenWidth / imgWidth.toFloat()).coerceAtMost(ImageTransform.screenHeight / imgHeight.toFloat())
+                (screenWidth / imgWidth.toFloat()).coerceAtMost(screenHeight / imgHeight.toFloat())
             }
         }
 

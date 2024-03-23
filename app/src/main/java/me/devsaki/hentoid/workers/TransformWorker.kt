@@ -28,7 +28,9 @@ import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImageHelper
-import me.devsaki.hentoid.util.image.ImageTransform
+import me.devsaki.hentoid.util.image.TransformParams
+import me.devsaki.hentoid.util.image.determineEncoder
+import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.util.notification.BaseNotification
 import timber.log.Timber
 import java.io.File
@@ -78,7 +80,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
         val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
 
-        val params = moshi.adapter(ImageTransform.Params::class.java).fromJson(paramsStr)
+        val params = moshi.adapter(TransformParams::class.java).fromJson(paramsStr)
         require(params != null)
 
         if (params.resizeEnabled && 3 == params.resizeMethod) { // AI upscale
@@ -93,7 +95,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         transform(contentIds, params)
     }
 
-    private fun transform(contentIds: LongArray, params: ImageTransform.Params) {
+    private fun transform(contentIds: LongArray, params: TransformParams) {
         // Flag contents as "being deleted" (triggers blink animation; lock operations)
         // +count the total number of images to convert
         contentIds.forEach {
@@ -114,7 +116,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         notifyProcessEnd()
     }
 
-    private fun transformContent(content: Content, params: ImageTransform.Params) {
+    private fun transformContent(content: Content, params: TransformParams) {
         val contentFolder =
             FileHelper.getDocumentFromTreeUriString(applicationContext, content.storageUri)
         val images = content.imageList
@@ -153,7 +155,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun transformChapter(
-        imgs: List<ImageFile>, contentFolder: DocumentFile, params: ImageTransform.Params
+        imgs: List<ImageFile>, contentFolder: DocumentFile, params: TransformParams
     ) {
         val nbManhwa = AtomicInteger(0)
         params.forceManhwa = false
@@ -168,7 +170,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     private fun transformImage(
         img: ImageFile,
         contentFolder: DocumentFile,
-        params: ImageTransform.Params,
+        params: TransformParams,
         nbManhwa: AtomicInteger,
         nbPages: Int
     ) {
@@ -194,7 +196,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             if (isManhwa) nbManhwa.incrementAndGet()
             params.forceManhwa = nbManhwa.get() * 1.0 / nbPages > 0.9
 
-            targetData = ImageTransform.transform(rawData, params)
+            targetData = transform(rawData, params)
         }
         if (isStopped) return
         if (targetData == rawData) return // Unchanged picture
@@ -205,7 +207,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
         BitmapFactory.decodeByteArray(targetData, 0, targetData.size, metadataOpts)
         val targetDims = Point(metadataOpts.outWidth, metadataOpts.outHeight)
-        val targetMime = ImageTransform.determineEncoder(isLossless, targetDims, params).mimeType
+        val targetMime = determineEncoder(isLossless, targetDims, params).mimeType
         val targetName = img.name + "." + FileHelper.getExtensionFromMimeType(targetMime)
         val newFile = sourceName != targetName
 
