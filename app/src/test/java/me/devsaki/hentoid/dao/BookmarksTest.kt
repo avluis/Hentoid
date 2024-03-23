@@ -6,7 +6,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.mocks.AbstractObjectBoxTest
-import me.devsaki.hentoid.util.ImportHelper
+import me.devsaki.hentoid.util.importBookmarks
 import net.lachlanmckee.timberjunit.TimberTestRule
 import org.junit.Assert
 import org.junit.BeforeClass
@@ -90,10 +90,10 @@ class BookmarksTest : AbstractObjectBoxTest() {
         bookmarksToImport.add(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff2"))
         bookmarksToImport.add(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff2/"))
 
-        Assert.assertEquals(0, ImportHelper.importBookmarks(dao, bookmarksToImport))
+        Assert.assertEquals(0, importBookmarks(dao, bookmarksToImport))
 
         bookmarksToImport.add(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff3/"))
-        Assert.assertEquals(1, ImportHelper.importBookmarks(dao, bookmarksToImport))
+        Assert.assertEquals(1, importBookmarks(dao, bookmarksToImport))
 
         val bookmarksToImportSet = HashSet<SiteBookmark>(bookmarksToImport)
         Assert.assertEquals(3, bookmarksToImportSet.size)
