@@ -12,6 +12,9 @@ import android.os.Looper
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.core.util.Consumer
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -19,6 +22,8 @@ import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.views.NestedScrollWebView
+import me.devsaki.hentoid.workers.UpdateDownloadWorker
+import me.devsaki.hentoid.workers.data.UpdateDownloadData
 import timber.log.Timber
 import java.util.Locale
 
@@ -88,5 +93,22 @@ fun Context.convertLocaleToEnglish() {
                 this.createConfigurationContext(config)
             this.resources.updateConfiguration(config, this.resources.displayMetrics)
         }
+    }
+}
+
+fun Context.runUpdateDownloadWorker(apkUrl: String) {
+    if (!UpdateDownloadWorker.isRunning(this) && apkUrl.isNotEmpty()) {
+        val builder = UpdateDownloadData.Builder()
+        builder.setUrl(apkUrl)
+
+        val workManager = WorkManager.getInstance(this)
+        workManager.enqueueUniqueWork(
+            R.id.update_download_service.toString(),
+            ExistingWorkPolicy.KEEP,
+            OneTimeWorkRequestBuilder<UpdateDownloadWorker>()
+                .setInputData(builder.data)
+                .addTag(WORK_CLOSEABLE)
+                .build()
+        )
     }
 }

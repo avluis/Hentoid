@@ -12,8 +12,8 @@ import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.runUpdateDownloadWorker
 import me.devsaki.hentoid.databinding.FragmentAboutChangelogBinding
-import me.devsaki.hentoid.util.AppHelper
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem
 import me.devsaki.hentoid.viewmodels.ChangelogViewModel
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
@@ -96,7 +96,7 @@ class ChangelogFragment : Fragment(R.layout.fragment_about_changelog) {
         // Download the latest update (equivalent to tapping the "Update available" notification)
         if (!UpdateDownloadWorker.isRunning(context) && apkUrl.isNotEmpty()) {
             Toast.makeText(context, R.string.downloading_update, Toast.LENGTH_SHORT).show()
-            AppHelper.runUpdateDownloadWorker(context, apkUrl)
+            context.runUpdateDownloadWorker(apkUrl)
         }
     }
 }
