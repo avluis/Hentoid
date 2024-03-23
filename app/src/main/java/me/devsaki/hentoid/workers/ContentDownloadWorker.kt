@@ -54,13 +54,14 @@ import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.download.ContentQueueManager.pauseQueue
-import me.devsaki.hentoid.util.download.DownloadHelper
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.prefsSpeedCapToKbps
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.setSpeedLimitKbps
 import me.devsaki.hentoid.util.download.RequestOrder
 import me.devsaki.hentoid.util.download.RequestOrder.NetworkError
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.download.RequestQueueManager.Companion.getInstance
+import me.devsaki.hentoid.util.download.downloadToFile
+import me.devsaki.hentoid.util.download.selectDownloadLocation
 import me.devsaki.hentoid.util.exception.AccountException
 import me.devsaki.hentoid.util.exception.CaptchaException
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
@@ -266,7 +267,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
         // Auto-select location according to storage management strategy
         if (content.storageUri.isEmpty()) {
-            location = DownloadHelper.selectDownloadLocation(context)
+            location = selectDownloadLocation(context)
             val result = testFolder(context, Preferences.getStorageUri(location))
             if (result != null) return result
         }
@@ -1347,7 +1348,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             val targetFileName = img.name
             try {
                 // == Download archive
-                val result = DownloadHelper.downloadToFile(
+                val result = downloadToFile(
                     applicationContext,
                     site,
                     img.url,

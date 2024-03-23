@@ -141,7 +141,8 @@ class RequestQueue(
     ): Optional<Triple<Int, Uri, String>> {
         Helper.assertNonUiThread()
 
-        val requestHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url).toMutableList()
+        val requestHeaders =
+            HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url).toMutableList()
         requestHeaders.add(
             androidx.core.util.Pair(
                 HttpHelper.HEADER_ACCEPT_KEY,
@@ -150,7 +151,7 @@ class RequestQueue(
         ) // Required to pass through cloudflare filtering on some sites
 
         // Initiate download
-        val result = DownloadHelper.downloadToFile(
+        val result = downloadToFile(
             context,
             site,
             url,

@@ -8,7 +8,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.ParseHelper
-import me.devsaki.hentoid.util.download.DownloadHelper.getCanonicalUrl
+import me.devsaki.hentoid.util.download.getCanonicalUrl
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.network.HttpHelper

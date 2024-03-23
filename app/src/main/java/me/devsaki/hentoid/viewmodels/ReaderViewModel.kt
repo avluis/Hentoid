@@ -39,7 +39,7 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
-import me.devsaki.hentoid.util.download.DownloadHelper
+import me.devsaki.hentoid.util.download.downloadToFileCached
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
@@ -1304,7 +1304,7 @@ class ReaderViewModel(
                 if (cookieStr.isNotEmpty()) headers.add(
                     Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
                 )
-                result = DownloadHelper.downloadToFileCached(
+                result = downloadToFileCached(
                     getApplication(),
                     content.site,
                     imgUrl,
@@ -1370,7 +1370,7 @@ class ReaderViewModel(
         img.url = pages.first
         // Download the picture
         try {
-            return DownloadHelper.downloadToFileCached(
+            return downloadToFileCached(
                 getApplication(),
                 content.site,
                 img.url,
@@ -1386,7 +1386,7 @@ class ReaderViewModel(
         }
         // Trying with backup URL
         img.url = pages.second
-        return DownloadHelper.downloadToFileCached(
+        return downloadToFileCached(
             getApplication(),
             content.site,
             img.url,

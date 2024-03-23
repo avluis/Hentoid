@@ -75,7 +75,7 @@ import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.util.download.DownloadHelper;
+import me.devsaki.hentoid.util.download.DownloadHelperKt;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.FileNotProcessedException;
@@ -1872,7 +1872,7 @@ public final class ContentHelper {
                 }
             }
         } else { // Primary folder for non-external content; using download strategy
-            StorageLocation location = DownloadHelper.INSTANCE.selectDownloadLocation(context);
+            StorageLocation location = DownloadHelperKt.selectDownloadLocation(context);
             targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, location, true);
         }
         if (null == targetFolder || !targetFolder.exists())
