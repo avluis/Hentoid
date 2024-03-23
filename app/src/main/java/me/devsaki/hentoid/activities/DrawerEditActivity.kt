@@ -15,7 +15,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.ActivityDrawerEditBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.SiteItem
 
@@ -31,7 +31,7 @@ class DrawerEditActivity : BaseActivity(), ItemTouchCallback {
     @SuppressLint("NonConstantResourceId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ThemeHelper.applyTheme(this)
+        applyTheme()
 
         binding = ActivityDrawerEditBinding.inflate(layoutInflater)
         binding?.let {

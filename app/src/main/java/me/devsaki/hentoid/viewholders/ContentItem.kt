@@ -53,9 +53,9 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.tintBitmap
 import timber.log.Timber
 import java.util.Locale
@@ -207,8 +207,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 pb.progress = (content.percent * 100).toInt()
                 pb.visibility = View.VISIBLE
 
-                val color: Int = if (isQueueReady && isIndividual) ThemeHelper.getColor(
-                    pb.context, R.color.secondary_light
+                val color: Int = if (isQueueReady && isIndividual) pb.context.getThemedColor(
+                    R.color.secondary_light
                 ) else ContextCompat.getColor(pb.context, R.color.medium_gray)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -285,7 +285,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
         init {
             if (viewType == ViewType.SPLIT) {
-                val color = ThemeHelper.getColor(view.context, R.color.secondary_light)
+                val color = view.context.getThemedColor(R.color.secondary_light)
                 view.background =
                     getSelectablePressedBackground(view.context, adjustAlpha(color, 100), 50, true)
             }
@@ -460,7 +460,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             var colorId: Int = R.color.card_title_light
             if (queueRecord != null && queueRecord.isFrozen) colorId = R.color.frozen_blue
             if (isGrid) colorId = R.color.white_opacity_87
-            tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.context, colorId))
+            tvTitle.setTextColor(tvTitle.context.getThemedColor(colorId))
         }
 
         private fun attachCompleted(content: Content) {
@@ -571,7 +571,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 } else {
                     visibility = View.VISIBLE
                     text = tagTxt
-                    setTextColor(ThemeHelper.getColor(context, R.color.card_tags_light))
+                    setTextColor(context.getThemedColor(R.color.card_tags_light))
                 }
             }
         }
@@ -708,7 +708,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
             // Glide options
             val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-            val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
+            val tintColor = context.getThemedColor(R.color.light_gray)
             val d: Drawable = BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
             val centerInside: Transformation<Bitmap> = CenterInside()
             glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)

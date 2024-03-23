@@ -18,7 +18,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.IncludeRulesControlsBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.RulesEditViewModel
@@ -178,8 +178,7 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
             fragmentManager: FragmentManager
         ) {
             val bottomFragment = RuleBottomPanelFragment()
-            ThemeHelper.setStyle(
-                context,
+            context.setStyle(
                 bottomFragment,
                 DialogFragment.STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog

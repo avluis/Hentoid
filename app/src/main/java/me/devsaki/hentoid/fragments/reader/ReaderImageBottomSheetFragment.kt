@@ -29,10 +29,12 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.IncludeReaderImageBottomPanelBinding
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.getIdForCurrentTheme
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.tintBitmap
+import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
@@ -55,7 +57,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
 
     init {
         val context: Context = HentoidApp.getInstance()
-        val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
+        val tintColor = context.getThemedColor(R.color.light_gray)
 
         val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
         val d: Drawable = BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
@@ -117,7 +119,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
      * @param images Book's list of images
      */
     private fun onImagesChanged(images: List<ImageFile>) {
-        val grayColor = ThemeHelper.getColor(requireContext(), R.color.dark_gray)
+        val grayColor = requireContext().getThemedColor(R.color.dark_gray)
         // Might happen when deleting the last page
         if (imageIndex >= images.size) imageIndex = images.size - 1
 
@@ -273,7 +275,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
     private fun onDeleteClick() {
         MaterialAlertDialogBuilder(
             requireContext(),
-            ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
+            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
         )
             .setIcon(R.drawable.ic_warning)
             .setCancelable(false)
@@ -338,8 +340,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
             builder.scale = currentScale
             bottomSheetFragment.arguments = builder.bundle
 
-            ThemeHelper.setStyle(
-                context,
+            context.setStyle(
                 bottomSheetFragment,
                 DialogFragment.STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog

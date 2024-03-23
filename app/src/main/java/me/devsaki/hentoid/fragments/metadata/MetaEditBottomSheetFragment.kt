@@ -30,7 +30,7 @@ import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.LanguageHelper
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
@@ -356,8 +356,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
 
             val bottomSheetFragment = MetaEditBottomSheetFragment()
             bottomSheetFragment.arguments = builder.bundle
-            ThemeHelper.setStyle(
-                context,
+            context.setStyle(
                 bottomSheetFragment,
                 DialogFragment.STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog

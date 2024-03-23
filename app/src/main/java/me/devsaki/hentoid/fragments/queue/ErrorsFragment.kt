@@ -42,7 +42,7 @@ import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
@@ -542,7 +542,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         if (1 == itemAdapter.adapterItemCount) redownloadAll() else  // Ask if there's more than 1 item
             MaterialAlertDialogBuilder(
                 requireContext(),
-                ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
+                requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
             )
                 .setIcon(R.drawable.ic_warning)
                 .setTitle(R.string.app_name)
@@ -574,7 +574,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         if (1 == itemAdapter.adapterItemCount) doCancelAll() else  // Ask if there's more than 1 item
             MaterialAlertDialogBuilder(
                 requireContext(),
-                ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
+                requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
             )
                 .setIcon(R.drawable.ic_warning)
                 .setTitle(R.string.app_name)
@@ -656,7 +656,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         val message = resources.getQuantityString(R.plurals.redownload_confirm, contents.size)
         MaterialAlertDialogBuilder(
             requireContext(),
-            ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
+            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
         )
             .setIcon(R.drawable.ic_warning)
             .setCancelable(false)

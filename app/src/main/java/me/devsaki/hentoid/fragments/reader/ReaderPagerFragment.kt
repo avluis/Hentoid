@@ -83,8 +83,8 @@ import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_16
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_4
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -1105,7 +1105,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             .setLifecycleOwner(requireActivity())
             .setTextColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
-            .setMenuColor(ThemeHelper.getColor(requireContext(), R.color.window_background_light))
+            .setMenuColor(requireContext().getThemedColor(R.color.window_background_light))
             .setTextSize(
                 Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1)
             ).setAutoDismiss(true)

@@ -36,7 +36,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
-import me.devsaki.hentoid.util.ThemeHelper.getIdForCurrentTheme
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.FileHelper
@@ -433,7 +432,7 @@ fun showExistingLibraryDialog(
 ) {
     MaterialAlertDialogBuilder(
         context,
-        getIdForCurrentTheme(context, R.style.Theme_Light_Dialog)
+        context.getIdForCurrentTheme(R.style.Theme_Light_Dialog)
     )
         .setIcon(R.drawable.ic_warning)
         .setCancelable(false)
@@ -889,7 +888,7 @@ fun scanForArchives(
                 dao,
                 json
             )
-            if (c!!.status != StatusContent.IGNORED) result.add(c)
+            if (c.status != StatusContent.IGNORED) result.add(c)
         }
     }
     return result

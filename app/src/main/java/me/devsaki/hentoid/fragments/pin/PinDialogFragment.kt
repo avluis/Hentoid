@@ -14,7 +14,7 @@ import androidx.annotation.StringRes
 import androidx.fragment.app.DialogFragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.FragmentPinDialogBinding
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.setStyle
 import java.security.InvalidParameterException
 
 abstract class PinDialogFragment : DialogFragment() {
@@ -25,8 +25,8 @@ abstract class PinDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ThemeHelper.setStyle(
-            requireActivity(), this, STYLE_NORMAL, R.style.Theme_Light_PinEntryDialog
+        requireActivity().setStyle(
+            this, STYLE_NORMAL, R.style.Theme_Light_PinEntryDialog
         )
     }
 

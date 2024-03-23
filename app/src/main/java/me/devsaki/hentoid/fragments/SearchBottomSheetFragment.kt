@@ -33,7 +33,7 @@ import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.LanguageHelper
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.SearchViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
@@ -330,8 +330,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
             builder.excludeMode = excludeClicked
             val searchBottomSheetFragment = SearchBottomSheetFragment()
             searchBottomSheetFragment.arguments = builder.bundle
-            ThemeHelper.setStyle(
-                context,
+            context.setStyle(
                 searchBottomSheetFragment,
                 DialogFragment.STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog

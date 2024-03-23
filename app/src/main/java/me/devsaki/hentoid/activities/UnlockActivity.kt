@@ -23,7 +23,7 @@ import me.devsaki.hentoid.fragments.pin.UnlockPinDialogFragment
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.applyTheme
 
 /**
  * This activity asks for a 4 digit pin if it is set and then transitions to another activity
@@ -32,7 +32,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ThemeHelper.applyTheme(this)
+        applyTheme()
         if (Preferences.getAppLockPin().length != 4) {
             Preferences.setAppLockPin("")
         }

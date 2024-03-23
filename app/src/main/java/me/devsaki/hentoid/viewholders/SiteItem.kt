@@ -12,7 +12,7 @@ import com.mikepenz.fastadapter.items.AbstractItem
 import com.mikepenz.fastadapter.utils.DragDropUtil.bindDragHandle
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.getThemedColor
 
 class SiteItem : AbstractItem<SiteItem.ViewHolder>, IExtendedDraggable<SiteItem.ViewHolder> {
 
@@ -77,13 +77,11 @@ class SiteItem : AbstractItem<SiteItem.ViewHolder>, IExtendedDraggable<SiteItem.
         }
 
         override fun onDragged() {
-            rootView.setBackgroundColor(
-                ThemeHelper.getColor(rootView.context, R.color.white_opacity_25)
-            )
+            rootView.setBackgroundColor(rootView.context.getThemedColor(R.color.white_opacity_25))
         }
 
         override fun onDropped() {
-            rootView.setBackgroundColor(ThemeHelper.getColor(rootView.context, R.color.transparent))
+            rootView.setBackgroundColor(rootView.context.getThemedColor(R.color.transparent))
         }
     }
 }

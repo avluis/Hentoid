@@ -6,15 +6,12 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
 import com.mikepenz.fastadapter.listeners.TouchEventHook
-import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.adjustAlpha
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.getSelectablePressedBackground
 import com.mikepenz.fastadapter.utils.DragDropUtil.bindDragHandle
@@ -22,7 +19,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.getThemedColor
 
 class TextItem<T> : AbstractItem<TextItem.ViewHolder<T>>,
     IExtendedDraggable<TextItem.ViewHolder<T>> {
@@ -69,7 +66,7 @@ class TextItem<T> : AbstractItem<TextItem.ViewHolder<T>>,
         isHighlighted: Boolean,
         centered: Boolean,
         touchHelper: ItemTouchHelper? = null,
-        selectable : Boolean = true
+        selectable: Boolean = true
     ) : super() {
         this.text = text
         this.mTag = tag
@@ -116,7 +113,7 @@ class TextItem<T> : AbstractItem<TextItem.ViewHolder<T>>,
         val dragHandle: ImageView? = root.findViewById(R.id.item_handle)
 
         init {
-            val color = ThemeHelper.getColor(root.context, R.color.secondary_light)
+            val color = root.context.getThemedColor(R.color.secondary_light)
             root.background =
                 getSelectablePressedBackground(root.context, adjustAlpha(color, 100), 50, true)
         }
@@ -146,15 +143,12 @@ class TextItem<T> : AbstractItem<TextItem.ViewHolder<T>>,
 
         override fun onDragged() {
             root.setBackgroundColor(
-                ThemeHelper.getColor(
-                    root.context,
-                    R.color.white_opacity_25
-                )
+                root.context.getThemedColor(R.color.white_opacity_25)
             )
         }
 
         override fun onDropped() {
-            root.setBackgroundColor(ThemeHelper.getColor(root.context, R.color.transparent))
+            root.setBackgroundColor(root.context.getThemedColor(R.color.transparent))
         }
     }
 

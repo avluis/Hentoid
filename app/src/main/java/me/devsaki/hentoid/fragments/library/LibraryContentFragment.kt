@@ -87,8 +87,8 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
@@ -475,7 +475,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         if (group!!.hasCustomBookOrder) { // Warn if a custom order already exists
             MaterialAlertDialogBuilder(
                 requireContext(),
-                ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
+                requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
             )
                 .setIcon(R.drawable.ic_warning)
                 .setTitle(R.string.app_name)
@@ -829,7 +829,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         )
         MaterialAlertDialogBuilder(
             requireContext(),
-            ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
+            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
         )
             .setIcon(R.drawable.ic_warning)
             .setCancelable(false)
@@ -879,7 +879,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         )
         MaterialAlertDialogBuilder(
             requireContext(),
-            ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
+            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
         )
             .setIcon(R.drawable.ic_warning)
             .setCancelable(false)
@@ -915,7 +915,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         MaterialAlertDialogBuilder(
             requireContext(),
-            ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
+            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
         )
             .setCancelable(false)
             .setTitle(R.string.app_name)

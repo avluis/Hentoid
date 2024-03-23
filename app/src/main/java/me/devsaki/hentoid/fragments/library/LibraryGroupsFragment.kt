@@ -61,7 +61,7 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.GroupDisplayItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
@@ -408,10 +408,7 @@ class LibraryGroupsFragment : Fragment(),
                     )
                     .setTextTypeface(Typeface.DEFAULT)
                     .setMenuColor(
-                        ThemeHelper.getColor(
-                            requireContext(),
-                            R.color.window_background_light
-                        )
+                        requireContext().getThemedColor(R.color.window_background_light)
                     )
                     .setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
                     .setAutoDismiss(true)

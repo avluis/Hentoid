@@ -33,7 +33,7 @@ import me.devsaki.hentoid.fragments.preferences.StorageUsageDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
@@ -58,7 +58,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ThemeHelper.applyTheme(this)
+        applyTheme()
 
         binding = ActivityPrefsStorageBinding.inflate(layoutInflater)
         setContentView(binding?.root)

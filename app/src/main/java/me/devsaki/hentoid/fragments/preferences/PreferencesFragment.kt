@@ -37,7 +37,7 @@ import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.file.FileHelper
@@ -211,7 +211,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onPrefColorThemeChanged() {
-        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity)
+        (requireActivity() as AppCompatActivity).applyTheme()
     }
 
     private fun onDoHChanged() {

@@ -35,7 +35,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.tintBitmap
 
 class GroupDisplayItem(
@@ -193,7 +193,7 @@ class GroupDisplayItem(
         init {
             val context: Context = HentoidApp.getInstance()
             val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-            val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
+            val tintColor = context.getThemedColor(R.color.light_gray)
             val d: Drawable =
                 BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
             val centerInside: Transformation<Bitmap> = CenterInside()

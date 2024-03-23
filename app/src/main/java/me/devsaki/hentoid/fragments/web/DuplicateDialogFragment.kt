@@ -26,7 +26,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ThemeHelper.getColor
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.tintBitmap
 import org.greenrobot.eventbus.EventBus
 
@@ -40,7 +40,7 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
 
         private var bmp: Bitmap =
             BitmapFactory.decodeResource(getInstance().resources, R.drawable.ic_hentoid_trans)
-        private var tintColor = getColor(getInstance(), R.color.light_gray)
+        private var tintColor = getInstance().getThemedColor(R.color.light_gray)
         var d: Drawable = BitmapDrawable(getInstance().resources, tintBitmap(bmp, tintColor))
 
         val centerInside: Transformation<Bitmap> = CenterInside()

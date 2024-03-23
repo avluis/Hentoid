@@ -13,7 +13,8 @@ import me.devsaki.hentoid.fragments.about.AboutFragment
 import me.devsaki.hentoid.fragments.about.AchievementsFragment
 import me.devsaki.hentoid.fragments.about.ChangelogFragment
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.applyTheme
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.widget.ScrollPositionListener
 
 
@@ -24,7 +25,7 @@ class AboutActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        ThemeHelper.applyTheme(this)
+        applyTheme()
 
         binding = ActivityAboutBinding.inflate(layoutInflater)
         binding?.apply {
@@ -53,10 +54,7 @@ class AboutActivity : BaseActivity() {
                     val recyclerView =
                         view.findViewById<RecyclerView>(com.mikepenz.aboutlibraries.R.id.cardListView)
                     recyclerView.setBackgroundColor(
-                        ThemeHelper.getColor(
-                            this@AboutActivity,
-                            R.color.window_background_light
-                        )
+                        getThemedColor(R.color.window_background_light)
                     )
                     val scrollListener = ScrollPositionListener { _ -> /* Nothing */ }
                     scrollListener.setOnEndOutOfBoundScrollListener {

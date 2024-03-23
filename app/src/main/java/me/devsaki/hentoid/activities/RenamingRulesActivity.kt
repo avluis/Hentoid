@@ -22,7 +22,7 @@ import me.devsaki.hentoid.databinding.ActivityRulesBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.metadata.MetaEditRuleDialogFragment
 import me.devsaki.hentoid.fragments.metadata.RuleBottomPanelFragment
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.viewholders.RuleItem
 import me.devsaki.hentoid.viewmodels.RulesEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -88,7 +88,7 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ThemeHelper.applyTheme(this)
+        applyTheme()
 
         binding = ActivityRulesBinding.inflate(layoutInflater)
         setContentView(binding?.root)

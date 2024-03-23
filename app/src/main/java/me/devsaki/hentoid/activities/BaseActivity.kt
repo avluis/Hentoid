@@ -26,7 +26,7 @@ import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings.lockType
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.toast
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -43,7 +43,7 @@ abstract class BaseActivity : AppCompatActivity {
         super.onCreate(savedInstanceState)
         // Change locale if set manually
         this.convertLocaleToEnglish()
-        ThemeHelper.applyTheme(this)
+        applyTheme()
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
     }
 

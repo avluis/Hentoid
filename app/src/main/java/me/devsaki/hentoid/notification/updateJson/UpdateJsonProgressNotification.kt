@@ -3,7 +3,7 @@ package me.devsaki.hentoid.notification.updateJson
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.notification.BaseNotification
 import java.util.Locale
 
@@ -20,7 +20,7 @@ class UpdateJsonProgressNotification(
             .setContentTitle(context.getString(R.string.notif_json_progress))
             .setContentInfo(progressString)
             .setProgress(max, progress, false)
-            .setColor(ThemeHelper.getColor(context, R.color.secondary_light))
+            .setColor(context.getThemedColor(R.color.secondary_light))
             .setLocalOnly(true)
             .setOngoing(true)
             .setOnlyAlertOnce(true)

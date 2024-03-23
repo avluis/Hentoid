@@ -42,7 +42,7 @@ import me.devsaki.hentoid.fragments.queue.QueueFragment
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.notification.NotificationManager
@@ -86,7 +86,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ThemeHelper.applyTheme(this)
+        applyTheme()
 
         binding = ActivityQueueBinding.inflate(layoutInflater)
         setContentView(binding?.root)

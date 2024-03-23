@@ -43,8 +43,8 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.FragmentReaderGalleryBinding
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
+import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.INestedItem
 import me.devsaki.hentoid.viewholders.ImageFileItem
@@ -195,10 +195,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                     R.id.action_remove_chapters -> {
                         val builder = MaterialAlertDialogBuilder(
                             requireActivity(),
-                            ThemeHelper.getIdForCurrentTheme(
-                                requireContext(),
-                                R.style.Theme_Light_Dialog
-                            )
+                            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
                         )
                         val title = requireActivity().getString(R.string.ask_clear_chapters)
                         builder.setMessage(title)

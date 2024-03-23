@@ -47,7 +47,7 @@ import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.fragments.metadata.MetaRenameDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
@@ -122,7 +122,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ThemeHelper.applyTheme(this)
+        applyTheme()
 
         binding = ActivityMetaEditBinding.inflate(layoutInflater)
         binding?.let {

@@ -25,7 +25,8 @@ import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.bundles.LibraryBottomSortFilterBundle
 import me.devsaki.hentoid.databinding.IncludeLibrarySortFilterBottomPanelBinding
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -75,8 +76,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             builder.isUngroupedGroupDisplayed = isUngroupedGroupDisplayed
             val libraryBottomSheetFragment = LibraryBottomSortFilterFragment()
             libraryBottomSheetFragment.arguments = builder.bundle
-            ThemeHelper.setStyle(
-                context,
+            context.setStyle(
                 libraryBottomSheetFragment,
                 DialogFragment.STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
@@ -114,7 +114,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             updateFilters()
         }
         greyColor = ContextCompat.getColor(context, R.color.medium_gray)
-        selectedColor = ThemeHelper.getColor(context, R.color.secondary_light)
+        selectedColor = context.getThemedColor(R.color.secondary_light)
     }
 
     override fun onCreateView(

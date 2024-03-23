@@ -77,7 +77,6 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Preferences.Constant
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.ThemeHelper.getColor
 import me.devsaki.hentoid.util.calcPhash
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
@@ -86,6 +85,7 @@ import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.getCoverBitmapFromStream
 import me.devsaki.hentoid.util.getHashEngine
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.showTooltip
@@ -585,7 +585,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                         binding?.quickDlFeedback?.visibility = View.INVISIBLE
                     } else {
                         binding?.quickDlFeedback?.setIndicatorColor(
-                            getColor(baseContext, R.color.secondary_light)
+                            baseContext.getThemedColor(R.color.secondary_light)
                         )
                     }
                 } catch (t: Throwable) {

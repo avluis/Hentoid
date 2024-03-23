@@ -5,7 +5,7 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.receiver.TransformNotificationStopReceiver
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.notification.BaseNotification
 import java.util.Locale
 
@@ -25,7 +25,7 @@ class TransformProgressNotification(
             .setContentText("")
             .setContentInfo(progressPc)
             .setProgress(100, (progress * 100).toInt(), 0 == maxItems)
-            .setColor(ThemeHelper.getColor(context, R.color.secondary_light))
+            .setColor(context.getThemedColor(R.color.secondary_light))
             .addAction(
                 R.drawable.ic_cancel,
                 context.getString(R.string.stop),

@@ -34,7 +34,7 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.tintBitmap
 
 /**
@@ -264,7 +264,7 @@ class SubExpandableItem<T>(
         init {
             val context: Context = HentoidApp.getInstance()
             val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-            val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
+            val tintColor = context.getThemedColor(R.color.light_gray)
             val d: Drawable =
                 BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
             val centerInside: Transformation<Bitmap> = CenterInside()

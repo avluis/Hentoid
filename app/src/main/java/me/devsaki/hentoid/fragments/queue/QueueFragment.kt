@@ -65,11 +65,11 @@ import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
@@ -302,9 +302,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 // Just do it if the queue has a single item
                 if (1 == itemAdapter.adapterItemCount) onCancelAll() else  // Ask if there's more than 1 item
                     MaterialAlertDialogBuilder(
-                        requireContext(), ThemeHelper.getIdForCurrentTheme(
-                            requireContext(), R.style.Theme_Light_Dialog
-                        )
+                        requireContext(),
+                        requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
                     ).setIcon(R.drawable.ic_warning).setCancelable(false)
                         .setTitle(R.string.app_name)
                         .setMessage(R.string.confirm_cancel_all)
@@ -1176,7 +1175,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         val message = resources.getQuantityString(R.plurals.redownload_confirm, contents.size)
         MaterialAlertDialogBuilder(
             requireContext(),
-            ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
+            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
         ).setIcon(R.drawable.ic_warning).setCancelable(false).setTitle(R.string.app_name)
             .setMessage(message).setPositiveButton(
                 R.string.yes

@@ -44,8 +44,8 @@ import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.determineEncoder
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
@@ -97,7 +97,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
 
     init {
         val context: Context = HentoidApp.getInstance()
-        val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
+        val tintColor = context.getThemedColor(R.color.light_gray)
 
         val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
         val d: Drawable = BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))

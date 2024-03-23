@@ -18,7 +18,7 @@ import me.devsaki.hentoid.activities.bundles.LibraryBottomSortFilterBundle
 import me.devsaki.hentoid.databinding.IncludeLibraryGroupsBottomPanelBinding
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ThemeHelper
+import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -49,8 +49,7 @@ class LibraryBottomGroupsFragment : BottomSheetDialogFragment() {
             val builder = LibraryBottomSortFilterBundle()
             val libraryBottomSheetFragment = LibraryBottomGroupsFragment()
             libraryBottomSheetFragment.arguments = builder.bundle
-            ThemeHelper.setStyle(
-                context,
+            context.setStyle(
                 libraryBottomSheetFragment,
                 DialogFragment.STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
