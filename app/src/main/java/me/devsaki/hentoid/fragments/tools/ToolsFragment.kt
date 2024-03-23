@@ -26,6 +26,7 @@ import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.activities.bundles.ToolsBundle
 import me.devsaki.hentoid.core.clearAppCache
 import me.devsaki.hentoid.core.clearWebviewCache
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
@@ -186,7 +187,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
             }
 
             ACCESS_LATEST_LOGS -> {
-                LogsDialogFragment.invoke(this)
+                show(LogsDialogFragment())
                 true
             }
 
