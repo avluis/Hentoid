@@ -10,66 +10,57 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-object PermissionHelper {
-    const val RQST_STORAGE_PERMISSION = 3
-    const val RQST_NOTIFICATION_PERMISSION = 4
+const val RQST_STORAGE_PERMISSION = 3
+const val RQST_NOTIFICATION_PERMISSION = 4
 
+private fun Context.checkPermission(code: String): Boolean {
+    return ContextCompat.checkSelfPermission(this, code) == PERMISSION_GRANTED
+}
 
-    private fun checkPermission(context: Context, code: String): Boolean {
-        return ContextCompat.checkSelfPermission(context, code) == PERMISSION_GRANTED
+fun Activity.requestExternalStorageReadPermission(permissionRequestCode: Int): Boolean {
+    return if (checkPermission(READ_EXTERNAL_STORAGE)) true
+    else {
+        ActivityCompat.requestPermissions(
+            this, arrayOf(READ_EXTERNAL_STORAGE),
+            permissionRequestCode
+        )
+        false
     }
+}
 
-    fun requestExternalStorageReadPermission(
-        activity: Activity,
-        permissionRequestCode: Int
-    ): Boolean {
-        return if (checkPermission(activity, READ_EXTERNAL_STORAGE)) true
-        else {
+fun Activity.checkExternalStorageReadWritePermission(): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return true
+    return checkPermission(READ_EXTERNAL_STORAGE) &&
+            checkPermission(WRITE_EXTERNAL_STORAGE)
+}
+
+fun Activity.requestExternalStorageReadWritePermission(permissionRequestCode: Int): Boolean {
+    return if (checkExternalStorageReadWritePermission() || Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) true else {
+        ActivityCompat.requestPermissions(
+            this, arrayOf(
+                READ_EXTERNAL_STORAGE,
+                WRITE_EXTERNAL_STORAGE
+            ), permissionRequestCode
+        )
+        false
+    }
+}
+
+fun Context.checkNotificationPermission(): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        checkPermission(POST_NOTIFICATIONS)
+    } else true
+}
+
+fun Activity.requestNotificationPermission(permissionRequestCode: Int): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (checkNotificationPermission()) true else {
             ActivityCompat.requestPermissions(
-                activity, arrayOf(READ_EXTERNAL_STORAGE),
+                this,
+                arrayOf(POST_NOTIFICATIONS),
                 permissionRequestCode
             )
             false
         }
-    }
-
-    fun checkExternalStorageReadWritePermission(activity: Activity): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return true
-        return checkPermission(activity, READ_EXTERNAL_STORAGE) &&
-                checkPermission(activity, WRITE_EXTERNAL_STORAGE)
-    }
-
-    fun requestExternalStorageReadWritePermission(
-        activity: Activity,
-        permissionRequestCode: Int
-    ): Boolean {
-        return if (checkExternalStorageReadWritePermission(activity) || Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) true else {
-            ActivityCompat.requestPermissions(
-                activity, arrayOf(
-                    READ_EXTERNAL_STORAGE,
-                    WRITE_EXTERNAL_STORAGE
-                ), permissionRequestCode
-            )
-            false
-        }
-    }
-
-    fun checkNotificationPermission(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            checkPermission(context, POST_NOTIFICATIONS)
-        } else true
-    }
-
-    fun requestNotificationPermission(activity: Activity, permissionRequestCode: Int): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkNotificationPermission(activity)) true else {
-                ActivityCompat.requestPermissions(
-                    activity,
-                    arrayOf(POST_NOTIFICATIONS),
-                    permissionRequestCode
-                )
-                false
-            }
-        } else true
-    }
+    } else true
 }

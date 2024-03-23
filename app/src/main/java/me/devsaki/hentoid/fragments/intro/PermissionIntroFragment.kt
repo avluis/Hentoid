@@ -16,7 +16,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IntroSlide02Binding
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.util.file.checkExternalStorageReadWritePermission
 
 class PermissionIntroFragment :
     Fragment(R.layout.intro_slide_02), SlidePolicy {
@@ -45,7 +45,7 @@ class PermissionIntroFragment :
     override val isPolicyRespected: Boolean
         get() {
             if (R.id.mode_browser == binding.modeSelect.checkedButtonId) return true
-            return PermissionHelper.checkExternalStorageReadWritePermission(requireActivity())
+            return requireActivity().checkExternalStorageReadWritePermission()
         }
 
     override fun onAttach(context: Context) {
@@ -80,7 +80,7 @@ class PermissionIntroFragment :
     }
 
     override fun onUserIllegallyRequestedNextPage() {
-        if (PermissionHelper.checkExternalStorageReadWritePermission(requireActivity()))
+        if (requireActivity().checkExternalStorageReadWritePermission())
             parentActivity.nextStep()
         else
             requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)

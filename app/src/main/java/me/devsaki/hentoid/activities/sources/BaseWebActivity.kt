@@ -82,8 +82,8 @@ import me.devsaki.hentoid.util.calcPhash
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.file.PermissionHelper.RQST_STORAGE_PERMISSION
-import me.devsaki.hentoid.util.file.PermissionHelper.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.getCoverBitmapFromStream
 import me.devsaki.hentoid.util.getHashEngine
 import me.devsaki.hentoid.util.network.HttpHelper
@@ -451,7 +451,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     // Make sure permissions are set at resume time; if not, warn the user
     private fun checkPermissions() {
         if (Preferences.isBrowserMode()) return
-        if (!requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
+        if (!this.requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION))
             toast(R.string.web_storage_permission_denied)
     }
 

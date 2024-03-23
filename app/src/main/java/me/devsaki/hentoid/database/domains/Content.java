@@ -71,7 +71,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
@@ -904,7 +904,7 @@ public class Content implements Serializable {
     }
 
     public boolean isArchive() {
-        return ArchiveHelper.INSTANCE.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed (not in any spec) !
+        return ArchiveHelperKt.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed (not in any spec) !
     }
 
     public String getArchiveLocationUri() {

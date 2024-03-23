@@ -12,7 +12,8 @@ import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.fragments.reader.ReaderGalleryFragment
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.requestExternalStorageReadPermission
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -54,10 +55,7 @@ open class ReaderActivity : BaseActivity() {
             }
         }
 
-        if (!PermissionHelper.requestExternalStorageReadPermission(
-                this,
-                PermissionHelper.RQST_STORAGE_PERMISSION
-            ) &&
+        if (!this.requestExternalStorageReadPermission(RQST_STORAGE_PERMISSION) &&
             Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
         ) {
             toast(R.string.storage_permission_denied)

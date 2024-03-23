@@ -56,7 +56,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.ArchiveEntry;
+import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
@@ -813,7 +814,7 @@ public class ImportHelper {
             // Look for the interesting stuff
             for (DocumentFile file : files)
                 if (file.getName() != null) {
-                    if (ArchiveHelper.INSTANCE.getArchiveNamesFilter().accept(file.getName()))
+                    if (ArchiveHelperKt.getArchiveNamesFilter().accept(file.getName()))
                         archives.add(file);
                     else if (JsonHelper.getJsonNamesFilter().accept(file.getName()))
                         jsons.add(file);
@@ -863,14 +864,14 @@ public class ImportHelper {
             }
         }
 
-        List<ArchiveHelper.ArchiveEntry> entries = Collections.emptyList();
+        List<ArchiveEntry> entries = Collections.emptyList();
         try {
-            entries = ArchiveHelper.INSTANCE.getArchiveEntries(context, archive);
+            entries = ArchiveHelperKt.getArchiveEntries(context, archive);
         } catch (Exception e) {
             Timber.w(e);
         }
 
-        List<ArchiveHelper.ArchiveEntry> imageEntries = Stream.of(entries)
+        List<ArchiveEntry> imageEntries = Stream.of(entries)
                 .filter(s -> ImageHelper.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(s.getPath())))
                 .filter(s -> s.getSize() > 0)
                 .toList();

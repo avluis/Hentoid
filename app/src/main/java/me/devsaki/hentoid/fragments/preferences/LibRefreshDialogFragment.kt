@@ -35,7 +35,8 @@ import me.devsaki.hentoid.util.ImportHelper.setAndScanPrimaryFolder
 import me.devsaki.hentoid.util.ImportHelper.showExistingLibraryDialog
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.toastShort
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -272,10 +273,8 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     }
 
     private fun pickFolder() {
-        if (PermissionHelper.requestExternalStorageReadWritePermission(
-                requireActivity(), PermissionHelper.RQST_STORAGE_PERMISSION
-            )
-        ) { // Make sure permissions are set
+        // Make sure permissions are set
+        if (requireActivity().requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION)) {
             Preferences.setBrowserMode(false)
             pickFolder.launch(location) // Run folder picker
         }

@@ -80,7 +80,8 @@ import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.FileNotProcessedException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.ArchiveEntry;
+import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
@@ -566,7 +567,7 @@ public final class ContentHelper {
                     File targetFolder = context.getFilesDir();
                     List<Pair<String, String>> extractInstructions = new ArrayList<>();
                     extractInstructions.add(new Pair<>(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, ""), newContentId + ""));
-                    List<Uri> results = ArchiveHelper.INSTANCE.extractArchiveEntriesSimple(context, archive.getUri(), targetFolder, extractInstructions);
+                    List<Uri> results = ArchiveHelperKt.extractArchiveEntriesSimple(context, archive.getUri(), targetFolder, extractInstructions);
                     if (!results.isEmpty()) {
                         Uri uri = results.get(0);
 
@@ -1104,15 +1105,15 @@ public final class ContentHelper {
      * @return List of ImageFiles contructed from the given parameters
      */
     public static List<ImageFile> createImageListFromArchiveEntries(
-            @NonNull final Uri archiveFileUri, @NonNull final List<ArchiveHelper.ArchiveEntry> files,
+            @NonNull final Uri archiveFileUri, @NonNull final List<ArchiveEntry> files,
             @NonNull final StatusContent targetStatus, int startingOrder,
             @NonNull final String namePrefix) {
         Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
         int order = startingOrder;
         // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
-        List<ArchiveHelper.ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).toList();
-        for (ArchiveHelper.ArchiveEntry f : fileList) {
+        List<ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).toList();
+        for (ArchiveEntry f : fileList) {
             String name = namePrefix + f.getPath();
             String path = archiveFileUri + File.separator + f.getPath();
             ImageFile img = new ImageFile();
@@ -2002,9 +2003,9 @@ public final class ContentHelper {
     /**
      * Comparator to be used to sort archive entries according to their names
      */
-    private static class InnerNameNumberArchiveComparator implements Comparator<ArchiveHelper.ArchiveEntry> {
+    private static class InnerNameNumberArchiveComparator implements Comparator<ArchiveEntry> {
         @Override
-        public int compare(@NonNull ArchiveHelper.ArchiveEntry o1, @NonNull ArchiveHelper.ArchiveEntry o2) {
+        public int compare(@NonNull ArchiveEntry o1, @NonNull ArchiveEntry o2) {
             return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(o1.getPath(), o2.getPath());
         }
     }

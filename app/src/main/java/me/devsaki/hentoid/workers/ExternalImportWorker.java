@@ -45,7 +45,7 @@ import me.devsaki.hentoid.util.LogHelperKt;
 import me.devsaki.hentoid.util.LogInfo;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 import me.devsaki.hentoid.util.file.DiskCache;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
@@ -244,7 +244,7 @@ public class ExternalImportWorker extends BaseWorker {
                 if (file.isDirectory()) subFolders.add(file);
                 else if (ImageHelper.INSTANCE.getImageNamesFilter().accept(file.getName()))
                     images.add(file);
-                else if (ArchiveHelper.INSTANCE.getArchiveNamesFilter().accept(file.getName()))
+                else if (ArchiveHelperKt.getArchiveNamesFilter().accept(file.getName()))
                     archives.add(file);
                 else if (JsonHelper.getJsonNamesFilter().accept(file.getName())) {
                     jsons.add(file);
@@ -264,7 +264,7 @@ public class ExternalImportWorker extends BaseWorker {
                     library.add(scanChapterFolders(context, root, subFolders, explorer, parentNames, dao, json));
                 }
                 // Look for archives inside
-                int nbArchivesInside = explorer.countFiles(subFolders.get(0), ArchiveHelper.INSTANCE.getArchiveNamesFilter());
+                int nbArchivesInside = explorer.countFiles(subFolders.get(0), ArchiveHelperKt.getArchiveNamesFilter());
                 if (nbArchivesInside > 0) {
                     List<Content> c = scanForArchives(context, subFolders, explorer, parentNames, dao);
                     library.addAll(c);

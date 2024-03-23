@@ -5,13 +5,13 @@ import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.ForegroundInfo
-import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.util.file.checkNotificationPermission
 
 class NotificationManager(val context: Context, private val notificationId: Int) {
 
     fun notify(notification: BaseNotification) {
         val managerCompat = NotificationManagerCompat.from(context)
-        if (PermissionHelper.checkNotificationPermission(context)) managerCompat.notify(
+        if (context.checkNotificationPermission()) managerCompat.notify(
             notificationId,
             notification.onCreateNotification(context)
         )
@@ -22,7 +22,7 @@ class NotificationManager(val context: Context, private val notificationId: Int)
     // (see https://stackoverflow.com/questions/60693832/workmanager-keep-notification-after-work-is-done)
     fun notifyLast(notification: BaseNotification) {
         val managerCompat = NotificationManagerCompat.from(context)
-        if (PermissionHelper.checkNotificationPermission(context)) managerCompat.notify(
+        if (context.checkNotificationPermission()) managerCompat.notify(
             notificationId + 1,
             notification.onCreateNotification(context)
         )

@@ -15,8 +15,8 @@ import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.file.ArchiveHelper
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.zipFiles
 import me.devsaki.hentoid.util.notification.BaseNotification
 import timber.log.Timber
 import java.io.IOException
@@ -105,9 +105,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
             val outputStream: OutputStream? = destFileResult.first
             if (outputStream != null) {
                 outputStream.use { os ->
-                    ArchiveHelper.zipFiles(
-                        applicationContext, files, os
-                    ) { f ->
+                    applicationContext.zipFiles(files, os) { f ->
                         globalProgress.setProgress(content.id.toString(), f)
                         notifyProcessProgress()
                     }

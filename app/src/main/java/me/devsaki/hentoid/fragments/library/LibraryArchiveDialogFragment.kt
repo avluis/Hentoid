@@ -24,7 +24,8 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.workers.ArchiveWorker
 import org.apache.commons.lang3.tuple.ImmutablePair
 
@@ -93,8 +94,8 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
 
                     targetFolder.entries.size - 1 -> { // Last item => Pick a folder
                         // Make sure permissions are set
-                        if (PermissionHelper.requestExternalStorageReadWritePermission(
-                                requireActivity(), PermissionHelper.RQST_STORAGE_PERMISSION
+                        if (requireActivity().requestExternalStorageReadWritePermission(
+                                RQST_STORAGE_PERMISSION
                             )
                         ) {
                             // Run folder picker

@@ -68,8 +68,13 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.file.PermissionHelper
-import me.devsaki.hentoid.util.file.StorageHelper
+import me.devsaki.hentoid.util.file.RQST_NOTIFICATION_PERMISSION
+import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.checkExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.file.checkNotificationPermission
+import me.devsaki.hentoid.util.file.isLowDeviceStorage
+import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.file.requestNotificationPermission
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.TextItem
@@ -521,19 +526,19 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 alertTxt.visibility = View.VISIBLE
                 alertIcon.visibility = View.GONE
                 alertFixBtn.visibility = View.GONE
-            } else if (!PermissionHelper.checkExternalStorageReadWritePermission(this@LibraryActivity)) { // Warn about permissions being lost
+            } else if (!this@LibraryActivity.checkExternalStorageReadWritePermission()) { // Warn about permissions being lost
                 alertTxt.setText(R.string.alert_permissions_lost)
                 alertTxt.visibility = View.VISIBLE
                 alertIcon.visibility = View.VISIBLE
                 alertFixBtn.setOnClickListener { fixPermissions() }
                 alertFixBtn.visibility = View.VISIBLE
-            } else if (!PermissionHelper.checkNotificationPermission(this@LibraryActivity)) { // Warn about notiftications not being enabled
+            } else if (!this@LibraryActivity.checkNotificationPermission()) { // Warn about notiftications not being enabled
                 alertTxt.setText(R.string.alert_notifications)
                 alertTxt.visibility = View.VISIBLE
                 alertIcon.visibility = View.VISIBLE
                 alertFixBtn.setOnClickListener { fixNotifications() }
                 alertFixBtn.visibility = View.VISIBLE
-            } else if (StorageHelper.isLowDeviceStorage(this@LibraryActivity)) { // Display low device storage alert
+            } else if (this@LibraryActivity.isLowDeviceStorage()) { // Display low device storage alert
                 alertTxt.setText(R.string.alert_low_memory)
                 alertTxt.visibility = View.VISIBLE
                 alertIcon.visibility = View.VISIBLE
@@ -945,19 +950,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun fixPermissions() {
-        if (PermissionHelper.requestExternalStorageReadWritePermission(
-                this,
-                PermissionHelper.RQST_STORAGE_PERMISSION
-            )
-        ) updateAlertBanner()
+        if (this.requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION)) updateAlertBanner()
     }
 
     private fun fixNotifications() {
-        if (PermissionHelper.requestNotificationPermission(
-                this,
-                PermissionHelper.RQST_NOTIFICATION_PERMISSION
-            )
-        ) updateAlertBanner()
+        if (this.requestNotificationPermission(RQST_NOTIFICATION_PERMISSION)) updateAlertBanner()
     }
 
     private fun isLowDatabaseStorage(): Boolean {
@@ -977,14 +974,14 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     ) {
         if (grantResults.isEmpty()) return
         binding?.alertBanner?.apply {
-            if (PermissionHelper.RQST_STORAGE_PERMISSION == requestCode) {
+            if (RQST_STORAGE_PERMISSION == requestCode) {
                 if (permissions.size < 2) return
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     alertTxt.visibility = View.GONE
                     alertIcon.visibility = View.GONE
                     alertFixBtn.visibility = View.GONE
                 } // Don't show rationales here; the alert still displayed on screen should be enough
-            } else if (PermissionHelper.RQST_NOTIFICATION_PERMISSION == requestCode) {
+            } else if (RQST_NOTIFICATION_PERMISSION == requestCode) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     alertTxt.visibility = View.GONE
                     alertIcon.visibility = View.GONE

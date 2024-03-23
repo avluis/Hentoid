@@ -68,7 +68,8 @@ import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.file.PermissionHelper
+import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
@@ -507,9 +508,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
             DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS -> {
                 motiveMsg = R.string.paused_dl_folder_credentials
-                PermissionHelper.requestExternalStorageReadWritePermission(
-                    requireActivity(), PermissionHelper.RQST_STORAGE_PERMISSION
-                )
+                requireActivity().requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION)
             }
 
             DownloadEvent.Motive.STALE_CREDENTIALS -> motiveMsg =

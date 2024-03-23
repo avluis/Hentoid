@@ -9,7 +9,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.AchievementEvent
 import me.devsaki.hentoid.json.core.JsonAchievements
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.file.StorageHelper
+import me.devsaki.hentoid.util.file.isLowDeviceStorage
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.time.Instant
@@ -82,7 +82,7 @@ object AchievementsManager {
 
     fun checkStorage(context: Context) {
         if (!isRegistered(18)) {
-            if (StorageHelper.isLowDeviceStorage(context, 98)) registerAndSignal(18)
+            if (context.isLowDeviceStorage(98)) registerAndSignal(18)
         }
     }
 

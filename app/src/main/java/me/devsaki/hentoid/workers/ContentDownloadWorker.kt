@@ -69,10 +69,10 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.file.ArchiveHelper
-import me.devsaki.hentoid.util.file.ArchiveHelper.extractArchiveEntries
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
+import me.devsaki.hentoid.util.file.ZIP_MIME_TYPE
+import me.devsaki.hentoid.util.file.extractArchiveEntries
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImageHelper.assembleGif
 import me.devsaki.hentoid.util.network.Connectivity
@@ -1361,7 +1361,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     Uri.fromFile(ugoiraCacheFolder),
                     targetFileName,
                     downloadInterrupted,
-                    ArchiveHelper.ZIP_MIME_TYPE,
+                    ZIP_MIME_TYPE,
                     resourceId = img.order
                 )
 
@@ -1370,8 +1370,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     ?: throw IOException("Couldn't download ugoira file : resource not available")
 
                 // == Extract all frames
-                extractArchiveEntries(
-                    applicationContext,
+                applicationContext.extractArchiveEntries(
                     targetFileUri,
                     ugoiraCacheFolder,
                     null,  // Extract everything; keep original names

@@ -76,7 +76,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeed;
 import me.devsaki.hentoid.util.StringHelper;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle;
 import timber.log.Timber;
@@ -1199,7 +1199,7 @@ class ObjectBoxDB {
             case ContentHelper.Type.ARCHIVE:
                 qc = qc.and(Content_.status.equal(StatusContent.EXTERNAL.getCode()));
                 QueryCondition<Content> combinedCondition = null;
-                for (String ext : ArchiveHelper.INSTANCE.getSupportedExtensions()) {
+                for (String ext : ArchiveHelperKt.getSupportedExtensions()) {
                     if (null == combinedCondition)
                         combinedCondition = Content_.storageUri.endsWith(ext, QueryBuilder.StringOrder.CASE_INSENSITIVE);
                     else

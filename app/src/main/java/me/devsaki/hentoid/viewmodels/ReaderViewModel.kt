@@ -45,9 +45,9 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
-import me.devsaki.hentoid.util.file.ArchiveHelper
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.extractArchiveEntriesCached
 import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri
@@ -1157,7 +1157,7 @@ class ReaderViewModel(
         val nbProcessed = AtomicInteger()
 
         try {
-            ArchiveHelper.extractArchiveEntriesCached(getApplication(),
+            getApplication<Application>().applicationContext.extractArchiveEntriesCached(
                 archiveFile.uri,
                 extractInstructions,
                 archiveExtractKillSwitch,

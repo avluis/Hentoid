@@ -17,7 +17,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 import me.devsaki.hentoid.util.image.ImageHelper;
 
 /**
@@ -375,7 +375,7 @@ public class ImageFile {
 
     public boolean isArchived() {
         String lowerUri = url.toLowerCase();
-        for (String ext : ArchiveHelper.INSTANCE.getSupportedExtensions()) {
+        for (String ext : ArchiveHelperKt.getSupportedExtensions()) {
             if (lowerUri.contains("." + ext + File.separator)) return true;
         }
         return false;
