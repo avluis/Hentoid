@@ -23,10 +23,13 @@ import me.devsaki.hentoid.databinding.IntroSlide04Binding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.ImportHelper
-import me.devsaki.hentoid.util.ImportHelper.setAndScanPrimaryFolder
+import me.devsaki.hentoid.util.PickFolderContract
+import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.ProcessFolderResult
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.setAndScanPrimaryFolder
+import me.devsaki.hentoid.util.showExistingLibraryDialog
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -40,8 +43,8 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     // True when that screen has been validated once
     private var isDone = false
 
-    private val pickFolder = registerForActivityResult(ImportHelper.PickFolderContract()) { res ->
-        onFolderPickerResult(res.left, res.right)
+    private val pickFolder = registerForActivityResult(PickFolderContract()) { res ->
+        onFolderPickerResult(res.first, res.second)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,9 +113,9 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             if (Preferences.isBrowserMode()) View.INVISIBLE else View.VISIBLE
     }
 
-    private fun onFolderPickerResult(resultCode: Int, treeUri: Uri?) {
+    private fun onFolderPickerResult(resultCode: PickerResult, treeUri: Uri?) {
         when (resultCode) {
-            ImportHelper.PickerResult.OK -> {
+            PickerResult.OK -> {
                 if (null == treeUri) return
                 binding?.apply {
                     waitTxt.visibility = View.VISIBLE
@@ -132,12 +135,12 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                         }
                         waitTxt.clearAnimation()
                         waitTxt.visibility = View.GONE
-                        onScanHentoidFolderResult(result.left, result.right)
+                        onScanHentoidFolderResult(result.first, result.second)
                     }
                 }
             }
 
-            ImportHelper.PickerResult.KO_CANCELED -> {
+            PickerResult.KO_CANCELED -> {
                 binding?.apply {
                     Snackbar.make(
                         root,
@@ -148,7 +151,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 }
             }
 
-            ImportHelper.PickerResult.KO_OTHER, ImportHelper.PickerResult.KO_NO_URI -> {
+            PickerResult.KO_OTHER, PickerResult.KO_NO_URI -> {
                 binding?.apply {
                     Snackbar.make(
                         root,
@@ -161,18 +164,18 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         }
     }
 
-    private fun onScanHentoidFolderResult(resultCode: Int, rootUri: String) {
+    private fun onScanHentoidFolderResult(resultCode: ProcessFolderResult, rootUri: String) {
         binding?.apply {
             when (resultCode) {
-                ImportHelper.ProcessFolderResult.OK_EMPTY_FOLDER -> nextStep()
-                ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED -> { // Import service is already launched by the Helper; nothing else to do
+                ProcessFolderResult.OK_EMPTY_FOLDER -> nextStep()
+                ProcessFolderResult.OK_LIBRARY_DETECTED -> { // Import service is already launched by the Helper; nothing else to do
                     updateOnSelectFolder()
                     return
                 }
 
-                ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED_ASK -> {
+                ProcessFolderResult.OK_LIBRARY_DETECTED_ASK -> {
                     updateOnSelectFolder()
-                    ImportHelper.showExistingLibraryDialog(
+                    showExistingLibraryDialog(
                         requireContext(),
                         StorageLocation.PRIMARY_1,
                         rootUri
@@ -180,41 +183,44 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     return
                 }
 
-                ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER -> Snackbar.make(
+                ProcessFolderResult.KO_INVALID_FOLDER -> Snackbar.make(
                     root,
                     R.string.import_invalid,
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
 
-                ImportHelper.ProcessFolderResult.KO_APP_FOLDER -> Snackbar.make(
+                ProcessFolderResult.KO_APP_FOLDER -> Snackbar.make(
                     root,
                     R.string.import_invalid,
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
 
-                ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER -> Snackbar.make(
+                ProcessFolderResult.KO_DOWNLOAD_FOLDER -> Snackbar.make(
                     root,
                     R.string.import_download_folder,
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
 
-                ImportHelper.ProcessFolderResult.KO_CREATE_FAIL -> Snackbar.make(
+                ProcessFolderResult.KO_CREATE_FAIL -> Snackbar.make(
                     root,
                     R.string.import_create_fail,
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
 
-                ImportHelper.ProcessFolderResult.KO_ALREADY_RUNNING -> Snackbar.make(
+                ProcessFolderResult.KO_ALREADY_RUNNING -> Snackbar.make(
                     root,
                     R.string.service_running,
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
 
-                ImportHelper.ProcessFolderResult.KO_OTHER -> Snackbar.make(
+                ProcessFolderResult.KO_OTHER -> Snackbar.make(
                     root,
                     R.string.import_other,
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
+
+                else -> { /* Nothing*/
+                }
             }
             skipBtn.visibility = View.VISIBLE
         }

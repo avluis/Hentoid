@@ -21,13 +21,14 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryArchiveBinding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.ImportHelper
+import me.devsaki.hentoid.util.PickFolderContract
+import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.workers.ArchiveWorker
-import org.apache.commons.lang3.tuple.ImmutablePair
 
 class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFragment.Parent>() {
     companion object {
@@ -55,8 +56,8 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
     private lateinit var contentIds: LongArray
 
     private val pickFolder =
-        registerForActivityResult(ImportHelper.PickFolderContract()) { result: ImmutablePair<Int, Uri> ->
-            onFolderPickerResult(result.left, result.right)
+        registerForActivityResult(PickFolderContract()) { result ->
+            onFolderPickerResult(result.first, result.second)
         }
 
 
@@ -158,11 +159,11 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
         }
     }
 
-    private fun onFolderPickerResult(resultCode: Int, uri: Uri) {
+    private fun onFolderPickerResult(resultCode: PickerResult, uri: Uri) {
         when (resultCode) {
-            ImportHelper.PickerResult.OK -> {
+            PickerResult.OK -> {
                 // Persist I/O permissions; keep existing ones if present
-                ImportHelper.persistLocationCredentials(
+                persistLocationCredentials(
                     requireContext(),
                     uri,
                     listOf(

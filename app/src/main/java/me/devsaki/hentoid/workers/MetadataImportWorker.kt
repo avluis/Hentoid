@@ -33,11 +33,11 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.importBookmarks
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.workers.data.MetadataImportData
 import org.greenrobot.eventbus.EventBus
@@ -129,7 +129,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         if (importBookmarks) {
             val bookmarks = collection.bookmarks
             totalItems += bookmarks.size
-            ImportHelper.importBookmarks(dao, bookmarks)
+            importBookmarks(dao, bookmarks)
             nbOK += bookmarks.size
         }
         val contentToImport: MutableList<JsonContent> = ArrayList()

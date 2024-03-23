@@ -53,7 +53,7 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.ImportHelper;
+import me.devsaki.hentoid.util.ImportHelperKt;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogEntry;
 import me.devsaki.hentoid.util.LogHelperKt;
@@ -445,7 +445,7 @@ public class PrimaryImportWorker extends BaseWorker {
                 }
 
                 // If content has an external-library tag or an EXTERNAL status, remove it because we're importing for the primary library now
-                ImportHelper.removeExternalAttributes(content);
+                ImportHelperKt.removeExternalAttributes(content);
 
                 content.computeSize();
                 ContentHelper.addContent(context, dao, content);
@@ -497,7 +497,7 @@ public class PrimaryImportWorker extends BaseWorker {
                             }
                     }
                     // Scan the folder
-                    Content storedContent = ImportHelper.scanBookFolder(context, bookFolder, explorer, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
+                    Content storedContent = ImportHelperKt.scanBookFolder(context, bookFolder, explorer, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
                     DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder, Consts.JSON_FILE_NAME_V2);
                     storedContent.setJsonUri(newJson.getUri().toString());
                     ContentHelper.addContent(context, dao, storedContent);
@@ -671,7 +671,7 @@ public class PrimaryImportWorker extends BaseWorker {
             List<SiteBookmark> bookmarks = contentCollection.getBookmarks();
             eventProgress(STEP_4_QUEUE_FINAL, bookmarks.size(), 0, 0);
             trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Bookmarks JSON deserialized : %s items detected", bookmarks.size() + "");
-            ImportHelper.importBookmarks(dao, bookmarks);
+            ImportHelperKt.importBookmarks(dao, bookmarks);
             trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import bookmarks succeeded");
         } else {
             trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import bookmarks failed : JSON unreadable");
@@ -686,7 +686,7 @@ public class PrimaryImportWorker extends BaseWorker {
             List<RenamingRule> rules = contentCollection.getRenamingRules();
             eventProgress(STEP_4_QUEUE_FINAL, rules.size(), 0, 0);
             trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Renaming rules JSON deserialized : %s items detected", rules.size() + "");
-            ImportHelper.importRenamingRules(dao, rules);
+            ImportHelperKt.importRenamingRules(dao, rules);
             trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import renaming rules succeeded");
         } else {
             trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import renaming rules failed : JSON unreadable");

@@ -1,9 +1,11 @@
 package me.devsaki.hentoid.workers;
 
-import static me.devsaki.hentoid.util.ImportHelper.scanArchive;
-import static me.devsaki.hentoid.util.ImportHelper.scanBookFolder;
-import static me.devsaki.hentoid.util.ImportHelper.scanChapterFolders;
-import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
+import static me.devsaki.hentoid.util.ImportHelperKt.getContentJsonNamesFilter;
+import static me.devsaki.hentoid.util.ImportHelperKt.getFileWithName;
+import static me.devsaki.hentoid.util.ImportHelperKt.scanArchive;
+import static me.devsaki.hentoid.util.ImportHelperKt.scanBookFolder;
+import static me.devsaki.hentoid.util.ImportHelperKt.scanChapterFolders;
+import static me.devsaki.hentoid.util.ImportHelperKt.scanForArchives;
 
 import android.content.Context;
 import android.net.Uri;
@@ -38,7 +40,6 @@ import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogEntry;
 import me.devsaki.hentoid.util.LogHelperKt;
@@ -248,7 +249,7 @@ public class ExternalImportWorker extends BaseWorker {
                     archives.add(file);
                 else if (JsonHelper.getJsonNamesFilter().accept(file.getName())) {
                     jsons.add(file);
-                    if (ImportHelper.getContentJsonNamesFilter().accept(file.getName()))
+                    if (getContentJsonNamesFilter().accept(file.getName()))
                         contentJsons.add(file);
                 }
             }
@@ -260,7 +261,7 @@ public class ExternalImportWorker extends BaseWorker {
                 // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
                 int nbPicturesInside = explorer.countFiles(subFolders.get(0), ImageHelperKt.getImageNamesFilter());
                 if (nbPicturesInside > 1) {
-                    DocumentFile json = ImportHelper.getFileWithName(jsons, Consts.JSON_FILE_NAME_V2);
+                    DocumentFile json = getFileWithName(jsons, Consts.JSON_FILE_NAME_V2);
                     library.add(scanChapterFolders(context, root, subFolders, explorer, parentNames, dao, json));
                 }
                 // Look for archives inside
@@ -273,7 +274,7 @@ public class ExternalImportWorker extends BaseWorker {
         }
         if (!archives.isEmpty()) { // We've got an archived book
             for (DocumentFile archive : archives) {
-                DocumentFile json = ImportHelper.getFileWithName(jsons, archive.getName());
+                DocumentFile json = getFileWithName(jsons, archive.getName());
                 Content c = scanArchive(context, root, archive, parentNames, StatusContent.EXTERNAL, dao, json);
                 if (!c.getStatus().equals(StatusContent.IGNORED)) library.add(c);
                 else
@@ -281,7 +282,7 @@ public class ExternalImportWorker extends BaseWorker {
             }
         }
         if (images.size() > 2 || !contentJsons.isEmpty()) { // We've got a book
-            DocumentFile json = ImportHelper.getFileWithName(contentJsons, Consts.JSON_FILE_NAME_V2);
+            DocumentFile json = getFileWithName(contentJsons, Consts.JSON_FILE_NAME_V2);
             library.add(scanBookFolder(context, root, explorer, parentNames, StatusContent.EXTERNAL, dao, images, json));
         }
 

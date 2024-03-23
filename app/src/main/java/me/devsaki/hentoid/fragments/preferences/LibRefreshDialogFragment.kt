@@ -26,20 +26,19 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.ImportHelper.ImportOptions
-import me.devsaki.hentoid.util.ImportHelper.PickFolderContract
-import me.devsaki.hentoid.util.ImportHelper.PickerResult
-import me.devsaki.hentoid.util.ImportHelper.ProcessFolderResult
-import me.devsaki.hentoid.util.ImportHelper.setAndScanExternalFolder
-import me.devsaki.hentoid.util.ImportHelper.setAndScanPrimaryFolder
-import me.devsaki.hentoid.util.ImportHelper.showExistingLibraryDialog
+import me.devsaki.hentoid.util.ImportOptions
+import me.devsaki.hentoid.util.PickFolderContract
+import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.ProcessFolderResult
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.setAndScanExternalFolder
+import me.devsaki.hentoid.util.setAndScanPrimaryFolder
+import me.devsaki.hentoid.util.showExistingLibraryDialog
 import me.devsaki.hentoid.util.toastShort
 import me.devsaki.hentoid.workers.PrimaryImportWorker
-import org.apache.commons.lang3.tuple.ImmutablePair
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -66,8 +65,8 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     private var isServiceGracefulClose = false
 
     private val pickFolder =
-        registerForActivityResult(PickFolderContract()) { result: ImmutablePair<Int, Uri> ->
-            onFolderPickerResult(result.left, result.right)
+        registerForActivityResult(PickFolderContract()) { result: Pair<PickerResult, Uri> ->
+            onFolderPickerResult(result.first, result.second)
         }
 
 
@@ -157,7 +156,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 val res = withContext(Dispatchers.IO) {
                     try {
                         val res = setAndScanExternalFolder(requireContext(), externalUri)
-                        return@withContext res.left
+                        return@withContext res.first
                     } catch (e: Exception) {
                         Timber.w(e)
                         return@withContext ProcessFolderResult.KO_OTHER
@@ -180,13 +179,14 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 }
             }
         } else {
-            val options = ImportOptions()
-            options.rename = rename
-            options.removePlaceholders = removePlaceholders
-            options.renumberPages = renumberPages
-            options.cleanNoJson = cleanAbsent
-            options.cleanNoImages = cleanNoImages
-            options.importGroups = false
+            val options = ImportOptions(
+                rename,
+                removePlaceholders,
+                renumberPages,
+                cleanAbsent,
+                cleanNoImages,
+                false
+            )
             val uriStr = Preferences.getStorageUri(location)
             if (uriStr.isEmpty()) {
                 activity?.toastShort(R.string.import_invalid_uri)
@@ -201,7 +201,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                         val res = setAndScanPrimaryFolder(
                             requireContext(), rootUri, location, false, options
                         )
-                        return@withContext res.left
+                        return@withContext res.first
                     } catch (e: Exception) {
                         Timber.w(e)
                         return@withContext ProcessFolderResult.KO_OTHER
@@ -280,7 +280,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
         }
     }
 
-    private fun onFolderPickerResult(resultCode: Int, uri: Uri) {
+    private fun onFolderPickerResult(resultCode: PickerResult, uri: Uri) {
         when (resultCode) {
             PickerResult.OK -> {
                 lifecycleScope.launch {
@@ -291,7 +291,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                             requireContext(), uri, location, true, null
                         )
                     }
-                    onScanHentoidFolderResult(res.left, res.right)
+                    onScanHentoidFolderResult(res.first, res.second)
                 }
             }
 
@@ -305,12 +305,10 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 ).show()
                 isCancelable = true
             }
-
-            else -> {}
         }
     }
 
-    private fun onScanHentoidFolderResult(@ProcessFolderResult resultCode: Int, rootUri: String) {
+    private fun onScanHentoidFolderResult(resultCode: ProcessFolderResult, rootUri: String) {
         when (resultCode) {
             ProcessFolderResult.OK_EMPTY_FOLDER -> {
                 parent?.onFolderSuccess()
@@ -342,13 +340,11 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 ).show()
                 isCancelable = true
             }
-
-            else -> {}
         }
     }
 
     @StringRes
-    private fun getMessage(@ProcessFolderResult resultCode: Int): Int {
+    private fun getMessage(resultCode: ProcessFolderResult): Int {
         return when (resultCode) {
             ProcessFolderResult.KO_INVALID_FOLDER -> R.string.import_invalid
             ProcessFolderResult.KO_APP_FOLDER -> R.string.import_app_folder
@@ -360,10 +356,8 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
             ProcessFolderResult.OK_EMPTY_FOLDER -> R.string.import_empty
             ProcessFolderResult.KO_OTHER -> R.string.import_other
             ProcessFolderResult.OK_LIBRARY_DETECTED,
-            ProcessFolderResult.OK_LIBRARY_DETECTED_ASK ->                 // Nothing should happen here
-                R.string.none
-
-            else -> R.string.none
+            ProcessFolderResult.OK_LIBRARY_DETECTED_ASK -> R.string.none
+            // Nothing should happen here
         }
     }
 

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json;
 
+import static me.devsaki.hentoid.util.ImportHelperKt.createCover;
+
 import androidx.annotation.Nullable;
 
 import com.annimon.stream.Optional;
@@ -23,7 +25,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.StringHelper;
 
 public class JsonContent {
@@ -182,7 +183,7 @@ public class JsonContent {
         List<ImageFile> imgs = Stream.of(imageFiles).map(i -> i.toEntity(chps)).toList();
         // Fix empty covers
         Optional<ImageFile> cover = Stream.of(imgs).filter(ImageFile::isCover).findFirst();
-        if (cover.isEmpty() || cover.get().getUrl().isEmpty()) ImportHelper.createCover(imgs);
+        if (cover.isEmpty() || cover.get().getUrl().isEmpty()) createCover(imgs);
 
         result.setImageFiles(imgs);
 
