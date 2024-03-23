@@ -49,10 +49,11 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.AttributeQueryResult;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.SearchHelper;
+import me.devsaki.hentoid.util.SearchCriteria;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
@@ -138,7 +139,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public SearchHelper.AttributeQueryResult selectAttributeMasterDataPaged(
+    public AttributeQueryResult selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
             long groupId,
@@ -664,7 +665,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     private List<GroupItem> selectGroupItemsByQuery(@NonNull final Group group) {
-        SearchHelper.SearchCriteria criteria = SearchActivityBundle.Companion.parseSearchUri(Uri.parse(group.searchUri));
+        SearchCriteria criteria = SearchActivityBundle.Companion.parseSearchUri(Uri.parse(group.searchUri));
         ContentSearchManager.ContentSearchBundle bundle = ContentSearchManager.ContentSearchBundle.Companion.fromSearchCriteria(criteria);
         List<Long> contentResult = ContentSearchManager.Companion.searchContentIds(bundle, this);
         return Stream.of(contentResult).map(c -> new GroupItem(c, group, -1)).toList();
@@ -875,7 +876,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
     }
 
-    private SearchHelper.AttributeQueryResult pagedAttributeSearch(
+    private AttributeQueryResult pagedAttributeSearch(
             @NonNull List<AttributeType> attrTypes,
             String filter,
             long groupId,
@@ -903,7 +904,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             }
         }
 
-        return new SearchHelper.AttributeQueryResult(attributes, totalSelectedAttributes);
+        return new AttributeQueryResult(attributes, totalSelectedAttributes);
     }
 
     private SparseIntArray countAttributes(long groupId,

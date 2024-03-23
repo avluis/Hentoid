@@ -32,8 +32,8 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.AttributeQueryResult;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 
 public interface CollectionDAO {
@@ -264,7 +264,7 @@ public interface CollectionDAO {
     @Nullable
     Attribute selectAttribute(long id);
 
-    SearchHelper.AttributeQueryResult selectAttributeMasterDataPaged(
+    AttributeQueryResult selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
             long groupId,

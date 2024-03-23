@@ -26,9 +26,9 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.IncludeSearchBottomPanelBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.ui.BlinkAnimation
+import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.LanguageHelper
-import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel

@@ -13,8 +13,8 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import java.util.Objects
 
 class SearchViewModel(

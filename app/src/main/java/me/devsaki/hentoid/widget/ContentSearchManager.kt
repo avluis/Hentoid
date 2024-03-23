@@ -11,7 +11,7 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.SearchHelper
+import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.long
@@ -193,7 +193,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
         }
 
         companion object {
-            fun fromSearchCriteria(data: SearchHelper.SearchCriteria): ContentSearchBundle {
+            fun fromSearchCriteria(data: SearchCriteria): ContentSearchBundle {
                 val result = ContentSearchBundle()
 
                 result.apply {

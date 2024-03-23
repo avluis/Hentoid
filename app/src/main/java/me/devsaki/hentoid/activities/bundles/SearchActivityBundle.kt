@@ -5,7 +5,7 @@ import android.os.Bundle
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.enums.AttributeType
-import me.devsaki.hentoid.util.SearchHelper
+import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.intArrayList
@@ -33,7 +33,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
     // Helper methods
     companion object {
         fun buildSearchUri(
-            searchCriteria: SearchHelper.SearchCriteria,
+            searchCriteria: SearchCriteria,
             query: String? = null
         ): Uri {
             return buildSearchUri(
@@ -79,11 +79,11 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
             }
         }
 
-        fun parseSearchUri(uri: String): SearchHelper.SearchCriteria {
+        fun parseSearchUri(uri: String): SearchCriteria {
             return parseSearchUri(Uri.parse(uri))
         }
 
-        fun parseSearchUri(uri: Uri): SearchHelper.SearchCriteria {
+        fun parseSearchUri(uri: Uri): SearchCriteria {
             val attrs: MutableSet<Attribute> = HashSet()
             var location = 0
             var contentType = 0
@@ -110,7 +110,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
                         uri.getQueryParameters(typeStr)[0].toInt()
                 }
             }
-            return SearchHelper.SearchCriteria(query, attrs, location, contentType)
+            return SearchCriteria(query, attrs, location, contentType)
         }
     }
 }
