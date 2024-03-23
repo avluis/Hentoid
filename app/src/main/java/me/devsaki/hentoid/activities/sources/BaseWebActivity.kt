@@ -82,7 +82,6 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper.getColor
 import me.devsaki.hentoid.util.ToastHelper
-import me.devsaki.hentoid.util.TooltipHelper.showTooltip
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.FileHelper
@@ -90,6 +89,7 @@ import me.devsaki.hentoid.util.file.PermissionHelper.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.PermissionHelper.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.views.NestedScrollWebView
 import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
@@ -619,7 +619,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
 
         // Display download button tooltip if a book page has been reached
-        if (isGalleryPage && !Preferences.isBrowserMode()) showTooltip(
+        if (isGalleryPage && !Preferences.isBrowserMode()) tooltip(
             R.string.help_web_download,
             false
         )
@@ -1512,10 +1512,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
     }
 
-    fun showTooltip(@StringRes resource: Int, always: Boolean) {
+    fun tooltip(@StringRes resource: Int, always: Boolean) {
         binding?.apply {
-            showTooltip(
-                this@BaseWebActivity,
+            this@BaseWebActivity.showTooltip(
                 resource,
                 ArrowOrientation.BOTTOM,
                 bottomNavigation,

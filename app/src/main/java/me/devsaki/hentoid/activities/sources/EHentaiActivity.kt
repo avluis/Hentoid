@@ -58,7 +58,7 @@ class EHentaiActivity : BaseWebActivity() {
                 )
             ) {
                 view.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/")
-                showTooltip(R.string.help_web_hires_eh_account, true)
+                tooltip(R.string.help_web_hires_eh_account, true)
             }
         }
 

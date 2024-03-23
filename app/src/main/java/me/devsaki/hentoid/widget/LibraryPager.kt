@@ -9,7 +9,7 @@ import com.skydoves.balloon.ArrowOrientation
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.ui.CarouselDecorator
 import me.devsaki.hentoid.ui.InputDialog
-import me.devsaki.hentoid.util.TooltipHelper.showTooltip
+import me.devsaki.hentoid.util.showTooltip
 
 /**
  * Page navigation bar for the library screen's paged mode
@@ -142,8 +142,7 @@ class LibraryPager(private val onPageChangeListener: Runnable) {
     }
 
     fun showTooltip(lifecycleOwner: LifecycleOwner) {
-        showTooltip(
-            pageCarousel.context,
+        pageCarousel.context.showTooltip(
             R.string.help_page_slider,
             ArrowOrientation.BOTTOM,
             pageCarousel,

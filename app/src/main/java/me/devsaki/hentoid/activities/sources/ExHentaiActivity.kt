@@ -57,15 +57,15 @@ class ExHentaiActivity : BaseWebActivity() {
             if (url.startsWith("https://exhentai.org") && authState != EhAuthState.LOGGED) {
                 CookieManager.getInstance().removeAllCookies(null)
                 webView.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/")
-                if (authState == EhAuthState.UNLOGGED_ABNORMAL) showTooltip(
+                if (authState == EhAuthState.UNLOGGED_ABNORMAL) tooltip(
                     R.string.help_web_incomplete_exh_credentials,
                     true
-                ) else showTooltip(R.string.help_web_invalid_exh_credentials, true)
+                ) else tooltip(R.string.help_web_invalid_exh_credentials, true)
             }
             if (url.startsWith("https://forums.e-hentai.org/index.php") && authState == EhAuthState.LOGGED) {
                 webView.loadUrl("https://exhentai.org/")
             }
-            showTooltip(R.string.help_web_exh_account, false)
+            tooltip(R.string.help_web_exh_account, false)
         }
 
         private fun logCookies(prefix: String, cookieStr: String) {

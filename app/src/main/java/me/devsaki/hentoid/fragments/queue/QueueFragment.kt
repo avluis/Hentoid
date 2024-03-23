@@ -67,11 +67,11 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
-import me.devsaki.hentoid.util.TooltipHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
+import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
@@ -732,8 +732,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
         // Signal swipe-to-cancel though a tooltip
         binding?.let {
-            if (!empty) TooltipHelper.showTooltip(
-                requireContext(),
+            if (!empty) requireContext().showTooltip(
                 R.string.help_swipe_cancel,
                 ArrowOrientation.BOTTOM,
                 it.queueList,

@@ -69,9 +69,9 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ToastHelper
-import me.devsaki.hentoid.util.TooltipHelper
 import me.devsaki.hentoid.util.file.PermissionHelper
 import me.devsaki.hentoid.util.file.StorageHelper
+import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -355,8 +355,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private fun onCreated(startBundle: Bundle?) {
         // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
         binding?.let {
-            if (Preferences.isFirstRunProcessComplete()) TooltipHelper.showTooltip(
-                this, R.string.help_search, ArrowOrientation.TOP,
+            if (Preferences.isFirstRunProcessComplete()) this.showTooltip(
+                R.string.help_search, ArrowOrientation.TOP,
                 it.toolbar, this
             )
             updateAlertBanner()
