@@ -17,8 +17,8 @@ import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
-import me.devsaki.hentoid.util.image.ImageHelper
-import me.devsaki.hentoid.util.image.ImageHelper.getMimeTypeFromPictureBinary
+import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
+import me.devsaki.hentoid.util.image.isMimeTypeSupported
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.jsoup.nodes.Document
 import timber.log.Timber
@@ -226,7 +226,7 @@ private fun getMimeTypeFromStream(
     size: String,
 ): String {
     val result = getMimeTypeFromPictureBinary(buffer)
-    if (!ImageHelper.isMimeTypeSupported(result)) {
+    if (!isMimeTypeSupported(result)) {
         if (contentType.contains("text/")) {
             val message = buffer.copyOfRange(0, bufLength).toString(UTF_8).trim()
             throw UnsupportedContentException("Message received from $url : $message")

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import static me.devsaki.hentoid.util.image.ImageHelperKt.MIME_IMAGE_GENERIC;
+
 import java.io.File;
 import java.util.Locale;
 import java.util.Objects;
@@ -18,7 +20,6 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelperKt;
-import me.devsaki.hentoid.util.image.ImageHelper;
 
 /**
  * Image File builder
@@ -275,7 +276,7 @@ public class ImageFile {
     }
 
     public String getMimeType() {
-        return (null == mimeType) ? ImageHelper.MIME_IMAGE_GENERIC : mimeType;
+        return (null == mimeType) ? MIME_IMAGE_GENERIC : mimeType;
     }
 
     public ImageFile setMimeType(String mimeType) {

@@ -27,7 +27,7 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper.getColor
-import me.devsaki.hentoid.util.image.ImageHelper.tintBitmap
+import me.devsaki.hentoid.util.image.tintBitmap
 import org.greenrobot.eventbus.EventBus
 
 class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Parent>() {

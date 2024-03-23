@@ -39,7 +39,10 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.image.ImageHelper
+import me.devsaki.hentoid.util.image.MIME_IMAGE_WEBP
+import me.devsaki.hentoid.util.image.bitmapToWebp
+import me.devsaki.hentoid.util.image.getBitmapFromVectorDrawable
+import me.devsaki.hentoid.util.image.tintBitmap
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.toast
 import okhttp3.Response
@@ -130,27 +133,27 @@ open class CustomWebViewClient : WebViewClient {
     companion object {
         // Represent WEBP binary data for the checkmark icon used to mark downloaded books
         // (will be fed directly to the browser when the resourcei is requested)
-        val CHECKMARK = ImageHelper.bitmapToWebp(
-            ImageHelper.tintBitmap(
-                ImageHelper.getBitmapFromVectorDrawable(
+        val CHECKMARK = bitmapToWebp(
+            tintBitmap(
+                getBitmapFromVectorDrawable(
                     HentoidApp.getInstance(), R.drawable.ic_checked
                 ), ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
             )
         )
 
         // this is for merged books
-        val MERGED_MARK = ImageHelper.bitmapToWebp(
-            ImageHelper.tintBitmap(
-                ImageHelper.getBitmapFromVectorDrawable(
+        val MERGED_MARK = bitmapToWebp(
+            tintBitmap(
+                getBitmapFromVectorDrawable(
                     HentoidApp.getInstance(), R.drawable.ic_action_merge
                 ), ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
             )
         )
 
         // this is for books with blocked tags;
-        val BLOCKED_MARK = ImageHelper.bitmapToWebp(
-            ImageHelper.tintBitmap(
-                ImageHelper.getBitmapFromVectorDrawable(
+        val BLOCKED_MARK = bitmapToWebp(
+            tintBitmap(
+                getBitmapFromVectorDrawable(
                     HentoidApp.getInstance(), R.drawable.ic_forbidden
                 ), ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
             )
@@ -471,15 +474,15 @@ open class CustomWebViewClient : WebViewClient {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
         } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {
             WebResourceResponse(
-                ImageHelper.MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(CHECKMARK)
+                MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(CHECKMARK)
             )
         } else if (isMarkMerged() && url.contains("hentoid-mergedmark")) {
             WebResourceResponse(
-                ImageHelper.MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(MERGED_MARK)
+                MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(MERGED_MARK)
             )
         } else if (url.contains("hentoid-blockedmark")) {
             WebResourceResponse(
-                ImageHelper.MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(BLOCKED_MARK)
+                MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(BLOCKED_MARK)
             )
         } else {
             if (isGalleryPage(url)) return parseResponse(

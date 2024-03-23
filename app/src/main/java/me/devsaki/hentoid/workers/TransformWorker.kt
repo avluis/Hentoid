@@ -27,9 +27,9 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.determineEncoder
+import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.util.notification.BaseNotification
 import timber.log.Timber
@@ -202,7 +202,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         if (targetData == rawData) return // Unchanged picture
 
         // Save transformed image data back to original image file
-        val isLossless = ImageHelper.isImageLossless(rawData)
+        val isLossless = isImageLossless(rawData)
         val sourceName = sourceFile.name ?: ""
 
         BitmapFactory.decodeByteArray(targetData, 0, targetData.size, metadataOpts)

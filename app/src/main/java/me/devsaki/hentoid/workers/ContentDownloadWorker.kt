@@ -73,8 +73,8 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.ZIP_MIME_TYPE
 import me.devsaki.hentoid.util.file.extractArchiveEntries
-import me.devsaki.hentoid.util.image.ImageHelper
-import me.devsaki.hentoid.util.image.ImageHelper.assembleGif
+import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
+import me.devsaki.hentoid.util.image.assembleGif
 import me.devsaki.hentoid.util.network.Connectivity
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.addSampleNow
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
@@ -1418,11 +1418,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     applicationContext,
                     ugoiraGifFile,
                     dir.uri,
-                    ImageHelper.MIME_IMAGE_GIF,
+                    MIME_IMAGE_GIF,
                     img.name + ".gif"
                 ) ?: throw IOException("Couldn't copy result ugoira file")
 
-                img.mimeType = ImageHelper.MIME_IMAGE_GIF
+                img.mimeType = MIME_IMAGE_GIF
                 img.size = FileHelper.fileSizeFromUri(
                     applicationContext,
                     ugoiraGifFile

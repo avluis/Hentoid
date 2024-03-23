@@ -10,8 +10,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.ImagePHash
+import me.devsaki.hentoid.util.image.decodeSampledBitmapFromStream
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import org.apache.commons.lang3.tuple.ImmutableTriple
 import timber.log.Timber
@@ -133,7 +133,7 @@ fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
 }
 
 fun getCoverBitmapFromStream(stream: InputStream): Bitmap? {
-    return ImageHelper.decodeSampledBitmapFromStream(
+    return decodeSampledBitmapFromStream(
         stream,
         COVER_WORK_RESOLUTION,
         COVER_WORK_RESOLUTION

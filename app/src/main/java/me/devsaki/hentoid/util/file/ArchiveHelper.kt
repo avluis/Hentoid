@@ -7,7 +7,7 @@ import android.os.ParcelFileDescriptor
 import androidx.core.util.Pair
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.image.ImageHelper.startsWith
+import me.devsaki.hentoid.util.image.startsWith
 import net.sf.sevenzipjbinding.ArchiveFormat
 import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult

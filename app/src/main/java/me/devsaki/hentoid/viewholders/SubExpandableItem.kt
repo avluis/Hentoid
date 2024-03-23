@@ -19,7 +19,11 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
-import com.mikepenz.fastadapter.*
+import com.mikepenz.fastadapter.ClickListener
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.IAdapter
+import com.mikepenz.fastadapter.IClickable
+import com.mikepenz.fastadapter.ISubItem
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.expandable.items.AbstractExpandableItem
 import com.mikepenz.fastadapter.listeners.TouchEventHook
@@ -31,7 +35,7 @@ import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.image.ImageHelper
+import me.devsaki.hentoid.util.image.tintBitmap
 
 /**
  * Inspired by mikepenz
@@ -262,7 +266,7 @@ class SubExpandableItem<T>(
             val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
             val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
             val d: Drawable =
-                BitmapDrawable(context.resources, ImageHelper.tintBitmap(bmp, tintColor))
+                BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
             val centerInside: Transformation<Bitmap> = CenterInside()
             glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
         }

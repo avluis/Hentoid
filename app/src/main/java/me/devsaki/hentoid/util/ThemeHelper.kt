@@ -13,7 +13,7 @@ import me.devsaki.hentoid.enums.Theme.Companion.searchById
 import java.util.Locale
 
 object ThemeHelper {
-    private val COLOR_CACHE: MutableMap<String, Int> = HashMap()
+    private val colorCache: MutableMap<String, Int> = HashMap()
 
     /**
      * Apply the app's current color theme to the given activity
@@ -208,13 +208,13 @@ object ThemeHelper {
      */
     fun getColor(context: Context, @ColorRes colorId: Int): Int {
         val key = Preferences.getColorTheme().toString() + "." + colorId
-        if (COLOR_CACHE.containsKey(key)) {
-            val result = COLOR_CACHE[key]
+        if (colorCache.containsKey(key)) {
+            val result = colorCache[key]
             return result ?: 0
         }
         val colorName = renameColorToCurrentTheme(getColorName(context, colorId))
         val result = ContextCompat.getColor(context, getColorId(context, colorName))
-        COLOR_CACHE[key] = result
+        colorCache[key] = result
         return result
     }
 }

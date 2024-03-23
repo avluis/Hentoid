@@ -56,7 +56,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
-import me.devsaki.hentoid.util.image.ImageHelper.tintBitmap
+import me.devsaki.hentoid.util.image.tintBitmap
 import timber.log.Timber
 import java.util.Locale
 

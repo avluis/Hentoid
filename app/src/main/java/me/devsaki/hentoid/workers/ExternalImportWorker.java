@@ -49,7 +49,7 @@ import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 import me.devsaki.hentoid.util.file.DiskCache;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.image.ImageHelper;
+import me.devsaki.hentoid.util.image.ImageHelperKt;
 import me.devsaki.hentoid.util.notification.BaseNotification;
 import timber.log.Timber;
 
@@ -242,7 +242,7 @@ public class ExternalImportWorker extends BaseWorker {
         for (DocumentFile file : files)
             if (file.getName() != null) {
                 if (file.isDirectory()) subFolders.add(file);
-                else if (ImageHelper.INSTANCE.getImageNamesFilter().accept(file.getName()))
+                else if (ImageHelperKt.getImageNamesFilter().accept(file.getName()))
                     images.add(file);
                 else if (ArchiveHelperKt.getArchiveNamesFilter().accept(file.getName()))
                     archives.add(file);
@@ -258,7 +258,7 @@ public class ExternalImportWorker extends BaseWorker {
             boolean allSubfoldersEndWithNumber = Stream.of(subFolders).map(DocumentFile::getName).withoutNulls().allMatch(n -> ENDS_WITH_NUMBER.matcher(n).matches());
             if (allSubfoldersEndWithNumber) {
                 // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
-                int nbPicturesInside = explorer.countFiles(subFolders.get(0), ImageHelper.INSTANCE.getImageNamesFilter());
+                int nbPicturesInside = explorer.countFiles(subFolders.get(0), ImageHelperKt.getImageNamesFilter());
                 if (nbPicturesInside > 1) {
                     DocumentFile json = ImportHelper.getFileWithName(jsons, Consts.JSON_FILE_NAME_V2);
                     library.add(scanChapterFolders(context, root, subFolders, explorer, parentNames, dao, json));

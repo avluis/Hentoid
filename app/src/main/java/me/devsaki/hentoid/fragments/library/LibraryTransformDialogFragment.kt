@@ -46,11 +46,13 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.image.ImageHelper
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.determineEncoder
+import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
+import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.screenHeight
 import me.devsaki.hentoid.util.image.screenWidth
+import me.devsaki.hentoid.util.image.tintBitmap
 import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.workers.TransformWorker
@@ -98,7 +100,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
 
         val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-        val d: Drawable = BitmapDrawable(context.resources, ImageHelper.tintBitmap(bmp, tintColor))
+        val d: Drawable = BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
 
         val centerInside: Transformation<Bitmap> = CenterInside()
         glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
@@ -317,13 +319,13 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         binding?.previewProgress?.isVisible = true
 
         lifecycleScope.launch {
-            val isLossless = ImageHelper.isImageLossless(rawData)
+            val isLossless = isImageLossless(rawData)
             val sourceSize = FileHelper.formatHumanReadableSize(rawData.size.toLong(), resources)
             val options = BitmapFactory.Options()
             options.inJustDecodeBounds = true
             BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options)
             val sourceDims = Point(options.outWidth, options.outHeight)
-            val sourceMime = ImageHelper.getMimeTypeFromPictureBinary(rawData)
+            val sourceMime = getMimeTypeFromPictureBinary(rawData)
             val sourceName = picName + "." + FileHelper.getExtensionFromMimeType(sourceMime)
             val params = buildParams()
             val targetData = withContext(Dispatchers.IO) {

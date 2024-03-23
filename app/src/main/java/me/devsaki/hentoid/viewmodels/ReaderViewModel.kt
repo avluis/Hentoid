@@ -48,7 +48,7 @@ import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.extractArchiveEntriesCached
-import me.devsaki.hentoid.util.image.ImageHelper
+import me.devsaki.hentoid.util.image.getMimeTypeFromUri
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -318,7 +318,7 @@ class ReaderViewModel(
                     val existingUri = DiskCache.getFile(formatCacheKey(it))
                     if (existingUri != null) {
                         it.fileUri = existingUri.toString()
-                        it.mimeType = ImageHelper.getMimeTypeFromUri(
+                        it.mimeType = getMimeTypeFromUri(
                             getApplication<Application>().applicationContext, existingUri
                         )
                     }
@@ -1217,7 +1217,7 @@ class ReaderViewModel(
         // Instanciate a new ImageFile not to modify the one used by the UI
         val extractedPic = ImageFile(img)
         extractedPic.fileUri = uri.toString()
-        extractedPic.mimeType = ImageHelper.getMimeTypeFromUri(
+        extractedPic.mimeType = getMimeTypeFromUri(
             getApplication<Application>().applicationContext, uri
         )
         synchronized(viewerImagesInternal) {

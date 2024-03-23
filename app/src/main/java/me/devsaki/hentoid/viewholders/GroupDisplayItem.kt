@@ -36,7 +36,7 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.util.image.ImageHelper
+import me.devsaki.hentoid.util.image.tintBitmap
 
 class GroupDisplayItem(
     val group: Group,
@@ -195,7 +195,7 @@ class GroupDisplayItem(
             val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
             val tintColor = ThemeHelper.getColor(context, R.color.light_gray)
             val d: Drawable =
-                BitmapDrawable(context.resources, ImageHelper.tintBitmap(bmp, tintColor))
+                BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
             val centerInside: Transformation<Bitmap> = CenterInside()
             glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
         }

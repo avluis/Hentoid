@@ -64,7 +64,7 @@ import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.file.DiskCache;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.image.ImageHelper;
+import me.devsaki.hentoid.util.image.ImageHelperKt;
 import me.devsaki.hentoid.util.notification.BaseNotification;
 import me.devsaki.hentoid.workers.data.PrimaryImportData;
 import timber.log.Timber;
@@ -82,7 +82,7 @@ public class PrimaryImportWorker extends BaseWorker {
     public static final int STEP_3_PAGES = 4;
     public static final int STEP_4_QUEUE_FINAL = 5;
 
-    final FileHelper.NameFilter imageNames = displayName -> ImageHelper.INSTANCE.isImageExtensionSupported(FileHelper.getExtension(displayName));
+    final FileHelper.NameFilter imageNames = displayName -> ImageHelperKt.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
     // VARIABLES
     int booksOK;                        // Number of books imported
@@ -320,7 +320,7 @@ public class PrimaryImportWorker extends BaseWorker {
         // Detect the presence of images if the corresponding cleanup option has been enabled
         if (cleanNoImages) {
             bookFiles = explorer.listFiles(context, bookFolder, null);
-            long nbImages = Stream.of(bookFiles).filter(f -> ImageHelper.INSTANCE.isSupportedImage(StringHelper.protect(f.getName()))).count();
+            long nbImages = Stream.of(bookFiles).filter(f -> ImageHelperKt.isSupportedImage(StringHelper.protect(f.getName()))).count();
             if (0 == nbImages && !explorer.hasFolders(bookFolder)) { // No supported images nor subfolders
                 boolean doRemove = true;
                 try {

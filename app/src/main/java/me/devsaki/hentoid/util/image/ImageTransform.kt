@@ -40,7 +40,7 @@ fun transform(
     params: TransformParams,
     allowBogusAiRescale: Boolean = false
 ): ByteArray {
-    if (ImageHelper.isImageAnimated(source)) return source
+    if (isImageAnimated(source)) return source
 
     val options = BitmapFactory.Options()
     options.inJustDecodeBounds = true
@@ -65,7 +65,7 @@ fun transform(
         BitmapFactory.decodeByteArray(source, 0, source.size)
     }
 
-    val isLossless = ImageHelper.isImageLossless(source)
+    val isLossless = isImageLossless(source)
     val targetDims = Point(bitmapOut.width, bitmapOut.height)
     try {
         return transcodeTo(
@@ -109,7 +109,7 @@ private fun resizePlainRatio(
     return if (ratio > 0.99 && ratio < 1.01) sourceBmp // Don't do anything
     else if (ratio > 1.01 && !allowUpscale) sourceBmp // Prevent upscaling
     else {
-        val rescaled = ImageHelper.sharpRescale(sourceBmp, ratio)
+        val rescaled = sharpRescale(sourceBmp, ratio)
         if (rescaled != sourceBmp) sourceBmp.recycle()
         try {
             Bitmap.createScaledBitmap(

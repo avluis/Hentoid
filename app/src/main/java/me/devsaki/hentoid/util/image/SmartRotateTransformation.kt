@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
-import me.devsaki.hentoid.util.image.ImageHelper.needsRotating
 import java.security.MessageDigest
 
 class SmartRotateTransformation(
@@ -18,7 +17,7 @@ class SmartRotateTransformation(
         toTransform: Bitmap,
         outWidth: Int,
         outHeight: Int
-    ): Bitmap? {
+    ): Bitmap {
         val matrix = Matrix()
         if (needsRotating(
                 screenWidth,
