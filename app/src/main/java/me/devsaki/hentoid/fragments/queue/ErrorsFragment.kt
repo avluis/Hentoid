@@ -31,6 +31,7 @@ import com.mikepenz.fastadapter.swipe.SimpleSwipeDrawerCallback
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentQueueErrorsBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -502,10 +503,11 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     private fun onDeleteBooks(c: List<Content>) {
         if (c.size > 2) {
             isDeletingAll = true
-            ProgressDialogFragment.invoke(
-                this,
-                resources.getString(R.string.cancel_queue_progress),
-                R.plurals.book
+            show(
+                ProgressDialogFragment(
+                    resources.getString(R.string.cancel_queue_progress),
+                    R.plurals.book
+                )
             )
         }
         viewModel.remove(c)
@@ -513,10 +515,11 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
 
     private fun doCancelAll() {
         isDeletingAll = true
-        ProgressDialogFragment.invoke(
-            this,
-            resources.getString(R.string.cancel_queue_progress),
-            R.plurals.book
+        show(
+            ProgressDialogFragment(
+                resources.getString(R.string.cancel_queue_progress),
+                R.plurals.book
+            )
         )
         viewModel.removeAll()
     }

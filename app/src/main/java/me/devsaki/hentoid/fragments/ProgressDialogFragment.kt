@@ -6,8 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.PluralsRes
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogProgressBinding
 import me.devsaki.hentoid.events.ProcessEvent
@@ -15,36 +13,18 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class ProgressDialogFragment : BaseDialogFragment<Nothing>() {
+private const val TITLE = "title"
+private const val PROGRESS_UNIT = "progressUnit"
 
-    companion object {
-        const val TITLE = "title"
-        const val PROGRESS_UNIT = "progressUnit"
+class ProgressDialogFragment() : DialogFragment() {
 
-        fun invoke(
-            activity: FragmentActivity,
-            title: String,
-            @PluralsRes progressUnit: Int
-        ): DialogFragment {
-            val args = getArgs(title, progressUnit)
-            return invoke(activity, ProgressDialogFragment(), args, isCancelable = false)
-        }
+    constructor(title: String, @PluralsRes progressUnit: Int) : this() {
+        val args = Bundle()
+        args.putString(TITLE, title)
+        args.putInt(PROGRESS_UNIT, progressUnit)
+        arguments = args
 
-        fun invoke(
-            fragment: Fragment,
-            title: String,
-            @PluralsRes progressUnit: Int
-        ): DialogFragment {
-            val args = getArgs(title, progressUnit)
-            return invoke(fragment, ProgressDialogFragment(), args, isCancelable = false)
-        }
-
-        private fun getArgs(title: String, @PluralsRes progressUnit: Int): Bundle {
-            val args = Bundle()
-            args.putString(TITLE, title)
-            args.putInt(PROGRESS_UNIT, progressUnit)
-            return args
-        }
+        isCancelable = false
     }
 
     private var binding: DialogProgressBinding? = null

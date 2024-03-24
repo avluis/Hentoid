@@ -37,6 +37,7 @@ import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -836,9 +837,10 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         viewModel.saveChapterPositions(
             expandableItemAdapter.adapterItems.mapNotNull { c -> c.tag }.map { ch -> ch as Chapter }
         )
-        ProgressDialogFragment.invoke(
-            this,
-            resources.getString(R.string.renaming_progress), R.plurals.file
+        show(
+            ProgressDialogFragment(
+                resources.getString(R.string.renaming_progress), R.plurals.file
+            )
         )
         isReorderingChapters = false
         updateToolbar()

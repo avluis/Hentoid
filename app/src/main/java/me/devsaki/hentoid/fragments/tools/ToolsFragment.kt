@@ -284,10 +284,11 @@ class ToolsFragment : PreferenceFragmentCompat(),
         invertScope: Boolean,
         keepGroupPrefs: Boolean
     ) {
-        ProgressDialogFragment.invoke(
-            this,
-            resources.getString(R.string.mass_operations_title),
-            R.plurals.book
+        show(
+            ProgressDialogFragment(
+                resources.getString(R.string.mass_operations_title),
+                R.plurals.book
+            )
         )
 
         val builder = DeleteData.Builder()

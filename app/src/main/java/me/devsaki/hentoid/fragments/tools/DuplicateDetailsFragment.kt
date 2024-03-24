@@ -22,6 +22,7 @@ import com.mikepenz.fastadapter.listeners.ClickEventHook
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
 import me.devsaki.hentoid.activities.bundles.DuplicateItemBundle
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateDetailsBinding
@@ -301,10 +302,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             toast(R.string.merge_success)
             activity.get()?.goBackToMain()
         }
-        ProgressDialogFragment.invoke(
-            this,
-            resources.getString(R.string.merge_progress),
-            R.plurals.page
+        show(
+            ProgressDialogFragment(
+                resources.getString(R.string.merge_progress),
+                R.plurals.page
+            )
         )
     }
 
