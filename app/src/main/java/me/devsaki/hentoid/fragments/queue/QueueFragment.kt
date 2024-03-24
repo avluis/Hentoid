@@ -838,7 +838,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     private fun showErrorStats() {
         if (itemAdapter.adapterItemCount > 0) {
-            if (contentId > -1) ErrorStatsDialogFragment.invoke(this, contentId)
+            if (contentId > -1) show(ErrorStatsDialogFragment(contentId))
         }
     }
 

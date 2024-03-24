@@ -4,8 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -14,7 +15,6 @@ import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.databinding.DialogQueueErrorsBinding
 import me.devsaki.hentoid.enums.ErrorType
 import me.devsaki.hentoid.events.DownloadEvent
-import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.file.FileHelper
@@ -25,17 +25,15 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.EnumMap
 
+private const val ID = "ID"
+
 /**
  * Info dialog for download errors details
  */
-class ErrorStatsDialogFragment : BaseDialogFragment<Nothing>() {
-    companion object {
-        const val ID = "ID"
-        fun invoke(fragment: Fragment, id: Long) {
-            val args = Bundle()
-            args.putLong(ID, id)
-            invoke(fragment, ErrorStatsDialogFragment(), args)
-        }
+class ErrorStatsDialogFragment() : DialogFragment() {
+
+    constructor(id: Long) : this() {
+        arguments = bundleOf(ID to id)
     }
 
     // == UI
