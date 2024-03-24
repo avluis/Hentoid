@@ -28,6 +28,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.activities.StoragePreferenceActivity
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.retrofit.DeviantArtServer
@@ -242,7 +243,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onClearCookies() {
-        CookiesDialogFragment.invoke(this)
+        show(CookiesDialogFragment())
     }
 
     private fun onAugmentedBrowserChanged() {
