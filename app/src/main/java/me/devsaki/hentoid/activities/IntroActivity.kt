@@ -100,7 +100,7 @@ class IntroActivity : AppIntro2() {
         goToNextSlide(false)
     }
 
-    private fun setSourcePrefs(sources: List<Site?>?) {
+    private fun setSourcePrefs(sources: List<Site>) {
         Preferences.setActiveSites(sources)
     }
 

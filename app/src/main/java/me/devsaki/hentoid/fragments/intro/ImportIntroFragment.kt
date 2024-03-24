@@ -289,13 +289,13 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     importStep4.visibility = View.VISIBLE
                 }
             } else if (ProcessEvent.Type.COMPLETE == event.eventType) {
-                when {
-                    PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step -> {
+                when (event.step) {
+                    PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> {
                         importStep2Check.visibility = View.VISIBLE
                         importStep3.visibility = View.VISIBLE
                     }
 
-                    PrimaryImportWorker.STEP_3_BOOKS == event.step -> {
+                    PrimaryImportWorker.STEP_3_BOOKS -> {
                         importStep3Text.text = resources.getString(
                             R.string.refresh_step3,
                             event.elementsTotal,
@@ -305,9 +305,9 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                         importStep4.visibility = View.VISIBLE
                     }
 
-                    PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step -> {
+                    PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
                         importStep4Check.visibility = View.VISIBLE
-                        nextStep()
+                        if (!isDone) nextStep()
                     }
                 }
             }
@@ -327,6 +327,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         materialDialog.show()
     }
 
+    @Synchronized
     private fun nextStep() {
         val parentActivity = requireActivity() as IntroActivity
         parentActivity.nextStep()

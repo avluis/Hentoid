@@ -12,27 +12,28 @@ import me.devsaki.hentoid.util.Preferences
 
 class ThemeIntroFragment : Fragment(R.layout.intro_slide_05) {
 
-    private var _binding: IntroSlide05Binding? = null
-    private val binding get() = _binding!!
+    private var binding: IntroSlide05Binding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = IntroSlide05Binding.inflate(inflater, container, false)
-        return binding.root
+    ): View? {
+        binding = IntroSlide05Binding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val parentActivity = context as IntroActivity
-        binding.intro5Light.setOnClickListener { parentActivity.setThemePrefs(Preferences.Constant.COLOR_THEME_LIGHT) }
-        binding.intro5Dark.setOnClickListener { parentActivity.setThemePrefs(Preferences.Constant.COLOR_THEME_DARK) }
-        binding.intro5Black.setOnClickListener { parentActivity.setThemePrefs(Preferences.Constant.COLOR_THEME_BLACK) }
+        binding?.apply {
+            intro5Light.setOnClickListener { parentActivity.setThemePrefs(Preferences.Constant.COLOR_THEME_LIGHT) }
+            intro5Dark.setOnClickListener { parentActivity.setThemePrefs(Preferences.Constant.COLOR_THEME_DARK) }
+            intro5Black.setOnClickListener { parentActivity.setThemePrefs(Preferences.Constant.COLOR_THEME_BLACK) }
+        }
     }
 }
