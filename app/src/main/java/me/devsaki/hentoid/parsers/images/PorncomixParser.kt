@@ -23,8 +23,7 @@ class PorncomixParser : BaseImageListParser() {
             null,
             Site.PORNCOMIX.useHentoidAgent(),
             Site.PORNCOMIX.useWebviewAgent()
-        )
-            ?: throw ParseException("Document unreachable : " + content.galleryUrl)
+        ) ?: throw ParseException("Document unreachable : " + content.galleryUrl)
 
         var result = parseComixImages(content, doc)
         if (result.isEmpty()) result = parseXxxToonImages(doc)
@@ -43,7 +42,6 @@ class PorncomixParser : BaseImageListParser() {
         return emptyList()
     }
 
-
     @Throws(Exception::class)
     fun parseComixImages(content: Content, doc: Document): List<String> {
         val pagesNavigator: List<Element> = doc.select(".select-pagination select option")
@@ -53,15 +51,15 @@ class PorncomixParser : BaseImageListParser() {
         val result: MutableList<String> = ArrayList()
         progressStart(content, null, pageUrls.size)
         for (pageUrl in pageUrls) {
-            val doc2 = getOnlineDocument(
+            getOnlineDocument(
                 pageUrl,
                 null,
                 Site.PORNCOMIX.useHentoidAgent(),
                 Site.PORNCOMIX.useWebviewAgent()
-            )
-            if (doc2 != null) {
-                val imageElement = doc.selectFirst(".entry-content img")
-                if (imageElement != null) result.add(ParseHelper.getImgSrc(imageElement))
+            )?.let {
+                it.selectFirst(".entry-content img")?.let { img ->
+                    result.add(ParseHelper.getImgSrc(img))
+                }
             }
             if (processHalted.get()) break
             progressPlus()
@@ -81,7 +79,7 @@ class PorncomixParser : BaseImageListParser() {
     private fun parseGedeComixImages(doc: Document): List<String> {
         val pages: List<Element> = doc.select(".reading-content img").filterNotNull()
         return if (pages.isEmpty()) emptyList()
-        else pages.mapNotNull { e -> ParseHelper.getImgSrc(e) }.distinct()
+        else pages.map { e -> ParseHelper.getImgSrc(e) }.distinct()
     }
 
     private fun parseAllPornComixImages(doc: Document): List<String> {
