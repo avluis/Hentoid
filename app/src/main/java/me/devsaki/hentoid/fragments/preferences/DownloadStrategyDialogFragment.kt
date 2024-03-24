@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsDlStrategyBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
@@ -14,18 +13,8 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 
 class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialogFragment.Parent>() {
-    companion object {
-        fun invoke(activity: FragmentActivity) {
-            invoke(activity, DownloadStrategyDialogFragment())
-        }
-    }
 
     private var binding: DialogPrefsDlStrategyBinding? = null
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

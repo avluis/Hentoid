@@ -135,7 +135,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             }
 
             strategyPanel.setOnClickListener {
-                DownloadStrategyDialogFragment.invoke(this@StoragePreferenceActivity)
+                show(DownloadStrategyDialogFragment())
             }
 
             statsPanel.setOnClickListener {
