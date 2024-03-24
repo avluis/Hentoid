@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
@@ -24,7 +24,6 @@ import me.devsaki.hentoid.databinding.DialogToolsMetaImportBinding
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
-import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.JsonHelper
@@ -39,7 +38,7 @@ import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.io.IOException
 
-class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
+class MetaImportDialogFragment : DialogFragment() {
 
     companion object {
         // Empty files import options
@@ -47,10 +46,6 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
         const val IMPORT_AS_EMPTY = 1
         const val IMPORT_AS_STREAMED = 2
         const val IMPORT_AS_ERROR = 3
-
-        operator fun invoke(fragment: Fragment) {
-            invoke(fragment, MetaImportDialogFragment())
-        }
     }
 
     // UI
