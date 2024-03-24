@@ -8,25 +8,19 @@ import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.DialogFragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogPrefsStorageBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
-import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 
-class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
-    companion object {
-        fun invoke(activity: FragmentActivity) {
-            invoke(activity, StorageUsageDialogFragment())
-        }
-    }
+class StorageUsageDialogFragment : DialogFragment() {
 
     // == UI
     private var binding: DialogPrefsStorageBinding? = null
