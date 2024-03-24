@@ -69,7 +69,7 @@ import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment
 import me.devsaki.hentoid.fragments.web.UrlDialogFragment
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.parsers.ContentParserFactory
-import me.devsaki.hentoid.ui.InputDialog.invokeNumberInputDialog
+import me.devsaki.hentoid.ui.invokeNumberInputDialog
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.ContentHelper.QueuePosition
 import me.devsaki.hentoid.util.Helper

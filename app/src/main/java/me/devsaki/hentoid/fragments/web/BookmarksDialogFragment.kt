@@ -33,7 +33,7 @@ import me.devsaki.hentoid.databinding.DialogWebBookmarksBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
-import me.devsaki.hentoid.ui.InputDialog.invokeInputDialog
+import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.toastShort

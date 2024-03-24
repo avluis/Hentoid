@@ -10,7 +10,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
 import me.devsaki.hentoid.databinding.IncludeReaderControlsOverlayBinding
-import me.devsaki.hentoid.ui.InputDialog
+import me.devsaki.hentoid.ui.invokeNumberInputDialog
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.toast
@@ -139,7 +139,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
             }
             pageMaxNumber?.setOnClickListener(null)
             pageCurrentNumber?.setOnClickListener {
-                InputDialog.invokeNumberInputDialog(
+                invokeNumberInputDialog(
                     pageSlider.context,
                     R.string.goto_page
                 ) { absPageNum: Int ->

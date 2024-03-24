@@ -59,7 +59,7 @@ import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
-import me.devsaki.hentoid.ui.InputDialog
+import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
@@ -1266,7 +1266,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     private fun saveSearchAsGroup() {
         val criteria = getSearchCriteria()
-        InputDialog.invokeInputDialog(
+        invokeInputDialog(
             this,
             R.string.group_new_name_dynamic,
             { s: String ->

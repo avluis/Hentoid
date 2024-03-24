@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.skydoves.balloon.ArrowOrientation
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.ui.CarouselDecorator
-import me.devsaki.hentoid.ui.InputDialog
+import me.devsaki.hentoid.ui.invokeNumberInputDialog
 import me.devsaki.hentoid.util.showTooltip
 
 /**
@@ -131,7 +131,7 @@ class LibraryPager(private val onPageChangeListener: Runnable) {
     }
 
     private fun onCarouselClick() {
-        InputDialog.invokeNumberInputDialog(
+        invokeNumberInputDialog(
             pagerPanel.context, R.string.goto_page
         ) { i: Int ->
             if (i in 1..pageCount && i != currentPageNumber) {

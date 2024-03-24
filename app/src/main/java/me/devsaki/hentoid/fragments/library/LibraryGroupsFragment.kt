@@ -55,7 +55,7 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
-import me.devsaki.hentoid.ui.InputDialog
+import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -327,7 +327,7 @@ class LibraryGroupsFragment : Fragment(),
     }
 
     private fun newGroupPrompt() {
-        InputDialog.invokeInputDialog(
+        invokeInputDialog(
             requireActivity(), R.string.new_group_name,
             { groupName: String ->
                 viewModel.newGroup(
@@ -565,7 +565,7 @@ class LibraryGroupsFragment : Fragment(),
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         val g = selectedItems.firstNotNullOfOrNull { gi -> gi.group }
         if (g != null) {
-            InputDialog.invokeInputDialog(
+            invokeInputDialog(
                 requireActivity(),
                 R.string.group_edit_name,
                 { newName: String -> onEditName(newName) },
