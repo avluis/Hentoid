@@ -12,7 +12,6 @@ import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import io.objectbox.query.QueryCondition;
 import io.objectbox.relation.ToMany;
+import kotlin.Pair;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.core.Consts;
@@ -166,7 +166,7 @@ class ObjectBoxDB {
         return store.sizeOnDisk();
     }
 
-    ImmutablePair<Long, Set<Attribute>> insertContentAndAttributes(Content content) {
+    Pair<Long, Set<Attribute>> insertContentAndAttributes(Content content) {
         ToMany<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
         Set<Attribute> newAttrs = new HashSet<>();
@@ -196,7 +196,7 @@ class ObjectBoxDB {
             }
             return store.boxFor(Content.class).put(content);
         });
-        return new ImmutablePair<>(result, newAttrs);
+        return new Pair<>(result, newAttrs);
     }
 
     // Faster alternative to insertContent when Content fields only need to be updated
@@ -1252,12 +1252,12 @@ class ObjectBoxDB {
     }
 
     // Returns a list of processed images grouped by status, with count and filesize (in bytes)
-    Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId) {
+    Map<StatusContent, Pair<Integer, Long>> countProcessedImagesById(long contentId) {
         QueryBuilder<ImageFile> imgQuery = store.boxFor(ImageFile.class).query();
         imgQuery.equal(ImageFile_.contentId, contentId);
         List<ImageFile> images = DBHelper.safeFind(imgQuery);
 
-        Map<StatusContent, ImmutablePair<Integer, Long>> result = new EnumMap<>(StatusContent.class);
+        Map<StatusContent, Pair<Integer, Long>> result = new EnumMap<>(StatusContent.class);
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
         // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
@@ -1272,7 +1272,7 @@ class ObjectBoxDB {
                     count = entry.getValue().size();
                     for (ImageFile img : entry.getValue()) sizeBytes += img.getSize();
                 }
-                result.put(t, new ImmutablePair<>(count, sizeBytes));
+                result.put(t, new Pair<>(count, sizeBytes));
             }
         }
 
@@ -1285,15 +1285,15 @@ class ObjectBoxDB {
                 .build();
     }
 
-    Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource(String rootPath) {
+    Map<Site, Pair<Integer, Long>> selectPrimaryMemoryUsagePerSource(String rootPath) {
         return selectMemoryUsagePerSource(new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()}, rootPath);
     }
 
-    Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource() {
+    Map<Site, Pair<Integer, Long>> selectExternalMemoryUsagePerSource() {
         return selectMemoryUsagePerSource(new int[]{StatusContent.EXTERNAL.getCode()}, "");
     }
 
-    Map<Site, ImmutablePair<Integer, Long>> selectMemoryUsagePerSource(int[] statusCodes, String rootPath) {
+    Map<Site, Pair<Integer, Long>> selectMemoryUsagePerSource(int[] statusCodes, String rootPath) {
         // Get all downloaded images regardless of the book's status
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, statusCodes);
@@ -1301,7 +1301,7 @@ class ObjectBoxDB {
             query.startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         List<Content> books = DBHelper.safeFind(query);
 
-        Map<Site, ImmutablePair<Integer, Long>> result = new EnumMap<>(Site.class);
+        Map<Site, Pair<Integer, Long>> result = new EnumMap<>(Site.class);
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
         // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
@@ -1316,7 +1316,7 @@ class ObjectBoxDB {
                     count = entry.getValue().size();
                     for (Content c : entry.getValue()) size += c.getSize();
                 }
-                result.put(s, new ImmutablePair<>(count, size));
+                result.put(s, new Pair<>(count, size));
             }
         }
 

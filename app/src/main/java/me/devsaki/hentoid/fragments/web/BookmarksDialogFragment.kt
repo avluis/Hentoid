@@ -493,7 +493,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         if (oldPosition == newPosition) return
         val dao: CollectionDAO = ObjectBoxDAO(requireContext())
         try {
-            val bookmarks = dao.selectBookmarks(site)
+            val bookmarks = dao.selectBookmarks(site).toMutableList()
             if (oldPosition < 0 || oldPosition >= bookmarks.size) return
 
             // Move the item

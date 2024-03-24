@@ -15,7 +15,6 @@ import androidx.core.content.ContextCompat
 import com.waynejo.androidndkgif.GifEncoder
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.file.FileHelper
-import org.apache.commons.lang3.tuple.ImmutablePair
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -337,12 +336,12 @@ fun decodeSampledBitmapFromStream(
 fun assembleGif(
     context: Context,
     folder: File,  // GIF encoder only work with paths...
-    frames: List<ImmutablePair<Uri, Int>>
+    frames: List<Pair<Uri, Int>>
 ): Uri? {
     require(frames.isNotEmpty()) { "No frames given" }
     var width: Int
     var height: Int
-    FileHelper.getInputStream(context, frames[0].left).use { input ->
+    FileHelper.getInputStream(context, frames[0].first).use { input ->
         val b = BitmapFactory.decodeStream(input)
         width = b.width
         height = b.height
@@ -357,13 +356,13 @@ fun assembleGif(
             GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY
         )
         for (frame in frames) {
-            FileHelper.getInputStream(context, frame.left).use { input ->
+            FileHelper.getInputStream(context, frame.first).use { input ->
                 val options = BitmapFactory.Options()
                 options.inPreferredConfig = Bitmap.Config.ARGB_8888
                 val b = BitmapFactory.decodeStream(input, null, options)
                 if (b != null) {
                     try {
-                        gifEncoder.encodeFrame(b, frame.right)
+                        gifEncoder.encodeFrame(b, frame.second)
                     } finally {
                         b.recycle()
                     }
@@ -435,8 +434,8 @@ private fun sharpRescale(
 
 fun sharpRescale(src: Bitmap, targetScale: Float): Bitmap {
     val resizeParams = computeRescaleParams(targetScale)
-    Timber.d(">> resizing successively to scale %s", resizeParams.right)
-    return successiveRescale(src, resizeParams.left)
+    Timber.d(">> resizing successively to scale %s", resizeParams.second)
+    return successiveRescale(src, resizeParams.first)
 }
 
 /**
@@ -447,7 +446,7 @@ fun sharpRescale(src: Bitmap, targetScale: Float): Bitmap {
  * - First : Number of half-resizes to perform
  * - Second : Corresponding scale
  */
-private fun computeRescaleParams(targetScale: Float): ImmutablePair<Int, Float> {
+private fun computeRescaleParams(targetScale: Float): Pair<Int, Float> {
     var resultScale = 1f
     var nbResize = 0
 
@@ -455,7 +454,7 @@ private fun computeRescaleParams(targetScale: Float): ImmutablePair<Int, Float> 
     // (seen with full-res pictures resized to 65% with Android's default bilinear filtering)
     for (i in 1..9) if (targetScale < 0.5.pow(i.toDouble()) * 1.33) nbResize++
     if (nbResize > 0) resultScale = 0.5.pow(nbResize.toDouble()).toFloat()
-    return ImmutablePair(nbResize, resultScale)
+    return Pair(nbResize, resultScale)
 }
 
 private fun successiveRescale(src: Bitmap, resizeNum: Int): Bitmap {

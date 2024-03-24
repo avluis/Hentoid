@@ -961,7 +961,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
         val dao: CollectionDAO = ObjectBoxDAO(applicationContext)
         try {
-            return dao.dbSizeBytes / 1024f / dbMaxSizeKb < 0.02
+            return dao.getDbSizeBytes() / 1024f / dbMaxSizeKb < 0.02
         } finally {
             dao.cleanup()
         }

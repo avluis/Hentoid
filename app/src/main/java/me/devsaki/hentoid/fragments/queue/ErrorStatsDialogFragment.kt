@@ -129,7 +129,7 @@ class ErrorStatsDialogFragment : BaseDialogFragment<Nothing>() {
 
     private fun createLog(): LogInfo {
         val content: Content
-        val dao: CollectionDAO = ObjectBoxDAO(context)
+        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
         try {
             content = dao.selectContent(currentId)!!
         } finally {

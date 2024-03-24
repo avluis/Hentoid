@@ -19,7 +19,6 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
-import org.apache.commons.lang3.tuple.ImmutablePair
 
 class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
     companion object {
@@ -59,8 +58,8 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
         val deviceFreeBytes = distinctVolumes.sumOf { p -> p.first }
         val deviceTotalBytes = distinctVolumes.sumOf { p -> p.second }
 
-        val primaryMemUsage: Map<Site, ImmutablePair<Int, Long>>
-        val externalMemUsage: Map<Site, ImmutablePair<Int, Long>>
+        val primaryMemUsage: Map<Site, Pair<Int, Long>>
+        val externalMemUsage: Map<Site, Pair<Int, Long>>
         val dao: CollectionDAO = ObjectBoxDAO(requireContext())
         try {
             primaryMemUsage = dao.selectPrimaryMemoryUsagePerSource()
@@ -68,8 +67,8 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
         } finally {
             dao.cleanup()
         }
-        val primaryUsageBytes = primaryMemUsage.map { e -> e.value.right }.sum()
-        val externalUsageBytes = externalMemUsage.map { e -> e.value.right }.sum()
+        val primaryUsageBytes = primaryMemUsage.map { e -> e.value.second }.sum()
+        val externalUsageBytes = externalMemUsage.map { e -> e.value.second }.sum()
 
         binding?.apply {
             graphDevice.progress = (100 - deviceFreeBytes * 100f / deviceTotalBytes).toInt()
@@ -106,13 +105,13 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
             )
 
             // Sort sources by largest size
-            val sitesBySize = primaryMemUsage.toList().sortedBy { e -> -e.second.right }
+            val sitesBySize = primaryMemUsage.toList().sortedBy { e -> -e.second.second }
             sitesBySize.forEach {
                 addRow(
                     memoryDetailsTable,
                     it.first.description,
-                    it.second.left.toString() + "",
-                    FileHelper.formatHumanReadableSize(it.second.right, resources)
+                    it.second.first.toString() + "",
+                    FileHelper.formatHumanReadableSize(it.second.second, resources)
                 )
             }
 
@@ -123,9 +122,9 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
             memoryDb.text =
                 resources.getString(
                     R.string.memory_database, FileHelper.formatHumanReadableSize(
-                        dao.dbSizeBytes,
+                        dao.getDbSizeBytes(),
                         resources
-                    ), dao.dbSizeBytes * 100 / 1024f / dbMaxSizeKb
+                    ), dao.getDbSizeBytes() * 100 / 1024f / dbMaxSizeKb
                 )
         }
     }

@@ -92,7 +92,7 @@ class ReaderViewModel(
 
 
     // Pictures data
-    private var currentImageSource: LiveData<MutableList<ImageFile>>? = null
+    private var currentImageSource: LiveData<List<ImageFile>>? = null
 
     // Set of image of current content
     private val databaseImages = MediatorLiveData<List<ImageFile>>()
@@ -229,7 +229,13 @@ class ReaderViewModel(
 
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource!!)
         currentImageSource = dao.selectAllFavouritePagesLive()
-        databaseImages.addSource(currentImageSource!!) { imgs -> loadImages(c, -1, imgs) }
+        databaseImages.addSource(currentImageSource!!) { imgs ->
+            loadImages(
+                c,
+                -1,
+                imgs.toMutableList()
+            )
+        }
     }
 
     /**
@@ -741,7 +747,13 @@ class ReaderViewModel(
             // Restore image source listener on error
             currentImageSource?.let { src ->
                 targetContent?.let {
-                    databaseImages.addSource(src) { imgs -> loadImages(it, -1, imgs) }
+                    databaseImages.addSource(src) { imgs ->
+                        loadImages(
+                            it,
+                            -1,
+                            imgs.toMutableList()
+                        )
+                    }
                 }
             }
         }
@@ -888,7 +900,7 @@ class ReaderViewModel(
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource!!)
         currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.id)
         databaseImages.addSource(currentImageSource!!) { imgs ->
-            loadImages(theContent, pageNumber, imgs, forceImageUIReload)
+            loadImages(theContent, pageNumber, imgs.toMutableList(), forceImageUIReload)
         }
     }
 
@@ -1595,9 +1607,12 @@ class ReaderViewModel(
         if (null == VANILLA_CHAPTERNAME_PATTERN) VANILLA_CHAPTERNAME_PATTERN = Pattern.compile(
             "$chapterStr [0-9]+"
         )
-        val theContent: Content = dao.selectContent(contentId)
-            ?: throw IllegalArgumentException("No content found") // Work on a fresh content
-        val selectedPage: ImageFile = dao.selectImageFile(selectedPageId)
+        // Work on a fresh content
+        val theContent: Content =
+            dao.selectContent(contentId) ?: throw IllegalArgumentException("No content found")
+
+        val selectedPage =
+            dao.selectImageFile(selectedPageId) ?: throw IllegalArgumentException("No page found")
         var currentChapter = selectedPage.linkedChapter
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
         if (null == currentChapter) {
@@ -1615,7 +1630,8 @@ class ReaderViewModel(
         require(selectedPage.order >= 2) { "Can't create or remove chapter on first page" }
 
         // If we tap the 1st page of an existing chapter, it means we're removing it
-        val firstChapterPic = chapterImages.sortedBy { obj: ImageFile -> obj.order }.firstOrNull()
+        val firstChapterPic =
+            chapterImages.sortedBy { obj: ImageFile -> obj.order }.firstOrNull()
         val isRemoving =
             if (firstChapterPic != null) firstChapterPic.order.toInt() == selectedPage.order.toInt() else false
 
@@ -1634,7 +1650,7 @@ class ReaderViewModel(
 
         // Renumber all chapters to reflect changes
         var order = 1
-        val updatedChapters: MutableList<Chapter?> = ArrayList()
+        val updatedChapters: MutableList<Chapter> = ArrayList()
         for (c in allChapters) {
             // Update names with the default "Chapter x" naming
             if (VANILLA_CHAPTERNAME_PATTERN!!.matcher(c.name).matches()) c.name =
@@ -1741,7 +1757,7 @@ class ReaderViewModel(
         if (null == VANILLA_CHAPTERNAME_PATTERN) VANILLA_CHAPTERNAME_PATTERN = Pattern.compile(
             "$chapterStr [0-9]+"
         )
-        var chapters: MutableList<Chapter> = dao.selectChapters(contentId)
+        var chapters = dao.selectChapters(contentId)
         require(chapters.isNotEmpty()) { "No chapters found" }
 
         // Reorder chapters according to target order

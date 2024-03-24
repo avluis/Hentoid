@@ -394,7 +394,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
         try {
             val location2Usages =
                 dao.selectPrimaryMemoryUsagePerSource(ContentHelper.getPathRoot(StorageLocation.PRIMARY_2))
-            location2Usage = location2Usages.map { e -> e.value.right }.sum()
+            location2Usage = location2Usages.map { e -> e.value.second }.sum()
             nbBooks = dao.countAllInternalBooks(
                 ContentHelper.getPathRoot(StorageLocation.PRIMARY_2),
                 false

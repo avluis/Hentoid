@@ -3,7 +3,6 @@ package me.devsaki.hentoid.workers
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import androidx.core.util.Pair
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -88,7 +87,6 @@ import me.devsaki.hentoid.util.network.parseCookies
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
-import org.apache.commons.lang3.tuple.ImmutablePair
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import timber.log.Timber
@@ -174,8 +172,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             return
         }
         var result = downloadFirstInQueue()
-        while (result.left != QueuingResult.QUEUE_END) {
-            if (result.left == QueuingResult.CONTENT_FOUND) watchProgress(result.right)
+        while (result.first != QueuingResult.QUEUE_END) {
+            if (result.first == QueuingResult.CONTENT_FOUND) watchProgress(result.second!!)
             result = downloadFirstInQueue()
         }
         notificationManager.cancel()
@@ -191,14 +189,14 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * - Right : 1st book of the download queue
      */
     @SuppressLint("TimberExceptionLogging", "TimberArgCount")
-    private fun downloadFirstInQueue(): ImmutablePair<QueuingResult, Content> {
+    private fun downloadFirstInQueue(): Pair<QueuingResult, Content?> {
         val contentPartImageList = "Image list"
         val context = applicationContext
 
         // Check if queue has been paused
         if (isQueuePaused) {
             Timber.i("Queue is paused. Download aborted.")
-            return ImmutablePair(QueuingResult.QUEUE_END, null)
+            return Pair(QueuingResult.QUEUE_END, null)
         }
         val connectivity = context.getConnectivity()
         // Check for network connectivity
@@ -206,7 +204,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.i("No internet connection available. Queue paused.")
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_INTERNET))
-            return ImmutablePair(QueuingResult.QUEUE_END, null)
+            return Pair(QueuingResult.QUEUE_END, null)
         }
 
         // Check for wifi if wifi-only mode is on
@@ -214,7 +212,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.i("No wi-fi connection available. Queue paused.")
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_WIFI))
-            return ImmutablePair(QueuingResult.QUEUE_END, null)
+            return Pair(QueuingResult.QUEUE_END, null)
         }
 
 
@@ -224,7 +222,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val queue = dao.selectQueue()
         if (queue.isEmpty()) {
             Timber.i("Queue is empty. Download aborted.")
-            return ImmutablePair(QueuingResult.QUEUE_END, null)
+            return Pair(QueuingResult.QUEUE_END, null)
         }
 
         // Look for the next unfrozen record
@@ -241,7 +239,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.i("No available downloads remaining. Queue paused.")
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_AVAILABLE_DOWNLOADS))
-            return ImmutablePair(QueuingResult.QUEUE_END, null)
+            return Pair(QueuingResult.QUEUE_END, null)
         }
         if (StatusContent.DOWNLOADED == content.status) {
             Timber.i("Content is already downloaded. Download aborted.")
@@ -249,7 +247,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             EventBus.getDefault()
                 .post(DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0))
             notificationManager.notify(DownloadErrorNotification(content))
-            return ImmutablePair(QueuingResult.CONTENT_SKIPPED, null)
+            return Pair(QueuingResult.CONTENT_SKIPPED, null)
         }
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null))
@@ -410,17 +408,17 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Get updated Content with the udpated ID and status of new images
         content = dao.selectContent(content.id)
-        if (null == content) return ImmutablePair(QueuingResult.CONTENT_SKIPPED, null)
+        if (null == content) return Pair(QueuingResult.CONTENT_SKIPPED, null)
         if (hasError) {
             moveToErrors(content.id)
             EventBus.getDefault()
                 .post(DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0))
-            return ImmutablePair(QueuingResult.CONTENT_FAILED, content)
+            return Pair(QueuingResult.CONTENT_FAILED, content)
         }
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadInterrupted.get()) return ImmutablePair(QueuingResult.CONTENT_SKIPPED, null)
+        if (downloadInterrupted.get()) return Pair(QueuingResult.CONTENT_SKIPPED, null)
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER, content))
 
@@ -442,7 +440,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // => Create all images, flag them as failed as well as the book
             dao.updateImageContentStatus(content.id, targetImageStatus, StatusContent.ERROR)
             completeDownload(content.id, content.title, 0, images.size, 0)
-            return ImmutablePair(QueuingResult.CONTENT_FAILED, content)
+            return Pair(QueuingResult.CONTENT_FAILED, content)
         }
 
         // Folder creation succeeds -> memorize its path
@@ -466,7 +464,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         while (content!!.isBeingProcessed) {
             Timber.d("Waiting for purge to complete")
             content = dao.selectContent(content.id)
-            if (null == content) return ImmutablePair(QueuingResult.CONTENT_SKIPPED, null)
+            if (null == content) return Pair(QueuingResult.CONTENT_SKIPPED, null)
             Helper.pause(1000)
             if (downloadInterrupted.get()) break
         }
@@ -498,7 +496,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadInterrupted.get()) return ImmutablePair(QueuingResult.CONTENT_SKIPPED, null)
+        if (downloadInterrupted.get()) return Pair(QueuingResult.CONTENT_SKIPPED, null)
         val pagesToParse: MutableList<ImageFile> = ArrayList()
         val ugoirasToDownload: MutableList<ImageFile> = ArrayList()
 
@@ -569,7 +567,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         else Timber.w(context.getString(R.string.queue_json_failed))
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.START_DOWNLOAD, content))
-        return ImmutablePair(QueuingResult.CONTENT_FOUND, content)
+        return Pair(QueuingResult.CONTENT_FOUND, content)
     }
 
     private fun parseMissingImages(
@@ -711,16 +709,16 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             // Measure idle time since last iteration
             if (status != null) {
-                deltaPages = status.left - pagesOK
+                deltaPages = status.first - pagesOK
                 if (deltaPages == 0) nbDeltaZeroPages++ else {
                     firstPageDownloaded = true
                     nbDeltaZeroPages = 0
                 }
-                pagesOK = status.left
-                downloadedBytes = status.right
+                pagesOK = status.first
+                downloadedBytes = status.second
             }
             status = statuses[StatusContent.ERROR]
-            if (status != null) pagesKO = status.left
+            if (status != null) pagesKO = status.first
             val downloadedMB = downloadedBytes / (1024.0 * 1024)
             val progress = pagesOK + pagesKO
             isDone = progress == totalPages
@@ -1382,7 +1380,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
 
                 // == Build the GIF using download params and extracted pics
-                val frames: MutableList<ImmutablePair<Uri, Int>> = ArrayList()
+                val frames: MutableList<Pair<Uri, Int>> = ArrayList()
 
                 // Get frame information
                 val downloadParams = ContentHelper.parseDownloadParams(img.downloadParams)
@@ -1399,13 +1397,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                             pathname.name.endsWith(frame.first)
                         })
                         if (files != null && files.isNotEmpty()) {
-                            frames.add(
-                                ImmutablePair(
-                                    Uri.fromFile(
-                                        files[0]
-                                    ), frame.second
-                                )
-                            )
+                            frames.add(Pair(Uri.fromFile(files[0]), frame.second))
                         }
                     }
                 }
@@ -1596,25 +1588,25 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     private fun testFolder(
         context: Context,
         uriString: String
-    ): ImmutablePair<QueuingResult, Content>? {
+    ): Pair<QueuingResult, Content?>? {
         if (uriString.isEmpty()) {
             Timber.i("No download folder set") // May happen if user has skipped it during the intro
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER))
-            return ImmutablePair(QueuingResult.QUEUE_END, null)
+            return Pair(QueuingResult.QUEUE_END, null)
         }
         val rootFolder = FileHelper.getDocumentFromTreeUriString(context, uriString)
         if (null == rootFolder) {
             Timber.i("Download folder has not been found. Please select it again.") // May happen if the folder has been moved or deleted after it has been selected
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND))
-            return ImmutablePair(QueuingResult.QUEUE_END, null)
+            return Pair(QueuingResult.QUEUE_END, null)
         }
         if (!FileHelper.isUriPermissionPersisted(context.contentResolver, rootFolder.uri)) {
             Timber.i("Insufficient credentials on download folder. Please select it again.")
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS))
-            return ImmutablePair(QueuingResult.QUEUE_END, null)
+            return Pair(QueuingResult.QUEUE_END, null)
         }
         val spaceLeftBytes = MemoryUsageFigures(context, rootFolder).getfreeUsageBytes()
         if (spaceLeftBytes < 2L * 1024 * 1024) {
@@ -1625,7 +1617,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     spaceLeftBytes
                 )
             )
-            return ImmutablePair(QueuingResult.QUEUE_END, null)
+            return Pair(QueuingResult.QUEUE_END, null)
         }
         return null
     }

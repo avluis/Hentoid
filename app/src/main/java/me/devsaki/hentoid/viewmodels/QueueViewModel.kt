@@ -31,7 +31,6 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.PurgeWorker
 import me.devsaki.hentoid.workers.data.DeleteData
-import org.apache.commons.lang3.tuple.ImmutablePair
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.time.Instant
@@ -94,7 +93,7 @@ class QueueViewModel(
         searchErrorContentUniversal()
     }
 
-    fun searchQueueUniversal(query: String? = null, source : Site? = null) {
+    fun searchQueueUniversal(query: String? = null, source: Site? = null) {
         if (currentQueueSource != null) queue.removeSource(currentQueueSource!!)
         currentQueueSource =
             if (query.isNullOrEmpty() && (null == source || Site.NONE == source)) dao.selectQueueLive()
@@ -103,7 +102,7 @@ class QueueViewModel(
         newSearch.value = true
     }
 
-    fun searchErrorContentUniversal(query: String? = null, source : Site? = null) {
+    fun searchErrorContentUniversal(query: String? = null, source: Site? = null) {
         if (currentErrorsSource != null) errors.removeSource(currentErrorsSource!!)
         currentErrorsSource =
             if (query.isNullOrEmpty() && (null == source || Site.NONE == source)) dao.selectErrorContentLive()
@@ -121,7 +120,7 @@ class QueueViewModel(
         Timber.d(">> move %s to %s", oldPosition, newPosition)
 
         // Get unpaged data to be sure we have everything in one collection
-        val localQueue = dao.selectQueue()
+        val localQueue = dao.selectQueue().toMutableList()
         if (oldPosition < 0 || oldPosition >= localQueue.size) return
 
         // Move the item
@@ -165,7 +164,7 @@ class QueueViewModel(
      */
     fun moveBottom(relativePositions: List<Int>) {
         val absolutePositions = relativeToAbsolutePositions(relativePositions)
-        val dbQueue = dao.selectQueue() ?: return
+        val dbQueue = dao.selectQueue()
         val endPos = dbQueue.size - 1
         for ((processed, oldPos) in absolutePositions.withIndex()) {
             moveAbsolute(oldPos - processed, endPos)
@@ -180,7 +179,7 @@ class QueueViewModel(
         val result: MutableList<Int> = ArrayList()
         val currentQueue = queue.value
         val dbQueue = dao.selectQueue()
-        if (null == currentQueue || null == dbQueue) return relativePositions
+        if (null == currentQueue) return relativePositions
         for (position in relativePositions) {
             for (i in dbQueue.indices) if (dbQueue[i].id == currentQueue[position].id) {
                 result.add(i)

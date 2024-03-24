@@ -53,8 +53,6 @@ import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import me.devsaki.hentoid.workers.data.UpdateJsonData
-import org.apache.commons.lang3.tuple.ImmutablePair
-import org.apache.commons.lang3.tuple.Pair
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.security.InvalidParameterException
@@ -124,8 +122,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         dao.cleanup()
         if (workObservers.isEmpty()) {
             val workManager = WorkManager.getInstance(getApplication())
-            for (info in workObservers) workManager.getWorkInfoByIdLiveData(info.left)
-                .removeObserver(info.right)
+            for (info in workObservers) workManager.getWorkInfoByIdLiveData(info.first)
+                .removeObserver(info.second)
         }
     }
 
@@ -743,7 +741,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     refreshAvailableGroupings()
                 }
             }
-        workObservers.add(ImmutablePair(request.id, workInfoObserver))
+        workObservers.add(Pair(request.id, workInfoObserver))
         workManager.getWorkInfoByIdLiveData(request.id).observeForever(workInfoObserver)
     }
 
