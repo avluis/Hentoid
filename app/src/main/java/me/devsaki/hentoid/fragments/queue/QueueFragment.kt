@@ -41,6 +41,7 @@ import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.QueueRecord
@@ -898,10 +899,11 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     private fun onCancelBooks(c: List<Content>) {
         if (c.size > 2) {
             isCancelingAll = true
-            ProgressDialogFragment.invoke(
-                this,
-                resources.getString(R.string.cancel_queue_progress),
-                R.plurals.book
+            show(
+                ProgressDialogFragment(
+                    resources.getString(R.string.cancel_queue_progress),
+                    R.plurals.book
+                )
             )
         }
         viewModel.cancel(c)
@@ -909,10 +911,11 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     private fun onCancelAll() {
         isCancelingAll = true
-        ProgressDialogFragment.invoke(
-            this,
-            resources.getString(R.string.cancel_queue_progress),
-            R.plurals.book
+        show(
+            ProgressDialogFragment(
+                resources.getString(R.string.cancel_queue_progress),
+                R.plurals.book
+            )
         )
         viewModel.cancelAll()
     }

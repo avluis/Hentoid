@@ -19,6 +19,7 @@ import com.skydoves.powermenu.PowerMenuItem
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.URL_GITHUB_WIKI_STORAGE
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -440,11 +441,11 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             .setTitle(R.string.app_name)
             .setMessage(resources.getString(R.string.storage_merge_ask, nbBooks))
             .setPositiveButton(R.string.yes) { dialog1: DialogInterface, _: Int ->
-                val fragment = ProgressDialogFragment.invoke(
-                    this,
+                val fragment = ProgressDialogFragment(
                     resources.getString(R.string.storage_merge_progress),
                     R.plurals.book
                 )
+                show(fragment)
                 dialog1.dismiss()
                 lifecycleScope.launch {
                     viewModel.merge2to1(nbBooks.toInt())

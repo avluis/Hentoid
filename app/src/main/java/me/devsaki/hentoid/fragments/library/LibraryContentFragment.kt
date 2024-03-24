@@ -72,7 +72,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.ProgressDialogFragment.Companion.invoke
+import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryTransformDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment.Companion.invoke
@@ -1701,7 +1701,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         deleteAfterMerging: Boolean
     ) {
         leaveSelectionMode()
-        invoke(this, resources.getString(R.string.merge_progress), R.plurals.page)
+        show(
+            ProgressDialogFragment(
+                resources.getString(R.string.merge_progress),
+                R.plurals.page
+            )
+        )
         viewModel.mergeContents(
             contentList, newTitle, deleteAfterMerging
         ) { onMergeSuccess() }
@@ -1715,7 +1720,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     override fun splitContent(content: Content, chapters: List<Chapter>) {
         leaveSelectionMode()
         viewModel.splitContent(content, chapters) { onSplitSuccess() }
-        invoke(this, resources.getString(R.string.split_progress), R.plurals.page)
+        show(
+            ProgressDialogFragment(
+                resources.getString(R.string.split_progress),
+                R.plurals.page
+            )
+        )
     }
 
     private fun onSplitSuccess() {

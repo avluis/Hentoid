@@ -27,6 +27,7 @@ import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.QueueRecord
@@ -386,11 +387,10 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
             else toast(R.string.redownloaded_missing_webview)
             return
         }
-        if (reparseContent || reparseImages) ProgressDialogFragment.invoke(
-            this,
+        if (reparseContent || reparseImages) show(ProgressDialogFragment(
             resources.getString(R.string.redownload_queue_progress),
             R.plurals.book
-        )
+        ))
         viewModel.redownloadContent(contentList, reparseContent, reparseImages, position,
             { nbSuccess: Int ->
                 val message = resources.getQuantityString(
