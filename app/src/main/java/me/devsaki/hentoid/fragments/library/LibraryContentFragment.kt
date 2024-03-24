@@ -61,7 +61,6 @@ import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.parseSearchUri
 import me.devsaki.hentoid.core.Consumer
-import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
@@ -89,6 +88,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.getIdForCurrentTheme
+import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder

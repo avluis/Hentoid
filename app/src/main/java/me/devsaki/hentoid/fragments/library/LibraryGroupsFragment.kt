@@ -44,7 +44,6 @@ import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
-import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
@@ -62,6 +61,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.GroupDisplayItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder

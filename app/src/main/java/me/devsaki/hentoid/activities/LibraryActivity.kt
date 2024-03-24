@@ -42,7 +42,6 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.LibraryActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.core.convertLocaleToEnglish
-import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -76,6 +75,7 @@ import me.devsaki.hentoid.util.file.isLowDeviceStorage
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.file.requestNotificationPermission
 import me.devsaki.hentoid.util.showTooltip
+import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel

@@ -12,11 +12,11 @@ import dev.skomlach.biometric.compat.BiometricAuthRequest
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiometricsHelper
 import me.devsaki.hentoid.core.HentoidApp
-import me.devsaki.hentoid.core.snack
 import me.devsaki.hentoid.core.startBiometric
 import me.devsaki.hentoid.databinding.FragmentPinPreferenceOnBinding
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.snack
 
 class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     ResetPinDialogFragment.Parent, ActivatePinDialogFragment.Parent {

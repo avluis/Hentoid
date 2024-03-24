@@ -11,13 +11,13 @@ import androidx.fragment.app.Fragment
 import androidx.webkit.CookieManagerCompat
 import androidx.webkit.WebViewFeature
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.shortSnack
 import me.devsaki.hentoid.databinding.DialogPrefsCookiesBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.shortSnack
 import timber.log.Timber
 
 class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
