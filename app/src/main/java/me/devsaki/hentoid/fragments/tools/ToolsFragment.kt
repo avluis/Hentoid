@@ -100,7 +100,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
             }
 
             EXPORT_LIBRARY -> {
-                MetaExportDialogFragment.invoke(this)
+                show(MetaExportDialogFragment())
                 true
             }
 

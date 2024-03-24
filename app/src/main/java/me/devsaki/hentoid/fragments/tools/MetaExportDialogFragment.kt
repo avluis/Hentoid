@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -26,7 +26,6 @@ import me.devsaki.hentoid.databinding.DialogToolsMetaExportBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StorageLocation
-import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
@@ -37,12 +36,10 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 
-class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
+class MetaExportDialogFragment : DialogFragment() {
 
-    companion object {
-        fun invoke(fragment: Fragment) {
-            invoke(fragment, MetaExportDialogFragment(), isCancelable = false)
-        }
+    init {
+        isCancelable = false
     }
 
     // == UI
