@@ -291,19 +291,21 @@ class MetadataEditViewModel(
             }
         }
 
-        // Save all JSONs
-        val builder = UpdateJsonData.Builder()
-        builder.setContentIds(contentList.value?.map { c -> c.id }?.toLongArray())
-        builder.setUpdateGroups(true)
+        contentList.value?.let {
+            // Save all JSONs
+            val builder = UpdateJsonData.Builder()
+            builder.setContentIds(it.map { c -> c.id }.toLongArray())
+            builder.setUpdateGroups(true)
 
-        val workManager = WorkManager.getInstance(getApplication())
-        workManager.enqueueUniqueWork(
-            R.id.udpate_json_service.toString(),
-            ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequestBuilder<UpdateJsonWorker>()
-                .setInputData(builder.data)
-                .build()
-        )
+            val workManager = WorkManager.getInstance(getApplication())
+            workManager.enqueueUniqueWork(
+                R.id.udpate_json_service.toString(),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                OneTimeWorkRequestBuilder<UpdateJsonWorker>()
+                    .setInputData(builder.data)
+                    .build()
+            )
+        }
     }
 
     fun renameAttribute(newName: String, id: Long, createRule: Boolean) {
