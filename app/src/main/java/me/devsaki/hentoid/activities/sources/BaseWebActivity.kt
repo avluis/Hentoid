@@ -226,7 +226,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             return
         }
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-        dao = ObjectBoxDAO(this)
+        dao = ObjectBoxDAO()
         Preferences.registerPrefsChangedListener(listener)
         if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls()
         if (Preferences.isBrowserMarkMerged()) updateMergedBooksUrls()

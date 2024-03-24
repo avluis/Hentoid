@@ -59,7 +59,7 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
         bookIds = requireArguments().getLongArray(BOOK_IDS)!!
 
         // Get existing custom groups
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             customGroups = dao.selectGroups(Grouping.CUSTOM.id, 0).toList()
 

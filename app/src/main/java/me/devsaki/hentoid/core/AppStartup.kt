@@ -252,7 +252,7 @@ object AppStartup {
             val bookmarksJson = FileHelper.findFile(context, appRoot, BOOKMARKS_JSON_FILE_NAME)
             if (null == bookmarksJson) {
                 Timber.i("Create bookmarks JSON : creating JSON")
-                val dao: CollectionDAO = ObjectBoxDAO(context)
+                val dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     Helper.updateBookmarksJson(context, dao)
                 } finally {
@@ -292,7 +292,7 @@ object AppStartup {
         Timber.i("Check achievements : start")
         AchievementsManager.checkPrefs()
         AchievementsManager.checkStorage(context)
-        AchievementsManager.checkCollection(context)
+        AchievementsManager.checkCollection()
         Timber.i("Check achievements : done")
     }
 }

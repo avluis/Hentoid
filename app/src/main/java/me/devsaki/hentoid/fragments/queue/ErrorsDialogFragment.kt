@@ -52,7 +52,7 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
         require(0L != id) { "No ID found" }
 
         val content: Content
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             content = dao.selectContent(id)!!
         } finally {

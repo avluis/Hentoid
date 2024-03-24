@@ -153,7 +153,7 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
 
     private fun loadContentList(): List<Content> {
         val result: List<Content>
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         result = try {
             dao.selectContent(contentIds)
         } finally {

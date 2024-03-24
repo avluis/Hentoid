@@ -17,37 +17,37 @@ class ViewModelFactory(val application: Application) : ViewModelProvider.Factory
         return when (modelClass) {
             LibraryViewModel::class.java -> LibraryViewModel(
                 application,
-                ObjectBoxDAO(application)
+                ObjectBoxDAO()
             )
 
             SearchViewModel::class.java -> SearchViewModel(
                 application,
-                ObjectBoxDAO(application),
+                ObjectBoxDAO(),
                 Preferences.getSearchAttributesSortOrder()
             )
 
-            QueueViewModel::class.java -> QueueViewModel(application, ObjectBoxDAO(application))
-            ReaderViewModel::class.java -> ReaderViewModel(application, ObjectBoxDAO(application))
+            QueueViewModel::class.java -> QueueViewModel(application, ObjectBoxDAO())
+            ReaderViewModel::class.java -> ReaderViewModel(application, ObjectBoxDAO())
 
             PreferencesViewModel::class.java -> PreferencesViewModel(
                 application,
-                ObjectBoxDAO(application)
+                ObjectBoxDAO()
             )
 
             DuplicateViewModel::class.java -> DuplicateViewModel(
                 application,
-                ObjectBoxDAO(application),
-                DuplicatesDAO(application)
+                ObjectBoxDAO(),
+                DuplicatesDAO()
             )
 
             MetadataEditViewModel::class.java -> MetadataEditViewModel(
                 application,
-                ObjectBoxDAO(application)
+                ObjectBoxDAO()
             )
 
             RulesEditViewModel::class.java -> RulesEditViewModel(
                 application,
-                ObjectBoxDAO(application)
+                ObjectBoxDAO()
             )
 
             else -> throw RuntimeException()

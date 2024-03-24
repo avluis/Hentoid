@@ -51,7 +51,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     private lateinit var globalProgress: ProgressManager
 
     init {
-        dao = ObjectBoxDAO(context)
+        dao = ObjectBoxDAO()
     }
 
 

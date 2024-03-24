@@ -316,7 +316,7 @@ fun setAndScanPrimaryFolder(
 
         // In case that Location was previously populated, drop all books
         if (Preferences.getStorageUri(location).isNotEmpty()) {
-            val dao: CollectionDAO = ObjectBoxDAO(context)
+            val dao: CollectionDAO = ObjectBoxDAO()
             try {
                 ContentHelper.detachAllPrimaryContent(dao, location)
             } finally {

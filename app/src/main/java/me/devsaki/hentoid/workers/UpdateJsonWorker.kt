@@ -33,7 +33,7 @@ class UpdateJsonWorker(context: Context, parameters: WorkerParameters) :
     private var nbOK = 0
 
     init {
-        dao = ObjectBoxDAO(context)
+        dao = ObjectBoxDAO()
     }
 
     override fun getStartNotification(): BaseNotification {

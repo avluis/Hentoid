@@ -103,7 +103,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     override fun onDestroy() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                val dao: CollectionDAO = ObjectBoxDAO(HentoidApp.getInstance())
+                val dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     Helper.updateBookmarksJson(HentoidApp.getInstance(), dao)
                 } finally {
@@ -199,7 +199,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
 
     private fun reloadBookmarks(): List<SiteBookmark> {
         val bookmarks: List<SiteBookmark>
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         bookmarks = try {
             reloadBookmarks(dao)
         } finally {
@@ -228,7 +228,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     }
 
     private fun getUnbookmarkedSites(): List<Site> {
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             val bookmarkedSites = dao.selectAllBookmarks().groupBy { it.site }.keys
             return Site.entries.filterNot { bookmarkedSites.contains(it) }
@@ -283,7 +283,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
 
     private fun onBookmarkBtnClickedAdd() {
         invokeInputDialog(requireContext(), R.string.bookmark_edit_title, {
-            val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+            val dao: CollectionDAO = ObjectBoxDAO()
             try {
                 bookmarkId = dao.insertBookmark(SiteBookmark(site, it, url))
                 reloadBookmarks(dao)
@@ -296,7 +296,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     }
 
     private fun onBookmarkBtnClickedRemove() {
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             dao.deleteBookmark(bookmarkId)
             bookmarkId = -1
@@ -391,7 +391,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             val b = selectedItems.first().getObject()
             if (b != null) {
                 b.title = newTitle
-                val dao: CollectionDAO = ObjectBoxDAO(context)
+                val dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     dao.insertBookmark(b)
                     reloadBookmarks(dao)
@@ -414,7 +414,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             val selectedContent =
                 selectedItems.mapNotNull { obj -> obj.getObject() }
             if (selectedContent.isNotEmpty()) {
-                val dao: CollectionDAO = ObjectBoxDAO(context)
+                val dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     for (b in selectedContent) {
                         if (b.id == bookmarkId) {
@@ -444,7 +444,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
                 selectedItems.mapNotNull { obj -> obj.getObject() }
             if (selectedContent.isNotEmpty()) {
                 val selectedBookmark = selectedContent[0]
-                val dao: CollectionDAO = ObjectBoxDAO(context)
+                val dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     val bookmarks = dao.selectBookmarks(site)
                     for (b in bookmarks) {
@@ -491,7 +491,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
 
         // Update DB
         if (oldPosition == newPosition) return
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             val bookmarks = dao.selectBookmarks(site).toMutableList()
             if (oldPosition < 0 || oldPosition >= bookmarks.size) return

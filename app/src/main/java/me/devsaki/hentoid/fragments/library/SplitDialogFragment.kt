@@ -143,7 +143,7 @@ class SplitDialogFragment : BaseDialogFragment<SplitDialogFragment.Parent>() {
     }
 
     private fun loadChapterList(): List<Chapter> {
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             content = dao.selectContent(contentId)
             return if (content != null) content!!.chaptersList else emptyList()

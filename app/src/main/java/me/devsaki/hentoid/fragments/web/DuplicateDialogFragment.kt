@@ -180,7 +180,7 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
     }
 
     private fun loadLibraryContent(): Content? {
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         return try {
             dao.selectContent(contentId)
         } finally {

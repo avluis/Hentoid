@@ -60,7 +60,7 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
 
         val primaryMemUsage: Map<Site, Pair<Int, Long>>
         val externalMemUsage: Map<Site, Pair<Int, Long>>
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             primaryMemUsage = dao.selectPrimaryMemoryUsagePerSource()
             externalMemUsage = dao.selectExternalMemoryUsagePerSource()

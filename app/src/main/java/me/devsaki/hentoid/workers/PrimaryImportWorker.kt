@@ -217,7 +217,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         "Importing groups"
                     )
                     // Flag existing groups for cleanup
-                    val dao: CollectionDAO = ObjectBoxDAO(context)
+                    val dao: CollectionDAO = ObjectBoxDAO()
                     try {
                         dao.flagAllGroups(Grouping.CUSTOM)
                         val groupsFile =
@@ -304,14 +304,14 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 )
 
                 // Cleanup previously detected duplicates
-                val duplicatesDAO = DuplicatesDAO(context)
+                val duplicatesDAO = DuplicatesDAO()
                 try {
                     duplicatesDAO.clearEntries()
                 } finally {
                     duplicatesDAO.cleanup()
                 }
                 // Flag DB content for cleanup
-                var dao: CollectionDAO = ObjectBoxDAO(context)
+                var dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     dao.flagAllInternalBooks(
                         ContentHelper.getPathRoot(previousUriStr),
@@ -322,7 +322,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     dao.cleanup()
                 }
                 try {
-                    dao = ObjectBoxDAO(context)
+                    dao = ObjectBoxDAO()
                     for (i in bookFolders.indices) {
                         if (isStopped) throw InterruptedException()
                         importFolder(
@@ -340,7 +340,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         // Clear the DAO every 2500K iterations to optimize memory
                         if (0 == i % 2500) {
                             dao.cleanup()
-                            dao = ObjectBoxDAO(context)
+                            dao = ObjectBoxDAO()
                         }
                     }
                 } finally {
@@ -366,7 +366,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 init(applicationContext)
 
                 // 4th pass : Import queue, bookmarks and renaming rules JSON
-                dao = ObjectBoxDAO(context)
+                dao = ObjectBoxDAO()
                 try {
                     val queueFile =
                         explorer.findFile(context, rootFolder, QUEUE_JSON_FILE_NAME)
@@ -428,7 +428,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 )
             )
             if (!isStopped) { // Should only be done when things have run properly
-                val dao: CollectionDAO = ObjectBoxDAO(context)
+                val dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     dao.deleteAllFlaggedBooks(true, ContentHelper.getPathRoot(previousUriStr))
                     dao.deleteAllFlaggedGroups()

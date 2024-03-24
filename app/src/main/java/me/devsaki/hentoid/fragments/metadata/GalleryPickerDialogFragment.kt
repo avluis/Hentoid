@@ -78,7 +78,7 @@ class GalleryPickerDialogFragment : BaseDialogFragment<GalleryPickerDialogFragme
 
     private fun loadImages(): List<ImageFile> {
         val result: List<ImageFile>
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             result = dao.selectImageFiles(imageIds)
         } finally {

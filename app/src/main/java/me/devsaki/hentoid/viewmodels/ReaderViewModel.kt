@@ -346,7 +346,7 @@ class ReaderViewModel(
     fun onActivityLeave() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                AchievementsManager.checkCollection(getApplication())
+                AchievementsManager.checkCollection()
             }
         }
     }
@@ -553,7 +553,7 @@ class ReaderViewModel(
         Helper.assertNonUiThread()
 
         // Use a brand new DAO for that (the viewmodel's DAO may be in the process of being cleaned up)
-        val dao: CollectionDAO = ObjectBoxDAO(getApplication<Application>())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             // Get a fresh version of current content in case it has been updated since the initial load
             // (that can be the case when viewing a book that is being downloaded)

@@ -429,7 +429,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                         previouslyViewedContent,
                         previouslyViewedPage
                     )
-                    val dao: CollectionDAO = ObjectBoxDAO(this)
+                    val dao: CollectionDAO = ObjectBoxDAO()
                     try {
                         val c = dao.selectContent(previouslyViewedContent)
                         if (c != null) ContentHelper.openReader(
@@ -959,7 +959,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     private fun isLowDatabaseStorage(): Boolean {
         val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
-        val dao: CollectionDAO = ObjectBoxDAO(applicationContext)
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             return dao.getDbSizeBytes() / 1024f / dbMaxSizeKb < 0.02
         } finally {

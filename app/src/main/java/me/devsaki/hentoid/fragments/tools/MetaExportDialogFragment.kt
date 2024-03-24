@@ -69,7 +69,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
-        dao = ObjectBoxDAO(requireContext())
+        dao = ObjectBoxDAO()
         val nbLibraryBooks = dao.countAllInternalBooks("", false)
         val nbQueueBooks = dao.countAllQueueBooks()
         val nbBookmarks = dao.countAllBookmarks()

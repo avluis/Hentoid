@@ -81,7 +81,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
     // === VARIABLES
     private lateinit var contentIds: LongArray
     private val content: Content? by lazy {
-        val dao = ObjectBoxDAO(requireContext())
+        val dao = ObjectBoxDAO()
         try {
             dao.selectContent(contentIds[contentIndex])
         } finally {

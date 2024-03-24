@@ -140,7 +140,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             FileExplorer(context, Uri.parse(Preferences.getExternalLibraryUri())).use { explorer ->
                 val detectedContent: MutableList<Content> = ArrayList()
                 // Deep recursive search starting from the place the user has selected
-                var dao: CollectionDAO = ObjectBoxDAO(context)
+                var dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     scanFolderRecursive(
                         context,
@@ -166,13 +166,13 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 )
 
                 // Flag DB content for cleanup
-                dao = ObjectBoxDAO(context)
+                dao = ObjectBoxDAO()
                 try {
                     dao.flagAllExternalBooks()
                 } finally {
                     dao.cleanup()
                 }
-                dao = ObjectBoxDAO(context)
+                dao = ObjectBoxDAO()
                 try {
                     for (content in detectedContent) {
                         if (isStopped) break

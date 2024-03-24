@@ -137,7 +137,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     init {
         EventBus.getDefault().register(this)
-        dao = ObjectBoxDAO(context)
+        dao = ObjectBoxDAO()
         requestQueueManager = getInstance(
             context, this::onRequestSuccess, this::onRequestError
         )
@@ -1057,7 +1057,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
 
                 AchievementsManager.checkStorage(context)
-                AchievementsManager.checkCollection(context)
+                AchievementsManager.checkCollection()
 
                 // Tracking Event (Download Completed)
                 trackDownloadEvent("Completed")

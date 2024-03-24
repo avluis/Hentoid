@@ -49,48 +49,47 @@ object DatabaseMaintenance {
     }
 
     private fun cleanContent(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
         try {
             // Set items that were being downloaded in previous session as paused
             Timber.i("Updating queue status : start")
-            db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED)
+            ObjectBoxDB.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED)
             Timber.i("Updating queue status : done")
 
             // Unflag all books marked for deletion
             Timber.i("Unflag books : start")
-            var contentList = db.selectAllFlaggedBooksQ().safeFind()
+            var contentList = ObjectBoxDB.selectAllFlaggedBooksQ().safeFind()
             Timber.i("Unflag books : %s books detected", contentList.size)
-            db.flagContentsForDeletion(contentList, false)
+            ObjectBoxDB.flagContentsForDeletion(contentList, false)
             Timber.i("Unflag books : done")
 
             // Unflag all books signaled as being processed
             Timber.i("Unmark books as being processed : start")
-            contentList = db.selectAllProcessedBooksQ().safeFind()
+            contentList = ObjectBoxDB.selectAllProcessedBooksQ().safeFind()
             Timber.i("Unmark books as being processed : %s books detected", contentList.size)
-            db.markContentsAsBeingProcessed(contentList, false)
+            ObjectBoxDB.markContentsAsBeingProcessed(contentList, false)
             Timber.i("Unmark books as being processed : done")
 
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
             Timber.i("Moving back isolated items to queue : start")
-            val contents = db.selectContentByStatus(StatusContent.PAUSED)
-            val queueContents = db.selectQueueContents()
+            val contents = ObjectBoxDB.selectContentByStatus(StatusContent.PAUSED).toMutableList()
+            val queueContents = ObjectBoxDB.selectQueueContents()
             contents.removeAll(queueContents)
             Timber.i("Moving back isolated items to queue : %s books detected", contents.size)
             if (contents.isNotEmpty()) {
-                var queueMaxPos = db.selectMaxQueueOrder().toInt()
+                var queueMaxPos = ObjectBoxDB.selectMaxQueueOrder().toInt()
                 val max = contents.size
                 var pos = 1f
                 for (c in contents) {
-                    db.insertQueue(c.id, ++queueMaxPos)
+                    ObjectBoxDB.insertQueue(c.id, ++queueMaxPos)
                     emitter(pos++ / max)
                 }
             }
             Timber.i("Moving back isolated items to queue : done")
         } finally {
-            db.cleanup()
+            ObjectBoxDB.cleanup()
         }
 
-        val mdb = MaintenanceDAO(context)
+        val mdb = MaintenanceDAO()
         try {
             // Remove empty QueueRecords from the queue (still not sure how they appear in the first place)
             Timber.i("Removing orphan Queue records : start")
@@ -104,26 +103,25 @@ object DatabaseMaintenance {
     }
 
     private fun clearTempContent(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
         try {
             // Clear temporary books created from browsing a book page without downloading it (since versionCode 60 / v1.3.7)
             Timber.i("Clearing temporary books : start")
-            val contents = db.selectContentByStatus(StatusContent.SAVED)
+            val contents = ObjectBoxDB.selectContentByStatus(StatusContent.SAVED)
             Timber.i("Clearing temporary books : %s books detected", contents.size)
             val max = contents.size
             var pos = 1f
             for (c in contents) {
-                db.deleteContentById(c.id)
+                ObjectBoxDB.deleteContentById(c.id)
                 emitter(pos++ / max)
             }
             Timber.i("Clearing temporary books : done")
         } finally {
-            db.cleanup()
+            ObjectBoxDB.cleanup()
         }
     }
 
     private fun cleanPropertiesOneShot(context: Context, emitter: (Float) -> Unit) {
-        val db = MaintenanceDAO(context)
+        val db = MaintenanceDAO()
         try {
             // Update URLs from deprecated Pururin image hosts
             Timber.i("Upgrading Pururin image hosts : start")
@@ -214,7 +212,7 @@ object DatabaseMaintenance {
     }
 
     private fun renameEmptyChapters(context: Context, emitter: (Float) -> Unit) {
-        val db = MaintenanceDAO(context)
+        val db = MaintenanceDAO()
         try {
             // Update URLs from deprecated Hitomi image covers
             Timber.i("Empying empty chapters : start")
@@ -234,22 +232,21 @@ object DatabaseMaintenance {
     }
 
     private fun cleanBookmarksOneShot(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
         try {
             // Detect duplicate bookmarks (host/someurl and host/someurl/)
             Timber.i("Detecting duplicate bookmarks : start")
-            db.selectAllDuplicateBookmarksQ().use { entries ->
+            ObjectBoxDB.selectAllDuplicateBookmarksQ().use { entries ->
                 Timber.i("Detecting duplicate bookmarks : %d bookmarks detected", entries.count())
                 entries.remove()
             }
             Timber.i("Detecting duplicate bookmarks : done")
         } finally {
-            db.cleanup()
+            ObjectBoxDB.cleanup()
         }
     }
 
     private fun setDefaultPropertiesOneShot(context: Context, emitter: (Float) -> Unit) {
-        val db = MaintenanceDAO(context)
+        val db = MaintenanceDAO()
         try {
             // Set default values for new ObjectBox properties that are values as null by default (see https://github.com/objectbox/objectbox-java/issues/157)
             Timber.i("Set default ObjectBox properties : start")
@@ -308,7 +305,7 @@ object DatabaseMaintenance {
             max = contents.size
             pos = 1f
             for (c in contents) {
-                c.uploadDate = c.uploadDate * 1000
+                c.uploadDate *= 1000
                 db.insertContentCore(c)
                 emitter(pos++ / max)
             }
@@ -331,7 +328,7 @@ object DatabaseMaintenance {
     }
 
     private fun computeContentSize(context: Context, emitter: (Float) -> Unit) {
-        val db = MaintenanceDAO(context)
+        val db = MaintenanceDAO()
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Computing downloaded content size : start")
@@ -351,7 +348,6 @@ object DatabaseMaintenance {
     }
 
     private fun createGroups(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Create non-existing groupings : start")
@@ -359,19 +355,19 @@ object DatabaseMaintenance {
             for (grouping in arrayOf(
                 Grouping.ARTIST,
                 Grouping.DL_DATE
-            )) if (0L == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping)
+            )) if (0L == ObjectBoxDB.countGroupsFor(grouping)) groupingsToProcess.add(grouping)
 
             // Test the existence of the "Ungrouped" custom group
             val ungroupedCustomGroup =
-                db.selectGroupsQ(
+                ObjectBoxDB.selectGroupsQ(
                     Grouping.CUSTOM.id,
                     null,
                     -1,
                     false,
                     1,
-                    false,
-                    false,
-                    -1
+                    groupFavouritesOnly = false,
+                    groupNonFavouritesOnly = false,
+                    filterRating = -1
                 ).safeFind()
 
             if (ungroupedCustomGroup.isEmpty()) groupingsToProcess.add(Grouping.CUSTOM)
@@ -385,7 +381,7 @@ object DatabaseMaintenance {
             for (g in groupingsToProcess) {
                 when (g) {
                     Grouping.ARTIST -> {
-                        val artists = db.selectAvailableAttributes(
+                        val artists = ObjectBoxDB.selectAvailableAttributes(
                             AttributeType.ARTIST,
                             -1,
                             LongArray(0),
@@ -397,9 +393,9 @@ object DatabaseMaintenance {
                             Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
                             0,
                             0
-                        )
+                        ).toMutableList()
                         artists.addAll(
-                            db.selectAvailableAttributes(
+                            ObjectBoxDB.selectAvailableAttributes(
                                 AttributeType.CIRCLE,
                                 -1,
                                 LongArray(0),
@@ -471,22 +467,22 @@ object DatabaseMaintenance {
             Timber.i("Create non-existing groupings : %s relations to create", bookInsertCount)
             var pos = 1f
             for (data in toInsert) {
-                db.insertGroup(data.first)
+                ObjectBoxDB.insertGroup(data.first)
                 data.second?.putGroup(data.first)
                 for ((order, contentId) in data.third.withIndex()) {
                     val item = GroupItem(contentId, data.first, order)
-                    db.insertGroupItem(item)
+                    ObjectBoxDB.insertGroupItem(item)
                     emitter(pos++ / bookInsertCount)
                 }
             }
             Timber.i("Create non-existing groupings : done")
         } finally {
-            db.cleanup()
+            ObjectBoxDB.cleanup()
         }
     }
 
     private fun computeReadingProgress(context: Context, emitter: (Float) -> Unit) {
-        val db = MaintenanceDAO(context)
+        val db = MaintenanceDAO()
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Computing downloaded content read progress : start")
@@ -509,7 +505,7 @@ object DatabaseMaintenance {
     }
 
     private fun reattachGroupCovers(context: Context, emitter: (Float) -> Unit) {
-        val db = MaintenanceDAO(context)
+        val db = MaintenanceDAO()
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Reattaching group covers : start")
@@ -532,14 +528,13 @@ object DatabaseMaintenance {
     }
 
     private fun cleanOrphanAttributes(context: Context, emitter: (Float) -> Unit) {
-        val db = ObjectBoxDB.getInstance(context)
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Cleaning orphan attributes : start")
-            db.cleanupOrphanAttributes()
+            ObjectBoxDB.cleanupOrphanAttributes()
             Timber.i("Cleaning orphan attributes : done")
         } finally {
-            db.cleanup()
+            ObjectBoxDB.cleanup()
         }
     }
 
@@ -547,12 +542,11 @@ object DatabaseMaintenance {
         context: Context,
         emitter: (Float) -> Unit
     ) {
-        val db = ObjectBoxDB.getInstance(context)
         try {
             // Refresh JSONs to persist missing downloadCompletionDates
             if (!Preferences.isRefreshJson1Complete()) {
                 Timber.i("Refresh Json for second download date : start")
-                val contentToRefresh = db.selectContentIdsWithUpdatableJson()
+                val contentToRefresh = ObjectBoxDB.selectContentIdsWithUpdatableJson()
                 Timber.i(
                     "Refresh Json for second download date : %d books detected",
                     contentToRefresh.size
@@ -573,7 +567,7 @@ object DatabaseMaintenance {
                 Preferences.setIsRefreshJson1Complete(true)
             }
         } finally {
-            db.cleanup()
+            ObjectBoxDB.cleanup()
         }
     }
 }

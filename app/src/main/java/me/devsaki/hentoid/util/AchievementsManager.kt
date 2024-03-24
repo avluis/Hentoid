@@ -86,8 +86,8 @@ object AchievementsManager {
         }
     }
 
-    fun checkCollection(context: Context) {
-        val db = AchievementsDAO(context)
+    fun checkCollection() {
+        val db = AchievementsDAO()
         val now = Instant.now().toEpochMilli()
         try {
             val eligibleContent = db.selectEligibleContentIds();

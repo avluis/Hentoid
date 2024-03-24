@@ -54,8 +54,8 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
 
 
     init {
-        dao = ObjectBoxDAO(applicationContext)
-        duplicatesDao = DuplicatesDAO(applicationContext)
+        dao = ObjectBoxDAO()
+        duplicatesDao = DuplicatesDAO()
     }
 
     override fun getStartNotification(): BaseNotification {

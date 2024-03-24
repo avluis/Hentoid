@@ -1,17 +1,14 @@
 package me.devsaki.hentoid.database
 
-import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import io.objectbox.android.ObjectBoxLiveData
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 
-class DuplicatesDAO(ctx: Context) {
-    private val db: ObjectBoxDB = ObjectBoxDB.getInstance(ctx)
-    
+class DuplicatesDAO {
     fun cleanup() {
-        db.cleanup()
+        ObjectBoxDB.cleanup()
         DuplicatesDB.cleanup()
     }
 
@@ -20,7 +17,7 @@ class DuplicatesDAO(ctx: Context) {
 
         // Get all contents in one go
         val contentIds = entries.map { it.referenceId }
-        val contents = db.selectContentById(contentIds)
+        val contents = ObjectBoxDB.selectContentById(contentIds)
         if (contents != null) {
             val contentsMap = contents.groupBy { it.id }
 
@@ -48,7 +45,7 @@ class DuplicatesDAO(ctx: Context) {
 
     private fun enrichWithContent(e: DuplicateEntry): DuplicateEntry {
         val items: List<Content>? =
-            db.selectContentById(mutableListOf(e.referenceId, e.duplicateId))
+            ObjectBoxDB.selectContentById(mutableListOf(e.referenceId, e.duplicateId))
         if (items != null && items.size > 1) {
             e.referenceContent = items[0]
             e.duplicateContent = items[1]

@@ -80,7 +80,7 @@ class MassOperationsDialogFragment : BaseDialogFragment<MassOperationsDialogFrag
 
     private suspend fun countBooks(invertScope: Boolean, keepFavGroups: Boolean): Pair<Int, Int> {
         return withContext(Dispatchers.IO) {
-            val dao = ObjectBoxDAO(requireContext())
+            val dao = ObjectBoxDAO()
             try {
                 var allCount = 0
                 dao.streamStoredContent(false, -1, false)

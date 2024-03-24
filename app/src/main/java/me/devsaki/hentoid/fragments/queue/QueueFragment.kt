@@ -872,7 +872,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }
             // Retrieve the latest version of the content if storage URI is unknown
             // (may happen when the item is fetched before it is processed by the downloader)
-            if (c.storageUri.isEmpty()) c = ObjectBoxDAO(requireContext()).selectContent(c.id)
+            if (c.storageUri.isEmpty()) c = ObjectBoxDAO().selectContent(c.id)
             return if (c != null) {
                 if (!ContentHelper.openReader(
                         requireContext(), c, -1, null, false, false

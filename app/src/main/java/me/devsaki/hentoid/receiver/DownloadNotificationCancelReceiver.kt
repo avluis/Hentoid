@@ -21,7 +21,7 @@ class DownloadNotificationCancelReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         CoroutineScope(Dispatchers.Default).launch {
             withContext(Dispatchers.IO) {
-                val dao: CollectionDAO = ObjectBoxDAO(context)
+                val dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     val queue = dao.selectQueue()
                     if (queue.isNotEmpty()) {

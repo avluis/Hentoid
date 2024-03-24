@@ -70,7 +70,7 @@ abstract class BaseDeleteWorker(
         isDownloadPrepurge = inputData.isDownloadPrepurge
         operation =
             if (1 == inputData.massOperation) ToolsActivity.MassOperation.STREAM else ToolsActivity.MassOperation.DELETE
-        dao = ObjectBoxDAO(context)
+        dao = ObjectBoxDAO()
 
         // Queried here to avoid serialization hard-limit of androidx.work.Data.Builder
         // when passing a large long[] through DeleteData

@@ -390,7 +390,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
     private fun onMergeToPrimaryOne() {
         val location2Usage: Long
         val nbBooks: Long
-        val dao: CollectionDAO = ObjectBoxDAO(this)
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             val location2Usages =
                 dao.selectPrimaryMemoryUsagePerSource(ContentHelper.getPathRoot(StorageLocation.PRIMARY_2))

@@ -81,7 +81,7 @@ class MetaRenameDialogFragment : BaseDialogFragment<MetaRenameDialogFragment.Par
     }
 
     private fun loadAttr(): Attribute? {
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             return dao.selectAttribute(attrId)
         } finally {

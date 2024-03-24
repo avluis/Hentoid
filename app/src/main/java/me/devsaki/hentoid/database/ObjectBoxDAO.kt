@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.database
 
-import android.content.Context
 import android.net.Uri
 import android.util.SparseIntArray
 import androidx.lifecycle.LiveData
@@ -43,31 +42,29 @@ import timber.log.Timber
 import kotlin.math.ceil
 import kotlin.math.min
 
-class ObjectBoxDAO(ctx: Context) : CollectionDAO {
-    private val db: ObjectBoxDB = ObjectBoxDB.getInstance(ctx)
-
+class ObjectBoxDAO : CollectionDAO {
     override fun cleanup() {
-        db.cleanup()
+        ObjectBoxDB.cleanup()
     }
 
     override fun cleanupOrphanAttributes() {
-        db.cleanupOrphanAttributes()
+        ObjectBoxDB.cleanupOrphanAttributes()
     }
 
     override fun getDbSizeBytes(): Long {
-        return db.dbSizeBytes
+        return ObjectBoxDB.getDbSizeBytes()
     }
 
     override fun selectStoredFavContentIds(bookFavs: Boolean, groupFavs: Boolean): Set<Long> {
-        return db.selectStoredContentFavIds(bookFavs, groupFavs)
+        return ObjectBoxDB.selectStoredContentFavIds(bookFavs, groupFavs)
     }
 
     override fun countContentWithUnhashedCovers(): Long {
-        return db.selectNonHashedContentQ().safeCount()
+        return ObjectBoxDB.selectNonHashedContentQ().safeCount()
     }
 
     override fun selectContentWithUnhashedCovers(): List<Content> {
-        return db.selectNonHashedContentQ().safeFind()
+        return ObjectBoxDB.selectNonHashedContentQ().safeFind()
     }
 
     override fun streamStoredContent(
@@ -76,9 +73,10 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         orderDesc: Boolean,
         consumer: Consumer<Content>
     ) {
-        db.selectStoredContentQ(includeQueued, orderField, orderDesc).build().use { query ->
-            query.forEach { c -> consumer(c) }
-        }
+        ObjectBoxDB.selectStoredContentQ(includeQueued, orderField, orderDesc).build()
+            .use { query ->
+                query.forEach { c -> consumer(c) }
+            }
     }
 
     override fun selectRecentBookIds(searchBundle: ContentSearchBundle): List<Long> {
@@ -97,11 +95,11 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     override fun insertAttribute(attr: Attribute): Long {
-        return db.insertAttribute(attr)
+        return ObjectBoxDB.insertAttribute(attr)
     }
 
     override fun selectAttribute(id: Long): Attribute? {
-        return db.selectAttribute(id)
+        return ObjectBoxDB.selectAttribute(id)
     }
 
     override fun selectAttributeMasterDataPaged(
@@ -147,11 +145,11 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     override fun selectChapters(contentId: Long): List<Chapter> {
-        return db.selectChapters(contentId)
+        return ObjectBoxDB.selectChapters(contentId)
     }
 
     override fun selectErrorContentLive(): LiveData<List<Content>> {
-        return ObjectBoxLiveData(db.selectErrorContentQ())
+        return ObjectBoxLiveData(ObjectBoxDB.selectErrorContentQ())
     }
 
     override fun selectErrorContentLive(query: String?, source: Site?): LiveData<List<Content>> {
@@ -162,7 +160,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         bundle.attributes = buildSearchUri(sourceAttr, "", 0, 0).toString()
         bundle.sortField = Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE
         return ObjectBoxLiveData(
-            db.selectContentUniversalQ(
+            ObjectBoxDB.selectContentUniversalQ(
                 bundle,
                 LongArray(0),
                 intArrayOf(StatusContent.ERROR.code)
@@ -171,14 +169,14 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     override fun selectErrorContent(): List<Content> {
-        return db.selectErrorContentQ().safeFind()
+        return ObjectBoxDB.selectErrorContentQ().safeFind()
     }
 
     override fun countAllBooksLive(): LiveData<Int> {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
         // See https://github.com/objectbox/objectbox-java/issues/776
-        val livedata = ObjectBoxLiveData(db.selectVisibleContentQ())
+        val livedata = ObjectBoxLiveData(ObjectBoxDB.selectVisibleContentQ())
         val result = MediatorLiveData<Int>()
         result.addSource(livedata) { v -> result.setValue(v.size) }
         return result
@@ -186,7 +184,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
 
     override fun countBooks(
         groupId: Long,
-        metadata: Set<Attribute?>?,
+        metadata: Set<Attribute>?,
         @ContentHelper.Location location: Int,
         @ContentHelper.Type contentType: Int
     ): LiveData<Int> {
@@ -199,7 +197,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         bundle.contentType = contentType
         bundle.sortField = Preferences.Constant.ORDER_FIELD_NONE
         val livedata = ObjectBoxLiveData(
-            db.selectContentSearchContentQ(
+            ObjectBoxDB.selectContentSearchContentQ(
                 bundle,
                 getDynamicGroupContent(groupId),
                 metadata,
@@ -227,7 +225,10 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     override fun selectNoContent(): LiveData<PagedList<Content>> {
-        return LivePagedListBuilder(ObjectBoxDataSource.Factory(db.selectNoContentQ()), 1).build()
+        return LivePagedListBuilder(
+            ObjectBoxDataSource.Factory(ObjectBoxDB.selectNoContentQ()),
+            1
+        ).build()
     }
 
 
@@ -262,9 +263,12 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     ): Pair<Long, DataSource.Factory<Int, Content>> {
         val isRandom = searchBundle.sortField == Preferences.Constant.ORDER_FIELD_RANDOM
         val query: Query<Content> = if (isUniversal) {
-            db.selectContentUniversalQ(searchBundle, getDynamicGroupContent(searchBundle.groupId))
+            ObjectBoxDB.selectContentUniversalQ(
+                searchBundle,
+                getDynamicGroupContent(searchBundle.groupId)
+            )
         } else {
-            db.selectContentSearchContentQ(
+            ObjectBoxDB.selectContentSearchContentQ(
                 searchBundle,
                 getDynamicGroupContent(searchBundle.groupId),
                 metadata,
@@ -272,7 +276,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
             )
         }
         return if (isRandom) {
-            val shuffledIds = db.shuffledIds
+            val shuffledIds = ObjectBoxDB.getShuffledIds()
             Pair(query.count(), RandomDataSourceFactory(query, shuffledIds))
         } else Pair(query.count(), ObjectBoxDataSource.Factory(query))
     }
@@ -283,12 +287,12 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         metadata: Set<Attribute>
     ): Pair<Long, DataSource.Factory<Int, Content>> {
         val ids: LongArray = if (isUniversal) {
-            db.selectContentUniversalByGroupItem(
+            ObjectBoxDB.selectContentUniversalByGroupItem(
                 searchBundle,
                 getDynamicGroupContent(searchBundle.groupId)
             )
         } else {
-            db.selectContentSearchContentByGroupItem(
+            ObjectBoxDB.selectContentSearchContentByGroupItem(
                 searchBundle,
                 getDynamicGroupContent(searchBundle.groupId),
                 metadata
@@ -296,17 +300,17 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         }
         return Pair(
             ids.size.toLong(), PredeterminedDataSourceFactory(
-                { id -> db.selectContentById(id) }, ids
+                { id -> ObjectBoxDB.selectContentById(id) }, ids
             )
         )
     }
 
     override fun selectContent(id: Long): Content? {
-        return db.selectContentById(id)
+        return ObjectBoxDB.selectContentById(id)
     }
 
     override fun selectContent(id: LongArray): List<Content> {
-        return db.selectContentById(id.toList()) ?: emptyList()
+        return ObjectBoxDB.selectContentById(id.toList()) ?: emptyList()
     }
 
     override fun selectContentBySourceAndUrl(
@@ -316,29 +320,29 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     ): Content? {
         val coverUrlStart =
             if (coverUrl != null) Content.getNeutralCoverUrlRoot(coverUrl, site) else ""
-        return db.selectContentBySourceAndUrl(site, contentUrl, coverUrlStart)
+        return ObjectBoxDB.selectContentBySourceAndUrl(site, contentUrl, coverUrlStart)
     }
 
     override fun selectAllSourceUrls(site: Site): Set<String> {
-        return db.selectAllContentUrls(site.code)
+        return ObjectBoxDB.selectAllContentUrls(site.code)
     }
 
     override fun selectAllMergedUrls(site: Site): Set<String> {
-        return db.selectAllMergedContentUrls(site)
+        return ObjectBoxDB.selectAllMergedContentUrls(site)
     }
 
     override fun searchTitlesWith(word: String, contentStatusCodes: IntArray): List<Content> {
-        return db.selectContentWithTitle(word, contentStatusCodes)
+        return ObjectBoxDB.selectContentWithTitle(word, contentStatusCodes)
     }
 
     override fun selectContentByStorageUri(folderUri: String, onlyFlagged: Boolean): Content? {
         // Select only the "document" part of the URI, as the "tree" part can vary
         val docPart = folderUri.substring(folderUri.indexOf("/document/"))
-        return db.selectContentEndWithStorageUri(docPart, onlyFlagged)
+        return ObjectBoxDB.selectContentEndWithStorageUri(docPart, onlyFlagged)
     }
 
     override fun insertContent(content: Content): Long {
-        val result = db.insertContentAndAttributes(content)
+        val result = ObjectBoxDB.insertContentAndAttributes(content)
         // Attach new attributes to existing groups, if any
         for (a in result.second) {
             val g = selectGroupByName(Grouping.ARTIST.id, a.name)
@@ -348,72 +352,72 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     override fun insertContentCore(content: Content): Long {
-        return db.insertContentCore(content)
+        return ObjectBoxDB.insertContentCore(content)
     }
 
     override fun updateContentStatus(updateFrom: StatusContent, updateTo: StatusContent) {
-        db.updateContentStatus(updateFrom, updateTo)
+        ObjectBoxDB.updateContentStatus(updateFrom, updateTo)
     }
 
     override fun updateContentProcessedFlag(contentId: Long, flag: Boolean) {
-        db.updateContentProcessedFlag(contentId, flag)
+        ObjectBoxDB.updateContentProcessedFlag(contentId, flag)
     }
 
     override fun deleteContent(content: Content) {
-        db.deleteContentById(content.id)
+        ObjectBoxDB.deleteContentById(content.id)
     }
 
     override fun selectErrorRecordByContentId(contentId: Long): List<ErrorRecord> {
-        return db.selectErrorRecordByContentId(contentId)
+        return ObjectBoxDB.selectErrorRecordByContentId(contentId)
     }
 
     override fun insertErrorRecord(record: ErrorRecord) {
-        db.insertErrorRecord(record)
+        ObjectBoxDB.insertErrorRecord(record)
     }
 
     override fun deleteErrorRecords(contentId: Long) {
-        db.deleteErrorRecords(contentId)
+        ObjectBoxDB.deleteErrorRecords(contentId)
     }
 
     override fun insertChapters(chapters: List<Chapter>) {
-        db.insertChapters(chapters)
+        ObjectBoxDB.insertChapters(chapters)
     }
 
     override fun deleteChapters(content: Content) {
-        db.deleteChaptersByContentId(content.id)
+        ObjectBoxDB.deleteChaptersByContentId(content.id)
     }
 
     override fun deleteChapter(chapter: Chapter) {
-        db.deleteChapter(chapter.id)
+        ObjectBoxDB.deleteChapter(chapter.id)
     }
 
     override fun clearDownloadParams(contentId: Long) {
-        val c = db.selectContentById(contentId) ?: return
+        val c = ObjectBoxDB.selectContentById(contentId) ?: return
         c.setDownloadParams("")
-        db.insertContentCore(c)
+        ObjectBoxDB.insertContentCore(c)
         val imgs = c.imageFiles ?: return
         for (img in imgs) img.setDownloadParams("")
-        db.insertImageFiles(imgs)
+        ObjectBoxDB.insertImageFiles(imgs)
     }
 
     override fun shuffleContent() {
-        db.shuffleContentIds()
+        ObjectBoxDB.shuffleContentIds()
     }
 
     override fun countAllInternalBooks(rootPath: String, favsOnly: Boolean): Long {
-        return db.selectAllInternalBooksQ(rootPath, favsOnly, true).safeCount()
+        return ObjectBoxDB.selectAllInternalBooksQ(rootPath, favsOnly, true).safeCount()
     }
 
     override fun countAllQueueBooks(): Long {
         // Count doesn't work here because selectAllQueueBooksQ uses a filter
-        return db.selectAllQueueBooksQ().safeFindIds().size.toLong()
+        return ObjectBoxDB.selectAllQueueBooksQ().safeFindIds().size.toLong()
     }
 
     override fun countAllQueueBooksLive(): LiveData<Int> {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
         // See https://github.com/objectbox/objectbox-java/issues/776
-        val livedata = ObjectBoxLiveData(db.selectAllQueueBooksQ())
+        val livedata = ObjectBoxLiveData(ObjectBoxDB.selectAllQueueBooksQ())
         val result = MediatorLiveData<Int>()
         result.addSource(livedata) { v -> result.setValue(v.size) }
         return result
@@ -424,38 +428,43 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         favsOnly: Boolean,
         consumer: Consumer<Content>
     ) {
-        db.selectAllInternalBooksQ(rootPath, favsOnly, true).use { query ->
+        ObjectBoxDB.selectAllInternalBooksQ(rootPath, favsOnly, true).use { query ->
             query.forEach { t -> consumer(t) }
         }
     }
 
     override fun deleteAllExternalBooks() {
-        db.deleteContentById(db.selectAllExternalBooksQ().safeFindIds())
+        ObjectBoxDB.deleteContentById(ObjectBoxDB.selectAllExternalBooksQ().safeFindIds())
     }
 
     override fun selectGroups(groupIds: LongArray): List<Group> {
-        return db.selectGroups(groupIds) ?: emptyList()
+        return ObjectBoxDB.selectGroups(groupIds) ?: emptyList()
     }
 
     override fun selectGroups(grouping: Int): List<Group> {
-        return db.selectGroupsQ(grouping, null, 0, false, -1, false, false, -1).safeFind()
+        return ObjectBoxDB.selectGroupsQ(
+            grouping, null, 0, false, -1,
+            groupFavouritesOnly = false,
+            groupNonFavouritesOnly = false,
+            filterRating = -1
+        ).safeFind()
     }
 
     override fun selectGroups(grouping: Int, subType: Int): List<Group> {
-        return db.selectGroupsQ(
+        return ObjectBoxDB.selectGroupsQ(
             grouping,
             null,
             0,
             false,
             subType,
-            false,
-            false,
-            -1
+            groupFavouritesOnly = false,
+            groupNonFavouritesOnly = false,
+            filterRating = -1
         ).safeFind()
     }
 
     override fun selectEditedGroups(grouping: Int): List<Group> {
-        return db.selectEditedGroups(grouping)
+        return ObjectBoxDB.selectEditedGroups(grouping)
     }
 
     override fun selectGroupsLive(
@@ -471,7 +480,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         // Artist / group visibility filter is only relevant when the selected grouping is "By Artist"
         val subType = if (grouping == Grouping.ARTIST.id) artistGroupVisibility else -1
         val livedata: LiveData<List<Group>> = ObjectBoxLiveData(
-            db.selectGroupsQ(
+            ObjectBoxDB.selectGroupsQ(
                 grouping,
                 query,
                 orderField,
@@ -582,12 +591,12 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         if (g.grouping == Grouping.CUSTOM) {
             val newItems: MutableList<GroupItem>
             if (g.isUngroupedGroup) { // Populate Ungrouped custom group
-                newItems = db.selectUngroupedContentIds().map { id ->
+                newItems = ObjectBoxDB.selectUngroupedContentIds().map { id ->
                     GroupItem(id, g, -1)
                 }.toMutableList()
             } else { // Reselect items; only take items from the library to avoid counting those who've been sent back to the Queue
                 val groupContent =
-                    db.selectContentIdsByGroup(g.id) // Specific query to get there fast
+                    ObjectBoxDB.selectContentIdsByGroup(g.id) // Specific query to get there fast
                 newItems = ArrayList()
                 for (i in groupContent.indices) {
                     newItems.add(GroupItem(groupContent[i], g, i))
@@ -608,7 +617,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
 
     private fun getLatestDlDate(g: Group): Long {
         // Manually select all content as g.getContents won't work (unresolved items)
-        val contents = db.selectContentById(g.contentIds)
+        val contents = ObjectBoxDB.selectContentById(g.contentIds)
         if (contents != null) {
             return contents.maxOfOrNull { c -> c.downloadDate } ?: 0
         }
@@ -616,42 +625,44 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     override fun selectGroup(groupId: Long): Group? {
-        return db.selectGroup(groupId)
+        return ObjectBoxDB.selectGroup(groupId)
     }
 
     override fun selectGroupByName(grouping: Int, name: String): Group? {
-        return db.selectGroupByName(grouping, name)
+        return ObjectBoxDB.selectGroupByName(grouping, name)
     }
 
     // Does NOT check name unicity
     override fun insertGroup(group: Group): Long {
         // Auto-number max order when not provided
-        if (-1 == group.order) group.order = db.getMaxGroupOrderFor(group.grouping) + 1
-        return db.insertGroup(group)
+        if (-1 == group.order) group.order = ObjectBoxDB.getMaxGroupOrderFor(group.grouping) + 1
+        return ObjectBoxDB.insertGroup(group)
     }
 
     override fun countGroupsFor(grouping: Grouping): Long {
-        return db.countGroupsFor(grouping)
+        return ObjectBoxDB.countGroupsFor(grouping)
     }
 
     override fun deleteGroup(groupId: Long) {
-        db.deleteGroup(groupId)
+        ObjectBoxDB.deleteGroup(groupId)
     }
 
     override fun deleteAllGroups(grouping: Grouping) {
-        db.deleteGroupItemsByGrouping(grouping.id)
-        db.selectGroupsByGroupingQ(grouping.id).safeRemove()
+        ObjectBoxDB.deleteGroupItemsByGrouping(grouping.id)
+        ObjectBoxDB.selectGroupsByGroupingQ(grouping.id).safeRemove()
     }
 
     override fun flagAllGroups(grouping: Grouping) {
-        db.flagGroupsForDeletion(db.selectGroupsByGroupingQ(grouping.id).safeFind())
+        ObjectBoxDB.flagGroupsForDeletion(
+            ObjectBoxDB.selectGroupsByGroupingQ(grouping.id).safeFind()
+        )
     }
 
     override fun deleteAllFlaggedGroups() {
-        db.selectFlaggedGroupsQ().use { flaggedGroups ->
+        ObjectBoxDB.selectFlaggedGroupsQ().use { flaggedGroups ->
             // Delete related GroupItems first
             val groups = flaggedGroups.find()
-            for (g in groups) db.deleteGroupItemsByGroup(g.id)
+            for (g in groups) ObjectBoxDB.deleteGroupItemsByGroup(g.id)
 
             // Actually delete the Group
             flaggedGroups.remove()
@@ -660,7 +671,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
 
     override fun insertGroupItem(item: GroupItem): Long {
         // Auto-number max order when not provided
-        if (-1 == item.order) item.order = db.getMaxGroupItemOrderFor(item.groupId) + 1
+        if (-1 == item.order) item.order = ObjectBoxDB.getMaxGroupItemOrderFor(item.groupId) + 1
 
         // If target group doesn't have a cover, get the corresponding Content's
         val groupCoverContent = item.group.target.coverContent
@@ -672,11 +683,11 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
             }
             groupCoverContent.setAndPutTarget(c)
         }
-        return db.insertGroupItem(item)
+        return ObjectBoxDB.insertGroupItem(item)
     }
 
     override fun selectGroupItems(contentId: Long, grouping: Grouping): List<GroupItem> {
-        return db.selectGroupItems(contentId, grouping.id)
+        return ObjectBoxDB.selectGroupItems(contentId, grouping.id)
     }
 
     private fun selectGroupItemsByDlDate(
@@ -684,7 +695,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         minDays: Int,
         maxDays: Int
     ): List<GroupItem> {
-        val contentResult = db.selectContentByDlDate(minDays, maxDays)
+        val contentResult = ObjectBoxDB.selectContentByDlDate(minDays, maxDays)
         return contentResult.map { c -> GroupItem(c, group, -1) }
     }
 
@@ -697,19 +708,19 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
 
     override fun deleteGroupItems(groupItemIds: List<Long>) {
         // Check if one of the GroupItems to delete is linked to the content that contains the group's cover picture
-        val groupItems = db.selectGroupItems(groupItemIds.toLongArray())
+        val groupItems = ObjectBoxDB.selectGroupItems(groupItemIds.toLongArray())
         for (gi in groupItems) {
             val groupCoverContent = gi.group.target.coverContent
             // If so, remove the cover picture
             if (groupCoverContent.isResolvedAndNotNull && groupCoverContent.targetId == gi.content.targetId)
                 gi.group.target.coverContent.setAndPutTarget(null)
         }
-        db.deleteGroupItems(groupItemIds.toLongArray())
+        ObjectBoxDB.deleteGroupItems(groupItemIds.toLongArray())
     }
 
     override fun flagAllInternalBooks(rootPath: String, includePlaceholders: Boolean) {
-        db.flagContentsForDeletion(
-            db.selectAllInternalBooksQ(
+        ObjectBoxDB.flagContentsForDeletion(
+            ObjectBoxDB.selectAllInternalBooksQ(
                 rootPath,
                 false,
                 includePlaceholders
@@ -718,23 +729,25 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     override fun flagAllExternalBooks() {
-        db.flagContentsForDeletion(db.selectAllExternalBooksQ().safeFind(), true)
+        ObjectBoxDB.flagContentsForDeletion(ObjectBoxDB.selectAllExternalBooksQ().safeFind(), true)
     }
 
     override fun deleteAllInternalBooks(rootPath: String, resetRemainingImagesStatus: Boolean) {
-        db.deleteContentById(db.selectAllInternalBooksQ(rootPath, false).safeFindIds())
+        ObjectBoxDB.deleteContentById(
+            ObjectBoxDB.selectAllInternalBooksQ(rootPath, false).safeFindIds()
+        )
         if (resetRemainingImagesStatus) resetRemainingImagesStatus(rootPath)
     }
 
     override fun deleteAllFlaggedBooks(resetRemainingImagesStatus: Boolean, pathRoot: String?) {
-        db.deleteContentById(db.selectAllFlaggedBooksQ().safeFindIds())
+        ObjectBoxDB.deleteContentById(ObjectBoxDB.selectAllFlaggedBooksQ().safeFindIds())
         if (resetRemainingImagesStatus && pathRoot != null) resetRemainingImagesStatus(pathRoot)
     }
 
     // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
     private fun resetRemainingImagesStatus(rootPath: String) {
-        val remainingContentIds = db.selectAllQueueBooksQ(rootPath).safeFindIds()
-        for (contentId in remainingContentIds) db.updateImageContentStatus(
+        val remainingContentIds = ObjectBoxDB.selectAllQueueBooksQ(rootPath).safeFindIds()
+        for (contentId in remainingContentIds) ObjectBoxDB.updateImageContentStatus(
             contentId,
             null,
             StatusContent.SAVED
@@ -742,25 +755,25 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     override fun flagAllErrorBooksWithJson() {
-        db.flagContentsForDeletion(db.selectAllErrorJsonBooksQ().safeFind(), true)
+        ObjectBoxDB.flagContentsForDeletion(ObjectBoxDB.selectAllErrorJsonBooksQ().safeFind(), true)
     }
 
     override fun deleteAllQueuedBooks() {
         Timber.i("Cleaning up queue")
-        db.deleteContentById(db.selectAllQueueBooksQ().safeFindIds())
-        db.deleteQueueRecords()
+        ObjectBoxDB.deleteContentById(ObjectBoxDB.selectAllQueueBooksQ().safeFindIds())
+        ObjectBoxDB.deleteQueueRecords()
     }
 
     override fun insertImageFile(img: ImageFile) {
-        db.insertImageFile(img)
+        ObjectBoxDB.insertImageFile(img)
     }
 
     override fun insertImageFiles(imgs: List<ImageFile>) {
-        db.insertImageFiles(imgs)
+        ObjectBoxDB.insertImageFiles(imgs)
     }
 
     override fun replaceImageList(contentId: Long, newList: List<ImageFile>) {
-        db.replaceImageFiles(contentId, newList)
+        ObjectBoxDB.replaceImageFiles(contentId, newList)
     }
 
     override fun updateImageContentStatus(
@@ -768,16 +781,16 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         updateFrom: StatusContent?,
         updateTo: StatusContent
     ) {
-        db.updateImageContentStatus(contentId, updateFrom, updateTo)
+        ObjectBoxDB.updateImageContentStatus(contentId, updateFrom, updateTo)
     }
 
     override fun updateImageFileStatusParamsMimeTypeUriSize(image: ImageFile) {
-        db.updateImageFileStatusParamsMimeTypeUriSize(image)
+        ObjectBoxDB.updateImageFileStatusParamsMimeTypeUriSize(image)
     }
 
     override fun deleteImageFiles(imgs: List<ImageFile>) {
         // Delete the page
-        db.deleteImageFiles(imgs)
+        ObjectBoxDB.deleteImageFiles(imgs)
 
         // Lists all relevant content
         val contents = imgs.filter { i -> i.content != null }
@@ -785,58 +798,58 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
 
         // Update the content with its new size
         for (contentId in contents) {
-            val content = db.selectContentById(contentId)
+            val content = ObjectBoxDB.selectContentById(contentId)
             if (content != null) {
                 content.computeSize()
-                db.insertContentCore(content)
+                ObjectBoxDB.insertContentCore(content)
             }
         }
     }
 
     override fun selectImageFile(id: Long): ImageFile? {
-        return db.selectImageFile(id)
+        return ObjectBoxDB.selectImageFile(id)
     }
 
     override fun selectImageFiles(ids: LongArray): List<ImageFile> {
-        return db.selectImageFiles(ids)
+        return ObjectBoxDB.selectImageFiles(ids)
     }
 
     override fun selectDownloadedImagesFromContentLive(id: Long): LiveData<List<ImageFile>> {
-        return ObjectBoxLiveData(db.selectDownloadedImagesFromContentQ(id))
+        return ObjectBoxLiveData(ObjectBoxDB.selectDownloadedImagesFromContentQ(id))
     }
 
     override fun selectDownloadedImagesFromContent(id: Long): List<ImageFile> {
-        return db.selectDownloadedImagesFromContentQ(id).safeFind()
+        return ObjectBoxDB.selectDownloadedImagesFromContentQ(id).safeFind()
     }
 
     override fun countProcessedImagesById(contentId: Long): Map<StatusContent, Pair<Int, Long>> {
-        return db.countProcessedImagesById(contentId)
+        return ObjectBoxDB.countProcessedImagesById(contentId)
     }
 
     override fun selectAllFavouritePagesLive(): LiveData<List<ImageFile>> {
-        return ObjectBoxLiveData(db.selectAllFavouritePagesQ())
+        return ObjectBoxLiveData(ObjectBoxDB.selectAllFavouritePagesQ())
     }
 
     override fun countAllFavouritePagesLive(): LiveData<Int> {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
         // See https://github.com/objectbox/objectbox-java/issues/776
-        val livedata = ObjectBoxLiveData(db.selectAllFavouritePagesQ())
+        val livedata = ObjectBoxLiveData(ObjectBoxDB.selectAllFavouritePagesQ())
         val result = MediatorLiveData<Int>()
         result.addSource(livedata) { v -> result.setValue(v.size) }
         return result
     }
 
     override fun selectPrimaryMemoryUsagePerSource(): Map<Site, Pair<Int, Long>> {
-        return db.selectPrimaryMemoryUsagePerSource("")
+        return ObjectBoxDB.selectPrimaryMemoryUsagePerSource("")
     }
 
     override fun selectPrimaryMemoryUsagePerSource(rootPath: String): Map<Site, Pair<Int, Long>> {
-        return db.selectPrimaryMemoryUsagePerSource(rootPath)
+        return ObjectBoxDB.selectPrimaryMemoryUsagePerSource(rootPath)
     }
 
     override fun selectExternalMemoryUsagePerSource(): Map<Site, Pair<Int, Long>> {
-        return db.selectExternalMemoryUsagePerSource()
+        return ObjectBoxDB.selectExternalMemoryUsagePerSource()
     }
 
     override fun addContentToQueue(
@@ -848,7 +861,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         replacementTitle: String?,
         isQueueActive: Boolean
     ) {
-        if (targetImageStatus != null) db.updateImageContentStatus(
+        if (targetImageStatus != null) ObjectBoxDB.updateImageContentStatus(
             content.id,
             sourceImageStatus,
             targetImageStatus
@@ -858,10 +871,10 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         if (replacedContentId > -1) content.setContentIdToReplace(replacedContentId)
         if (replacementTitle != null) content.replacementTitle = replacementTitle
         insertContent(content)
-        if (!db.isContentInQueue(content)) {
+        if (!ObjectBoxDB.isContentInQueue(content)) {
             val targetPosition: Int =
                 if (position == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM) {
-                    db.selectMaxQueueOrder().toInt() + 1
+                    ObjectBoxDB.selectMaxQueueOrder().toInt() + 1
                 } else { // Top - don't put #1 if queue is active not to interrupt current download
                     if (isQueueActive) 2 else 1
                 }
@@ -870,7 +883,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     private fun insertQueueAndRenumber(contentId: Long, order: Int) {
-        val queue = db.selectQueueRecordsQ().safeFind().toMutableList()
+        val queue = ObjectBoxDB.selectQueueRecordsQ().safeFind().toMutableList()
         val newRecord = QueueRecord(contentId, order)
 
         // Put in the right place
@@ -881,7 +894,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         // Renumber everything and save
         var index = 1
         for (qr in queue) qr.rank = index++
-        db.updateQueue(queue)
+        ObjectBoxDB.updateQueue(queue)
     }
 
     private fun getDynamicGroupContent(groupId: Long): LongArray {
@@ -901,13 +914,13 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         metadata: Set<Attribute>
     ): List<Long> {
         return if (isUniversal) {
-            db.selectContentUniversalId(
+            ObjectBoxDB.selectContentUniversalId(
                 searchBundle,
                 getDynamicGroupContent(searchBundle.groupId),
                 ObjectBoxDB.libraryStatus
             ).toList()
         } else {
-            db.selectContentSearchId(
+            ObjectBoxDB.selectContentSearchId(
                 searchBundle,
                 getDynamicGroupContent(searchBundle.groupId),
                 metadata,
@@ -934,7 +947,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
         if (attrTypes.isNotEmpty()) {
             if (attrTypes[0] == AttributeType.SOURCE) {
                 attributes.addAll(
-                    db.selectAvailableSources(
+                    ObjectBoxDB.selectAvailableSources(
                         groupId,
                         dynamicGroupContentIds,
                         attrs,
@@ -948,7 +961,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
                 for (type in attrTypes) {
                     // TODO fix sorting when concatenating both lists
                     attributes.addAll(
-                        db.selectAvailableAttributes(
+                        ObjectBoxDB.selectAvailableAttributes(
                             type,
                             groupId,
                             dynamicGroupContentIds,
@@ -962,7 +975,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
                             itemPerPage
                         )
                     )
-                    totalSelectedAttributes += db.countAvailableAttributes(
+                    totalSelectedAttributes += ObjectBoxDB.countAvailableAttributes(
                         type,
                         groupId,
                         dynamicGroupContentIds,
@@ -987,10 +1000,10 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     ): SparseIntArray {
         val result: SparseIntArray
         if (filter.isNullOrEmpty() && 0 == location && 0 == contentType && -1L == groupId) {
-            result = db.countAvailableAttributesPerType()
-            result.put(AttributeType.SOURCE.code, db.selectAvailableSources().size)
+            result = ObjectBoxDB.countAvailableAttributesPerType()
+            result.put(AttributeType.SOURCE.code, ObjectBoxDB.selectAvailableSources().size)
         } else {
-            result = db.countAvailableAttributesPerType(
+            result = ObjectBoxDB.countAvailableAttributesPerType(
                 groupId,
                 dynamicGroupContentIds,
                 filter,
@@ -999,7 +1012,7 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
             )
             result.put(
                 AttributeType.SOURCE.code,
-                db.selectAvailableSources(
+                ObjectBoxDB.selectAvailableSources(
                     groupId,
                     dynamicGroupContentIds,
                     filter,
@@ -1013,77 +1026,78 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
     }
 
     override fun selectQueueLive(): LiveData<List<QueueRecord>> {
-        return ObjectBoxLiveData(db.selectQueueRecordsQ())
+        return ObjectBoxLiveData(ObjectBoxDB.selectQueueRecordsQ())
     }
 
     override fun selectQueueLive(query: String?, source: Site?): LiveData<List<QueueRecord>> {
-        return ObjectBoxLiveData(db.selectQueueRecordsQ(query, source))
+        return ObjectBoxLiveData(ObjectBoxDB.selectQueueRecordsQ(query, source))
     }
 
     override fun selectQueue(): List<QueueRecord> {
-        return db.selectQueueRecordsQ().safeFind()
+        return ObjectBoxDB.selectQueueRecordsQ().safeFind()
     }
 
     override fun updateQueue(queue: List<QueueRecord>) {
-        db.updateQueue(queue)
+        ObjectBoxDB.updateQueue(queue)
     }
 
     override fun deleteQueue(content: Content) {
-        db.deleteQueueRecords(content)
+        ObjectBoxDB.deleteQueueRecords(content)
     }
 
     override fun deleteQueue(index: Int) {
-        db.deleteQueueRecords(index)
+        ObjectBoxDB.deleteQueueRecords(index)
     }
 
     override fun deleteQueueRecordsCore() {
-        db.deleteQueueRecords()
+        ObjectBoxDB.deleteQueueRecords()
     }
 
     override fun selectHistory(s: Site): SiteHistory {
-        return db.selectHistory(s) ?: SiteHistory()
+        return ObjectBoxDB.selectHistory(s) ?: SiteHistory()
     }
 
     override fun insertSiteHistory(site: Site, url: String) {
-        db.insertSiteHistory(site, url)
+        ObjectBoxDB.insertSiteHistory(site, url)
     }
 
     // BOOKMARKS
 
     // BOOKMARKS
     override fun countAllBookmarks(): Long {
-        return db.selectBookmarksQ(null).safeCount()
+        return ObjectBoxDB.selectBookmarksQ(null).safeCount()
     }
 
     override fun selectAllBookmarks(): List<SiteBookmark> {
-        return db.selectBookmarksQ(null).safeFind()
+        return ObjectBoxDB.selectBookmarksQ(null).safeFind()
     }
 
     override fun deleteAllBookmarks() {
-        db.selectBookmarksQ(null).safeRemove()
+        ObjectBoxDB.selectBookmarksQ(null).safeRemove()
     }
 
     override fun selectBookmarks(s: Site): List<SiteBookmark> {
-        return db.selectBookmarksQ(s).safeFind()
+        return ObjectBoxDB.selectBookmarksQ(s).safeFind()
     }
 
     override fun selectHomepage(s: Site): SiteBookmark? {
-        return db.selectHomepage(s)
+        return ObjectBoxDB.selectHomepage(s)
     }
 
     override fun insertBookmark(bookmark: SiteBookmark): Long {
         // Auto-number max order when not provided
-        if (-1 == bookmark.order) bookmark.order = db.getMaxBookmarkOrderFor(bookmark.site) + 1
-        return db.insertBookmark(bookmark)
+        if (-1 == bookmark.order) bookmark.order =
+            ObjectBoxDB.getMaxBookmarkOrderFor(bookmark.site) + 1
+        return ObjectBoxDB.insertBookmark(bookmark)
     }
 
     override fun insertBookmarks(bookmarks: List<SiteBookmark>) {
         // Mass insert method; no need to renumber here
-        db.insertBookmarks(bookmarks)
+        ObjectBoxDB.insertBookmarks(bookmarks)
     }
 
     override fun deleteBookmark(bookmarkId: Long) {
-        db.deleteBookmark(bookmarkId)
+        ObjectBoxDB.deleteBookmark(bookmarkId)
     }
 
 
@@ -1091,26 +1105,26 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
 
     // SEARCH HISTORY
     override fun selectSearchRecordsLive(): LiveData<List<SearchRecord>> {
-        return ObjectBoxLiveData(db.selectSearchRecordsQ())
+        return ObjectBoxLiveData(ObjectBoxDB.selectSearchRecordsQ())
     }
 
     private fun selectSearchRecords(): List<SearchRecord> {
-        return db.selectSearchRecordsQ().safeFind()
+        return ObjectBoxDB.selectSearchRecordsQ().safeFind()
     }
 
     override fun insertSearchRecord(record: SearchRecord, limit: Int) {
         val records = selectSearchRecords().toMutableList()
         if (records.contains(record)) return
         while (records.size >= limit) {
-            db.deleteSearchRecord(records[0].id)
+            ObjectBoxDB.deleteSearchRecord(records[0].id)
             records.removeAt(0)
         }
         records.add(record)
-        db.insertSearchRecords(records)
+        ObjectBoxDB.insertSearchRecords(records)
     }
 
     override fun deleteAllSearchRecords() {
-        db.selectSearchRecordsQ().safeRemove()
+        ObjectBoxDB.selectSearchRecordsQ().safeRemove()
     }
 
 
@@ -1118,35 +1132,40 @@ class ObjectBoxDAO(ctx: Context) : CollectionDAO {
 
     // RENAMING RULES
     override fun selectRenamingRule(id: Long): RenamingRule? {
-        return db.selectRenamingRule(id)
+        return ObjectBoxDB.selectRenamingRule(id)
     }
 
     override fun selectRenamingRulesLive(
         type: AttributeType,
         nameFilter: String?
     ): LiveData<List<RenamingRule>> {
-        return ObjectBoxLiveData(db.selectRenamingRulesQ(type, StringHelper.protect(nameFilter)))
+        return ObjectBoxLiveData(
+            ObjectBoxDB.selectRenamingRulesQ(
+                type,
+                StringHelper.protect(nameFilter)
+            )
+        )
     }
 
     override fun selectRenamingRules(type: AttributeType, nameFilter: String?): List<RenamingRule> {
-        return db.selectRenamingRulesQ(type, StringHelper.protect(nameFilter)).safeFind()
+        return ObjectBoxDB.selectRenamingRulesQ(type, StringHelper.protect(nameFilter)).safeFind()
     }
 
     override fun insertRenamingRule(rule: RenamingRule): Long {
-        return db.insertRenamingRule(rule)
+        return ObjectBoxDB.insertRenamingRule(rule)
     }
 
     override fun insertRenamingRules(rules: List<RenamingRule>) {
-        db.insertRenamingRules(rules)
+        ObjectBoxDB.insertRenamingRules(rules)
     }
 
     override fun deleteRenamingRules(ids: List<Long>) {
-        db.deleteRenamingRules(ids.toLongArray())
+        ObjectBoxDB.deleteRenamingRules(ids.toLongArray())
     }
 
 
     // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
     override fun selectContentIdsWithUpdatableJson(): LongArray {
-        return db.selectContentIdsWithUpdatableJson()
+        return ObjectBoxDB.selectContentIdsWithUpdatableJson()
     }
 }

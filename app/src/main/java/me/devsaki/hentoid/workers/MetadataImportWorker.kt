@@ -117,7 +117,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             trace(Log.ERROR, "Couldn't deserialize JSON file")
             return
         }
-        dao = ObjectBoxDAO(context)
+        dao = ObjectBoxDAO()
         if (!add) {
             if (importLibrary) dao.deleteAllInternalBooks("", false)
             if (importQueue) dao.deleteAllQueuedBooks()
@@ -333,7 +333,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             var folderName: String
             for (f in subfolders) if (f.name != null) {
                 folderName = f.name!!.lowercase(Locale.getDefault())
-                for (s in Site.values()) {
+                for (s in Site.entries) {
                     if (folderName.equals(s.folder, ignoreCase = true)) {
                         if (data.containsKey(s)) {
                             val list = data[s]

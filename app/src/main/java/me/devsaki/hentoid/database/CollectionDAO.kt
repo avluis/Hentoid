@@ -180,7 +180,7 @@ interface CollectionDAO {
 
     fun countBooks(
         groupId: Long,
-        metadata: Set<Attribute?>?,
+        metadata: Set<Attribute>?,
         @ContentHelper.Location location: Int,
         @ContentHelper.Type contentType: Int
     ): LiveData<Int>

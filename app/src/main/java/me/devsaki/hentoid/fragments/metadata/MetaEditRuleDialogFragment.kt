@@ -167,7 +167,7 @@ class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment
     }
 
     private fun loadRule(): RenamingRule? {
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        val dao: CollectionDAO = ObjectBoxDAO()
         try {
             return dao.selectRenamingRule(ruleId)
         } finally {

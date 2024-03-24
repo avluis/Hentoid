@@ -94,7 +94,7 @@ class DownloadsImportWorker(
             return
         }
         totalItems = downloads.size
-        dao = ObjectBoxDAO(context)
+        dao = ObjectBoxDAO()
         try {
             for (s in downloads) {
                 var galleryUrl = s

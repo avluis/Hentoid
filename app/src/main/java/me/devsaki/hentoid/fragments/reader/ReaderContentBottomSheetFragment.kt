@@ -114,7 +114,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
         lifecycleScope.launch {
             var content: Content? = null
             withContext(Dispatchers.IO) {
-                val dao = ObjectBoxDAO(requireContext())
+                val dao = ObjectBoxDAO()
                 try {
                     content = dao.selectContent(contentId)
                 } finally {
