@@ -339,7 +339,7 @@ class LibraryGroupsFragment : Fragment(),
     }
 
     private fun onNewGroupNameExists() {
-        activity.get()?.toast(R.string.group_name_exists)
+        toast(R.string.group_name_exists)
         newGroupPrompt()
     }
 
@@ -579,7 +579,7 @@ class LibraryGroupsFragment : Fragment(),
         val g = selectedItems.firstNotNullOfOrNull { gi -> gi.group }
         if (g != null) {
             viewModel.renameGroup(g, newName, { stringIntRes ->
-                activity.get()?.toast(stringIntRes)
+                toast(stringIntRes)
                 editSelectedItemName()
             }) { selectExtension!!.selectOnLongClick = true }
         }

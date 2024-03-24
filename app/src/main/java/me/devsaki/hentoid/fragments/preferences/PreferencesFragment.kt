@@ -193,7 +193,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onPrefRequiringRestartChanged() {
-        activity?.toast(R.string.restart_needed)
+        toast(R.string.restart_needed)
     }
 
     private fun onExternalFolderChanged() {

@@ -736,7 +736,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val item = selectedItems.firstOrNull() ?: return
             val c = item.content ?: return
             if (c.storageUri.isEmpty()) {
-                context.toast(R.string.folder_undefined)
+                toast(R.string.folder_undefined)
                 return
             }
             val folder =
@@ -1709,7 +1709,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     private fun onMergeSuccess() {
-        activity.get()?.toast(R.string.merge_success)
+        toast(R.string.merge_success)
         refreshIfNeeded()
     }
 
@@ -1720,7 +1720,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     private fun onSplitSuccess() {
-        activity.get()?.toast(R.string.split_success)
+        toast(R.string.split_success)
         refreshIfNeeded()
     }
 

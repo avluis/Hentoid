@@ -867,7 +867,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             var c = item.content
             // Process the click
             if (null == c) {
-                activity.get()?.toast(R.string.err_no_content)
+                toast(R.string.err_no_content)
                 return false
             }
             // Retrieve the latest version of the content if storage URI is unknown
@@ -877,7 +877,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 if (!ContentHelper.openReader(
                         requireContext(), c, -1, null, false, false
                     )
-                ) activity.get()?.toast(R.string.err_no_content)
+                ) toast(R.string.err_no_content)
                 true
             } else false
         }

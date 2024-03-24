@@ -732,13 +732,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     private fun onPageFavouriteSuccess(newState: Boolean) {
-        activity?.toast(if (newState) R.string.page_favourite_success else R.string.page_unfavourite_success)
+        toast(if (newState) R.string.page_favourite_success else R.string.page_unfavourite_success)
         isPageFavourite = newState
         updateFavouriteButtonIcon()
     }
 
     private fun onBookFavouriteSuccess(newState: Boolean) {
-        activity?.toast(if (newState) R.string.book_favourite_success else R.string.book_unfavourite_success)
+        toast(if (newState) R.string.book_favourite_success else R.string.book_unfavourite_success)
         isContentFavourite = newState
         updateFavouriteButtonIcon()
     }
@@ -1473,12 +1473,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             else -> 2f
         }
         if (showToast) {
-            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) activity?.toast(
-                R.string.slideshow_start_vertical,
-                resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)[convertPrefsDelayToSliderPosition(
-                    delayPref
-                )]
-            ) else activity?.toast(R.string.slideshow_start, factor)
+            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+                toast(
+                    R.string.slideshow_start_vertical,
+                    resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)[convertPrefsDelayToSliderPosition(
+                        delayPref
+                    )]
+                ) else toast(R.string.slideshow_start, factor)
         }
         scrollListener.disableScroll()
         if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) {
@@ -1526,7 +1527,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         isSlideshowActive = false
         scrollListener.enableScroll()
-        activity?.toast(R.string.slideshow_stop)
+        toast(R.string.slideshow_stop)
     }
 
     private fun displayZoomLevel(value: Float) {

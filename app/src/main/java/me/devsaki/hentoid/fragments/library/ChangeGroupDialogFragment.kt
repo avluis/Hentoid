@@ -152,7 +152,7 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                     }
 
                 } else {
-                    requireActivity().toast(R.string.group_not_selected)
+                    toast(R.string.group_not_selected)
                 }
             } else if (detachRadio.isChecked) {
                 viewModel.moveContentsToCustomGroup(bookIds, null) {
@@ -171,10 +171,10 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                             dismissAllowingStateLoss()
                         }
                     } else {
-                        requireActivity().toast(R.string.group_name_exists)
+                        toast(R.string.group_name_exists)
                     }
                 } else {
-                    requireActivity().toast(R.string.group_name_empty)
+                    toast(R.string.group_name_empty)
                 }
             }
         }

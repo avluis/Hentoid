@@ -362,7 +362,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         if (1 == selectedItems.size && context != null) {
             val b = selectedItems.first().getObject()
             if (b != null && Helper.copyPlainTextToClipboard(context, b.url)) {
-                activity?.toastShort(R.string.web_url_clipboard)
+                toastShort(R.string.web_url_clipboard)
                 binding?.selectionToolbar?.visibility = View.INVISIBLE
             }
         }

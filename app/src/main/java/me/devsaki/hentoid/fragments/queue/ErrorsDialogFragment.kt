@@ -116,7 +116,7 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
     }
 
     private fun showErrorLog(content: Content) {
-        activity?.toast(R.string.redownload_generating_log_file)
+        toast(R.string.redownload_generating_log_file)
         val logInfo = createLog(content)
         val logFile = requireContext().writeLog(logInfo)
         if (logFile != null) FileHelper.openFile(requireContext(), logFile)

@@ -189,7 +189,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
             )
             val uriStr = Preferences.getStorageUri(location)
             if (uriStr.isEmpty()) {
-                activity?.toastShort(R.string.import_invalid_uri)
+                toastShort(R.string.import_invalid_uri)
                 dismissAllowingStateLoss()
                 return
             }

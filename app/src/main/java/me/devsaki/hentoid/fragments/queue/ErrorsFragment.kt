@@ -450,7 +450,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                     false,
                     false
                 )
-            ) activity.get()?.toast(R.string.err_no_content)
+            ) toast(R.string.err_no_content)
             return true
         }
         return false

@@ -120,7 +120,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
 
             CLEAR_BROWSER_CACHE -> {
                 context?.clearWebviewCache {
-                    activity?.toast(
+                    toast(
                         if (it) R.string.tools_cache_browser_success else
                             if (WebkitPackageHelper.getWebViewUpdating()) R.string.tools_cache_browser_updating_webview
                             else R.string.tools_cache_browser_missing_webview
@@ -137,7 +137,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
                             DiskCache.init(this)
                         }
                     }
-                    activity?.toast(R.string.tools_cache_app_success)
+                    toast(R.string.tools_cache_app_success)
                 }
                 true
             }

@@ -623,7 +623,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             }
         } else { // Create/remove chapter
             viewModel.createRemoveChapter(img) {
-                activity.get()?.toast(
+                toast(
                     R.string.chapter_toggle_failed,
                     img.order
                 )
@@ -796,7 +796,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
      * Strip all chapters from the current content
      */
     private fun stripChapters() {
-        viewModel.stripChapters { activity.get()?.toast(R.string.chapters_remove_failed) }
+        viewModel.stripChapters { toast(R.string.chapters_remove_failed) }
     }
 
     override fun itemTouchDropped(oldPosition: Int, newPosition: Int) {
