@@ -15,7 +15,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.network.HttpHelper.UriParts
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.views.AnchiraBackgroundWebView
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber

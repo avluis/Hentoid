@@ -6,7 +6,8 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.json.sources.SimplyGalleryMetadata
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.fixUrl
+import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class SimplyParser : BaseImageListParser() {
     override fun isChapterUrl(url: String): Boolean {
@@ -21,7 +22,7 @@ class SimplyParser : BaseImageListParser() {
 
         // 1. Scan the gallery page for viewer URL (can't be deduced)
         var viewerUrl: String? = null
-        var doc = HttpHelper.getOnlineDocument(
+        var doc = getOnlineDocument(
             content.galleryUrl,
             headers,
             Site.SIMPLY.useHentoidAgent(),
@@ -32,7 +33,7 @@ class SimplyParser : BaseImageListParser() {
             var parent = page.parent()
             while (parent != null && !parent.`is`("a")) parent = parent.parent()
             if (null == parent) return result
-            viewerUrl = HttpHelper.fixUrl(parent.attr("href"), Site.SIMPLY.url)
+            viewerUrl = fixUrl(parent.attr("href"), Site.SIMPLY.url)
         }
         if (null == viewerUrl) return result
 
@@ -40,7 +41,7 @@ class SimplyParser : BaseImageListParser() {
         if (processHalted.get()) throw PreparationInterruptedException()
 
         // 2. Get the metadata on the viewer page
-        doc = HttpHelper.getOnlineDocument(
+        doc = getOnlineDocument(
             viewerUrl,
             headers,
             Site.SIMPLY.useHentoidAgent(),

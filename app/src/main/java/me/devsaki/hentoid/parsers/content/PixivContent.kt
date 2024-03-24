@@ -7,7 +7,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getCookies
 import timber.log.Timber
 import java.io.IOException
 
@@ -31,7 +31,7 @@ class PixivContent : BaseContentParser() {
         }
         try {
             if (id.isNotEmpty()) {
-                val cookieStr = HttpHelper.getCookies(
+                val cookieStr = getCookies(
                     url,
                     null,
                     Site.PIXIV.useMobileAgent(),

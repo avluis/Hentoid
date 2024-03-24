@@ -49,9 +49,13 @@ import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.extractArchiveEntriesCached
 import me.devsaki.hentoid.util.image.getMimeTypeFromUri
-import me.devsaki.hentoid.util.network.HttpHelper
-import me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri
+import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.network.fixUrl
+import me.devsaki.hentoid.util.network.getCookies
+import me.devsaki.hentoid.util.network.getExtensionFromUri
+import me.devsaki.hentoid.util.network.peekCookies
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -1280,29 +1284,29 @@ class ReaderViewModel(
             // Prepare request headers
             val headers: MutableList<Pair<String, String>> = ArrayList()
             headers.add(
-                Pair(HttpHelper.HEADER_REFERER_KEY, content.readerUrl)
+                Pair(HEADER_REFERER_KEY, content.readerUrl)
             ) // Useful for Hitomi and Toonily
             val result: Pair<Uri?, String>
             if (img.needsPageParsing()) {
-                val pageUrl = HttpHelper.fixUrl(img.pageUrl, content.site.url)
+                val pageUrl = fixUrl(img.pageUrl, content.site.url)
                 // Get cookies from the app jar
-                var cookieStr = HttpHelper.getCookies(pageUrl)
+                var cookieStr = getCookies(pageUrl)
                 // If nothing found, peek from the site
-                if (cookieStr.isEmpty()) cookieStr = HttpHelper.peekCookies(pageUrl)
+                if (cookieStr.isEmpty()) cookieStr = peekCookies(pageUrl)
                 if (cookieStr.isNotEmpty()) headers.add(
-                    Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
+                    Pair(HEADER_COOKIE_KEY, cookieStr)
                 )
                 result = downloadPictureFromPage(
                     content, img, pageIndex, headers, stopDownload
                 )
             } else {
-                val imgUrl = HttpHelper.fixUrl(img.url, content.site.url)
+                val imgUrl = fixUrl(img.url, content.site.url)
                 // Get cookies from the app jar
-                var cookieStr = HttpHelper.getCookies(imgUrl)
+                var cookieStr = getCookies(imgUrl)
                 // If nothing found, peek from the site
-                if (cookieStr.isEmpty()) cookieStr = HttpHelper.peekCookies(content.galleryUrl)
+                if (cookieStr.isEmpty()) cookieStr = peekCookies(content.galleryUrl)
                 if (cookieStr.isNotEmpty()) headers.add(
-                    Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
+                    Pair(HEADER_COOKIE_KEY, cookieStr)
                 )
                 result = downloadToFileCached(
                     getApplication(),
@@ -1364,7 +1368,7 @@ class ReaderViewModel(
         interruptDownload: AtomicBoolean
     ): Pair<Uri?, String> {
         val site = content.site
-        val pageUrl = HttpHelper.fixUrl(img.pageUrl, site.url)
+        val pageUrl = fixUrl(img.pageUrl, site.url)
         val parser = ContentParserFactory.getImageListParser(content.site)
         val pages = parser.parseImagePage(pageUrl, requestHeaders)
         img.url = pages.first

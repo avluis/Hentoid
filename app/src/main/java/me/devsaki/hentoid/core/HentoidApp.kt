@@ -18,8 +18,8 @@ import me.devsaki.hentoid.receiver.WebViewUpdateCycleReceiver
 import me.devsaki.hentoid.timber.CrashlyticsTree
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.network.initUserAgents
 import timber.log.Timber
 import java.time.Instant
 
@@ -78,7 +78,7 @@ class HentoidApp : Application() {
         // Init user agents (must be done here as some users seem not to complete AppStartup properly)
         Timber.i("Init user agents : start")
         if (WebkitPackageHelper.getWebViewAvailable()) {
-            HttpHelper.initUserAgents(this)
+            initUserAgents(this)
             Timber.i("Init user agents : done")
         } else Timber.w("Failed to init user agents: WebView is unavailable")
     }

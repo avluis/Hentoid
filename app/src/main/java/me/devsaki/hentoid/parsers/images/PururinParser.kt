@@ -4,8 +4,8 @@ import androidx.core.util.Pair
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.ParseHelper
-import me.devsaki.hentoid.util.network.HttpHelper
-import me.devsaki.hentoid.util.network.HttpHelper.UriParts
+import me.devsaki.hentoid.util.network.UriParts
+import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class PururinParser : BaseImageListParser() {
     override fun isChapterUrl(url: String): Boolean {
@@ -17,7 +17,7 @@ class PururinParser : BaseImageListParser() {
 
         val headers = fetchHeaders(content)
 
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             content.galleryUrl,
             headers,
             Site.PURURIN.useHentoidAgent(),
@@ -27,7 +27,7 @@ class PururinParser : BaseImageListParser() {
             // Get all thumb URLs and convert them to page URLs
             val imgSrc = doc.select(".gallery-preview img")
                 .filterNotNull()
-                .mapNotNull { e -> ParseHelper.getImgSrc(e) }
+                .map { e -> ParseHelper.getImgSrc(e) }
                 .map { thumbUrl -> thumbToPage(thumbUrl) }
             result.addAll(imgSrc)
         }

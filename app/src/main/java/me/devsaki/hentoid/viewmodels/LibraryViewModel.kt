@@ -45,8 +45,8 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -1087,7 +1087,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 )
             for (img in splitContentImages) {
                 if (img.status == StatusContent.DOWNLOADED) {
-                    val extension = HttpHelper.getExtensionFromUri(img.fileUri)
+                    val extension = getExtensionFromUri(img.fileUri)
                     val newUri = FileHelper.copyFile(
                         getApplication(),
                         Uri.parse(img.fileUri),

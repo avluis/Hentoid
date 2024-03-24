@@ -17,7 +17,8 @@ import me.devsaki.hentoid.util.download.DownloadRateLimiter.setRateLimit
 import me.devsaki.hentoid.util.download.DownloadRateLimiter.take
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getCookies
+import me.devsaki.hentoid.util.network.waitBlocking429
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 
@@ -67,7 +68,7 @@ class PixivParser : BaseImageListParser() {
             val useMobileAgent = Site.PIXIV.useMobileAgent()
             val useHentoidAgent = Site.PIXIV.useHentoidAgent()
             val useWebviewAgent = Site.PIXIV.useWebviewAgent()
-            val cookieStr = HttpHelper.getCookies(
+            val cookieStr = getCookies(
                 onlineContent.galleryUrl, null,
                 useMobileAgent, useHentoidAgent, useWebviewAgent
             )
@@ -238,7 +239,7 @@ class PixivParser : BaseImageListParser() {
         take()
         var userIllustResp =
             PixivServer.api.getUserIllusts(userId, cookieStr, acceptAll, userAgent).execute()
-        if (HttpHelper.waitBlocking429(
+        if (waitBlocking429(
                 userIllustResp,
                 Preferences.getHttp429DefaultDelaySecs() * 1000
             )
@@ -290,7 +291,7 @@ class PixivParser : BaseImageListParser() {
             var illustResp =
                 PixivServer.api.getIllustMetadata(illustId, cookieStr, acceptAll, userAgent)
                     .execute()
-            while (HttpHelper.waitBlocking429(
+            while (waitBlocking429(
                     illustResp,
                     Preferences.getHttp429DefaultDelaySecs() * 1000
                 ) && waited < 2

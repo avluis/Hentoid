@@ -6,7 +6,7 @@ import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import timber.log.Timber
 import java.io.IOException
@@ -68,7 +68,7 @@ class HentaifoxParser : BaseImageListParser() {
 
     override fun parseImages(content: Content): List<String> {
         // Fetch the book gallery page
-        val doc = HttpHelper.getOnlineDocument(content.galleryUrl)
+        val doc = getOnlineDocument(content.galleryUrl)
             ?: throw ParseException("Document unreachable : " + content.galleryUrl)
 
         val thumbs: List<Element> = doc.select(".g_thumb img")

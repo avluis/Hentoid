@@ -15,7 +15,7 @@ import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getCookies
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -110,7 +110,7 @@ class DeviantArtContent : BaseContentParser() {
     private fun parseXhrDeviation(content: Content, url: String, updateImages: Boolean): Content {
         try {
             val uri = Uri.parse(url)
-            val cookieStr = HttpHelper.getCookies(
+            val cookieStr = getCookies(
                 url,
                 null,
                 Site.DEVIANTART.useMobileAgent(),
@@ -160,7 +160,7 @@ class DeviantArtContent : BaseContentParser() {
         val uri = Uri.parse(url)
         val userName = uri.getQueryParameter("username") ?: ""
 
-        val cookieStr = HttpHelper.getCookies(
+        val cookieStr = getCookies(
             Site.DEVIANTART.url,
             null,
             Site.DEVIANTART.useMobileAgent(),

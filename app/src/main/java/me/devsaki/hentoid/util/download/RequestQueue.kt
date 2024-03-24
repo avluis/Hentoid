@@ -13,7 +13,8 @@ import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_ACCEPT_KEY
+import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.util.Queue
@@ -142,10 +143,10 @@ class RequestQueue(
         Helper.assertNonUiThread()
 
         val requestHeaders =
-            HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url).toMutableList()
+            webkitRequestHeadersToOkHttpHeaders(headers, url).toMutableList()
         requestHeaders.add(
             androidx.core.util.Pair(
-                HttpHelper.HEADER_ACCEPT_KEY,
+                HEADER_ACCEPT_KEY,
                 "image/jpeg,image/png,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*"
             )
         ) // Required to pass through cloudflare filtering on some sites

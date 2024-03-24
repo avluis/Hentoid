@@ -43,7 +43,20 @@ import me.devsaki.hentoid.util.image.MIME_IMAGE_WEBP
 import me.devsaki.hentoid.util.image.bitmapToWebp
 import me.devsaki.hentoid.util.image.getBitmapFromVectorDrawable
 import me.devsaki.hentoid.util.image.tintBitmap
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
+import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.cleanContentType
+import me.devsaki.hentoid.util.network.fixUrl
+import me.devsaki.hentoid.util.network.getChromeVersion
+import me.devsaki.hentoid.util.network.getCookies
+import me.devsaki.hentoid.util.network.getExtensionFromUri
+import me.devsaki.hentoid.util.network.getOnlineResource
+import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import me.devsaki.hentoid.util.network.okHttpResponseToWebkitResponse
+import me.devsaki.hentoid.util.network.setCookies
+import me.devsaki.hentoid.util.network.simplifyUrl
+import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import me.devsaki.hentoid.util.toast
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -333,7 +346,7 @@ open class CustomWebViewClient : WebViewClient {
      * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
      */
     private fun canUseSingleOkHttpRequest(): Boolean {
-        return (Settings.isBrowserAugmented && (HttpHelper.getChromeVersion() < 45 || HttpHelper.getChromeVersion() > 71))
+        return (Settings.isBrowserAugmented && (getChromeVersion() < 45 || getChromeVersion() > 71))
     }
 
 
@@ -360,7 +373,7 @@ open class CustomWebViewClient : WebViewClient {
         // Download and open the torrent file
         // NB : Opening the URL itself won't work when the tracker is private
         // as the 3rd party torrent app doesn't have access to it
-        if (HttpHelper.getExtensionFromUri(url) == "torrent") {
+        if (getExtensionFromUri(url) == "torrent") {
             view.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
                 try {
                     val uri = withContext(Dispatchers.IO) {
@@ -390,9 +403,8 @@ open class CustomWebViewClient : WebViewClient {
     private fun downloadFile(
         context: Context, url: String, requestHeaders: Map<String, String>?
     ): File {
-        val requestHeadersList: List<Pair<String, String>> =
-            HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
-        HttpHelper.getOnlineResource(
+        val requestHeadersList = webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
+        getOnlineResource(
             url,
             requestHeadersList,
             site.useMobileAgent(),
@@ -405,7 +417,7 @@ open class CustomWebViewClient : WebViewClient {
             val file = File(
                 cacheDir.absolutePath + File.separator + Helper.getRandomInt(
                     10000
-                ) + "." + HttpHelper.getExtensionFromUri(url)
+                ) + "." + getExtensionFromUri(url)
             )
             if (!file.createNewFile()) throw IOException("Couldn't create file")
             val torrentFileUri = Uri.fromFile(file)
@@ -498,8 +510,8 @@ open class CustomWebViewClient : WebViewClient {
             if ((removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty()
                         || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags()
                         || activity != null && activity.customCss.isNotEmpty())
-                && (HttpHelper.getExtensionFromUri(url).isEmpty()
-                        || HttpHelper.getExtensionFromUri(url).equals("html", ignoreCase = true))
+                && (getExtensionFromUri(url).isEmpty()
+                        || getExtensionFromUri(url).equals("html", ignoreCase = true))
             ) {
                 val host = Uri.parse(url).host
                 if (host != null && !isHostNotInRestrictedDomains(host))
@@ -519,9 +531,9 @@ open class CustomWebViewClient : WebViewClient {
             // Query resource using OkHttp
             val urlStr = request.url.toString()
             val requestHeadersList =
-                HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
+                webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
             try {
-                HttpHelper.getOnlineResource(
+                getOnlineResource(
                     urlStr,
                     requestHeadersList,
                     site.useMobileAgent(),
@@ -531,7 +543,7 @@ open class CustomWebViewClient : WebViewClient {
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
                     val body = response.body ?: throw IOException("Empty body")
-                    return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream())
+                    return okHttpResponseToWebkitResponse(response, body.byteStream())
                 }
             } catch (e: IOException) {
                 Timber.i(e)
@@ -580,12 +592,11 @@ open class CustomWebViewClient : WebViewClient {
         // If we're here for remove elements only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null
         if (analyzeForDownload) activity?.onGalleryPageStarted()
-        val requestHeadersList =
-            HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
+        val requestHeadersList = webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
         var response: Response? = null
         try {
             // Query resource here, using OkHttp
-            response = HttpHelper.getOnlineResourceFast(
+            response = getOnlineResourceFast(
                 url,
                 requestHeadersList,
                 site.useMobileAgent(),
@@ -599,7 +610,7 @@ open class CustomWebViewClient : WebViewClient {
             // If fast method occurred timeout, reconnect with non-fast method
             Timber.d("Timeout; Reconnect with non-fast method : %s", url)
             try {
-                response = HttpHelper.getOnlineResource(
+                response = getOnlineResource(
                     url,
                     requestHeadersList,
                     site.useMobileAgent(),
@@ -631,14 +642,14 @@ open class CustomWebViewClient : WebViewClient {
                     if (BuildConfig.DEBUG)
                         Timber.v("WebView : redirection from %s to %s", url, targetUrl)
                     if (targetUrl.isNotEmpty())
-                        browserLoadAsync(HttpHelper.fixUrl(targetUrl, site.url))
+                        browserLoadAsync(fixUrl(targetUrl, site.url))
                     return null
                 }
 
                 // Scram if the response is something else than html
                 val rawContentType =
-                    response.header(HttpHelper.HEADER_CONTENT_TYPE, "") ?: return null
-                val contentType = HttpHelper.cleanContentType(rawContentType)
+                    response.header(HEADER_CONTENT_TYPE, "") ?: return null
+                val contentType = cleanContentType(rawContentType)
                 if (contentType.first.isNotEmpty() && contentType.first != "text/html") return null
 
                 // Scram if the response is empty
@@ -676,7 +687,7 @@ open class CustomWebViewClient : WebViewClient {
                     }
 
                     // Convert OkHttp response to the expected format
-                    result = HttpHelper.okHttpResponseToWebkitResponse(response, browserStream)
+                    result = okHttpResponseToWebkitResponse(response, browserStream)
 
                     // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
                     if (result.responseHeaders.containsKey("set-cookie")
@@ -688,7 +699,7 @@ open class CustomWebViewClient : WebViewClient {
                             // Set-cookie might contain multiple cookies to set separated by a line feed (see HttpHelper.getValuesSeparatorFromHttpHeader)
                             val cookieParts = cookiesStr.split("\n")
                             for (cookie in cookieParts)
-                                if (cookie.isNotEmpty()) HttpHelper.setCookies(url, cookie)
+                                if (cookie.isNotEmpty()) setCookies(url, cookie)
                         }
                     }
                 } else {
@@ -743,8 +754,8 @@ open class CustomWebViewClient : WebViewClient {
         // Save useful download params for future use during download
         val params = if (content.downloadParams.length > 2) // Params already contain values
             ContentHelper.parseDownloadParams(content.downloadParams) else HashMap()
-        params[HttpHelper.HEADER_COOKIE_KEY] = HttpHelper.getCookies(url)
-        params[HttpHelper.HEADER_REFERER_KEY] = content.site.url
+        params[HEADER_COOKIE_KEY] = getCookies(url)
+        params[HEADER_REFERER_KEY] = content.site.url
         content.downloadParams =
             JsonHelper.serializeToJson<Map<String, String>>(params, JsonHelper.MAP_STRINGS)
         isHtmlLoaded.set(true)
@@ -860,7 +871,7 @@ open class CustomWebViewClient : WebViewClient {
                     }
                     if (isForbidden) continue
                 }
-                val aHref = HttpHelper.simplifyUrl(link.attr("href"))
+                val aHref = simplifyUrl(link.attr("href"))
                 if (aHref.isNotEmpty() && !elements.containsKey(aHref)) // We only process the first match - usually the cover
                     elements[aHref] = Pair(link, null)
             }
@@ -874,7 +885,7 @@ open class CustomWebViewClient : WebViewClient {
                     }
                     if (isForbidden) continue
                 }
-                val aHref = HttpHelper.simplifyUrl(parent.attr("href"))
+                val aHref = simplifyUrl(parent.attr("href"))
                 val elt = elements[aHref]
                 if (elt != null && null == elt.second) // We only process the first match - usually the cover
                     elements[aHref] = Pair(elt.first, linkedImage)
@@ -929,7 +940,7 @@ open class CustomWebViewClient : WebViewClient {
                     }
                     if (isForbidden) continue
                 }
-                val aHref = HttpHelper.simplifyUrl(link.attr("href"))
+                val aHref = simplifyUrl(link.attr("href"))
                 elements[link] = aHref
             }
             for (entry in elements.entries) {

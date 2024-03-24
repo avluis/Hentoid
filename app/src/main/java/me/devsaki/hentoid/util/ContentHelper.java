@@ -1,6 +1,10 @@
 package me.devsaki.hentoid.util;
 
 import static me.devsaki.hentoid.util.image.ImageHelperKt.MIME_IMAGE_GENERIC;
+import static me.devsaki.hentoid.util.network.HttpHelperKt.HEADER_CONTENT_TYPE;
+import static me.devsaki.hentoid.util.network.HttpHelperKt.HEADER_COOKIE_KEY;
+import static me.devsaki.hentoid.util.network.HttpHelperKt.HEADER_REFERER_KEY;
+import static me.devsaki.hentoid.util.network.HttpHelperKt.HEADER_USER_AGENT;
 
 import android.content.Context;
 import android.content.Intent;
@@ -88,7 +92,7 @@ import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelperKt;
 import me.devsaki.hentoid.util.network.CloudflareHelper;
-import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.HttpHelperKt;
 import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
@@ -1258,7 +1262,7 @@ public final class ContentHelper {
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
             String cookieStr = fetchResponse.second;
-            if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+            if (!cookieStr.isEmpty()) params.put(HEADER_COOKIE_KEY, cookieStr);
 
             newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
             return Optional.of(newContent);
@@ -1274,15 +1278,15 @@ public final class ContentHelper {
         List<Pair<String, String>> requestHeadersList;
         if (null == requestHeaders) {
             requestHeadersList = new ArrayList<>();
-            requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, url));
+            requestHeadersList.add(new Pair<>(HEADER_REFERER_KEY, url));
         } else {
             requestHeadersList = requestHeaders;
         }
-        String cookieStr = HttpHelper.INSTANCE.getCookies(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        String cookieStr = HttpHelperKt.getCookies(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         if (!cookieStr.isEmpty())
-            requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+            requestHeadersList.add(new Pair<>(HEADER_COOKIE_KEY, cookieStr));
 
-        Response response = HttpHelper.INSTANCE.getOnlineResourceFast(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        Response response = HttpHelperKt.getOnlineResourceFast(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
 
         // Raise exception if blocked by Cloudflare
         if (503 == response.code() && site.isUseCloudflare())
@@ -1294,7 +1298,7 @@ public final class ContentHelper {
 
         // Scram if the response content-type is something else than the target type
         if (targetContentType != null) {
-            Pair<String, String> contentType = HttpHelper.INSTANCE.cleanContentType(StringHelper.protect(response.header(HttpHelper.HEADER_CONTENT_TYPE, "")));
+            Pair<String, String> contentType = HttpHelperKt.cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")));
             if (!contentType.first.isEmpty() && !contentType.first.equalsIgnoreCase(targetContentType))
                 throw new IOException("Not an HTML resource " + url);
         }
@@ -1319,10 +1323,10 @@ public final class ContentHelper {
         // If content doesn't have any download parameters, get them from the cookie manager
         String contentDownloadParamsStr = content.getDownloadParams();
         if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
-            String cookieStr = HttpHelper.INSTANCE.getCookies(url);
+            String cookieStr = HttpHelperKt.getCookies(url);
             if (!cookieStr.isEmpty()) {
                 Map<String, String> downloadParams = new HashMap<>();
-                downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+                downloadParams.put(HEADER_COOKIE_KEY, cookieStr);
                 content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
             }
         }
@@ -1347,8 +1351,8 @@ public final class ContentHelper {
                         if (!imageDownloadParams.containsKey(entry.getKey()))
                             imageDownloadParams.put(entry.getKey(), entry.getValue());
                     // Referer, just in case
-                    if (!imageDownloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
-                        imageDownloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
+                    if (!imageDownloadParams.containsKey(HEADER_REFERER_KEY))
+                        imageDownloadParams.put(HEADER_REFERER_KEY, content.getSite().getUrl());
                     i.setDownloadParams(JsonHelper.serializeToJson(imageDownloadParams, JsonHelper.MAP_STRINGS));
                 } else {
                     i.setDownloadParams(contentDownloadParamsStr);
@@ -1567,15 +1571,15 @@ public final class ContentHelper {
             // Quickly skip JSON deserialization if there are no cookies in downloadParams
             if (content != null) {
                 String downloadParamsStr = content.getDownloadParams();
-                if (downloadParamsStr != null && downloadParamsStr.contains(HttpHelper.HEADER_COOKIE_KEY)) {
+                if (downloadParamsStr != null && downloadParamsStr.contains(HEADER_COOKIE_KEY)) {
                     Map<String, String> downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr);
-                    cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                    referer = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                    cookieStr = downloadParams.get(HEADER_COOKIE_KEY);
+                    referer = downloadParams.get(HEADER_REFERER_KEY);
                 }
                 if (null == cookieStr)
-                    cookieStr = HttpHelper.INSTANCE.getCookies(content.getGalleryUrl());
+                    cookieStr = HttpHelperKt.getCookies(content.getGalleryUrl());
                 if (null == referer) referer = content.getGalleryUrl();
-                builder = builder.addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr).addHeader(HttpHelper.HEADER_REFERER_KEY, referer).addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
+                builder = builder.addHeader(HEADER_COOKIE_KEY, cookieStr).addHeader(HEADER_REFERER_KEY, referer).addHeader(HEADER_USER_AGENT, content.getSite().getUserAgent());
             }
 
             return new GlideUrl(imageUrl, builder.build()); // From URL
@@ -1671,26 +1675,26 @@ public final class ContentHelper {
 
         // Peek it to see if downloads work
         List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
+        headers.add(new Pair<>(HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
 
         try {
             if (img.needsPageParsing()) {
                 // Get cookies from the app jar
-                String cookieStr = HttpHelper.INSTANCE.getCookies(img.getPageUrl());
+                String cookieStr = HttpHelperKt.getCookies(img.getPageUrl());
                 // If nothing found, peek from the site
                 if (cookieStr.isEmpty())
-                    cookieStr = HttpHelper.INSTANCE.peekCookies(img.getPageUrl());
+                    cookieStr = HttpHelperKt.peekCookies(img.getPageUrl());
                 if (!cookieStr.isEmpty())
-                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                    headers.add(new Pair<>(HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPictureFromPage(content.getSite(), img, headers);
             } else {
                 // Get cookies from the app jar
-                String cookieStr = HttpHelper.INSTANCE.getCookies(img.getUrl());
+                String cookieStr = HttpHelperKt.getCookies(img.getUrl());
                 // If nothing found, peek from the site
                 if (cookieStr.isEmpty())
-                    cookieStr = HttpHelper.INSTANCE.peekCookies(content.getGalleryUrl());
+                    cookieStr = HttpHelperKt.peekCookies(content.getGalleryUrl());
                 if (!cookieStr.isEmpty())
-                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                    headers.add(new Pair<>(HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPicture(content.getSite(), img, headers);
             }
         } catch (IOException | LimitReachedException | EmptyResultException |
@@ -1719,26 +1723,26 @@ public final class ContentHelper {
 
         // Peek it to see if downloads work
         List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
+        headers.add(new Pair<>(HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
 
         try {
             if (img.needsPageParsing()) {
                 // Get cookies from the app jar
-                String cookieStr = HttpHelper.INSTANCE.getCookies(img.getPageUrl());
+                String cookieStr = HttpHelperKt.getCookies(img.getPageUrl());
                 // If nothing found, peek from the site
                 if (cookieStr.isEmpty())
-                    cookieStr = HttpHelper.INSTANCE.peekCookies(img.getPageUrl());
+                    cookieStr = HttpHelperKt.peekCookies(img.getPageUrl());
                 if (!cookieStr.isEmpty())
-                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                    headers.add(new Pair<>(HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPictureFromPage(content.getSite(), img, headers);
             } else {
                 // Get cookies from the app jar
-                String cookieStr = HttpHelper.INSTANCE.getCookies(img.getUrl());
+                String cookieStr = HttpHelperKt.getCookies(img.getUrl());
                 // If nothing found, peek from the site
                 if (cookieStr.isEmpty())
-                    cookieStr = HttpHelper.INSTANCE.peekCookies(chapter.getUrl());
+                    cookieStr = HttpHelperKt.peekCookies(chapter.getUrl());
                 if (!cookieStr.isEmpty())
-                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                    headers.add(new Pair<>(HEADER_COOKIE_KEY, cookieStr));
                 return testDownloadPicture(content.getSite(), img, headers);
             }
         } catch (IOException | LimitReachedException | EmptyResultException |
@@ -1764,7 +1768,7 @@ public final class ContentHelper {
             @NonNull ImageFile img,
             List<Pair<String, String>> requestHeaders) throws
             IOException, LimitReachedException, EmptyResultException, CloudflareHelper.CloudflareProtectedException {
-        String pageUrl = HttpHelper.INSTANCE.fixUrl(img.getPageUrl(), site.getUrl());
+        String pageUrl = HttpHelperKt.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(site);
         Pair<String, String> pages = parser.parseImagePage(pageUrl, requestHeaders);
         img.setUrl(pages.first);
@@ -1793,7 +1797,7 @@ public final class ContentHelper {
             @NonNull Site site,
             @NonNull ImageFile img,
             List<Pair<String, String>> requestHeaders) throws IOException, CloudflareHelper.CloudflareProtectedException {
-        String url = HttpHelper.INSTANCE.fixUrl(img.getUrl(), site.getUrl());
+        String url = HttpHelperKt.fixUrl(img.getUrl(), site.getUrl());
 
         Pair<ResponseBody, String> response = fetchBodyFast(url, site, requestHeaders, null);
         ResponseBody body = response.first;
@@ -1896,7 +1900,7 @@ public final class ContentHelper {
         try {
             // Set cover
             if (isInLibrary(coverPic.getStatus())) {
-                String extension = HttpHelper.INSTANCE.getExtensionFromUri(firstCover.getFileUri());
+                String extension = HttpHelperKt.getExtensionFromUri(firstCover.getFileUri());
                 Uri newUri = FileHelper.copyFile(context, Uri.parse(firstCover.getFileUri()), targetFolder.getUri(), firstCover.getMimeType(), firstCover.getName() + "." + extension);
                 if (newUri != null) coverPic.setFileUri(newUri.toString());
                 else Timber.w("Could not move file %s", firstCover.getFileUri());
@@ -1935,7 +1939,7 @@ public final class ContentHelper {
 
                     // If exists, move the picture to the merged books' folder
                     if (isInLibrary(newImg.getStatus())) {
-                        String extension = HttpHelper.INSTANCE.getExtensionFromUri(img.getFileUri());
+                        String extension = HttpHelperKt.getExtensionFromUri(img.getFileUri());
                         Uri newUri = FileHelper.copyFile(context, Uri.parse(img.getFileUri()), targetFolder.getUri(), newImg.getMimeType(), newImg.getName() + "." + extension);
                         if (newUri != null) newImg.setFileUri(newUri.toString());
                         else Timber.w("Could not move file %s", img.getFileUri());

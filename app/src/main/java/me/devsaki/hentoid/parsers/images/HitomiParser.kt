@@ -17,7 +17,8 @@ import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import me.devsaki.hentoid.views.HitomiBackgroundWebView
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -59,15 +60,15 @@ class HitomiParser : BaseImageListParser() {
 
         // Add referer information to downloadParams for future image download
         val downloadParams: MutableMap<String, String> = HashMap()
-        downloadParams[HttpHelper.HEADER_REFERER_KEY] = pageUrl
+        downloadParams[HEADER_REFERER_KEY] = pageUrl
         val downloadParamsStr =
             JsonHelper.serializeToJson<Map<String, String>>(downloadParams, JsonHelper.MAP_STRINGS)
         val galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + onlineContent.uniqueSiteId + ".js"
 
         // Get the gallery JSON
         val headers: MutableList<Pair<String, String>> = ArrayList()
-        headers.add(Pair(HttpHelper.HEADER_REFERER_KEY, pageUrl))
-        val response = HttpHelper.getOnlineResourceFast(
+        headers.add(Pair(HEADER_REFERER_KEY, pageUrl))
+        val response = getOnlineResourceFast(
             galleryJsonUrl,
             headers,
             Site.HITOMI.useMobileAgent(),

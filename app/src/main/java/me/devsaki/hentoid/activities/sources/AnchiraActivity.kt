@@ -10,8 +10,11 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.AnchiraGalleryMetadata
 import me.devsaki.hentoid.parsers.images.AnchiraParser
-import me.devsaki.hentoid.util.network.HttpHelper
-import me.devsaki.hentoid.util.network.HttpHelper.UriParts
+import me.devsaki.hentoid.util.network.UriParts
+import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import me.devsaki.hentoid.util.network.okHttpResponseToWebkitResponse
+import me.devsaki.hentoid.util.network.optOnlineResourceFast
+import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import me.devsaki.hentoid.views.AnchiraBackgroundWebView
 import me.devsaki.hentoid.views.AnchiraBackgroundWebView.AnchiraJsContentInterface
 import me.devsaki.hentoid.views.AnchiraBackgroundWebView.Companion.interfaceName
@@ -76,9 +79,9 @@ class AnchiraActivity : BaseWebActivity() {
             val uriParts = UriParts(url, true)
             if (uriParts.entireFileName.startsWith("app.") && uriParts.extension == "js") {
                 try {
-                    HttpHelper.getOnlineResourceFast(
+                    getOnlineResourceFast(
                         url,
-                        HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url),
+                        webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url),
                         Site.ANCHIRA.useMobileAgent(),
                         Site.ANCHIRA.useHentoidAgent(),
                         Site.ANCHIRA.useWebviewAgent()
@@ -91,7 +94,7 @@ class AnchiraActivity : BaseWebActivity() {
                         var jsFile =
                             body.source().readString(StandardCharsets.UTF_8)
                         jsFile = jsFile.replace(".isTrusted", ".cancelable")
-                        return HttpHelper.okHttpResponseToWebkitResponse(
+                        return okHttpResponseToWebkitResponse(
                             response, ByteArrayInputStream(
                                 jsFile.toByteArray(StandardCharsets.UTF_8)
                             )
@@ -113,9 +116,9 @@ class AnchiraActivity : BaseWebActivity() {
                     // Kill CORS
                     if (request.method.equals("options", ignoreCase = true)) {
                         try {
-                            val response = HttpHelper.optOnlineResourceFast(
+                            val response = optOnlineResourceFast(
                                 url,
-                                HttpHelper.webkitRequestHeadersToOkHttpHeaders(
+                                webkitRequestHeadersToOkHttpHeaders(
                                     request.requestHeaders,
                                     url
                                 ),
@@ -129,7 +132,7 @@ class AnchiraActivity : BaseWebActivity() {
 
                             // Scram if the response is empty
                             val body = response.body ?: throw IOException("Empty body")
-                            return HttpHelper.okHttpResponseToWebkitResponse(
+                            return okHttpResponseToWebkitResponse(
                                 response,
                                 body.byteStream()
                             )

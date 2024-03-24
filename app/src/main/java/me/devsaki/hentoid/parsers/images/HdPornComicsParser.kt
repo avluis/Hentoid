@@ -4,7 +4,7 @@ import androidx.core.util.Pair
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 
 class HdPornComicsParser : BaseImageListParser() {
@@ -21,7 +21,7 @@ class HdPornComicsParser : BaseImageListParser() {
 
     override fun parseImages(content: Content): List<String> {
         // Fetch the book gallery page
-        val doc = HttpHelper.getOnlineDocument(content.galleryUrl)
+        val doc = getOnlineDocument(content.galleryUrl)
             ?: throw ParseException("Document unreachable : " + content.galleryUrl)
 
         return parseImages(doc.select("figure a picture img").filterNotNull())

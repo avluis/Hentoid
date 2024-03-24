@@ -13,7 +13,10 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.getCookies
+import me.devsaki.hentoid.util.network.getUserAgent
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
 import java.util.regex.Pattern
@@ -289,8 +292,8 @@ object ParseHelper {
      */
     fun getSavedCookieStr(downloadParams: String?): String {
         val downloadParamsMap = ContentHelper.parseDownloadParams(downloadParams)
-        return if (downloadParamsMap.containsKey(HttpHelper.HEADER_COOKIE_KEY)) StringHelper.protect(
-            downloadParamsMap[HttpHelper.HEADER_COOKIE_KEY]
+        return if (downloadParamsMap.containsKey(HEADER_COOKIE_KEY)) StringHelper.protect(
+            downloadParamsMap[HEADER_COOKIE_KEY]
         ) else ""
     }
 
@@ -305,7 +308,7 @@ object ParseHelper {
         headers: MutableList<Pair<String, String>>
     ) {
         val cookieStr = getSavedCookieStr(downloadParams)
-        if (cookieStr.isNotEmpty()) headers.add(Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr))
+        if (cookieStr.isNotEmpty()) headers.add(Pair(HEADER_COOKIE_KEY, cookieStr))
     }
 
     /**
@@ -319,9 +322,9 @@ object ParseHelper {
         val params: MutableMap<String, String> = HashMap()
         for (img in imgs) {
             params.clear()
-            val cookieStr = HttpHelper.getCookies(img.url)
-            if (cookieStr.isNotEmpty()) params[HttpHelper.HEADER_COOKIE_KEY] = cookieStr
-            params[HttpHelper.HEADER_REFERER_KEY] = referrer
+            val cookieStr = getCookies(img.url)
+            if (cookieStr.isNotEmpty()) params[HEADER_COOKIE_KEY] = cookieStr
+            params[HEADER_REFERER_KEY] = referrer
             img.setDownloadParams(
                 JsonHelper.serializeToJson<Map<String, String>>(
                     params,
@@ -536,7 +539,7 @@ object ParseHelper {
      * @return User agent corresponding to the given site
      */
     fun getUserAgent(site: Site): String {
-        return HttpHelper.getUserAgent(
+        return getUserAgent(
             site.useMobileAgent(),
             site.useHentoidAgent(),
             site.useWebviewAgent()

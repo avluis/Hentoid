@@ -8,7 +8,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -151,10 +151,9 @@ class MusesContent : BaseContentParser() {
         // Tags are not shown on the album page, but on the picture page (!)
         try {
             thumbLinks?.let {
-                val doc =
-                    HttpHelper.getOnlineDocument(
-                        Site.MUSES.url + it[it.size - 1].attr("href")
-                    )
+                val doc = getOnlineDocument(
+                    Site.MUSES.url + it[it.size - 1].attr("href")
+                )
                 if (doc != null) {
                     val elements = doc.select(".album-tags a[href*='/search/tag']")
                     if (!elements.isEmpty()) ParseHelper.parseAttributes(

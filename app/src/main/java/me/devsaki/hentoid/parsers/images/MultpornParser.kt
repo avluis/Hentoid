@@ -3,7 +3,10 @@ package me.devsaki.hentoid.parsers.images
 import androidx.core.util.Pair
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.addCurrentCookiesToHeader
+import me.devsaki.hentoid.util.network.fixUrl
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import java.io.IOException
 import java.util.Locale
@@ -16,7 +19,7 @@ class MultpornParser : BaseImageListParser() {
                 val juiceIndex = scriptText.indexOf("/juicebox/xml/")
                 if (juiceIndex > -1) {
                     val juiceEndIndex = scriptText.indexOf("\"", juiceIndex)
-                    return HttpHelper.fixUrl(
+                    return fixUrl(
                         scriptText.substring(juiceIndex, juiceEndIndex),
                         Site.MULTPORN.url
                     )
@@ -29,9 +32,9 @@ class MultpornParser : BaseImageListParser() {
         fun getImagesUrls(juiceboxUrl: String, galleryUrl: String): List<String> {
             val result: MutableList<String> = java.util.ArrayList()
             val headers: MutableList<Pair<String, String>> = java.util.ArrayList()
-            HttpHelper.addCurrentCookiesToHeader(juiceboxUrl, headers)
-            headers.add(Pair(HttpHelper.HEADER_REFERER_KEY, galleryUrl))
-            val doc = HttpHelper.getOnlineDocument(
+            addCurrentCookiesToHeader(juiceboxUrl, headers)
+            headers.add(Pair(HEADER_REFERER_KEY, galleryUrl))
+            val doc = getOnlineDocument(
                 juiceboxUrl,
                 headers,
                 Site.MULTPORN.useHentoidAgent(),
@@ -59,7 +62,7 @@ class MultpornParser : BaseImageListParser() {
 
         val headers = fetchHeaders(content)
 
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             content.galleryUrl,
             headers,
             Site.ALLPORNCOMIC.useHentoidAgent(),

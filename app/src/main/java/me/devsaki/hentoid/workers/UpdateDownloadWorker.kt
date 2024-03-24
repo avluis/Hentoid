@@ -8,7 +8,7 @@ import me.devsaki.hentoid.notification.update.UpdateFailedNotification
 import me.devsaki.hentoid.notification.update.UpdateInstallNotification
 import me.devsaki.hentoid.notification.update.UpdateProgressNotification
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineResource
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.workers.data.UpdateDownloadData
 import timber.log.Timber
@@ -55,7 +55,7 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
         Timber.w(context.resources.getString(R.string.starting_download))
         val file = File(context.externalCacheDir, "hentoid.apk")
         file.createNewFile()
-        val response = HttpHelper.getOnlineResource(apkUrl, null, false, false, false)
+        val response = getOnlineResource(apkUrl, null, false, false, false)
         Timber.d("DOWNLOADING APK - RESPONSE %s", response.code)
         if (response.code >= 300) throw IOException("Network error " + response.code)
         val body = response.body

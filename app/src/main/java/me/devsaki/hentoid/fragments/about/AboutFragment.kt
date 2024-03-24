@@ -16,8 +16,8 @@ import me.devsaki.hentoid.core.URL_GITHUB_WIKI
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.databinding.FragmentAboutBinding
 import me.devsaki.hentoid.events.UpdateEvent
-import me.devsaki.hentoid.util.network.HttpHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.network.getChromeVersion
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -68,7 +68,7 @@ class AboutFragment : Fragment(R.layout.fragment_about) {
                 R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE
             )
             tvChromeVersionName.text = if (WebkitPackageHelper.getWebViewAvailable()) getString(
-                R.string.about_chrome_version, HttpHelper.getChromeVersion()
+                R.string.about_chrome_version, getChromeVersion()
             )
             else getString(R.string.about_chrome_unavailable)
             tvAndroidApi.text = getString(

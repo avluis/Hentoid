@@ -6,7 +6,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.CaptchaException
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class TsuminoParser : BaseImageListParser() {
     override fun isChapterUrl(url: String): Boolean {
@@ -17,7 +17,7 @@ class TsuminoParser : BaseImageListParser() {
         val headers = fetchHeaders(content)
 
         // Fetch the reader page
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             content.readerUrl,
             headers,
             Site.TSUMINO.useHentoidAgent(),

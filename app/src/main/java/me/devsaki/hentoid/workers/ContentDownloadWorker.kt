@@ -78,9 +78,14 @@ import me.devsaki.hentoid.util.image.assembleGif
 import me.devsaki.hentoid.util.network.Connectivity
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.addSampleNow
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getConnectivity
+import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getIncomingNetworkUsage
+import me.devsaki.hentoid.util.network.parseCookies
+import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -664,11 +669,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val downloadParams: MutableMap<String, String> =
             if (img.downloadParams.length > 2) ContentHelper.parseDownloadParams(img.downloadParams) else HashMap()
         // Add referer if unset
-        if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) downloadParams[HttpHelper.HEADER_REFERER_KEY] =
+        if (!downloadParams.containsKey(HEADER_REFERER_KEY)) downloadParams[HEADER_REFERER_KEY] =
             content.galleryUrl
         // Add cookies if unset or if the site needs fresh cookies
-        if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY) || content.site.isUseCloudflare) downloadParams[HttpHelper.HEADER_COOKIE_KEY] =
-            HttpHelper.getCookies(img.url)
+        if (!downloadParams.containsKey(HEADER_COOKIE_KEY) || content.site.isUseCloudflare) downloadParams[HEADER_COOKIE_KEY] =
+            getCookies(img.url)
         img.downloadParams =
             JsonHelper.serializeToJson<Map<String, String>>(
                 downloadParams,
@@ -1086,13 +1091,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         content: Content
     ) {
         val site = content.site
-        val pageUrl = HttpHelper.fixUrl(img.pageUrl, site.url)
+        val pageUrl = fixUrl(img.pageUrl, site.url)
 
         // Apply image download parameters
         val requestHeaders = getRequestHeaders(pageUrl, img.downloadParams)
         try {
-            val reqHeaders =
-                HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.pageUrl)
+            val reqHeaders = webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.pageUrl)
             val parser = ContentParserFactory.getImageListParser(content.site)
             val pages = parser.parseImagePage(img.pageUrl, reqHeaders)
             img.url = pages.first
@@ -1174,7 +1178,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         content: Content
     ): RequestOrder {
         val site = content.site
-        val imageUrl = HttpHelper.fixUrl(img.url, site.url)
+        val imageUrl = fixUrl(img.url, site.url)
 
         // Apply image download parameters
         val requestHeaders = getRequestHeaders(imageUrl, img.downloadParams)
@@ -1184,7 +1188,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             val imgParser = ContentParserFactory.getImageListParser(content)
             img.backupUrl = imgParser.getAltUrl(imageUrl)
         }
-        val backupUrlFinal = HttpHelper.fixUrl(img.backupUrl, site.url)
+        val backupUrlFinal = fixUrl(img.backupUrl, site.url)
 
         // Create request order
         return RequestOrder(
@@ -1259,7 +1263,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.STALE_CREDENTIALS))
             dao.clearDownloadParams(contentId)
             val cfCookie =
-                StringHelper.protect(HttpHelper.parseCookies(HttpHelper.getCookies(img.url))[CLOUDFLARE_COOKIE])
+                StringHelper.protect(parseCookies(getCookies(img.url))[CLOUDFLARE_COOKIE])
             userActionNotificationManager.notify(UserActionNotification(request.site, cfCookie))
             if (isInForeground()) EventBus.getDefault()
                 .post(DownloadReviveEvent(request.site, cfCookie))
@@ -1352,7 +1356,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     applicationContext,
                     site,
                     img.url,
-                    HttpHelper.webkitRequestHeadersToOkHttpHeaders(
+                    webkitRequestHeadersToOkHttpHeaders(
                         getRequestHeaders(
                             img.url,
                             img.downloadParams
@@ -1519,17 +1523,17 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         var cookieStr = ""
         val downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr)
         if (downloadParams.isNotEmpty()) {
-            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
-                val value = downloadParams[HttpHelper.HEADER_COOKIE_KEY]
+            if (downloadParams.containsKey(HEADER_COOKIE_KEY)) {
+                val value = downloadParams[HEADER_COOKIE_KEY]
                 if (value != null) cookieStr = value
             }
-            if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
-                val value = downloadParams[HttpHelper.HEADER_REFERER_KEY]
-                if (value != null) result[HttpHelper.HEADER_REFERER_KEY] = value
+            if (downloadParams.containsKey(HEADER_REFERER_KEY)) {
+                val value = downloadParams[HEADER_REFERER_KEY]
+                if (value != null) result[HEADER_REFERER_KEY] = value
             }
         }
-        if (cookieStr.isEmpty()) cookieStr = HttpHelper.getCookies(url)
-        result[HttpHelper.HEADER_COOKIE_KEY] = cookieStr
+        if (cookieStr.isEmpty()) cookieStr = getCookies(url)
+        result[HEADER_COOKIE_KEY] = cookieStr
         return result
     }
 

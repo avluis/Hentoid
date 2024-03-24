@@ -86,8 +86,13 @@ import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.getCoverBitmapFromStream
 import me.devsaki.hentoid.util.getHashEngine
 import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.network.fixUrl
+import me.devsaki.hentoid.util.network.getCookies
+import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import me.devsaki.hentoid.util.network.simplifyUrl
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.views.NestedScrollWebView
@@ -1217,11 +1222,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     val requestHeadersList: List<Pair<String, String>> = ArrayList()
                     val downloadParams =
                         ContentHelper.parseDownloadParams(onlineContent.downloadParams)
-                    downloadParams[HttpHelper.HEADER_COOKIE_KEY] =
-                        HttpHelper.getCookies(onlineContent.coverImageUrl)
-                    downloadParams[HttpHelper.HEADER_REFERER_KEY] = onlineContent.site.url
-                    val onlineCover = HttpHelper.getOnlineResourceFast(
-                        HttpHelper.fixUrl(
+                    downloadParams[HEADER_COOKIE_KEY] =
+                        getCookies(onlineContent.coverImageUrl)
+                    downloadParams[HEADER_REFERER_KEY] = onlineContent.site.url
+                    val onlineCover = getOnlineResourceFast(
+                        fixUrl(
                             onlineContent.coverImageUrl,
                             getStartUrl()
                         ),
@@ -1463,7 +1468,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             downloadedBooksUrls.clear()
             downloadedBooksUrls.addAll(
                 dao.selectAllSourceUrls(getStartSite())
-                    .map { url -> HttpHelper.simplifyUrl(url) }
+                    .map { url -> simplifyUrl(url) }
                     .filterNot { obj: String -> obj.isEmpty() }
             )
         }
@@ -1482,7 +1487,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                             ""
                         )
                     } //each sites "gallery" path
-                    .map { url -> HttpHelper.simplifyUrl(url) }
+                    .map { url -> simplifyUrl(url) }
                     .filterNot { obj: String -> obj.isEmpty() }
             )
         }

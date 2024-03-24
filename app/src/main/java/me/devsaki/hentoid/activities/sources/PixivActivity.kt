@@ -14,7 +14,9 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.content.PixivContent
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import me.devsaki.hentoid.util.network.okHttpResponseToWebkitResponse
+import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import timber.log.Timber
 import java.io.IOException
 
@@ -65,9 +67,9 @@ class PixivActivity : BaseWebActivity() {
             // Kill CORS
             if (url.contains("s.pximg.net")) {
                 try {
-                    val response = HttpHelper.getOnlineResourceFast(
+                    val response = getOnlineResourceFast(
                         url,
-                        HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url),
+                        webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url),
                         Site.PIXIV.useMobileAgent(),
                         Site.PIXIV.useHentoidAgent(),
                         Site.PIXIV.useWebviewAgent()
@@ -78,7 +80,7 @@ class PixivActivity : BaseWebActivity() {
 
                     // Scram if the response is empty
                     val body = response.body ?: throw IOException("Empty body")
-                    return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream())
+                    return okHttpResponseToWebkitResponse(response, body.byteStream())
                 } catch (e: IOException) {
                     Timber.w(e)
                 }

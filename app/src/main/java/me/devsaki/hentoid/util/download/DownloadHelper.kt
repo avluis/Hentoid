@@ -19,7 +19,10 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.isMimeTypeSupported
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
+import me.devsaki.hentoid.util.network.fixUrl
+import me.devsaki.hentoid.util.network.getOnlineResourceDownloader
+import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import org.jsoup.nodes.Document
 import timber.log.Timber
 import java.io.File
@@ -120,16 +123,16 @@ private fun downloadToFile(
     notifyProgress: Consumer<Float>? = null
 ): Pair<Uri?, String> {
     Helper.assertNonUiThread()
-    val url = HttpHelper.fixUrl(rawUrl, site.url)
+    val url = fixUrl(rawUrl, site.url)
     if (interruptDownload.get()) throw DownloadInterruptedException("Download interrupted")
     Timber.d("DOWNLOADING %d %s", resourceId, url)
-    val response = if (failFast) HttpHelper.getOnlineResourceFast(
+    val response = if (failFast) getOnlineResourceFast(
         url,
         requestHeaders,
         site.useMobileAgent(),
         site.useHentoidAgent(),
         site.useWebviewAgent()
-    ) else HttpHelper.getOnlineResourceDownloader(
+    ) else getOnlineResourceDownloader(
         url,
         requestHeaders,
         site.useMobileAgent(),
@@ -170,7 +173,7 @@ private fun downloadToFile(
                 if (0 == iteration++) {
                     // Read mime-type on the fly if not forced
                     if (mimeType.isEmpty()) {
-                        val contentType = response.header(HttpHelper.HEADER_CONTENT_TYPE) ?: ""
+                        val contentType = response.header(HEADER_CONTENT_TYPE) ?: ""
                         mimeType = getMimeTypeFromStream(buffer, len, contentType, url, sizeStr)
                     }
                     // Create target file and output stream

@@ -7,7 +7,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.SimplyContentMetadata
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import timber.log.Timber
 import java.io.IOException
 
@@ -20,7 +20,7 @@ class SimplyApiContent : BaseContentParser() {
             val headers: MutableList<Pair<String, String>> = ArrayList()
             ParseHelper.addSavedCookiesToHeader(content.downloadParams, headers)
             try {
-                val doc = HttpHelper.getOnlineDocument(
+                val doc = getOnlineDocument(
                     url,
                     headers,
                     Site.SIMPLY.useHentoidAgent(),

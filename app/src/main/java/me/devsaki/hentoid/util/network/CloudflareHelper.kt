@@ -5,7 +5,11 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
-import android.webkit.*
+import android.webkit.CookieManager
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp
@@ -46,14 +50,14 @@ class CloudflareHelper {
         oldCookie: String?
     ): Boolean {
         val oldCookieInternal: String = oldCookie ?: StringHelper.protect(
-            HttpHelper.parseCookies(
-                HttpHelper.getCookies(revivedSite.url)
+            parseCookies(
+                getCookies(revivedSite.url)
             )[CLOUDFLARE_COOKIE]
         )
 
         // Nuke the cookie to force its refresh
-        val domain = "." + HttpHelper.getDomainFromUri(revivedSite.url)
-        HttpHelper.setCookies(domain, "$CLOUDFLARE_COOKIE=;Max-Age=0; secure; HttpOnly")
+        val domain = "." + getDomainFromUri(revivedSite.url)
+        setCookies(domain, "$CLOUDFLARE_COOKIE=;Max-Age=0; secure; HttpOnly")
 
         val handler = Handler(Looper.getMainLooper())
         handler.post {
@@ -71,7 +75,7 @@ class CloudflareHelper {
         // Wait for cookies to refresh
         do {
             val cfcookie =
-                HttpHelper.parseCookies(HttpHelper.getCookies(revivedSite.url))[CLOUDFLARE_COOKIE]
+                parseCookies(getCookies(revivedSite.url))[CLOUDFLARE_COOKIE]
             if (!cfcookie.isNullOrEmpty() && cfcookie != oldCookieInternal) {
                 Timber.d("CF-COOKIE : refreshed !")
                 passed = true
@@ -161,9 +165,9 @@ class CloudflareHelper {
                 // Query resource using OkHttp
                 val urlStr = request.url.toString()
                 val requestHeadersList =
-                    HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
+                    webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
                 try {
-                    val response = HttpHelper.getOnlineResource(
+                    val response = getOnlineResource(
                         urlStr,
                         requestHeadersList,
                         useMobileAgent,
@@ -174,7 +178,7 @@ class CloudflareHelper {
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
                     val body = response.body ?: throw IOException("Empty body")
-                    return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream())
+                    return okHttpResponseToWebkitResponse(response, body.byteStream())
                 } catch (e: IOException) {
                     Timber.i(e)
                 }

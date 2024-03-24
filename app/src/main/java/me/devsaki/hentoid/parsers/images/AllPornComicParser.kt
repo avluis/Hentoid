@@ -5,7 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 
 class AllPornComicParser : BaseImageListParser() {
@@ -21,7 +21,7 @@ class AllPornComicParser : BaseImageListParser() {
 
         // 1. Scan the gallery page for chapter URLs
         val chapterUrls: MutableList<String> = ArrayList()
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             content.galleryUrl,
             headers,
             Site.ALLPORNCOMIC.useHentoidAgent(),
@@ -57,7 +57,7 @@ class AllPornComicParser : BaseImageListParser() {
         val theHeaders = headers ?: fetchHeaders(chapterUrl, downloadParams)
 
         if (processedUrl.isEmpty()) processedUrl = chapterUrl
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             chapterUrl,
             theHeaders,
             Site.ALLPORNCOMIC.useHentoidAgent(),

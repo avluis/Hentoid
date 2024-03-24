@@ -72,7 +72,8 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelperKt;
-import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.HttpHelperKt;
+import me.devsaki.hentoid.util.network.UriParts;
 import timber.log.Timber;
 
 /**
@@ -264,7 +265,7 @@ public class Content implements Serializable {
             case TSUMINO:
                 return url.replace("/Read/Index", "");
             case PURURIN:
-                return url.replace(HttpHelper.INSTANCE.getHttpProtocol(url) + "://pururin.to/gallery", "");
+                return url.replace(HttpHelperKt.getHttpProtocol(url) + "://pururin.to/gallery", "");
             case NHENTAI:
                 return url.replace(site.getUrl(), "").replace("/g/", "/").replaceFirst("/1/$", "/");
             case MUSES:
@@ -544,7 +545,7 @@ public class Content implements Serializable {
         if (url.isEmpty()) return url;
 
         if (site == Site.MANHWA) {
-            HttpHelper.UriParts parts = new HttpHelper.UriParts(url, true);
+            UriParts parts = new UriParts(url, true);
             // Remove the last part of the filename if it is formatted as "numberxnumber"
             String[] nameParts = parts.getFileNameNoExt().split("-");
             String[] lastPartParts = nameParts[nameParts.length - 1].split("x");

@@ -12,7 +12,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.images.HitomiParser
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.parseParameters
 import org.jsoup.nodes.Document
 import timber.log.Timber
 import java.util.Locale
@@ -131,7 +131,7 @@ class HitomiActivity : BaseWebActivity() {
                 .contains("search")
         ) builder.fragment(page.toString() + "") // https://hitomi.la/search.html?<searchTerm>#<page>
         else {
-            val params = HttpHelper.parseParameters(resultsUri).toMutableMap()
+            val params = parseParameters(resultsUri).toMutableMap()
             params["page"] = page.toString() + ""
             builder.clearQuery()
             params.forEach { (key, value) ->

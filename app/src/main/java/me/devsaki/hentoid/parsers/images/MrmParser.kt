@@ -5,7 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 
 class MrmParser : BaseImageListParser() {
@@ -23,7 +23,7 @@ class MrmParser : BaseImageListParser() {
         // NB : We can't just guess the URLs by starting to 1 and increment them
         // because the site provides "subchapters" (e.g. 4.6, 2.5)
         val chapterUrls: MutableList<String> = ArrayList()
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             content.galleryUrl,
             headers,
             Site.MRM.useHentoidAgent(),
@@ -64,7 +64,7 @@ class MrmParser : BaseImageListParser() {
     ): List<String> {
         if (processedUrl.isEmpty()) processedUrl = chapterUrl
 
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             chapterUrl,
             headers ?: fetchHeaders(chapterUrl, downloadParams),
             Site.MRM.useHentoidAgent(),

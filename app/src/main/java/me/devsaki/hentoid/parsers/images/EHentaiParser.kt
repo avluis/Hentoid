@@ -21,7 +21,14 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_ACCEPT_KEY
+import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.fixUrl
+import me.devsaki.hentoid.util.network.getOnlineDocument
+import me.devsaki.hentoid.util.network.parseCookies
+import me.devsaki.hentoid.util.network.postOnlineResource
+import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.jsoup.nodes.Document
@@ -97,7 +104,7 @@ class EHentaiParser : ImageListParser {
                     throw EmptyResultException("You need to be logged in to download full-size images.")
                 // Use full image URL, if available
                 val fullImgUrl = imageMetadata.fullUrlRelative
-                if (fullImgUrl.isNotEmpty()) imageUrl = HttpHelper.fixUrl(fullImgUrl, site.url)
+                if (fullImgUrl.isNotEmpty()) imageUrl = fixUrl(fullImgUrl, site.url)
             }
             return Pair(imageUrl, null)
         }
@@ -108,7 +115,7 @@ class EHentaiParser : ImageListParser {
             requestHeaders: List<Pair<String, String>>,
             site: Site
         ): Pair<String, String?> {
-            val doc = HttpHelper.getOnlineDocument(
+            val doc = getOnlineDocument(
                 url,
                 requestHeaders,
                 site.useHentoidAgent(),
@@ -169,7 +176,7 @@ class EHentaiParser : ImageListParser {
                     return EhAuthState.UNLOGGED_ABNORMAL
                 else if (cookiesStr.contains("ipb_member_id=")) {
                     // may contain ipb_member_id=0, e.g. after unlogging manually
-                    val cookies = HttpHelper.parseCookies(cookiesStr)
+                    val cookies = parseCookies(cookiesStr)
                     val memberId = cookies["ipb_member_id"]
                     return if (memberId != null && memberId != "0") EhAuthState.LOGGED else EhAuthState.UNLOGGED
                 }
@@ -186,8 +193,8 @@ class EHentaiParser : ImageListParser {
             maxPages: Int,
             chapter: Chapter?
         ): ImageFile? {
-            val reqHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
-            val doc = HttpHelper.getOnlineDocument(
+            val reqHeaders = webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
+            val doc = getOnlineDocument(
                 url,
                 reqHeaders,
                 site.useHentoidAgent(),
@@ -227,7 +234,7 @@ class EHentaiParser : ImageListParser {
                 EHentaiImageQuery::class.java
             )
             var bodyStr: String
-            HttpHelper.postOnlineResource(
+            postOnlineResource(
                 imageInfo.apiUrl,
                 headers,
                 true,
@@ -310,7 +317,7 @@ class EHentaiParser : ImageListParser {
             if (nbGalleryPages > 1) {
                 var i = 1
                 while (i < nbGalleryPages && !progress.isProcessHalted()) {
-                    val pageDoc = HttpHelper.getOnlineDocument(
+                    val pageDoc = getOnlineDocument(
                         content.galleryUrl + "/?p=" + i,
                         headers,
                         useHentoidAgent,
@@ -393,7 +400,7 @@ class EHentaiParser : ImageListParser {
             useWebviewAgent: Boolean
         ): MpvInfo? {
             var result: MpvInfo? = null
-            val doc = HttpHelper.getOnlineDocument(url, headers, useHentoidAgent, useWebviewAgent)
+            val doc = getOnlineDocument(url, headers, useHentoidAgent, useWebviewAgent)
                 ?: throw ParseException("Unreachable MPV")
 
             val scripts: List<Element> = doc.select("script")
@@ -443,9 +450,9 @@ class EHentaiParser : ImageListParser {
             // Retrieve and set cookies (optional; e-hentai can work without cookies even though certain galleries are unreachable)
             val cookieStr = getCookieStr(content)
             val headers: MutableList<Pair<String, String>> = java.util.ArrayList()
-            headers.add(Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr))
-            headers.add(Pair(HttpHelper.HEADER_REFERER_KEY, content.site.url))
-            headers.add(Pair(HttpHelper.HEADER_ACCEPT_KEY, "*/*"))
+            headers.add(Pair(HEADER_COOKIE_KEY, cookieStr))
+            headers.add(Pair(HEADER_REFERER_KEY, content.site.url))
+            headers.add(Pair(HEADER_ACCEPT_KEY, "*/*"))
 
             /*
              * A/ Without multipage viewer
@@ -463,7 +470,7 @@ class EHentaiParser : ImageListParser {
             val useHentoidAgent = Site.EHENTAI.useHentoidAgent()
             val useWebviewAgent = Site.EHENTAI.useWebviewAgent()
 
-            val galleryDoc = HttpHelper.getOnlineDocument(
+            val galleryDoc = getOnlineDocument(
                 content.galleryUrl,
                 headers,
                 useHentoidAgent,

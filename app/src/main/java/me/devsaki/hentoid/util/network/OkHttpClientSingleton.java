@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.util.network;
 
+import static me.devsaki.hentoid.util.network.HttpHelperKt.DEFAULT_REQUEST_TIMEOUT;
+import static me.devsaki.hentoid.util.network.HttpHelperKt.HEADER_USER_AGENT;
+
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
@@ -32,7 +35,7 @@ public class OkHttpClientSingleton {
     }
 
     public static OkHttpClient getInstance() {
-        return getInstance(HttpHelper.DEFAULT_REQUEST_TIMEOUT, HttpHelper.DEFAULT_REQUEST_TIMEOUT, true);
+        return getInstance(DEFAULT_REQUEST_TIMEOUT, DEFAULT_REQUEST_TIMEOUT, true);
     }
 
     public static OkHttpClient getInstance(int connectTimeout, int ioTimeout, boolean followRedirects) {
@@ -111,7 +114,7 @@ public class OkHttpClientSingleton {
         Request.Builder builder = chain.request().newBuilder();
         // If not specified, all requests are done with the device's mobile user-agent, without the Hentoid string
         if (null == chain.request().header("User-Agent") && null == chain.request().header("user-agent"))
-            builder.header(HttpHelper.HEADER_USER_AGENT, HttpHelper.INSTANCE.getMobileUserAgent(false, true));
+            builder.header(HEADER_USER_AGENT, HttpHelperKt.getMobileUserAgent(false, true));
         return chain.proceed(builder.build());
     }
 }

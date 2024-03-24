@@ -5,7 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import timber.log.Timber
 import java.io.IOException
@@ -24,7 +24,7 @@ class ImhentaiParser : BaseImageListParser() {
         // 2- Generate image URL from imagePath constant, gallery ID, page number and extension
 
         // 1- Get image extension from gallery data (JSON on HTML body)
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             content.readerUrl,
             headers,
             Site.IMHENTAI.useHentoidAgent(),

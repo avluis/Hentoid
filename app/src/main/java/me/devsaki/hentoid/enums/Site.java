@@ -9,7 +9,7 @@ import java.util.Set;
 import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.json.core.JsonSiteSettings;
-import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.HttpHelperKt;
 import timber.log.Timber;
 
 /**
@@ -122,7 +122,7 @@ public enum Site {
         }
 
         for (Site s : Site.values())
-            if (s.code > 0 && HttpHelper.INSTANCE.getDomainFromUri(url).equalsIgnoreCase(HttpHelper.INSTANCE.getDomainFromUri(s.url)))
+            if (s.code > 0 && HttpHelperKt.getDomainFromUri(url).equalsIgnoreCase(HttpHelperKt.getDomainFromUri(s.url)))
                 return s;
 
         return Site.NONE;
@@ -206,9 +206,9 @@ public enum Site {
 
     public String getUserAgent() {
         if (useMobileAgent())
-            return HttpHelper.INSTANCE.getMobileUserAgent(useHentoidAgent(), useWebviewAgent());
+            return HttpHelperKt.getMobileUserAgent(useHentoidAgent(), useWebviewAgent());
         else
-            return HttpHelper.INSTANCE.getDesktopUserAgent(useHentoidAgent(), useWebviewAgent());
+            return HttpHelperKt.getDesktopUserAgent(useHentoidAgent(), useWebviewAgent());
     }
 
     public void updateFrom(@NonNull final JsonSiteSettings.JsonSite jsonSite) {

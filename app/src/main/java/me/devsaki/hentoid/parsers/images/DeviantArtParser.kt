@@ -8,7 +8,8 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getCookies
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import timber.log.Timber
 import kotlin.math.floor
@@ -86,7 +87,7 @@ class DeviantArtParser : BaseImageListParser() {
             token: String,
             daMinorVersion: String
         ): List<ImageFile> {
-            val cookieStr = HttpHelper.getCookies(
+            val cookieStr = getCookies(
                 Site.DEVIANTART.url,
                 null,
                 Site.DEVIANTART.useMobileAgent(),
@@ -141,7 +142,7 @@ class DeviantArtParser : BaseImageListParser() {
         processedUrl = onlineContent.galleryUrl
 
         if (processedUrl.contains("/art/")) {
-            val urls = HttpHelper.getOnlineDocument(
+            val urls = getOnlineDocument(
                 processedUrl,
                 fetchHeaders(onlineContent),
                 Site.DEVIANTART.useHentoidAgent(),
@@ -161,7 +162,7 @@ class DeviantArtParser : BaseImageListParser() {
             }
         }
         if (processedUrl.endsWith("/gallery")) {
-            HttpHelper.getOnlineDocument(
+            getOnlineDocument(
                 processedUrl,
                 fetchHeaders(onlineContent),
                 Site.DEVIANTART.useHentoidAgent(),
@@ -177,7 +178,7 @@ class DeviantArtParser : BaseImageListParser() {
         url: String,
         headers: List<Pair<String, String>>
     ): Pair<String, String?> {
-        HttpHelper.getOnlineDocument(
+        getOnlineDocument(
             url,
             headers,
             Site.DEVIANTART.useHentoidAgent(),

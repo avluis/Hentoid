@@ -9,7 +9,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
 import timber.log.Timber
@@ -61,7 +61,7 @@ class Manhwa18Parser : BaseImageListParser() {
 
         // 1. Scan the gallery page for chapter URLs
         val chapters: List<Chapter>
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             onlineContent.galleryUrl,
             headers,
             Site.MANHWA18.useHentoidAgent(),
@@ -152,7 +152,7 @@ class Manhwa18Parser : BaseImageListParser() {
         targetOrder: Int,
         headers: List<Pair<String, String>>?
     ): List<ImageFile> {
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
             content.site.useHentoidAgent(),

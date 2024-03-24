@@ -5,7 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class ASMHentaiParser : BaseImageListParser() {
     override fun isChapterUrl(url: String): Boolean {
@@ -16,7 +16,7 @@ class ASMHentaiParser : BaseImageListParser() {
         val result: MutableList<String> = ArrayList()
 
         // Fetch the reader page
-        val doc = HttpHelper.getOnlineDocument(content.readerUrl)
+        val doc = getOnlineDocument(content.readerUrl)
         if (doc != null) {
             var nbPages = -1
             val nbPagesE = doc.select(".pages_btn").first()

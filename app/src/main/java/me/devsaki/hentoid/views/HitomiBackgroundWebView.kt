@@ -10,7 +10,9 @@ import android.webkit.WebViewClient
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineResource
+import me.devsaki.hentoid.util.network.okHttpResponseToWebkitResponse
+import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -71,10 +73,10 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
             val url = request.url.toString()
             if (url.contains("gg.js")) {
                 val requestHeadersList =
-                    HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url)
+                    webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url)
                 try {
                     // Query resource here, using OkHttp
-                    val response = HttpHelper.getOnlineResource(
+                    val response = getOnlineResource(
                         url,
                         requestHeadersList,
                         site.useMobileAgent(),
@@ -88,7 +90,7 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                             "\\{[\\s]*return[\\s]+[0-9]+;[\\s]*\\}".toRegex(),
                             "{return o;}"
                         )
-                        return HttpHelper.okHttpResponseToWebkitResponse(
+                        return okHttpResponseToWebkitResponse(
                             response, ByteArrayInputStream(
                                 jsFile.toByteArray(
                                     StandardCharsets.UTF_8
@@ -109,9 +111,9 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                 // Query resource using OkHttp
                 val urlStr = request.url.toString()
                 val requestHeadersList =
-                    HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
+                    webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
                 try {
-                    val response = HttpHelper.getOnlineResource(
+                    val response = getOnlineResource(
                         urlStr,
                         requestHeadersList,
                         site.useMobileAgent(),
@@ -122,7 +124,7 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
                     val body = response.body ?: throw IOException("Empty body")
-                    return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream())
+                    return okHttpResponseToWebkitResponse(response, body.byteStream())
                 } catch (e: IOException) {
                     Timber.i(e)
                 }

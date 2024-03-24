@@ -6,7 +6,9 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getExtensionFromUri
+import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import timber.log.Timber
 import java.io.IOException
 import java.util.Collections
@@ -222,7 +224,7 @@ class AdBlocker(val site: Site) {
         }
 
         // 3- Accept non-JS files that are not blacklisted
-        val extension = HttpHelper.getExtensionFromUri(cleanUrl)
+        val extension = getExtensionFromUri(cleanUrl)
         val isJs = extension == "js" || extension.isEmpty() // Obvious js and hidden js
         if (!isJs) return false
 
@@ -237,9 +239,8 @@ class AdBlocker(val site: Site) {
         if (Looper.getMainLooper().thread !== Thread.currentThread()) { // No network call on UI thread
             Timber.d(">> examining grey file : %s", url)
             try {
-                val requestHeadersList =
-                    HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url)
-                val response = HttpHelper.getOnlineResourceFast(
+                val requestHeadersList = webkitRequestHeadersToOkHttpHeaders(headers, url)
+                val response = getOnlineResourceFast(
                     url,
                     requestHeadersList,
                     site.useMobileAgent(),

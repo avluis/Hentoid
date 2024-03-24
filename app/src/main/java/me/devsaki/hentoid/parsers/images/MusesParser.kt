@@ -5,7 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 
 class MusesParser : BaseImageListParser() {
@@ -17,8 +17,9 @@ class MusesParser : BaseImageListParser() {
         val result: MutableList<String> = ArrayList()
 
         // Fetch the book gallery page
-        val doc = HttpHelper.getOnlineDocument(content.galleryUrl)
-            ?: throw ParseException("Document unreachable : " + content.galleryUrl)
+        val doc =
+            getOnlineDocument(content.galleryUrl)
+                ?: throw ParseException("Document unreachable : " + content.galleryUrl)
 
         val thumbs: List<Element> = doc.select(".gallery img").filterNotNull()
 

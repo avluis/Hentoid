@@ -15,8 +15,10 @@ import me.devsaki.hentoid.databinding.DialogPrefsCookiesBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.Cookie
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.network.getCookies
+import me.devsaki.hentoid.util.network.parseCookies
 import me.devsaki.hentoid.util.shortSnack
 import timber.log.Timber
 
@@ -74,14 +76,14 @@ class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
             if (0 == sitePicker.index) {
                 cookies = HashMap()
                 sites.forEach { s ->
-                    val siteCookies = HttpHelper.parseCookies(HttpHelper.getCookies(s.url))
+                    val siteCookies = parseCookies(getCookies(s.url))
                     siteCookies.forEach {
                         cookies[it.key] = it.value
                     }
                 }
             } else {
                 val site = sites[sitePicker.index - 1]
-                cookies = HttpHelper.parseCookies(HttpHelper.getCookies(site.url))
+                cookies = parseCookies(getCookies(site.url))
             }
             if (cookies.keys.isNotEmpty())
                 cookiesList.text = TextUtils.join("\n", cookies.keys)
@@ -107,7 +109,7 @@ class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
                 mgr.getCookie(site.url).split("; ")
             }
         siteCookies.forEach {
-            HttpHelper.Cookie.parse(it).let { ck ->
+            Cookie.parse(it).let { ck ->
                 // For some reason, we have to use an empty domain when the cookie's domain doesn't start with .
                 val domain = if (ck.domain.startsWith(".")) ck.domain else ""
                 val cookieParts: MutableList<String> = ArrayList()

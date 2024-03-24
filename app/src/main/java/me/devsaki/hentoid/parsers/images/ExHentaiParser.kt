@@ -9,7 +9,10 @@ import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_ACCEPT_KEY
+import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 
@@ -68,9 +71,9 @@ class ExHentaiParser : ImageListParser {
             // Retrieve and set cookies (optional; e-hentai can work without cookies even though certain galleries are unreachable)
             val cookieStr: String = EHentaiParser.getCookieStr(content)
             val headers: MutableList<Pair<String, String>> = ArrayList()
-            headers.add(Pair(HttpHelper.HEADER_COOKIE_KEY, cookieStr))
-            headers.add(Pair(HttpHelper.HEADER_REFERER_KEY, content.site.url))
-            headers.add(Pair(HttpHelper.HEADER_ACCEPT_KEY, "*/*"))
+            headers.add(Pair(HEADER_COOKIE_KEY, cookieStr))
+            headers.add(Pair(HEADER_REFERER_KEY, content.site.url))
+            headers.add(Pair(HEADER_ACCEPT_KEY, "*/*"))
 
             /*
              * A/ Without multipage viewer
@@ -87,7 +90,7 @@ class ExHentaiParser : ImageListParser {
              */
             val useHentoidAgent = Site.EXHENTAI.useHentoidAgent()
             val useWebviewAgent = Site.EXHENTAI.useWebviewAgent()
-            val galleryDoc = HttpHelper.getOnlineDocument(
+            val galleryDoc = getOnlineDocument(
                 content.galleryUrl,
                 headers,
                 useHentoidAgent,

@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import android.net.Uri
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.parseParameters
 
 class NhentaiActivity : BaseWebActivity() {
     companion object {
@@ -39,7 +39,7 @@ class NhentaiActivity : BaseWebActivity() {
 
     private fun rewriteResultsUrl(resultsUri: Uri, page: Int): String {
         val builder = resultsUri.buildUpon()
-        val params = HttpHelper.parseParameters(resultsUri).toMutableMap()
+        val params = parseParameters(resultsUri).toMutableMap()
         params["page"] = page.toString() + ""
         builder.clearQuery()
         params.forEach { (key, value) ->

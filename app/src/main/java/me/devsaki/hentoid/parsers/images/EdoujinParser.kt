@@ -11,7 +11,7 @@ import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
 import timber.log.Timber
@@ -89,7 +89,7 @@ class EdoujinParser : BaseImageListParser() {
         // NB : We can't just guess the URLs by starting to 1 and increment them
         // because the site provides "subchapters" (e.g. 4.6, 2.5)
         val chapters: List<Chapter>
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             onlineContent.galleryUrl,
             headers,
             Site.EDOUJIN.useHentoidAgent(),
@@ -159,7 +159,7 @@ class EdoujinParser : BaseImageListParser() {
         headers: List<Pair<String, String>>?
     ): List<ImageFile> {
         val theHeaders = headers ?: fetchHeaders(content)
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             chp.url,
             theHeaders,
             content.site.useHentoidAgent(),

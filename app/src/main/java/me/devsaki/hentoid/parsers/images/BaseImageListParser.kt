@@ -8,7 +8,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.parsers.ParseHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import org.apache.commons.lang3.NotImplementedException
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -166,7 +166,7 @@ abstract class BaseImageListParser : ImageListParser {
     ): List<Pair<String, String>> {
         val headers: MutableList<Pair<String, String>> = ArrayList()
         if (downloadParams != null) ParseHelper.addSavedCookiesToHeader(downloadParams, headers)
-        headers.add(Pair(HttpHelper.HEADER_REFERER_KEY, url))
+        headers.add(Pair(HEADER_REFERER_KEY, url))
         return headers
     }
 }

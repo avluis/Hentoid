@@ -6,7 +6,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
@@ -19,7 +19,7 @@ class PorncomixParser : BaseImageListParser() {
         processedUrl = content.galleryUrl
 
         // Fetch the book gallery page
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             content.galleryUrl,
             null,
             Site.PORNCOMIX.useHentoidAgent(),
@@ -54,7 +54,7 @@ class PorncomixParser : BaseImageListParser() {
         val result: MutableList<String> = ArrayList()
         progressStart(content, null, pageUrls.size)
         for (pageUrl in pageUrls) {
-            val doc2 = HttpHelper.getOnlineDocument(
+            val doc2 = getOnlineDocument(
                 pageUrl,
                 null,
                 Site.PORNCOMIX.useHentoidAgent(),

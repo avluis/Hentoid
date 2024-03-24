@@ -7,7 +7,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.getHttpProtocol
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -50,7 +50,7 @@ class PururinContent : BaseContentParser() {
         if (url.endsWith("/")) theUrl = url.substring(0, url.length - 1)
         content.setUrl(theUrl)
 
-        if (!coverUrl.startsWith("http")) coverUrl += HttpHelper.getHttpProtocol(url) + ":" + coverUrl
+        if (!coverUrl.startsWith("http")) coverUrl += getHttpProtocol(url) + ":" + coverUrl
         content.setCoverImageUrl(coverUrl)
 
         title?.let {

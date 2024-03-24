@@ -11,7 +11,9 @@ import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.download.getCanonicalUrl
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.POST_MIME_TYPE
+import me.devsaki.hentoid.util.network.getOnlineDocument
+import me.devsaki.hentoid.util.network.postOnlineDocument
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
 import timber.log.Timber
@@ -65,7 +67,7 @@ class ManhwaParser : BaseImageListParser() {
         // 1- Detect chapters on gallery page
         var chapters: List<Chapter> = ArrayList()
         var reason = ""
-        var doc = HttpHelper.getOnlineDocument(
+        var doc = getOnlineDocument(
             onlineContent.galleryUrl,
             headers,
             Site.MANHWA.useHentoidAgent(),
@@ -74,12 +76,12 @@ class ManhwaParser : BaseImageListParser() {
         if (doc != null) {
             val canonicalUrl = getCanonicalUrl(doc)
             // Retrieve the chapters page chunk
-            doc = HttpHelper.postOnlineDocument(
+            doc = postOnlineDocument(
                 canonicalUrl + "ajax/chapters/",
                 headers,
                 Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent(),
                 "",
-                HttpHelper.POST_MIME_TYPE
+                POST_MIME_TYPE
             )
             if (doc != null) {
                 val chapterLinks: List<Element> = doc.select("[class^=wp-manga-chapter] a")
@@ -161,7 +163,7 @@ class ManhwaParser : BaseImageListParser() {
         targetOrder: Int,
         headers: List<Pair<String, String>>?
     ): List<ImageFile> {
-        val doc = HttpHelper.getOnlineDocument(
+        val doc = getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
             content.site.useHentoidAgent(),
