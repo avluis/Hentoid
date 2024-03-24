@@ -7,13 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.webkit.CookieManagerCompat
 import androidx.webkit.WebViewFeature
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsCookiesBinding
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.Cookie
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -22,13 +21,7 @@ import me.devsaki.hentoid.util.network.parseCookies
 import me.devsaki.hentoid.util.shortSnack
 import timber.log.Timber
 
-class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
-
-    companion object {
-        fun invoke(parentFragment: Fragment) {
-            invoke(parentFragment, CookiesDialogFragment())
-        }
-    }
+class CookiesDialogFragment : DialogFragment() {
 
     // == UI
     private var binding: DialogPrefsCookiesBinding? = null
