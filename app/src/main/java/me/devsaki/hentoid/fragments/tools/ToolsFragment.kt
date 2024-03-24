@@ -108,7 +108,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
             }
 
             IMPORT_LIBRARY -> {
-                MetaImportDialogFragment.invoke(this)
+                show(MetaImportDialogFragment())
                 true
             }
 
