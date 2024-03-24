@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 
 import com.annimon.stream.Stream;
 
-import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.ArrayList;
@@ -13,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import kotlin.Triple;
 
 /**
  * String-related utility class
@@ -196,8 +197,8 @@ public final class StringHelper {
     }
 
     // TODO doc
-    public static List<ImmutableTriple<Integer, Integer, Integer>> locateDigits(@NonNull final String s) {
-        List<ImmutableTriple<Integer, Integer, Integer>> result = new ArrayList<>();
+    public static List<Triple<Integer, Integer, Integer>> locateDigits(@NonNull final String s) {
+        List<Triple<Integer, Integer, Integer>> result = new ArrayList<>();
         boolean inDigit = false;
         int startIndex = -1;
         for (int i = 0; i < s.length(); i++) {
@@ -207,13 +208,13 @@ public final class StringHelper {
                 inDigit = true;
             } else if (!Character.isDigit(c) && inDigit) {
                 int value = Integer.parseInt(s.substring(startIndex, i));
-                result.add(new ImmutableTriple<>(startIndex, i - 1, value));
+                result.add(new Triple<>(startIndex, i - 1, value));
                 inDigit = false;
             }
         }
         if (inDigit) {
             int value = Integer.parseInt(s.substring(startIndex));
-            result.add(new ImmutableTriple<>(startIndex, s.length() - 1, value));
+            result.add(new Triple<>(startIndex, s.length() - 1, value));
         }
         return result;
     }

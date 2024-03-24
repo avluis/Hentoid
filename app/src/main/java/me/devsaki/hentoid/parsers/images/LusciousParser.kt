@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.parsers.images
 
-import androidx.core.util.Pair
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType

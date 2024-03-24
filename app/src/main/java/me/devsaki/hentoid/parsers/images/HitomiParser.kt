@@ -4,7 +4,6 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.URLUtil
 import android.webkit.WebView
-import androidx.core.util.Pair
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile

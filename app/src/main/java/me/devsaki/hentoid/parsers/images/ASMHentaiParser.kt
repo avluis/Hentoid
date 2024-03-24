@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.parsers.images
 
-import androidx.core.util.Pair
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.util.StringHelper
@@ -22,7 +21,7 @@ class ASMHentaiParser : BaseImageListParser() {
             val nbPagesE = doc.select(".pages_btn").first()
             if (nbPagesE != null) {
                 val digits = StringHelper.locateDigits(nbPagesE.text())
-                if (digits.isNotEmpty()) nbPages = digits[digits.size - 1].right
+                if (digits.isNotEmpty()) nbPages = digits[digits.size - 1].third
             }
             if (-1 == nbPages) throw ParseException("Couldn't find the number of pages")
             var imgContainer = doc.select("div.reader_overlay") // New ASM layout

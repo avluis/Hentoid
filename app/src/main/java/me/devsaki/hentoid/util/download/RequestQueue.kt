@@ -145,7 +145,7 @@ class RequestQueue(
         val requestHeaders =
             webkitRequestHeadersToOkHttpHeaders(headers, url).toMutableList()
         requestHeaders.add(
-            androidx.core.util.Pair(
+            Pair(
                 HEADER_ACCEPT_KEY,
                 "image/jpeg,image/png,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*"
             )

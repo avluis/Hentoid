@@ -6,7 +6,6 @@ import android.text.TextUtils
 import android.webkit.CookieManager
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
-import androidx.core.util.Pair
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
@@ -282,7 +281,7 @@ private fun buildRequest(
     useWebviewAgent: Boolean
 ): Request.Builder {
     val requestBuilder = Request.Builder().url(url)
-    if (headers != null) for (header in headers) if (header.second != null) requestBuilder.addHeader(
+    if (headers != null) for (header in headers) requestBuilder.addHeader(
         header.first,
         header.second
     )

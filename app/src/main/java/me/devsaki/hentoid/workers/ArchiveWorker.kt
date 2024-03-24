@@ -129,11 +129,11 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         val bookFolderName = ContentHelper.formatBookFolderName(content)
         val ext = if (0 == params.targetFormat) "zip" else "cbz"
         // First try creating the file with the new naming...
-        var destName = bookFolderName.left + "." + ext
+        var destName = bookFolderName.first + "." + ext
         return try {
             createTargetFile(params.targetFolderUri, destName, params.overwrite)
         } catch (e: IOException) { // ...if it fails, try creating the file with the old sanitized naming
-            destName = bookFolderName.right + "." + ext
+            destName = bookFolderName.second + "." + ext
             createTargetFile(params.targetFolderUri, destName, params.overwrite)
         }
     }

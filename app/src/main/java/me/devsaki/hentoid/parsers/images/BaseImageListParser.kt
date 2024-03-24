@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.parsers.images
 
 import android.webkit.URLUtil
-import androidx.core.util.Pair
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -46,7 +45,7 @@ abstract class BaseImageListParser : ImageListParser {
 
     override fun parseImagePage(
         url: String,
-        headers: List<Pair<String, String>>
+        requestHeaders: List<Pair<String, String>>
     ): Pair<String, String?> {
         throw NotImplementedException("Parser does not implement parseImagePage")
     }

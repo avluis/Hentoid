@@ -27,7 +27,6 @@ import androidx.annotation.StringRes
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
-import androidx.core.util.Pair
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -1258,13 +1257,13 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                         dao
                     )
                     if (duplicateResult != null) {
-                        duplicateId = duplicateResult.left.id
-                        duplicateSimilarity = duplicateResult.right
+                        duplicateId = duplicateResult.first.id
+                        duplicateSimilarity = duplicateResult.second
                         // Content ID of the duplicate candidate of the currently viewed Content
-                        val duplicateSameSite = duplicateResult.left.site == onlineContent.site
+                        val duplicateSameSite = duplicateResult.first.site == onlineContent.site
                         // Same site and similar => enable download button by default, but look for extra pics just in case
                         if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload) searchForExtraImages(
-                            duplicateResult.left,
+                            duplicateResult.first,
                             onlineContent
                         )
                     }

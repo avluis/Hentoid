@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.parsers
 
-import androidx.core.util.Pair
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Chapter

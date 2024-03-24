@@ -3,7 +3,6 @@ package me.devsaki.hentoid.util.download
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import androidx.core.util.Pair
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation

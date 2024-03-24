@@ -539,13 +539,13 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         .dropLastWhile { it.isEmpty() }
                         .toTypedArray()
                     val bookFolderName = bookPathParts[bookPathParts.size - 1]
-                    if (!canonicalBookFolderName.left.equals(bookFolderName, ignoreCase = true)) {
+                    if (!canonicalBookFolderName.first.equals(bookFolderName, ignoreCase = true)) {
                         if (renameFolder(
                                 context,
                                 bookFolder,
                                 content,
                                 explorer,
-                                canonicalBookFolderName.left
+                                canonicalBookFolderName.first
                             )
                         ) {
                             trace(
@@ -554,7 +554,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                                 log,
                                 "[Rename OK] Folder %s renamed to %s",
                                 bookFolderName,
-                                canonicalBookFolderName.left
+                                canonicalBookFolderName.first
                             )
                             // Rescan files inside the renamed folder
                             bookFiles = explorer.listFiles(context, bookFolder, null)
@@ -565,7 +565,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                                 log,
                                 "[Rename KO] Could not rename file %s to %s",
                                 bookFolderName,
-                                canonicalBookFolderName.left
+                                canonicalBookFolderName.first
                             )
                         }
                     }

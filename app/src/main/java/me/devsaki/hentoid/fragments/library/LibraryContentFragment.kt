@@ -103,7 +103,6 @@ import me.devsaki.hentoid.widget.RedownloadMenu
 import me.devsaki.hentoid.widget.ScrollPositionListener
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import me.zhanghai.android.fastscroll.PopupTextProvider
-import org.apache.commons.lang3.tuple.ImmutablePair
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -1302,10 +1301,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * @param librarySize Size of the library
      * @return Min and max index of the books to display on the given page
      */
-    private fun getShelfBound(shelfNumber: Int, librarySize: Int): ImmutablePair<Int, Int> {
+    private fun getShelfBound(shelfNumber: Int, librarySize: Int): Pair<Int, Int> {
         val minIndex = (shelfNumber - 1) * Preferences.getContentPageQuantity()
         val maxIndex = min(minIndex + Preferences.getContentPageQuantity(), librarySize)
-        return ImmutablePair(minIndex, maxIndex)
+        return Pair(minIndex, maxIndex)
     }
 
     /**
@@ -1321,8 +1320,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             fastAdapter?.notifyDataSetChanged()
         } else {
             val bounds = getShelfBound(pager.getCurrentPageNumber(), iLibrary.size)
-            val minIndex = bounds.getLeft()
-            val maxIndex = bounds.getRight()
+            val minIndex = bounds.first
+            val maxIndex = bounds.second
             if (minIndex >= maxIndex) { // We just deleted the last item of the last page => Go back one page
                 pager.setCurrentPage(pager.getCurrentPageNumber() - 1)
                 loadBookshelf(iLibrary)
@@ -1346,8 +1345,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         if (Preferences.getEndlessScroll()) return
 
         val bounds = getShelfBound(shelfNumber, iLibrary.size)
-        val minIndex = bounds.getLeft()
-        val maxIndex = bounds.getRight()
+        val minIndex = bounds.first
+        val maxIndex = bounds.second
         // Paged mode won't be used in edit mode
         val viewType =
             if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) ContentItem.ViewType.LIBRARY

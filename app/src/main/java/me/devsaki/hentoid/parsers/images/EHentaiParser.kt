@@ -2,7 +2,6 @@ package me.devsaki.hentoid.parsers.images
 
 import android.webkit.CookieManager
 import android.webkit.URLUtil
-import androidx.core.util.Pair
 import com.squareup.moshi.Json
 import com.squareup.moshi.Types
 import me.devsaki.hentoid.database.domains.Chapter

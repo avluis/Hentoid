@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.json.sources;
 
 import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
 
 import com.annimon.stream.Stream;
 
@@ -12,6 +11,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import kotlin.Pair;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
@@ -130,9 +130,9 @@ public class PixivPreloadMetadata {
         attributes.add(attribute);
 
         for (Pair<String, String> tag : illustData.getTags()) {
-            String name = StringHelper.removeNonPrintableChars(tag.second);
+            String name = StringHelper.removeNonPrintableChars(tag.getSecond());
             AttributeType type = AttributeType.TAG;
-            attribute = new Attribute(type, name, pixivPrefix + "tags/" + tag.first, Site.LUSCIOUS);
+            attribute = new Attribute(type, name, pixivPrefix + "tags/" + tag.getFirst(), Site.LUSCIOUS);
             attributes.add(attribute);
         }
         content.putAttributes(attributes);

@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.os.ParcelFileDescriptor
-import androidx.core.util.Pair
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.image.startsWith

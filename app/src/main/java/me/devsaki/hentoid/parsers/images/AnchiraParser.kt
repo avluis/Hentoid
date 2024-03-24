@@ -3,7 +3,6 @@ package me.devsaki.hentoid.parsers.images
 import android.os.Handler
 import android.os.Looper
 import android.webkit.URLUtil
-import androidx.core.util.Pair
 import me.devsaki.hentoid.activities.sources.WebResultConsumer
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.domains.Content

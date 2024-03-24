@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.json.sources
 
-import androidx.core.util.Pair
 import com.squareup.moshi.Json
 import com.squareup.moshi.Types
 import me.devsaki.hentoid.database.domains.Attribute
@@ -181,7 +180,7 @@ data class PixivIllustMetadata(
             if (null == label) label = romaji
             if (null == label) label = tag
             if (null == label) label = ""
-            return Pair<String, String>(tag, label)
+            return Pair<String, String>(tag ?: "", label)
         }
     }
 

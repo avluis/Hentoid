@@ -1,13 +1,12 @@
 package me.devsaki.hentoid.util.network
 
-import org.apache.commons.lang3.tuple.ImmutablePair
 import java.time.Instant
 import java.util.LinkedList
 import java.util.Queue
 
 object DownloadSpeedCalculator {
     private const val MAX_SAMPLES_SIZE = 15
-    private val samples: Queue<ImmutablePair<Long, Long>> = LinkedList()
+    private val samples: Queue<Pair<Long, Long>> = LinkedList()
 
     private var avgSpeedBps = 0f
 
@@ -20,7 +19,7 @@ object DownloadSpeedCalculator {
     @Synchronized
     fun addSampleNow(downloadedBytes: Long) {
         val ticksNow = Instant.now().toEpochMilli()
-        samples.add(ImmutablePair(ticksNow, downloadedBytes))
+        samples.add(Pair(ticksNow, downloadedBytes))
         if (samples.size > MAX_SAMPLES_SIZE) samples.poll()
         updateAvgSpeed(ticksNow, downloadedBytes)
     }
@@ -34,7 +33,7 @@ object DownloadSpeedCalculator {
     private fun updateAvgSpeed(ticksNow: Long, downloadedBytes: Long) {
         val firstRecord = samples.peek()
         if (firstRecord != null) avgSpeedBps =
-            (downloadedBytes - firstRecord.right) * 1f / ((ticksNow - firstRecord.left) / 1000f)
+            (downloadedBytes - firstRecord.second) * 1f / ((ticksNow - firstRecord.first) / 1000f)
     }
 
     /**

@@ -13,7 +13,6 @@ import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.image.ImagePHash
 import me.devsaki.hentoid.util.image.decodeSampledBitmapFromStream
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
-import org.apache.commons.lang3.tuple.ImmutableTriple
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
@@ -300,18 +299,18 @@ fun sanitizeTitle(title: String): Triple<String, Int, Int> {
     // These are to be :
     //  - Located in the last 20% of the title
     //  - Separated by at most 4 characters
-    var minChapter: ImmutableTriple<Int, Int, Int>? = null
-    var maxChapter: ImmutableTriple<Int, Int, Int>? = null
+    var minChapter: Triple<Int, Int, Int>? = null
+    var maxChapter: Triple<Int, Int, Int>? = null
     val digitsMap = StringHelper.locateDigits(title).reversed()
     digitsMap.forEach {
-        if (it.middle >= title.length * 0.8 && null == maxChapter) maxChapter = it
+        if (it.second >= title.length * 0.8 && null == maxChapter) maxChapter = it
         else maxChapter?.let { max ->
-            if (it.middle >= max.left - 5) minChapter = it
+            if (it.second >= max.first - 5) minChapter = it
         }
     }
     if (maxChapter != null && null == minChapter) minChapter = maxChapter
-    val minChapterValue = if (minChapter != null) minChapter!!.right else -1
-    val maxChapterValue = if (maxChapter != null) maxChapter!!.right else -1
+    val minChapterValue = if (minChapter != null) minChapter!!.third else -1
+    val maxChapterValue = if (maxChapter != null) maxChapter!!.third else -1
 
     // Sanitize the title
     var result = StringHelper.removeDigits(title)

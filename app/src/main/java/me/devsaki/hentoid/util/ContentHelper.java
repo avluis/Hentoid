@@ -17,7 +17,6 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -33,7 +32,6 @@ import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
@@ -52,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import kotlin.Pair;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ReaderActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
@@ -740,21 +739,21 @@ public final class ContentHelper {
         if (null == siteDownloadDir) return null;
 
         // == Book folder
-        ImmutablePair<String, String> bookFolderName = formatBookFolderName(content);
+        Pair<String, String> bookFolderName = formatBookFolderName(content);
 
         // First try finding the folder with new naming...
         if (!createOnly) {
-            DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.left);
+            DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.getFirst());
             if (null == bookFolder) { // ...then with old (sanitized) naming
-                bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.right);
+                bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.getSecond());
             }
             if (bookFolder != null) return bookFolder;
         }
 
         // If nothing found, or create-only, create a new folder with the new naming...
-        DocumentFile result = siteDownloadDir.createDirectory(bookFolderName.left);
+        DocumentFile result = siteDownloadDir.createDirectory(bookFolderName.getFirst());
         if (null == result) { // ...if it fails, create a new folder with the old naming
-            return siteDownloadDir.createDirectory(bookFolderName.right);
+            return siteDownloadDir.createDirectory(bookFolderName.getSecond());
         } else return result;
     }
 
@@ -766,13 +765,13 @@ public final class ContentHelper {
      * - Left side : Naming convention allowing non-ANSI characters
      * - Right side : Old naming convention with ANSI characters alone
      */
-    public static ImmutablePair<String, String> formatBookFolderName(
+    public static Pair<String, String> formatBookFolderName(
             @NonNull final Content content) {
         String title = content.getTitle();
         title = (null == title) ? "" : title;
         String author = formatBookAuthor(content).toLowerCase();
 
-        return new ImmutablePair<>(formatBookFolderName(content, FileHelper.cleanFileName(title), FileHelper.cleanFileName(author)), formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_")));
+        return new Pair<>(formatBookFolderName(content, FileHelper.cleanFileName(title), FileHelper.cleanFileName(author)), formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_")));
     }
 
     private static String formatBookFolderName(@NonNull final Content content,
@@ -986,14 +985,14 @@ public final class ContentHelper {
      */
     public static List<ImageFile> matchFilesToImageList(
             @NonNull final List<DocumentFile> files, @NonNull final List<ImageFile> images) {
-        Map<String, ImmutablePair<String, Long>> fileNameProperties = new HashMap<>(files.size());
+        Map<String, Pair<String, Long>> fileNameProperties = new HashMap<>(files.size());
         List<ImageFile> result = new ArrayList<>();
         boolean coverFound = false;
 
         // Put file names into a Map to speed up the lookup
         for (DocumentFile file : files)
             if (file.getName() != null)
-                fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
+                fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new Pair<>(file.getUri().toString(), file.length()));
 
         // Look up similar names between images and file names
         int order;
@@ -1003,10 +1002,10 @@ public final class ContentHelper {
             ImageFile img = orderedImages.get(i);
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
 
-            ImmutablePair<String, Long> property;
+            Pair<String, Long> property;
             boolean isOnline = img.getStatus().equals(StatusContent.ONLINE);
             if (isOnline) {
-                property = new ImmutablePair<>("", 0L);
+                property = new Pair<>("", 0L);
             } else {
                 // Detect gaps inside image numbering
                 order = img.getOrder();
@@ -1014,11 +1013,11 @@ public final class ContentHelper {
                 if (previousOrder > -1 && previousOrder < order - 1) {
                     Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
                     for (int j = previousOrder + 1; j < order; j++) {
-                        ImmutablePair<String, Long> localProperty = fileNameProperties.get(j + "");
+                        Pair<String, Long> localProperty = fileNameProperties.get(j + "");
                         if (localProperty != null) {
                             Timber.i("Numbering gap filled with a file : %d", j);
                             ImageFile newImage = ImageFile.fromImageUrl(j, orderedImages.get(i - 1).getUrl(), StatusContent.DOWNLOADED, orderedImages.size());
-                            newImage.setFileUri(localProperty.left).setSize(localProperty.right);
+                            newImage.setFileUri(localProperty.getFirst()).setSize(localProperty.getSecond());
                             result.add(Math.max(0, result.size() - 1), newImage);
                         }
                     }
@@ -1032,7 +1031,7 @@ public final class ContentHelper {
                     coverFound = true;
                     img.setIsCover(true);
                 }
-                result.add(img.setFileUri(property.left).setSize(property.right).setStatus(isOnline ? StatusContent.ONLINE : StatusContent.DOWNLOADED));
+                result.add(img.setFileUri(property.getFirst()).setSize(property.getSecond()).setStatus(isOnline ? StatusContent.ONLINE : StatusContent.DOWNLOADED));
             } else Timber.i(">> image not found among files : %s", imgName);
         }
 
@@ -1233,7 +1232,7 @@ public final class ContentHelper {
         if (null == site || Site.NONE == site) return Optional.empty();
 
         Pair<ResponseBody, String> fetchResponse = fetchBodyFast(urlToLoad, site, null, "text/html");
-        try (ResponseBody body = fetchResponse.first) {
+        try (ResponseBody body = fetchResponse.getFirst()) {
             if (null == body) return Optional.empty();
 
             Class<? extends ContentParser> c = ContentParserFactory.INSTANCE.getContentParserClass(site);
@@ -1261,7 +1260,7 @@ public final class ContentHelper {
 
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
-            String cookieStr = fetchResponse.second;
+            String cookieStr = fetchResponse.getSecond();
             if (!cookieStr.isEmpty()) params.put(HEADER_COOKIE_KEY, cookieStr);
 
             newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
@@ -1299,7 +1298,7 @@ public final class ContentHelper {
         // Scram if the response content-type is something else than the target type
         if (targetContentType != null) {
             Pair<String, String> contentType = HttpHelperKt.cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")));
-            if (!contentType.first.isEmpty() && !contentType.first.equalsIgnoreCase(targetContentType))
+            if (!contentType.getFirst().isEmpty() && !contentType.getFirst().equalsIgnoreCase(targetContentType))
                 throw new IOException("Not an HTML resource " + url);
         }
 
@@ -1604,9 +1603,9 @@ public final class ContentHelper {
      * - Right side : Similarity score (between 0 and 1; 1=100%)
      */
     @Nullable
-    public static ImmutablePair<Content, Float> findDuplicate(@NonNull final Context context,
-                                                              @NonNull final Content content, boolean useTitle, boolean useArtist, boolean useLanguage,
-                                                              boolean useCover, int sensitivity, long pHash, @NonNull final CollectionDAO dao) {
+    public static Pair<Content, Float> findDuplicate(@NonNull final Context context,
+                                                     @NonNull final Content content, boolean useTitle, boolean useArtist, boolean useLanguage,
+                                                     boolean useCover, int sensitivity, long pHash, @NonNull final CollectionDAO dao) {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted(Comparator.comparingInt(String::length)).findLast();
@@ -1637,7 +1636,7 @@ public final class ContentHelper {
         if (bestMatch.isPresent()) {
             Content resultContent = dao.selectContent(bestMatch.get().getDuplicateId());
             float resultScore = bestMatch.get().calcTotalScore();
-            return new ImmutablePair<>(resultContent, resultScore);
+            return new Pair<>(resultContent, resultScore);
         }
 
         return null;
@@ -1771,16 +1770,16 @@ public final class ContentHelper {
         String pageUrl = HttpHelperKt.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.INSTANCE.getImageListParser(site);
         Pair<String, String> pages = parser.parseImagePage(pageUrl, requestHeaders);
-        img.setUrl(pages.first);
+        img.setUrl(pages.getFirst());
         // Download the picture
         try {
             return testDownloadPicture(site, img, requestHeaders);
         } catch (IOException | CloudflareHelper.CloudflareProtectedException e) {
-            if (pages.second != null) Timber.d("First download failed; trying backup URL");
+            if (pages.getSecond() != null) Timber.d("First download failed; trying backup URL");
             else throw e;
         }
         // Trying with backup URL
-        img.setUrl(pages.second);
+        img.setUrl(pages.getSecond());
         return testDownloadPicture(site, img, requestHeaders);
     }
 
@@ -1800,7 +1799,7 @@ public final class ContentHelper {
         String url = HttpHelperKt.fixUrl(img.getUrl(), site.getUrl());
 
         Pair<ResponseBody, String> response = fetchBodyFast(url, site, requestHeaders, null);
-        ResponseBody body = response.first;
+        ResponseBody body = response.getFirst();
         if (null == body)
             throw new IOException("Could not read response : empty body for " + img.getUrl());
 
@@ -1866,15 +1865,15 @@ public final class ContentHelper {
             if (null == externalRootFolder || !externalRootFolder.exists())
                 throw new ContentNotProcessedException(mergedContent, "Could not create target directory : external root unreachable");
 
-            ImmutablePair<String, String> bookFolderName = formatBookFolderName(mergedContent);
+            Pair<String, String> bookFolderName = formatBookFolderName(mergedContent);
             // First try finding the folder with new naming...
-            targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.left);
+            targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.getFirst());
             if (null == targetFolder) { // ...then with old (sanitized) naming...
-                targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.right);
+                targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.getSecond());
                 if (null == targetFolder) { // ...if not, create a new folder with the new naming...
-                    targetFolder = externalRootFolder.createDirectory(bookFolderName.left);
+                    targetFolder = externalRootFolder.createDirectory(bookFolderName.getFirst());
                     if (null == targetFolder) { // ...if it fails, create a new folder with the old naming
-                        targetFolder = externalRootFolder.createDirectory(bookFolderName.right);
+                        targetFolder = externalRootFolder.createDirectory(bookFolderName.getSecond());
                     }
                 }
             }

@@ -26,7 +26,6 @@ import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import me.devsaki.hentoid.workers.data.DuplicateData
-import okhttp3.internal.toImmutableList
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -107,7 +106,7 @@ class DuplicateViewModel(
 
     fun setBookChoice(content: Content, choice: Boolean) {
         if (null == selectedDuplicates.value) return
-        val selectedDupes = selectedDuplicates.value!!.toImmutableList()
+        val selectedDupes = selectedDuplicates.value!!.toMutableList()
         for (dupe in selectedDupes) {
             if (dupe.duplicateId == content.id) dupe.keep = choice
         }
@@ -116,7 +115,7 @@ class DuplicateViewModel(
 
     fun applyChoices(onComplete: Runnable) {
         if (null == selectedDuplicates.value) return
-        val selectedDupes = selectedDuplicates.value!!.toImmutableList()
+        val selectedDupes = selectedDuplicates.value!!
 
         // Mark as "is being deleted" to trigger blink animation
         val deleteList = ArrayList<Long>()
@@ -167,7 +166,7 @@ class DuplicateViewModel(
         if (contentList.isEmpty()) return
         if (null == selectedDuplicates.value) return
 
-        val selectedDupes = selectedDuplicates.value!!.toImmutableList()
+        val selectedDupes = selectedDuplicates.value!!
         val context = getApplication<Application>().applicationContext
 
         viewModelScope.launch {

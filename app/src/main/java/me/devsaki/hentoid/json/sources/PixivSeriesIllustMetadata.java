@@ -2,11 +2,10 @@ package me.devsaki.hentoid.json.sources;
 
 import com.annimon.stream.Stream;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.Pair;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.StringHelper;
@@ -46,10 +45,10 @@ public class PixivSeriesIllustMetadata {
         return message;
     }
 
-    public List<ImmutablePair<String, String>> getIllustIdTitles() {
-        List<ImmutablePair<String, String>> result = new ArrayList<>();
+    public List<Pair<String, String>> getIllustIdTitles() {
+        List<Pair<String, String>> result = new ArrayList<>();
         if (null == body || null == body.series_contents) return result;
-        return Stream.of(body.series_contents).map(c -> new ImmutablePair<>(c.getId(), c.getTitle())).toList();
+        return Stream.of(body.series_contents).map(c -> new Pair<>(c.getId(), c.getTitle())).toList();
     }
 
     public List<Chapter> getChapters(long contentId) {

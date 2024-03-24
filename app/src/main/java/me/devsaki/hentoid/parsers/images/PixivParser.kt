@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.parsers.images
 
 import android.webkit.URLUtil
-import androidx.core.util.Pair
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content

@@ -25,7 +25,6 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuBuilder;
-import androidx.core.util.Pair;
 import androidx.core.view.MenuCompat;
 import androidx.documentfile.provider.DocumentFile;
 
@@ -57,6 +56,7 @@ import java.util.Random;
 import java.util.Set;
 
 import io.whitfin.siphash.SipHasher;
+import kotlin.Pair;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.core.HentoidApp;
@@ -357,8 +357,8 @@ public final class Helper {
         float numerator = 0;
         float denominator = 0;
         for (Pair<Float, Float> operand : operands) {
-            numerator += (operand.first * operand.second);
-            denominator += operand.second;
+            numerator += (operand.getFirst() * operand.getSecond());
+            denominator += operand.getSecond();
         }
         return (denominator > 0) ? numerator / denominator : 0;
     }

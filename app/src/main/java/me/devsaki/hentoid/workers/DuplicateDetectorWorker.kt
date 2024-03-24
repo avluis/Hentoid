@@ -229,7 +229,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
             Log.DEBUG,
             "Indexing %s/%s",
             c.site.name,
-            ContentHelper.formatBookFolderName(c).left
+            ContentHelper.formatBookFolderName(c).first
         )
     }
 

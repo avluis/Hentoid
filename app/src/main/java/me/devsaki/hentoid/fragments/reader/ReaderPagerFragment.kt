@@ -95,8 +95,6 @@ import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
 import me.devsaki.hentoid.widget.ReaderKeyListener
 import me.devsaki.hentoid.widget.ReaderSmoothScroller
 import me.devsaki.hentoid.widget.ScrollPositionListener
-import org.apache.commons.lang3.tuple.ImmutablePair
-import org.apache.commons.lang3.tuple.Pair
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -201,7 +199,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             onSlideShowSliderChosen(sliderIndex)
         }
         processPositionDebouncer = Debouncer(lifecycleScope, 75) { pair ->
-            onPageChanged(pair.left, pair.right)
+            onPageChanged(pair.first, pair.second)
         }
         rescaleDebouncer = Debouncer(lifecycleScope, 100) { scale ->
             adapter.multiplyScale(scale)
@@ -925,7 +923,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             val scrollDirection = scrollPosition - absImageIndex
             absImageIndex = scrollPosition
             // Remember the last relevant movement and schedule it for execution
-            processPositionDebouncer.submit(ImmutablePair(absImageIndex, scrollDirection))
+            processPositionDebouncer.submit(Pair(absImageIndex, scrollDirection))
 
             adapter.getImageAt(absImageIndex)?.let {
                 viewModel.markPageAsRead(it.order)

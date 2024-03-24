@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.parsers.images
 
-import androidx.core.util.Pair
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.StringHelper
@@ -30,7 +29,7 @@ class TsuminoParser : BaseImageListParser() {
             val nbPagesE = doc.select("h1").first()
             if (null != nbPagesE) {
                 val digits = StringHelper.locateDigits(nbPagesE.text())
-                if (digits.isNotEmpty()) nbPages = digits[digits.size - 1].right
+                if (digits.isNotEmpty()) nbPages = digits[digits.size - 1].third
             }
             if (-1 == nbPages) throw ParseException("Couldn't find the number of pages")
             val contents = doc.select("#image-container").first()
