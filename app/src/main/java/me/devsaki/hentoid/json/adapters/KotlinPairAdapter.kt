@@ -1,6 +1,10 @@
 package me.devsaki.hentoid.json.adapters
 
-import com.squareup.moshi.*
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonReader
+import com.squareup.moshi.JsonWriter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -45,7 +49,7 @@ class KotlinPairAdapterFactory : JsonAdapter.Factory {
         val listType = Types.newParameterizedType(List::class.java, String::class.java)
         val listAdapter = moshi.adapter<List<String>>(listType)
 
-        return AndroidPairAdapter(
+        return KotlinPairAdapter(
             moshi.adapter(type.actualTypeArguments[0]),
             moshi.adapter(type.actualTypeArguments[1]),
             listAdapter

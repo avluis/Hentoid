@@ -22,7 +22,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.json.adapters.AndroidPairAdapterFactory;
+import me.devsaki.hentoid.json.adapters.KotlinPairAdapterFactory;
 import me.devsaki.hentoid.util.file.FileHelper;
 import timber.log.Timber;
 
@@ -45,7 +45,7 @@ public class JsonHelper {
     private static final Moshi MOSHI = new Moshi.Builder()
             .add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new AttributeType.AttributeTypeAdapter())
-            .add(new AndroidPairAdapterFactory())
+            .add(new KotlinPairAdapterFactory())
             .addLast(new KotlinJsonAdapterFactory())
             .build();
 
