@@ -14,7 +14,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.readFile
+import me.devsaki.hentoid.fragments.tools.readFile
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification

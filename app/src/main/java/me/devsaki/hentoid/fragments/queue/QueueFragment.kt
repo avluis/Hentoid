@@ -59,7 +59,7 @@ import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
-import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.invoke
+import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
@@ -324,7 +324,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 true
             }
             it.menu.findItem(R.id.action_import_downloads).setOnMenuItemClickListener {
-                invoke(this)
+                show(DownloadsImportDialogFragment())
                 true
             }
             it.menu.findItem(R.id.action_error_stats).setOnMenuItemClickListener {

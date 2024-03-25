@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
@@ -26,7 +26,6 @@ import me.devsaki.hentoid.databinding.DialogQueueDownloadsImportBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
-import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
@@ -42,40 +41,33 @@ import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.io.InputStreamReader
 
+// TODO is this the best place for this function?
+fun readFile(context: Context, file: DocumentFile): List<String> {
+    var lines: List<String>
+    FileHelper.getInputStream(context, file).use { inputStream ->
+        InputStreamReader(inputStream).use {
+            lines = it.readLines()
+        }
+    }
+    return lines
+        .map { s -> s.trim().lowercase() }
+        .filterNot { s -> s.isEmpty() }
+        .filter { s ->
+            StringHelper.isNumeric(s) ||
+                    (s.startsWith("http")
+                            && Site.searchByUrl(s) != Site.NONE
+                            )
+        }
+}
+
 /**
  * Dialog for the downloads list import feature
  */
-class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
-
-    companion object {
-        fun invoke(fragment: Fragment) {
-            invoke(fragment, DownloadsImportDialogFragment())
-        }
-
-        fun readFile(context: Context, file: DocumentFile): List<String> {
-            var lines: List<String>
-            FileHelper.getInputStream(context, file).use { inputStream ->
-                InputStreamReader(inputStream).use {
-                    lines = it.readLines()
-                }
-            }
-            return lines
-                .map { s -> s.trim().lowercase() }
-                .filterNot { s -> s.isEmpty() }
-                .filter { s ->
-                    StringHelper.isNumeric(s) ||
-                            (s.startsWith("http")
-                                    && Site.searchByUrl(s) != Site.NONE
-                                    )
-                }
-        }
-    }
-
+class DownloadsImportDialogFragment : DialogFragment() {
 
     private var binding: DialogQueueDownloadsImportBinding? = null
 
     private var isServiceGracefulClose = false
-
 
     private val pickFile = registerForActivityResult(PickFileContract()) { result ->
         onFilePickerResult(result.first, result.second)
