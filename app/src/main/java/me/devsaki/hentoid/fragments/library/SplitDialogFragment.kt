@@ -9,6 +9,7 @@ import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.select.getSelectExtension
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
@@ -29,7 +30,9 @@ class SplitDialogFragment : BaseDialogFragment<SplitDialogFragment.Parent>() {
         operator fun invoke(parent: Fragment, content: Content) {
             val args = Bundle()
             args.putLong(KEY_CONTENT, content.id)
-            invoke(parent, SplitDialogFragment(), args)
+            val dialog = SplitDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

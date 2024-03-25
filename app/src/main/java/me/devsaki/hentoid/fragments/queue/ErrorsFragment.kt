@@ -766,8 +766,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         SelectSiteDialogFragment.invoke(
             this,
             getString(R.string.filter_by_source),
-            excludedSources,
-            parentIsActivity = true
+            excludedSources
         )
     }
 }

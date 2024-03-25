@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.databinding.DialogReaderDeleteBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
@@ -17,7 +18,9 @@ class ReaderDeleteDialogFragment : BaseDialogFragment<ReaderDeleteDialogFragment
         fun invoke(parent: Fragment, isDeletePageAllowed: Boolean) {
             val args = Bundle()
             args.putBoolean(KEY_DELETE_PAGE_ALLOWED, isDeletePageAllowed)
-            invoke(parent, ReaderDeleteDialogFragment(), args)
+            val dialog = ReaderDeleteDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

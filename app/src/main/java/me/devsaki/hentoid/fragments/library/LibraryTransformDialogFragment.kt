@@ -37,6 +37,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.core.setOnTextChangedListener
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryTransformBinding
@@ -71,7 +72,9 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             args.putLongArray(
                 KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
             )
-            invoke(parent, LibraryTransformDialogFragment(), args)
+            val dialog = LibraryTransformDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

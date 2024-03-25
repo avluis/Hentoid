@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.databinding.DialogReaderBookPrefsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
@@ -34,7 +35,9 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
                 DISPLAY_MODE,
                 Preferences.getContentDisplayMode(bookPrefs)
             )
-            invoke(parent, ReaderPrefsDialogFragment(), args)
+            val dialog = ReaderPrefsDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

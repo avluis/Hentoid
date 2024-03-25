@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -30,7 +31,9 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
         fun invoke(parentFragment: Fragment, id: Long) {
             val args = Bundle()
             args.putLong(ID, id)
-            invoke(parentFragment, ErrorsDialogFragment(), args)
+            val dialog = ErrorsDialogFragment()
+            dialog.arguments = args
+            parentFragment.show(dialog)
         }
     }
 

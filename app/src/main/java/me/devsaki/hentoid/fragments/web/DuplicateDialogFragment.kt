@@ -17,6 +17,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -31,6 +32,10 @@ import me.devsaki.hentoid.util.image.tintBitmap
 import org.greenrobot.eventbus.EventBus
 
 class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Parent>() {
+
+    init {
+        isCancelable = false
+    }
 
     companion object {
         private const val KEY_CONTENT_ID = "contentId"
@@ -59,7 +64,9 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
             args.putInt(KEY_ONLINE_CONTENT_PAGES, onlineContentNbPages)
             args.putFloat(KEY_CONTENT_SIMILARITY, similarity)
             args.putBoolean(KEY_IS_DOWNLOAD_PLUS, isDownloadPlus)
-            invoke(parent, DuplicateDialogFragment(), args, isCancelable = false)
+            val dialog = DuplicateDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

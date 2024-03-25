@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -26,7 +27,9 @@ class GalleryPickerDialogFragment : BaseDialogFragment<GalleryPickerDialogFragme
         fun invoke(activity: FragmentActivity, images: List<ImageFile>) {
             val args = Bundle()
             args.putLongArray(KEY_IMGS, images.map { i -> i.id }.toLongArray())
-            invoke(activity, GalleryPickerDialogFragment(), args)
+            val dialog = GalleryPickerDialogFragment()
+            dialog.arguments = args
+            activity.show(dialog)
         }
     }
 

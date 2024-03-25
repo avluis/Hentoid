@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.SiteBookmark
@@ -60,7 +61,9 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             args.putInt(KEY_SITE, site.code)
             args.putString(KEY_TITLE, title)
             args.putString(KEY_URL, url)
-            invoke(parent, BookmarksDialogFragment(), args)
+            val dialog = BookmarksDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

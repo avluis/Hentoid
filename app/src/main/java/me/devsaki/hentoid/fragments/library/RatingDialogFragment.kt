@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Debouncer
 
@@ -26,7 +27,9 @@ class RatingDialogFragment : BaseDialogFragment<RatingDialogFragment.Parent>() {
             val args = Bundle()
             args.putInt(RATING, initialRating)
             args.putLongArray(ITEM_IDS, itemIds)
-            invoke(parent, RatingDialogFragment(), args)
+            val dialog = RatingDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

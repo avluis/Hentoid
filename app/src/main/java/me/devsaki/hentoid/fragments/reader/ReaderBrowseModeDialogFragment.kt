@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.databinding.DialogReaderBrowseModeChooserBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
@@ -12,7 +13,7 @@ import me.devsaki.hentoid.util.Preferences
 class ReaderBrowseModeDialogFragment : BaseDialogFragment<ReaderBrowseModeDialogFragment.Parent>() {
     companion object {
         fun invoke(parent: Fragment) {
-            invoke(parent, ReaderBrowseModeDialogFragment())
+            parent.show(ReaderBrowseModeDialogFragment())
         }
     }
 
