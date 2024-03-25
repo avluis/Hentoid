@@ -74,7 +74,6 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
-import me.devsaki.hentoid.fragments.library.LibraryTransformDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
@@ -584,7 +583,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     snack(R.string.invalid_selection_generic)
                     return false
                 }
-                invoke(this, contents)
+                show(LibraryTransformDialogFragment(contents))
                 keepToolbar = true
             }
 
