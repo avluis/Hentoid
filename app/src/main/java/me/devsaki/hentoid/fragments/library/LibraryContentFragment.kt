@@ -723,10 +723,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val selectedItems: Set<ContentItem> = selectedItems
             deselect(selections.toMutableSet())
             val bookIds = selectedItems.mapNotNull { ci -> ci.content }.map { c -> c.id }
-            ChangeGroupDialogFragment.invoke(
-                this@LibraryContentFragment,
-                bookIds.toLongArray()
-            )
+            show(ChangeGroupDialogFragment(bookIds.toLongArray()))
         }
     }
 
