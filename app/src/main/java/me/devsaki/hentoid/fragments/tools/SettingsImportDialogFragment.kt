@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogToolsSettingsImportBinding
-import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.PickFileContract
@@ -29,16 +28,10 @@ import java.io.IOException
 /**
  * Dialog for the settings metadata import feature
  */
-class SettingsImportDialogFragment : BaseDialogFragment<Nothing>() {
-    companion object {
-        fun invoke(fragment: Fragment) {
-            invoke(fragment, SettingsImportDialogFragment())
-        }
-    }
+class SettingsImportDialogFragment : DialogFragment() {
 
     private var binding: DialogToolsSettingsImportBinding? = null
     private var dismissHandler: Handler? = null
-
 
     private val pickFile = registerForActivityResult(PickFileContract())
     { result -> onFilePickerResult(result.first, result.second) }

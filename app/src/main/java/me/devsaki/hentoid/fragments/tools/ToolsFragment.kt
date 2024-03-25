@@ -115,7 +115,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
             }
 
             IMPORT_SETTINGS -> {
-                SettingsImportDialogFragment.invoke(this)
+                show(SettingsImportDialogFragment())
                 true
             }
 
