@@ -5,10 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
-import androidx.fragment.app.Fragment
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Group
@@ -19,20 +18,15 @@ import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 
+private const val BOOK_IDS = "BOOK_IDS"
+
 /**
  * Dialog to select or create a custom group
  */
-class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.Parent>() {
-    companion object {
-        private const val BOOK_IDS = "BOOK_IDS"
+class ChangeGroupDialogFragment() : BaseDialogFragment<ChangeGroupDialogFragment.Parent>() {
 
-        operator fun invoke(parent: Fragment, bookIds: LongArray) {
-            val args = Bundle()
-            args.putLongArray(BOOK_IDS, bookIds)
-            val dialog = ChangeGroupDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+    constructor(bookIds: LongArray) : this(){
+        arguments = bundleOf(BOOK_IDS to bookIds)
     }
 
     private lateinit var bookIds: LongArray
