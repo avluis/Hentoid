@@ -12,9 +12,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
@@ -37,7 +37,6 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.core.setOnTextChangedListener
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryTransformBinding
@@ -65,19 +64,14 @@ import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.max
 
-class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialogFragment.Parent>() {
-    companion object {
-        const val KEY_CONTENTS = "contents"
+private const val KEY_CONTENTS = "contents"
 
-        fun invoke(parent: Fragment, contentList: List<Content>) {
-            val args = Bundle()
-            args.putLongArray(
-                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
-            )
-            val dialog = LibraryTransformDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+class LibraryTransformDialogFragment() : BaseDialogFragment<LibraryTransformDialogFragment.Parent>() {
+
+    constructor(contentList: List<Content>) : this() {
+        arguments = bundleOf(
+            KEY_CONTENTS to contentList.map { c -> c.id }.toLongArray()
+        )
     }
 
     // UI
