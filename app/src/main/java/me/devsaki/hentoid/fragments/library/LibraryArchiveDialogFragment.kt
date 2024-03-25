@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.view.children
-import androidx.fragment.app.FragmentActivity
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
@@ -17,7 +17,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryArchiveBinding
 import me.devsaki.hentoid.enums.StorageLocation
@@ -31,26 +30,15 @@ import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.workers.ArchiveWorker
 
-class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFragment.Parent>() {
-    companion object {
+private const val KEY_CONTENTS = "contents"
 
-        const val KEY_CONTENTS = "contents"
+class LibraryArchiveDialogFragment() : BaseDialogFragment<LibraryArchiveDialogFragment.Parent>() {
 
-        fun invoke(parent: FragmentActivity, contentList: List<Content>) {
-            val dialog = LibraryArchiveDialogFragment()
-            dialog.arguments = getArgs(contentList)
-            parent.show(dialog)
-        }
-
-        private fun getArgs(contentList: List<Content>): Bundle {
-            val args = Bundle()
-            args.putLongArray(
-                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
-            )
-            return args
-        }
+    constructor(contentList: List<Content>) : this() {
+        arguments = bundleOf(
+            KEY_CONTENTS to contentList.map { c -> c.id }.toLongArray()
+        )
     }
-
 
     // UI
     private var binding: DialogLibraryArchiveBinding? = null

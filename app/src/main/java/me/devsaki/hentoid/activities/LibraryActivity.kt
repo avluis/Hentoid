@@ -1217,7 +1217,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             return
         }
         selectExtension.deselect(selectExtension.selections.toMutableSet())
-        LibraryArchiveDialogFragment.invoke(this, items)
+        show(LibraryArchiveDialogFragment(items))
     }
 
     override fun leaveSelectionMode() {
