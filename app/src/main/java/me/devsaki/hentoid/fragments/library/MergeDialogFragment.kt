@@ -14,6 +14,7 @@ import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.drag.SimpleDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -42,7 +43,9 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
                 contentList.map { obj: Content -> obj.id }.toLongArray()
             )
             args.putBoolean(KEY_DELETE_DEFAULT, deleteDefault)
-            invoke(parent, MergeDialogFragment(), args)
+            val dialog = MergeDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

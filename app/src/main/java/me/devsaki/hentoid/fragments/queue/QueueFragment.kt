@@ -1252,8 +1252,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         SelectSiteDialogFragment.invoke(
             this,
             getString(R.string.filter_by_source),
-            sources,
-            parentIsActivity = true
+            sources
         )
     }
 }

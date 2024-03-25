@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Attribute
@@ -22,7 +23,9 @@ class MetaRenameDialogFragment : BaseDialogFragment<MetaRenameDialogFragment.Par
         fun invoke(parent: FragmentActivity, attrId: Long) {
             val args = Bundle()
             args.putLong(KEY_ID, attrId)
-            invoke(parent, MetaRenameDialogFragment(), args)
+            val dialog = MetaRenameDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

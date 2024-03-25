@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogSelectSiteBinding
 import me.devsaki.hentoid.enums.Site
@@ -34,10 +35,11 @@ class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Par
             includedSiteCodes: List<Int> = emptyList(),
             uniqueIdOnly: Boolean = false,
             showAltSites: Boolean = false,
-            parentIsActivity: Boolean = false,
         ) {
             val args = getArgs(title, includedSiteCodes, uniqueIdOnly, showAltSites)
-            invoke(fragment, SelectSiteDialogFragment(), args, parentIsActivity = parentIsActivity)
+            val dialog = SelectSiteDialogFragment()
+            dialog.arguments = args
+            fragment.show(dialog)
         }
 
         private fun getArgs(

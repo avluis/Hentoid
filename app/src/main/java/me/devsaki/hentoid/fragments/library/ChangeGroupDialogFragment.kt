@@ -8,6 +8,7 @@ import android.widget.CompoundButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Group
@@ -28,7 +29,9 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
         operator fun invoke(parent: Fragment, bookIds: LongArray) {
             val args = Bundle()
             args.putLongArray(BOOK_IDS, bookIds)
-            invoke(parent, ChangeGroupDialogFragment(), args)
+            val dialog = ChangeGroupDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

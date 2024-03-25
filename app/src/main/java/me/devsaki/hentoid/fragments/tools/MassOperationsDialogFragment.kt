@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ToolsActivity
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogToolsMassOperationsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
@@ -27,7 +28,9 @@ class MassOperationsDialogFragment : BaseDialogFragment<MassOperationsDialogFrag
         fun invoke(fragment: Fragment, contentSearchBundle: Bundle?) {
             val args = Bundle()
             args.putBundle(SEARCH_ARGS, contentSearchBundle)
-            invoke(fragment, MassOperationsDialogFragment(), args)
+            val dialog = MassOperationsDialogFragment()
+            dialog.arguments = args
+            fragment.show(dialog)
         }
     }
 

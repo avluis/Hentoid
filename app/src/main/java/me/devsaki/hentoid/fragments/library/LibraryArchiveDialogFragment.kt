@@ -17,6 +17,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryArchiveBinding
 import me.devsaki.hentoid.enums.StorageLocation
@@ -37,7 +38,9 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
         const val KEY_CONTENTS = "contents"
 
         fun invoke(parent: FragmentActivity, contentList: List<Content>) {
-            invoke(parent, LibraryArchiveDialogFragment(), getArgs(contentList))
+            val dialog = LibraryArchiveDialogFragment()
+            dialog.arguments = getArgs(contentList)
+            parent.show(dialog)
         }
 
         private fun getArgs(contentList: List<Content>): Bundle {

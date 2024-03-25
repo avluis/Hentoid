@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentActivity
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.RenamingRule
@@ -38,7 +39,9 @@ class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment
             args.putLong(KEY_RULE_ID, ruleId)
             if (attrType != null) args.putInt(KEY_ATTR_TYPE_CODE, attrType.code)
 
-            invoke(parent, MetaEditRuleDialogFragment(), args)
+            val dialog = MetaEditRuleDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 

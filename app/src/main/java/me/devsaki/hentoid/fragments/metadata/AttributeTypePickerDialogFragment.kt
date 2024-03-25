@@ -9,6 +9,7 @@ import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.DialogMetaNewAttributeBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -27,7 +28,9 @@ class AttributeTypePickerDialogFragment :
         fun invoke(parent: FragmentActivity, newAttrName: String) {
             val args = Bundle()
             args.putString(KEY_NAME, newAttrName)
-            invoke(parent, AttributeTypePickerDialogFragment(), args)
+            val dialog = AttributeTypePickerDialogFragment()
+            dialog.arguments = args
+            parent.show(dialog)
         }
     }
 
