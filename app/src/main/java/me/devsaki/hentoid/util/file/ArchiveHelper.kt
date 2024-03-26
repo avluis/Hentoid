@@ -39,9 +39,7 @@ private val SUPPORTED_EXTENSIONS = setOf("zip", "epub", "cbz", "cbr", "cb7", "7z
 
 private val archiveNamesFilter =
     FileHelper.NameFilter { displayName: String ->
-        isArchiveExtensionSupported(
-            FileHelper.getExtension(displayName)
-        )
+        isArchiveExtensionSupported(FileHelper.getExtension(displayName))
     }
 
 private const val INTERRUPTION_MSG = "Extract archive INTERRUPTED"
@@ -128,7 +126,6 @@ private fun getTypeFromArchiveHeader(binary: ByteArray): ArchiveFormat? {
 /**
  * Get the entries of the given archive file
  *
- * @param context Context to be used
  * @param file    Archive file to read
  * @return List of the entries of the given archive file; an empty list if the archive file is not supported
  * @throws IOException If something horrible happens during I/O
@@ -236,7 +233,6 @@ fun Context.extractArchiveEntriesSimple(
 /**
  * Extract the given entries from the given archive file
  *
- * @param context          Context to be used
  * @param uri              Uri of the archive file to extract from
  * @param fileCreator      Method to call to create a new file to extract to
  * @param fileFinder       Method to call to find a file in the extraction location
@@ -313,7 +309,6 @@ private fun Context.extractArchiveEntries(
 /**
  * Add the given file to the given ZipOutputStream
  *
- * @param context Context to be used
  * @param file    File to be added
  * @param stream  ZipOutputStream to write to
  * @param buffer  Buffer to be used
@@ -341,7 +336,6 @@ private fun Context.addFile(
 /**
  * Archive the given files into the given output stream using the ZIP format
  *
- * @param context Context to be used
  * @param files   List of the files to be archived
  * @param out     Output stream to write to
  * @throws IOException If something horrible happens during I/O
@@ -476,10 +470,7 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
 
 private fun findFile(targetFolder: File, targetName: String): Uri? {
     val files = targetFolder.listFiles { _, name: String ->
-        name.equals(
-            targetName,
-            ignoreCase = true
-        )
+        name.equals(targetName, ignoreCase = true)
     }
     return if (null == files || files.isEmpty()) null
     else Uri.fromFile(files[0])
