@@ -80,7 +80,7 @@ fun isMimeTypeSupported(extension: String): Boolean {
  * @param mimeType MIME type to test
  * @return True if the app supports the reading of images with the given MIME type; false if not
  */
-fun isImageExtensionSupported(mimeType: String): Boolean {
+private fun isImageExtensionSupported(mimeType: String): Boolean {
     return (mimeType.equals("jpg", ignoreCase = true)
             || mimeType.equals("jpeg", ignoreCase = true)
             || mimeType.equals("webp", ignoreCase = true)

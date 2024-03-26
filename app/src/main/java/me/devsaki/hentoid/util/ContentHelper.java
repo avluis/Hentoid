@@ -397,7 +397,7 @@ public final class ContentHelper {
             return new ArrayList<>();
         }
 
-        return FileHelper.listFoldersFilter(context, folder, displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME) && ImageHelperKt.isImageExtensionSupported(FileHelper.getExtension(displayName))));
+        return FileHelper.listFoldersFilter(context, folder, displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME) && ImageHelperKt.isSupportedImage(displayName)));
     }
 
     /**

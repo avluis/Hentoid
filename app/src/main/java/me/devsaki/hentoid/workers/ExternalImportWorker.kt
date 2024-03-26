@@ -73,12 +73,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     private fun eventProgress(step: Int, nbBooks: Int, booksOK: Int, booksKO: Int) {
         EventBus.getDefault().post(
             ProcessEvent(
-                ProcessEvent.Type.PROGRESS,
-                R.id.import_external,
-                step,
-                booksOK,
-                booksKO,
-                nbBooks
+                ProcessEvent.Type.PROGRESS, R.id.import_external, step, booksOK, booksKO, nbBooks
             )
         )
     }
@@ -89,11 +84,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun eventComplete(
-        step: Int,
-        nbBooks: Int,
-        booksOK: Int,
-        booksKO: Int,
-        cleanupLogFile: DocumentFile?
+        step: Int, nbBooks: Int, booksOK: Int, booksKO: Int, cleanupLogFile: DocumentFile?
     ) {
         EventBus.getDefault().postSticky(
             ProcessEvent(
@@ -143,13 +134,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 var dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     scanFolderRecursive(
-                        context,
-                        rootFolder,
-                        explorer,
-                        ArrayList(),
-                        detectedContent,
-                        dao,
-                        log
+                        context, rootFolder, explorer, ArrayList(), detectedContent, dao, log
                     )
                 } finally {
                     dao.cleanup()
@@ -223,25 +208,16 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                         }
                         ContentHelper.addContent(context, dao, content)
                         trace(
-                            Log.INFO,
-                            1,
-                            log,
-                            "Import book OK : %s",
-                            content.storageUri
+                            Log.INFO, 1, log, "Import book OK : %s", content.storageUri
                         )
                         booksOK++
                         notificationManager.notify(
                             ImportProgressNotification(
-                                content.title,
-                                booksOK + booksKO,
-                                detectedContent.size
+                                content.title, booksOK + booksKO, detectedContent.size
                             )
                         )
                         eventProgress(
-                            PrimaryImportWorker.STEP_3_BOOKS,
-                            detectedContent.size,
-                            booksOK,
-                            booksKO
+                            PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size, booksOK, booksKO
                         )
                     } // detected content
                     dao.deleteAllFlaggedBooks(false, null)
@@ -259,11 +235,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     detectedContent.size.toString() + ""
                 )
                 eventComplete(
-                    PrimaryImportWorker.STEP_3_BOOKS,
-                    detectedContent.size,
-                    booksOK,
-                    booksKO,
-                    null
+                    PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size, booksOK, booksKO, null
                 )
                 // Clear disk cache as import may reuse previous image IDs
                 init(applicationContext)
@@ -274,11 +246,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         } finally {
             logFile = context.writeLog(buildLogInfo(log))
             eventComplete(
-                PrimaryImportWorker.STEP_4_QUEUE_FINAL,
-                booksOK + booksKO,
-                booksOK,
-                booksKO,
-                logFile
+                PrimaryImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile
             ) // Final event; should be step 4
             notificationManager.notify(ImportCompleteNotification(booksOK, booksKO))
         }
@@ -328,10 +296,9 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         // If at least 2 subfolders and everyone of them ends with a number, we've got a multi-chapter book
         if (subFolders.size >= 2) {
             val allSubfoldersEndWithNumber =
-                subFolders.mapNotNull { obj: DocumentFile -> obj.name }
-                    .all { n: String ->
-                        ENDS_WITH_NUMBER.matcher(n).matches()
-                    }
+                subFolders.mapNotNull { obj: DocumentFile -> obj.name }.all { n: String ->
+                    ENDS_WITH_NUMBER.matcher(n).matches()
+                }
             if (allSubfoldersEndWithNumber) {
                 // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
                 val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
@@ -339,13 +306,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     val json = getFileWithName(jsons, JSON_FILE_NAME_V2)
                     library.add(
                         scanChapterFolders(
-                            context,
-                            root,
-                            subFolders,
-                            explorer,
-                            parentNames,
-                            dao,
-                            json
+                            context, root, subFolders, explorer, parentNames, dao, json
                         )
                     )
                 }
@@ -357,39 +318,33 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
         }
-        if (archives.isNotEmpty()) { // We've got an archived book
+
+        // We've got an archived book
+        if (archives.isNotEmpty()) {
             for (archive in archives) {
                 val json = getFileWithName(jsons, archive.name)
                 val c = scanArchive(
-                    context,
-                    root,
-                    archive,
-                    parentNames,
-                    StatusContent.EXTERNAL,
-                    dao,
-                    json
+                    context, root, archive, parentNames, StatusContent.EXTERNAL, dao, json
                 )
-                if (c.status != StatusContent.IGNORED) library.add(c) else trace(
-                    Log.DEBUG,
-                    0,
-                    log,
-                    "Archive ignored (unsupported pictures or corrupted archive) : %s",
-                    archive.name ?: "<name not found>"
-                )
+                // Valid archive
+                if (0 == c.first) library.add(c.second!!)
+                else {
+                    // Invalid archive
+                    val message = when (c.first) {
+                        1 -> "Archive ignored (contains another archive) : %s"
+                        else -> "Archive ignored (unsupported pictures or corrupted archive) : %s"
+                    }
+                    trace(Log.INFO, 0, log, message, archive.name ?: "<name not found>")
+                }
             }
         }
-        if (images.size > 2 || contentJsons.isNotEmpty()) { // We've got a book
+
+        // We've got a book
+        if (images.size > 2 || contentJsons.isNotEmpty()) {
             val json = getFileWithName(contentJsons, JSON_FILE_NAME_V2)
             library.add(
                 scanBookFolder(
-                    context,
-                    root,
-                    explorer,
-                    parentNames,
-                    StatusContent.EXTERNAL,
-                    dao,
-                    images,
-                    json
+                    context, root, explorer, parentNames, StatusContent.EXTERNAL, dao, images, json
                 )
             )
         }
@@ -398,21 +353,13 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         val newParentNames: MutableList<String> = ArrayList(parentNames)
         newParentNames.add(rootName)
         for (subfolder in subFolders) scanFolderRecursive(
-            context,
-            subfolder,
-            explorer,
-            newParentNames,
-            library,
-            dao,
-            log
+            context, subfolder, explorer, newParentNames, library, dao, log
         )
     }
 
     @Throws(IOException::class)
     private fun createJsonFileFor(
-        context: Context,
-        content: Content,
-        explorer: FileExplorer
+        context: Context, content: Content, explorer: FileExplorer
     ): Uri? {
         if (null == content.storageUri || content.storageUri.isEmpty()) return null
 
@@ -437,8 +384,11 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         }
         val jsonFile = explorer.findFile(context, contentFolder, jsonName)
         return if (jsonFile != null && jsonFile.exists()) jsonFile.uri else JsonHelper.jsonToFile(
-            context, JsonContent.fromEntity(content),
-            JsonContent::class.java, contentFolder, jsonName
+            context,
+            JsonContent.fromEntity(content),
+            JsonContent::class.java,
+            contentFolder,
+            jsonName
         ).uri
     }
 }

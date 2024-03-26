@@ -41,8 +41,9 @@ import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getArchiveNamesFilter
+import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.image.imageNamesFilter
-import me.devsaki.hentoid.util.image.isImageExtensionSupported
+import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import me.devsaki.hentoid.workers.data.PrimaryImportData
@@ -53,7 +54,7 @@ import java.time.Instant
 import java.util.Locale
 
 
-private val EXTERNAL_LIB_TAG = "external-library"
+private const val EXTERNAL_LIB_TAG = "external-library"
 
 enum class PickerResult {
     OK,  // OK - Returned a valid URI
@@ -888,7 +889,7 @@ fun scanForArchives(
                 dao,
                 json
             )
-            if (c.status != StatusContent.IGNORED) result.add(c)
+            if (0 == c.first) result.add(c.second!!)
         }
     }
     return result
@@ -905,7 +906,12 @@ fun scanForArchives(
  * @param targetStatus Target status of the Content to create
  * @param dao          CollectionDAO to use
  * @param jsonFile     JSON file to use, if one has been detected upstream; null if it has to be detected
- * @return Content created from the given archive
+ * @return Pair containing
+ *  Key : Return code
+ *      0 = success
+ *      1 = failure; file just contains other archives
+ *      2 = failure; file doesn't contain supported images or is corrupted
+ *  Value : Content created from the given archive, ur null if return code > 0
  */
 fun scanArchive(
     context: Context,
@@ -915,7 +921,7 @@ fun scanArchive(
     targetStatus: StatusContent,
     dao: CollectionDAO,
     jsonFile: DocumentFile?
-): Content {
+): Pair<Int, Content?> {
     var result: Content? = null
     if (jsonFile != null) {
         try {
@@ -931,20 +937,25 @@ fun scanArchive(
             Timber.w(e)
         }
     }
+
     var entries = emptyList<ArchiveEntry>()
     try {
         entries = context.getArchiveEntries(archive)
     } catch (e: Exception) {
         Timber.w(e)
     }
-    val imageEntries = entries.filter { (path): ArchiveEntry ->
-        isImageExtensionSupported(
-            FileHelper.getExtension(path)
-        )
-    }
+
+    val archiveEntries = entries.filter { (path) -> isSupportedArchive(path) }
+    val imageEntries = entries.filter { (path) -> isSupportedImage(path) }
         .filter { (_, size): ArchiveEntry -> size > 0 }
-        .toList()
-    if (imageEntries.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+
+    if (imageEntries.isEmpty()) {
+        // If it just contains other archives, raise an error
+        if (archiveEntries.isNotEmpty()) return Pair(1, null)
+        // If it contains no supported images, raise an error
+        return Pair(2, null)
+    }
+
     val images = ContentHelper.createImageListFromArchiveEntries(
         archive.uri,
         imageEntries,
@@ -978,7 +989,7 @@ fun scanArchive(
     result.computeSize()
     // e.g. when the ZIP table doesn't contain any size entry
     if (result.size <= 0) result.forceSize(archive.length())
-    return result
+    return Pair(0, result)
 }
 
 /**
