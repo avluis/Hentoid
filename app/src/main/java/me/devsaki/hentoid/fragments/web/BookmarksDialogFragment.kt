@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -42,29 +43,20 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 
-class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Parent>(),
+private const val KEY_SITE = "site"
+private const val KEY_TITLE = "title"
+private const val KEY_URL = "url"
+
+class BookmarksDialogFragment() : BaseDialogFragment<BookmarksDialogFragment.Parent>(),
     ItemTouchCallback,
     SelectSiteDialogFragment.Parent {
 
-    companion object {
-        private const val KEY_SITE = "site"
-        private const val KEY_TITLE = "title"
-        private const val KEY_URL = "url"
-
-        fun invoke(
-            parent: FragmentActivity,
-            site: Site,
-            title: String,
-            url: String
-        ) {
-            val args = Bundle()
-            args.putInt(KEY_SITE, site.code)
-            args.putString(KEY_TITLE, title)
-            args.putString(KEY_URL, url)
-            val dialog = BookmarksDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+    constructor(site: Site, title: String, url: String) : this() {
+        arguments = bundleOf(
+            KEY_SITE to site.code,
+            KEY_TITLE to title,
+            KEY_URL to url
+        )
     }
 
     // === UI

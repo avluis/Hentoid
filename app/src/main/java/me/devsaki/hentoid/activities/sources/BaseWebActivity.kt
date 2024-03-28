@@ -771,11 +771,12 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * Handler for the "bookmark" top menu button of the browser
      */
     private fun onBookmarkClick() {
-        BookmarksDialogFragment.invoke(
-            this,
-            getStartSite(),
-            StringHelper.protect(webView.title),
-            StringHelper.protect(webView.url)
+        show(
+            BookmarksDialogFragment(
+                getStartSite(),
+                StringHelper.protect(webView.title),
+                StringHelper.protect(webView.url)
+            )
         )
     }
 
