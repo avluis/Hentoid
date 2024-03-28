@@ -847,22 +847,24 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             Preferences.isDownloadDuplicateAsk() && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD
         when (actionButtonMode) {
             ActionMode.DOWNLOAD -> {
-                if (needsDuplicateAlert) DuplicateDialogFragment.invoke(
-                    this,
-                    duplicateId,
-                    currentContent!!.qtyPages,
-                    duplicateSimilarity,
-                    false
+                if (needsDuplicateAlert) show(
+                    DuplicateDialogFragment(
+                        duplicateId,
+                        currentContent!!.qtyPages,
+                        duplicateSimilarity,
+                        false
+                    )
                 ) else processDownload(false, false, false)
             }
 
             ActionMode.DOWNLOAD_PLUS -> {
-                if (needsDuplicateAlert) DuplicateDialogFragment.invoke(
-                    this,
-                    duplicateId,
-                    currentContent!!.qtyPages,
-                    duplicateSimilarity,
-                    true
+                if (needsDuplicateAlert) show(
+                    DuplicateDialogFragment(
+                        duplicateId,
+                        currentContent!!.qtyPages,
+                        duplicateSimilarity,
+                        true
+                    )
                 ) else processDownload(false, true, false)
             }
 
@@ -1314,12 +1316,13 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             ContentStatus.UNDOWNLOADABLE -> onResultFailed()
             ContentStatus.UNKNOWN -> {
                 if (quickDownload) {
-                    if (duplicateId > -1 && Preferences.isDownloadDuplicateAsk()) DuplicateDialogFragment.invoke(
-                        this,
-                        duplicateId,
-                        currentContent!!.qtyPages,
-                        duplicateSimilarity,
-                        false
+                    if (duplicateId > -1 && Preferences.isDownloadDuplicateAsk()) show(
+                        DuplicateDialogFragment(
+                            duplicateId,
+                            currentContent!!.qtyPages,
+                            duplicateSimilarity,
+                            false
+                        )
                     ) else processDownload(
                         quickDownload = true,
                         isDownloadPlus = false,

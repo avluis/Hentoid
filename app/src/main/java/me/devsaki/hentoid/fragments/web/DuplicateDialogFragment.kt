@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
@@ -31,17 +32,32 @@ import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.tintBitmap
 import org.greenrobot.eventbus.EventBus
 
-class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Parent>() {
+private const val KEY_CONTENT_ID = "contentId"
+private const val KEY_ONLINE_CONTENT_PAGES = "onlineContentPages"
+private const val KEY_CONTENT_SIMILARITY = "similarity"
+private const val KEY_IS_DOWNLOAD_PLUS = "downloadPlus"
+
+class DuplicateDialogFragment() : BaseDialogFragment<DuplicateDialogFragment.Parent>() {
 
     init {
         isCancelable = false
     }
 
+    constructor(
+        libraryContentId: Long,
+        onlineContentNbPages: Int,
+        similarity: Float,
+        isDownloadPlus: Boolean
+    ) : this() {
+        arguments = bundleOf(
+            KEY_CONTENT_ID to libraryContentId,
+            KEY_ONLINE_CONTENT_PAGES to onlineContentNbPages,
+            KEY_CONTENT_SIMILARITY to similarity,
+            KEY_IS_DOWNLOAD_PLUS to isDownloadPlus
+        )
+    }
+
     companion object {
-        private const val KEY_CONTENT_ID = "contentId"
-        private const val KEY_ONLINE_CONTENT_PAGES = "onlineContentPages"
-        private const val KEY_CONTENT_SIMILARITY = "similarity"
-        private const val KEY_IS_DOWNLOAD_PLUS = "downloadPlus"
 
         private var bmp: Bitmap =
             BitmapFactory.decodeResource(getInstance().resources, R.drawable.ic_hentoid_trans)
@@ -51,23 +67,6 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
         val centerInside: Transformation<Bitmap> = CenterInside()
 
         val glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
-
-        fun invoke(
-            parent: FragmentActivity,
-            libraryContentId: Long,
-            onlineContentNbPages: Int,
-            similarity: Float,
-            isDownloadPlus: Boolean
-        ) {
-            val args = Bundle()
-            args.putLong(KEY_CONTENT_ID, libraryContentId)
-            args.putInt(KEY_ONLINE_CONTENT_PAGES, onlineContentNbPages)
-            args.putFloat(KEY_CONTENT_SIMILARITY, similarity)
-            args.putBoolean(KEY_IS_DOWNLOAD_PLUS, isDownloadPlus)
-            val dialog = DuplicateDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
     }
 
     private var binding: DialogWebDuplicateBinding? = null
