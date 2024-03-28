@@ -414,7 +414,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     }
 
     private fun showErrorLogDialog(content: Content) {
-        ErrorsDialogFragment.invoke(this, content.id)
+        show(ErrorsDialogFragment(content.id))
     }
 
     private fun onErrorsChanged(result: List<Content>) {

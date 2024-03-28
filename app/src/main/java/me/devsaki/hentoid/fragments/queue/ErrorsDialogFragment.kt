@@ -4,9 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.core.os.bundleOf
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -21,25 +20,18 @@ import me.devsaki.hentoid.util.file.shareFile
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.writeLog
 
+private const val ID = "ID"
+
 /**
  * Info dialog for download errors details
  */
-class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
+class ErrorsDialogFragment() : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
 
-    companion object {
-        const val ID = "ID"
-
-        fun invoke(parentFragment: Fragment, id: Long) {
-            val args = Bundle()
-            args.putLong(ID, id)
-            val dialog = ErrorsDialogFragment()
-            dialog.arguments = args
-            parentFragment.show(dialog)
-        }
+    constructor(id: Long) : this() {
+        arguments = bundleOf(ID to id)
     }
 
     private var binding: DialogLibraryErrorsBinding? = null
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
