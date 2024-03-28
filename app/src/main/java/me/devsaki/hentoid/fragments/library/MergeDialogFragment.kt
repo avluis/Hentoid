@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.fastadapter.FastAdapter
@@ -14,7 +14,6 @@ import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.drag.SimpleDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -26,27 +25,16 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 
-class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), ItemTouchCallback {
+private const val KEY_CONTENTS = "contents"
+private const val KEY_DELETE_DEFAULT = "delete_default"
 
-    companion object {
-        private const val KEY_CONTENTS = "contents"
-        private const val KEY_DELETE_DEFAULT = "delete_default"
+class MergeDialogFragment() : BaseDialogFragment<MergeDialogFragment.Parent>(), ItemTouchCallback {
 
-        operator fun invoke(
-            parent: Fragment,
-            contentList: List<Content>,
-            deleteDefault: Boolean
-        ) {
-            val args = Bundle()
-            args.putLongArray(
-                KEY_CONTENTS,
-                contentList.map { obj: Content -> obj.id }.toLongArray()
-            )
-            args.putBoolean(KEY_DELETE_DEFAULT, deleteDefault)
-            val dialog = MergeDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+    constructor(contentList: List<Content>, deleteDefault: Boolean) : this() {
+        arguments = bundleOf(
+            KEY_CONTENTS to contentList.map { obj: Content -> obj.id }.toLongArray(),
+            KEY_DELETE_DEFAULT to deleteDefault
+        )
     }
 
     // === UI

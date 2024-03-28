@@ -268,10 +268,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
     private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_merge -> {
-                MergeDialogFragment.invoke(
-                    this,
-                    itemAdapter.adapterItems.mapNotNull { di -> di.content },
-                    true
+                show(
+                    MergeDialogFragment(
+                        itemAdapter.adapterItems.mapNotNull { di -> di.content },
+                        true
+                    )
                 )
             }
         }

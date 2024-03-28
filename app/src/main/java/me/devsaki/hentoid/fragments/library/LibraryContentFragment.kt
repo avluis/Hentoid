@@ -74,7 +74,6 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
-import me.devsaki.hentoid.fragments.library.MergeDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
@@ -561,10 +560,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             R.id.action_set_group_cover -> askSetGroupCover()
             R.id.action_merge -> {
-                invoke(
-                    this,
-                    selectExtension!!.selectedItems.mapNotNull { ci -> ci.content },
-                    false
+                show(
+                    MergeDialogFragment(
+                        selectExtension!!.selectedItems.mapNotNull { ci -> ci.content },
+                        false
+                    )
                 )
                 keepToolbar = true
             }
