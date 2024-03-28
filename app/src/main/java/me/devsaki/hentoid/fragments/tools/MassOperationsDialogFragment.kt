@@ -4,15 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ToolsActivity
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogToolsMassOperationsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
@@ -20,20 +19,13 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.widget.ContentSearchManager
 
-class MassOperationsDialogFragment : BaseDialogFragment<MassOperationsDialogFragment.Parent>() {
+private const val SEARCH_ARGS = "search_args"
 
-    companion object {
-        const val SEARCH_ARGS = "search_args"
+class MassOperationsDialogFragment() : BaseDialogFragment<MassOperationsDialogFragment.Parent>() {
 
-        fun invoke(fragment: Fragment, contentSearchBundle: Bundle?) {
-            val args = Bundle()
-            args.putBundle(SEARCH_ARGS, contentSearchBundle)
-            val dialog = MassOperationsDialogFragment()
-            dialog.arguments = args
-            fragment.show(dialog)
-        }
+    constructor(contentSearchBundle: Bundle?) : this() {
+        arguments = bundleOf(SEARCH_ARGS to contentSearchBundle)
     }
-
 
     // == UI
     private var binding: DialogToolsMassOperationsBinding? = null

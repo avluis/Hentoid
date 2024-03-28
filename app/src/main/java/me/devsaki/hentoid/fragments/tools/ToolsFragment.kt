@@ -98,7 +98,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
             }
 
             MASS_OPERATIONS -> {
-                MassOperationsDialogFragment.invoke(this, contentSearchBundle)
+                show(MassOperationsDialogFragment(contentSearchBundle))
                 true
             }
 
