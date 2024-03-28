@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentActivity
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
@@ -16,21 +17,15 @@ import me.devsaki.hentoid.databinding.DialogMetaGalleryBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.viewholders.ImageFileItem
 
+private const val KEY_IMGS = "image_ids"
+
 /**
  * Dialog to pick a picture in a content gallery
  */
-class GalleryPickerDialogFragment : BaseDialogFragment<GalleryPickerDialogFragment.Parent>() {
+class GalleryPickerDialogFragment() : BaseDialogFragment<GalleryPickerDialogFragment.Parent>() {
 
-    companion object {
-        const val KEY_IMGS = "image_ids"
-
-        fun invoke(activity: FragmentActivity, images: List<ImageFile>) {
-            val args = Bundle()
-            args.putLongArray(KEY_IMGS, images.map { i -> i.id }.toLongArray())
-            val dialog = GalleryPickerDialogFragment()
-            dialog.arguments = args
-            activity.show(dialog)
-        }
+    constructor(images: List<ImageFile>) : this() {
+        arguments = bundleOf(KEY_IMGS to images.map { i -> i.id }.toLongArray())
     }
 
     // UI

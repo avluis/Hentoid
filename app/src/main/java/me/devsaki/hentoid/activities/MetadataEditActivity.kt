@@ -36,6 +36,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.AttributeItemBundle
 import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle
 import me.devsaki.hentoid.core.setOnTextChangedListener
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
@@ -333,7 +334,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
                             if (imgs != null) {
                                 b2.titleNew.visibility = View.GONE
                                 b2.tagsFab.visibility = View.GONE
-                                GalleryPickerDialogFragment.invoke(this, imgs)
+                                show(GalleryPickerDialogFragment(imgs))
                             }
                         }
                     }
