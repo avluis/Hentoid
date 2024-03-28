@@ -22,6 +22,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle
 import me.devsaki.hentoid.adapters.AvailableAttributeAdapter
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.IncludeSearchBottomPanelBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -286,7 +287,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         val attr = button.tag as Attribute
         if (attr.isNew) { // Create new attribute
             if (attr.type.equals(AttributeType.UNDEFINED))
-                AttributeTypePickerDialogFragment.invoke(activity as FragmentActivity, attr.name)
+                (activity as FragmentActivity).show(AttributeTypePickerDialogFragment(attr.name))
             else // Type already known
                 onNewAttributeSelected(attr.name, attr.type)
         } else if (!contentAttributes.contains(attr)) { // Add existing attribute

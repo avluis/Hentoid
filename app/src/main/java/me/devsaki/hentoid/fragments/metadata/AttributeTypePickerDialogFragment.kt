@@ -4,34 +4,27 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentActivity
+import androidx.core.os.bundleOf
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.DialogMetaNewAttributeBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.viewholders.AttributeItem
 
+private const val KEY_NAME = "name"
+
 /**
  * Dialog to pick a picture in a content gallery
  */
-class AttributeTypePickerDialogFragment :
+class AttributeTypePickerDialogFragment() :
     BaseDialogFragment<AttributeTypePickerDialogFragment.Parent>() {
 
-    companion object {
-        const val KEY_NAME = "name"
-
-        fun invoke(parent: FragmentActivity, newAttrName: String) {
-            val args = Bundle()
-            args.putString(KEY_NAME, newAttrName)
-            val dialog = AttributeTypePickerDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+    constructor(newAttrName: String) : this() {
+        arguments = bundleOf(KEY_NAME to newAttrName)
     }
 
     // UI
