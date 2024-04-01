@@ -6,11 +6,10 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentActivity
+import androidx.core.os.bundleOf
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.RenamingRule
@@ -18,33 +17,23 @@ import me.devsaki.hentoid.databinding.DialogMetaRuleEditBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 
+private const val KEY_RULE_ID = "id"
+private const val KEY_MODE_CREATE = "mode_create"
+private const val KEY_ATTR_TYPE_CODE = "attr_type_code"
+
 /**
  * Dialog to edit an attribute naming rule
  */
-class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment.Parent>() {
+class MetaEditRuleDialogFragment() : BaseDialogFragment<MetaEditRuleDialogFragment.Parent>() {
 
-    companion object {
-        const val KEY_RULE_ID = "id"
-        const val KEY_MODE_CREATE = "mode_create"
-        const val KEY_ATTR_TYPE_CODE = "attr_type_code"
-
-        fun invoke(
-            parent: FragmentActivity,
-            createMode: Boolean,
-            ruleId: Long,
-            attrType: AttributeType? = null
-        ) {
-            val args = Bundle()
-            args.putBoolean(KEY_MODE_CREATE, createMode)
-            args.putLong(KEY_RULE_ID, ruleId)
-            if (attrType != null) args.putInt(KEY_ATTR_TYPE_CODE, attrType.code)
-
-            val dialog = MetaEditRuleDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+    constructor(createMode: Boolean, ruleId: Long, attrType: AttributeType? = null) : this() {
+        val args = bundleOf(
+            KEY_MODE_CREATE to createMode,
+            KEY_RULE_ID to ruleId
+        )
+        if (attrType != null) args.putInt(KEY_ATTR_TYPE_CODE, attrType.code)
+        arguments = args
     }
-
 
     // UI
     private var binding: DialogMetaRuleEditBinding? = null

@@ -17,6 +17,7 @@ import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil
 import com.mikepenz.fastadapter.select.SelectExtension
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.RenamingRuleBundle
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.databinding.ActivityRulesBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -171,7 +172,7 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
             it.list.adapter = fastAdapter
             // New rule FAB
             it.tagsFab.setOnClickListener {
-                MetaEditRuleDialogFragment.invoke(this, true, 0, attributeTypeFilter)
+                show(MetaEditRuleDialogFragment(true, 0, attributeTypeFilter))
             }
 
         }
@@ -275,7 +276,7 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
 
 
     private fun editRule(rule: RenamingRule) {
-        MetaEditRuleDialogFragment.invoke(this, false, rule.id)
+        show(MetaEditRuleDialogFragment(false, rule.id))
     }
 
     override fun onCreateRule(type: AttributeType, source: String, target: String) {
