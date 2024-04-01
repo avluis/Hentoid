@@ -61,7 +61,6 @@ import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.reader.ReaderContentBottomSheetFragment.Companion.invoke
-import me.devsaki.hentoid.fragments.reader.ReaderDeleteDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderImageBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderNavigation.Pager
 import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.invoke
@@ -244,11 +243,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     R.id.action_book_settings -> onBookSettingsClick()
                     R.id.action_shuffle -> onShuffleClick()
                     R.id.action_slideshow -> onSlideshowClick()
-                    R.id.action_delete_book -> if (VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode()) invoke(
-                        this, !isContentArchive
-                    )
-                    else  // We already know what to delete
-                        onDeleteElement(VIEWER_DELETE_TARGET_PAGE == Preferences.getReaderDeleteTarget())
+                    R.id.action_delete_book -> {
+                        if (VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode())
+                            show(ReaderDeleteDialogFragment(!isContentArchive))
+                        else  // We already know what to delete
+                            onDeleteElement(VIEWER_DELETE_TARGET_PAGE == Preferences.getReaderDeleteTarget())
+                    }
 
                     else -> {}
                 }

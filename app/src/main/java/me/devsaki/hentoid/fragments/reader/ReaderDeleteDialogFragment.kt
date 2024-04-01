@@ -4,26 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.databinding.DialogReaderDeleteBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 
-class ReaderDeleteDialogFragment : BaseDialogFragment<ReaderDeleteDialogFragment.Parent>() {
+private const val KEY_DELETE_PAGE_ALLOWED = "delete_page_allowed"
 
-    companion object {
-        const val KEY_DELETE_PAGE_ALLOWED = "delete_page_allowed"
+class ReaderDeleteDialogFragment() : BaseDialogFragment<ReaderDeleteDialogFragment.Parent>() {
 
-        fun invoke(parent: Fragment, isDeletePageAllowed: Boolean) {
-            val args = Bundle()
-            args.putBoolean(KEY_DELETE_PAGE_ALLOWED, isDeletePageAllowed)
-            val dialog = ReaderDeleteDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+    constructor(isDeletePageAllowed: Boolean) : this() {
+        arguments = bundleOf(KEY_DELETE_PAGE_ALLOWED to isDeletePageAllowed)
     }
-
 
     // UI
     private var binding: DialogReaderDeleteBinding? = null
