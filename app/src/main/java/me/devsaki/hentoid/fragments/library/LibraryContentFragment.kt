@@ -74,7 +74,6 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
-import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
@@ -572,7 +571,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 selectedContent = selectExtension!!.selectedItems.firstOrNull()
                 selectedContent?.let {
                     val c = it.content
-                    if (c != null) invoke(this, c)
+                    if (c != null) show(SplitDialogFragment(c))
                 }
                 keepToolbar = true
             }
