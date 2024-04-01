@@ -80,6 +80,8 @@ import me.devsaki.hentoid.viewmodels.QueueViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.build
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
+import me.devsaki.hentoid.widget.DragSelectTouchListener
+import me.devsaki.hentoid.widget.DragSelectionProcessor
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
@@ -114,6 +116,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     private val itemAdapter = ItemAdapter<ContentItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
     private val selectExtension = fastAdapter.getSelectExtension()
+    private var mDragSelectTouchListener: DragSelectTouchListener? = null
 
     // Helper for swiping items
     private lateinit var touchHelper: ItemTouchHelper
@@ -216,7 +219,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         }
         val helper = FastAdapterPreClickSelectHelper(fastAdapter, selectExtension)
         fastAdapter.onPreClickListener = { _, _, _, pos -> helper.onPreClickListener(pos) }
-        fastAdapter.onPreLongClickListener = { _, _, _, pos -> helper.onPreLongClickListener(pos) }
+        fastAdapter.onPreLongClickListener =
+            { _, _, _, p ->
+                // Warning : specific code for drag selection
+                mDragSelectTouchListener?.startDragSelection(p)
+                helper.onPreLongClickListener(p)
+            }
 
         binding?.apply {
             queueList.adapter = fastAdapter
@@ -242,6 +250,32 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
             touchHelper = ItemTouchHelper(dragSwipeCallback)
             touchHelper.attachToRecyclerView(queueList)
+
+            // Select / deselect on swipe
+            val onDragSelectionListener: DragSelectTouchListener.OnDragSelectListener =
+                DragSelectionProcessor(object : DragSelectionProcessor.ISelectionHandler {
+                    override val selection: Set<Int>
+                        get() = selectExtension.selections
+
+                    override fun isSelected(index: Int): Boolean {
+                        return selectExtension.selections.contains(index)
+                    }
+
+                    override fun updateSelection(
+                        start: Int,
+                        end: Int,
+                        isSelected: Boolean,
+                        calledFromOnStart: Boolean
+                    ) {
+                        if (isSelected) selectExtension.select(IntRange(start, end))
+                        else selectExtension.deselect(IntRange(start, end).toMutableList())
+                    }
+                }).withMode(DragSelectionProcessor.Mode.Simple)
+
+            DragSelectTouchListener().withSelectListener(onDragSelectionListener).let {
+                mDragSelectTouchListener = it
+                queueList.addOnItemTouchListener(it)
+            }
         }
 
         // Item click listener
