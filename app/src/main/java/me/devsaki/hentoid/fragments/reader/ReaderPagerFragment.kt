@@ -53,13 +53,13 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.adapters.ImagePagerAdapter
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.reader.ReaderBrowseModeDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderContentBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderDeleteDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderImageBottomSheetFragment.Companion.invoke
@@ -345,7 +345,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             // System bars are visible only if HUD is visible
             setSystemBarsVisible(controlsOverlay.root.visibility == View.VISIBLE)
         }
-        if (VIEWER_BROWSE_NONE == Preferences.getReaderBrowseMode()) invoke(this)
+        if (VIEWER_BROWSE_NONE == Preferences.getReaderBrowseMode()) {
+            show(ReaderBrowseModeDialogFragment())
+        }
         navigator.updatePageControls()
     }
 

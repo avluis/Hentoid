@@ -11,11 +11,6 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 
 class ReaderBrowseModeDialogFragment : BaseDialogFragment<ReaderBrowseModeDialogFragment.Parent>() {
-    companion object {
-        fun invoke(parent: Fragment) {
-            parent.show(ReaderBrowseModeDialogFragment())
-        }
-    }
 
     // UI
     private var binding: DialogReaderBrowseModeChooserBinding? = null
