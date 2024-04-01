@@ -6,31 +6,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.fragment.app.Fragment
+import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Debouncer
+
+private const val RATING = "RATING"
+private const val ITEM_IDS = "ITEM_IDS"
 
 /**
  * Dialog to assign a rating
  */
-class RatingDialogFragment : BaseDialogFragment<RatingDialogFragment.Parent>() {
+class RatingDialogFragment() : BaseDialogFragment<RatingDialogFragment.Parent>() {
 
-    companion object {
-        private const val RATING = "RATING"
-        private const val ITEM_IDS = "ITEM_IDS"
-
-        operator fun invoke(parent: Fragment, itemIds: LongArray, initialRating: Int) {
-            val args = Bundle()
-            args.putInt(RATING, initialRating)
-            args.putLongArray(ITEM_IDS, itemIds)
-            val dialog = RatingDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+    constructor(itemIds: LongArray, initialRating: Int) : this() {
+        arguments = bundleOf(
+            RATING to initialRating,
+            ITEM_IDS to itemIds
+        )
     }
 
     // === UI

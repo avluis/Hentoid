@@ -74,7 +74,6 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
-import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
@@ -666,7 +665,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val selectedItems = selectExtension!!.selectedItems
         val selectedIds = selectedItems.mapNotNull { ci -> ci.content }.map { c -> c.id }
         if (selectedIds.isNotEmpty()) {
-            invoke(this, selectedIds.toLongArray(), 0)
+            show(RatingDialogFragment(selectedIds.toLongArray(), 0))
         }
     }
 
@@ -1599,7 +1598,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * @param content Content whose "rating" button has been clicked on
      */
     private fun onBookRatingClick(content: Content) {
-        invoke(this, longArrayOf(content.id), content.rating)
+        show(RatingDialogFragment(longArrayOf(content.id), content.rating))
     }
 
     private fun redownloadFromScratch(contentList: List<Content>) {

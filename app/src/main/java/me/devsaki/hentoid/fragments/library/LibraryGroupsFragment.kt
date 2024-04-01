@@ -54,7 +54,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
@@ -361,7 +360,7 @@ class LibraryGroupsFragment : Fragment(),
      * @param group Group whose "rating" button has been clicked on
      */
     private fun onGroupRatingClick(group: Group) {
-        invoke(this, longArrayOf(group.getId()), group.rating)
+        show(RatingDialogFragment(longArrayOf(group.getId()), group.rating))
     }
 
     /**
@@ -557,7 +556,7 @@ class LibraryGroupsFragment : Fragment(),
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         val selectedIds = selectedItems.map { gi -> gi.group }.map { g -> g.id }
         if (selectedIds.isNotEmpty()) {
-            invoke(this, selectedIds.toLongArray(), 0)
+            show(RatingDialogFragment(selectedIds.toLongArray(), 0))
         }
     }
 
