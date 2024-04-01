@@ -46,15 +46,36 @@ import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
+private val IMAGE_DIFF_CALLBACK: DiffUtil.ItemCallback<ImageFile> =
+    object : DiffUtil.ItemCallback<ImageFile>() {
+        override fun areItemsTheSame(
+            oldItem: ImageFile, newItem: ImageFile
+        ): Boolean {
+            return oldItem.uniqueHash() == newItem.uniqueHash()
+        }
+
+        override fun areContentsTheSame(
+            oldItem: ImageFile, newItem: ImageFile
+        ): Boolean {
+            return (oldItem == newItem)
+        }
+    }
+
 class ImagePagerAdapter(val context: Context) :
     ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder>(IMAGE_DIFF_CALLBACK) {
+
+    enum class ImageType(val value: Int) {
+        IMG_TYPE_OTHER(0), // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Glide if animation detected
+        IMG_TYPE_GIF(1), // Static and animated GIFs -> use APNG4Android library
+        IMG_TYPE_APNG(2), // Animated PNGs -> use APNG4Android library
+        IMG_TYPE_AWEBP(3) // Animated WEBPs -> use APNG4Android library
+    }
 
     enum class ViewType(val value: Int) {
         DEFAULT(0), IMAGEVIEW_STRETCH(1), SSIV_VERTICAL(2)
     }
 
-    private val pageMinHeight =
-        context.resources.getDimension(R.dimen.page_min_height).toInt()
+    private val pageMinHeight = context.resources.getDimension(R.dimen.page_min_height).toInt()
 
     private var itemTouchListener: OnTouchListener? = null
     private var scaleListener: BiConsumer<Int, Float>? = null
@@ -116,18 +137,18 @@ class ImagePagerAdapter(val context: Context) :
         this.itemTouchListener = itemTouchListener
     }
 
-    private fun getImageType(img: ImageFile?): Int {
-        if (null == img) return IMG_TYPE_OTHER
+    private fun getImageType(img: ImageFile?): ImageType {
+        if (null == img) return ImageType.IMG_TYPE_OTHER
         val extension = FileHelper.getExtension(img.fileUri)
         if ("gif".equals(extension, ignoreCase = true) || img.mimeType.contains("gif")) {
-            return IMG_TYPE_GIF
+            return ImageType.IMG_TYPE_GIF
         }
         if ("apng".equals(extension, ignoreCase = true) || img.mimeType.contains("apng")) {
-            return IMG_TYPE_APNG
+            return ImageType.IMG_TYPE_APNG
         }
         return if ("webp".equals(extension, ignoreCase = true) || img.mimeType.contains("webp")) {
-            IMG_TYPE_AWEBP
-        } else IMG_TYPE_OTHER
+            ImageType.IMG_TYPE_AWEBP
+        } else ImageType.IMG_TYPE_OTHER
     }
 
     private fun getImageViewType(displayParams: ReaderPagerFragment.DisplayParams): Int {
@@ -193,15 +214,16 @@ class ImagePagerAdapter(val context: Context) :
                 image.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL)
             }
             // Avoid stacking 0-px tall images on screen and load all of them at the same time
-            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
-                rootView.minimumHeight = pageMinHeight
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) rootView.minimumHeight =
+                pageMinHeight
 
             val imageType = getImageType(getImageAt(position))
             if (forceImageView != null) { // ImageView has been forced
                 switchImageView(forceImageView!!)
                 forceImageView = null // Reset force flag
-            } else if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType)
-                switchImageView(true)
+            } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType) switchImageView(
+                true
+            )
             else switchImageView(imgViewType == ViewType.IMAGEVIEW_STRETCH.value)
 
             // Initialize SSIV when required
@@ -225,8 +247,9 @@ class ImagePagerAdapter(val context: Context) :
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
             layoutParams.height = layoutStyle
             imgView.layoutParams = layoutParams
-            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
-                imgView.setOnTouchListener(itemTouchListener)
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation) imgView.setOnTouchListener(
+                itemTouchListener
+            )
 
             var imageAvailable = true
             val img = getImageAt(position)
@@ -290,10 +313,8 @@ class ImagePagerAdapter(val context: Context) :
     }
 
     fun getDimensionsAtPosition(position: Int): Point {
-        if (recyclerView != null) {
-            val holder =
-                recyclerView!!.findViewHolderForAdapterPosition(position) as ImageViewHolder?
-            if (holder != null) return holder.dimensions
+        (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.let { holder ->
+            return holder.dimensions
         }
         return Point()
     }
@@ -302,10 +323,8 @@ class ImagePagerAdapter(val context: Context) :
         if (absoluteScales.containsKey(position)) {
             val result = absoluteScales[position]
             if (result != null) return result
-        } else if (recyclerView != null) {
-            val holder =
-                recyclerView!!.findViewHolderForAdapterPosition(position) as ImageViewHolder?
-            if (holder != null) return holder.absoluteScale
+        } else (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.let { holder ->
+            return holder.absoluteScale
         }
         return 0f
     }
@@ -320,37 +339,31 @@ class ImagePagerAdapter(val context: Context) :
     }
 
     fun setRelativeScaleAtPosition(position: Int, targetRelativeScale: Float) {
-        if (recyclerView != null) {
-            val holder =
-                recyclerView!!.findViewHolderForAdapterPosition(position) as ImageViewHolder?
-            if (holder != null && initialAbsoluteScales.containsKey(position)) {
-                val initialScale = initialAbsoluteScales[position]
-                if (initialScale != null) holder.absoluteScale = targetRelativeScale * initialScale
+        recyclerView?.apply {
+            (findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.let { holder ->
+                if (initialAbsoluteScales.containsKey(position)) {
+                    initialAbsoluteScales[position]?.let { initialScale ->
+                        holder.absoluteScale = targetRelativeScale * initialScale
+                    }
+                }
             }
         }
     }
 
     fun resetScaleAtPosition(position: Int) {
-        if (recyclerView != null) {
-            val holder =
-                recyclerView!!.findViewHolderForAdapterPosition(position) as ImageViewHolder?
-            holder?.resetScale()
-        }
+        (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.resetScale()
     }
 
     fun multiplyScale(multiplier: Float) {
-        if (recyclerView != null) {
-            for (i in 0 until itemCount) {
-                val holder = recyclerView!!.findViewHolderForAdapterPosition(i) as ImageViewHolder?
-                holder?.multiplyVirtualScale(multiplier)
-            }
+        for (i in 0 until itemCount) {
+            (recyclerView?.findViewHolderForAdapterPosition(i) as ImageViewHolder?)
+                ?.multiplyVirtualScale(multiplier)
         }
     }
 
     private fun onAbsoluteScaleChanged(position: Int, scale: Float) {
         Timber.d(">> position %d -> scale %s", position, scale)
-        if (!initialAbsoluteScales.containsKey(position))
-            initialAbsoluteScales[position] = scale
+        if (!initialAbsoluteScales.containsKey(position)) initialAbsoluteScales[position] = scale
         if (!absoluteScales.containsKey(position)) absoluteScales[position] = scale
         if (abs(scale - absoluteScales[position]!!) > 0.01) {
             absoluteScales[position] = scale
@@ -391,7 +404,7 @@ class ImagePagerAdapter(val context: Context) :
 
         fun setImage(img: ImageFile) {
             this.img = img
-            val imgType: Int = getImageType(img)
+            val imgType = getImageType(img)
             val uri = Uri.parse(img.fileUri)
             noImgTxt?.isVisible = false
             Timber.d("Picture %d : binding viewholder %s %s", absoluteAdapterPosition, imgType, uri)
@@ -566,10 +579,7 @@ class ImagePagerAdapter(val context: Context) :
 
         // == GLIDE CALLBACKS
         override fun onLoadFailed(
-            e: GlideException?,
-            model: Any?,
-            target: Target<Drawable>,
-            isFirstResource: Boolean
+            e: GlideException?, model: Any?, target: Target<Drawable>, isFirstResource: Boolean
         ): Boolean {
             Timber.d(
                 e, "Picture %d : Glide loading failed : %s", absoluteAdapterPosition, img!!.fileUri
@@ -586,38 +596,12 @@ class ImagePagerAdapter(val context: Context) :
             isFirstResource: Boolean
         ): Boolean {
             noImgTxt?.visibility = View.GONE
-            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
-                adjustHeight(resource.intrinsicWidth, resource.intrinsicHeight, true)
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) adjustHeight(
+                resource.intrinsicWidth,
+                resource.intrinsicHeight,
+                true
+            )
             return false
         }
-    }
-
-    companion object {
-        // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Glide if animation detected
-        const val IMG_TYPE_OTHER = 0
-
-        // Static and animated GIFs -> use APNG4Android library
-        const val IMG_TYPE_GIF = 1
-
-        // Animated PNGs -> use APNG4Android library
-        const val IMG_TYPE_APNG = 2
-
-        // Animated WEBPs -> use APNG4Android library
-        const val IMG_TYPE_AWEBP = 3
-
-        val IMAGE_DIFF_CALLBACK: DiffUtil.ItemCallback<ImageFile> =
-            object : DiffUtil.ItemCallback<ImageFile>() {
-                override fun areItemsTheSame(
-                    oldItem: ImageFile, newItem: ImageFile
-                ): Boolean {
-                    return oldItem.uniqueHash() == newItem.uniqueHash()
-                }
-
-                override fun areContentsTheSame(
-                    oldItem: ImageFile, newItem: ImageFile
-                ): Boolean {
-                    return (oldItem == newItem)
-                }
-            }
     }
 }

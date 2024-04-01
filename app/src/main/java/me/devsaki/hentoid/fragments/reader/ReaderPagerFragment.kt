@@ -447,10 +447,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                         else if (1.0 != scale && it.isPageSnapEnabled()) it.setPageSnapEnabled(false)
                     }
                 }
-                if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(
-                        bookPreferences
-                    )
-                ) rescaleDebouncer.submit(scale.toFloat())
+                if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+                    rescaleDebouncer.submit(scale.toFloat())
             }
             recyclerView.setLongTapListener(object : ZoomableRecyclerView.LongTapListener {
                 override fun onListen(ev: MotionEvent?): Boolean {
