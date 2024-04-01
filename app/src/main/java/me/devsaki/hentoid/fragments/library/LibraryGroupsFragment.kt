@@ -68,6 +68,8 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager
+import me.devsaki.hentoid.widget.DragSelectTouchListener
+import me.devsaki.hentoid.widget.DragSelectionProcessor
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import me.zhanghai.android.fastscroll.PopupTextProvider
@@ -107,6 +109,7 @@ class LibraryGroupsFragment : Fragment(),
     private var fastAdapter = FastAdapter.with(itemAdapter)
     private var selectExtension: SelectExtension<GroupDisplayItem>? = null
     private var touchHelper: ItemTouchHelper? = null
+    private var mDragSelectTouchListener: DragSelectTouchListener? = null
 
 
     // ======== VARIABLES
@@ -684,7 +687,39 @@ class LibraryGroupsFragment : Fragment(),
             fastAdapter.onPreClickListener =
                 { _, _, _, position -> helper.onPreClickListener(position) }
             fastAdapter.onPreLongClickListener =
-                { _, _, _, position -> helper.onPreLongClickListener(position) }
+                { _, _, _, p ->
+                    // Warning : specific code for drag selection
+                    mDragSelectTouchListener?.startDragSelection(p)
+                    helper.onPreLongClickListener(p)
+                }
+        }
+
+        // Select / deselect on swipe
+        val onDragSelectionListener: DragSelectTouchListener.OnDragSelectListener =
+            DragSelectionProcessor(object : DragSelectionProcessor.ISelectionHandler {
+                override val selection: Set<Int>
+                    get() = selectExtension!!.selections
+
+                override fun isSelected(index: Int): Boolean {
+                    return selectExtension!!.selections.contains(index)
+                }
+
+                override fun updateSelection(
+                    start: Int,
+                    end: Int,
+                    isSelected: Boolean,
+                    calledFromOnStart: Boolean
+                ) {
+                    selectExtension?.let {
+                        if (isSelected) it.select(IntRange(start, end))
+                        else it.deselect(IntRange(start, end).toMutableList())
+                    }
+                }
+            }).withMode(DragSelectionProcessor.Mode.Simple)
+
+        DragSelectTouchListener().withSelectListener(onDragSelectionListener).let {
+            mDragSelectTouchListener = it
+            binding?.recyclerView?.addOnItemTouchListener(it)
         }
 
         // Drag, drop & swiping

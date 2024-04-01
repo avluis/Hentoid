@@ -97,6 +97,8 @@ import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.AddQueueMenu
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager
+import me.devsaki.hentoid.widget.DragSelectTouchListener
+import me.devsaki.hentoid.widget.DragSelectionProcessor
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import me.devsaki.hentoid.widget.LibraryPager
 import me.devsaki.hentoid.widget.RedownloadMenu
@@ -228,6 +230,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private var fastAdapter: FastAdapter<ContentItem>? = null
     private var selectExtension: SelectExtension<ContentItem>? = null
     private var touchHelper: ItemTouchHelper? = null
+    private var mDragSelectTouchListener: DragSelectTouchListener? = null
 
 
     // ======== VARIABLES
@@ -1157,16 +1160,16 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             fastAdapter = FastAdapter.with(itemAdapter!!)
             pagedItemAdapter = null
         }
-        if (!fastAdapter!!.hasObservers()) fastAdapter!!.setHasStableIds(true)
+        if (!fastAdapter!!.hasObservers()) fastAdapter?.setHasStableIds(true)
 
 
         // == CLICK LISTENERS
 
         // Item click listener
-        fastAdapter!!.onClickListener = { _, _, i: ContentItem, _ -> onItemClick(i) }
+        fastAdapter?.onClickListener = { _, _, i: ContentItem, _ -> onItemClick(i) }
 
         // Favourite button click listener
-        fastAdapter!!.addEventHook(object : ClickEventHook<ContentItem>() {
+        fastAdapter?.addEventHook(object : ClickEventHook<ContentItem>() {
             override fun onClick(
                 v: View,
                 position: Int,
@@ -1184,7 +1187,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         })
 
         // Rating button click listener
-        fastAdapter!!.addEventHook(object : ClickEventHook<ContentItem>() {
+        fastAdapter?.addEventHook(object : ClickEventHook<ContentItem>() {
             override fun onClick(
                 v: View,
                 position: Int,
@@ -1202,7 +1205,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         })
 
         // Site button click listener
-        fastAdapter!!.addEventHook(object : ClickEventHook<ContentItem>() {
+        fastAdapter?.addEventHook(object : ClickEventHook<ContentItem>() {
             override fun onClick(
                 v: View,
                 position: Int,
@@ -1220,7 +1223,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         })
 
         // "To top" button click listener (groups view only)
-        fastAdapter!!.addEventHook(object : ClickEventHook<ContentItem>() {
+        fastAdapter?.addEventHook(object : ClickEventHook<ContentItem>() {
             override fun onClick(
                 v: View,
                 position: Int,
@@ -1238,7 +1241,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         })
 
         // "To bottom" button click listener (groups view only)
-        fastAdapter!!.addEventHook(object : ClickEventHook<ContentItem>() {
+        fastAdapter?.addEventHook(object : ClickEventHook<ContentItem>() {
             override fun onClick(
                 v: View,
                 position: Int,
@@ -1269,10 +1272,42 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     }
                 }
             val helper = FastAdapterPreClickSelectHelper(fastAdapter!!, this)
-            fastAdapter!!.onPreClickListener =
+            fastAdapter?.onPreClickListener =
                 { _, _, _, position -> helper.onPreClickListener(position) }
-            fastAdapter!!.onPreLongClickListener =
-                { _, _, _, position -> helper.onPreLongClickListener(position) }
+            fastAdapter?.onPreLongClickListener =
+                { _, _, _, p ->
+                    // Warning : specific code for drag selection
+                    mDragSelectTouchListener?.startDragSelection(p)
+                    helper.onPreLongClickListener(p)
+                }
+        }
+
+        // Select / deselect on swipe
+        val onDragSelectionListener: DragSelectTouchListener.OnDragSelectListener =
+            DragSelectionProcessor(object : DragSelectionProcessor.ISelectionHandler {
+                override val selection: Set<Int>
+                    get() = selectExtension!!.selections
+
+                override fun isSelected(index: Int): Boolean {
+                    return selectExtension!!.selections.contains(index)
+                }
+
+                override fun updateSelection(
+                    start: Int,
+                    end: Int,
+                    isSelected: Boolean,
+                    calledFromOnStart: Boolean
+                ) {
+                    selectExtension?.let {
+                        if (isSelected) it.select(IntRange(start, end))
+                        else it.deselect(IntRange(start, end).toMutableList())
+                    }
+                }
+            }).withMode(DragSelectionProcessor.Mode.Simple)
+
+        DragSelectTouchListener().withSelectListener(onDragSelectionListener).let {
+            mDragSelectTouchListener = it
+            binding?.recyclerView?.addOnItemTouchListener(it)
         }
 
         // Drag, drop & swiping
@@ -1287,7 +1322,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         touchHelper = ItemTouchHelper(dragSwipeCallback)
 
         binding?.recyclerView?.let {
-            touchHelper!!.attachToRecyclerView(it)
+            touchHelper?.attachToRecyclerView(it)
             it.adapter = fastAdapter
             it.setHasFixedSize(true)
         }
