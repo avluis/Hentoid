@@ -794,8 +794,6 @@
     <string name="search_type_entries_4">Archive</string>
     <string name="search_type_entries_5">Placeholder</string>
 
-    <!-- DB migration & Maintenance -->
-
     <!-- Image reader -->
     <string name="no_images">Could not load the book: No image found</string>
     <string name="loading_archive">Loading: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
@@ -1041,6 +1039,9 @@
     <string name="missing_web_view_title">WebView is not installed or disabled</string>
     <string name="missing_web_view">Hentoid has been unable to find Android\'s built-in Web Viewer for apps.\nWithout it you can\'t browse sources, redownload books; you really can\'t do much that requires Internet.\n\nIt is most likely that it\'s actually installed on your system, but disabled: please go to <b>Settings</b> &gt; <b>Apps</b> &gt; <b>Disabled apps</b> and enable <b>Android System WebView</b>.\n\nIf you can\'t find the app, please install it from your device\'s <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">App Store</a></b>.</string>
     <string name="missing_web_view_library">Back to library</string>
+
+    <!-- Launch text selection -->
+    <string name="launch">Launch</string>
 
     <!-- Group names -->
     <string name="group_today">Today</string>

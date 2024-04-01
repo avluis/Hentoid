@@ -36,8 +36,8 @@ object Settings {
     var lockType: Int by IntSetting(Key.LOCK_TYPE, 0)
 
     // MASS OPERATIONS
-    var massOperation : Int by IntSetting("MASS_OPERATION", 0)
-    var massOperationScope : Int by IntSetting("MASS_SCOPE", 0)
+    var massOperation: Int by IntSetting("MASS_OPERATION", 0)
+    var massOperationScope: Int by IntSetting("MASS_SCOPE", 0)
 
     // TRANSFORM
     var isResizeEnabled: Boolean by BoolSetting("TRANSFORM_RESIZE_ENABLED", false)
@@ -82,6 +82,9 @@ object Settings {
     // ACHIEVEMENTS
     var achievements: ULong by ULongSetting(Key.ACHIEVEMENTS, 0UL)
     var nbAIRescale: Int by IntSetting(Key.ACHIEVEMENTS_NB_AI_RESCALE, 0)
+
+    // MISC
+    var isTextMenuOn: Boolean by BoolSetting(Key.TEXT_SELECT_MENU, false)
 
 
     // Public Helpers
@@ -155,6 +158,7 @@ object Settings {
         const val WEB_AUGMENTED_BROWSER = "pref_browser_augmented"
         const val WEB_ADBLOCKER = "WEB_ADBLOCKER"
         const val WEB_FORCE_LIGHTMODE = "WEB_FORCE_LIGHTMODE"
+        const val TEXT_SELECT_MENU = "TEXT_SELECT_MENU"
     }
 
     object Value {

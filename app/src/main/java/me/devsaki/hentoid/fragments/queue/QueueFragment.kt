@@ -1210,12 +1210,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     private fun onFilterSourcesClick() {
         if (!enabled) return
-        val excludedSources =
-            Site.entries.filterNot { e -> unfilteredSources.contains(e) }.map { s -> s.code }
+        val sources =
+            Site.entries.filter { e -> unfilteredSources.contains(e) }.map { s -> s.code }
         SelectSiteDialogFragment.invoke(
             this,
             getString(R.string.filter_by_source),
-            excludedSources,
+            sources,
             parentIsActivity = true
         )
     }

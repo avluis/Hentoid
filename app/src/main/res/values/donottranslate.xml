@@ -573,5 +573,6 @@
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_ratio_completed_threshold_default" translatable="false">-1</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
-    <string name="pref_viewer_slideshow_delay_vertical_default" translatable="false">0</string>
+    <string name="pref_viewer_slideshow_delay_vertical_default" translatable="false">0</string>*
+    <string name="pref_text_select_menu_default" translatable="false">false</string>
 </resources>

@@ -1,10 +1,13 @@
 package me.devsaki.hentoid.core
 
 import android.app.NotificationManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.hardware.usb.UsbManager
+import android.os.Build
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -17,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.ProcessTextActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.DatabaseMaintenance
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -37,6 +41,7 @@ import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.workers.StartupWorker
@@ -142,6 +147,7 @@ object AppStartup {
             this::sendFirebaseStats,
             this::createBookmarksJson,
             this::createPlugReceiver,
+            this::activateTextIntent,
             this::checkAchievements
         )
     }
@@ -294,5 +300,21 @@ object AppStartup {
         AchievementsManager.checkStorage(context)
         AchievementsManager.checkCollection()
         Timber.i("Check achievements : done")
+    }
+
+    private fun activateTextIntent(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Activate text intent : start")
+
+        val flags = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) 0
+        else PackageManager.SYNCHRONOUS
+
+        val state = if (Settings.isTextMenuOn) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+        else PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+
+        context.packageManager.setComponentEnabledSetting(
+            ComponentName(context, ProcessTextActivity::class.java), state, flags
+        )
+
+        Timber.i("Activate text intent : done")
     }
 }

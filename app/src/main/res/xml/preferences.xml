@@ -823,4 +823,12 @@
         android:title="@string/pref_screenshot_title"
         app:iconSpaceReserved="false" />
 
+    <CheckBoxPreference
+        android:defaultValue="@string/pref_text_select_menu_default"
+        android:key="TEXT_SELECT_MENU"
+        android:summaryOff="@string/pref_text_select_menu_summary_off"
+        android:summaryOn="@string/pref_text_select_menu_summary_on"
+        android:title="@string/pref_text_select_menu_title"
+        app:iconSpaceReserved="false" />
+
 </PreferenceScreen>

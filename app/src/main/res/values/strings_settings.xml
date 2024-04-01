@@ -244,4 +244,9 @@
     <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page (horizontal display)</string>
     <string name="pref_viewer_slideshow_delay_vertical">Slideshow / Scrolling speed (vertical display)</string>
     <string name="doh_warning">Some websites won\'t work well with DNS over HTTPS. Use an external DNS app if you experience issues during navigation (e.g. blank pages, unresponsive login forms)</string>
+
+    <!-- Misc -->
+    <string name="pref_text_select_menu_title">Text select menu</string>
+    <string name="pref_text_select_menu_summary_off">You device\'s text select menu doesn\'t allow you to launch nuke codes with Hentoid</string>
+    <string name="pref_text_select_menu_summary_on">You device\'s text select menu allows you to launch nuke codes with Hentoid</string>
 </resources>

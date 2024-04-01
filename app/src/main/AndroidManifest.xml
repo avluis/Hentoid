@@ -218,6 +218,18 @@
             android:label="@string/title_activity_storage"
             tools:ignore="UnusedAttribute" />
         <activity
+            android:name=".activities.ProcessTextActivity"
+            android:exported="true"
+            android:label="@string/launch"
+            android:icon="@drawable/ic_hentoid"
+            android:theme="@style/Theme.Invisible">
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".activities.IntentActivity"
             android:exported="true"
             android:theme="@style/Theme.Invisible">

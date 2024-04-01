@@ -227,11 +227,11 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         return bookmarks
     }
 
-    private fun getUnbookmarkedSites(): List<Site> {
+    private fun getBookmarkedSites(): List<Site> {
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
             val bookmarkedSites = dao.selectAllBookmarks().groupBy { it.site }.keys
-            return Site.entries.filterNot { bookmarkedSites.contains(it) }
+            return Site.entries.filter { bookmarkedSites.contains(it) }
         } finally {
             dao.cleanup()
         }
@@ -330,7 +330,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
                 SelectSiteDialogFragment.invoke(
                     this,
                     getString(R.string.bookmark_change_site),
-                    getUnbookmarkedSites().map { it.code },
+                    getBookmarkedSites().map { it.code },
                     showAltSites = false
                 )
             }

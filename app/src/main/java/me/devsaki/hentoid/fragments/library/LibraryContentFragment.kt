@@ -1432,9 +1432,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
         if (newSearch && StringHelper.isNumeric(query)) {
             val dialogTitle = getString(R.string.search_bookid_label, query)
-            val siteCodes = result.toList()
+            val excludedSiteCodes = result.toList()
                 .filter { content -> query == content.uniqueSiteId }
                 .map { obj -> obj.site.code }
+            val siteCodes = Site.entries
+                .map { s -> s.code }
+                .filterNot { c -> excludedSiteCodes.contains(c) }
             if (!result.isEmpty()) {
                 binding?.recyclerView?.let {
                     val snackbar: Snackbar = Snackbar.make(
