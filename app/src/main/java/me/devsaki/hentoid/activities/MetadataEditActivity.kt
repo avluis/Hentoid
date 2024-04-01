@@ -447,10 +447,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
             OnMenuItemClickListener { _: Int, it: PowerMenuItem ->
                 when (it.tag) {
                     0 -> { // Rename
-                        MetaRenameDialogFragment.invoke(
-                            this,
-                            item.attribute.id
-                        )
+                        show(MetaRenameDialogFragment(item.attribute.id))
                     }
 
                     1 -> { // Replace with...

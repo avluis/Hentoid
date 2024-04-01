@@ -4,31 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentActivity
-import me.devsaki.hentoid.core.show
+import androidx.core.os.bundleOf
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.DialogMetaRenameBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 
+private const val KEY_ID = "id"
+
 /**
  * Dialog to rename an attribute
  */
-class MetaRenameDialogFragment : BaseDialogFragment<MetaRenameDialogFragment.Parent>() {
+class MetaRenameDialogFragment() : BaseDialogFragment<MetaRenameDialogFragment.Parent>() {
 
-    companion object {
-        const val KEY_ID = "id"
-
-        fun invoke(parent: FragmentActivity, attrId: Long) {
-            val args = Bundle()
-            args.putLong(KEY_ID, attrId)
-            val dialog = MetaRenameDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+    constructor(attrId: Long) : this() {
+        arguments = bundleOf(KEY_ID to attrId)
     }
-
 
     // UI
     private var binding: DialogMetaRenameBinding? = null
