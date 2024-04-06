@@ -211,14 +211,10 @@ dependencies {
     // Fast scroller
     implementation 'me.zhanghai.android.fastscroll:library:1.3.0'
 
-    // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
+    // Specific UI layout to display the tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
-    def about_version = '8.9.4'
-    implementation "com.mikepenz:aboutlibraries-core:$about_version"
-    implementation "com.mikepenz:aboutlibraries:$about_version"
-
-    // https://github.com/nekocode/Badge (for the tag editor)
+    // Format recyclerView item as a badge https://github.com/nekocode/Badge
     implementation "com.github.nekocode:Badge:2.1"
 
 
@@ -311,12 +307,17 @@ dependencies {
     // Searchable prefs
     implementation 'com.github.ByteHamster:SearchPreference:v2.4.0'
 
+    // Automated generation of the Licenses screen
+    def about_version = '8.9.4'
+    implementation "com.mikepenz:aboutlibraries-core:$about_version"
+    implementation "com.mikepenz:aboutlibraries:$about_version"
+
 
     /**
      * ANALYTICS
      */
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:32.7.4')
+    implementation platform('com.google.firebase:firebase-bom:32.8.0')
 
     // Crashlytics
     implementation 'com.google.firebase:firebase-crashlytics'
