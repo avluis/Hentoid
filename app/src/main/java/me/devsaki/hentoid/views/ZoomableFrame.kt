@@ -95,10 +95,11 @@ class ZoomableFrame : FrameLayout {
             velocityX: Float,
             velocityY: Float
         ): Boolean {
-            val recycler = getRecycler()
-            return if (enabled && null != recycler) recycler.zoomFling(
+            if (!enabled) return false
+
+            return getRecycler()?.zoomFling(
                 velocityX.roundToInt(), velocityY.roundToInt()
-            ) else false
+            ) ?: false
         }
 
         override fun onDown(e: MotionEvent): Boolean {

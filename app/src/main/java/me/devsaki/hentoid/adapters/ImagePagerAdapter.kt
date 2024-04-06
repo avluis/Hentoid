@@ -28,6 +28,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiConsumer
+import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
 import me.devsaki.hentoid.customssiv.ImageSource
@@ -180,7 +181,7 @@ class ImagePagerAdapter(val context: Context) :
             ssiv.setOnTouchListener(null)
 
             rootView.minimumHeight = 0
-            noImgTxt?.isVisible = false
+            noImgTxt.isVisible = false
         }
     }
 
@@ -213,9 +214,10 @@ class ImagePagerAdapter(val context: Context) :
                 image.setIgnoreTouchEvents(true)
                 image.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL)
             }
+
             // Avoid stacking 0-px tall images on screen and load all of them at the same time
-            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) rootView.minimumHeight =
-                pageMinHeight
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+                rootView.minimumHeight = pageMinHeight
 
             val imageType = getImageType(getImageAt(position))
             if (forceImageView != null) { // ImageView has been forced
@@ -247,9 +249,8 @@ class ImagePagerAdapter(val context: Context) :
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
             layoutParams.height = layoutStyle
             imgView.layoutParams = layoutParams
-            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation) imgView.setOnTouchListener(
-                itemTouchListener
-            )
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
+                imgView.setOnTouchListener(itemTouchListener)
 
             var imageAvailable = true
             val img = getImageAt(position)
@@ -258,13 +259,12 @@ class ImagePagerAdapter(val context: Context) :
 
             val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
             val isExtracting = img != null && !imageAvailable && !img.url.startsWith("http")
-            if (noImgTxt != null) {
-                @StringRes var text: Int = R.string.image_not_found
-                if (isStreaming) text = R.string.image_streaming
-                else if (isExtracting) text = R.string.image_extracting
-                noImgTxt.setText(text)
-                noImgTxt.isVisible = !imageAvailable
-            }
+
+            @StringRes var text: Int = R.string.image_not_found
+            if (isStreaming) text = R.string.image_streaming
+            else if (isExtracting) text = R.string.image_extracting
+            noImgTxt.setText(text)
+            noImgTxt.isVisible = !imageAvailable
         }
     }
 
@@ -387,9 +387,9 @@ class ImagePagerAdapter(val context: Context) :
 
     inner class ImageViewHolder(val rootView: View) : RecyclerView.ViewHolder(rootView),
         OnImageEventListener, RequestListener<Drawable> {
-        val ssiv: CustomSubsamplingScaleImageView = itemView.findViewById(R.id.ssiv)
-        private val imageView: ImageView = itemView.findViewById(R.id.imageview)
-        val noImgTxt: TextView? = itemView.findViewById(R.id.viewer_no_page_txt)
+        val ssiv: CustomSubsamplingScaleImageView = itemView.requireById(R.id.ssiv)
+        private val imageView: ImageView = itemView.requireById(R.id.imageview)
+        val noImgTxt: TextView = itemView.requireById(R.id.viewer_no_page_txt)
 
         lateinit var imgView: View
 
@@ -406,7 +406,7 @@ class ImagePagerAdapter(val context: Context) :
             this.img = img
             val imgType = getImageType(img)
             val uri = Uri.parse(img.fileUri)
-            noImgTxt?.isVisible = false
+            noImgTxt.isVisible = false
             Timber.d("Picture %d : binding viewholder %s %s", absoluteAdapterPosition, imgType, uri)
             if (!isImageView) { // SubsamplingScaleImageView
                 Timber.d("Using SSIV")
@@ -584,7 +584,7 @@ class ImagePagerAdapter(val context: Context) :
             Timber.d(
                 e, "Picture %d : Glide loading failed : %s", absoluteAdapterPosition, img!!.fileUri
             )
-            if (isImageView) noImgTxt?.visibility = View.VISIBLE
+            if (isImageView) noImgTxt.visibility = View.VISIBLE
             return false
         }
 
@@ -595,7 +595,7 @@ class ImagePagerAdapter(val context: Context) :
             dataSource: DataSource,
             isFirstResource: Boolean
         ): Boolean {
-            noImgTxt?.visibility = View.GONE
+            noImgTxt.visibility = View.GONE
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) adjustHeight(
                 resource.intrinsicWidth,
                 resource.intrinsicHeight,

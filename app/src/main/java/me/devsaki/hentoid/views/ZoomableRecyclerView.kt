@@ -24,7 +24,7 @@ import kotlin.math.roundToInt
 
 /**
  * Zoomable RecyclerView that supports gestures
- * To be used inside a {@link ZoomableFrame}
+ * Must be used inside a {@link ZoomableFrame}
  * <p>
  * Credits go to the Tachiyomi team
  */
@@ -168,7 +168,7 @@ class ZoomableRecyclerView : RecyclerView {
         }
         val scaleAnimator = ValueAnimator.ofFloat(fromScale, toScale)
         scaleAnimator.addUpdateListener { animation: ValueAnimator ->
-            setScaleRate(animation.animatedValue as Float)
+            setViewScaleRate(animation.animatedValue as Float)
         }
         animatorSet.playTogether(translationXAnimator, translationYAnimator, scaleAnimator)
         animatorSet.duration =
@@ -183,7 +183,7 @@ class ZoomableRecyclerView : RecyclerView {
             override fun onAnimationEnd(animation: Animator) {
                 isZooming = false
                 scale = toScale
-                if (scaleListener != null) scaleListener!!.accept(scale.toDouble())
+                scaleListener?.accept(scale.toDouble())
             }
 
             override fun onAnimationCancel(animation: Animator) {
@@ -226,7 +226,8 @@ class ZoomableRecyclerView : RecyclerView {
         return true
     }
 
-    private fun setScaleRate(rate: Float) {
+    // This is where magic happens
+    private fun setViewScaleRate(rate: Float) {
         scaleX = rate
         scaleY = rate
     }
@@ -234,8 +235,8 @@ class ZoomableRecyclerView : RecyclerView {
     fun onScale(scaleFactor: Float) {
         scale *= scaleFactor
         scale = Helper.coerceIn(scale, DEFAULT_SCALE, MAX_SCALE)
-        Timber.i(">> scale %s -> %s", scaleFactor, scale)
-        setScaleRate(scale)
+        Timber.d(">> scale %s -> %s", scaleFactor, scale)
+        setViewScaleRate(scale)
         if (scale != DEFAULT_SCALE) {
             x = getPositionX(x)
             y = getPositionY(y)
@@ -243,7 +244,7 @@ class ZoomableRecyclerView : RecyclerView {
             x = 0f
             y = 0f
         }
-        if (scaleListener != null) scaleListener!!.accept(scale.toDouble())
+        scaleListener?.accept(scale.toDouble())
     }
 
     fun onScaleBegin() {
