@@ -1753,9 +1753,8 @@ class ReaderViewModel(
     private fun doSaveChapterPositions(contentId: Long, newChapterOrder: List<Long>) {
         Helper.assertNonUiThread()
         val chapterStr = getApplication<Application>().getString(R.string.gallery_chapter_prefix)
-        if (null == VANILLA_CHAPTERNAME_PATTERN) VANILLA_CHAPTERNAME_PATTERN = Pattern.compile(
-            "$chapterStr [0-9]+"
-        )
+        if (null == VANILLA_CHAPTERNAME_PATTERN)
+            VANILLA_CHAPTERNAME_PATTERN = Pattern.compile("$chapterStr [0-9]+")
         var chapters = dao.selectChapters(contentId)
         require(chapters.isNotEmpty()) { "No chapters found" }
 
