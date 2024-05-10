@@ -170,7 +170,7 @@ dependencies {
     }
 
     // Animated pics support (APNG, AWEBP and GIF) -> https://github.com/penfeizhou/APNG4Android
-    def APNG4Android_version = '2.28.0'
+    def APNG4Android_version = '3.0.1'
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
     implementation "com.github.penfeizhou.android.animation:gif:$APNG4Android_version"
     implementation "com.github.penfeizhou.android.animation:awebp:$APNG4Android_version"
