@@ -19,7 +19,7 @@ import kotlin.math.roundToInt
  */
 class ZoomableFrame : FrameLayout {
 
-    private var enabled = true
+    var frameEnabled = true
 
 
     constructor (context: Context) : super(context)
@@ -58,7 +58,7 @@ class ZoomableFrame : FrameLayout {
      * Dispatches a touch event to the detectors.
      */
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        if (enabled) {
+        if (frameEnabled) {
             scaleDetector.onTouchEvent(ev)
             flingDetector.onTouchEvent(ev)
         }
@@ -70,17 +70,17 @@ class ZoomableFrame : FrameLayout {
      */
     inner class ScaleListener : SimpleOnScaleGestureListener() {
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-            if (enabled) getRecycler()?.onScaleBegin()
-            return enabled
+            if (frameEnabled) getRecycler()?.onScaleBegin()
+            return frameEnabled
         }
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            if (enabled) getRecycler()?.onScale(detector.scaleFactor)
-            return enabled
+            if (frameEnabled) getRecycler()?.onScale(detector.scaleFactor)
+            return frameEnabled
         }
 
         override fun onScaleEnd(detector: ScaleGestureDetector) {
-            if (enabled) getRecycler()?.onScaleEnd()
+            if (frameEnabled) getRecycler()?.onScaleEnd()
         }
     }
 
@@ -95,7 +95,7 @@ class ZoomableFrame : FrameLayout {
             velocityX: Float,
             velocityY: Float
         ): Boolean {
-            if (!enabled) return false
+            if (!frameEnabled) return false
 
             return getRecycler()?.zoomFling(
                 velocityX.roundToInt(), velocityY.roundToInt()
@@ -103,15 +103,7 @@ class ZoomableFrame : FrameLayout {
         }
 
         override fun onDown(e: MotionEvent): Boolean {
-            return enabled
+            return frameEnabled
         }
-    }
-
-    fun enable() {
-        enabled = true
-    }
-
-    fun disable() {
-        enabled = false
     }
 }

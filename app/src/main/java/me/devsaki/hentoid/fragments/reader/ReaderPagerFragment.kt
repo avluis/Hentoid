@@ -131,6 +131,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private var latestSlideshowTick: Long = -1
 
     private var displayParams: DisplayParams? = null
+    private var isImageAnimated = false
 
     // Properties
     // Preferences of current book; to feed the book prefs dialog
@@ -174,6 +175,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     // Debouncer for the slideshow slider
     private lateinit var slideshowSliderDebouncer: Debouncer<Int>
+
 
     // Pager implementation
     override val currentImg: ImageFile?
@@ -241,20 +243,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     R.id.action_show_favorite_pages -> onShowFavouriteClick()
                     R.id.action_book_settings -> onBookSettingsClick()
                     R.id.action_shuffle -> onShuffleClick()
-                    R.id.action_slideshow -> {
-                        var startIndex =
-                            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(
-                                    bookPreferences
-                                )
-                            ) Preferences.getReaderSlideshowDelayVertical() else Preferences.getReaderSlideshowDelay()
-                        startIndex = convertPrefsDelayToSliderPosition(startIndex)
-                        it.controlsOverlay.slideshowDelaySlider.value = startIndex.toFloat()
-                        it.controlsOverlay.slideshowDelaySlider.labelBehavior =
-                            LabelFormatter.LABEL_FLOATING
-                        it.controlsOverlay.slideshowDelaySlider.visibility = View.VISIBLE
-                        slideshowSliderDebouncer.submit(startIndex)
-                    }
-
+                    R.id.action_slideshow -> onSlideshowClick()
                     R.id.action_delete_book -> if (VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode()) invoke(
                         this, !isContentArchive
                     )
@@ -442,9 +431,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             // Scale listener from the ImageView, incl. top to bottom browsing
             recyclerView.setOnScaleListener { scale ->
                 if (LinearLayoutManager.HORIZONTAL == llm.orientation) {
-                    pageSnapWidget.let {
-                        if (1.0 == scale && !it.isPageSnapEnabled()) it.setPageSnapEnabled(true)
-                        else if (1.0 != scale && it.isPageSnapEnabled()) it.setPageSnapEnabled(false)
+                    pageSnapWidget.apply {
+                        if (scale - 1.0 < 0.05 && !isPageSnapEnabled()) setPageSnapEnabled(true)
+                        else if (scale - 1.0 > 0.05 && isPageSnapEnabled()) setPageSnapEnabled(false)
                     }
                 }
                 if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
@@ -460,17 +449,17 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             adapter.setOnScaleListener { position, scale ->
                 if (position == absImageIndex) adapterRescaleDebouncer.submit(scale)
             }
+            adapter.setAnimationAlertListener {
+                isImageAnimated = true
+                displayParams?.apply {
+                    if (!hasAnimation) {
+                        onDisplayParamsChange(
+                            DisplayParams(browseMode, displayMode, isSmoothRendering, true)
+                        )
+                    }
+                }
+            }
 
-            val tapZoneScale = if (Preferences.isReaderTapToTurn2x()) 2 else 1
-            val onHorizontalZoneTapListener = OnZoneTapListener(
-                recyclerView, tapZoneScale
-            ).setOnLeftZoneTapListener { onLeftTap() }.setOnRightZoneTapListener { onRightTap() }
-                .setOnMiddleZoneTapListener { onMiddleTap() }.setOnLongTapListener { onLongTap() }
-            adapter.setItemTouchListener(onHorizontalZoneTapListener) // For independent images mode (horizontal)
-            val onVerticalZoneTapListener =
-                OnZoneTapListener(recyclerView, 1).setOnMiddleZoneTapListener { onMiddleTap() }
-                    .setOnLongTapListener { onLongTap() }
-            recyclerView.setTapListener(onVerticalZoneTapListener) // For paper roll mode (vertical)
             adapter.setRecyclerView(recyclerView)
             llm = PrefetchLinearLayoutManager(requireContext())
             llm.orientation = LinearLayoutManager.HORIZONTAL
@@ -624,6 +613,24 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     /**
+     * Handle click on "Slideshow" action button
+     */
+    private fun onSlideshowClick() {
+        var startIndex =
+            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+                Preferences.getReaderSlideshowDelayVertical()
+            else Preferences.getReaderSlideshowDelay()
+        startIndex = convertPrefsDelayToSliderPosition(startIndex)
+        binding?.let {
+            it.controlsOverlay.slideshowDelaySlider.value = startIndex.toFloat()
+            it.controlsOverlay.slideshowDelaySlider.labelBehavior =
+                LabelFormatter.LABEL_FLOATING
+            it.controlsOverlay.slideshowDelaySlider.visibility = View.VISIBLE
+        }
+        slideshowSliderDebouncer.submit(startIndex)
+    }
+
+    /**
      * Handle click on "Show favourite pages" toggle action button
      */
     private fun onShowFavouriteClick() {
@@ -755,6 +762,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         isComputingImageList = true
         binding?.apply {
             adapter.reset()
+            // Required to communicate tapListener to the Adapter before images are binded
+            images.firstOrNull()?.let {
+                it.content.reach(it)?.apply {
+                    adjustDisplay(bookPreferences)
+                }
+            }
             adapter.submitList(images) { differEndCallback() }
             if (images.isEmpty()) {
                 setSystemBarsVisible(true)
@@ -833,6 +846,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         absImageIndex = -1 // Will be updated by onStartingIndexChanged
         navigator.onContentChanged(content)
         updateFavouriteButtonIcon()
+        // Reset animation presence flag
+        displayParams?.apply {
+            displayParams = DisplayParams(browseMode, displayMode, isSmoothRendering, false)
+            // onDisplayParamsChange will be called as soon as images are loaded
+        }
 
         showFavoritePagesMenu.isVisible = !content.isDynamic
         deleteMenu.isVisible = !content.isDynamic
@@ -1022,7 +1040,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val newDisplayParams = DisplayParams(
             Preferences.getContentBrowseMode(bookPreferences),
             Preferences.getContentDisplayMode(bookPreferences),
-            Preferences.isContentSmoothRendering(bookPreferences)
+            Preferences.isContentSmoothRendering(bookPreferences),
+            displayParams?.hasAnimation ?: false
         )
         if (null == displayParams || newDisplayParams != displayParams)
             onDisplayParamsChange(newDisplayParams)
@@ -1043,9 +1062,20 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             (null == currentDisplayParams || currentDisplayParams.orientation != newDisplayParams.orientation)
         val isDirectionChange =
             (null == currentDisplayParams || currentDisplayParams.direction != newDisplayParams.direction)
+        val isAnimationChange =
+            (null == currentDisplayParams || currentDisplayParams.hasAnimation != newDisplayParams.hasAnimation)
         displayParams = newDisplayParams
 
+        var isZoomFrameEnabled = false
+
         binding?.apply {
+            // Animated picture appears in horizontal mode => enable zoom frame
+            if (isAnimationChange && VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation) {
+                if (newDisplayParams.hasAnimation || isImageAnimated) {
+                    isZoomFrameEnabled = true
+                }
+            }
+
             // Orientation changes
             if (isOrientationChange) {
                 llm.orientation = getOrientation(newDisplayParams.orientation)
@@ -1053,17 +1083,35 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
                 recyclerView.resetScale()
 
+                val tapZoneScale = if (Preferences.isReaderTapToTurn2x()) 2 else 1
+
                 if (VIEWER_ORIENTATION_VERTICAL == newDisplayParams.orientation) {
-                    zoomFrame.enable()
-                    recyclerView.setLongTapZoomEnabled(Preferences.isReaderHoldToZoom())
+                    // For paper roll mode (vertical)
+                    val onVerticalZoneTapListener =
+                        OnZoneTapListener(recyclerView, 1)
+                            .setOnMiddleZoneTapListener { onMiddleTap() }
+                            .setOnLongTapListener { onLongTap() }
+                    adapter.setItemTouchListener(onVerticalZoneTapListener)
+
+                    isZoomFrameEnabled = true
                     onUpdateImageDisplay(false)
                 } else {
-                    zoomFrame.disable()
-                    recyclerView.setLongTapZoomEnabled(!Preferences.isReaderHoldToZoom())
+                    // For independent images mode (horizontal)
+                    val onHorizontalZoneTapListener =
+                        OnZoneTapListener(recyclerView, tapZoneScale)
+                            .setOnLeftZoneTapListener { onLeftTap() }
+                            .setOnRightZoneTapListener { onRightTap() }
+                            .setOnMiddleZoneTapListener { onMiddleTap() }
+                            .setOnLongTapListener { onLongTap() }
+                    adapter.setItemTouchListener(onHorizontalZoneTapListener)
+
                     seekToIndex(absImageIndex)
                 }
                 pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation)
             }
+
+            zoomFrame.frameEnabled = isZoomFrameEnabled
+            recyclerView.setLongTapZoomEnabled(!(Preferences.isReaderHoldToZoom() xor isZoomFrameEnabled))
 
             // Direction changes
             if (isDirectionChange) {
@@ -1438,12 +1486,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun onSlideShowSliderChosen(sliderIndex: Int) {
         val prefsDelay = convertSliderPositionToPrefsDelay(sliderIndex)
-        if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(
-                bookPreferences
-            )
-        ) Preferences.setReaderSlideshowDelayVertical(prefsDelay) else Preferences.setReaderSlideshowDelay(
-            prefsDelay
-        )
+
+        if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+            Preferences.setReaderSlideshowDelayVertical(prefsDelay)
+        else Preferences.setReaderSlideshowDelay(prefsDelay)
+
         binding?.apply {
             Helper.removeLabels(controlsOverlay.slideshowDelaySlider)
             controlsOverlay.slideshowDelaySlider.visibility = View.GONE
@@ -1456,10 +1503,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         hideControlsOverlay()
 
         // Compute slideshow delay
-        val delayPref: Int = if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(
-                bookPreferences
-            )
-        ) Preferences.getReaderSlideshowDelayVertical() else Preferences.getReaderSlideshowDelay()
+        val delayPref: Int =
+            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+                Preferences.getReaderSlideshowDelayVertical()
+            else Preferences.getReaderSlideshowDelay()
+
         val factor: Float = when (delayPref) {
             VIEWER_SLIDESHOW_DELAY_05 -> 0.5f
             VIEWER_SLIDESHOW_DELAY_1 -> 1f
@@ -1547,7 +1595,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     data class DisplayParams(
-        val browseMode: Int, val displayMode: Int, val isSmoothRendering: Boolean
+        val browseMode: Int,
+        val displayMode: Int,
+        val isSmoothRendering: Boolean,
+        val hasAnimation: Boolean
     ) {
         val orientation =
             if (browseMode == VIEWER_BROWSE_TTB) VIEWER_ORIENTATION_VERTICAL else VIEWER_ORIENTATION_HORIZONTAL

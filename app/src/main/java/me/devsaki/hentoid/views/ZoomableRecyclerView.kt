@@ -28,6 +28,10 @@ import kotlin.math.roundToInt
  * <p>
  * Credits go to the Tachiyomi team
  */
+private const val ANIMATOR_DURATION_TIME = 200L
+private const val DEFAULT_SCALE = 1f
+private const val MAX_SCALE = 3f
+
 class ZoomableRecyclerView : RecyclerView {
 
     private var isZooming = false
@@ -44,8 +48,8 @@ class ZoomableRecyclerView : RecyclerView {
         private set
 
     private val listener = GestureListener()
-    private var scaleListener: Consumer<Double>? = null
     private val detector = Detector(context, listener)
+    private var scaleListener: Consumer<Double>? = null
     private var getMaxDimensionsListener: Consumer<Point>? = null
 
     private var tapListener: OnZoneTapListener? = null
@@ -80,7 +84,7 @@ class ZoomableRecyclerView : RecyclerView {
         this.getMaxDimensionsListener = getMaxDimensionsListener
     }
 
-    fun setTapListener(tapListener: OnZoneTapListener) {
+    fun setTapListener(tapListener: OnZoneTapListener?) {
         this.tapListener = tapListener
     }
 
@@ -100,13 +104,11 @@ class ZoomableRecyclerView : RecyclerView {
         fun onListen(ev: MotionEvent?): Boolean
     }
 
-
     override fun onMeasure(widthSpec: Int, heightSpec: Int) {
         halfWidth = MeasureSpec.getSize(widthSpec) / 2
         halfHeight = MeasureSpec.getSize(heightSpec) / 2
         super.onMeasure(widthSpec, heightSpec)
     }
-
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
         detector.onTouchEvent(e)
@@ -266,12 +268,7 @@ class ZoomableRecyclerView : RecyclerView {
         }
 
         override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-            val llm: LayoutManager? = layoutManager
-            if (llm is LinearLayoutManager) {
-                val orientation = llm.orientation
-                if (orientation == LinearLayoutManager.VERTICAL)
-                    tapListener?.onSingleTapConfirmedAction(e)
-            }
+            tapListener?.onSingleTapConfirmedAction(e)
             return false
         }
 
@@ -407,11 +404,5 @@ class ZoomableRecyclerView : RecyclerView {
                 y = getPositionY(y + dy)
             }
         }
-    }
-
-    companion object {
-        const val ANIMATOR_DURATION_TIME: Long = 200
-        const val DEFAULT_SCALE = 1f
-        const val MAX_SCALE = 3f
     }
 }

@@ -1,24 +1,22 @@
 package me.devsaki.hentoid.widget
 
 import android.annotation.SuppressLint
-import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
-import androidx.core.view.GestureDetectorCompat
 import me.devsaki.hentoid.R
 
 /**
  * Zoned tap listener for the reader
  */
-class OnZoneTapListener(val view: View, tapZoneScale: Int) : OnTouchListener {
+class OnZoneTapListener(view: View, tapZoneScale: Int) : OnTouchListener {
     /**
      * This view's dimensions are used to determine which zone a tap belongs to
      */
-    private val gestureDetector: GestureDetectorCompat
+    private val gestureDetector: ViewZoomGestureListener
 
-    private var pagerTapZoneWidth = 0
-
+    private val pagerTapZoneWidth: Int
+    private val parentWidth: Int
 
     private var onLeftZoneTapListener: Runnable? = null
 
@@ -29,10 +27,10 @@ class OnZoneTapListener(val view: View, tapZoneScale: Int) : OnTouchListener {
     private var onLongTapListener: Runnable? = null
 
     init {
-        val context = view.context
-        gestureDetector = GestureDetectorCompat(context, OnGestureListener())
+        gestureDetector = ViewZoomGestureListener(view.context, GestureListener())
         pagerTapZoneWidth =
-            context.resources.getDimensionPixelSize(R.dimen.tap_zone_width) * tapZoneScale
+            view.context.resources.getDimensionPixelSize(R.dimen.tap_zone_width) * tapZoneScale
+        parentWidth = view.width
     }
 
     fun setOnLeftZoneTapListener(onLeftZoneTapListener: Runnable?): OnZoneTapListener {
@@ -58,7 +56,7 @@ class OnZoneTapListener(val view: View, tapZoneScale: Int) : OnTouchListener {
     fun onSingleTapConfirmedAction(e: MotionEvent): Boolean {
         if (e.x < pagerTapZoneWidth && onLeftZoneTapListener != null) {
             onLeftZoneTapListener!!.run()
-        } else if (e.x > view.width - pagerTapZoneWidth && onRightZoneTapListener != null) {
+        } else if (e.x > parentWidth - pagerTapZoneWidth && onRightZoneTapListener != null) {
             onRightZoneTapListener!!.run()
         } else {
             if (onMiddleZoneTapListener != null) onMiddleZoneTapListener!!.run()
@@ -76,12 +74,12 @@ class OnZoneTapListener(val view: View, tapZoneScale: Int) : OnTouchListener {
         return gestureDetector.onTouchEvent(event)
     }
 
-    inner class OnGestureListener : SimpleOnGestureListener() {
+    inner class GestureListener : ViewZoomGestureListener.Listener() {
         override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
             return onSingleTapConfirmedAction(e)
         }
 
-        override fun onLongPress(e: MotionEvent) {
+        override fun onLongTapConfirmed(ev: MotionEvent) {
             onLongPressAction()
         }
     }

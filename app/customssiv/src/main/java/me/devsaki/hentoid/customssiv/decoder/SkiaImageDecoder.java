@@ -16,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import me.devsaki.hentoid.customssiv.exception.UnsupportedContentException;
 import me.devsaki.hentoid.customssiv.util.Helper;
 import me.devsaki.hentoid.customssiv.util.ImageHelper;
 
@@ -40,7 +41,7 @@ public class SkiaImageDecoder implements ImageDecoder {
 
     @Override
     @NonNull
-    public Bitmap decode(@NonNull final Context context, @NonNull final Uri uri) throws IOException, PackageManager.NameNotFoundException {
+    public Bitmap decode(@NonNull final Context context, @NonNull final Uri uri) throws IOException, PackageManager.NameNotFoundException, UnsupportedContentException {
         String uriString = uri.toString();
         BitmapFactory.Options options = new BitmapFactory.Options();
         Bitmap bitmap = null;
@@ -66,7 +67,7 @@ public class SkiaImageDecoder implements ImageDecoder {
                 byte[] header = new byte[400];
                 if (input.read(header) > 0) {
                     if (ImageHelper.isImageAnimated(header))
-                        throw new RuntimeException("SSIV doesn't handle animated pictures");
+                        throw new UnsupportedContentException("SSIV doesn't handle animated pictures");
 
                     // If it passes, load the whole picture
                     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
