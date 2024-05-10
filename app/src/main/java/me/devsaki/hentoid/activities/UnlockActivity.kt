@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -77,6 +78,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
         }
     }
 
+    @SuppressLint("MissingSuperCall")
     @Deprecated("Deprecated in Java", ReplaceWith("moveTaskToBack(true)"))
     override fun onBackPressed() {
         // We don't want the back button to remove the unlock screen displayed upon app restore
