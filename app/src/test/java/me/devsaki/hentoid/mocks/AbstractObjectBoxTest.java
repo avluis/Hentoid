@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.mocks;
 
-import androidx.annotation.NonNull;
+import static java.sql.DriverManager.println;
+
 import androidx.test.core.app.ApplicationProvider;
 
 import com.google.firebase.FirebaseApp;
@@ -13,14 +14,11 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 import io.objectbox.BoxStore;
 import io.objectbox.DebugFlags;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import timber.log.Timber;
-
-import static java.sql.DriverManager.println;
 
 public abstract class AbstractObjectBoxTest {
     private static final File TEST_DIRECTORY = new File("objectbox-example/test-db");

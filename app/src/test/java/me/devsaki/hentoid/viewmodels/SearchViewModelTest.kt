@@ -56,7 +56,7 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
             attrs3.add(Attribute(AttributeType.ARTIST, "artist3"))
             attrs3.add(Attribute(AttributeType.LANGUAGE, "english"))
 
-            mockObjectBoxDAO = ObjectBoxDAO(store)
+            mockObjectBoxDAO = ObjectBoxDAO(/*store*/)
             mockObjectBoxDAO.insertContent(
                 Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.ASMHENTAI)
                     .addAttributes(attrs1)

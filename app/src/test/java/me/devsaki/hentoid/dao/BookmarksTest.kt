@@ -32,7 +32,7 @@ class BookmarksTest : AbstractObjectBoxTest() {
         @JvmStatic
         fun prepareDB() {
             println(">> Preparing DB...")
-            dao = ObjectBoxDAO(store)
+            dao = ObjectBoxDAO(/*store*/)
             dao.insertBookmark(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff1"))
             dao.insertBookmark(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff2/"))
             println(">> DB prepared")
