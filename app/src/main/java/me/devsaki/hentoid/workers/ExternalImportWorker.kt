@@ -168,8 +168,9 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             dao.selectContentByStorageUri(content.storageUri, false)
 
                         // The very same book may also exist in the DB under a different folder,
-                        if (null == existingDuplicate && content.url.trim()
-                                .isNotEmpty() && content.site != Site.NONE
+                        if (null == existingDuplicate
+                            && content.url.trim().isNotEmpty()
+                            && content.site != Site.NONE
                         ) {
                             existingDuplicate =
                                 dao.selectContentBySourceAndUrl(content.site, content.url, "")
@@ -270,7 +271,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         log: MutableList<LogEntry>
     ) {
         if (parentNames.size > 4) return  // We've descended too far
-        val rootName = if (null == root.name) "" else root.name!!
+        val rootName = root.name ?: ""
         eventProcessed(2, rootName)
         Timber.d(">>>> scan root %s", root.uri)
         val files = explorer.listDocumentFiles(context, root)
@@ -281,22 +282,21 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         val contentJsons: MutableList<DocumentFile> = ArrayList()
 
         // Look for the interesting stuff
-        for (file in files) if (file.name != null) {
-            if (file.isDirectory) subFolders.add(file) else if (imageNamesFilter.accept(file.name!!)) images.add(
-                file
-            ) else if (getArchiveNamesFilter().accept(
-                    file.name!!
-                )
-            ) archives.add(file) else if (JsonHelper.getJsonNamesFilter().accept(file.name!!)) {
+        for (file in files) {
+            val fileName = file.name ?: ""
+            if (file.isDirectory) subFolders.add(file)
+            else if (imageNamesFilter.accept(fileName)) images.add(file)
+            else if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
+            else if (JsonHelper.getJsonNamesFilter().accept(fileName)) {
                 jsons.add(file)
-                if (getContentJsonNamesFilter().accept(file.name!!)) contentJsons.add(file)
+                if (getContentJsonNamesFilter().accept(fileName)) contentJsons.add(file)
             }
         }
 
-        // If at least 2 subfolders and everyone of them ends with a number, we've got a multi-chapter book
+        // If at least 2 subfolders and all of them ends with a number, we've got a multi-chapter book
         if (subFolders.size >= 2) {
             val allSubfoldersEndWithNumber =
-                subFolders.mapNotNull { obj: DocumentFile -> obj.name }.all { n: String ->
+                subFolders.mapNotNull { f -> f.name }.all { n: String ->
                     ENDS_WITH_NUMBER.matcher(n).matches()
                 }
             if (allSubfoldersEndWithNumber) {
@@ -310,10 +310,11 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                         )
                     )
                 }
-                // Look for archives inside
+                // Look for archives inside; if there's one inside the 1st folder, load them as a chapters
                 val nbArchivesInside = explorer.countFiles(subFolders[0], getArchiveNamesFilter())
-                if (nbArchivesInside > 0) {
-                    val c = scanForArchives(context, subFolders, explorer, parentNames, dao)
+                if (1 == nbArchivesInside) {
+                    val c =
+                        scanForArchives(context, root, subFolders, explorer, parentNames, dao, true)
                     library.addAll(c)
                 }
             }

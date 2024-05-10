@@ -26,6 +26,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
+import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.RenamingRule
@@ -761,7 +762,7 @@ fun scanChapterFolders(
  * @param targetStatus           Target status of the detected images
  * @param addFolderNametoImgName True if the parent folder name has to be added to detected images name
  * @param images                 Image list to populate or enrich
- * @param imageFiles             Image file list, if already listed upstream; null if it needs to be listed
+ * @param imgs             Image file list, if already listed upstream; null if it needs to be listed
  */
 private fun scanFolderImages(
     context: Context,
@@ -855,14 +856,17 @@ private fun parentNamesAsTags(parentNames: List<String>): AttributeMap {
  * @param explorer    FileExplorer to use
  * @param parentNames Names of parent folders, for formatting purposes; last of the list is the immediate parent of the scanned folders
  * @param dao         CollectionDAO to use
+ * @param chaptered   True to create one single book containing the 1st archive of each subfolder as chapters; false to create one book per archive
  * @return List of Content created from every archive inside the given subfolders
  */
 fun scanForArchives(
     context: Context,
+    parent: DocumentFile,
     subFolders: List<DocumentFile>,
     explorer: FileExplorer,
     parentNames: List<String>,
-    dao: CollectionDAO
+    dao: CollectionDAO,
+    chaptered: Boolean = false
 ): List<Content> {
     val result: MutableList<Content> = ArrayList()
     for (subfolder in subFolders) {
@@ -871,12 +875,10 @@ fun scanForArchives(
         val jsons: MutableList<DocumentFile> = ArrayList()
 
         // Look for the interesting stuff
-        for (file in files) if (file.name != null) {
-            if (getArchiveNamesFilter().accept(file.name!!)) archives.add(file) else if (JsonHelper.getJsonNamesFilter()
-                    .accept(
-                        file.name!!
-                    )
-            ) jsons.add(file)
+        for (file in files) {
+            val fileName = file.name ?: ""
+            if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
+            else if (JsonHelper.getJsonNamesFilter().accept(fileName)) jsons.add(file)
         }
         for (archive in archives) {
             val json = getFileWithName(jsons, archive.name)
@@ -889,10 +891,57 @@ fun scanForArchives(
                 dao,
                 json
             )
-            if (0 == c.first) result.add(c.second!!)
+            if (0 == c.first) {
+                result.add(c.second!!)
+                if (chaptered) break // Just read the 1st archive of any subfolder
+            }
         }
     }
-    return result
+    if (chaptered) { // Return one single book with all results as chapters
+        val content =
+            Content().setSite(Site.NONE)
+                .setTitle(parentNames.lastOrNull() ?: "")
+                .setUrl("")
+        content.setDownloadDate(
+            subFolders.lastOrNull()?.lastModified() ?: Instant.now().toEpochMilli()
+        )
+        content.addAttributes(parentNamesAsTags(parentNames))
+
+        content.addAttributes(newExternalAttribute())
+        content.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.uri.toString())
+        if (0L == content.downloadDate) content.setDownloadDate(Instant.now().toEpochMilli())
+        content.lastEditDate = Instant.now().toEpochMilli()
+
+        val chapterStr = context.getString(R.string.gallery_chapter_prefix)
+        var chapterOffset = 0
+        val chapters: MutableList<Chapter> = ArrayList()
+        val images: MutableList<ImageFile> = ArrayList()
+        result.forEachIndexed { cidx, c ->
+            val chapter = Chapter(cidx + 1, c.archiveLocationUri, chapterStr + " " + (cidx + 1))
+            chapter.setContent(content)
+            chapter.setImageFiles(c.imageList.filter { i -> i.isReadable })
+            chapter.imageFiles?.forEachIndexed { iidx, img ->
+                img.setOrder(chapterOffset + iidx + 1)
+                img.computeName(5)
+                img.setChapter(chapter)
+            }
+            chapters.add(chapter)
+            chapter.imageFiles?.let {
+                images.addAll(it)
+                chapterOffset += it.size
+            }
+        }
+        val coverExists = images.any { i -> i.isCover }
+        if (!coverExists) createCover(images)
+        content.setImageFiles(images)
+        if (0 == content.qtyPages) {
+            val countUnreadable = images.filterNot { obj: ImageFile -> obj.isReadable }.count()
+            content.setQtyPages(images.size - countUnreadable) // Minus unreadable pages (cover thumb)
+        }
+        content.setChapters(chapters)
+        content.computeSize()
+        return listOf(content)
+    } else return result
 }
 
 /**
