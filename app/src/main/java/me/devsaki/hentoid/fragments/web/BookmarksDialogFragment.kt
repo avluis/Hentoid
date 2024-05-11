@@ -481,7 +481,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     }
 
     override fun itemTouchDropped(oldPosition: Int, newPosition: Int) {
-        // Update  visuals
+        // Update visuals
         binding?.apply {
             val vh = recyclerview.findViewHolderForAdapterPosition(newPosition)
             if (vh is IDraggableViewHolder) {
@@ -496,6 +496,9 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             val bookmarks = dao.selectBookmarks(site).toMutableList()
             if (oldPosition < 0 || oldPosition >= bookmarks.size) return
 
+            // Add a bogus item on Position 0 to simulate the "Homepage" UI item
+            bookmarks.add(0, SiteBookmark(Site.NONE, "", ""))
+
             // Move the item
             val fromValue = bookmarks[oldPosition]
             val delta = if (oldPosition < newPosition) 1 else -1
@@ -506,12 +509,14 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             }
             bookmarks[newPosition] = fromValue
 
-            // Renumber everything and update the DB
-            var index = 1
-            for (b in bookmarks) {
-                b.order = index++
-                dao.insertBookmark(b)
-            }
+            // Remove the bogus element before saving
+            bookmarks.removeIf { b -> b.site == Site.NONE }
+
+            // Renumber everything
+            bookmarks.forEachIndexed { idx, b -> b.order = idx + 1 }
+
+            // Update DB
+            dao.insertBookmarks(bookmarks)
         } finally {
             dao.cleanup()
         }
