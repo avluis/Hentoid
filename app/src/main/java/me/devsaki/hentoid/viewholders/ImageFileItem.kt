@@ -194,7 +194,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
             pageNumberTxt.text = pageNumberTxt.resources.getString(
                 R.string.gallery_display_page,
                 currentBegin,
-                item.image.order,
+                item.image.displayOrder + 1,
                 isFavourite,
                 currentEnd
             )
