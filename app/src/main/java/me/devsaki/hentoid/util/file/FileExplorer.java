@@ -419,17 +419,6 @@ public class FileExplorer implements Closeable {
     /**
      * Properties of a stored document
      */
-    static class DocumentProperties {
-        final Uri uri;
-        final String name;
-        final long size;
-        final boolean isDirectory;
-
-        public DocumentProperties(Uri uri, String name, long size, boolean isDirectory) {
-            this.uri = uri;
-            this.name = name;
-            this.size = size;
-            this.isDirectory = isDirectory;
-        }
+    record DocumentProperties(Uri uri, String name, long size, boolean isDirectory) {
     }
 }
