@@ -117,7 +117,6 @@ class QueueViewModel(
     // =========================
     fun moveAbsolute(oldPosition: Int, newPosition: Int) {
         if (oldPosition == newPosition) return
-        Timber.d(">> move %s to %s", oldPosition, newPosition)
 
         // Get unpaged data to be sure we have everything in one collection
         val localQueue = dao.selectQueue().toMutableList()
@@ -134,8 +133,7 @@ class QueueViewModel(
         localQueue[newPosition] = fromValue
 
         // Renumber everything
-        var index = 1
-        for (qr in localQueue) qr.rank = index++
+        localQueue.forEachIndexed { idx, qr -> qr.rank = idx + 1 }
 
         // Update queue in DB
         dao.updateQueue(localQueue)
