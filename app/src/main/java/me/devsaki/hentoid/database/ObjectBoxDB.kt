@@ -477,6 +477,7 @@ object ObjectBoxDB {
         }
     }
 
+    // Find any book that has the same content URL _or_ a chapter with the same content URL _or_ the same cover URL
     fun selectContentBySourceAndUrl(
         site: Site,
         contentUrl: String,

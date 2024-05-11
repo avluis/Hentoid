@@ -313,6 +313,7 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectContentById(id.toList()) ?: emptyList()
     }
 
+    // Find any book that has the same content URL _or_ a chapter with the same content URL _or_ the same cover URL
     override fun selectContentBySourceAndUrl(
         site: Site,
         contentUrl: String,
