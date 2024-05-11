@@ -63,11 +63,27 @@
             android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
             android:textColor="@color/card_tags_light"
             android:textSize="@dimen/text_subtitle_2"
-            app:layout_constraintBottom_toTopOf="@id/img_divider"
+            app:layout_constraintBottom_toTopOf="@id/content_launch_code"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivCover"
             app:layout_constraintTop_toBottomOf="@id/content_artist"
             tools:text="@string/book_tags" />
+
+        <TextView
+            android:id="@+id/content_launch_code"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            android:textColor="@color/card_tags_light"
+            android:textSize="@dimen/caption"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/img_divider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/content_tags"
+            tools:text="@string/book_launchcode"
+            tools:visibility="visible" />
 
         <View
             android:id="@+id/img_divider"

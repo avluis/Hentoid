@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -129,6 +130,8 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
         val thumbLocation = content.cover.usableUri
         binding?.apply {
+
+            // Cover
             if (thumbLocation.isEmpty()) {
                 ivCover.visibility = View.INVISIBLE
             } else {
@@ -156,6 +159,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
                     true
                 )
             }
+
             contentTitle.text = content.title
             contentArtist.text = ContentHelper.formatArtistForDisplay(requireContext(), content)
             updateFavouriteDisplay(content.isFavourite)
@@ -167,6 +171,10 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
                 contentTags.visibility = View.VISIBLE
                 contentTags.text = tagTxt
             }
+            if (content.site.hasUniqueBookId())
+                contentLaunchCode.text =
+                    resources.getString(R.string.book_launchcode, content.uniqueSiteId)
+            contentLaunchCode.isVisible = content.site.hasUniqueBookId()
         }
     }
 
