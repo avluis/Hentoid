@@ -942,11 +942,11 @@ class ObjectBoxDAO : CollectionDAO {
         pageNum: Int,
         itemPerPage: Int
     ): AttributeQueryResult {
-        val attributes: MutableSet<Attribute> = HashSet()
+        val result: MutableList<Attribute> = ArrayList()
         var totalSelectedAttributes: Long = 0
         if (attrTypes.isNotEmpty()) {
             if (attrTypes[0] == AttributeType.SOURCE) {
-                attributes.addAll(
+                result.addAll(
                     ObjectBoxDB.selectAvailableSources(
                         groupId,
                         dynamicGroupContentIds,
@@ -956,11 +956,11 @@ class ObjectBoxDAO : CollectionDAO {
                         includeFreeAttrs
                     )
                 )
-                totalSelectedAttributes = attributes.size.toLong()
+                totalSelectedAttributes = result.size.toLong()
             } else {
                 for (type in attrTypes) {
                     // TODO fix sorting when concatenating both lists
-                    attributes.addAll(
+                    result.addAll(
                         ObjectBoxDB.selectAvailableAttributes(
                             type,
                             groupId,
@@ -988,7 +988,7 @@ class ObjectBoxDAO : CollectionDAO {
                 }
             }
         }
-        return AttributeQueryResult(attributes, totalSelectedAttributes)
+        return AttributeQueryResult(result, totalSelectedAttributes)
     }
 
     private fun countAttributes(

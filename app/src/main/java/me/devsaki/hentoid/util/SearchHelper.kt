@@ -8,7 +8,8 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.domains.Attribute
 
 data class AttributeQueryResult(
-    val attributes: Set<Attribute>,
+    // Ordered list of results
+    val attributes: List<Attribute>,
     val totalSelectedAttributes: Long
 )
 
