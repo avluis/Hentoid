@@ -41,8 +41,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
     private lateinit var viewModel: ReaderViewModel
 
     // UI
-    private var _binding: IncludeReaderContentBottomPanelBinding? = null
-    private val binding get() = _binding!!
+    private var binding: IncludeReaderContentBottomPanelBinding? = null
     private val stars: Array<ImageView?> = arrayOfNulls(5)
 
     // VARS
@@ -86,25 +85,25 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = IncludeReaderContentBottomPanelBinding.inflate(inflater, container, false)
+    ): View? {
+        binding = IncludeReaderContentBottomPanelBinding.inflate(inflater, container, false)
+        binding?.apply {
+            stars[0] = rating1
+            stars[1] = rating2
+            stars[2] = rating3
+            stars[3] = rating4
+            stars[4] = rating5
 
-        stars[0] = binding.rating1
-        stars[1] = binding.rating2
-        stars[2] = binding.rating3
-        stars[3] = binding.rating4
-        stars[4] = binding.rating5
-
-        binding.imgActionFavourite.setOnClickListener { onFavouriteClick() }
-        for (i in 0..4) {
-            stars[i]?.setOnClickListener { setRating(i + 1) }
+            imgActionFavourite.setOnClickListener { onFavouriteClick() }
+            for (i in 0..4) {
+                stars[i]?.setOnClickListener { setRating(i + 1) }
+            }
         }
-
-        return binding.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
@@ -129,51 +128,53 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
         if (null == content) return
 
         val thumbLocation = content.cover.usableUri
-        if (thumbLocation.isEmpty()) {
-            binding.ivCover.visibility = View.INVISIBLE
-        } else {
-            binding.ivCover.visibility = View.VISIBLE
-            if (thumbLocation.startsWith("http")) {
-                val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, content)
-                if (glideUrl != null) {
-                    Glide.with(binding.ivCover)
-                        .load(glideUrl)
-                        .apply(glideRequestOptions)
-                        .into(binding.ivCover)
-                }
-            } else Glide.with(binding.ivCover)
-                .load(Uri.parse(thumbLocation))
-                .apply(glideRequestOptions)
-                .into(binding.ivCover)
-        }
-        if (openOnTap) binding.ivCover.setOnClickListener {
-            ContentHelper.openReader(
-                requireActivity(),
-                content,
-                -1,
-                null,
-                false,
-                true
-            )
-        }
-        binding.contentTitle.text = content.title
-        binding.contentArtist.text = ContentHelper.formatArtistForDisplay(requireContext(), content)
-        updateFavouriteDisplay(content.isFavourite)
-        updateRatingDisplay(content.rating)
-        val tagTxt = ContentHelper.formatTagsForDisplay(content)
-        if (tagTxt.isEmpty()) {
-            binding.contentTags.visibility = View.GONE
-        } else {
-            binding.contentTags.visibility = View.VISIBLE
-            binding.contentTags.text = tagTxt
+        binding?.apply {
+            if (thumbLocation.isEmpty()) {
+                ivCover.visibility = View.INVISIBLE
+            } else {
+                ivCover.visibility = View.VISIBLE
+                if (thumbLocation.startsWith("http")) {
+                    val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, content)
+                    if (glideUrl != null) {
+                        Glide.with(ivCover)
+                            .load(glideUrl)
+                            .apply(glideRequestOptions)
+                            .into(ivCover)
+                    }
+                } else Glide.with(ivCover)
+                    .load(Uri.parse(thumbLocation))
+                    .apply(glideRequestOptions)
+                    .into(ivCover)
+            }
+            if (openOnTap) ivCover.setOnClickListener {
+                ContentHelper.openReader(
+                    requireActivity(),
+                    content,
+                    -1,
+                    null,
+                    false,
+                    true
+                )
+            }
+            contentTitle.text = content.title
+            contentArtist.text = ContentHelper.formatArtistForDisplay(requireContext(), content)
+            updateFavouriteDisplay(content.isFavourite)
+            updateRatingDisplay(content.rating)
+            val tagTxt = ContentHelper.formatTagsForDisplay(content)
+            if (tagTxt.isEmpty()) {
+                contentTags.visibility = View.GONE
+            } else {
+                contentTags.visibility = View.VISIBLE
+                contentTags.text = tagTxt
+            }
         }
     }
 
-
     private fun updateFavouriteDisplay(isFavourited: Boolean) {
-        if (isFavourited) binding.imgActionFavourite.setImageResource(R.drawable.ic_fav_full) else binding.imgActionFavourite.setImageResource(
-            R.drawable.ic_fav_empty
-        )
+        binding?.apply {
+            if (isFavourited) imgActionFavourite.setImageResource(R.drawable.ic_fav_full)
+            else imgActionFavourite.setImageResource(R.drawable.ic_fav_empty)
+        }
     }
 
     private fun updateRatingDisplay(rating: Int) {
