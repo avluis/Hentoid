@@ -75,6 +75,8 @@ object Settings {
     var isBrowserAugmented: Boolean by BoolSetting(Key.WEB_AUGMENTED_BROWSER, true)
     var isAdBlockerOn: Boolean by BoolSetting(Key.WEB_ADBLOCKER, true)
     var isBrowserForceLightMode: Boolean by BoolSetting(Key.WEB_FORCE_LIGHTMODE, false)
+    var isBrowserLanguageFilter: Boolean by BoolSetting("pref_browser_language_filter", false)
+    var browserLanguageFilterValue: String by StringSetting("pref_language_filter_value", "english")
 
     // READER
     var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)

@@ -11,7 +11,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.images.HitomiParser
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.network.parseParameters
 import org.jsoup.nodes.Document
 import timber.log.Timber
@@ -93,7 +93,7 @@ class HitomiActivity : BaseWebActivity() {
     }
 
     override fun onPageStarted(
-        url: String?,
+        url: String,
         isGalleryPage: Boolean,
         isHtmlLoaded: Boolean,
         isBookmarkable: Boolean
@@ -102,11 +102,14 @@ class HitomiActivity : BaseWebActivity() {
         super.onPageStarted(url, isGalleryPage, isHtmlLoaded, isBookmarkable)
     }
 
-    override fun onPageFinished(isResultsPage: Boolean, isGalleryPage: Boolean) {
-        if (Preferences.isLanguageFilterButton() && isUrlFilterable(webView.url ?: ""))
-            languageFilterButton?.visibility = View.VISIBLE
+    override fun onPageFinished(url: String, isResultsPage: Boolean, isGalleryPage: Boolean) {
+        if (Settings.isBrowserLanguageFilter
+            && Settings.browserLanguageFilterValue.isNotEmpty()
+            && isUrlFilterableByLanguage(url)
+        ) languageFilterButton?.visibility = View.VISIBLE
         else languageFilterButton?.visibility = View.INVISIBLE
-        super.onPageFinished(isResultsPage, isGalleryPage)
+
+        super.onPageFinished(url, isResultsPage, isGalleryPage)
     }
 
     override fun createWebClient(): CustomWebViewClient {
@@ -127,10 +130,9 @@ class HitomiActivity : BaseWebActivity() {
 
     private fun rewriteResultsUrl(resultsUri: Uri, page: Int): String {
         val builder = resultsUri.buildUpon()
-        if (resultsUri.toString()
-                .contains("search")
-        ) builder.fragment(page.toString() + "") // https://hitomi.la/search.html?<searchTerm>#<page>
-        else {
+        if (resultsUri.toString().contains("search")) {
+            builder.fragment(page.toString() + "") // https://hitomi.la/search.html?<searchTerm>#<page>
+        } else {
             val params = parseParameters(resultsUri).toMutableMap()
             params["page"] = page.toString() + ""
             builder.clearQuery()
@@ -141,19 +143,22 @@ class HitomiActivity : BaseWebActivity() {
         return builder.toString()
     }
 
+    // Language filter button
+
     private fun onLangFilterButtonClick() {
-        val temp =
-            Preferences.getLanguageFilterButtonValue() + ".html".lowercase(Locale.getDefault())
-        if (webView.url!!.contains("-all.html")) webView.loadUrl(
-            webView.url!!.replace("all.html", temp)
-        ) else webView.loadUrl(webView.url + "index-" + temp)
+        val temp = Settings.browserLanguageFilterValue + ".html".lowercase(Locale.getDefault())
+
+        val url = webView.url ?: ""
+        if (url.contains("-all.html")) webView.loadUrl(url.replace("all.html", temp))
+        else webView.loadUrl(webView.url + "index-" + temp)
     }
 
-    private fun isUrlFilterable(url: String): Boolean {
+    private fun isUrlFilterableByLanguage(url: String): Boolean {
         //only works on 1st page
         return url == "https://hitomi.la/" || url == "https://hitomi.la/?page=1"
                 || url.endsWith("-all.html") || url.endsWith("-all.html?page=1")
     }
+
 
     private open inner class HitomiWebClient(
         site: Site,

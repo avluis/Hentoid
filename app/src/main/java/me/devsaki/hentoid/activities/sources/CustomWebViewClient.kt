@@ -445,7 +445,7 @@ open class CustomWebViewClient : WebViewClient {
         if (BuildConfig.DEBUG) Timber.v("WebView : page finished %s", url)
         isPageLoading.set(false)
         isHtmlLoaded.set(false) // Reset for the next page
-        activity?.onPageFinished(isResultsPage(StringHelper.protect(url)), isGalleryPage(url))
+        activity?.onPageFinished(url, isResultsPage(StringHelper.protect(url)), isGalleryPage(url))
     }
 
     /**
@@ -1002,10 +1002,18 @@ open class CustomWebViewClient : WebViewClient {
 
         // CALLBACKS
         fun onPageStarted(
-            url: String?, isGalleryPage: Boolean, isHtmlLoaded: Boolean, isBookmarkable: Boolean
+            url: String,
+            isGalleryPage: Boolean,
+            isHtmlLoaded: Boolean,
+            isBookmarkable: Boolean
         )
 
-        fun onPageFinished(isResultsPage: Boolean, isGalleryPage: Boolean)
+        fun onPageFinished(
+            url: String,
+            isResultsPage: Boolean,
+            isGalleryPage: Boolean
+        )
+
         fun onGalleryPageStarted()
 
         // GETTERS

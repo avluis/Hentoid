@@ -246,8 +246,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         refreshStopMenu = toolbar.menu.findItem(R.id.web_menu_refresh_stop)
         bookmarkMenu = toolbar.menu.findItem(R.id.web_menu_bookmark)
         adblockMenu = toolbar.menu.findItem(R.id.web_menu_adblocker)
-        languageFilterButton = findViewById(R.id.language_filter_button)
         binding?.apply {
+            this@BaseWebActivity.languageFilterButton = languageFilterButton
             bottomNavigation.setOnMenuItemClickListener { item ->
                 this@BaseWebActivity.onMenuItemSelected(item)
             }
@@ -600,7 +600,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     override fun onPageStarted(
-        url: String?,
+        url: String,
         isGalleryPage: Boolean,
         isHtmlLoaded: Boolean,
         isBookmarkable: Boolean
@@ -662,7 +662,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
     }
 
-    override fun onPageFinished(isResultsPage: Boolean, isGalleryPage: Boolean) {
+    override fun onPageFinished(url : String, isResultsPage: Boolean, isGalleryPage: Boolean) {
         refreshNavigationMenu(isResultsPage)
         refreshStopMenu?.setIcon(R.drawable.ic_action_refresh)
 
