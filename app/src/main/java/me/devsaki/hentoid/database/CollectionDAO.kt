@@ -37,7 +37,9 @@ interface CollectionDAO {
 
     fun selectContentByStorageUri(folderUri: String, onlyFlagged: Boolean): Content?
 
-    fun selectContentBySourceAndUrl(site: Site, contentUrl: String, coverUrl: String?): Content?
+    fun selectContentByUrlOrCover(site: Site, contentUrl: String, coverUrl: String?): Content?
+
+    fun selectContentByUrlAndCover(site: Site, contentUrl: String, coverUrl: String?): Content?
 
     fun selectAllSourceUrls(site: Site): Set<String>
 

@@ -198,7 +198,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         dao: CollectionDAO
     ) {
         val c = jsonContent.toEntity(dao)
-        val duplicate = dao.selectContentBySourceAndUrl(c.site, c.url, "")
+        val duplicate = dao.selectContentByUrlOrCover(c.site, c.url, "")
         if (duplicate != null) return
         var mappedToFiles = false
         val siteFolders = siteFoldersCache[c.site]

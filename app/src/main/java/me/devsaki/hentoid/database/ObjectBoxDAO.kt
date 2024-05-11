@@ -314,14 +314,25 @@ class ObjectBoxDAO : CollectionDAO {
     }
 
     // Find any book that has the given content URL _or_ a chapter with the given content URL _or_ has a cover starting with the given cover URL
-    override fun selectContentBySourceAndUrl(
+    override fun selectContentByUrlOrCover(
         site: Site,
         contentUrl: String,
         coverUrl: String?
     ): Content? {
         val coverUrlStart =
             if (coverUrl != null) Content.getNeutralCoverUrlRoot(coverUrl, site) else ""
-        return ObjectBoxDB.selectContentBySourceAndUrl(site, contentUrl, coverUrlStart)
+        return ObjectBoxDB.selectContentByUrlOrCover(site, contentUrl, coverUrlStart)
+    }
+
+    // Find any book that has the given content URL _and_ has a cover starting with the given cover URL
+    override fun selectContentByUrlAndCover(
+        site: Site,
+        contentUrl: String,
+        coverUrl: String?
+    ): Content? {
+        val coverUrlStart =
+            if (coverUrl != null) Content.getNeutralCoverUrlRoot(coverUrl, site) else ""
+        return ObjectBoxDB.selectContentByUrlAndCover(site, contentUrl, coverUrlStart)
     }
 
     override fun selectAllSourceUrls(site: Site): Set<String> {

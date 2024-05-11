@@ -868,7 +868,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             ActionMode.READ -> {
                 val searchUrl =
                     if (getStartSite().hasCoverBasedPageUpdates()) currentContent!!.coverImageUrl else ""
-                currentContent = dao.selectContentBySourceAndUrl(
+                currentContent = dao.selectContentByUrlOrCover(
                     currentContent!!.site,
                     currentContent!!.url,
                     searchUrl
@@ -1210,7 +1210,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             if (getStartSite().hasCoverBasedPageUpdates()) onlineContent.coverImageUrl else ""
         // TODO manage DB calls concurrency to avoid getting read transaction conflicts
         val contentDB =
-            dao.selectContentBySourceAndUrl(onlineContent.site, onlineContent.url, searchUrl)
+            dao.selectContentByUrlOrCover(onlineContent.site, onlineContent.url, searchUrl)
         val isInCollection = contentDB != null && ContentHelper.isInLibrary(contentDB.status)
         val isInQueue = contentDB != null && ContentHelper.isInQueue(contentDB.status)
         if (!isInCollection && !isInQueue) {

@@ -128,7 +128,7 @@ class DownloadsImportWorker(
             return
         }
         val existingContent =
-            dao!!.selectContentBySourceAndUrl(site, Content.transformRawUrl(site, url), null)
+            dao!!.selectContentByUrlOrCover(site, Content.transformRawUrl(site, url), null)
         if (existingContent != null) {
             val location =
                 if (ContentHelper.isInQueue(existingContent.status)) "queue" else "library"

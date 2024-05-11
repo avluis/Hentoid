@@ -173,11 +173,16 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             && content.site != Site.NONE
                         ) {
                             existingDuplicate =
-                                dao.selectContentBySourceAndUrl(content.site, content.url, "")
+                                dao.selectContentByUrlAndCover(
+                                    content.site,
+                                    content.url,
+                                    content.coverImageUrl
+                                )
                             // Ignore the duplicate if it is queued; we do prefer to import a full book
                             if (existingDuplicate != null) {
-                                if (ContentHelper.isInQueue(existingDuplicate.status)) existingDuplicate =
-                                    null else duplicateOrigin = "book"
+                                if (ContentHelper.isInQueue(existingDuplicate.status))
+                                    existingDuplicate = null
+                                else duplicateOrigin = "book"
                             }
                         }
                         if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion) {

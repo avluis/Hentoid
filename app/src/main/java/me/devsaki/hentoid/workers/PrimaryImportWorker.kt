@@ -515,7 +515,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 // If the very same book still exists in the DB at this point, it means it's present in the queue
                 // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
                 val existingDuplicate =
-                    dao.selectContentBySourceAndUrl(content.site, content.url, "")
+                    dao.selectContentByUrlAndCover(content.site, content.url, content.coverImageUrl)
                 if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion) {
                     booksKO++
                     val location =
@@ -948,7 +948,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             val lst: MutableList<QueueRecord> = ArrayList()
             var count = 1
             for (c in queuedContent) {
-                val duplicate = dao.selectContentBySourceAndUrl(c.site, c.url, "")
+                val duplicate = dao.selectContentByUrlOrCover(c.site, c.url, "")
                 if (null == duplicate) {
                     if (c.status == StatusContent.ERROR) {
                         // Add error books as library entries, not queue entries
