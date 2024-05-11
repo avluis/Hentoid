@@ -19,7 +19,7 @@ import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.drag.SimpleDragCallback
-import com.mikepenz.fastadapter.select.SelectExtension
+import com.mikepenz.fastadapter.select.getSelectExtension
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,7 +72,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
 
     private val itemAdapter = ItemAdapter<TextItem<SiteBookmark>>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
-    private lateinit var selectExtension: SelectExtension<TextItem<SiteBookmark>>
+    private var selectExtension = fastAdapter.getSelectExtension()
     private lateinit var touchHelper: ItemTouchHelper
 
     // === VARIABLES
@@ -127,8 +127,6 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         super.onViewCreated(rootView, savedInstanceState)
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
-        selectExtension = fastAdapter.getOrCreateExtension(SelectExtension::class.java)!!
-
         selectExtension.isSelectable = true
         selectExtension.multiSelect = true
         selectExtension.selectOnLongClick = true
@@ -149,6 +147,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             { _, _, _, position: Int -> helper.onPreClickListener(position) }
         fastAdapter.onPreLongClickListener =
             { _, _, _, position: Int -> helper.onPreLongClickListener(position) }
+
 
         // Activate drag & drop
         val dragCallback = SimpleDragCallback(this)
