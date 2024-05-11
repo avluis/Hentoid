@@ -30,13 +30,15 @@
     "EHENTAI": {
       "useHentoidAgent": true,
       "hasBackupURLs": true,
+      "jsoupOutputSyntax": 1,
       "bookCardExcludedParentClasses": [
         "gm",
         "gtb"
       ]
     },
     "EXHENTAI": {
-      "hasBackupURLs": true
+      "hasBackupURLs": true,
+      "jsoupOutputSyntax": 1
     },
     "LUSCIOUS": {
       "hasUniqueBookId": true

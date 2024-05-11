@@ -85,8 +85,12 @@ public enum Site {
     // Controls for "Mark downloaded/merged" in browser
     private int bookCardDepth = 2;
     private Set<String> bookCardExcludedParentClasses = new HashSet<>();
-    //Controls for "Mark books with blocked tags" in browser
+    // Controls for "Mark books with blocked tags" in browser
     private int galleryHeight = -1;
+    // Determine which Jsoup output to use when rewriting the HTML
+    // 0 : html; 1 : xml
+    private int jsoupOutputSyntax = 0;
+
 
     Site(int code,
          String description,
@@ -192,6 +196,8 @@ public enum Site {
         return galleryHeight;
     }
 
+    public int getJsoupOutputSyntax() { return jsoupOutputSyntax; }
+
     public boolean isVisible() {
         for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;
         return true;
@@ -232,6 +238,8 @@ public enum Site {
             bookCardExcludedParentClasses = new HashSet<>(jsonSite.getBookCardExcludedParentClasses());
         if (jsonSite.getGalleryHeight() != null)
             galleryHeight = jsonSite.getGalleryHeight();
+        if (jsonSite.getJsoupOutputSyntax() != null)
+            jsoupOutputSyntax = jsonSite.getJsoupOutputSyntax();
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {

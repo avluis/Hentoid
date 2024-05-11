@@ -15,6 +15,7 @@ data class JsonSiteSettings(
         val requestsCapPerSecond: Int?,
         val bookCardDepth: Int?,
         val bookCardExcludedParentClasses: List<String>?,
-        val galleryHeight: Int?
+        val galleryHeight: Int?,
+        val jsoupOutputSyntax: Int?
     )
 }

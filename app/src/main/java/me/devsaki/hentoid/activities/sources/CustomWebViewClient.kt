@@ -825,7 +825,9 @@ open class CustomWebViewClient : WebViewClient {
     ): InputStream {
         val doc = Jsoup.parse(stream, null, baseUri)
         // https://github.com/jhy/jsoup/issues/502#issuecomment-953514521
-        doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml)
+        if (1 == site.jsoupOutputSyntax) {
+            doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml)
+        }
 
         // Add custom inline CSS to the main page only
         if (customCss != null && baseUri == mainPageUrl)
