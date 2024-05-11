@@ -331,10 +331,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override fun onStart() {
         super.onStart()
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-        (requireActivity() as ReaderActivity).registerKeyListener(ReaderKeyListener(lifecycleScope).setOnVolumeDownListener { b: Boolean -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.previousFunctional() else previousPage() }
-            .setOnVolumeUpListener { b: Boolean -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.nextFunctional() else nextPage() }
-            .setOnKeyLeftListener { onLeftTap() }.setOnKeyRightListener { onRightTap() }
-            .setOnBackListener { onBackClick() })
+        (requireActivity() as ReaderActivity)
+            .registerKeyListener(ReaderKeyListener(lifecycleScope)
+                .setOnVolumeDownListener { b: Boolean -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.previousFunctional() else previousPage() }
+                .setOnVolumeUpListener { b: Boolean -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.nextFunctional() else nextPage() }
+                .setOnKeyLeftListener { onLeftTap() }.setOnKeyRightListener { onRightTap() }
+                .setOnBackListener { onBackClick() })
     }
 
     override fun onResume() {
@@ -1092,7 +1094,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                             .setOnMiddleZoneTapListener { onMiddleTap() }
                             .setOnLongTapListener { onLongTap() }
                     adapter.setItemTouchListener(onVerticalZoneTapListener)
-
                     isZoomFrameEnabled = true
                     onUpdateImageDisplay(false)
                 } else {
@@ -1104,7 +1105,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                             .setOnMiddleZoneTapListener { onMiddleTap() }
                             .setOnLongTapListener { onLongTap() }
                     adapter.setItemTouchListener(onHorizontalZoneTapListener)
-
                     seekToIndex(absImageIndex)
                 }
                 pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation)

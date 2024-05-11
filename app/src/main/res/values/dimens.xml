@@ -67,7 +67,6 @@
     <dimen name="card_book_title">12sp</dimen>
 
     <!-- image viewer -->
-    <dimen name="tap_zone_width">64dp</dimen>
     <dimen name="page_min_height">600dp</dimen>
 
     <!-- fast scroller -->

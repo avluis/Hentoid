@@ -4,19 +4,18 @@ import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
-import me.devsaki.hentoid.R
+import java.lang.ref.WeakReference
 
 /**
  * Zoned tap listener for the reader
  */
-class OnZoneTapListener(view: View, tapZoneScale: Int) : OnTouchListener {
+class OnZoneTapListener(view: View, private val tapZoneScale: Int) : OnTouchListener {
     /**
      * This view's dimensions are used to determine which zone a tap belongs to
      */
     private val gestureDetector: ViewZoomGestureListener
 
-    private val pagerTapZoneWidth: Int
-    private val parentWidth: Int
+    private val view: WeakReference<View>
 
     private var onLeftZoneTapListener: Runnable? = null
 
@@ -28,9 +27,11 @@ class OnZoneTapListener(view: View, tapZoneScale: Int) : OnTouchListener {
 
     init {
         gestureDetector = ViewZoomGestureListener(view.context, GestureListener())
-        pagerTapZoneWidth =
-            view.context.resources.getDimensionPixelSize(R.dimen.tap_zone_width) * tapZoneScale
-        parentWidth = view.width
+        this.view = WeakReference(view)
+    }
+
+    private fun getPagerTapZoneWidth(parentWidth: Int): Int {
+        return (parentWidth * 0.18 * tapZoneScale).toInt()
     }
 
     fun setOnLeftZoneTapListener(onLeftZoneTapListener: Runnable?): OnZoneTapListener {
@@ -54,13 +55,15 @@ class OnZoneTapListener(view: View, tapZoneScale: Int) : OnTouchListener {
     }
 
     fun onSingleTapConfirmedAction(e: MotionEvent): Boolean {
-        if (e.x < pagerTapZoneWidth && onLeftZoneTapListener != null) {
-            onLeftZoneTapListener!!.run()
-        } else if (e.x > parentWidth - pagerTapZoneWidth && onRightZoneTapListener != null) {
-            onRightZoneTapListener!!.run()
-        } else {
-            if (onMiddleZoneTapListener != null) onMiddleZoneTapListener!!.run()
-            else return false
+        view.get()?.let {
+            if (e.x < getPagerTapZoneWidth(it.width) && onLeftZoneTapListener != null) {
+                onLeftZoneTapListener?.run()
+            } else if (e.x > it.width - getPagerTapZoneWidth(it.width) && onRightZoneTapListener != null) {
+                onRightZoneTapListener?.run()
+            } else {
+                if (onMiddleZoneTapListener != null) onMiddleZoneTapListener?.run()
+                else return false
+            }
         }
         return true
     }
