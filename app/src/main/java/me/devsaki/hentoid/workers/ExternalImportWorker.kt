@@ -29,6 +29,7 @@ import me.devsaki.hentoid.util.file.DiskCache.init
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.getArchiveNamesFilter
+import me.devsaki.hentoid.util.findDuplicateContentByUrl
 import me.devsaki.hentoid.util.getContentJsonNamesFilter
 import me.devsaki.hentoid.util.getFileWithName
 import me.devsaki.hentoid.util.image.imageNamesFilter
@@ -172,12 +173,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             && content.url.trim().isNotEmpty()
                             && content.site != Site.NONE
                         ) {
-                            existingDuplicate =
-                                dao.selectContentByUrlAndCover(
-                                    content.site,
-                                    content.url,
-                                    content.coverImageUrl
-                                )
+                            existingDuplicate = findDuplicateContentByUrl(content, dao)
                             // Ignore the duplicate if it is queued; we do prefer to import a full book
                             if (existingDuplicate != null) {
                                 if (ContentHelper.isInQueue(existingDuplicate.status))

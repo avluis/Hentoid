@@ -50,6 +50,7 @@ import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.file.DiskCache.init
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.findDuplicateContentByUrl
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.importBookmarks
 import me.devsaki.hentoid.util.importRenamingRules
@@ -514,8 +515,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
                 // If the very same book still exists in the DB at this point, it means it's present in the queue
                 // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
-                val existingDuplicate =
-                    dao.selectContentByUrlAndCover(content.site, content.url, content.coverImageUrl)
+                val existingDuplicate = findDuplicateContentByUrl(content, dao)
                 if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion) {
                     booksKO++
                     val location =

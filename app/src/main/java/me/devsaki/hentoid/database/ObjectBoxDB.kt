@@ -508,32 +508,15 @@ object ObjectBoxDB {
                 .order(Content_.id).safeFindFirst()
     }
 
-    // Find any book that has the given content URL _and_ has a cover starting with the given cover URL
-    fun selectContentByUrlAndCover(
-        site: Site,
-        contentUrl: String,
-        coverUrlStart: String
-    ): Content? {
+    // Find all books that have the given content URL
+    fun selectContentByUrl(site: Site, contentUrl: String): Set<Content> {
         val contentUrlCondition =
             Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 .and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
                 .and(Content_.site.equal(site.code))
-        return if (coverUrlStart.isNotEmpty()) {
-            val coverCondition =
-                Content_.coverImageUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-                    .and(
-                        Content_.coverImageUrl.startsWith(
-                            coverUrlStart,
-                            QueryBuilder.StringOrder.CASE_INSENSITIVE
-                        )
-                    )
-                    .and(Content_.site.equal(site.code))
 
-            store.boxFor(Content::class.java).query(contentUrlCondition.and(coverCondition))
-                .order(Content_.id).safeFindFirst()
-        } else
-            store.boxFor(Content::class.java).query(contentUrlCondition)
-                .order(Content_.id).safeFindFirst()
+        return store.boxFor(Content::class.java).query(contentUrlCondition)
+            .order(Content_.id).safeFind().toSet()
     }
 
     fun selectAllContentUrls(siteCode: Int): Set<String> {

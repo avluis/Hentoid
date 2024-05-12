@@ -39,7 +39,7 @@ interface CollectionDAO {
 
     fun selectContentByUrlOrCover(site: Site, contentUrl: String, coverUrl: String?): Content?
 
-    fun selectContentByUrlAndCover(site: Site, contentUrl: String, coverUrl: String?): Content?
+    fun selectContentsByUrl(site: Site, contentUrl: String): Set<Content>
 
     fun selectAllSourceUrls(site: Site): Set<String>
 

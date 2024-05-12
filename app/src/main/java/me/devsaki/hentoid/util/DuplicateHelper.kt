@@ -334,6 +334,31 @@ private fun computeArtistScore(
     return -1f // Nothing to match against
 }
 
+/**
+ * Find if the given Content exists in the database, based on its URL and the URL of its images
+ * A duplicate is found when all URLs match
+ * Returns found duplicate or null if none is found
+ */
+fun findDuplicateContentByUrl(content: Content, dao: CollectionDAO): Content? {
+    val candidates = dao.selectContentsByUrl(content.site, content.url)
+    val sourceImgs = content.imageList
+    val sourceReadablePages = sourceImgs.count { it.isReadable }
+    candidates.forEach {
+        it.imageList.let { imgs ->
+            val readablePages = imgs.count { i -> i.isReadable }
+            if (readablePages == sourceReadablePages) {
+                var mismatch = false
+                for (i in 0..<imgs.size) {
+                    if (sourceImgs[i].url != imgs[i].url) mismatch = true
+                    if (mismatch) break
+                }
+                if (!mismatch) return it
+            }
+        }
+    }
+    return null
+}
+
 class DuplicateCandidate(
     content: Content,
     useTitle: Boolean,
