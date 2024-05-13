@@ -196,6 +196,7 @@ public class JsonContent {
         for (JsonErrorRecord err : errorRecords) errs.add(err.toEntity());
         result.setErrorLog(errs);
 
+
         // GROUPS
         if (dao != null) {
             for (JsonGroupItem gi : groups) {

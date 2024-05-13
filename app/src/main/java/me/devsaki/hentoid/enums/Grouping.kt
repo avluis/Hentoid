@@ -22,12 +22,12 @@ enum class Grouping(
         // Same as ValueOf with a fallback to NONE
         // (vital for forward compatibility)
         fun searchByName(name: String): Grouping {
-            for (s in Grouping.values()) if (s.name.equals(name, ignoreCase = true)) return s
+            for (s in entries) if (s.name.equals(name, ignoreCase = true)) return s
             return NONE
         }
 
         fun searchById(id: Int): Grouping {
-            for (s in Grouping.values()) if (id == s.id) return s
+            for (s in entries) if (id == s.id) return s
             return NONE
         }
     }

@@ -201,43 +201,18 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         var previousUriStr = Preferences.getStorageUri(location)
         if (previousUriStr.isEmpty()) previousUriStr = "FAIL" // Auto-fails if location is not set
         Preferences.setStorageUri(location, targetRootUri)
+
         val rootFolder = FileHelper.getDocumentFromTreeUriString(context, targetRootUri)
         if (null == rootFolder) {
             Timber.e("Root folder is invalid for location %s (%s)", location.name, targetRootUri)
             return
         }
+
         val bookFolders: MutableList<DocumentFile> = ArrayList()
         try {
             FileExplorer(context, rootFolder.uri).use { explorer ->
                 // 1st pass : Import groups JSON
-                if (importGroups) {
-                    trace(
-                        Log.INFO,
-                        STEP_GROUPS,
-                        log,
-                        "Importing groups"
-                    )
-                    // Flag existing groups for cleanup
-                    val dao: CollectionDAO = ObjectBoxDAO()
-                    try {
-                        dao.flagAllGroups(Grouping.CUSTOM)
-                        val groupsFile =
-                            explorer.findFile(context, rootFolder, GROUPS_JSON_FILE_NAME)
-                        if (groupsFile != null) importGroups(
-                            context,
-                            groupsFile,
-                            dao,
-                            log
-                        ) else trace(
-                            Log.INFO,
-                            STEP_GROUPS,
-                            log,
-                            "No groups file found"
-                        )
-                    } finally {
-                        dao.cleanup()
-                    }
-                }
+                if (importGroups) importGroups(context, rootFolder, explorer, log)
 
                 // 2nd pass : count subfolders of every site folder
                 eventProgress(
@@ -305,12 +280,14 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 )
 
                 // Cleanup previously detected duplicates
+                // (as we're updating the collection, they're now obsolete)
                 val duplicatesDAO = DuplicatesDAO()
                 try {
                     duplicatesDAO.clearEntries()
                 } finally {
                     duplicatesDAO.cleanup()
                 }
+
                 // Flag DB content for cleanup
                 var dao: CollectionDAO = ObjectBoxDAO()
                 try {
@@ -322,6 +299,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 } finally {
                     dao.cleanup()
                 }
+
                 try {
                     dao = ObjectBoxDAO()
                     for (i in bookFolders.indices) {
@@ -449,6 +427,25 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
+    private fun importGroups(
+        context: Context,
+        rootFolder: DocumentFile,
+        explorer: FileExplorer,
+        log: MutableList<LogEntry>
+    ) {
+        trace(Log.INFO, STEP_GROUPS, log, "Importing groups")
+        val dao: CollectionDAO = ObjectBoxDAO()
+        try {
+            val groupsFile = explorer.findFile(context, rootFolder, GROUPS_JSON_FILE_NAME)
+            if (groupsFile != null) {
+                dao.flagAllGroups(Grouping.CUSTOM) // Flag existing groups for cleanup
+                importGroups(context, groupsFile, dao, log)
+            } else trace(Log.INFO, STEP_GROUPS, log, "No groups file found")
+        } finally {
+            dao.cleanup()
+        }
+    }
+
     private fun importFolder(
         context: Context,
         explorer: FileExplorer,
@@ -475,8 +472,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 try {
                     content = importJson(context, bookFolder, bookFiles, dao)
                     // Don't delete books that are _not supposed to_ have downloaded images
-                    if (content != null && content.downloadMode == Content.DownloadMode.STREAM) doRemove =
-                        false
+                    if (content != null && content.downloadMode == Content.DownloadMode.STREAM)
+                        doRemove = false
                 } catch (e: ParseException) {
                     trace(
                         Log.WARN,
@@ -532,12 +529,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     val canonicalBookFolderName = ContentHelper.formatBookFolderName(content)
                     val currentPathParts = bookFolder.uri.pathSegments
                     val bookUriParts =
-                        currentPathParts[currentPathParts.size - 1].split(":".toRegex())
-                            .dropLastWhile { it.isEmpty() }
-                            .toTypedArray()
-                    val bookPathParts = bookUriParts[bookUriParts.size - 1].split("/".toRegex())
-                        .dropLastWhile { it.isEmpty() }
-                        .toTypedArray()
+                        currentPathParts[currentPathParts.size - 1].split(":")
+                    val bookPathParts = bookUriParts[bookUriParts.size - 1].split("/")
                     val bookFolderName = bookPathParts[bookPathParts.size - 1]
                     if (!canonicalBookFolderName.first.equals(bookFolderName, ignoreCase = true)) {
                         if (renameFolder(
@@ -738,8 +731,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     val parentFolder: MutableList<String> = ArrayList()
                     // Try and detect the site according to the parent folder
                     val parents =
-                        bookFolder.uri.path!!.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-                            .toTypedArray() // _not_ File.separator but the universal Uri separator
+                        bookFolder.uri.path!!.split("/") // _not_ File.separator but the universal Uri separator
                     if (parents.size > 1) {
                         for (s in Site.entries) if (parents[parents.size - 2].equals(
                                 s.folder,

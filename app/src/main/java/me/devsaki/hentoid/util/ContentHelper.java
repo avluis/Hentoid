@@ -532,7 +532,7 @@ public final class ContentHelper {
         //   - the book is in the library (i.e. not queued)
         //   - the book is linked to no group from the given grouping
         if (Helper.getListFromPrimitiveArray(libraryStatus).contains(content.getStatus().getCode())) {
-            List<Grouping> staticGroupings = Stream.of(Grouping.values()).filter(Grouping::getCanReorderBooks).toList();
+            List<Grouping> staticGroupings = Stream.of(Grouping.getEntries()).filter(Grouping::getCanReorderBooks).toList();
             for (Grouping g : staticGroupings)
                 if (content.getGroupItems(g).isEmpty()) {
                     if (g.equals(Grouping.ARTIST)) {
