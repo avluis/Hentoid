@@ -35,6 +35,8 @@
         <item name="android:dialogTheme">@style/Theme.Black.DialogFragment</item>
         <!-- Preferences -->
         <item name="alertDialogTheme">@style/Theme.Black.Dialog</item>
+        <!-- Radio button -->
+        <item name="radioButtonStyle">@style/Widget.App.RadioButton</item>
         <!-- Text -->
         <item name="android:editTextColor">@color/on_primary_black</item>
         <item name="android:textColorPrimary">@color/on_primary_black</item>

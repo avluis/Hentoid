@@ -123,6 +123,15 @@
         <item name="android:textColor">?colorSecondary</item>
     </style>
 
+    <!-- Radio button -->
+    <style name="Widget.App.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.RadioButton</item>
+    </style>
+
+    <style name="ThemeOverlay.App.RadioButton" parent="">
+        <item name="colorPrimary">?colorSecondary</item>
+    </style>
+
     <style name="MaterialAlertDialog.App.Title.Text" parent="MaterialAlertDialog.Material3.Title.Text">
         <item name="android:textColor">@color/white_opacity_87</item>
     </style>
