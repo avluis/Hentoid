@@ -75,8 +75,10 @@ class ZoomableRecyclerView : RecyclerView {
     override fun onDraw(c: Canvas) {
         super.onDraw(c)
         if (null == maxBitmapDimensions && getMaxDimensionsListener != null) {
-            maxBitmapDimensions = Point(c.maximumBitmapWidth, c.maximumBitmapHeight)
-            getMaxDimensionsListener!!.accept(maxBitmapDimensions)
+            Point(c.maximumBitmapWidth, c.maximumBitmapHeight).let {
+                maxBitmapDimensions = it
+                getMaxDimensionsListener?.accept(it)
+            }
         }
     }
 
