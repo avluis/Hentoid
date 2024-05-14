@@ -120,7 +120,11 @@
         <item name="android:windowSoftInputMode">adjustResize</item>
         <item name="colorPrimary">@color/primary_light</item>
         <item name="colorSecondary">@color/secondary_light</item>
-        <item name="android:colorBackground">@color/window_background_light</item>
+        <item name="bottomSheetStyle">@style/Theme.Light.ModalBottomSheetDialog</item>
+    </style>
+
+    <style name="Theme.Light.ModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/window_background_light</item>
     </style>
 
     <!-- PIN screens -->

@@ -113,7 +113,11 @@
         <item name="android:windowSoftInputMode">adjustResize</item>
         <item name="colorPrimary">@color/primary_dark</item>
         <item name="colorSecondary">@color/secondary_dark</item>
-        <item name="android:colorBackground">@color/window_background_dark</item>
+        <item name="bottomSheetStyle">@style/Theme.Dark.ModalBottomSheetDialog</item>
+    </style>
+
+    <style name="Theme.Dark.ModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/window_background_dark</item>
     </style>
 
     <!-- PIN screens -->
