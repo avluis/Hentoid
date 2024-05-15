@@ -173,8 +173,8 @@ private fun getFolderPickerIntent(context: Context, location: StorageLocation): 
     intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
 
     // Start the SAF at the specified location
-    if (Build.VERSION.SDK_INT >= VERSION_CODES.O && Preferences.getStorageUri(location)
-            .isNotEmpty()
+    if (Build.VERSION.SDK_INT >= VERSION_CODES.O
+        && Preferences.getStorageUri(location).isNotEmpty()
     ) {
         val file = getDocumentFromTreeUriString(
             context,
@@ -371,9 +371,8 @@ fun setAndScanExternalFolder(
     if (primaryUri2.isNotEmpty()) primaryUri2 =
         getFullPathFromUri(context, Uri.parse(primaryUri2))
     val selectedFullPath = getFullPathFromUri(context, treeUri)
-    if (primaryUri1.isNotEmpty() && selectedFullPath.startsWith(primaryUri1) || primaryUri2.isNotEmpty() && selectedFullPath.startsWith(
-            primaryUri2
-        )
+    if (primaryUri1.isNotEmpty() && selectedFullPath.startsWith(primaryUri1)
+        || primaryUri2.isNotEmpty() && selectedFullPath.startsWith(primaryUri2)
     ) {
         Timber.w(
             "Trying to set the external library inside a primary library location %s",
@@ -413,14 +412,9 @@ fun persistLocationCredentials(
     location: List<StorageLocation>
 ) {
     val uri = location
-        .map { l -> Preferences.getStorageUri(l) }
-        .filterNot { obj: String -> obj.isEmpty() }
-        .map { uriString: String? ->
-            Uri.parse(
-                uriString
-            )
-        }
-        .toList()
+        .mapNotNull { l -> Preferences.getStorageUri(l) }
+        .filterNot { obj -> obj.isEmpty() }
+        .map { uri -> Uri.parse(uri) }
     persistNewUriPermission(context, treeUri, uri)
 }
 
@@ -478,23 +472,19 @@ fun showExistingLibraryDialog(
 private fun hasBooks(context: Context, folder: DocumentFile): Boolean {
     try {
         FileExplorer(context, folder.uri).use { explorer ->
-            val folders =
-                explorer.listFolders(context, folder)
+            val folders = explorer.listFolders(context, folder)
 
             // Filter out download subfolders among listed subfolders
             for (subfolder in folders) {
                 val subfolderName = subfolder.name
                 if (subfolderName != null) {
-                    for (s in Site.entries) if (subfolderName.equals(
-                            s.folder,
-                            ignoreCase = true
-                        )
-                    ) {
-                        // Search subfolders within identified download folders
-                        // NB : for performance issues, we assume the mere presence of a subfolder inside a download folder means there's an existing book
-                        if (explorer.hasFolders(subfolder)) return true
-                        break
-                    }
+                    for (s in Site.entries)
+                        if (subfolderName.equals(s.folder, ignoreCase = true)) {
+                            // Search subfolders within identified download folders
+                            // NB : for performance issues, we assume the mere presence of a subfolder inside a download folder means there's an existing book
+                            if (explorer.hasFolders(subfolder)) return true
+                            break
+                        }
                 }
             }
         }
@@ -788,7 +778,7 @@ private fun scanFolderImages(
     if (addFolderNametoImgName) namePrefix = "$folderName-"
     images.addAll(
         ContentHelper.createImageListFromFiles(
-            imageFiles!!, targetStatus, order,
+            imageFiles, targetStatus, order,
             namePrefix
         )
     )
