@@ -1,21 +1,21 @@
-package me.devsaki.hentoid.receiver;
+package me.devsaki.hentoid.receiver
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import me.devsaki.hentoid.util.network.WebkitPackageHelper.getWebViewAvailable
+import me.devsaki.hentoid.util.network.WebkitPackageHelper.getWebViewUpdating
+import me.devsaki.hentoid.util.network.WebkitPackageHelper.setWebViewAvailable
+import me.devsaki.hentoid.util.network.WebkitPackageHelper.setWebViewUpdating
+import timber.log.Timber
 
-import me.devsaki.hentoid.util.network.WebkitPackageHelper;
-import timber.log.Timber;
-
-public class WebViewUpdateCycleReceiver extends BroadcastReceiver {
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        if (intent == null || intent.getData() == null) {
-            return;
+class WebViewUpdateCycleReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (intent == null || intent.data == null) {
+            return
         }
 
-        final String packageName = intent.getData().getSchemeSpecificPart();
+        val packageName = intent.data!!.schemeSpecificPart
         /* Android L-M (AOSP) com.android.webview           (GMS) com.google.android.webview
            Android N-P (AOSP) com.android.webview           (GMS) com.android.chrome
                                                     (Custom ROMs) com.google.android.apps.chrome
@@ -37,24 +37,31 @@ public class WebViewUpdateCycleReceiver extends BroadcastReceiver {
            really asking for trouble. Only add OEM-specific package names here or very popular
            production-ready WebView implementations.
          */
-        if (packageName.equals("com.android.webview") || packageName.equals("com.android.chrome") || packageName.equals("com.google.android.webview")
-                || packageName.equals("com.google.android.apps.chrome") || packageName.equals("com.google.android.webview.debug") || packageName.equals("org.bromite.webview")
-                || packageName.equals("app.vanadium.webview") || packageName.equals("app.vanadium.trichromelibrary") || packageName.equals("com.google.android.trichromelibrary")) {
-            WebkitPackageHelper.INSTANCE.setWebViewAvailable();
-            if (intent.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
-                if (!WebkitPackageHelper.INSTANCE.getWebViewAvailable()) { // If some other WebView provider is available, then we shouldn't care
-                    Timber.w("The last WebView provider (package %s) has been removed, hoping it is an update", packageName);
-                    WebkitPackageHelper.INSTANCE.setWebViewUpdating(true);
-                } else
-                    Timber.i("A WebView provider has been removed (package %s), but another implementation is available", packageName);
-
-            } else if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED) || intent.getAction().equals(Intent.ACTION_PACKAGE_REPLACED)) {
-                if (WebkitPackageHelper.INSTANCE.getWebViewAvailable()) { // ...but does the system recognize it as a WebView provider?
-                    Timber.i("Got WebView back! Implementation now provided by package %s", packageName);
-                    WebkitPackageHelper.INSTANCE.setWebViewUpdating(false);
+        if (packageName == "com.android.webview" || packageName == "com.android.chrome" || packageName == "com.google.android.webview" || packageName == "com.google.android.apps.chrome" || packageName == "com.google.android.webview.debug" || packageName == "org.bromite.webview" || packageName == "app.vanadium.webview" || packageName == "app.vanadium.trichromelibrary" || packageName == "com.google.android.trichromelibrary") {
+            setWebViewAvailable()
+            if (intent.action == Intent.ACTION_PACKAGE_REMOVED) {
+                if (!getWebViewAvailable()) { // If some other WebView provider is available, then we shouldn't care
+                    Timber.w(
+                        "The last WebView provider (package %s) has been removed, hoping it is an update",
+                        packageName
+                    )
+                    setWebViewUpdating(true)
+                } else Timber.i(
+                    "A WebView provider has been removed (package %s), but another implementation is available",
+                    packageName
+                )
+            } else if (intent.action == Intent.ACTION_PACKAGE_ADDED || intent.action == Intent.ACTION_PACKAGE_REPLACED) {
+                if (getWebViewAvailable()) { // ...but does the system recognize it as a WebView provider?
+                    Timber.i(
+                        "Got WebView back! Implementation now provided by package %s",
+                        packageName
+                    )
+                    setWebViewUpdating(false)
                 } else {
-                    if (WebkitPackageHelper.INSTANCE.getWebViewUpdating())
-                        Timber.w("WebView provider candidate (package %s) has installed, but there is still no implementation available", packageName);
+                    if (getWebViewUpdating()) Timber.w(
+                        "WebView provider candidate (package %s) has installed, but there is still no implementation available",
+                        packageName
+                    )
                 }
             }
         }
