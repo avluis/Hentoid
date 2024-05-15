@@ -40,7 +40,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
 import me.devsaki.hentoid.util.download.RequestQueueManager
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -201,7 +201,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         val storageFolderPref: Preference? =
             findPreference(Preferences.Key.EXTERNAL_LIBRARY) as Preference?
         val uri = Uri.parse(Preferences.getExternalLibraryUri())
-        storageFolderPref?.summary = FileHelper.getFullPathFromUri(requireContext(), uri)
+        storageFolderPref?.summary = getFullPathFromUri(requireContext(), uri)
         // Enable/disable sub-prefs
         val deleteExternalLibrary: Preference? =
             findPreference(Preferences.Key.EXTERNAL_LIBRARY_DELETE) as Preference?

@@ -1,5 +1,20 @@
 package me.devsaki.hentoid.util;
 
+import static me.devsaki.hentoid.util.file.FileHelperKt.URI_ELEMENTS_SEPARATOR;
+import static me.devsaki.hentoid.util.file.FileHelperKt.cleanFileName;
+import static me.devsaki.hentoid.util.file.FileHelperKt.copyFile;
+import static me.devsaki.hentoid.util.file.FileHelperKt.findFolder;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getDocumentFromTreeUriString;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getFileFromSingleUriString;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getFileNameWithoutExtension;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getInputStream;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getMimeTypeFromFileName;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getOrCreateCacheFolder;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getOutputStream;
+import static me.devsaki.hentoid.util.file.FileHelperKt.legacyFileFromUri;
+import static me.devsaki.hentoid.util.file.FileHelperKt.listFiles;
+import static me.devsaki.hentoid.util.file.FileHelperKt.listFoldersFilter;
+import static me.devsaki.hentoid.util.file.FileHelperKt.removeFile;
 import static me.devsaki.hentoid.util.image.ImageHelperKt.MIME_IMAGE_GENERIC;
 import static me.devsaki.hentoid.util.network.HttpHelperKt.HEADER_CONTENT_TYPE;
 import static me.devsaki.hentoid.util.network.HttpHelperKt.HEADER_COOKIE_KEY;
@@ -88,7 +103,7 @@ import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.file.ArchiveEntry;
 import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 import me.devsaki.hentoid.util.file.FileExplorer;
-import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.file.NameFilter;
 import me.devsaki.hentoid.util.image.ImageHelperKt;
 import me.devsaki.hentoid.util.network.CloudflareHelper;
 import me.devsaki.hentoid.util.network.HttpHelperKt;
@@ -231,9 +246,9 @@ public final class ContentHelper {
     public static boolean updateJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
 
-        DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
+        DocumentFile file = getFileFromSingleUriString(context, content.getJsonUri());
         if (file != null) {
-            try (OutputStream output = FileHelper.getOutputStream(context, file)) {
+            try (OutputStream output = getOutputStream(context, file)) {
                 if (output != null) {
                     JsonHelper.updateJson(JsonContent.fromEntity(content), JsonContent.class, output);
                     return true;
@@ -260,7 +275,7 @@ public final class ContentHelper {
         if (content.isArchive())
             return null; // Keep that as is, we can't find the parent folder anyway
 
-        DocumentFile folder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
+        DocumentFile folder = getDocumentFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return null;
         try {
             DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder, Consts.JSON_FILE_NAME_V2);
@@ -304,7 +319,7 @@ public final class ContentHelper {
         }).withoutNulls().toList();
         if (errors != null) queuedContent.addAll(errors);
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
+        DocumentFile rootFolder = getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
         if (null == rootFolder) return false;
 
         try {
@@ -391,13 +406,13 @@ public final class ContentHelper {
         String storageUri = content.getStorageUri();
 
         Timber.d("Opening: %s from: %s", content.getTitle(), storageUri);
-        DocumentFile folder = FileHelper.getDocumentFromTreeUriString(context, storageUri);
+        DocumentFile folder = getDocumentFromTreeUriString(context, storageUri);
         if (null == folder) {
             Timber.d("File not found!! Exiting method.");
             return new ArrayList<>();
         }
 
-        return FileHelper.listFoldersFilter(context, folder, displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME) && ImageHelperKt.isSupportedImage(displayName)));
+        return listFoldersFilter(context, folder, displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME) && ImageHelperKt.isSupportedImage(displayName)));
     }
 
     /**
@@ -415,7 +430,7 @@ public final class ContentHelper {
         dao.deleteContent(content);
 
         if (content.isArchive()) { // Remove an archive
-            DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
+            DocumentFile archive = getFileFromSingleUriString(context, content.getStorageUri());
             if (null == archive)
                 throw new FileNotProcessedException(content, "Failed to find archive " + content.getStorageUri());
 
@@ -427,11 +442,11 @@ public final class ContentHelper {
 
             // Remove the cover stored in the app's persistent folder
             File appFolder = context.getFilesDir();
-            File[] images = appFolder.listFiles((dir, name) -> FileHelper.getFileNameWithoutExtension(name).equals(content.getId() + ""));
-            if (images != null) for (File f : images) FileHelper.removeFile(f);
+            File[] images = appFolder.listFiles((dir, name) -> getFileNameWithoutExtension(name).equals(content.getId() + ""));
+            if (images != null) for (File f : images) removeFile(f);
         } else if (/*isInLibrary(content.getStatus()) &&*/ !content.getStorageUri().isEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
-            DocumentFile folder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
+            DocumentFile folder = getDocumentFromTreeUriString(context, content.getStorageUri());
             if (null == folder)
                 throw new FileNotProcessedException(content, "Failed to find directory " + content.getStorageUri());
 
@@ -486,7 +501,7 @@ public final class ContentHelper {
         // Remove all images stored in the app's persistent folder (archive covers)
         File appFolder = context.getFilesDir();
         File[] images = appFolder.listFiles((file, s) -> ImageHelperKt.isSupportedImage(s));
-        if (images != null) for (File f : images) FileHelper.removeFile(f);
+        if (images != null) for (File f : images) removeFile(f);
     }
 
     /**
@@ -509,9 +524,9 @@ public final class ContentHelper {
     }
 
     public static String getPathRoot(String locationUriStr) {
-        int pathDivider = locationUriStr.lastIndexOf(FileHelper.URI_ELEMENTS_SEPARATOR);
+        int pathDivider = locationUriStr.lastIndexOf(URI_ELEMENTS_SEPARATOR);
         if (pathDivider > -1)
-            return locationUriStr.substring(0, pathDivider + FileHelper.URI_ELEMENTS_SEPARATOR.length()); // Include separator
+            return locationUriStr.substring(0, pathDivider + URI_ELEMENTS_SEPARATOR.length()); // Include separator
         return locationUriStr;
     }
 
@@ -566,7 +581,7 @@ public final class ContentHelper {
 
         // Extract the cover to the app's persistent folder if the book is an archive
         if (content.isArchive() && content.getImageFiles() != null) {
-            DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
+            DocumentFile archive = getFileFromSingleUriString(context, content.getStorageUri());
             if (archive != null) {
                 try {
                     File targetFolder = context.getFilesDir();
@@ -579,7 +594,7 @@ public final class ContentHelper {
                         // Save the pic as low-res JPG
                         File extractedFile = new File(uri.getPath()); // These are file URI's
                         if (extractedFile.length() > 0) {
-                            try (InputStream is = FileHelper.getInputStream(context, uri)) {
+                            try (InputStream is = getInputStream(context, uri)) {
                                 Bitmap b = BitmapFactory.decodeStream(is);
                                 if (b != null) {
                                     String targetFileName = Consts.EXT_THUMB_FILE_PREFIX + extractedFile.getName();
@@ -591,7 +606,7 @@ public final class ContentHelper {
                                     } else { // Create new file
                                         finalFile = new File(targetFolder, targetFileName);
                                     }
-                                    try (OutputStream os = FileHelper.getOutputStream(finalFile)) {
+                                    try (OutputStream os = getOutputStream(finalFile)) {
                                         Bitmap resizedBitmap = ImageHelperKt.getScaledDownBitmap(b, Helper.dimensAsPx(context, Settings.INSTANCE.getLibraryGridCardWidthDP()), false);
                                         resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os);
                                         resizedBitmap.recycle();
@@ -654,7 +669,7 @@ public final class ContentHelper {
 
         // Remove the pages from disk
         for (ImageFile image : images)
-            FileHelper.removeFile(context, Uri.parse(image.getFileUri()));
+            removeFile(context, Uri.parse(image.getFileUri()));
 
         // Lists all relevant content
         List<Long> contents = Stream.of(images).filter(i -> i.getContent() != null).map(i -> i.getContent().getTargetId()).distinct().toList();
@@ -743,9 +758,9 @@ public final class ContentHelper {
 
         // First try finding the folder with new naming...
         if (!createOnly) {
-            DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.getFirst());
+            DocumentFile bookFolder = findFolder(context, siteDownloadDir, bookFolderName.getFirst());
             if (null == bookFolder) { // ...then with old (sanitized) naming
-                bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.getSecond());
+                bookFolder = findFolder(context, siteDownloadDir, bookFolderName.getSecond());
             }
             if (bookFolder != null) return bookFolder;
         }
@@ -771,7 +786,7 @@ public final class ContentHelper {
         title = (null == title) ? "" : title;
         String author = formatBookAuthor(content).toLowerCase();
 
-        return new Pair<>(formatBookFolderName(content, FileHelper.cleanFileName(title), FileHelper.cleanFileName(author)), formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_")));
+        return new Pair<>(formatBookFolderName(content, cleanFileName(title), cleanFileName(author)), formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_")));
     }
 
     private static String formatBookFolderName(@NonNull final Content content,
@@ -872,7 +887,7 @@ public final class ContentHelper {
             Timber.e("No storage URI defined for location %s", location.name());
             return null;
         }
-        DocumentFile appFolder = FileHelper.getDocumentFromTreeUriString(context, appUriStr);
+        DocumentFile appFolder = getDocumentFromTreeUriString(context, appUriStr);
         if (null == appFolder) {
             Timber.e("App folder %s does not exist", appUriStr);
             return null;
@@ -1049,7 +1064,7 @@ public final class ContentHelper {
      */
     public static List<ImageFile> createImageListFromFolder(@NonNull final Context context,
                                                             @NonNull final DocumentFile folder) {
-        List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, ImageHelperKt.getImageNamesFilter());
+        List<DocumentFile> imageFiles = listFiles(context, folder, ImageHelperKt.getImageNamesFilter());
         if (!imageFiles.isEmpty()) return createImageListFromFiles(imageFiles);
         else return Collections.emptyList();
     }
@@ -1090,8 +1105,8 @@ public final class ContentHelper {
                 coverFound = true;
                 img.setIsCover(true);
             } else order++;
-            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.getUri().toString()).setStatus(targetStatus).setFileUri(f.getUri().toString()).setSize(f.length());
-            img.setMimeType(FileHelper.getMimeTypeFromFileName(name));
+            img.setName(getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.getUri().toString()).setStatus(targetStatus).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setMimeType(getMimeTypeFromFileName(name));
             result.add(img);
         }
         // If no thumb found, set the 1st image as cover
@@ -1124,8 +1139,8 @@ public final class ContentHelper {
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(path).setStatus(targetStatus).setFileUri(path).setSize(f.getSize());
-            img.setMimeType(FileHelper.getMimeTypeFromFileName(name));
+            img.setName(getFileNameWithoutExtension(name)).setOrder(order).setUrl(path).setStatus(targetStatus).setFileUri(path).setSize(f.getSize());
+            img.setMimeType(getMimeTypeFromFileName(name));
             result.add(img);
         }
         return result;
@@ -1389,25 +1404,25 @@ public final class ContentHelper {
      */
     public static void purgeFiles(@NonNull final Context context,
                                   @NonNull final Content content, boolean removeJson, boolean removeCover) {
-        DocumentFile bookFolder = FileHelper.getDocumentFromTreeUriString(context, content.getStorageUri());
+        DocumentFile bookFolder = getDocumentFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
             // Identify files to keep
-            FileHelper.NameFilter namesToKeep = displayName -> {
+            NameFilter namesToKeep = displayName -> {
                 String name = displayName.toLowerCase();
                 return (!removeJson && name.endsWith("json")) || (!removeCover && name.startsWith(Consts.THUMB_FILE_NAME));
             };
-            List<DocumentFile> filesToKeep = FileHelper.listFiles(context, bookFolder, namesToKeep);
+            List<DocumentFile> filesToKeep = listFiles(context, bookFolder, namesToKeep);
 
             // If any, copy them to temp storage
             List<File> tempFiles = new ArrayList<>();
             File tempFolder = null;
             if (!filesToKeep.isEmpty()) {
-                tempFolder = FileHelper.getOrCreateCacheFolder(context, "tmp" + content.getId());
+                tempFolder = getOrCreateCacheFolder(context, "tmp" + content.getId());
                 for (DocumentFile file : filesToKeep) {
                     try {
-                        Uri uri = FileHelper.copyFile(context, file.getUri(), Uri.fromFile(tempFolder), StringHelper.protect(file.getType()), StringHelper.protect(file.getName()));
+                        Uri uri = copyFile(context, file.getUri(), Uri.fromFile(tempFolder), StringHelper.protect(file.getType()), StringHelper.protect(file.getName()));
                         if (uri != null) {
-                            File tmpFile = FileHelper.legacyFileFromUri(uri);
+                            File tmpFile = legacyFileFromUri(uri);
                             if (tmpFile != null) tempFiles.add(tmpFile);
                         }
                     } catch (IOException e) {
@@ -1435,8 +1450,8 @@ public final class ContentHelper {
                     for (File file : tempFiles) {
                         try {
                             String name = file.getName().toLowerCase();
-                            String mimeType = FileHelper.getMimeTypeFromFileName(name);
-                            Uri newUri = FileHelper.copyFile(context, Uri.fromFile(file), bookFolder.getUri(), mimeType, file.getName());
+                            String mimeType = getMimeTypeFromFileName(name);
+                            Uri newUri = copyFile(context, Uri.fromFile(file), bookFolder.getUri(), mimeType, file.getName());
                             if (newUri != null && name.endsWith("json"))
                                 content.setJsonUri(newUri.toString());
                         } catch (IOException e) {
@@ -1861,15 +1876,15 @@ public final class ContentHelper {
         DocumentFile targetFolder;
         // External library root for external content
         if (mergedContent.getStatus().equals(StatusContent.EXTERNAL)) {
-            DocumentFile externalRootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri());
+            DocumentFile externalRootFolder = getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri());
             if (null == externalRootFolder || !externalRootFolder.exists())
                 throw new ContentNotProcessedException(mergedContent, "Could not create target directory : external root unreachable");
 
             Pair<String, String> bookFolderName = formatBookFolderName(mergedContent);
             // First try finding the folder with new naming...
-            targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.getFirst());
+            targetFolder = findFolder(context, externalRootFolder, bookFolderName.getFirst());
             if (null == targetFolder) { // ...then with old (sanitized) naming...
-                targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.getSecond());
+                targetFolder = findFolder(context, externalRootFolder, bookFolderName.getSecond());
                 if (null == targetFolder) { // ...if not, create a new folder with the new naming...
                     targetFolder = externalRootFolder.createDirectory(bookFolderName.getFirst());
                     if (null == targetFolder) { // ...if it fails, create a new folder with the old naming
@@ -1900,7 +1915,7 @@ public final class ContentHelper {
             // Set cover
             if (isInLibrary(coverPic.getStatus())) {
                 String extension = HttpHelperKt.getExtensionFromUri(firstCover.getFileUri());
-                Uri newUri = FileHelper.copyFile(context, Uri.parse(firstCover.getFileUri()), targetFolder.getUri(), firstCover.getMimeType(), firstCover.getName() + "." + extension);
+                Uri newUri = copyFile(context, Uri.parse(firstCover.getFileUri()), targetFolder.getUri(), firstCover.getMimeType(), firstCover.getName() + "." + extension);
                 if (newUri != null) coverPic.setFileUri(newUri.toString());
                 else Timber.w("Could not move file %s", firstCover.getFileUri());
             }
@@ -1939,7 +1954,7 @@ public final class ContentHelper {
                     // If exists, move the picture to the merged books' folder
                     if (isInLibrary(newImg.getStatus())) {
                         String extension = HttpHelperKt.getExtensionFromUri(img.getFileUri());
-                        Uri newUri = FileHelper.copyFile(context, Uri.parse(img.getFileUri()), targetFolder.getUri(), newImg.getMimeType(), newImg.getName() + "." + extension);
+                        Uri newUri = copyFile(context, Uri.parse(img.getFileUri()), targetFolder.getUri(), newImg.getMimeType(), newImg.getName() + "." + extension);
                         if (newUri != null) newImg.setFileUri(newUri.toString());
                         else Timber.w("Could not move file %s", img.getFileUri());
                         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.Type.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));

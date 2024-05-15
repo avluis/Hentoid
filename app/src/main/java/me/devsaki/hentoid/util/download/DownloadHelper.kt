@@ -14,8 +14,14 @@ import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.DiskCache
-import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
+import me.devsaki.hentoid.util.file.MemoryUsageFigures
+import me.devsaki.hentoid.util.file.fileSizeFromUri
+import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
+import me.devsaki.hentoid.util.file.formatHumanReadableSize
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtensionFromMimeType
+import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.isMimeTypeSupported
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
@@ -148,7 +154,7 @@ private fun downloadToFile(
         ?: throw IOException("Could not read response : empty body for $url")
     val size = body.contentLength()
     val sizeStr =
-        if (size < 1) "unknown" else FileHelper.formatHumanReadableSize(size, context.resources)
+        if (size < 1) "unknown" else formatHumanReadableSize(size, context.resources)
     Timber.d(
         "STARTING DOWNLOAD FOR %d (size %s)",
         resourceId,
@@ -183,7 +189,7 @@ private fun downloadToFile(
                         targetFileUri!!.path,
                         sizeStr
                     )
-                    out = FileHelper.getOutputStream(context, targetFileUri!!)
+                    out = getOutputStream(context, targetFileUri!!)
                 }
                 if (len > 0 && out != null) {
                     out!!.write(buffer, 0, len)
@@ -198,13 +204,13 @@ private fun downloadToFile(
                 out?.flush()
                 if (targetFileUri != null) {
                     val targetFileSize =
-                        FileHelper.fileSizeFromUri(context, targetFileUri!!)
+                        fileSizeFromUri(context, targetFileUri!!)
                     Timber.d(
                         "DOWNLOAD %d [%s] WRITTEN TO %s (%s)",
                         resourceId,
                         mimeType,
                         targetFileUri!!.path,
-                        FileHelper.formatHumanReadableSize(
+                        formatHumanReadableSize(
                             targetFileSize,
                             context.resources
                         )
@@ -215,7 +221,7 @@ private fun downloadToFile(
         }
     }
     // Remove the remaining file chunk if download has been interrupted
-    if (targetFileUri != null) FileHelper.removeFile(context, targetFileUri!!)
+    if (targetFileUri != null) removeFile(context, targetFileUri!!)
     throw DownloadInterruptedException("Download interrupted")
 }
 
@@ -246,7 +252,7 @@ private fun createFile(
     mimeType: String
 ): Uri {
     var targetFileNameFinal =
-        targetFileName + "." + FileHelper.getExtensionFromMimeType(mimeType)
+        targetFileName + "." + getExtensionFromMimeType(mimeType)
     // Keep the extension if the target file name is provided with one
     val dotOffset = targetFileName.lastIndexOf('.')
     if (dotOffset > -1) {
@@ -271,9 +277,9 @@ private fun createFile(
         }
     } else {
         val targetFolder =
-            FileHelper.getDocumentFromTreeUriString(context, targetFolderUri.toString())
+            getDocumentFromTreeUriString(context, targetFolderUri.toString())
         if (targetFolder != null) {
-            val file = FileHelper.findOrCreateDocumentFile(
+            val file = findOrCreateDocumentFile(
                 context,
                 targetFolder,
                 mimeType,
@@ -328,8 +334,8 @@ fun selectDownloadLocation(context: Context): StorageLocation {
     if (uriStr1.isEmpty()) return StorageLocation.PRIMARY_2
 
     // Broken cases
-    val root1 = FileHelper.getDocumentFromTreeUriString(context, uriStr1)
-    val root2 = FileHelper.getDocumentFromTreeUriString(context, uriStr2)
+    val root1 = getDocumentFromTreeUriString(context, uriStr1)
+    val root2 = getDocumentFromTreeUriString(context, uriStr2)
     if (null == root1 && null == root2) return StorageLocation.NONE
     if (root1 != null && null == root2) return StorageLocation.PRIMARY_1
     if (null == root1) return StorageLocation.PRIMARY_2

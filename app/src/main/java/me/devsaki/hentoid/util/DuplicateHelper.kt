@@ -9,7 +9,8 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.AttributeType
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.image.ImagePHash
 import me.devsaki.hentoid.util.image.decodeSampledBitmapFromStream
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
@@ -121,7 +122,7 @@ fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
     if (content.cover.fileUri.isEmpty()) return null
 
     try {
-        FileHelper.getInputStream(context, Uri.parse(content.cover.fileUri))
+        getInputStream(context, Uri.parse(content.cover.fileUri))
             .use {
                 return getCoverBitmapFromStream(it)
             }
@@ -153,7 +154,7 @@ private fun savePhash(context: Context, dao: CollectionDAO, content: Content, pH
         // Update the book JSON if the book folder still exists
         if (content.storageUri.isNotEmpty()) {
             val folder =
-                FileHelper.getDocumentFromTreeUriString(context, content.storageUri)
+                getDocumentFromTreeUriString(context, content.storageUri)
             if (folder != null) {
                 if (content.jsonUri.isNotEmpty()) ContentHelper.updateJson(
                     context,

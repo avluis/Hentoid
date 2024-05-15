@@ -15,7 +15,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import me.devsaki.hentoid.views.HitomiBackgroundWebView
@@ -140,7 +140,7 @@ class HitomiParser : BaseImageListParser() {
     // TODO optimize
     private fun getJsPagesScript(galleryInfo: String): String {
         val sb = StringBuilder()
-        FileHelper.getAssetAsString(getInstance().assets, "hitomi_pages.js", sb)
+        getAssetAsString(getInstance().assets, "hitomi_pages.js", sb)
         return sb.toString().replace("\$galleryInfo", galleryInfo)
     }
 

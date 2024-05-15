@@ -32,10 +32,10 @@ object DiskCache {
 
     fun init(context: Context) {
         Helper.assertNonUiThread()
-        folder = FileHelper.getOrCreateCacheFolder(context, FOLDER_NAME)
+        folder = getOrCreateCacheFolder(context, FOLDER_NAME)
             ?: throw IOException("Couldn't initialize cache folder $FOLDER_NAME")
         if (!folder.deleteRecursively()) Timber.w("Couldn't empty cache folder $FOLDER_NAME")
-        folder = FileHelper.getOrCreateCacheFolder(context, FOLDER_NAME)
+        folder = getOrCreateCacheFolder(context, FOLDER_NAME)
             ?: throw IOException("Couldn't initialize cache folder $FOLDER_NAME")
         synchronized(entries) {
             entries.clear()
@@ -59,7 +59,7 @@ object DiskCache {
                         Timber.d("Disk cache : removing %s", oldestEntry.key)
                         entries.remove(oldestEntry.key)
                     }
-                    FileHelper.legacyFileFromUri(oldestEntry.value.second)?.let {
+                    legacyFileFromUri(oldestEntry.value.second)?.let {
                         storageTaken -= it.length()
                         it.delete()
                     }

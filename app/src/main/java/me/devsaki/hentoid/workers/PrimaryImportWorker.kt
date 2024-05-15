@@ -49,7 +49,8 @@ import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.file.DiskCache.init
 import me.devsaki.hentoid.util.file.FileExplorer
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.findDuplicateContentByUrl
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.importBookmarks
@@ -202,7 +203,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         if (previousUriStr.isEmpty()) previousUriStr = "FAIL" // Auto-fails if location is not set
         Preferences.setStorageUri(location, targetRootUri)
 
-        val rootFolder = FileHelper.getDocumentFromTreeUriString(context, targetRootUri)
+        val rootFolder = getDocumentFromTreeUriString(context, targetRootUri)
         if (null == rootFolder) {
             Timber.e("Root folder is invalid for location %s (%s)", location.name, targetRootUri)
             return
@@ -505,7 +506,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         // Detect JSON and try to parse it
         try {
             if (null == bookFiles) bookFiles = explorer.listFiles(context, bookFolder, null)
-            if (null == content) content = importJson(context, bookFolder, bookFiles!!, dao)
+            if (null == content) content = importJson(context, bookFolder, bookFiles, dao)
             if (content != null) {
                 // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
                 if (existingFlaggedContent != null) dao.deleteContent(existingFlaggedContent)
@@ -565,7 +566,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 }
 
                 // Attach image file Uri's to the book's images
-                val imageFiles = bookFiles!!.filter { f ->
+                val imageFiles = bookFiles.filter { f ->
                     isSupportedImage(StringHelper.protect(f.name))
                 }
                 if (imageFiles.isNotEmpty()) {
@@ -875,9 +876,9 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 nbRenumbered++
                 img.setOrder(naturalOrder)
                 img.computeName(nbMaxDigits)
-                val file = FileHelper.getDocumentFromTreeUriString(context, img.fileUri)
+                val file = getDocumentFromTreeUriString(context, img.fileUri)
                 if (file != null) {
-                    val extension = FileHelper.getExtension(StringHelper.protect(file.name))
+                    val extension = getExtension(StringHelper.protect(file.name))
                     file.renameTo(img.name + "." + extension)
                     img.setFileUri(file.uri.toString())
                 }

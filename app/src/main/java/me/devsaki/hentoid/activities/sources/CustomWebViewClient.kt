@@ -37,7 +37,9 @@ import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getAssetAsString
+import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.file.saveBinary
 import me.devsaki.hentoid.util.image.MIME_IMAGE_WEBP
 import me.devsaki.hentoid.util.image.bitmapToWebp
 import me.devsaki.hentoid.util.image.getBitmapFromVectorDrawable
@@ -378,7 +380,7 @@ open class CustomWebViewClient : WebViewClient {
                     val uri = withContext(Dispatchers.IO) {
                         downloadFile(view.context, url, headers)
                     }
-                    FileHelper.openFile(view.context, uri)
+                    openFile(view.context, uri)
                 } catch (t: Throwable) {
                     view.context.toast(R.string.torrent_dl_fail, StringHelper.protect(t.message))
                     Timber.w(t)
@@ -420,7 +422,7 @@ open class CustomWebViewClient : WebViewClient {
             )
             if (!file.createNewFile()) throw IOException("Couldn't create file")
             val torrentFileUri = Uri.fromFile(file)
-            FileHelper.saveBinary(context, torrentFileUri, body.bytes())
+            saveBinary(context, torrentFileUri, body.bytes())
             return file
         }
     }
@@ -987,7 +989,7 @@ open class CustomWebViewClient : WebViewClient {
     ): String {
         val sb = StringBuilder()
         sb.append("javascript:")
-        FileHelper.getAssetAsString(context.assets, assetName, sb)
+        getAssetAsString(context.assets, assetName, sb)
         var result = sb.toString()
         if (replacements != null) {
             for (p in replacements) result = result.replace(p.first, p.second)

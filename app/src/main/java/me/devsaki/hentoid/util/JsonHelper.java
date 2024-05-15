@@ -1,5 +1,11 @@
 package me.devsaki.hentoid.util;
 
+import static me.devsaki.hentoid.util.file.FileHelperKt.findOrCreateDocumentFile;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getExtension;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getOutputStream;
+import static me.devsaki.hentoid.util.file.FileHelperKt.readFileAsString;
+import static me.devsaki.hentoid.util.file.FileHelperKt.syncStream;
+
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -23,7 +29,7 @@ import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.json.adapters.KotlinPairAdapterFactory;
-import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.file.NameFilter;
 import timber.log.Timber;
 
 /**
@@ -37,7 +43,7 @@ public class JsonHelper {
 
     public static final String JSON_MIME_TYPE = "application/json";
 
-    private static final FileHelper.NameFilter jsonFilter = displayName -> FileHelper.getExtension(displayName).equalsIgnoreCase("json");
+    private static final NameFilter jsonFilter = displayName -> getExtension(displayName).equalsIgnoreCase("json");
 
     public static final Type LIST_STRINGS = Types.newParameterizedType(List.class, String.class);
     public static final Type MAP_STRINGS = Types.newParameterizedType(Map.class, String.class, String.class);
@@ -78,11 +84,11 @@ public class JsonHelper {
      * @throws IOException If anything happens during file I/O
      */
     public static <K> DocumentFile jsonToFile(@NonNull final Context context, K object, Type type, @NonNull DocumentFile dir, @NonNull final String fileName) throws IOException {
-        DocumentFile file = FileHelper.findOrCreateDocumentFile(context, dir, JSON_MIME_TYPE, fileName);
+        DocumentFile file = findOrCreateDocumentFile(context, dir, JSON_MIME_TYPE, fileName);
         if (null == file)
             throw new IOException("Failed creating file " + fileName + " in " + dir.getUri().getPath());
 
-        try (OutputStream output = FileHelper.getOutputStream(context, file)) {
+        try (OutputStream output = getOutputStream(context, file)) {
             if (output != null) updateJson(object, type, output);
             else Timber.w("JSON file creation failed for %s", file.getUri().getPath());
         }
@@ -101,7 +107,7 @@ public class JsonHelper {
     public static <K> void updateJson(K object, Type type, @NonNull OutputStream output) throws IOException {
         byte[] bytes = serializeToJson(object, type).getBytes();
         output.write(bytes);
-        if (output instanceof FileOutputStream) FileHelper.sync((FileOutputStream) output);
+        if (output instanceof FileOutputStream) syncStream((FileOutputStream) output);
         output.flush();
     }
 
@@ -116,7 +122,7 @@ public class JsonHelper {
      * @throws IOException If anything happens during file I/O
      */
     public static <T> T jsonToObject(@NonNull final Context context, DocumentFile f, Class<T> type) throws IOException {
-        return jsonToObject(FileHelper.readFileAsString(context, f), type);
+        return jsonToObject(readFileAsString(context, f), type);
     }
 
     /**
@@ -130,7 +136,7 @@ public class JsonHelper {
      * @throws IOException If anything happens during file I/O
      */
     public static <T> T jsonToObject(@NonNull final Context context, @NonNull DocumentFile f, Type type) throws IOException {
-        return jsonToObject(FileHelper.readFileAsString(context, f), type);
+        return jsonToObject(readFileAsString(context, f), type);
     }
 
     /**
@@ -165,11 +171,11 @@ public class JsonHelper {
     }
 
     /**
-     * Build a {@link FileHelper.NameFilter} only accepting json files
+     * Build a {@link NameFilter} only accepting json files
      *
-     * @return {@link FileHelper.NameFilter} only accepting json files
+     * @return {@link NameFilter} only accepting json files
      */
-    public static FileHelper.NameFilter getJsonNamesFilter() {
+    public static NameFilter getJsonNamesFilter() {
         return jsonFilter;
     }
 }

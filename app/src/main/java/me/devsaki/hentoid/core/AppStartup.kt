@@ -43,7 +43,9 @@ import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.DiskCache
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.findFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.readStreamAsString
 import me.devsaki.hentoid.workers.StartupWorker
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import org.conscrypt.Conscrypt
@@ -161,7 +163,7 @@ object AppStartup {
     private fun loadSiteProperties(context: Context, emitter: (Float) -> Unit) {
         try {
             context.resources.openRawResource(R.raw.sites).use { stream ->
-                val siteSettingsStr = FileHelper.readStreamAsString(stream)
+                val siteSettingsStr = readStreamAsString(stream)
                 val siteSettings = JsonHelper.jsonToObject(
                     siteSettingsStr, JsonSiteSettings::class.java
                 )
@@ -251,11 +253,11 @@ object AppStartup {
     // Creates the JSON file for bookmarks if it doesn't exist
     private fun createBookmarksJson(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Create bookmarks JSON : start")
-        val appRoot = FileHelper.getDocumentFromTreeUriString(
+        val appRoot = getDocumentFromTreeUriString(
             context, Preferences.getStorageUri(StorageLocation.PRIMARY_1)
         )
         if (appRoot != null) {
-            val bookmarksJson = FileHelper.findFile(context, appRoot, BOOKMARKS_JSON_FILE_NAME)
+            val bookmarksJson = findFile(context, appRoot, BOOKMARKS_JSON_FILE_NAME)
             if (null == bookmarksJson) {
                 Timber.i("Create bookmarks JSON : creating JSON")
                 val dao: CollectionDAO = ObjectBoxDAO()

@@ -32,7 +32,7 @@ import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.widget.AddQueueMenu
 import me.devsaki.hentoid.workers.DownloadsImportWorker
 import me.devsaki.hentoid.workers.data.DownloadsImportData
@@ -54,7 +54,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
 
         fun readFile(context: Context, file: DocumentFile): List<String> {
             var lines: List<String>
-            FileHelper.getInputStream(context, file).use { inputStream ->
+            getInputStream(context, file).use { inputStream ->
                 InputStreamReader(inputStream).use {
                     lines = it.readLines()
                 }

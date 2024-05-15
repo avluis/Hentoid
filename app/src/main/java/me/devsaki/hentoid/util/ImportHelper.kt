@@ -39,10 +39,16 @@ import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.FileExplorer
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.NameFilter
+import me.devsaki.hentoid.util.file.createNoMedia
 import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getArchiveNamesFilter
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
+import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.file.listFoldersFilter
+import me.devsaki.hentoid.util.file.persistNewUriPermission
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.workers.ExternalImportWorker
@@ -79,13 +85,13 @@ enum class ProcessFolderResult {
 }
 
 private val hentoidFolderNames =
-    FileHelper.NameFilter { displayName: String ->
+    NameFilter { displayName: String ->
         (displayName.equals(DEFAULT_PRIMARY_FOLDER, ignoreCase = true)
                 || displayName.equals(DEFAULT_PRIMARY_FOLDER_OLD, ignoreCase = true))
     }
 
 private val hentoidContentJson =
-    FileHelper.NameFilter { displayName: String ->
+    NameFilter { displayName: String ->
         displayName.equals(JSON_FILE_NAME_V2, ignoreCase = true)
                 || displayName.equals(JSON_FILE_NAME, ignoreCase = true)
                 || displayName.equals(JSON_FILE_NAME_OLD, ignoreCase = true)
@@ -170,7 +176,7 @@ private fun getFolderPickerIntent(context: Context, location: StorageLocation): 
     if (Build.VERSION.SDK_INT >= VERSION_CODES.O && Preferences.getStorageUri(location)
             .isNotEmpty()
     ) {
-        val file = FileHelper.getDocumentFromTreeUriString(
+        val file = getDocumentFromTreeUriString(
             context,
             Preferences.getStorageUri(location)
         )
@@ -248,9 +254,9 @@ fun setAndScanPrimaryFolder(
         else Preferences.getStorageUri(StorageLocation.PRIMARY_1)
 
     if (otherLocationUriStr.isNotEmpty()) {
-        val treeFullPath = FileHelper.getFullPathFromUri(context, treeUri)
+        val treeFullPath = getFullPathFromUri(context, treeUri)
         val otherLocationFullPath =
-            FileHelper.getFullPathFromUri(context, Uri.parse(otherLocationUriStr))
+            getFullPathFromUri(context, Uri.parse(otherLocationUriStr))
         if (treeFullPath.startsWith(otherLocationFullPath)) {
             Timber.e(
                 "Selected folder is inside the other primary location : %s",
@@ -270,8 +276,8 @@ fun setAndScanPrimaryFolder(
     // Check if selected folder is separate from Hentoid's external location
     val extLocationStr = Preferences.getStorageUri(StorageLocation.EXTERNAL)
     if (extLocationStr.isNotEmpty()) {
-        val treeFullPath = FileHelper.getFullPathFromUri(context, treeUri)
-        val extFullPath = FileHelper.getFullPathFromUri(context, Uri.parse(extLocationStr))
+        val treeFullPath = getFullPathFromUri(context, treeUri)
+        val extFullPath = getFullPathFromUri(context, Uri.parse(extLocationStr))
         if (treeFullPath.startsWith(extFullPath)) {
             Timber.e("Selected folder is inside the external location : %s", treeUri.toString())
             return Pair(ProcessFolderResult.KO_PRIMARY_EXTERNAL, treeUri.toString())
@@ -290,7 +296,7 @@ fun setAndScanPrimaryFolder(
     }
 
     // Set the folder as the app's downloads folder
-    val result = FileHelper.createNoMedia(context, hentoidFolder)
+    val result = createNoMedia(context, hentoidFolder)
     if (result < 0) {
         Timber.e(
             "Could not set the selected root folder (error = %d) %s",
@@ -361,10 +367,10 @@ fun setAndScanExternalFolder(
     var primaryUri1 = Preferences.getStorageUri(StorageLocation.PRIMARY_1)
     var primaryUri2 = Preferences.getStorageUri(StorageLocation.PRIMARY_2)
     if (primaryUri1.isNotEmpty()) primaryUri1 =
-        FileHelper.getFullPathFromUri(context, Uri.parse(primaryUri1))
+        getFullPathFromUri(context, Uri.parse(primaryUri1))
     if (primaryUri2.isNotEmpty()) primaryUri2 =
-        FileHelper.getFullPathFromUri(context, Uri.parse(primaryUri2))
-    val selectedFullPath = FileHelper.getFullPathFromUri(context, treeUri)
+        getFullPathFromUri(context, Uri.parse(primaryUri2))
+    val selectedFullPath = getFullPathFromUri(context, treeUri)
     if (primaryUri1.isNotEmpty() && selectedFullPath.startsWith(primaryUri1) || primaryUri2.isNotEmpty() && selectedFullPath.startsWith(
             primaryUri2
         )
@@ -415,7 +421,7 @@ fun persistLocationCredentials(
             )
         }
         .toList()
-    FileHelper.persistNewUriPermission(context, treeUri, uri)
+    persistNewUriPermission(context, treeUri, uri)
 }
 
 /**
@@ -527,7 +533,7 @@ fun getExistingHentoidDirFrom(context: Context, root: DocumentFile): DocumentFil
     if (isHentoidFolderName(root.name!!)) return root
 
     // If not, look for it in its children
-    val hentoidDirs = FileHelper.listFoldersFilter(context, root, hentoidFolderNames)
+    val hentoidDirs = listFoldersFilter(context, root, hentoidFolderNames)
     return if (hentoidDirs.isNotEmpty()) hentoidDirs[0] else null
 }
 
@@ -1019,7 +1025,7 @@ fun scanArchive(
     if (null == result) {
         result = Content().setSite(Site.NONE).setTitle(
             if (null == archive.name) ""
-            else FileHelper.getFileNameWithoutExtension(archive.name!!)
+            else getFileNameWithoutExtension(archive.name!!)
         ).setUrl("")
         result.setDownloadDate(archive.lastModified())
         result.addAttributes(parentNamesAsTags(parentNames))
@@ -1085,19 +1091,19 @@ fun importRenamingRules(dao: CollectionDAO, rules: List<RenamingRule>) {
  */
 fun getFileWithName(files: List<DocumentFile>, name: String?): DocumentFile? {
     if (null == name) return null
-    val targetBareName = FileHelper.getFileNameWithoutExtension(name)
+    val targetBareName = getFileNameWithoutExtension(name)
     val file = files.firstOrNull { f ->
-        f.name != null && FileHelper.getFileNameWithoutExtension(f.name!!)
+        f.name != null && getFileNameWithoutExtension(f.name!!)
             .equals(targetBareName, ignoreCase = true)
     }
     return file
 }
 
 /**
- * Build a [FileHelper.NameFilter] only accepting Content json files
+ * Build a [NameFilter] only accepting Content json files
  *
- * @return [FileHelper.NameFilter] only accepting Content json files
+ * @return [NameFilter] only accepting Content json files
  */
-fun getContentJsonNamesFilter(): FileHelper.NameFilter {
+fun getContentJsonNamesFilter(): NameFilter {
     return hentoidContentJson
 }

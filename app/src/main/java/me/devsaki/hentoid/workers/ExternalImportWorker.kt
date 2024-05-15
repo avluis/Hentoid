@@ -27,8 +27,10 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.file.DiskCache.init
 import me.devsaki.hentoid.util.file.FileExplorer
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.getArchiveNamesFilter
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.findDuplicateContentByUrl
 import me.devsaki.hentoid.util.getContentJsonNamesFilter
 import me.devsaki.hentoid.util.getFileWithName
@@ -121,8 +123,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         var booksOK = 0 // Number of books imported
         var booksKO = 0 // Number of folders found with no valid book inside
         val log: MutableList<LogEntry> = ArrayList()
-        val rootFolder =
-            FileHelper.getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri())
+        val rootFolder = getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri())
         if (null == rootFolder) {
             Timber.e("External folder is not defined (%s)", Preferences.getExternalLibraryUri())
             return
@@ -367,19 +368,17 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
         // Check if the storage URI is valid
         val contentFolder: DocumentFile? = if (content.isArchive) {
-            FileHelper.getDocumentFromTreeUriString(context, content.archiveLocationUri)
+            getDocumentFromTreeUriString(context, content.archiveLocationUri)
         } else {
-            FileHelper.getDocumentFromTreeUriString(context, content.storageUri)
+            getDocumentFromTreeUriString(context, content.storageUri)
         }
         if (null == contentFolder) return null
 
         // If a JSON file already exists at that location, use it as is, don't overwrite it
         val jsonName = if (content.isArchive) {
-            val archiveFile = FileHelper.getFileFromSingleUriString(context, content.storageUri)
-            FileHelper.getFileNameWithoutExtension(
-                StringHelper.protect(
-                    archiveFile!!.name
-                )
+            val archiveFile = getFileFromSingleUriString(context, content.storageUri)
+            getFileNameWithoutExtension(
+                StringHelper.protect(archiveFile!!.name)
             ) + ".json"
         } else {
             JSON_FILE_NAME_V2

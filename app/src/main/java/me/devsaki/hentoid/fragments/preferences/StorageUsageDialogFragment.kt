@@ -17,8 +17,9 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
+import me.devsaki.hentoid.util.file.MemoryUsageFigures
+import me.devsaki.hentoid.util.file.formatHumanReadableSize
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 
 class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
     companion object {
@@ -77,15 +78,15 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
 
             memoryTotalTxt.text = resources.getString(
                 R.string.memory_total,
-                FileHelper.formatHumanReadableSize(deviceTotalBytes, resources)
+                formatHumanReadableSize(deviceTotalBytes, resources)
             )
             memoryFreeTxt.text = resources.getString(
-                R.string.memory_free, FileHelper.formatHumanReadableSize(deviceFreeBytes, resources)
+                R.string.memory_free, formatHumanReadableSize(deviceFreeBytes, resources)
             )
 
             memoryHentoidPrimaryTxt.text = resources.getString(
                 R.string.memory_hentoid_main,
-                FileHelper.formatHumanReadableSize(primaryUsageBytes, resources)
+                formatHumanReadableSize(primaryUsageBytes, resources)
             )
 
             memoryHentoidExtTxt.isVisible = externalUsageBytes > 0
@@ -93,7 +94,7 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
 
             memoryHentoidExtTxt.text = resources.getString(
                 R.string.memory_hentoid_ext,
-                FileHelper.formatHumanReadableSize(externalUsageBytes, resources)
+                formatHumanReadableSize(externalUsageBytes, resources)
             )
 
             val table = memoryDetailsTable
@@ -111,7 +112,7 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
                     memoryDetailsTable,
                     it.first.description,
                     it.second.first.toString() + "",
-                    FileHelper.formatHumanReadableSize(it.second.second, resources)
+                    formatHumanReadableSize(it.second.second, resources)
                 )
             }
 
@@ -121,7 +122,7 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
             val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
             memoryDb.text =
                 resources.getString(
-                    R.string.memory_database, FileHelper.formatHumanReadableSize(
+                    R.string.memory_database, formatHumanReadableSize(
                         dao.getDbSizeBytes(),
                         resources
                     ), dao.getDbSizeBytes() * 100 / 1024f / dbMaxSizeKb
@@ -132,7 +133,7 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
     private fun getStats(location: StorageLocation): Pair<Long, Long> {
         val root = Preferences.getStorageUri(location)
         if (root.isNotEmpty()) {
-            val rootFolder = FileHelper.getDocumentFromTreeUriString(requireActivity(), root)
+            val rootFolder = getDocumentFromTreeUriString(requireActivity(), root)
             if (rootFolder != null) {
                 val memUsage = MemoryUsageFigures(requireContext(), rootFolder)
                 return Pair(memUsage.getfreeUsageBytes(), memUsage.totalSpaceBytes)

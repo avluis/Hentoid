@@ -23,7 +23,7 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.CloudflareHelper.CloudflareProtectedException
 import me.devsaki.hentoid.util.notification.BaseNotification
@@ -83,7 +83,7 @@ class DownloadsImportWorker(
         queuePosition: Int,
         importAsStreamed: Boolean
     ) {
-        val file = FileHelper.getFileFromSingleUriString(context, fileUri)
+        val file = getFileFromSingleUriString(context, fileUri)
         if (null == file) {
             trace(Log.ERROR, "Couldn't find downloads file at %s", fileUri)
             return

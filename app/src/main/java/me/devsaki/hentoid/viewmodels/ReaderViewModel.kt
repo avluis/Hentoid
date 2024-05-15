@@ -45,8 +45,13 @@ import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.DiskCache
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.extractArchiveEntriesCached
+import me.devsaki.hentoid.util.file.findFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.image.getMimeTypeFromUri
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
@@ -874,7 +879,7 @@ class ReaderViewModel(
         if (-1 == currentContentIndex) currentContentIndex = 0
         c.isFirst = 0 == currentContentIndex
         c.isLast = currentContentIndex >= contentIds.size - 1
-        if (null == FileHelper.getDocumentFromTreeUriString(
+        if (null == getDocumentFromTreeUriString(
                 getApplication(),
                 c.storageUri
             )
@@ -941,8 +946,8 @@ class ReaderViewModel(
     private fun cacheJson(context: Context, content: Content) {
         Helper.assertNonUiThread()
         if (content.jsonUri.isNotEmpty() || content.isArchive) return
-        val folder = FileHelper.getDocumentFromTreeUriString(context, content.storageUri) ?: return
-        val foundFile = FileHelper.findFile(getApplication(), folder, JSON_FILE_NAME_V2)
+        val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return
+        val foundFile = findFile(getApplication(), folder, JSON_FILE_NAME_V2)
         if (null == foundFile) {
             Timber.e("JSON file not detected in %s", content.storageUri)
             return
@@ -1020,7 +1025,7 @@ class ReaderViewModel(
         val indexesByArchive = indexesToLoad.filter { viewerImagesInternal[it].isArchived }
             .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
         indexesByArchive.keys.forEach {
-            FileHelper.getFileFromSingleUriString(getApplication(), it)?.let { archiveFile ->
+            getFileFromSingleUriString(getApplication(), it)?.let { archiveFile ->
                 extractPics(indexesByArchive[it]!!, archiveFile)
             }
         }
@@ -1796,11 +1801,11 @@ class ReaderViewModel(
         //      third = Target ImageFile
         val swaps = HashMap<Uri, Triple<Uri, Uri, ImageFile>>()
         val renames = ArrayList<Triple<DocumentFile, String, ImageFile>>()
-        val parentFolder = FileHelper.getDocumentFromTreeUriString(
+        val parentFolder = getDocumentFromTreeUriString(
             getApplication(), chapters[0].content.target.storageUri
         )
         if (parentFolder != null) {
-            val contentFiles = FileHelper.listFiles(getApplication(), parentFolder, null)
+            val contentFiles = listFiles(getApplication(), parentFolder, null)
             for (doc in contentFiles) {
                 val newName = fileNames[doc.uri.toString()]
                 if (newName != null) {
@@ -1827,14 +1832,14 @@ class ReaderViewModel(
         // NB : "thanks to" SAF; this works faster than renaming the files
         permutationGroups.forEach { tasks ->
             var firstFileContent: ByteArray
-            FileHelper.getInputStream(getApplication(), tasks[0].first).use {
+            getInputStream(getApplication(), tasks[0].first).use {
                 firstFileContent = it.readBytes()
             }
             tasks.forEachIndexed { index, task ->
                 if (index < tasks.size - 1) {
-                    FileHelper.getOutputStream(getApplication(), task.first).use { os ->
+                    getOutputStream(getApplication(), task.first).use { os ->
                         os?.let {
-                            FileHelper.getInputStream(getApplication(), task.second).use { input ->
+                            getInputStream(getApplication(), task.second).use { input ->
                                 Helper.copy(input, it)
                             }
                         }
@@ -1842,7 +1847,7 @@ class ReaderViewModel(
                     task.third.fileUri = task.first.toString()
                     swaps.remove(task.first)
                 } else { // Last task
-                    FileHelper.getOutputStream(getApplication(), task.first).use { os ->
+                    getOutputStream(getApplication(), task.first).use { os ->
                         os?.write(firstFileContent)
                     }
                     task.third.fileUri = task.first.toString()

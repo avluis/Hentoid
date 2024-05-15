@@ -79,8 +79,8 @@ import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.calcPhash
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.getCoverBitmapFromStream
 import me.devsaki.hentoid.util.getHashEngine
@@ -662,7 +662,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
     }
 
-    override fun onPageFinished(url : String, isResultsPage: Boolean, isGalleryPage: Boolean) {
+    override fun onPageFinished(url: String, isResultsPage: Boolean, isGalleryPage: Boolean) {
         refreshNavigationMenu(isResultsPage)
         refreshStopMenu?.setIcon(R.drawable.ic_action_refresh)
 
@@ -1611,19 +1611,19 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun computeCustomCss(): String {
         if (null == m_customCss) {
             val sb = StringBuilder()
-            if (Preferences.isBrowserMarkDownloaded() || Preferences.isBrowserMarkMerged() || Preferences.isBrowserMarkBlockedTags()) FileHelper.getAssetAsString(
+            if (Preferences.isBrowserMarkDownloaded() || Preferences.isBrowserMarkMerged() || Preferences.isBrowserMarkBlockedTags()) getAssetAsString(
                 assets, "downloaded.css", sb
             )
-            if (getStartSite() == Site.NHENTAI && Preferences.isBrowserNhentaiInvisibleBlacklist()) FileHelper.getAssetAsString(
+            if (getStartSite() == Site.NHENTAI && Preferences.isBrowserNhentaiInvisibleBlacklist()) getAssetAsString(
                 assets, "nhentai_invisible_blacklist.css", sb
             )
-            if (getStartSite() == Site.IMHENTAI) FileHelper.getAssetAsString(
+            if (getStartSite() == Site.IMHENTAI) getAssetAsString(
                 assets, "imhentai.css", sb
             )
-            if (getStartSite() == Site.KSK) FileHelper.getAssetAsString(
+            if (getStartSite() == Site.KSK) getAssetAsString(
                 assets, "ksk.css", sb
             )
-            if (getStartSite() == Site.PIXIV && Settings.isBrowserAugmented) FileHelper.getAssetAsString(
+            if (getStartSite() == Site.PIXIV && Settings.isBrowserAugmented) getAssetAsString(
                 assets, "pixiv.css", sb
             )
             m_customCss = sb.toString()

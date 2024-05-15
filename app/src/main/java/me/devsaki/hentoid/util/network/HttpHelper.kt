@@ -9,7 +9,7 @@ import android.webkit.WebSettings
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.DEFAULT_MIME_TYPE
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -337,7 +337,7 @@ fun okHttpResponseToWebkitResponse(
         )
     } else {
         WebResourceResponse(
-            FileHelper.DEFAULT_MIME_TYPE,
+            DEFAULT_MIME_TYPE,
             null,
             resp.code,
             message,

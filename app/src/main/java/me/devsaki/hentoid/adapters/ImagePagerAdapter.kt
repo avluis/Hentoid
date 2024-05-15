@@ -40,7 +40,7 @@ import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import me.devsaki.hentoid.util.image.screenHeight
 import me.devsaki.hentoid.util.image.screenWidth
@@ -149,7 +149,7 @@ class ImagePagerAdapter(val context: Context) :
 
     private fun getImageType(img: ImageFile?): ImageType {
         if (null == img) return ImageType.IMG_TYPE_OTHER
-        val extension = FileHelper.getExtension(img.fileUri)
+        val extension = getExtension(img.fileUri)
         if ("gif".equals(extension, ignoreCase = true) || img.mimeType.contains("gif")) {
             return ImageType.IMG_TYPE_GIF
         }

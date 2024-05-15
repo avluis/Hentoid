@@ -31,7 +31,9 @@ import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getDownloadsFolder
+import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -308,11 +310,11 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
             "favs-$targetFileName"
         targetFileName = "export-$targetFileName"
         try {
-            FileHelper.openNewDownloadOutputStream(
+            openNewDownloadOutputStream(
                 requireContext(),
                 targetFileName,
                 JsonHelper.JSON_MIME_TYPE
-            ).use { newDownload ->
+            )?.use { newDownload ->
                 ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
                     .use { input -> Helper.copy(input, newDownload) }
             }
@@ -323,10 +325,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
                     BaseTransientBottomBar.LENGTH_LONG
                 )
                     .setAction(R.string.open_folder) {
-                        FileHelper.openFile(
-                            requireContext(),
-                            FileHelper.getDownloadsFolder()
-                        )
+                        openFile(requireContext(), getDownloadsFolder())
                     }
                     .show()
             }

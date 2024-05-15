@@ -18,7 +18,7 @@ import androidx.work.WorkManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.views.NestedScrollWebView
@@ -71,7 +71,7 @@ fun Context.clearWebviewCache(callback: Consumer<Boolean>?) {
 fun Context.clearAppCache() {
     try {
         val dir = this.cacheDir
-        FileHelper.removeFile(dir)
+        removeFile(dir)
     } catch (e: Exception) {
         Timber.e(e, "Error when clearing app cache upon update")
     }

@@ -8,8 +8,8 @@ import me.devsaki.hentoid.database.domains.Achievement
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.AchievementEvent
 import me.devsaki.hentoid.json.core.JsonAchievements
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.isLowDeviceStorage
+import me.devsaki.hentoid.util.file.readStreamAsString
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.time.Instant
@@ -28,7 +28,7 @@ object AchievementsManager {
         val result = HashMap<Int, Achievement>()
 
         context.resources.openRawResource(R.raw.achievements).use { `is` ->
-            val achievementsStr = FileHelper.readStreamAsString(`is`)
+            val achievementsStr = readStreamAsString(`is`)
             val achievementsObj = JsonHelper.jsonToObject(
                 achievementsStr,
                 JsonAchievements::class.java

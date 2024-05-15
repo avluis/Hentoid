@@ -24,8 +24,9 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.PickFolderContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.workers.ArchiveWorker
@@ -133,14 +134,14 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
                 )
                 if (Settings.latestTargetFolderUri.isNotEmpty()) {
                     val uri = Uri.parse(Settings.latestTargetFolderUri)
-                    if (FileHelper.getDocumentFromTreeUriString(
+                    if (getDocumentFromTreeUriString(
                             requireContext(),
                             uri.toString()
                         ) != null
                     ) {
                         entries.add(
                             1,
-                            FileHelper.getFullPathFromUri(
+                            getFullPathFromUri(
                                 requireContext(),
                                 Uri.parse(Settings.latestTargetFolderUri)
                             )

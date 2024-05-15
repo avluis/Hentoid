@@ -30,7 +30,16 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.IncludeReaderImageBottomPanelBinding
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.fileExists
+import me.devsaki.hentoid.util.file.fileSizeFromUri
+import me.devsaki.hentoid.util.file.formatHumanReadableSize
+import me.devsaki.hentoid.util.file.getDownloadsFolder
+import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.file.getFullPathFromUri
+import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.util.file.shareFile
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.tintBitmap
@@ -132,25 +141,25 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
                 val archiveUri = filePath.substring(0, lastSeparator)
                 val fileName = filePath.substring(lastSeparator)
                 filePath =
-                    FileHelper.getFullPathFromUri(
+                    getFullPathFromUri(
                         requireContext(),
                         Uri.parse(archiveUri)
                     ) + fileName
             } else {
                 filePath =
-                    FileHelper.getFullPathFromUri(requireContext(), Uri.parse(it.fileUri))
+                    getFullPathFromUri(requireContext(), Uri.parse(it.fileUri))
             }
 
             binding.imagePath.text = filePath
-            val imageExists = FileHelper.fileExists(requireContext(), Uri.parse(it.fileUri))
+            val imageExists = fileExists(requireContext(), Uri.parse(it.fileUri))
             if (imageExists) {
                 val dimensions = getImageDimensions(requireContext(), it.fileUri)
                 val sizeStr: String = if (it.size > 0) {
-                    FileHelper.formatHumanReadableSize(it.size, resources)
+                    formatHumanReadableSize(it.size, resources)
                 } else {
                     val size =
-                        FileHelper.fileSizeFromUri(requireContext(), Uri.parse(it.fileUri))
-                    FileHelper.formatHumanReadableSize(size, resources)
+                        fileSizeFromUri(requireContext(), Uri.parse(it.fileUri))
+                    formatHumanReadableSize(size, resources)
                 }
                 binding.imageStats.text = resources.getString(
                     R.string.viewer_img_details,
@@ -217,16 +226,16 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
     private fun onCopyClick() {
         image?.let {
             val targetFileName =
-                it.content.target.uniqueSiteId + "-" + it.name + "." + FileHelper.getExtension(it.fileUri)
+                it.content.target.uniqueSiteId + "-" + it.name + "." + getExtension(it.fileUri)
             try {
                 val fileUri = Uri.parse(it.fileUri)
-                if (!FileHelper.fileExists(requireContext(), fileUri)) return
-                FileHelper.openNewDownloadOutputStream(
+                if (!fileExists(requireContext(), fileUri)) return
+                openNewDownloadOutputStream(
                     requireContext(),
                     targetFileName,
                     it.mimeType
-                ).use { newDownload ->
-                    FileHelper.getInputStream(requireContext(), fileUri)
+                )?.use { newDownload ->
+                    getInputStream(requireContext(), fileUri)
                         .use { input -> Helper.copy(input, newDownload) }
                 }
                 Snackbar.make(
@@ -235,7 +244,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
                     BaseTransientBottomBar.LENGTH_LONG
                 )
                     .setAction(R.string.open_folder) {
-                        FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder())
+                        openFile(requireContext(), getDownloadsFolder())
                     }
                     .show()
             } catch (e: IOException) {
@@ -260,7 +269,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
     private fun onShareClick() {
         image?.let {
             val fileUri = Uri.parse(it.fileUri)
-            if (FileHelper.fileExists(requireContext(), fileUri)) FileHelper.shareFile(
+            if (fileExists(requireContext(), fileUri)) shareFile(
                 requireContext(),
                 fileUri,
                 "",
@@ -299,11 +308,11 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
      */
     private fun getImageDimensions(context: Context, uri: String): Point {
         val fileUri = Uri.parse(uri)
-        if (!FileHelper.fileExists(context, fileUri)) return Point(0, 0)
+        if (!fileExists(context, fileUri)) return Point(0, 0)
         val options = BitmapFactory.Options()
         options.inJustDecodeBounds = true
         return try {
-            BitmapFactory.decodeStream(FileHelper.getInputStream(context, fileUri), null, options)
+            BitmapFactory.decodeStream(getInputStream(context, fileUri), null, options)
             Point(options.outWidth, options.outHeight)
         } catch (e: IOException) {
             Timber.w(e)

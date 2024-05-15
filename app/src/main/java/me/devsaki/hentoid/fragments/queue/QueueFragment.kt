@@ -66,8 +66,8 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
@@ -529,7 +529,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             DownloadEvent.Motive.NO_WIFI -> motiveMsg = R.string.paused_no_wifi
             DownloadEvent.Motive.NO_STORAGE -> {
                 motiveMsg = -1
-                val spaceLeft = FileHelper.formatHumanReadableSize(
+                val spaceLeft = formatHumanReadableSize(
                     event.downloadedSizeB, resources
                 )
                 message = getString(R.string.paused_no_storage, spaceLeft)

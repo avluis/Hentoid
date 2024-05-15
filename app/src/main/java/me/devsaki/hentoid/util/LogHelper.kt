@@ -6,7 +6,10 @@ import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.StorageLocation
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.util.file.saveBinary
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.time.Instant
@@ -227,25 +230,25 @@ fun Context.writeLog(logInfo: LogInfo): DocumentFile? {
         val log = logInfo.build()
 
         // Save the log; use primary folder by default
-        val folder = FileHelper.getDocumentFromTreeUriString(
+        val folder = getDocumentFromTreeUriString(
             this, Preferences.getStorageUri(StorageLocation.PRIMARY_1)
         )
         if (folder != null) {
-            val logDocumentFile = FileHelper.findOrCreateDocumentFile(
+            val logDocumentFile = findOrCreateDocumentFile(
                 this, folder, "text/plain", logFileName
             )
-            if (logDocumentFile != null) FileHelper.saveBinary(
+            if (logDocumentFile != null) saveBinary(
                 this,
                 logDocumentFile.uri,
                 log.toByteArray()
             )
             return logDocumentFile
         } else { // If it fails, use device's "download" folder (panic mode)
-            FileHelper.openNewDownloadOutputStream(
+            openNewDownloadOutputStream(
                 HentoidApp.getInstance(),
                 logFileName,
                 "text/plain"
-            ).use { newDownload ->
+            )?.use { newDownload ->
                 ByteArrayInputStream(log.toByteArray()).use { input ->
                     Helper.copy(input, newDownload)
                 }

@@ -44,7 +44,9 @@ import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.formatHumanReadableSize
+import me.devsaki.hentoid.util.file.getExtensionFromMimeType
+import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.determineEncoder
@@ -320,24 +322,24 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
 
         lifecycleScope.launch {
             val isLossless = isImageLossless(rawData)
-            val sourceSize = FileHelper.formatHumanReadableSize(rawData.size.toLong(), resources)
+            val sourceSize = formatHumanReadableSize(rawData.size.toLong(), resources)
             val options = BitmapFactory.Options()
             options.inJustDecodeBounds = true
             BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options)
             val sourceDims = Point(options.outWidth, options.outHeight)
             val sourceMime = getMimeTypeFromPictureBinary(rawData)
-            val sourceName = picName + "." + FileHelper.getExtensionFromMimeType(sourceMime)
+            val sourceName = picName + "." + getExtensionFromMimeType(sourceMime)
             val params = buildParams()
             val targetData = withContext(Dispatchers.IO) {
                 return@withContext transform(rawData, params, true)
             }
             val unchanged = targetData == rawData
 
-            val targetSize = FileHelper.formatHumanReadableSize(targetData.size.toLong(), resources)
+            val targetSize = formatHumanReadableSize(targetData.size.toLong(), resources)
             BitmapFactory.decodeByteArray(targetData, 0, targetData.size, options)
             val targetDims = Point(options.outWidth, options.outHeight)
             val targetMime = determineEncoder(isLossless, targetDims, params).mimeType
-            val targetName = picName + "." + FileHelper.getExtensionFromMimeType(targetMime)
+            val targetName = picName + "." + getExtensionFromMimeType(targetMime)
 
             binding?.apply {
                 if (unchanged) {
@@ -364,7 +366,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             maxPages = pages.size
             val page = pages[pageIndex]
             try {
-                FileHelper.getInputStream(requireContext(), Uri.parse(page.fileUri)).use {
+                getInputStream(requireContext(), Uri.parse(page.fileUri)).use {
                     return Pair(page.name, it.readBytes())
                 }
             } catch (t: Throwable) {

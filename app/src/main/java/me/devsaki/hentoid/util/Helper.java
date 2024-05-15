@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.util;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
+import static me.devsaki.hentoid.util.file.FileHelperKt.FILE_IO_BUFFER_SIZE;
+import static me.devsaki.hentoid.util.file.FileHelperKt.getDocumentFromTreeUriString;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -66,7 +68,6 @@ import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.json.JsonContentCollection;
-import me.devsaki.hentoid.util.file.FileHelper;
 import timber.log.Timber;
 
 /**
@@ -372,7 +373,7 @@ public final class Helper {
      */
     public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
         // Transfer bytes from in to out
-        byte[] buf = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
+        byte[] buf = new byte[FILE_IO_BUFFER_SIZE];
         int len;
         while ((len = in.read(buf)) > 0) {
             out.write(buf, 0, len);
@@ -504,7 +505,7 @@ public final class Helper {
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setBookmarks(bookmarks);
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
+        DocumentFile rootFolder = getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
         if (null == rootFolder) return false;
 
         try {
@@ -535,7 +536,7 @@ public final class Helper {
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setRenamingRules(rules);
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
+        DocumentFile rootFolder = getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
         if (null == rootFolder) return false;
 
         try {

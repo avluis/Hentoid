@@ -17,7 +17,9 @@ import me.devsaki.hentoid.parsers.content.ExhentaiContent
 import me.devsaki.hentoid.parsers.images.EHentaiParser
 import me.devsaki.hentoid.parsers.images.EHentaiParser.EhAuthState
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.saveBinary
 import timber.log.Timber
 import java.io.IOException
 
@@ -70,18 +72,18 @@ class ExHentaiActivity : BaseWebActivity() {
 
         private fun logCookies(prefix: String, cookieStr: String) {
             try {
-                val root = FileHelper.getDocumentFromTreeUriString(
+                val root = getDocumentFromTreeUriString(
                     application,
                     Preferences.getStorageUri(StorageLocation.PRIMARY_1)
                 )
                 if (root != null) {
-                    val cookiesLog = FileHelper.findOrCreateDocumentFile(
+                    val cookiesLog = findOrCreateDocumentFile(
                         application,
                         root,
                         "text/plain",
                         "cookies_" + prefix + "_log.txt"
                     )
-                    if (cookiesLog != null) FileHelper.saveBinary(
+                    if (cookiesLog != null) saveBinary(
                         application,
                         cookiesLog.uri,
                         cookieStr.toByteArray()
