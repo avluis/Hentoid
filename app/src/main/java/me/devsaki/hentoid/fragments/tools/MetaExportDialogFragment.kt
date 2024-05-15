@@ -43,7 +43,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
 
     companion object {
         fun invoke(fragment: Fragment) {
-            invoke(fragment, MetaExportDialogFragment(), isCancelable = false)
+            invoke(fragment, MetaExportDialogFragment())
         }
     }
 
@@ -207,6 +207,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
             it.exportRunBtn.visibility = View.GONE
             it.exportProgressBar.isIndeterminate = true
             it.exportProgressBar.visibility = View.VISIBLE
+            isCancelable = false
 
             lifecycleScope.launch {
                 val result = withContext(Dispatchers.IO) {
