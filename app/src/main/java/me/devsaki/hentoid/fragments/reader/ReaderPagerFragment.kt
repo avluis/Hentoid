@@ -577,14 +577,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun convertPrefsDelayToSliderPosition(prefsDelay: Int): Int {
         val prefsValues = resources.getStringArray(R.array.pref_viewer_slideshow_delay_values)
-            .map { s: String -> s.toInt() }.toList()
+            .map { s -> s.toInt() }
         for (i in prefsValues.indices) if (prefsValues[i] == prefsDelay) return i
         return 0
     }
 
     private fun convertSliderPositionToPrefsDelay(sliderPosition: Int): Int {
         val prefsValues = resources.getStringArray(R.array.pref_viewer_slideshow_delay_values)
-            .map { s: String -> s.toInt() }.toList()
+            .map { s -> s.toInt() }
         return prefsValues[sliderPosition]
     }
 
