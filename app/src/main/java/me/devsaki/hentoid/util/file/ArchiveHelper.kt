@@ -424,7 +424,7 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
             }
         }
         position += seekDelta
-        Timber.d("position : $position")
+        //Timber.v("position : $position")
         return position
     }
 
@@ -453,7 +453,7 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
         return try {
             var result = stream!!.read(bytes)
             position += result
-            if (result != bytes.size) Timber.w("diff %s expected; %s read", bytes.size, result)
+            //if (result != bytes.size) Timber.w("diff %s expected; %s read", bytes.size, result)
             if (result < 0) result = 0
             result
         } catch (e: IOException) {

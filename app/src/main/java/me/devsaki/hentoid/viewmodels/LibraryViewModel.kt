@@ -1075,7 +1075,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 splitContent,
                 "Could not create target directory"
             )
-            splitContent.storageUri = targetFolder.uri.toString()
+            splitContent.storageDoc = targetFolder
 
             // Copy the corresponding images to that folder
             val splitContentImages = splitContent.imageFiles

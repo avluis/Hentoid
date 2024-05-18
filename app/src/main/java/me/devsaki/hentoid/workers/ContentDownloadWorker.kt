@@ -265,7 +265,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (content.storageUri.isNotEmpty()) {
             // Reset storage URI if unreachable (will be re-created later in the method)
             val rootFolder = getDocumentFromTreeUriString(context, content.storageUri)
-            if (null == rootFolder) content.storageUri = "" else {
+            if (null == rootFolder) content.clearStorageDoc() else {
                 val result = testFolder(context, content.storageUri)
                 if (result != null) return result
                 dir = getDocumentFromTreeUriString(
@@ -451,7 +451,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Folder creation succeeds -> memorize its path
         val targetFolder: DocumentFile = dir
-        content.storageUri = targetFolder.uri.toString()
+        content.storageDoc = targetFolder
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
         if (0 == content.qtyPages) content.qtyPages = images.count { i -> i.isReadable }

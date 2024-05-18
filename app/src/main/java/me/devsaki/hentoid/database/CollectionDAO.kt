@@ -41,6 +41,8 @@ interface CollectionDAO {
 
     fun selectContentsByUrl(site: Site, contentUrl: String): Set<Content>
 
+    fun selectContentsByQtyPageAndSize(qtyPage : Int, size: Long): Set<Content>
+
     fun selectAllSourceUrls(site: Site): Set<String>
 
     fun selectAllMergedUrls(site: Site): Set<String>

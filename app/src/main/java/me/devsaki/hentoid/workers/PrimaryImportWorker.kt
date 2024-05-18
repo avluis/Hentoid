@@ -310,6 +310,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                             explorer,
                             dao,
                             bookFolders,
+                            rootFolder,
                             bookFolders[i],
                             log,
                             rename,
@@ -452,6 +453,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         explorer: FileExplorer,
         dao: CollectionDAO,
         bookFolders: MutableList<DocumentFile>,
+        parent : DocumentFile,
         bookFolder: DocumentFile,
         log: MutableList<LogEntry>,
         rename: Boolean,
@@ -729,7 +731,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 }
             } else { // If not, rebuild the book and regenerate the JSON according to stored data
                 try {
-                    val parentFolder: MutableList<String> = ArrayList()
+                    val parentNames: MutableList<String> = ArrayList()
                     // Try and detect the site according to the parent folder
                     val parents =
                         bookFolder.uri.path!!.split("/") // _not_ File.separator but the universal Uri separator
@@ -739,16 +741,17 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                                 ignoreCase = true
                             )
                         ) {
-                            parentFolder.add(s.folder)
+                            parentNames.add(s.folder)
                             break
                         }
                     }
                     // Scan the folder
                     val storedContent = scanBookFolder(
                         context,
+                        parent,
                         bookFolder,
                         explorer,
-                        parentFolder,
+                        parentNames,
                         StatusContent.DOWNLOADED,
                         dao,
                         null,
@@ -846,7 +849,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         try {
             if (folder.renameTo(newName)) {
                 // 1- Update the book folder's URI
-                content.setStorageUri(folder.uri.toString())
+                content.setStorageDoc(folder)
                 // 2- Update the JSON's URI
                 val jsonFile = explorer.findFile(context, folder, JSON_FILE_NAME_V2)
                 if (jsonFile != null) content.jsonUri = jsonFile.uri.toString()
@@ -1263,7 +1266,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             content.setMigratedStatus()
             content.setDownloadDate(Instant.now().toEpochMilli())
             val contentV2 = content.toV2Content()
-            contentV2.setStorageUri(parentFolder.uri.toString())
+            contentV2.setStorageDoc(parentFolder)
             val newJson = JsonHelper.jsonToFile(
                 context, JsonContent.fromEntity(contentV2),
                 JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
@@ -1295,7 +1298,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 content.setMigratedStatus()
             }
             val contentV2 = content.toV2Content()
-            contentV2.setStorageUri(parentFolder.uri.toString())
+            contentV2.setStorageDoc(parentFolder)
             val newJson = JsonHelper.jsonToFile(
                 context, JsonContent.fromEntity(contentV2),
                 JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
@@ -1323,7 +1326,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             val content = JsonHelper.jsonToObject(context, json, JsonContent::class.java)
             val result = content.toEntity(dao)
             result.jsonUri = json.uri.toString()
-            result.setStorageUri(parentFolder.uri.toString())
+            result.setStorageDoc(parentFolder)
             result
         } catch (e: IOException) {
             Timber.e(e, "Error reading JSON (v2) file")

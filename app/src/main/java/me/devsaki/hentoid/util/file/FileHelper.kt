@@ -159,7 +159,7 @@ private fun getVolumePath(context: Context, volumeId: String): String? {
         }
 
         for (volume in result) {
-            val uuid = StringHelper.protect(getUuid.invoke(volume) as String)
+            val uuid = StringHelper.protect(getUuid.invoke(volume) as String?)
             val primary = isPrimary.invoke(volume) as Boolean
 
             if (volumeIdMatch(uuid, primary, volumeId)) return getVolumePath(volume)
@@ -642,10 +642,9 @@ fun getFileNameWithoutExtension(filePath: String): String {
     val fileName = if (-1 == folderSeparatorIndex) filePath
     else filePath.substring(folderSeparatorIndex + 1)
 
-    return if (fileName.contains("."))
-        fileName.substring(
-            0, fileName.lastIndexOf('.')
-        ) else fileName
+    val dotIndex = fileName.lastIndexOf('.')
+    return if (-1 == dotIndex) fileName
+    else fileName.substring(0, dotIndex)
 }
 
 /**
@@ -1466,6 +1465,10 @@ fun byteCountToDisplayRoundedSize(size: Long, places: Int, res: Resources): Stri
         res,
         Locale.getDefault()
     )
+}
+
+fun DocumentFile.uniqueHash(): Long {
+    return Helper.hash64((this.name + "." + this.length()).toByteArray())
 }
 
 fun interface NameFilter {

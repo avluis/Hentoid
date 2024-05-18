@@ -214,7 +214,7 @@ class FileExplorer : Closeable {
      * List the children of a given folder (non recursive) matching the given criteria
      *
      * @param context     Context to use for the query
-     * @param parent      Folder containing the document to count
+     * @param parent      Folder containing the documents to list
      * @param nameFilter  NameFilter defining which documents to include
      * @param listFolders true if matching folders have to be listed in the results
      * @param listFiles   true if matching files have to be listed in the results
@@ -278,7 +278,8 @@ class FileExplorer : Closeable {
                     val documentSize = c.getLong(3)
 
                     // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
-                    if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder))) results.add(
+                    if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
+                        results.add(
                         DocumentProperties(
                             buildDocumentUriUsingTreeCached(parent.uri, documentId),
                             documentName,

@@ -519,6 +519,15 @@ object ObjectBoxDB {
             .order(Content_.id).safeFind().toSet()
     }
 
+    fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content> {
+        val contentUrlCondition =
+            Content_.size.equal(size)
+                .and(Content_.qtyPages.equal(qtyPage))
+
+        return store.boxFor(Content::class.java).query(contentUrlCondition)
+            .order(Content_.id).safeFind().toSet()
+    }
+
     fun selectAllContentUrls(siteCode: Int): Set<String> {
         store.boxFor(Content::class.java).query().equal(Content_.site, siteCode.toLong())
             .`in`(Content_.status, libraryStatus).notNull(Content_.url)

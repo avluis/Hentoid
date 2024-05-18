@@ -300,7 +300,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                 )
             ) {
                 // Cache folder Uri
-                c.storageUri = f.uri.toString()
+                c.storageDoc = f
                 // Cache JSON Uri
                 val json = findFile(context, f, JSON_FILE_NAME_V2)
                 if (json != null) c.jsonUri = json.uri.toString()

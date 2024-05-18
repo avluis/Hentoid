@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.provider.DocumentsContract
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.ExistingWorkPolicy
@@ -14,7 +15,9 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.moshi.JsonDataException
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.DEFAULT_PRIMARY_FOLDER
 import me.devsaki.hentoid.core.DEFAULT_PRIMARY_FOLDER_OLD
 import me.devsaki.hentoid.core.HentoidApp.LifeCycleListener.Companion.disable
@@ -38,12 +41,15 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.file.ArchiveEntry
+import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.createNoMedia
 import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getArchiveNamesFilter
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.isSupportedArchive
@@ -59,9 +65,12 @@ import java.io.File
 import java.io.IOException
 import java.time.Instant
 import java.util.Locale
+import java.util.regex.Pattern
 
 
 private const val EXTERNAL_LIB_TAG = "external-library"
+
+val ENDS_WITH_NUMBER: Pattern = Pattern.compile(".*\\d+(\\.\\d+)?$")
 
 enum class PickerResult {
     OK,  // OK - Returned a valid URI
@@ -578,9 +587,129 @@ private fun runExternalImport(
 }
 
 /**
+ * Recursively scan the contents of the given folder, up to 4 sublevels
+ *
+ * @param context Context to use
+ * @param dao DAO to use to populate entities
+ * @param parent Parent of the folder to scan (cuz DocumentFile.getParentFile can't stand on its own)
+ * @param toScan Folder to scan
+ * @param explorer FileExplorer to use
+ * @param parentNames Names of all parent folders
+ * @param library Structure that will receive all detected Content
+ * @param progressFeedback Progress feedback to run (optional)
+ * @param log Log to write to (optional)
+ */
+fun scanFolderRecursive(
+    context: Context,
+    dao: CollectionDAO,
+    parent: DocumentFile?,
+    toScan: DocumentFile,
+    explorer: FileExplorer,
+    parentNames: List<String>,
+    library: MutableList<Content>,
+    progressFeedback: Consumer<String>? = null,
+    log: MutableList<LogEntry>? = null
+) {
+    Helper.assertNonUiThread()
+    if (parentNames.size > 4) return  // We've descended too far
+    val rootName = toScan.name ?: ""
+    progressFeedback?.invoke(rootName)
+    Timber.d(">>>> scan root %s", toScan.uri)
+    val files = explorer.listDocumentFiles(context, toScan)
+    val subFolders: MutableList<DocumentFile> = ArrayList()
+    val images: MutableList<DocumentFile> = ArrayList()
+    val archives: MutableList<DocumentFile> = ArrayList()
+    val jsons: MutableList<DocumentFile> = ArrayList()
+    val contentJsons: MutableList<DocumentFile> = ArrayList()
+
+    // Look for the interesting stuff
+    for (file in files) {
+        val fileName = file.name ?: ""
+        if (file.isDirectory) subFolders.add(file)
+        else if (imageNamesFilter.accept(fileName)) images.add(file)
+        else if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
+        else if (JsonHelper.getJsonNamesFilter().accept(fileName)) {
+            jsons.add(file)
+            if (getContentJsonNamesFilter().accept(fileName)) contentJsons.add(file)
+        }
+    }
+
+    // If at least 2 subfolders and all of them ends with a number, we've got a multi-chapter book
+    if (subFolders.size >= 2) {
+        val allSubfoldersEndWithNumber =
+            subFolders.mapNotNull { f -> f.name }.all { s -> ENDS_WITH_NUMBER.matcher(s).matches() }
+        if (allSubfoldersEndWithNumber) {
+            // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
+            val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
+            if (nbPicturesInside > 1) {
+                val json = getFileWithName(jsons, JSON_FILE_NAME_V2)
+                library.add(
+                    scanChapterFolders(
+                        context, toScan, subFolders, explorer, parentNames, dao, json
+                    )
+                )
+            }
+            // Look for archives inside; if there's one inside the 1st folder, load them as a chapters
+            val nbArchivesInside = explorer.countFiles(subFolders[0], getArchiveNamesFilter())
+            if (1 == nbArchivesInside) {
+                val c =
+                    scanForArchives(context, toScan, subFolders, explorer, parentNames, dao, true)
+                library.addAll(c)
+            }
+        }
+    }
+
+    // We've got an archived book
+    if (archives.isNotEmpty()) {
+        for (archive in archives) {
+            val json = getFileWithName(jsons, archive.name)
+            val c = scanArchive(
+                context, toScan, archive, parentNames, StatusContent.EXTERNAL, dao, json
+            )
+            // Valid archive
+            if (0 == c.first) library.add(c.second!!)
+            else {
+                // Invalid archive
+                val message = when (c.first) {
+                    1 -> "Archive ignored (contains another archive) : %s"
+                    else -> "Archive ignored (unsupported pictures or corrupted archive) : %s"
+                }
+                Trace(Log.INFO, 0, log, message, archive.name ?: "<name not found>")
+            }
+        }
+    }
+
+    // We've got a book
+    if (images.size > 2 || contentJsons.isNotEmpty()) {
+        val json = getFileWithName(contentJsons, JSON_FILE_NAME_V2)
+        library.add(
+            scanBookFolder(
+                context,
+                parent,
+                toScan,
+                explorer,
+                parentNames,
+                StatusContent.EXTERNAL,
+                dao,
+                images,
+                json
+            )
+        )
+    }
+
+    // Go down one level
+    val newParentNames: MutableList<String> = ArrayList(parentNames)
+    newParentNames.add(rootName)
+    for (subfolder in subFolders) scanFolderRecursive(
+        context, dao, toScan, subfolder, explorer, newParentNames, library, progressFeedback, log
+    )
+}
+
+/**
  * Create a Content from the given folder
  *
  * @param context      Context to use
+ * @param parentFolder Parent folder of bookFolder (cuz DocumentFile.getParentFile can't stand on its own)
  * @param bookFolder   Folder to analyze
  * @param explorer     FileExplorer to use
  * @param parentNames  Names of parent folders, for formatting purposes; last of the list is the immediate parent of bookFolder
@@ -592,6 +721,7 @@ private fun runExternalImport(
  */
 fun scanBookFolder(
     context: Context,
+    parentFolder: DocumentFile?,
     bookFolder: DocumentFile,
     explorer: FileExplorer,
     parentNames: List<String>,
@@ -644,7 +774,8 @@ fun scanBookFolder(
         result.addAttributes(parentNamesAsTags(parentNames))
     }
     if (targetStatus == StatusContent.EXTERNAL) result!!.addAttributes(newExternalAttribute())
-    result!!.setStatus(targetStatus).setStorageUri(bookFolder.uri.toString())
+    result!!.setStatus(targetStatus).setStorageDoc(bookFolder)
+    if (null != parentFolder) result.parentStorageUri = parentFolder.uri.toString()
     if (0L == result.downloadDate) result.setDownloadDate(Instant.now().toEpochMilli())
     result.lastEditDate = Instant.now().toEpochMilli()
     val images: MutableList<ImageFile> = ArrayList()
@@ -724,7 +855,7 @@ fun scanChapterFolders(
         result.addAttributes(parentNamesAsTags(parentNames))
     }
     result!!.addAttributes(newExternalAttribute())
-    result.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.uri.toString())
+    result.setStatus(StatusContent.EXTERNAL).setStorageDoc(parent)
     if (0L == result.downloadDate) result.setDownloadDate(Instant.now().toEpochMilli())
     result.lastEditDate = Instant.now().toEpochMilli()
     val images: MutableList<ImageFile> = ArrayList()
@@ -904,7 +1035,7 @@ fun scanForArchives(
         content.addAttributes(parentNamesAsTags(parentNames))
 
         content.addAttributes(newExternalAttribute())
-        content.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.uri.toString())
+        content.setStatus(StatusContent.EXTERNAL).setStorageDoc(parent)
         if (0L == content.downloadDate) content.setDownloadDate(Instant.now().toEpochMilli())
         content.lastEditDate = Instant.now().toEpochMilli()
 
@@ -913,7 +1044,7 @@ fun scanForArchives(
         val chapters: MutableList<Chapter> = ArrayList()
         val images: MutableList<ImageFile> = ArrayList()
         result.forEachIndexed { cidx, c ->
-            val chapter = Chapter(cidx + 1, c.archiveLocationUri, chapterStr + " " + (cidx + 1))
+            val chapter = Chapter(cidx + 1, c.parentStorageUri, chapterStr + " " + (cidx + 1))
             chapter.setContent(content)
             chapter.setImageFiles(c.imageList.filter { i -> i.isReadable })
             chapter.imageFiles?.forEachIndexed { iidx, img ->
@@ -1021,19 +1152,21 @@ fun scanArchive(
         result.addAttributes(parentNamesAsTags(parentNames))
         result.addAttributes(newExternalAttribute())
     }
-    result!!.setStatus(targetStatus)
-        .setStorageUri(archive.uri.toString()) // Here storage URI is a file URI, not a folder
-    if (0L == result.downloadDate) result.setDownloadDate(Instant.now().toEpochMilli())
-    result.lastEditDate = Instant.now().toEpochMilli()
-    result.archiveLocationUri = parentFolder.uri.toString()
-    result.setImageFiles(images)
-    if (0 == result.qtyPages) {
-        val countUnreadable = images.filterNot { obj: ImageFile -> obj.isReadable }.count()
-        result.setQtyPages(images.size - countUnreadable) // Minus unreadable pages (cover thumb)
+    result?.apply {
+        setStatus(targetStatus)
+        setStorageDoc(archive) // Here storage URI is a file URI, not a folder
+        parentStorageUri = parentFolder.uri.toString()
+        if (0L == downloadDate) setDownloadDate(Instant.now().toEpochMilli())
+        lastEditDate = Instant.now().toEpochMilli()
+        setImageFiles(images)
+        if (0 == qtyPages) {
+            val countUnreadable = images.filterNot { obj: ImageFile -> obj.isReadable }.count()
+            setQtyPages(images.size - countUnreadable) // Minus unreadable pages (cover thumb)
+        }
+        computeSize()
+        // e.g. when the ZIP table doesn't contain any size entry
+        if (size <= 0) forceSize(archive.length())
     }
-    result.computeSize()
-    // e.g. when the ZIP table doesn't contain any size entry
-    if (result.size <= 0) result.forceSize(archive.length())
     return Pair(0, result)
 }
 
@@ -1089,6 +1222,119 @@ fun getFileWithName(files: List<DocumentFile>, name: String?): DocumentFile? {
     return file
 }
 
+fun createJsonFileFor(
+    context: Context,
+    content: Content,
+    explorer: FileExplorer,
+    log: MutableList<LogEntry>?
+) {
+    if (content.jsonUri.isEmpty()) {
+        var jsonUri: Uri? = null
+        try {
+            jsonUri = createJsonFileFor(context, content, explorer)
+        } catch (ioe: IOException) {
+            Timber.w(ioe) // Not blocking
+            Trace(
+                Log.WARN,
+                1,
+                log,
+                "Could not create JSON in %s",
+                content.storageUri
+            )
+        }
+        if (jsonUri != null) content.jsonUri = jsonUri.toString()
+    }
+}
+
+@Throws(IOException::class)
+private fun createJsonFileFor(
+    context: Context,
+    content: Content,
+    explorer: FileExplorer
+): Uri? {
+    if (null == content.storageUri || content.storageUri.isEmpty()) return null
+
+    // Check if the storage URI is valid
+    val contentFolder: DocumentFile? = if (content.isArchive) {
+        getDocumentFromTreeUriString(context, content.parentStorageUri)
+    } else {
+        getDocumentFromTreeUriString(context, content.storageUri)
+    }
+    if (null == contentFolder) return null
+
+    // If a JSON file already exists at that location, use it as is, don't overwrite it
+    val jsonName = if (content.isArchive) {
+        val archiveFile = getFileFromSingleUriString(context, content.storageUri)
+        getFileNameWithoutExtension(
+            StringHelper.protect(archiveFile!!.name)
+        ) + ".json"
+    } else {
+        JSON_FILE_NAME_V2
+    }
+
+    val jsonFile = explorer.findFile(context, contentFolder, jsonName)
+    return if (jsonFile != null && jsonFile.exists()) jsonFile.uri
+    else JsonHelper.jsonToFile(
+        context,
+        JsonContent.fromEntity(content),
+        JsonContent::class.java,
+        contentFolder,
+        jsonName
+    ).uri
+}
+
+fun existsInCollection(
+    content: Content,
+    dao: CollectionDAO,
+    searchByStorageUri: Boolean = false,
+    log: MutableList<LogEntry>? = null
+): Boolean {
+    // If the same book folder is already in the DB, that means the user is trying to import
+    // a subfolder of the Hentoid main folder (yes, it has happened) => ignore these books
+    var duplicateOrigin = "folder"
+    var existingDuplicate: Content? = null
+
+    if (searchByStorageUri)
+        existingDuplicate = dao.selectContentByStorageUri(content.storageUri, false)
+
+
+    // The very same book may also exist in the DB under a different folder
+    // 1- Look for duplicates using URL and site
+    if (null == existingDuplicate
+        && content.url.trim().isNotEmpty()
+        && content.site != Site.NONE
+    ) {
+        existingDuplicate = findDuplicateContentByUrl(content, dao)
+        // Ignore the duplicate if it is queued; we do prefer to import a full book
+        if (existingDuplicate != null) {
+            if (ContentHelper.isInQueue(existingDuplicate.status)) existingDuplicate = null
+            else duplicateOrigin = "book"
+        }
+    }
+
+    // 2- Look for duplicates using physical properties (last resort)
+    if (null == existingDuplicate) {
+        existingDuplicate = findDuplicateContentByQtyPageAndSize(content, dao)
+        // Ignore the duplicate if it is queued; we do prefer to import a full book
+        if (existingDuplicate != null) {
+            if (ContentHelper.isInQueue(existingDuplicate.status)) existingDuplicate = null
+            else duplicateOrigin = "book"
+        }
+    }
+
+    if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion) {
+        Trace(
+            Log.INFO,
+            1,
+            log,
+            "Import book KO! ($duplicateOrigin already in collection) : %s",
+            content.storageUri
+        )
+        return true
+    }
+    return false
+}
+
 /**
  * Build a [NameFilter] only accepting Content json files
  *
@@ -1096,4 +1342,103 @@ fun getFileWithName(files: List<DocumentFile>, name: String?): DocumentFile? {
  */
 fun getContentJsonNamesFilter(): NameFilter {
     return hentoidContentJson
+}
+
+fun updateWithBeholder(
+    context: Context,
+    log: MutableList<LogEntry>? = null
+) {
+    Helper.assertNonUiThread()
+    Timber.d("delta init")
+    Beholder.init(context)
+    val delta = Beholder.scanForDelta(context)
+    Timber.d("delta end")
+
+    val dao = ObjectBoxDAO()
+    try {
+        Timber.d("delta+ : " + delta.first.size + " items")
+        delta.first.forEach { deltaPlus ->
+            val deltaPlusRoot = deltaPlus.first
+            FileExplorer(context, deltaPlusRoot).use { explorer ->
+                val addedContent: MutableList<Content> = ArrayList()
+
+                // Pair siblings with the same name (e.g. archives and JSON files)
+                val deltaPlusPairs =
+                    deltaPlus.second.groupBy { f -> getFileNameWithoutExtension(f.name ?: "") }
+
+                deltaPlusPairs.values.forEach { docs ->
+                    if (BuildConfig.DEBUG) {
+                        docs.forEach { doc ->
+                            Timber.d("delta+ => " + doc.uri.toString())
+                        }
+                    }
+                    val archive =
+                        docs.firstOrNull { it.isFile && isSupportedArchive(it.name ?: "") }
+                    val folder = docs.firstOrNull { it.isDirectory }
+
+                    // Import new archive
+                    if (archive != null) {
+                        val json =
+                            docs.firstOrNull {
+                                it.isFile && getExtension(it.name ?: "")
+                                    .equals("json", true)
+                            }
+                        val c = scanArchive(
+                            context,
+                            deltaPlusRoot,
+                            archive,
+                            emptyList(),
+                            StatusContent.EXTERNAL,
+                            dao,
+                            json
+                        )
+                        // Valid archive
+                        if (0 == c.first) addedContent.add(c.second!!)
+                        else {
+                            // Invalid archive
+                            val message = when (c.first) {
+                                1 -> "Archive ignored (contains another archive) : %s"
+                                else -> "Archive ignored (unsupported pictures or corrupted archive) : %s"
+                            }
+                            Trace(Log.INFO, 0, log, message, archive.name ?: "<name not found>")
+                        }
+                    } else if (folder != null) { // Import new folder
+                        scanFolderRecursive(
+                            context,
+                            dao,
+                            deltaPlusRoot,
+                            folder,
+                            explorer,
+                            emptyList(),
+                            addedContent,
+                            null,
+                            log
+                        )
+                    }
+                } // deltaPlus docs
+
+                // Process added content
+                addedContent.forEach {
+                    if (!existsInCollection(it, dao, true, log)) {
+                        createJsonFileFor(context, it, explorer, log)
+                        ContentHelper.addContent(context, dao, it)
+                    }
+                }
+            } // explorer
+        } // deltaPlus
+
+        val toRemove = delta.second.filter { it > 0 }
+        Timber.d("delta- : " + toRemove.size + " useful / " + delta.second.size + " total")
+        toRemove.forEach { idToRemove ->
+            Timber.d("delta- => $idToRemove")
+            Content().apply {
+                id = idToRemove
+                ContentHelper.removeContent(context, dao, this)
+            }
+        }
+    } catch (e: Exception) {
+        Timber.w(e)
+    } finally {
+        dao.cleanup()
+    }
 }

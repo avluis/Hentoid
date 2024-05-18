@@ -332,6 +332,11 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectContentByUrl(site, contentUrl)
     }
 
+    // Find any book that has the given quality of pages _and_ size
+    override fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content> {
+        return ObjectBoxDB.selectContentsByQtyPageAndSize(qtyPage, size)
+    }
+
     override fun selectAllSourceUrls(site: Site): Set<String> {
         return ObjectBoxDB.selectAllContentUrls(site.code)
     }

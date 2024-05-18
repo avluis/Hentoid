@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.core.HentoidApp
@@ -213,6 +214,19 @@ class LogInfo(// Log file name, without the extension
         logStr.append(logName).append(" log : end")
         return logStr.toString()
     }
+}
+
+fun Trace(
+    priority: Int,
+    chapter: Int,
+    memoryLog: MutableList<LogEntry>?,
+    str: String,
+    vararg t: String
+) {
+    val s = String.format(str, *t)
+    Timber.log(priority, s)
+    val isError = priority > Log.INFO
+    memoryLog?.add(LogEntry(s, chapter, isError))
 }
 
 /**

@@ -475,11 +475,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 binding?.apply {
                     if (newProgress == 100) {
                         swipeContainer.post {
-                            if (binding != null) swipeContainer.isRefreshing = false
+                            binding?.swipeContainer?.isRefreshing = false
                         }
                     } else {
                         swipeContainer.post {
-                            if (binding != null) swipeContainer.isRefreshing = true
+                            binding?.swipeContainer?.isRefreshing = true
                         }
                     }
                 }

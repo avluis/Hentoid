@@ -1260,8 +1260,8 @@ public final class ContentHelper {
             else newContent = contentParser.update(content, urlToLoad, true);
 
             newContent.setJsonUri("");
-            newContent.setStorageUri("");
-            newContent.setArchiveLocationUri("");
+            newContent.clearStorageDoc();
+            newContent.setParentStorageUri("");
 
             if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
                 String canonicalUrl = contentParser.getCanonicalUrl();
@@ -1445,7 +1445,7 @@ public final class ContentHelper {
                 }
 
                 if (bookFolder != null) {
-                    content.setStorageUri(bookFolder.getUri().toString());
+                    content.setStorageDoc(bookFolder);
                     // Copy back the files to the new folder
                     for (File file : tempFiles) {
                         try {
@@ -1899,7 +1899,7 @@ public final class ContentHelper {
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
 
-        mergedContent.setStorageUri(targetFolder.getUri().toString());
+        mergedContent.setStorageDoc(targetFolder);
 
         // Renumber all picture files and dispatch chapters
         long nbImages = Stream.of(contentList).map(Content::getImageFiles).withoutNulls().flatMap(Stream::of).filter(ImageFile::isReadable).count();

@@ -345,19 +345,34 @@ fun findDuplicateContentByUrl(content: Content, dao: CollectionDAO): Content? {
     val sourceImgs = content.imageList
     val sourceReadablePages = sourceImgs.count { it.isReadable }
     candidates.forEach {
-        it.imageList.let { imgs ->
-            val readablePages = imgs.count { i -> i.isReadable }
-            if (readablePages == sourceReadablePages) {
-                var mismatch = false
-                for (i in 0..<imgs.size) {
-                    if (sourceImgs[i].url != imgs[i].url) mismatch = true
-                    if (mismatch) break
-                }
-                if (!mismatch) return it
-            }
-        }
+        if (isAllPagesMatch(content, it)) return it
     }
     return null
+}
+
+/**
+ * Find if the given Content exists in the database, based on its URL and the URL of its images
+ * A duplicate is found when all URLs match
+ * Returns found duplicate or null if none is found
+ */
+fun findDuplicateContentByQtyPageAndSize(content: Content, dao: CollectionDAO): Content? {
+    val candidates = dao.selectContentsByQtyPageAndSize(content.qtyPages, content.size)
+    val sourceImgs = content.imageList
+    val sourceReadablePages = sourceImgs.count { it.isReadable }
+    candidates.forEach {
+        if (isAllPagesMatch(content, it)) return it
+    }
+    return null
+}
+
+private fun isAllPagesMatch(c1: Content, c2: Content): Boolean {
+    val sourceReadablePages = c1.imageList.filter { it.isReadable }
+    val readablePages = c2.imageList.filter { it.isReadable }
+    if (readablePages.size != sourceReadablePages.size) return false
+    for (i in readablePages.indices) {
+        if (sourceReadablePages[i].url != readablePages[i].url) return false
+    }
+    return true
 }
 
 class DuplicateCandidate(

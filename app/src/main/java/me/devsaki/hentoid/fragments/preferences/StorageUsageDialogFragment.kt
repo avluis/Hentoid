@@ -9,6 +9,10 @@ import android.widget.TableRow
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -20,6 +24,8 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.updateWithBeholder
+import timber.log.Timber
 
 class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
     companion object {
@@ -117,7 +123,20 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
             }
 
             // Make details fold/unfold
-            memoryDetails.setOnClickListener { onDetailsClick() }
+            memoryDetails.setOnClickListener {
+                // TODO remove !
+                lifecycleScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            updateWithBeholder(requireActivity())
+                        }
+                    } catch (t: Throwable) {
+                        Timber.e(t)
+                    }
+                }
+                // TODO remove !
+                onDetailsClick()
+            }
 
             val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
             memoryDb.text =
