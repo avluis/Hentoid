@@ -1196,18 +1196,18 @@ fun readStreamAsString(input: InputStream): String {
 @Throws(IOException::class, IllegalArgumentException::class)
 fun readStreamAsStrings(input: InputStream): List<String> {
     val result: MutableList<String> = ArrayList()
-    var sCurrentLine: String
+    var sCurrentLine: String?
     var isFirst = true
     BufferedReader(InputStreamReader(input)).use { br ->
-        while ((br.readLine().also {
-                sCurrentLine = it
-            }) != null) {
-            if (isFirst) {
-                // Strip UTF-8 BOMs if any
-                if (sCurrentLine[0] == '\uFEFF') sCurrentLine = sCurrentLine.substring(1)
-                isFirst = false
-            }
-            result.add(sCurrentLine)
+        while ((br.readLine().also { sCurrentLine = it }) != null) {
+            sCurrentLine?.let {
+                if (isFirst) {
+                    // Strip UTF-8 BOMs if any
+                    if (it[0] == '\uFEFF') sCurrentLine = it.substring(1)
+                    isFirst = false
+                }
+                result.add(it)
+            } ?: break
         }
     }
     return result
