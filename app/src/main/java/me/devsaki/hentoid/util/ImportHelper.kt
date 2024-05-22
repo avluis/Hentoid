@@ -1356,7 +1356,7 @@ fun updateWithBeholder(
 
     val dao = ObjectBoxDAO()
     try {
-        Timber.d("delta+ : " + delta.first.size + " items")
+        Timber.d("delta+ : " + delta.first.size + " roots")
         delta.first.forEach { deltaPlus ->
             val deltaPlusRoot = deltaPlus.first
             FileExplorer(context, deltaPlusRoot).use { explorer ->

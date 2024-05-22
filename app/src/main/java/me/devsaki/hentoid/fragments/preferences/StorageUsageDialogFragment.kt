@@ -124,17 +124,6 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
 
             // Make details fold/unfold
             memoryDetails.setOnClickListener {
-                // TODO remove !
-                lifecycleScope.launch {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            updateWithBeholder(requireActivity())
-                        }
-                    } catch (t: Throwable) {
-                        Timber.e(t)
-                    }
-                }
-                // TODO remove !
                 onDetailsClick()
             }
 

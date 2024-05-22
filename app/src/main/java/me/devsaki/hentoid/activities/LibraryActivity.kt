@@ -37,6 +37,9 @@ import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.powermenu.MenuAnimation
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.LibraryActivityBundle
@@ -77,6 +80,7 @@ import me.devsaki.hentoid.util.file.requestNotificationPermission
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.updateWithBeholder
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -413,6 +417,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     override fun onStart() {
         super.onStart()
+        considerResumeReading()
+        considerRefreshExtLib()
+    }
+
+    private fun considerResumeReading() {
         val previouslyViewedContent = Preferences.getReaderCurrentContent()
         val previouslyViewedPage = Preferences.getReaderCurrentPageNum()
         if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ReaderActivity.isRunning()) {
@@ -449,6 +458,19 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             // Only show that once
             Preferences.setReaderCurrentContent(-1)
             Preferences.setReaderCurrentPageNum(-1)
+        }
+    }
+
+    private fun considerRefreshExtLib() {
+        if (Preferences.getExternalLibraryUri().isNullOrEmpty()) return
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    updateWithBeholder(this@LibraryActivity)
+                }
+            } catch (t: Throwable) {
+                Timber.e(t)
+            }
         }
     }
 
