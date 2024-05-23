@@ -3,10 +3,12 @@ package me.devsaki.hentoid.workers
 import android.content.Context
 import android.util.Log
 import androidx.annotation.IdRes
+import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkManager
-import androidx.work.Worker
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.util.LogEntry
@@ -25,7 +27,7 @@ abstract class BaseWorker(
     parameters: WorkerParameters,
     @IdRes val serviceId: Int,
     logName: String?
-) : Worker(context, parameters) {
+) : CoroutineWorker(context, parameters) {
     protected lateinit var notificationManager: NotificationManager
 
     protected var isComplete = true
@@ -66,12 +68,6 @@ abstract class BaseWorker(
         }
     }
 
-    override fun onStopped() {
-        onInterrupt()
-        clear()
-        super.onStopped()
-    }
-
     private fun initNotifications(context: Context) {
         notificationManager = NotificationManager(context, serviceId)
         notificationManager.cancel()
@@ -101,11 +97,14 @@ abstract class BaseWorker(
         Timber.d("%s worker destroyed", this.javaClass.simpleName)
     }
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         try {
             ensureLongRunning()
-            getToWork(inputData)
+            withContext(Dispatchers.IO) {
+                getToWork(inputData)
+            }
         } catch (e: Exception) {
+            onInterrupt()
             logs?.apply {
                 add(LogEntry("Exception caught ! %s : %s", e.message, e.stackTrace))
                 dumpLog()
@@ -114,7 +113,6 @@ abstract class BaseWorker(
         } finally {
             clear()
         }
-
         // Retry when incomplete and not manually stopped
         return if (!isStopped && !isComplete) Result.retry() else Result.success()
     }
