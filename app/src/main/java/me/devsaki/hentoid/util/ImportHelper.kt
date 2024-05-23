@@ -15,7 +15,6 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.moshi.JsonDataException
-import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.DEFAULT_PRIMARY_FOLDER
@@ -41,14 +40,12 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.file.ArchiveEntry
-import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.createNoMedia
 import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getArchiveNamesFilter
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getFullPathFromUri
@@ -59,6 +56,7 @@ import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
+import me.devsaki.hentoid.workers.data.ExternalImportData
 import me.devsaki.hentoid.workers.data.PrimaryImportData
 import timber.log.Timber
 import java.io.File
@@ -563,7 +561,8 @@ private fun runPrimaryImport(
     val workManager = WorkManager.getInstance(context)
     workManager.enqueueUniqueWork(
         R.id.import_service.toString(), ExistingWorkPolicy.REPLACE,
-        OneTimeWorkRequest.Builder(PrimaryImportWorker::class.java).setInputData(builder.data)
+        OneTimeWorkRequest.Builder(PrimaryImportWorker::class.java)
+            .setInputData(builder.data)
             .addTag(WORK_CLOSEABLE).build()
     )
 }
@@ -573,15 +572,20 @@ private fun runPrimaryImport(
  *
  * @param context Context to use
  */
-private fun runExternalImport(
-    context: Context
+fun runExternalImport(
+    context: Context,
+    behold: Boolean = false
 ): Boolean {
     if (ExternalImportWorker.isRunning(context)) return false
     ImportNotificationChannel.init(context)
+    val builder = ExternalImportData.Builder()
+    builder.setBehold(behold)
     val workManager = WorkManager.getInstance(context)
     workManager.enqueueUniqueWork(
         R.id.external_import_service.toString(), ExistingWorkPolicy.REPLACE,
-        OneTimeWorkRequest.Builder(ExternalImportWorker::class.java).addTag(WORK_CLOSEABLE).build()
+        OneTimeWorkRequest.Builder(ExternalImportWorker::class.java)
+            .setInputData(builder.data)
+            .addTag(WORK_CLOSEABLE).build()
     )
     return true
 }
@@ -674,7 +678,7 @@ fun scanFolderRecursive(
                     1 -> "Archive ignored (contains another archive) : %s"
                     else -> "Archive ignored (unsupported pictures or corrupted archive) : %s"
                 }
-                Trace(Log.INFO, 0, log, message, archive.name ?: "<name not found>")
+                trace(Log.INFO, 0, log, message, archive.name ?: "<name not found>")
             }
         }
     }
@@ -1234,7 +1238,7 @@ fun createJsonFileFor(
             jsonUri = createJsonFileFor(context, content, explorer)
         } catch (ioe: IOException) {
             Timber.w(ioe) // Not blocking
-            Trace(
+            trace(
                 Log.WARN,
                 1,
                 log,
@@ -1323,7 +1327,7 @@ fun existsInCollection(
     }
 
     if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion) {
-        Trace(
+        trace(
             Log.INFO,
             1,
             log,
@@ -1342,103 +1346,4 @@ fun existsInCollection(
  */
 fun getContentJsonNamesFilter(): NameFilter {
     return hentoidContentJson
-}
-
-fun updateWithBeholder(
-    context: Context,
-    log: MutableList<LogEntry>? = null
-) {
-    Helper.assertNonUiThread()
-    Timber.d("delta init")
-    Beholder.init(context)
-    val delta = Beholder.scanForDelta(context)
-    Timber.d("delta end")
-
-    val dao = ObjectBoxDAO()
-    try {
-        Timber.d("delta+ : " + delta.first.size + " roots")
-        delta.first.forEach { deltaPlus ->
-            val deltaPlusRoot = deltaPlus.first
-            FileExplorer(context, deltaPlusRoot).use { explorer ->
-                val addedContent: MutableList<Content> = ArrayList()
-
-                // Pair siblings with the same name (e.g. archives and JSON files)
-                val deltaPlusPairs =
-                    deltaPlus.second.groupBy { f -> getFileNameWithoutExtension(f.name ?: "") }
-
-                deltaPlusPairs.values.forEach { docs ->
-                    if (BuildConfig.DEBUG) {
-                        docs.forEach { doc ->
-                            Timber.d("delta+ => " + doc.uri.toString())
-                        }
-                    }
-                    val archive =
-                        docs.firstOrNull { it.isFile && isSupportedArchive(it.name ?: "") }
-                    val folder = docs.firstOrNull { it.isDirectory }
-
-                    // Import new archive
-                    if (archive != null) {
-                        val json =
-                            docs.firstOrNull {
-                                it.isFile && getExtension(it.name ?: "")
-                                    .equals("json", true)
-                            }
-                        val c = scanArchive(
-                            context,
-                            deltaPlusRoot,
-                            archive,
-                            emptyList(),
-                            StatusContent.EXTERNAL,
-                            dao,
-                            json
-                        )
-                        // Valid archive
-                        if (0 == c.first) addedContent.add(c.second!!)
-                        else {
-                            // Invalid archive
-                            val message = when (c.first) {
-                                1 -> "Archive ignored (contains another archive) : %s"
-                                else -> "Archive ignored (unsupported pictures or corrupted archive) : %s"
-                            }
-                            Trace(Log.INFO, 0, log, message, archive.name ?: "<name not found>")
-                        }
-                    } else if (folder != null) { // Import new folder
-                        scanFolderRecursive(
-                            context,
-                            dao,
-                            deltaPlusRoot,
-                            folder,
-                            explorer,
-                            emptyList(),
-                            addedContent,
-                            null,
-                            log
-                        )
-                    }
-                } // deltaPlus docs
-
-                // Process added content
-                addedContent.forEach {
-                    if (!existsInCollection(it, dao, true, log)) {
-                        createJsonFileFor(context, it, explorer, log)
-                        ContentHelper.addContent(context, dao, it)
-                    }
-                }
-            } // explorer
-        } // deltaPlus
-
-        val toRemove = delta.second.filter { it > 0 }
-        Timber.d("delta- : " + toRemove.size + " useful / " + delta.second.size + " total")
-        toRemove.forEach { idToRemove ->
-            Timber.d("delta- => $idToRemove")
-            Content().apply {
-                id = idToRemove
-                ContentHelper.removeContent(context, dao, this)
-            }
-        }
-    } catch (e: Exception) {
-        Timber.w(e)
-    } finally {
-        dao.cleanup()
-    }
 }

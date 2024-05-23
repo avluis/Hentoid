@@ -63,7 +63,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
         upscaler?.cleanup()
 

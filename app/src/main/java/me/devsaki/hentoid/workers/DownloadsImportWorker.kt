@@ -2,6 +2,7 @@ package me.devsaki.hentoid.workers
 
 import android.content.Context
 import android.util.Log
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
@@ -58,9 +59,9 @@ class DownloadsImportWorker(
         // Nothing
     }
 
-    override fun onClear() {
-        if (cfHelper != null) cfHelper!!.clear()
-        if (dao != null) dao!!.cleanup()
+    override fun onClear(logFile: DocumentFile?) {
+        cfHelper?.clear()
+        dao?.cleanup()
     }
 
     override fun getToWork(input: Data) {

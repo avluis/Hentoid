@@ -2,6 +2,7 @@ package me.devsaki.hentoid.workers
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import me.devsaki.hentoid.R
@@ -29,7 +30,7 @@ class StartupWorker(context: Context, parameters: WorkerParameters) :
         killSwitch.set(true)
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         killSwitch.set(true)
     }
 

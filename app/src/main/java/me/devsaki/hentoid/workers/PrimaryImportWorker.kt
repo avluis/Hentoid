@@ -58,6 +58,7 @@ import me.devsaki.hentoid.util.importRenamingRules
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.removeExternalAttributes
 import me.devsaki.hentoid.util.scanBookFolder
+import me.devsaki.hentoid.util.trace
 import me.devsaki.hentoid.util.writeLog
 import me.devsaki.hentoid.workers.data.PrimaryImportData
 import org.greenrobot.eventbus.EventBus
@@ -100,12 +101,12 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         // Nothing
     }
 
     override fun getToWork(input: Data) {
-        val data = PrimaryImportData.Parser(inputData)
+        val data = PrimaryImportData.Parser(input)
 
         startImport(
             data.location,
@@ -156,20 +157,6 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             )
         )
     }
-
-    private fun trace(
-        priority: Int,
-        chapter: Int,
-        memoryLog: MutableList<LogEntry>?,
-        str: String,
-        vararg t: Any
-    ) {
-        val s = String.format(str, *t)
-        Timber.log(priority, s)
-        val isError = priority > Log.INFO
-        memoryLog?.add(LogEntry(s, chapter, isError))
-    }
-
 
     /**
      * Import books from known source folders
@@ -453,7 +440,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         explorer: FileExplorer,
         dao: CollectionDAO,
         bookFolders: MutableList<DocumentFile>,
-        parent : DocumentFile,
+        parent: DocumentFile,
         bookFolder: DocumentFile,
         log: MutableList<LogEntry>,
         rename: Boolean,

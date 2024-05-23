@@ -3,6 +3,7 @@ package me.devsaki.hentoid.workers
 import android.content.Context
 import android.util.Log
 import androidx.annotation.IdRes
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkManager
@@ -32,9 +33,10 @@ abstract class BaseWorker(
 
     protected var isComplete = true
 
-    protected val logName: String
-    private var logs: MutableList<LogEntry>?
-
+    protected var logName: String
+    protected var logNoDataMessage = ""
+    protected var logs: MutableList<LogEntry>?
+        private set
 
     companion object {
         @JvmStatic
@@ -86,11 +88,11 @@ abstract class BaseWorker(
     }
 
     private fun clear() {
-        onClear()
         logs?.apply {
             add(LogEntry("Worker destroyed / stopped=%s / complete=%s", isStopped, isComplete))
-            dumpLog()
         }
+        val logFile = dumpLog()
+        onClear(logFile)
 
         // Tell everyone the worker is shutting down
         EventBus.getDefault().post(ServiceDestroyedEvent(serviceId))
@@ -107,7 +109,6 @@ abstract class BaseWorker(
             onInterrupt()
             logs?.apply {
                 add(LogEntry("Exception caught ! %s : %s", e.message, e.stackTrace))
-                dumpLog()
             }
             Timber.e(e)
         } finally {
@@ -117,8 +118,8 @@ abstract class BaseWorker(
         return if (!isStopped && !isComplete) Result.retry() else Result.success()
     }
 
-    private fun dumpLog() {
-        logs?.let {
+    private fun dumpLog(): DocumentFile? {
+        return logs?.let {
             val logInfo = LogInfo(logName)
             logInfo.setHeaderName(logName)
             logInfo.setEntries(it)
@@ -130,7 +131,7 @@ abstract class BaseWorker(
 
     protected abstract fun onInterrupt()
 
-    protected abstract fun onClear()
+    protected abstract fun onClear(logFile: DocumentFile?)
 
     protected abstract fun getToWork(input: Data)
 }

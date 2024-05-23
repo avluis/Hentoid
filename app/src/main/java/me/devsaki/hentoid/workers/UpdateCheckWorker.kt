@@ -2,6 +2,7 @@ package me.devsaki.hentoid.workers
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import me.devsaki.hentoid.BuildConfig
@@ -27,7 +28,7 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         // Nothing
     }
 

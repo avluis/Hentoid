@@ -78,7 +78,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
     }
 

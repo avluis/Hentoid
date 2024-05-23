@@ -162,7 +162,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         downloadInterrupted.set(true)
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         EventBus.getDefault().unregister(this)
         dao.cleanup()
     }

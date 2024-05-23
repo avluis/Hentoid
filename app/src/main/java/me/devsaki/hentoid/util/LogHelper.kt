@@ -15,7 +15,7 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.time.Instant
 
-private val LINE_SEPARATOR = System.getProperty("line.separator")
+private val LINE_SEPARATOR = System.lineSeparator()
 
 /**
  * Represents a log entry
@@ -216,12 +216,12 @@ class LogInfo(// Log file name, without the extension
     }
 }
 
-fun Trace(
+fun trace(
     priority: Int,
     chapter: Int,
     memoryLog: MutableList<LogEntry>?,
     str: String,
-    vararg t: String
+    vararg t: Any
 ) {
     val s = String.format(str, *t)
     Timber.log(priority, s)

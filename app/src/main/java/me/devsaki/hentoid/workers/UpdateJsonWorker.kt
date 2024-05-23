@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
@@ -28,13 +29,9 @@ class UpdateJsonWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.udpate_json_service, "update_json") {
 
     // Variable used during the import process
-    private var dao: CollectionDAO? = null
+    private var dao: CollectionDAO = ObjectBoxDAO()
     private var totalItems = 0
     private var nbOK = 0
-
-    init {
-        dao = ObjectBoxDAO()
-    }
 
     override fun getStartNotification(): BaseNotification {
         return UpdateJsonStartNotification()
@@ -44,15 +41,15 @@ class UpdateJsonWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
-        dao?.cleanup()
+    override fun onClear(logFile: DocumentFile?) {
+        dao.cleanup()
     }
 
     override fun getToWork(input: Data) {
         val data = UpdateJsonData.Parser(inputData)
         var contentIds = data.contentIds
 
-        if (data.updateMissingDlDate) contentIds = dao!!.selectContentIdsWithUpdatableJson()
+        if (data.updateMissingDlDate) contentIds = dao.selectContentIdsWithUpdatableJson()
 
         if (null == contentIds) {
             Timber.w("Expected contentIds or selectContentIdsWithUpdatableJson")
@@ -62,13 +59,13 @@ class UpdateJsonWorker(context: Context, parameters: WorkerParameters) :
         totalItems = contentIds.size
 
         for (id in contentIds) {
-            val c = dao!!.selectContent(id)
+            val c = dao.selectContent(id)
             if (c != null) ContentHelper.persistJson(applicationContext, c)
             nextOK()
         }
         progressDone()
 
-        if (data.updateGroups) GroupHelper.updateGroupsJson(applicationContext, dao!!)
+        if (data.updateGroups) GroupHelper.updateGroupsJson(applicationContext, dao)
     }
 
     private fun nextOK() {

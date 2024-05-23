@@ -3,6 +3,7 @@ package me.devsaki.hentoid.workers
 import android.content.Context
 import android.util.Log
 import androidx.annotation.IdRes
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.annimon.stream.Optional
@@ -107,7 +108,7 @@ abstract class BaseDeleteWorker(
         // Nothing to do here
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
     }
 
