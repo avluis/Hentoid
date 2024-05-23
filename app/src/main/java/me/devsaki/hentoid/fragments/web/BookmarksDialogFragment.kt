@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -320,14 +319,13 @@ class BookmarksDialogFragment() : BaseDialogFragment<BookmarksDialogFragment.Par
     @SuppressLint("NonConstantResourceId")
     private fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
-            R.id.action_home -> {
-                SelectSiteDialogFragment.invoke(
-                    this,
+            R.id.action_home -> show(
+                SelectSiteDialogFragment(
                     getString(R.string.bookmark_change_site),
                     getBookmarkedSites().map { it.code },
                     showAltSites = false
                 )
-            }
+            )
         }
         return true
     }

@@ -1477,23 +1477,27 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                         BaseTransientBottomBar.LENGTH_LONG
                     )
                     snackbar.setAction(R.string.menu_search) {
-                        SelectSiteDialogFragment.invoke(
-                            this,
-                            dialogTitle,
-                            siteCodes,
-                            uniqueIdOnly = true,
-                            showAltSites = true
+                        show(
+                            SelectSiteDialogFragment(
+                                dialogTitle,
+                                siteCodes,
+                                uniqueIdOnly = true,
+                                showAltSites = true
+                            )
                         )
                     }
                     snackbar.show()
                 }
-            } else SelectSiteDialogFragment.invoke(
-                this,
-                dialogTitle,
-                siteCodes,
-                uniqueIdOnly = true,
-                showAltSites = true
-            )
+            } else {
+                show(
+                    SelectSiteDialogFragment(
+                        dialogTitle,
+                        siteCodes,
+                        uniqueIdOnly = true,
+                        showAltSites = true
+                    )
+                )
+            }
         }
 
         if (newSearch && query.trim().equals(

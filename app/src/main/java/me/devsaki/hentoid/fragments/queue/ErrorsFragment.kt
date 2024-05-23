@@ -794,10 +794,12 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         if (!enabled) return
         val sources =
             Site.entries.filter { e -> unfilteredSources.contains(e) }.map { s -> s.code }
-        SelectSiteDialogFragment.invoke(
-            this,
-            getString(R.string.filter_by_source),
-            sources
+        show(
+            SelectSiteDialogFragment(
+                getString(R.string.filter_by_source),
+                sources,
+                parentIsActivity = true
+            )
         )
     }
 }

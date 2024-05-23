@@ -4,58 +4,46 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.core.os.bundleOf
+import androidx.fragment.app.DialogFragment
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogSelectSiteBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DrawerItem
 
+private const val INCLUDED_SITES = "INCLUDED_SITES"
+private const val UNIQUE_ID_ONLY = "UNIQUE_ID_ONLY"
+private const val ALT_SITES = "ALT_SITES"
+private const val TITLE = "TITLE"
+private const val PARENT_IS_ACTIVITY = "PARENT_IS_ACTIVITY"
+
 /**
  * Dialog to select a site
  */
-class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Parent>() {
+class SelectSiteDialogFragment() : DialogFragment() {
+
+    constructor(
+        title: String,
+        includedSiteCodes: List<Int> = emptyList(),
+        uniqueIdOnly: Boolean = false,
+        showAltSites: Boolean = false,
+        parentIsActivity: Boolean = false
+    ) : this() {
+        arguments = bundleOf(
+            TITLE to title,
+            INCLUDED_SITES to ArrayList(includedSiteCodes),
+            UNIQUE_ID_ONLY to uniqueIdOnly,
+            ALT_SITES to showAltSites,
+            PARENT_IS_ACTIVITY to parentIsActivity
+        )
+    }
 
     // UI
     private var binding: DialogSelectSiteBinding? = null
-
-    companion object {
-        private const val INCLUDED_SITES = "INCLUDED_SITES"
-        private const val UNIQUE_ID_ONLY = "UNIQUE_ID_ONLY"
-        private const val ALT_SITES = "ALT_SITES"
-        private const val TITLE = "TITLE"
-
-        fun invoke(
-            fragment: Fragment,
-            title: String,
-            includedSiteCodes: List<Int> = emptyList(),
-            uniqueIdOnly: Boolean = false,
-            showAltSites: Boolean = false,
-        ) {
-            val args = getArgs(title, includedSiteCodes, uniqueIdOnly, showAltSites)
-            val dialog = SelectSiteDialogFragment()
-            dialog.arguments = args
-            fragment.show(dialog)
-        }
-
-        private fun getArgs(
-            title: String,
-            includedSiteCodes: List<Int> = emptyList(),
-            uniqueIdOnly: Boolean = false,
-            showAltSites: Boolean = false
-        ): Bundle {
-            val args = Bundle()
-            args.putIntegerArrayList(INCLUDED_SITES, ArrayList(includedSiteCodes))
-            args.putBoolean(UNIQUE_ID_ONLY, uniqueIdOnly)
-            args.putBoolean(ALT_SITES, showAltSites)
-            args.putString(TITLE, title)
-            return args
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -107,6 +95,11 @@ class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Par
 
     private fun onItemSelected(s: Site?, altCode: Int?): Boolean {
         if (null == s) return false
+
+        val parent =
+            if (requireArguments().getBoolean(PARENT_IS_ACTIVITY)) activity as Parent?
+            else parentFragment as Parent?
+
         parent?.onSiteSelected(s, altCode ?: 0)
         dismiss()
         return true
