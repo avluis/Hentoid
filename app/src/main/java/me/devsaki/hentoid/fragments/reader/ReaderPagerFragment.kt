@@ -63,7 +63,6 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.reader.ReaderContentBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderImageBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderNavigation.Pager
-import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -603,7 +602,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onBookSettingsClick() {
         currentImg?.let {
             it.content.reach(it)?.apply {
-                invoke(this@ReaderPagerFragment, bookPreferences)
+                show(ReaderPrefsDialogFragment(bookPreferences))
             }
         }
     }

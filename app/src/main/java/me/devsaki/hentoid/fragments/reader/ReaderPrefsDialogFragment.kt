@@ -5,40 +5,34 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
-import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.databinding.DialogReaderBookPrefsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 
-class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.Parent>() {
-    companion object {
+private const val RENDERING_MODE = "render_mode"
+private const val BROWSE_MODE = "browse_mode"
+private const val DISPLAY_MODE = "display_mode"
 
-        const val RENDERING_MODE = "render_mode"
-        const val BROWSE_MODE = "browse_mode"
-        const val DISPLAY_MODE = "display_mode"
+class ReaderPrefsDialogFragment() : BaseDialogFragment<ReaderPrefsDialogFragment.Parent>() {
 
-        fun invoke(parent: Fragment, bookPrefs: Map<String, String>) {
-            val args = Bundle()
-            if (bookPrefs.containsKey(Preferences.Key.VIEWER_RENDERING)) args.putInt(
-                RENDERING_MODE,
-                if (Preferences.isContentSmoothRendering(bookPrefs)) 1 else 0
-            )
-            if (bookPrefs.containsKey(Preferences.Key.VIEWER_BROWSE_MODE)) args.putInt(
-                BROWSE_MODE,
-                Preferences.getContentBrowseMode(bookPrefs)
-            )
-            if (bookPrefs.containsKey(Preferences.Key.VIEWER_IMAGE_DISPLAY)) args.putInt(
-                DISPLAY_MODE,
-                Preferences.getContentDisplayMode(bookPrefs)
-            )
-            val dialog = ReaderPrefsDialogFragment()
-            dialog.arguments = args
-            parent.show(dialog)
-        }
+    constructor(bookPrefs: Map<String, String>) : this() {
+        val args = Bundle()
+        if (bookPrefs.containsKey(Preferences.Key.VIEWER_RENDERING)) args.putInt(
+            RENDERING_MODE,
+            if (Preferences.isContentSmoothRendering(bookPrefs)) 1 else 0
+        )
+        if (bookPrefs.containsKey(Preferences.Key.VIEWER_BROWSE_MODE)) args.putInt(
+            BROWSE_MODE,
+            Preferences.getContentBrowseMode(bookPrefs)
+        )
+        if (bookPrefs.containsKey(Preferences.Key.VIEWER_IMAGE_DISPLAY)) args.putInt(
+            DISPLAY_MODE,
+            Preferences.getContentDisplayMode(bookPrefs)
+        )
+        arguments = args
     }
 
     // UI
