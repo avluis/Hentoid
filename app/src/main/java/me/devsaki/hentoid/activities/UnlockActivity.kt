@@ -17,6 +17,7 @@ import me.devsaki.hentoid.core.BiometricsHelper
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.core.HentoidApp.Companion.isUnlocked
 import me.devsaki.hentoid.core.HentoidApp.Companion.setUnlocked
+import me.devsaki.hentoid.core.show
 import me.devsaki.hentoid.core.startBiometric
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
@@ -42,7 +43,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
             return
         }
         if (savedInstanceState == null) {
-            if (1 == Settings.lockType) UnlockPinDialogFragment.invoke(supportFragmentManager)
+            if (1 == Settings.lockType) show(UnlockPinDialogFragment())
             else if (2 == Settings.lockType) {
                 val bestBM = BiometricsHelper.detectBestBiometric()
                 if (bestBM != null) {
@@ -57,7 +58,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
 
     override fun onResume() {
         super.onResume()
-        if (1 == Settings.lockType) UnlockPinDialogFragment.invoke(supportFragmentManager)
+        if (1 == Settings.lockType) show(UnlockPinDialogFragment())
     }
 
     override fun onUnlockSuccess() {

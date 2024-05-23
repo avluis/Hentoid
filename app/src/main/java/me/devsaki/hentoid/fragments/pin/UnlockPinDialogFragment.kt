@@ -8,12 +8,9 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Preferences
 
 class UnlockPinDialogFragment : PinDialogFragment() {
-    companion object {
-        operator fun invoke(mgr: FragmentManager) {
-            val fragment = UnlockPinDialogFragment()
-            fragment.isCancelable = false
-            fragment.show(mgr, null)
-        }
+
+    init {
+        isCancelable = false
     }
 
     private var parent: Parent? = null
