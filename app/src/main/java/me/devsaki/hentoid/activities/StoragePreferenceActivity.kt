@@ -243,12 +243,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
     }
 
     private fun importLocation(location: StorageLocation) {
-        LibRefreshDialogFragment.invoke(
-            supportFragmentManager,
-            showOptions = false,
-            chooseFolder = true,
-            location
-        )
+        show(LibRefreshDialogFragment(showOptions = false, chooseFolder = true, location))
     }
 
     private fun onActionClick(location: StorageLocation, anchor: View) {
@@ -332,11 +327,12 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     if (PrimaryImportWorker.isRunning(baseContext)) {
                         toast(R.string.pref_import_running)
                     } else {
-                        LibRefreshDialogFragment.invoke(
-                            supportFragmentManager,
-                            showOptions = location != StorageLocation.EXTERNAL,
-                            chooseFolder = false,
-                            location
+                        show(
+                            LibRefreshDialogFragment(
+                                showOptions = location != StorageLocation.EXTERNAL,
+                                chooseFolder = false,
+                                location
+                            )
                         )
                     }
                 }

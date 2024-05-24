@@ -9,8 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.annotation.StringRes
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
@@ -44,12 +44,25 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 
+private const val SHOW_OPTIONS = "show_options"
+private const val CHOOSE_FOLDER = "choose_folder"
+private const val LOCATION = "location"
+
 /**
  * Launcher dialog for the following features :
  * - Set/replace download folder
  * - Library refresh
  */
-class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Parent>() {
+class LibRefreshDialogFragment() : BaseDialogFragment<LibRefreshDialogFragment.Parent>() {
+
+    constructor(showOptions: Boolean, chooseFolder: Boolean, location: StorageLocation) : this() {
+        arguments = bundleOf(
+            SHOW_OPTIONS to showOptions,
+            CHOOSE_FOLDER to chooseFolder,
+            LOCATION to location.ordinal
+        )
+    }
+
     // == UI
     private var _binding1: DialogPrefsRefreshBinding? = null
     private val binding1 get() = _binding1!!
@@ -515,29 +528,6 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 { dismissAllowingStateLoss() },
                 3000
             )
-        }
-    }
-
-    companion object {
-        const val SHOW_OPTIONS = "show_options"
-        const val CHOOSE_FOLDER = "choose_folder"
-        const val LOCATION = "location"
-
-        fun invoke(
-            fragmentManager: FragmentManager,
-            showOptions: Boolean,
-            chooseFolder: Boolean,
-            location: StorageLocation
-        ) {
-            val fragment = LibRefreshDialogFragment()
-
-            val args = Bundle()
-            args.putBoolean(SHOW_OPTIONS, showOptions)
-            args.putBoolean(CHOOSE_FOLDER, chooseFolder)
-            args.putInt(LOCATION, location.ordinal)
-            fragment.arguments = args
-
-            fragment.show(fragmentManager, null)
         }
     }
 
