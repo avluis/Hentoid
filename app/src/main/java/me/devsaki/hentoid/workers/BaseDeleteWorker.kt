@@ -165,7 +165,7 @@ abstract class BaseDeleteWorker(
      */
     private fun deleteContent(content: Content) {
         Helper.assertNonUiThread()
-        progressItem(content, false)
+        progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
         try {
             ContentHelper.removeContent(applicationContext, dao, content)
             trace(Log.INFO, "Removed item: %s from database and file system.", content.title)
@@ -258,7 +258,7 @@ abstract class BaseDeleteWorker(
      * @param content Content to be purged
      */
     private fun purgeContentFiles(content: Content, removeCover: Boolean) {
-        progressItem(content, true)
+        progressItem(content, DeleteProgressNotification.ProgressType.PURGE_BOOKS)
         try {
             ContentHelper.purgeFiles(applicationContext, content, false, removeCover)
             // Update content folder and JSON Uri's after purging
@@ -293,7 +293,7 @@ abstract class BaseDeleteWorker(
     private fun deleteGroup(group: Group, deleteGroupsOnly: Boolean) {
         Helper.assertNonUiThread()
         var theGroup: Group? = group
-        progressItem(theGroup, false)
+        progressItem(theGroup, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
         try {
             // Reassign group for contained items
             if (deleteGroupsOnly) {
@@ -346,7 +346,7 @@ abstract class BaseDeleteWorker(
 
     private fun removeQueuedContent(content: Content) {
         try {
-            progressItem(content, false)
+            progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
             ContentHelper.removeQueuedContent(applicationContext, dao, content, true)
         } catch (e: ContentNotProcessedException) {
             // Don't throw the exception if we can't remove something that isn't there
@@ -364,17 +364,29 @@ abstract class BaseDeleteWorker(
 
     private fun removeImageFiles(ids: LongArray) {
         val imgs = dao.selectImageFiles(ids)
+        trace(Log.INFO, "Removing %s images...", imgs.size)
+        val uris = imgs.map { it.fileUri }
         dao.deleteImageFiles(imgs)
-        imgs.forEach {
+        uris.forEachIndexed { index, uri ->
             if (isStopped) return
-            removeFile(applicationContext, Uri.parse(it.fileUri))
+            removeFile(applicationContext, Uri.parse(uri))
+            progressItem(
+                "Page " + (index + 1).toString(),
+                DeleteProgressNotification.ProgressType.DELETE_PAGES
+            )
         }
+        progressDone()
+        trace(Log.INFO, "Removed %s images", imgs.size)
     }
 
 
-    private fun progressItem(item: Any?, isPurge: Boolean) {
+    private fun progressItem(item: Any?, type: DeleteProgressNotification.ProgressType) {
         var title: String? = null
-        if (item is Content) title = item.title else if (item is Group) title = item.name
+        when (item) {
+            is Content -> title = item.title
+            is Group -> title = item.name
+            is String -> title = item
+        }
         if (title != null) {
             deleteProgress++
             notificationManager.notify(
@@ -382,7 +394,7 @@ abstract class BaseDeleteWorker(
                     title,
                     deleteProgress + nbError,
                     deleteMax,
-                    isPurge
+                    type
                 )
             )
             EventBus.getDefault().post(

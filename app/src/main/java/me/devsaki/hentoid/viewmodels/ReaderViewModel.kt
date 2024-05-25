@@ -1761,22 +1761,25 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
+                    val imageIdsToDelete: MutableList<Long> = ArrayList()
                     chapterIds.forEach { chId ->
                         dao.selectChapter(chId)?.let { chp ->
+                            // Queue pages for deletion
+                            imageIdsToDelete.addAll(chp.imageList.map { it.id })
                             // Delete chapter
                             dao.deleteChapter(chp)
-
-                            // User worker to delete ImageFiles and associated files
-                            val builder = DeleteData.Builder()
-                            builder.setImageIds(chp.imageList.map { it.id })
-                            val workManager = WorkManager.getInstance(getApplication())
-                            workManager.enqueue(
-                                OneTimeWorkRequest.Builder(DeleteWorker::class.java)
-                                    .setInputData(builder.data).build()
-                            )
                         }
                     }
+                    // User worker to delete ImageFiles and associated files
+                    val builder = DeleteData.Builder()
+                    builder.setImageIds(imageIdsToDelete)
+                    val workManager = WorkManager.getInstance(getApplication())
+                    workManager.enqueue(
+                        OneTimeWorkRequest.Builder(DeleteWorker::class.java)
+                            .setInputData(builder.data).build()
+                    )
                 }
+
                 withContext(Dispatchers.Main) {
                     reloadContent()
                 }

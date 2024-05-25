@@ -19,6 +19,20 @@
         tools:ignore="ContentDescription" />
 
     <ImageView
+        android:id="@+id/selected_flag"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_checked_circle"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/expand_handle"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+
+    <ImageView
         android:id="@+id/ivCover"
         android:layout_width="36dp"
         android:layout_height="48dp"
@@ -26,7 +40,7 @@
         android:clickable="false"
         android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/expand_handle"
+        app:layout_constraintStart_toEndOf="@id/selected_flag"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_hentoid_trans"
