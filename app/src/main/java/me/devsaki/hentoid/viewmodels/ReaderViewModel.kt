@@ -1883,7 +1883,7 @@ class ReaderViewModel(
         var nbProcessedTasks = 1
 
         // Perform swaps by exchanging file content
-        // NB : "thanks to" SAF; this works faster than renaming the files
+        // NB : "thanks to" SAF; this works faster than renaming the files :facepalm:
         permutationGroups.forEach { tasks ->
             var firstFileContent: ByteArray
             getInputStream(getApplication(), tasks[0].first).use {

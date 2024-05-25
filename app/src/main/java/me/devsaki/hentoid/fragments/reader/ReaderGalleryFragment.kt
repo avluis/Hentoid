@@ -85,7 +85,6 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private lateinit var toggleFavouriteMenu: MenuItem
     private lateinit var editChaptersMenu: MenuItem
     private lateinit var editChapterNameMenu: MenuItem
-    private lateinit var deleteChapterMenu: MenuItem
     private lateinit var addChapterMenu: MenuItem
     private lateinit var resetChaptersMenu: MenuItem
     private lateinit var confirmReorderMenu: MenuItem
@@ -187,7 +186,6 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             cancelReorderMenu = toolbar.menu.findItem(R.id.action_edit_cancel)
             itemSetCoverMenu = selectionToolbar.menu.findItem(R.id.action_set_group_cover)
             editChapterNameMenu = selectionToolbar.menu.findItem(R.id.action_edit_chapter_name)
-            deleteChapterMenu = selectionToolbar.menu.findItem(R.id.action_delete)
             toggleFavouriteMenu = selectionToolbar.menu.findItem(R.id.action_toggle_favorite_pages)
             selectionToolbar.setNavigationOnClickListener {
                 selectExtension.deselect(selectExtension.selections.toMutableSet())
@@ -661,7 +659,6 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         toggleFavouriteMenu.isVisible = editMode == EditMode.NONE
         itemSetCoverMenu.isVisible = editMode == EditMode.NONE && 1L == selectedCount
         editChapterNameMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && 1L == selectedCount
-        deleteChapterMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS
         binding?.apply {
             selectionToolbar.title = resources.getQuantityString(
                 R.plurals.items_selected,
