@@ -135,6 +135,7 @@ private fun getFullPathFromTreeUri(context: Context, uri: Uri): String {
  * @param volumeId Volume ID to get the path from
  * @return Human-readable access path of the given volume ID
  */
+@Suppress("UNCHECKED_CAST")
 private fun getVolumePath(context: Context, volumeId: String): String? {
     try {
         // StorageVolume exists since API19, has an uiid since API21 but is only visible since API24
