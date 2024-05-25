@@ -366,6 +366,7 @@ abstract class BaseDeleteWorker(
         val imgs = dao.selectImageFiles(ids)
         trace(Log.INFO, "Removing %s images...", imgs.size)
         val uris = imgs.map { it.fileUri }
+        val contentIds = imgs.map { it.contentId }.distinct()
         dao.deleteImageFiles(imgs)
         uris.forEachIndexed { index, uri ->
             if (isStopped) return
@@ -374,6 +375,14 @@ abstract class BaseDeleteWorker(
                 "Page " + (index + 1).toString(),
                 DeleteProgressNotification.ProgressType.DELETE_PAGES
             )
+        }
+
+        // Update content JSON if it exists (i.e. if book is not queued)
+        contentIds.forEach { contentId ->
+            dao.selectContent(contentId)?.let { content ->
+                if (content.jsonUri.isNotEmpty())
+                    ContentHelper.updateJson(applicationContext, content)
+            }
         }
         progressDone()
         trace(Log.INFO, "Removed %s images", imgs.size)
