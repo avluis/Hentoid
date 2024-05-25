@@ -188,10 +188,8 @@ class SubExpandableItem<T>(
             ivCover.visibility = View.VISIBLE
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")) {
-                val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, null)
-                if (glideUrl != null) {
-                    Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions)
-                        .into(ivCover)
+                ContentHelper.bindOnlineCover(thumbLocation, null)?.let { glideUrl ->
+                    Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions).into(ivCover)
                 }
             } else  // From stored picture
                 Glide.with(ivCover).load(Uri.parse(thumbLocation))

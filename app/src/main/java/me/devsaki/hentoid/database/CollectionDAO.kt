@@ -41,7 +41,7 @@ interface CollectionDAO {
 
     fun selectContentsByUrl(site: Site, contentUrl: String): Set<Content>
 
-    fun selectContentsByQtyPageAndSize(qtyPage : Int, size: Long): Set<Content>
+    fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content>
 
     fun selectAllSourceUrls(site: Site): Set<String>
 
@@ -284,6 +284,8 @@ interface CollectionDAO {
 
     // CHAPTERS
     fun selectChapters(contentId: Long): List<Chapter>
+
+    fun selectChapter(chapterId: Long): Chapter?
 
     fun insertChapters(chapters: List<Chapter>)
 

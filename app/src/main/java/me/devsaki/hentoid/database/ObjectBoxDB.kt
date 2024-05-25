@@ -1902,6 +1902,11 @@ object ObjectBoxDB {
             .order(Chapter_.order).safeFind()
     }
 
+    fun selectChapter(chapterId: Long): Chapter? {
+        return store.boxFor(Chapter::class.java).query()
+            .equal(Chapter_.id, chapterId).safeFindFirst()
+    }
+
     fun insertChapters(chapters: List<Chapter>?) {
         store.boxFor(Chapter::class.java).put(chapters)
     }

@@ -36,6 +36,7 @@
     <string name="resume">Resume</string>
     <string name="cancel">Cancel</string>
     <string name="cancel_all">Cancel all</string>
+    <string name="reset">Reset</string>
     <string name="freeze">Toggle freeze</string>
     <string name="menu_completed_single">Mark as completed</string>
     <string name="menu_reset_read">Mark as unread</string>
@@ -851,6 +852,7 @@
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
+    <string name="gallery_edit_name">Edit name</string>
     <string name="gallery_display_page"><x:g example="&gt;" id="startMarker">%1$s</x:g>Page <x:g example="2" id="number">%2$d</x:g><x:g example="♥" id="isFavourite">%3$s</x:g><x:g example="&lt;" id="endMarker">%4$s</x:g></string>
     <string name="gallery_display_chapter">Chp <x:g example="2" id="number">%d</x:g></string>
     <string name="gallery_no_chapter">No chapter</string>
@@ -866,7 +868,7 @@
     <string name="slideshow_start">Starting slideshow (delay <x:g example="0.5" id="time">%.1f</x:g>s)</string>
     <string name="slideshow_start_vertical">Starting slideshow (<x:g example="fast" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Slideshow stopped</string>
-    <string name="ask_clear_chapters">Clear all chapters?</string>
+    <string name="ask_clear_chapters">Reset all chapters?</string>
     <string name="view_book">View book</string>
 
     <!-- Changelog -->

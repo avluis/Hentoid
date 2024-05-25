@@ -1739,6 +1739,54 @@ class ReaderViewModel(
         dao.deleteChapter(toRemove)
     }
 
+    fun renameChapter(chapterId: Long, newName: String) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    dao.selectChapter(chapterId)?.let { chp ->
+                        chp.name = newName
+                        dao.insertChapters(listOf(chp))
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    reloadContent()
+                }
+            } catch (t: Throwable) {
+                Timber.e(t)
+            }
+        }
+    }
+
+    fun deleteChapters(chapterIds: List<Long>, onError: (Throwable) -> Unit) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    chapterIds.forEach { chId ->
+                        dao.selectChapter(chId)?.let { chp ->
+                            // Delete chapter
+                            dao.deleteChapter(chp)
+
+                            // User worker to delete ImageFiles and associated files
+                            val builder = DeleteData.Builder()
+                            builder.setImageIds(chp.imageList.map { it.id })
+                            val workManager = WorkManager.getInstance(getApplication())
+                            workManager.enqueue(
+                                OneTimeWorkRequest.Builder(DeleteWorker::class.java)
+                                    .setInputData(builder.data).build()
+                            )
+                        }
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    reloadContent()
+                }
+            } catch (t: Throwable) {
+                Timber.e(t)
+                onError.invoke(t)
+            }
+        }
+    }
+
     fun saveChapterPositions(chapters: List<Chapter>) {
         val theContent = content.value ?: return
         viewModelScope.launch {
@@ -1757,7 +1805,8 @@ class ReaderViewModel(
 
     private fun doSaveChapterPositions(contentId: Long, newChapterOrder: List<Long>) {
         Helper.assertNonUiThread()
-        val chapterStr = getApplication<Application>().getString(R.string.gallery_chapter_prefix)
+        val chapterStr =
+            getApplication<Application>().getString(R.string.gallery_chapter_prefix)
         if (null == VANILLA_CHAPTERNAME_PATTERN)
             VANILLA_CHAPTERNAME_PATTERN = Pattern.compile("$chapterStr [0-9]+")
         var chapters = dao.selectChapters(contentId)
@@ -1789,7 +1838,8 @@ class ReaderViewModel(
         orderedImages.forEachIndexed { index, img ->
             img.order = index + 1
             img.computeName(nbMaxDigits)
-            fileNames[img.fileUri] = Pair(img.name + "." + getExtensionFromUri(img.fileUri), img)
+            fileNames[img.fileUri] =
+                Pair(img.name + "." + getExtensionFromUri(img.fileUri), img)
         }
 
         // == Compute file swaps
@@ -1809,7 +1859,8 @@ class ReaderViewModel(
             for (doc in contentFiles) {
                 val newName = fileNames[doc.uri.toString()]
                 if (newName != null) {
-                    val duplicate = contentFiles.firstOrNull { f -> f.name.equals(newName.first) }
+                    val duplicate =
+                        contentFiles.firstOrNull { f -> f.name.equals(newName.first) }
                     if (duplicate != null && duplicate.uri != doc.uri) swaps[duplicate.uri] =
                         Triple(duplicate.uri, doc.uri, newName.second)
                     else if (newName.first != doc.name) renames.add(

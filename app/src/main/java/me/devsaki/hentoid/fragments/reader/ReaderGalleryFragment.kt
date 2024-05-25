@@ -42,6 +42,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.FragmentReaderGalleryBinding
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
+import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.getIdForCurrentTheme
@@ -82,8 +83,10 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private lateinit var itemSetCoverMenu: MenuItem
     private lateinit var showFavouritePagesMenu: MenuItem
     private lateinit var editChaptersMenu: MenuItem
+    private lateinit var editChapterNameMenu: MenuItem
+    private lateinit var deleteChapterMenu: MenuItem
     private lateinit var addChapterMenu: MenuItem
-    private lateinit var removeChaptersMenu: MenuItem
+    private lateinit var resetChaptersMenu: MenuItem
     private lateinit var confirmReorderMenu: MenuItem
     private lateinit var cancelReorderMenu: MenuItem
 
@@ -94,6 +97,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private val expandableItemAdapter = ItemAdapter<INestedItem<SubExpandableItem.ViewHolder>>()
     private val expandableFastAdapter = FastAdapter.with(expandableItemAdapter)
     private val expandableExtension = expandableFastAdapter.getExpandableExtension()
+    private val expandableSelectExtension = expandableFastAdapter.getSelectExtension()
     private var touchHelper: ItemTouchHelper? = null
 
     private var mDragSelectTouchListener: DragSelectTouchListener? = null
@@ -170,51 +174,22 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
             // Toolbar
             toolbar.setNavigationOnClickListener { onBackClick() }
-            toolbar.setOnMenuItemClickListener { clickedMenuItem: MenuItem ->
-                when (clickedMenuItem.itemId) {
-                    R.id.action_show_favorite_pages -> {
-                        viewModel.filterFavouriteImages(!filterFavouritesState)
-                    }
-
-                    R.id.action_edit_chapters -> {
-                        setChapterEditMode(EditMode.EDIT_CHAPTERS)
-                    }
-
-                    R.id.action_add_remove_chapters -> {
-                        setChapterEditMode(EditMode.ADD_CHAPTER)
-                    }
-
-                    R.id.action_edit_confirm -> {
-                        onConfirmChapterReordering()
-                    }
-
-                    R.id.action_edit_cancel -> {
-                        onCancelChapterReordering()
-                    }
-
-                    R.id.action_remove_chapters -> {
-                        val builder = MaterialAlertDialogBuilder(
-                            requireActivity(),
-                            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
-                        )
-                        val title = requireActivity().getString(R.string.ask_clear_chapters)
-                        builder.setMessage(title)
-                            .setPositiveButton(R.string.yes) { _, _ -> stripChapters() }
-                            .setNegativeButton(R.string.no) { _, _ -> }
-                            .create().show()
-                    }
-                }
+            toolbar.setOnMenuItemClickListener { item: MenuItem ->
+                onMenuItemClicked(item)
                 true
             }
             showFavouritePagesMenu = toolbar.menu.findItem(R.id.action_show_favorite_pages)
             editChaptersMenu = toolbar.menu.findItem(R.id.action_edit_chapters)
-            removeChaptersMenu = toolbar.menu.findItem(R.id.action_remove_chapters)
+            resetChaptersMenu = toolbar.menu.findItem(R.id.action_reset_chapters)
             addChapterMenu = toolbar.menu.findItem(R.id.action_add_remove_chapters)
             confirmReorderMenu = toolbar.menu.findItem(R.id.action_edit_confirm)
             cancelReorderMenu = toolbar.menu.findItem(R.id.action_edit_cancel)
             itemSetCoverMenu = selectionToolbar.menu.findItem(R.id.action_set_group_cover)
+            editChapterNameMenu = selectionToolbar.menu.findItem(R.id.action_edit_chapter_name)
+            deleteChapterMenu = selectionToolbar.menu.findItem(R.id.action_delete)
             selectionToolbar.setNavigationOnClickListener {
                 selectExtension.deselect(selectExtension.selections.toMutableSet())
+                expandableSelectExtension.deselect(expandableSelectExtension.selections.toMutableSet())
                 selectionToolbar.visibility = View.GONE
                 toolbar.visibility = View.VISIBLE
             }
@@ -359,6 +334,36 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                         helper.onPreLongClickListener(p)
                     }
 
+
+                expandableSelectExtension.apply {
+                    isSelectable = true
+                    multiSelect = true
+                    selectOnLongClick = true
+                    selectWithItemUpdate = true
+                    selectionListener =
+                        object : ISelectionListener<INestedItem<SubExpandableItem.ViewHolder>> {
+                            override fun onSelectionChanged(
+                                item: INestedItem<SubExpandableItem.ViewHolder>,
+                                selected: Boolean
+                            ) {
+                                onExpandableSelectionChanged()
+                            }
+                        }
+                }
+                val expandableHelper = FastAdapterPreClickSelectHelper(
+                    expandableFastAdapter,
+                    expandableSelectExtension
+                )
+                expandableFastAdapter.onPreClickListener =
+                    { _, _, _, position -> expandableHelper.onPreClickListener(position) }
+                expandableFastAdapter.onPreLongClickListener =
+                    { _, _, _, p ->
+                        // Warning : specific code for drag selection
+                        mDragSelectTouchListener?.startDragSelection(p)
+                        expandableHelper.onPreLongClickListener(p)
+                    }
+
+
                 // Item click listener
                 fastAdapter.onClickListener = { _, _, i, _ -> onItemClick(i) }
 
@@ -449,7 +454,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 .mapNotNull { obj -> obj.linkedChapter }
                 .sortedBy { obj -> obj.order }
                 .filter { c -> c.order > -1 }
-                .distinct().toList()
+                .distinct()
             var displayOrder = 0
             for (c in chapters) {
                 val expandableItem =
@@ -529,13 +534,68 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         updateToolbar()
     }
 
+    private fun onMenuItemClicked(item: MenuItem) {
+        when (item.itemId) {
+            R.id.action_show_favorite_pages -> {
+                viewModel.filterFavouriteImages(!filterFavouritesState)
+            }
+
+            R.id.action_edit_chapters -> {
+                setChapterEditMode(EditMode.EDIT_CHAPTERS)
+            }
+
+            R.id.action_add_remove_chapters -> {
+                setChapterEditMode(EditMode.ADD_CHAPTER)
+            }
+
+            R.id.action_edit_confirm -> {
+                onConfirmChapterReordering()
+            }
+
+            R.id.action_edit_cancel -> {
+                onCancelChapterReordering()
+            }
+
+            R.id.action_reset_chapters -> {
+                val builder = MaterialAlertDialogBuilder(
+                    requireActivity(),
+                    requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
+                )
+                val title = requireActivity().getString(R.string.ask_clear_chapters)
+                builder.setMessage(title)
+                    .setPositiveButton(R.string.yes) { _, _ -> stripChapters() }
+                    .setNegativeButton(R.string.no) { _, _ -> }
+                    .create().show()
+            }
+        }
+    }
+
     @SuppressLint("NonConstantResourceId")
     private fun onSelectionMenuItemClicked(menuItem: MenuItem): Boolean {
         val selectedItems: Set<ImageFileItem> = selectExtension.selectedItems
+        val selectedChapters =
+            expandableSelectExtension.selectedItems.mapNotNull { it.tag }.map { it as Chapter }
+
         when (menuItem.itemId) {
-            R.id.action_delete -> if (selectedItems.isNotEmpty()) {
-                val selectedImages = selectedItems.map { obj: ImageFileItem -> obj.getImage() }
-                askDeleteSelected(selectedImages)
+            R.id.action_delete -> {
+                if (editMode == EditMode.NONE && selectedItems.isNotEmpty()) { // View image in gallery
+                    val selectedImages = selectedItems.map { it.getImage() }
+                    askDeleteSelectedImgs(selectedImages)
+                }
+                if (editMode == EditMode.EDIT_CHAPTERS && selectedChapters.isNotEmpty()) { // Edit chapters
+                    askDeleteSelectedChps(selectedChapters)
+                }
+            }
+
+            R.id.action_edit_chapter_name -> if (selectedChapters.isNotEmpty()) {
+                selectedChapters.firstOrNull()?.let { chap ->
+                    invokeInputDialog(
+                        requireActivity(),
+                        R.string.group_edit_name,
+                        { newName -> viewModel.renameChapter(chap.id, newName) },
+                        chap.name
+                    )
+                }
             }
 
             R.id.action_set_group_cover -> if (selectedItems.isNotEmpty()) {
@@ -566,6 +626,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 return false
             }
         }
+
         binding?.apply {
             selectionToolbar.visibility = View.GONE
             toolbar.visibility = View.VISIBLE
@@ -579,11 +640,12 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         editChaptersMenu.isVisible =
             editMode == EditMode.NONE && !shuffledState && !isContentDynamic
         addChapterMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && !isReorderingChapters
-        removeChaptersMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && !isReorderingChapters
+        resetChaptersMenu.isVisible = editMode == EditMode.ADD_CHAPTER
         confirmReorderMenu.isVisible = isReorderingChapters
         cancelReorderMenu.isVisible = isReorderingChapters
         binding?.apply {
-            if (chapterSelector.index > -1) chapterSelector.isVisible = editMode == EditMode.NONE
+            if (chapterSelector.index > -1) chapterSelector.isVisible =
+                editMode == EditMode.NONE
             val titleRes = when (editMode) {
                 EditMode.NONE -> R.string.gallery_title
                 EditMode.EDIT_CHAPTERS -> R.string.gallery_title_edit
@@ -594,7 +656,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     }
 
     private fun updateSelectionToolbar(selectedCount: Long) {
-        itemSetCoverMenu.isVisible = 1L == selectedCount
+        itemSetCoverMenu.isVisible = editMode == EditMode.NONE && 1L == selectedCount
+        editChapterNameMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && 1L == selectedCount
+        deleteChapterMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && 1L == selectedCount
         binding?.apply {
             selectionToolbar.title = resources.getQuantityString(
                 R.plurals.items_selected,
@@ -694,12 +758,27 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         }
     }
 
+    private fun onExpandableSelectionChanged() {
+        val selectedCount = expandableSelectExtension.selections.size
+        binding?.apply {
+            if (0 == selectedCount) {
+                selectionToolbar.visibility = View.GONE
+                toolbar.visibility = View.VISIBLE
+                expandableSelectExtension.selectOnLongClick = true
+            } else {
+                updateSelectionToolbar(selectedCount.toLong())
+                selectionToolbar.visibility = View.VISIBLE
+                toolbar.visibility = View.GONE
+            }
+        }
+    }
+
     /**
      * Display the yes/no dialog to make sure the user really wants to delete selected items
      *
      * @param items Items to be deleted if the answer is yes
      */
-    private fun askDeleteSelected(items: List<ImageFile>) {
+    private fun askDeleteSelectedImgs(items: List<ImageFile>) {
         activity.get()?.let {
             val builder = MaterialAlertDialogBuilder(it)
             val title = it.resources.getQuantityString(
@@ -712,6 +791,31 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 { _, _ ->
                     selectExtension.deselect(selectExtension.selections.toMutableSet())
                     viewModel.deletePages(items) { t: Throwable -> onDeleteError(t) }
+                }
+                .setNegativeButton(R.string.no)
+                { _, _ -> selectExtension.deselect(selectExtension.selections.toMutableSet()) }
+                .create().show()
+        }
+    }
+
+    /**
+     * Display the yes/no dialog to make sure the user really wants to delete selected items
+     *
+     * @param items Items to be deleted if the answer is yes
+     */
+    private fun askDeleteSelectedChps(items: List<Chapter>) {
+        activity.get()?.let { act ->
+            val builder = MaterialAlertDialogBuilder(act)
+            val title = act.resources.getQuantityString(
+                R.plurals.ask_delete_multiple,
+                items.size,
+                items.size
+            )
+            builder.setMessage(title)
+                .setPositiveButton(R.string.yes)
+                { _, _ ->
+                    selectExtension.deselect(selectExtension.selections.toMutableSet())
+                    viewModel.deleteChapters(items.map { it.id }) { t: Throwable -> onDeleteError(t) }
                 }
                 .setNegativeButton(R.string.no)
                 { _, _ -> selectExtension.deselect(selectExtension.selections.toMutableSet()) }
@@ -834,7 +938,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private fun onConfirmChapterReordering() {
         // Save final position of items in DB
         viewModel.saveChapterPositions(
-            expandableItemAdapter.adapterItems.mapNotNull { c -> c.tag }.map { ch -> ch as Chapter }
+            expandableItemAdapter.adapterItems.mapNotNull { c -> c.tag }
+                .map { ch -> ch as Chapter }
         )
         ProgressDialogFragment.invoke(
             this,

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.annotation.IdRes
 import androidx.documentfile.provider.DocumentFile
@@ -25,6 +26,7 @@ import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
+import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -48,6 +50,7 @@ abstract class BaseDeleteWorker(
     private val contentPurgeKeepCovers: Boolean
     private val groupIds: LongArray
     private val queueIds: LongArray
+    private val imageIds: LongArray
     private val isDeleteAllQueueRecords: Boolean
     private val isDeleteGroupsOnly: Boolean
     private val isDownloadPrepurge: Boolean
@@ -66,6 +69,7 @@ abstract class BaseDeleteWorker(
         contentPurgeKeepCovers = inputData.contentPurgeKeepCovers
         groupIds = inputData.groupIds
         queueIds = inputData.queueIds
+        imageIds = inputData.imageIds
         isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly
         isDownloadPrepurge = inputData.isDownloadPrepurge
@@ -97,7 +101,8 @@ abstract class BaseDeleteWorker(
             }
         }
         contentIds = askedContentIds
-        deleteMax = contentIds.size + contentPurgeIds.size + groupIds.size + queueIds.size
+        deleteMax =
+            contentIds.size + contentPurgeIds.size + groupIds.size + queueIds.size + imageIds.size
     }
 
     override fun getStartNotification(): BaseNotification {
@@ -123,6 +128,9 @@ abstract class BaseDeleteWorker(
 
         // Remove Contents and associated QueueRecords
         if (queueIds.isNotEmpty()) removeQueue(queueIds)
+        // Remove files linked to the given ImageFile IDs
+        if (imageIds.isNotEmpty()) removeImageFiles(imageIds)
+
         // If asked, make sure all QueueRecords are removed including dead ones
         if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore()
         progressDone()
@@ -353,6 +361,16 @@ abstract class BaseDeleteWorker(
             }
         }
     }
+
+    private fun removeImageFiles(ids: LongArray) {
+        val imgs = dao.selectImageFiles(ids)
+        dao.deleteImageFiles(imgs)
+        imgs.forEach {
+            if (isStopped) return
+            removeFile(applicationContext, Uri.parse(it.fileUri))
+        }
+    }
+
 
     private fun progressItem(item: Any?, isPurge: Boolean) {
         var title: String? = null
