@@ -875,7 +875,7 @@ data class Cookie(
 /**
  * Class to parse and manipulate Uri parts
  */
-class UriParts(uri: String, lowercase: Boolean) {
+class UriParts(uri: String, lowercase: Boolean = false) {
     var path: String
     var fileNameNoExt: String
     var extension: String

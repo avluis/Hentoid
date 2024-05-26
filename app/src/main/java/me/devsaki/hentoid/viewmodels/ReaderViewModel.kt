@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.SEED_PAGES
@@ -55,10 +56,10 @@ import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.image.getMimeTypeFromUri
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
-import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.network.peekCookies
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -77,6 +78,10 @@ import java.util.regex.Pattern
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
+private const val DOWNLOAD_RANGE = 6 // Sequential download; not concurrent
+private const val EXTRACT_RANGE = 35
+
+private var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
 
 class ReaderViewModel(
     application: Application, private val dao: CollectionDAO
@@ -1621,8 +1626,7 @@ class ReaderViewModel(
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
         if (null == currentChapter) {
             currentChapter = Chapter(1, "", "$chapterStr 1")
-            val workingList: List<ImageFile>? = theContent.imageFiles
-            if (workingList != null) {
+            theContent.imageFiles?.let { workingList ->
                 currentChapter.setImageFiles(workingList)
                 // Link images the other way around so that what follows works properly
                 for (img in workingList) img.setChapter(currentChapter)
@@ -1649,8 +1653,8 @@ class ReaderViewModel(
         val theViewerImages = dao.selectDownloadedImagesFromContent(theContent.id)
         // Rely on the order of pictures to get chapter in the right order
         val allChapters =
-            theViewerImages.asSequence().map { obj -> obj.linkedChapter }.distinct().filterNotNull()
-                .filter { c -> c.order > -1 }.toList()
+            theViewerImages.asSequence().mapNotNull { it.linkedChapter }.distinct()
+                .filter { it.order > -1 }
 
         // Renumber all chapters to reflect changes
         var order = 1
@@ -1695,7 +1699,7 @@ class ReaderViewModel(
         newChapter.setContent(content)
 
         // Sort by order
-        chapterImages = chapterImages.sortedBy { obj: ImageFile -> obj.order }
+        chapterImages = chapterImages.sortedBy { it.order }
 
         // Split pages
         val firstPageOrder = selectedPage.order
@@ -1723,7 +1727,7 @@ class ReaderViewModel(
         content: Content, toRemove: Chapter, chapterImages: List<ImageFile>
     ) {
         var contentChapters: List<Chapter> = content.chapters ?: return
-        contentChapters = contentChapters.sortedBy { obj: Chapter -> obj.order }
+        contentChapters = contentChapters.sortedBy { it.order }
         val removeOrder = toRemove.order
 
         // Identify preceding chapter
@@ -1806,6 +1810,7 @@ class ReaderViewModel(
         }
     }
 
+    @Throws(IOException::class)
     private fun doSaveChapterPositions(contentId: Long, newChapterOrder: List<Long>) {
         Helper.assertNonUiThread()
         val chapterStr =
@@ -1836,93 +1841,109 @@ class ReaderViewModel(
         require(orderedImages.isNotEmpty()) { "No images found" }
 
         // Keep existing formatting
-        val nbMaxDigits = orderedImages[orderedImages.size - 1].name.length
-        val fileNames = HashMap<String, Pair<String, ImageFile>>()
+        val nbMaxDigits = orderedImages.maxOf { it.name.length }
+        // Key = source Uri
+        // Value = operation
+        val operations = HashMap<String, FileOperation>()
         orderedImages.forEachIndexed { index, img ->
             img.order = index + 1
             img.computeName(nbMaxDigits)
-            fileNames[img.fileUri] =
-                Pair(img.name + "." + getExtensionFromUri(img.fileUri), img)
-        }
 
-        // == Compute file swaps
-
-        //  Key = Source file URI
-        //  Value
-        //      first = Source file URI
-        //      second = Target file URI
-        //      third = Target ImageFile
-        val swaps = HashMap<Uri, Triple<Uri, Uri, ImageFile>>()
-        val renames = ArrayList<Triple<DocumentFile, String, ImageFile>>()
-        val parentFolder = getDocumentFromTreeUriString(
-            getApplication(), chapters[0].content.target.storageUri
-        )
-        if (parentFolder != null) {
-            val contentFiles = listFiles(getApplication(), parentFolder, null)
-            for (doc in contentFiles) {
-                val newName = fileNames[doc.uri.toString()]
-                if (newName != null) {
-                    val duplicate =
-                        contentFiles.firstOrNull { f -> f.name.equals(newName.first) }
-                    if (duplicate != null && duplicate.uri != doc.uri) swaps[duplicate.uri] =
-                        Triple(duplicate.uri, doc.uri, newName.second)
-                    else if (newName.first != doc.name) renames.add(
-                        Triple(
-                            doc, newName.first, newName.second
-                        )
-                    )
-                }
+            val uriParts = UriParts(Uri.decode(img.fileUri))
+            val sourceFileName = uriParts.entireFileName
+            val targetFileName = img.name + "." + uriParts.extension
+            // Only post actual renaming jobs
+            if (!sourceFileName.equals(targetFileName, true)) {
+                operations[img.fileUri] = FileOperation(img.fileUri, targetFileName, img)
             }
         }
 
-        // Groups swaps into permutation groups
-        val permutationGroups: List<List<Triple<Uri, Uri, ImageFile>>> =
-            buildPermutationGroups(swaps)
+        Timber.d("Recap")
+        operations.forEach { op ->
+            Timber.d(
+                "%s <- %s",
+                op.value.targetName,
+                op.value.sourceUri
+            )
+        }
 
-        val nbTasks = swaps.size + renames.size
+        // Groups swaps into permutation groups
+        val parentFolder = getDocumentFromTreeUriString(
+            getApplication(), chapters[0].content.target.storageUri
+        ) ?: throw IOException("Parent folder not found")
+
+        buildPermutationGroups(getApplication(), operations, parentFolder)
+        val finalOpsTmp = operations.values.sortedBy { it.sequenceNumber }.sortedBy { it.order }
+        val finalOps = finalOpsTmp.groupBy { it.sequenceNumber }.values.toList()
+
+        finalOps.forEach { seq ->
+            seq.forEach { op ->
+                Timber.d(
+                    "[%d.%d] %s <- %s",
+                    op.sequenceNumber,
+                    op.order,
+                    op.targetName,
+                    op.sourceUri
+                )
+            }
+        }
+
+        val nbTasks = finalOps.size
         var nbProcessedTasks = 1
 
         // Perform swaps by exchanging file content
         // NB : "thanks to" SAF; this works faster than renaming the files :facepalm:
-        permutationGroups.forEach { tasks ->
-            var firstFileContent: ByteArray
-            getInputStream(getApplication(), tasks[0].first).use {
-                firstFileContent = it.readBytes()
-            }
-            tasks.forEachIndexed { index, task ->
-                if (index < tasks.size - 1) {
-                    getOutputStream(getApplication(), task.first).use { os ->
-                        os?.let {
-                            getInputStream(getApplication(), task.second).use { input ->
-                                Helper.copy(input, it)
-                            }
+        var firstFileContent: ByteArray? = null
+        finalOps.forEach { seq ->
+            seq.forEachIndexed { idx, op ->
+                if (op.isLoop) {
+                    if (0 == idx) { // First item
+                        getInputStream(getApplication(), op.target!!).use {
+                            firstFileContent = it.readBytes()
+                        }
+                    } else if (idx == seq.size - 1 && firstFileContent != null) { // Last item
+                        if (BuildConfig.DEBUG) Timber.d(
+                            "[%d.%d] Swap %s <- %s (last)",
+                            op.sequenceNumber,
+                            op.order,
+                            op.targetName,
+                            op.sourceUri
+                        )
+                        getOutputStream(getApplication(), op.target!!).use { os ->
+                            os?.write(firstFileContent)
+                        }
+                        op.targetData.fileUri = op.target?.uri?.toString()
+                        return@forEachIndexed
+                    }
+                }
+
+                if (op.isRename) {
+                    if (BuildConfig.DEBUG) Timber.d(
+                        "[%d.%d] Rename %s <- %s",
+                        op.sequenceNumber,
+                        op.order,
+                        op.targetName,
+                        op.sourceUri
+                    )
+                    op.source?.renameTo(op.targetName)
+                    op.targetData.fileUri = op.source?.uri?.toString()
+                } else {
+                    if (BuildConfig.DEBUG) Timber.d(
+                        "[%d.%d] Swap %s <- %s",
+                        op.sequenceNumber,
+                        op.order,
+                        op.targetName,
+                        op.sourceUri
+                    )
+                    getOutputStream(getApplication(), op.target!!)?.use { os ->
+                        getInputStream(getApplication(), op.source!!).use { input ->
+                            Helper.copy(input, os)
                         }
                     }
-                    task.third.fileUri = task.first.toString()
-                    swaps.remove(task.first)
-                } else { // Last task
-                    getOutputStream(getApplication(), task.first).use { os ->
-                        os?.write(firstFileContent)
-                    }
-                    task.third.fileUri = task.first.toString()
+                    op.targetData.fileUri = op.target?.uri?.toString()
                 }
             }
-            EventBus.getDefault().post(
-                ProcessEvent(
-                    ProcessEvent.Type.PROGRESS,
-                    R.id.generic_progress,
-                    0,
-                    nbProcessedTasks++,
-                    0,
-                    nbTasks
-                )
-            )
-        }
 
-        // Perform renames
-        renames.forEach { task ->
-            task.first.renameTo(task.second)
-            task.third.fileUri = task.first.uri.toString()
             EventBus.getDefault().post(
                 ProcessEvent(
                     ProcessEvent.Type.PROGRESS,
@@ -1949,42 +1970,98 @@ class ReaderViewModel(
         Glide.get(getApplication()).clearDiskCache()
     }
 
-    private fun buildPermutationGroups(swaps: HashMap<Uri, Triple<Uri, Uri, ImageFile>>): List<List<Triple<Uri, Uri, ImageFile>>> {
-        val result: MutableList<List<Triple<Uri, Uri, ImageFile>>> = ArrayList()
+    /**
+     * Enrich the given operations
+     *
+     * @param ctx Context to use
+     * @param ops Operations to enrhich
+     *      Key = source file Uri
+     *      Value = operation
+     * @param root Root of the content folder to use
+     */
+    private fun buildPermutationGroups(
+        ctx: Context,
+        ops: MutableMap<String, FileOperation>,
+        root: DocumentFile
+    ) {
+        if (ops.isEmpty()) return
 
-        if (swaps.isNotEmpty()) {
-            val processedKeys: MutableSet<Uri> = HashSet()
-            var currentGroup: MutableList<Triple<Uri, Uri, ImageFile>> = ArrayList()
-            var leftToProcess = swaps.size
+        // Take a snapshot of the Content's current files to simulate operations as they're built
+        val files: Map<String, Pair<DocumentFile, String>> = listFiles(ctx, root, null)
+            .associateBy({ it.uri.toString() }, { Pair(it, it.name ?: "") })
+        if (files.isEmpty()) return
 
-            var task = swaps.values.first()
-            while (leftToProcess > 0) {
-                processedKeys.add(task.first)
-                currentGroup.add(task)
-                leftToProcess--
-                if (swaps.containsKey(task.second) && !processedKeys.contains(task.second)) {
-                    task = swaps[task.second]!!
-                } else {
-                    result.add(currentGroup)
-                    currentGroup = ArrayList()
-                    if (leftToProcess > 0) {
-                        val nextKey = swaps.keys.find { k -> !processedKeys.contains(k) }!!
-                        task = swaps[nextKey]!!
+        val availableFiles =
+            files.values.map { it.second }.filterNot { it.isEmpty() }.toMutableSet()
+
+        // source name => source Uri
+        val uriByName = files.values.associateBy({ it.second }, { it.first.uri.toString() })
+            .filterNot { it.key.isEmpty() }
+        // target name => source name
+        val nameOpsByTarget =
+            ops.values.associateBy({ it.targetName }, { files[it.sourceUri]?.second ?: "" })
+                .filterNot { it.value.isEmpty() }
+                .toMutableMap()
+        var sequenceNumber = 0
+
+        while (nameOpsByTarget.isNotEmpty()) {
+            val sourceNames = nameOpsByTarget.values.toSet()
+            val targetNames = nameOpsByTarget.keys
+
+            // Find a target that is not referenced among the sources (= no permutation loop)
+            var isLoop = false
+            val startSourceCandidate = targetNames.firstOrNull { !sourceNames.contains(it) }
+
+            // If none, take the 1st element and prepare for doing a permutation loop
+            var source: String? = if (null == startSourceCandidate) {
+                isLoop = true
+                sourceNames.first()
+            } else startSourceCandidate
+
+            // Walk the permutation sequence from start to finish
+            var order = 0
+            while (source != null) {
+                // Enrich the corresponding operation
+                ops[uriByName[source]]?.let { operation ->
+                    operation.source = files[uriByName[source]]?.first
+                    operation.target = files[uriByName[operation.targetName]]?.first
+                    operation.isRename = !availableFiles.contains(operation.targetName)
+                    operation.order = order
+                    operation.sequenceNumber = sequenceNumber
+                    operation.isLoop = isLoop
+
+                    // Update available files
+                    if (operation.isRename) {
+                        availableFiles.remove(source)
+                        availableFiles.add(operation.targetName)
                     }
+
+                    // Remove the operation we've just recorded
+                    nameOpsByTarget.remove(operation.targetName)
                 }
+
+                // Next permutation is the one that uses the current source as a target
+                source = nameOpsByTarget[source]
+                order++
             }
+            sequenceNumber++
         }
-        return result.toList()
     }
 
     private fun formatCacheKey(img: ImageFile): String {
         return "img" + img.id
     }
 
-    companion object {
-        const val DOWNLOAD_RANGE = 6 // Sequential download; not concurrent
-        const val EXTRACT_RANGE = 35
-
-        private var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
-    }
+    internal data class FileOperation(
+        val sourceUri: String,
+        val targetName: String,
+        val targetData: ImageFile,
+        // Following fields valued during 2nd pass (buildPermutationGroups)
+        var source: DocumentFile? = null,
+        var target: DocumentFile? = null,
+        var isRename: Boolean = false,
+        var order: Int = -1,
+        var sequenceNumber: Int = -1,
+        var isLoop: Boolean = false
+    )
 }
