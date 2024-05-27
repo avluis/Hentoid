@@ -317,12 +317,12 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Priority 2 : Last viewed position, if option enabled
         if (Preferences.isBrowserResumeLast()) {
             val siteHistory = dao.selectHistory(getStartSite())
-            if (siteHistory.url.isNotEmpty()) return siteHistory.url
+            if (!siteHistory.url.isNullOrEmpty()) return siteHistory.url
         }
 
         // Priority 3 : Homepage, if manually set through bookmarks
         val welcomePage = dao.selectHomepage(getStartSite())
-        return if (welcomePage != null) welcomePage.url else getStartSite().url
+        return welcomePage?.url ?: getStartSite().url
 
         // Default site URL
     }
