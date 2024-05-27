@@ -5,8 +5,9 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.parsers.images.DoujinsParser
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
@@ -62,7 +63,7 @@ class DoujinsContent : BaseContentParser() {
                         val imageUrls = DoujinsParser.parseImages(it)
                         content.qtyPages = imageUrls.size - 1 // Don't count the cover
                         content.setImageFiles(
-                            ParseHelper.urlsToImageFiles(
+                            urlsToImageFiles(
                                 imageUrls,
                                 content.coverImageUrl,
                                 StatusContent.SAVED
@@ -78,14 +79,14 @@ class DoujinsContent : BaseContentParser() {
 
         // Deduplicate tags
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.ARTIST,
             artists,
             false,
             Site.DOUJINS
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.TAG,
             tags,

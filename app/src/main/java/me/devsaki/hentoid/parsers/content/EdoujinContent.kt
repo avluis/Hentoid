@@ -7,8 +7,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.EdoujinParser
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
@@ -76,7 +78,7 @@ class EdoujinContent : BaseContentParser() {
                 if (updateImages && chapterImgs.isNotEmpty()) {
                     val coverUrl = chapterImgs[0]
                     content.setImageFiles(
-                        ParseHelper.urlsToImageFiles(
+                        urlsToImageFiles(
                             chapterImgs,
                             coverUrl,
                             StatusContent.SAVED
@@ -93,7 +95,7 @@ class EdoujinContent : BaseContentParser() {
 
     private fun updateGallery(content: Content, url: String, updateImages: Boolean): Content {
         cover?.let {
-            content.coverImageUrl = ParseHelper.getImgSrc(it)
+            content.coverImageUrl = getImgSrc(it)
         }
         title?.let {
             val titleStr = it.text()
@@ -122,7 +124,7 @@ class EdoujinContent : BaseContentParser() {
         }
 
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, properties, false, Site.EDOUJIN)
+        parseAttributes(attributes, AttributeType.TAG, properties, false, Site.EDOUJIN)
         var currentProperty = ""
 
         artist?.let { art ->

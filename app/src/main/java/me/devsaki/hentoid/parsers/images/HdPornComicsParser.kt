@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
@@ -9,7 +9,7 @@ import org.jsoup.nodes.Element
 class HdPornComicsParser : BaseImageListParser() {
     companion object {
         fun parseImages(pages: List<Element>): List<String> {
-            return pages.map { e -> ParseHelper.getImgSrc(e) }
+            return pages.map { e -> getImgSrc(e) }
                 .map { s -> s.replace("thumbs", "uploads") }
         }
     }

@@ -5,7 +5,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -39,12 +40,12 @@ class AnchiraContent : BaseContentParser() {
         if (null == imgs) return content.setStatus(StatusContent.IGNORED)
         content.title = title
         imgs?.let {
-            if (it.isNotEmpty()) content.coverImageUrl = ParseHelper.getImgSrc(it[0])
+            if (it.isNotEmpty()) content.coverImageUrl = getImgSrc(it[0])
         }
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.ANCHIRA)
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, parodies, true, Site.ANCHIRA)
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.ANCHIRA)
+        parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.ANCHIRA)
+        parseAttributes(attributes, AttributeType.SERIE, parodies, true, Site.ANCHIRA)
+        parseAttributes(attributes, AttributeType.TAG, tags, true, Site.ANCHIRA)
         content.putAttributes(attributes)
         var nbPages = 0
         extraData?.let {

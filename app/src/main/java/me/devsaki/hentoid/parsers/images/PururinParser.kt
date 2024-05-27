@@ -2,7 +2,7 @@ package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.getOnlineDocument
 
@@ -26,7 +26,7 @@ class PururinParser : BaseImageListParser() {
             // Get all thumb URLs and convert them to page URLs
             val imgSrc = doc.select(".gallery-preview img")
                 .filterNotNull()
-                .map { e -> ParseHelper.getImgSrc(e) }
+                .map { e -> getImgSrc(e) }
                 .map { thumbUrl -> thumbToPage(thumbUrl) }
             result.addAll(imgSrc)
         }

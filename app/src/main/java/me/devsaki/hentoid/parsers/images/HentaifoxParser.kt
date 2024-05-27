@@ -1,7 +1,8 @@
 package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getExtensionFromFormat
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.exception.ParseException
@@ -42,7 +43,7 @@ class HentaifoxParser : BaseImageListParser() {
                 }
             }
             if (thumbs.isNotEmpty() && imageFormats != null) {
-                val thumbUrl = ParseHelper.getImgSrc(thumbs[0])
+                val thumbUrl = getImgSrc(thumbs[0])
                 val thumbPath = thumbUrl.substring(
                     thumbUrl.indexOf("hentaifox.com") + 14,
                     thumbUrl.lastIndexOf("/") + 1
@@ -53,7 +54,7 @@ class HentaifoxParser : BaseImageListParser() {
                     val imgUrl =
                         "https://" + HOSTS[Helper.getRandomInt(HOSTS.size)] + "/" +
                                 thumbPath +
-                                (i + 1) + "." + ParseHelper.getExtensionFromFormat(imageFormats, i)
+                                (i + 1) + "." + getExtensionFromFormat(imageFormats, i)
                     result.add(imgUrl)
                 }
             }

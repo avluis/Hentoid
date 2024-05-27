@@ -2,7 +2,7 @@ package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
@@ -23,7 +23,7 @@ class MusesParser : BaseImageListParser() {
         val thumbs: List<Element> = doc.select(".gallery img").filterNotNull()
 
         for (e in thumbs) {
-            val src = ParseHelper.getImgSrc(e)
+            val src = getImgSrc(e)
             if (src.isEmpty()) continue
             val thumbParts = src.split("/").toMutableList()
             if (thumbParts.size > 3) {

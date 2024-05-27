@@ -7,7 +7,9 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.YoastGalleryMetadata
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
@@ -83,12 +85,10 @@ class AllPornComicContent : BaseContentParser() {
 
     private fun updateSingleChapter(content: Content, updateImages: Boolean): Content {
         if (updateImages) {
-            chapterImages?.let {
-                val imgUrls = it.map { e ->
-                    ParseHelper.getImgSrc(e)
-                }.filterNot { obj: String -> obj.isEmpty() }
+            chapterImages?.let { chImg ->
+                val imgUrls = chImg.map { getImgSrc(it) }.filterNot { it.isEmpty() }
                 content.setImageFiles(
-                    ParseHelper.urlsToImageFiles(
+                    urlsToImageFiles(
                         imgUrls,
                         coverUrl,
                         StatusContent.SAVED
@@ -102,28 +102,28 @@ class AllPornComicContent : BaseContentParser() {
 
     private fun updateGallery(content: Content, updateImages: Boolean): Content {
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CHARACTER,
             characterTags,
             false,
             Site.ALLPORNCOMIC
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.SERIE,
             seriesTags,
             false,
             Site.ALLPORNCOMIC
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.ARTIST,
             artistsTags,
             false,
             Site.ALLPORNCOMIC
         )
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.ALLPORNCOMIC)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.ALLPORNCOMIC)
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

@@ -8,7 +8,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
@@ -105,9 +105,9 @@ data class PixivIllustMetadata(
             return if (1 == pageCount) {
                 val img: ImageFile
                 if (null == ugoiraMeta) { // One single page
-                    img = ParseHelper.urlToImageFile(urlBig!!, 1, 1, StatusContent.SAVED)
+                    img = urlToImageFile(urlBig!!, 1, 1, StatusContent.SAVED)
                 } else { // One single ugoira
-                    img = ParseHelper.urlToImageFile(ugoiraMeta.src, 1, 1, StatusContent.SAVED)
+                    img = urlToImageFile(ugoiraMeta.src, 1, 1, StatusContent.SAVED)
                     val downloadParams: MutableMap<String, String> = HashMap()
                     val framesJson = JsonHelper.serializeToJson(
                         ugoiraMeta.getFrameList(),
@@ -128,7 +128,7 @@ data class PixivIllustMetadata(
                 val result: MutableList<ImageFile> = ArrayList()
                 for (pd in mangaA) {
                     result.add(
-                        ParseHelper.urlToImageFile(
+                        urlToImageFile(
                             pd.getUrl(),
                             order++,
                             mangaA.size,

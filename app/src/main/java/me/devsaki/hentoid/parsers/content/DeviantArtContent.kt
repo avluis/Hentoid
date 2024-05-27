@@ -9,8 +9,9 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.DeviantArtDeviation
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.parsers.images.DeviantArtParser
+import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
@@ -78,7 +79,7 @@ class DeviantArtContent : BaseContentParser() {
             attributes.add(attribute)
         }
 
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.DEVIANTART)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.DEVIANTART)
         content.putAttributes(attributes)
 
         val imgs = DeviantArtParser.parseDeviation(body)
@@ -126,7 +127,7 @@ class DeviantArtContent : BaseContentParser() {
                 uri.getQueryParameter("expand") ?: "",
                 uri.getQueryParameter("da_minor_version") ?: "",
                 cookieStr,
-                ParseHelper.getUserAgent(Site.DEVIANTART)
+                getUserAgent(Site.DEVIANTART)
             )
             val response = call.execute()
             if (response.isSuccessful) {
@@ -175,7 +176,7 @@ class DeviantArtContent : BaseContentParser() {
             uri.getQueryParameter("csrf_token") ?: "",
             uri.getQueryParameter("da_minor_version") ?: "",
             cookieStr,
-            ParseHelper.getUserAgent(Site.DEVIANTART)
+            getUserAgent(Site.DEVIANTART)
         )
         val response = call.execute()
         if (response.isSuccessful) {

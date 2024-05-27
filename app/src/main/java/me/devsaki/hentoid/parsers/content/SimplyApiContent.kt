@@ -4,7 +4,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.SimplyContentMetadata
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.addSavedCookiesToHeader
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import timber.log.Timber
@@ -17,7 +17,7 @@ class SimplyApiContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         if (url.contains("api.simply-hentai.com") && !url.endsWith("/status")) { // Triggered by an API request
             val headers: MutableList<Pair<String, String>> = ArrayList()
-            ParseHelper.addSavedCookiesToHeader(content.downloadParams, headers)
+            addSavedCookiesToHeader(content.downloadParams, headers)
             try {
                 val doc = getOnlineDocument(
                     url,

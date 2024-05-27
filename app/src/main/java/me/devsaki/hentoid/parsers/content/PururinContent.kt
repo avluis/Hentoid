@@ -5,7 +5,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.removeBrackets
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.network.getHttpProtocol
 import org.jsoup.nodes.Element
@@ -65,35 +66,35 @@ class PururinContent : BaseContentParser() {
                 var pagesFound = false
                 for (s in pgs) {
                     if (pagesFound) {
-                        qtyPages = ParseHelper.removeBrackets(s).toInt()
+                        qtyPages = removeBrackets(s).toInt()
                         break
                     }
-                    if (s.trim { it <= ' ' }.equals("pages", ignoreCase = true)) pagesFound = true
+                    if (s.trim().equals("pages", ignoreCase = true)) pagesFound = true
                 }
             }
             content.setQtyPages(qtyPages)
             content.setImageFiles(emptyList())
         }
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.PURURIN)
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.PURURIN)
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.PURURIN)
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.PURURIN)
-        ParseHelper.parseAttributes(
+        parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.PURURIN)
+        parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.PURURIN)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.PURURIN)
+        parseAttributes(attributes, AttributeType.SERIE, series, false, Site.PURURIN)
+        parseAttributes(
             attributes,
             AttributeType.CHARACTER,
             characters,
             false,
             Site.PURURIN
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.LANGUAGE,
             languages,
             false,
             Site.PURURIN
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CATEGORY,
             categories,

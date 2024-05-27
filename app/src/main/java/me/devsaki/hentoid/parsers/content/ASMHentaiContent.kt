@@ -5,7 +5,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -53,12 +54,12 @@ class ASMHentaiContent : BaseContentParser() {
 
         content.setRawUrl(theUrl)
         cover?.let {
-            content.coverImageUrl = "https:" + ParseHelper.getImgSrc(it)
+            content.coverImageUrl = "https:" + getImgSrc(it)
         }
         content.title = StringHelper.removeNonPrintableChars(title)
 
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.ARTIST,
             artists,
@@ -66,7 +67,7 @@ class ASMHentaiContent : BaseContentParser() {
             BADGE_CONST,
             Site.ASMHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.TAG,
             tags,
@@ -74,7 +75,7 @@ class ASMHentaiContent : BaseContentParser() {
             BADGE_CONST,
             Site.ASMHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.SERIE,
             series,
@@ -82,7 +83,7 @@ class ASMHentaiContent : BaseContentParser() {
             BADGE_CONST,
             Site.ASMHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CHARACTER,
             characters,
@@ -90,7 +91,7 @@ class ASMHentaiContent : BaseContentParser() {
             BADGE_CONST,
             Site.ASMHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.LANGUAGE,
             languages,

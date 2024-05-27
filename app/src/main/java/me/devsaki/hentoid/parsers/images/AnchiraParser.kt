@@ -9,7 +9,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.setDownloadParams
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
@@ -39,7 +40,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
         var result: List<ImageFile>
         try {
             result = parseImageListWithWebview(onlineContent)
-            ParseHelper.setDownloadParams(result, onlineContent.site.url)
+            setDownloadParams(result, onlineContent.site.url)
         } catch (e: Exception) {
             Helper.logException(e)
             result = emptyList()
@@ -143,7 +144,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
                             urls.add(parts.toUri())
                         }
                     }
-                    return ParseHelper.urlsToImageFiles(
+                    return urlsToImageFiles(
                         urls,
                         onlineContent.coverImageUrl,
                         StatusContent.SAVED

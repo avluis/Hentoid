@@ -5,8 +5,9 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
 import me.devsaki.hentoid.parsers.images.MultpornParser
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
@@ -57,35 +58,35 @@ class MultpornContent : BaseContentParser() {
                 Helper.parseDatetimeToEpoch(publishingDate, "yyyy-MM-dd'T'HH:mmXXX")
             )
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CHARACTER,
             characterTags,
             false,
             Site.MULTPORN
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.SERIE,
             seriesTags1,
             false,
             Site.MULTPORN
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.SERIE,
             seriesTags2,
             false,
             Site.MULTPORN
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.ARTIST,
             artistsTags,
             false,
             Site.MULTPORN
         )
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MULTPORN)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MULTPORN)
         content.putAttributes(attributes)
         val juiceboxRequestUrl = MultpornParser.getJuiceboxRequestUrl(headScripts!!)
         try {
@@ -94,10 +95,7 @@ class MultpornContent : BaseContentParser() {
                 content.setCoverImageUrl(imagesUrls[0])
                 if (updateImages) {
                     content.setImageFiles(
-                        ParseHelper.urlsToImageFiles(
-                            imagesUrls,
-                            imagesUrls[0], StatusContent.SAVED
-                        )
+                        urlsToImageFiles(imagesUrls, imagesUrls[0], StatusContent.SAVED)
                     )
                     content.setQtyPages(imagesUrls.size)
                 }

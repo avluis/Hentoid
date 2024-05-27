@@ -6,7 +6,11 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getChaptersFromLinks
+import me.devsaki.hentoid.parsers.getExtraChaptersbyUrl
+import me.devsaki.hentoid.parsers.getMaxImageOrder
+import me.devsaki.hentoid.parsers.setDownloadParams
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
@@ -72,7 +76,7 @@ class EdoujinParser : BaseImageListParser() {
         val result: List<ImageFile>
         try {
             result = parseImageFiles(onlineContent, storedContent)
-            ParseHelper.setDownloadParams(result, onlineContent.site.url)
+            setDownloadParams(result, onlineContent.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }
@@ -96,7 +100,7 @@ class EdoujinParser : BaseImageListParser() {
         )
             ?: return result
         val chapterLinks: List<Element> = doc.select("#chapterlist .eph-num a")
-        chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.id)
+        chapters = getChaptersFromLinks(chapterLinks, onlineContent.id)
 
         // If the stored content has chapters already, save them for comparison
         var storedChapters: List<Chapter>? = null
@@ -108,11 +112,11 @@ class EdoujinParser : BaseImageListParser() {
         if (null == storedChapters) storedChapters = emptyList()
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
-        val extraChapters = ParseHelper.getExtraChaptersbyUrl(storedChapters, chapters)
+        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters)
         progressStart(onlineContent, storedContent, extraChapters.size)
 
         // Start numbering extra images right after the last position of stored and chaptered images
-        val imgOffset = ParseHelper.getMaxImageOrder(storedChapters)
+        val imgOffset = getMaxImageOrder(storedChapters)
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (chp in extraChapters) {
@@ -143,7 +147,7 @@ class EdoujinParser : BaseImageListParser() {
         try {
             val ch = Chapter().setUrl(url) // Forge a chapter
             result = parseChapterImageFiles(content, ch, 1, null)
-            ParseHelper.setDownloadParams(result, content.site.url)
+            setDownloadParams(result, content.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }
@@ -169,7 +173,7 @@ class EdoujinParser : BaseImageListParser() {
             val info = getDataFromScripts(scripts)
             if (info != null) {
                 val imageUrls = info.getImages()
-                if (imageUrls.isNotEmpty()) return ParseHelper.urlsToImageFiles(
+                if (imageUrls.isNotEmpty()) return urlsToImageFiles(
                     imageUrls,
                     targetOrder,
                     StatusContent.SAVED,

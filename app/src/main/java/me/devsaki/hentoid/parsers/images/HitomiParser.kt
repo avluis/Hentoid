@@ -10,7 +10,8 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.HitomiGalleryInfo
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.setDownloadParams
+import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
@@ -42,7 +43,7 @@ class HitomiParser : BaseImageListParser() {
         var result: List<ImageFile>
         try {
             result = parseImageListWithWebview(onlineContent, null)
-            ParseHelper.setDownloadParams(result, onlineContent.site.url)
+            setDownloadParams(result, onlineContent.site.url)
         } catch (e: Exception) {
             Helper.logException(e)
             result = ArrayList()
@@ -113,8 +114,7 @@ class HitomiParser : BaseImageListParser() {
             result.add(ImageFile.newCover(imageUrls[0], StatusContent.SAVED))
             var order = 1
             for (s in imageUrls) {
-                val img =
-                    ParseHelper.urlToImageFile(s, order++, imageUrls.size, StatusContent.SAVED)
+                val img = urlToImageFile(s, order++, imageUrls.size, StatusContent.SAVED)
                 img.setDownloadParams(downloadParamsStr)
                 result.add(img)
             }

@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.parsers.images
 
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.signalProgress
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ParseProgress {
@@ -16,7 +16,7 @@ class ParseProgress {
         this.storedId = storedId
         currentStep = 0
         this.maxSteps = maxSteps
-        ParseHelper.signalProgress(contentId, storedId, currentStep, maxSteps)
+        signalProgress(contentId, storedId, currentStep, maxSteps)
         hasStarted = true
     }
 
@@ -33,10 +33,10 @@ class ParseProgress {
     }
 
     fun advance() {
-        ParseHelper.signalProgress(contentId, storedId, ++currentStep, maxSteps)
+        signalProgress(contentId, storedId, ++currentStep, maxSteps)
     }
 
     fun complete() {
-        ParseHelper.signalProgress(contentId, storedId, maxSteps, maxSteps)
+        signalProgress(contentId, storedId, maxSteps, maxSteps)
     }
 }

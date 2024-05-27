@@ -2,7 +2,7 @@ package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.network.getOnlineDocument
@@ -58,7 +58,7 @@ class PorncomixParser : BaseImageListParser() {
                 Site.PORNCOMIX.useWebviewAgent()
             )?.let {
                 it.selectFirst(".entry-content img")?.let { img ->
-                    result.add(ParseHelper.getImgSrc(img))
+                    result.add(getImgSrc(img))
                 }
             }
             if (processHalted.get()) break
@@ -79,7 +79,7 @@ class PorncomixParser : BaseImageListParser() {
     private fun parseGedeComixImages(doc: Document): List<String> {
         val pages: List<Element> = doc.select(".reading-content img").filterNotNull()
         return if (pages.isEmpty()) emptyList()
-        else pages.map { e -> ParseHelper.getImgSrc(e) }.distinct()
+        else pages.map { e -> getImgSrc(e) }.distinct()
     }
 
     private fun parseAllPornComixImages(doc: Document): List<String> {

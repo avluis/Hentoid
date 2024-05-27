@@ -6,7 +6,9 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.addSavedCookiesToHeader
+import me.devsaki.hentoid.parsers.setDownloadParams
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import org.apache.commons.lang3.NotImplementedException
 import org.greenrobot.eventbus.EventBus
@@ -87,13 +89,13 @@ abstract class BaseImageListParser : ImageListParser {
         val result: List<ImageFile>
         try {
             val imgUrls = parseImages(onlineContent)
-            result = ParseHelper.urlsToImageFiles(
+            result = urlsToImageFiles(
                 imgUrls,
                 StatusContent.SAVED,
                 onlineContent.coverImageUrl,
                 null
             )
-            ParseHelper.setDownloadParams(result, onlineContent.site.url)
+            setDownloadParams(result, onlineContent.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }
@@ -112,8 +114,8 @@ abstract class BaseImageListParser : ImageListParser {
         val result: List<ImageFile>
         try {
             val imgUrls = parseImages(url, content.downloadParams, null)
-            result = ParseHelper.urlsToImageFiles(imgUrls, StatusContent.SAVED, null, null)
-            ParseHelper.setDownloadParams(result, content.site.url)
+            result = urlsToImageFiles(imgUrls, StatusContent.SAVED, null, null)
+            setDownloadParams(result, content.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }
@@ -164,7 +166,7 @@ abstract class BaseImageListParser : ImageListParser {
         downloadParams: String?
     ): List<Pair<String, String>> {
         val headers: MutableList<Pair<String, String>> = ArrayList()
-        if (downloadParams != null) ParseHelper.addSavedCookiesToHeader(downloadParams, headers)
+        if (downloadParams != null) addSavedCookiesToHeader(downloadParams, headers)
         headers.add(Pair(HEADER_REFERER_KEY, url))
         return headers
     }

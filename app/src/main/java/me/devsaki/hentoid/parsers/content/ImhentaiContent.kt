@@ -4,7 +4,9 @@ import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.removeTextualTags
 import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -39,10 +41,10 @@ class ImhentaiContent : BaseContentParser() {
         content.setSite(Site.IMHENTAI)
         content.setRawUrl(url)
         cover?.let {
-            content.setCoverImageUrl(ParseHelper.getImgSrc(it))
+            content.setCoverImageUrl(getImgSrc(it))
         }
         var str = if (title.isNotEmpty()) StringHelper.removeNonPrintableChars(title) else ""
-        str = ParseHelper.removeTextualTags(str)
+        str = removeTextualTags(str)
         content.setTitle(str)
         if (updateImages) {
             var qtyPages = 0
@@ -55,17 +57,17 @@ class ImhentaiContent : BaseContentParser() {
             content.setQtyPages(qtyPages)
         }
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.IMHENTAI)
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.IMHENTAI)
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.IMHENTAI)
-        ParseHelper.parseAttributes(
+        parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.IMHENTAI)
+        parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.IMHENTAI)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.IMHENTAI)
+        parseAttributes(
             attributes,
             AttributeType.LANGUAGE,
             languages,
             false,
             Site.IMHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CATEGORY,
             categories,

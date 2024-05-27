@@ -2,7 +2,7 @@ package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
@@ -71,7 +71,7 @@ class MrmParser : BaseImageListParser() {
         )
         if (doc != null) {
             val images: List<Element> = doc.select(".entry-content img").filterNotNull()
-            return images.map { e -> ParseHelper.getImgSrc(e) }.filterNot { s -> s.isEmpty() }
+            return images.map { e -> getImgSrc(e) }.filterNot { s -> s.isEmpty() }
         }
         return emptyList()
     }

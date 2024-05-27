@@ -5,8 +5,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.NhentaiParser
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
@@ -71,7 +73,7 @@ class NhentaiContent : BaseContentParser() {
 
         content.setRawUrl(theUrl)
         cover?.let {
-            content.setCoverImageUrl(ParseHelper.getImgSrc(it))
+            content.setCoverImageUrl(getImgSrc(it))
         }
         var titleDef = title.trim { it <= ' ' }
         if (titleDef.isEmpty()) titleDef = titleAlt.trim { it <= ' ' }
@@ -80,7 +82,7 @@ class NhentaiContent : BaseContentParser() {
             Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")
         ) // e.g. 2022-03-20T00:09:43.309901+00:00
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.ARTIST,
             artists,
@@ -88,7 +90,7 @@ class NhentaiContent : BaseContentParser() {
             "name",
             Site.NHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CIRCLE,
             circles,
@@ -96,7 +98,7 @@ class NhentaiContent : BaseContentParser() {
             "name",
             Site.NHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.TAG,
             tags,
@@ -104,7 +106,7 @@ class NhentaiContent : BaseContentParser() {
             "name",
             Site.NHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.SERIE,
             series,
@@ -112,7 +114,7 @@ class NhentaiContent : BaseContentParser() {
             "name",
             Site.NHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CHARACTER,
             characters,
@@ -120,7 +122,7 @@ class NhentaiContent : BaseContentParser() {
             "name",
             Site.NHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.LANGUAGE,
             languages,
@@ -128,7 +130,7 @@ class NhentaiContent : BaseContentParser() {
             "name",
             Site.NHENTAI
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CATEGORY,
             categories,
@@ -139,7 +141,7 @@ class NhentaiContent : BaseContentParser() {
         content.putAttributes(attributes)
         if (updateImages) {
             thumbs?.let {
-                val images = ParseHelper.urlsToImageFiles(
+                val images = urlsToImageFiles(
                     NhentaiParser.parseImages(content, it),
                     content.coverImageUrl,
                     StatusContent.SAVED

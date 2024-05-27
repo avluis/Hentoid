@@ -8,7 +8,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.YoastGalleryMetadata
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
@@ -99,7 +99,7 @@ class PorncomixContent : BaseContentParser() {
     private fun tryProcessTags(elements: List<Element>?, attributes: AttributeMap): Boolean {
         elements?.let {
             if (it.isNotEmpty()) {
-                ParseHelper.parseAttributes(
+                parseAttributes(
                     attributes,
                     AttributeType.TAG,
                     mangaTags,

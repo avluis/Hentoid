@@ -6,8 +6,11 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.Hentai2ReadParser
+import me.devsaki.hentoid.parsers.images.IMAGE_PATH
+import me.devsaki.hentoid.parsers.parseAttribute
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -61,11 +64,11 @@ class Hentai2ReadContent : BaseContentParser() {
                 val title = StringHelper.removeNonPrintableChars(info.title)
                 content.setTitle(title)
                 val chapterImgs =
-                    info.images.map { s: String -> Hentai2ReadParser.IMAGE_PATH + s }
+                    info.images.map { s -> IMAGE_PATH + s }
                 if (updateImages && chapterImgs.isNotEmpty()) {
                     val coverUrl = chapterImgs[0]
                     content.setImageFiles(
-                        ParseHelper.urlsToImageFiles(
+                        urlsToImageFiles(
                             chapterImgs,
                             coverUrl,
                             StatusContent.SAVED
@@ -82,7 +85,7 @@ class Hentai2ReadContent : BaseContentParser() {
 
     private fun updateGallery(content: Content, updateImages: Boolean): Content {
         cover?.let {
-            content.setCoverImageUrl(ParseHelper.getImgSrc(it))
+            content.setCoverImageUrl(getImgSrc(it))
         }
         title?.let {
             if (it.isNotEmpty()) {
@@ -104,7 +107,7 @@ class Hentai2ReadContent : BaseContentParser() {
                         child.text().lowercase(Locale.getDefault())
                             .trim { it <= ' ' } else if (child.nodeName() == "a") {
                         when (currentProperty) {
-                            "parody" -> ParseHelper.parseAttribute(
+                            "parody" -> parseAttribute(
                                 attributes,
                                 AttributeType.SERIE,
                                 child,
@@ -112,7 +115,7 @@ class Hentai2ReadContent : BaseContentParser() {
                                 Site.HENTAI2READ
                             )
 
-                            "artist" -> ParseHelper.parseAttribute(
+                            "artist" -> parseAttribute(
                                 attributes,
                                 AttributeType.ARTIST,
                                 child,
@@ -120,7 +123,7 @@ class Hentai2ReadContent : BaseContentParser() {
                                 Site.HENTAI2READ
                             )
 
-                            "language" -> ParseHelper.parseAttribute(
+                            "language" -> parseAttribute(
                                 attributes,
                                 AttributeType.LANGUAGE,
                                 child,
@@ -128,7 +131,7 @@ class Hentai2ReadContent : BaseContentParser() {
                                 Site.HENTAI2READ
                             )
 
-                            "character" -> ParseHelper.parseAttribute(
+                            "character" -> parseAttribute(
                                 attributes,
                                 AttributeType.CHARACTER,
                                 child,
@@ -136,7 +139,7 @@ class Hentai2ReadContent : BaseContentParser() {
                                 Site.HENTAI2READ
                             )
 
-                            "content", "category" -> ParseHelper.parseAttribute(
+                            "content", "category" -> parseAttribute(
                                 attributes,
                                 AttributeType.TAG,
                                 child,

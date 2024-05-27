@@ -6,7 +6,9 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttribute
+import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
@@ -52,7 +54,7 @@ class MusesContent : BaseContentParser() {
                 val numSeparator = href.lastIndexOf('/')
                 if (StringHelper.isNumeric(href.substring(numSeparator + 1))) {
                     val img = thumbLink.select("img").first() ?: continue
-                    val src = ParseHelper.getImgSrc(img)
+                    val src = getImgSrc(img)
                     if (src.isEmpty()) continue
                     imagesUrls.add(src)
                     nbImages++
@@ -75,7 +77,7 @@ class MusesContent : BaseContentParser() {
                 if (it.size > 2) {
                     // Element 1 is always the publisher (using CIRCLE as publisher never appears on the Hentoid UI)
                     val publisher = it[1].text().lowercase(Locale.getDefault())
-                    if (!nonLegitPublishers.contains(publisher)) ParseHelper.parseAttribute(
+                    if (!nonLegitPublishers.contains(publisher)) parseAttribute(
                         attributes, AttributeType.CIRCLE,
                         it[1], false, Site.MUSES
                     )
@@ -83,7 +85,7 @@ class MusesContent : BaseContentParser() {
                         // Element 2 is either the author or the series, depending on the publisher
                         var type = AttributeType.SERIE
                         if (publishersWithAuthors.contains(publisher)) type = AttributeType.ARTIST
-                        ParseHelper.parseAttribute(
+                        parseAttribute(
                             attributes,
                             type,
                             it[2],
@@ -156,7 +158,7 @@ class MusesContent : BaseContentParser() {
                 )
                 if (doc != null) {
                     val elements = doc.select(".album-tags a[href*='/search/tag']")
-                    if (!elements.isEmpty()) ParseHelper.parseAttributes(
+                    if (!elements.isEmpty()) parseAttributes(
                         attributes,
                         AttributeType.TAG,
                         elements,
