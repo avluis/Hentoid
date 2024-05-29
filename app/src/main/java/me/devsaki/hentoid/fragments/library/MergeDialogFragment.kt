@@ -77,9 +77,9 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogLibraryMergeBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -169,7 +169,12 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
             titleNew.editText?.apply {
                 newTitleStr = text.toString()
             }
-            parent?.mergeContents(contents, newTitleStr, mergeDeleteSwitch.isChecked)
+            parent?.mergeContents(
+                contents,
+                newTitleStr,
+                mergeAppendBookTitleSwitch.isChecked,
+                mergeDeleteSwitch.isChecked
+            )
         }
         dismissAllowingStateLoss()
     }
@@ -216,6 +221,7 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
         fun mergeContents(
             contentList: List<Content>,
             newTitle: String,
+            appendBookTitle: Boolean,
             deleteAfterMerging: Boolean
         )
 

@@ -1738,12 +1738,13 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     override fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
+        appendBookTitle: Boolean,
         deleteAfterMerging: Boolean
     ) {
         leaveSelectionMode()
         invoke(this, resources.getString(R.string.merge_progress), R.plurals.page)
         viewModel.mergeContents(
-            contentList, newTitle, deleteAfterMerging
+            contentList, newTitle, appendBookTitle, deleteAfterMerging
         ) { onMergeSuccess() }
     }
 

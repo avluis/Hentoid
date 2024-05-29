@@ -1844,6 +1844,7 @@ public final class ContentHelper {
             @NonNull Context context,
             @NonNull List<Content> contentList,
             @NonNull String newTitle,
+            boolean appendBookTitle,
             @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
@@ -1945,8 +1946,11 @@ public final class ContentHelper {
                         newChapter = contentChapter;
                     } else {
                         if (chapLink.getUniqueId().isEmpty()) chapLink.populateUniqueId();
-                        if (null == newChapter || !chapLink.getUniqueId().equals(newChapter.getUniqueId()))
+                        if (null == newChapter || !chapLink.getUniqueId().equals(newChapter.getUniqueId())) {
                             newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
+                            if (appendBookTitle)
+                                newChapter.setName(c.getTitle() + " - " + newChapter.getName());
+                        }
                     }
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
                     newImg.setChapter(newChapter);
@@ -1990,7 +1994,7 @@ public final class ContentHelper {
     }
 
     public static StorageLocation getLocation(Content content) {
-        for (StorageLocation location : StorageLocation.values()) {
+        for (StorageLocation location : StorageLocation.getEntries()) {
             String rootUri = Preferences.getStorageUri(location);
             if (!rootUri.isEmpty() && content.getStorageUri().startsWith(rootUri))
                 return location;
