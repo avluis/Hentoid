@@ -7,12 +7,12 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.YoastGalleryMetadata
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -59,7 +59,7 @@ class ToonilyContent : BaseContentParser() {
     private fun updateSingleChapter(content: Content, url: String, updateImages: Boolean): Content {
         var title = NO_TITLE
         chapterTitle?.let {
-            title = StringHelper.removeNonPrintableChars(it.text())
+            title = cleanup(it.text())
         }
         content.setTitle(title)
         val urlParts = url.split("/")
@@ -86,7 +86,7 @@ class ToonilyContent : BaseContentParser() {
         var title = NO_TITLE
         breadcrumbs?.let {
             if (it.isNotEmpty())
-                title = StringHelper.removeNonPrintableChars(it[it.size - 1].text())
+                title = cleanup(it[it.size - 1].text())
         }
         content.setTitle(title)
         content.populateUniqueSiteId()

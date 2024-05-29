@@ -5,12 +5,12 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.NhentaiParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -75,9 +75,9 @@ class NhentaiContent : BaseContentParser() {
         cover?.let {
             content.setCoverImageUrl(getImgSrc(it))
         }
-        var titleDef = title.trim { it <= ' ' }
-        if (titleDef.isEmpty()) titleDef = titleAlt.trim { it <= ' ' }
-        content.setTitle(StringHelper.removeNonPrintableChars(titleDef))
+        var titleDef = title.trim()
+        if (titleDef.isEmpty()) titleDef = titleAlt.trim()
+        content.setTitle(cleanup(titleDef))
         content.setUploadDate(
             Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")
         ) // e.g. 2022-03-20T00:09:43.309901+00:00

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
+import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
+
 import androidx.annotation.NonNull;
 
 import com.squareup.moshi.Json;
@@ -15,7 +17,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.StringHelper;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class SimplyContentMetadata {
@@ -80,19 +81,19 @@ public class SimplyContentMetadata {
         if (!data.createdAt.isEmpty())
             content.setUploadDate(Helper.parseDatetimeToEpoch(data.createdAt, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")); // e.g. 2022-10-23T19:47:08.717+02:00
 
-        content.setTitle(StringHelper.removeNonPrintableChars(data.title));
+        content.setTitle(cleanup(data.title));
 
         content.setQtyPages(data.imageCount);
         content.setCoverImageUrl(data.preview.getThumbUrl());
 
         AttributeMap attributes = new AttributeMap();
         if (data.language != null) {
-            String name = StringHelper.removeNonPrintableChars(data.language.name);
+            String name = cleanup(data.language.name);
             Attribute attribute = new Attribute(AttributeType.LANGUAGE, name, Site.SIMPLY.getUrl() + "language/" + data.language.slug, Site.SIMPLY);
             attributes.add(attribute);
         }
         if (data.series != null) {
-            String name = StringHelper.removeNonPrintableChars(data.series.title);
+            String name = cleanup(data.series.title);
             Attribute attribute = new Attribute(AttributeType.SERIE, name, Site.SIMPLY.getUrl() + "series/" + data.series.slug, Site.SIMPLY);
             attributes.add(attribute);
         }
@@ -114,7 +115,7 @@ public class SimplyContentMetadata {
 
     private void populateAttributes(@NonNull AttributeMap attributes, List<MetadataEntry> entries, AttributeType type, @NonNull String typeUrl) {
         if (entries != null) for (MetadataEntry meta : entries) {
-            String name = StringHelper.removeNonPrintableChars(meta.title);
+            String name = cleanup(meta.title);
             Attribute attribute = new Attribute(type, name, Site.SIMPLY.getUrl() + typeUrl + "/" + meta.slug, Site.SIMPLY);
             attributes.add(attribute);
         }

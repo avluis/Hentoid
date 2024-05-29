@@ -388,10 +388,10 @@ class DuplicateCandidate(
     val coverHash =
         if (!useCover) Long.MIN_VALUE else if (Long.MIN_VALUE == forceCoverHash) content.cover.imageHash else forceCoverHash
     val size = content.size
-    val titleCleanup: String = if (useTitle) StringHelper.cleanup(content.title) else ""
+    val titleCleanup: String = if (useTitle) StringHelper.simplify(content.title) else ""
     val artistsCleanup: List<String>? =
         if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map {
-            StringHelper.cleanup(it.name)
+            StringHelper.simplify(it.name)
         } else Collections.emptyList()
     val countryCodes = if (useLanguage) content.attributeMap[AttributeType.LANGUAGE]?.map {
         LanguageHelper.getCountryCodeFromLanguage(it.name)

@@ -8,9 +8,9 @@ public class StringHelperTest {
 
     @Test
     public void cleanup() {
-        assertEquals("word", StringHelper.cleanup("[hi] word: [tag]"));
-        assertEquals("", StringHelper.cleanup(""));
-        assertEquals("a®a", StringHelper.cleanup("a&#174;a"));
-        assertEquals("word", StringHelper.cleanup("[word!]"));
+        assertEquals("word", StringHelper.simplify("[hi] word: [tag]"));
+        assertEquals("", StringHelper.simplify(""));
+        assertEquals("a®a", StringHelper.simplify("a&#174;a"));
+        assertEquals("word", StringHelper.simplify("[word!]"));
     }
 }

@@ -1622,7 +1622,7 @@ public final class ContentHelper {
                                                      @NonNull final Content content, boolean useTitle, boolean useArtist, boolean useLanguage,
                                                      boolean useCover, int sensitivity, long pHash, @NonNull final CollectionDAO dao) {
         // First find good rough candidates by searching for the longest word in the title
-        String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
+        String[] words = StringHelper.cleanMultipleSpaces(StringHelper.simplify(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted(Comparator.comparingInt(String::length)).findLast();
         // Too many resources consumed if the longest word is 1 character long
         if (longestWord.isEmpty() || longestWord.get().length() < 2) return null;

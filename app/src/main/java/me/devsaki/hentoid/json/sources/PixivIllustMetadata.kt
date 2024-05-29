@@ -8,6 +8,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.JsonHelper
@@ -245,7 +246,7 @@ data class PixivIllustMetadata(
         )
         result.add(attribute)
         for (tag in illustData.tags) {
-            val name = StringHelper.removeNonPrintableChars(tag.second)
+            val name = cleanup(tag.second)
             val type = AttributeType.TAG
             attribute = Attribute(type, name, Site.PIXIV.url + "tags/" + tag.first, Site.PIXIV)
             result.add(attribute)
@@ -259,7 +260,7 @@ data class PixivIllustMetadata(
         if (error || null == body || null == body.illustDetails)
             return content.setStatus(StatusContent.IGNORED)
         val illustData: IllustBody = body
-        content.setTitle(StringHelper.removeNonPrintableChars(illustData.title))
+        content.setTitle(cleanup(illustData.title))
         content.uniqueSiteId = illustData.illustId!!
         var urlValue = illustData.canonicalUrl
         if (urlValue.isEmpty()) urlValue = url

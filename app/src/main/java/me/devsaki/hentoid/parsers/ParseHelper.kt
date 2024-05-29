@@ -8,6 +8,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
+import me.devsaki.hentoid.parsers.content.BaseContentParser
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
@@ -16,6 +17,7 @@ import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
+import org.apache.commons.text.StringEscapeUtils
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
 import java.util.regex.Pattern
@@ -156,7 +158,7 @@ private fun parseAttribute(
         val e = element.selectFirst(".$childElementClass")
         if (e != null) e.ownText() else ""
     }
-    name = StringHelper.removeNonPrintableChars(name)
+    name = cleanup(name)
     name = removeBrackets(name)
     if (removeTrailingNumbers) name = removeTrailingNumbers(name)
     if (name.isEmpty() || name == "-" || name == "/") return
@@ -385,8 +387,7 @@ fun getChaptersFromLinks(
     for (e in chapterLinks) {
         val url = e.attr("href").trim()
         var name = e.attr("title").trim()
-        if (name.isEmpty()) name =
-            StringHelper.removeNonPrintableChars(e.ownText()).trim()
+        if (name.isEmpty()) name = cleanup(e.ownText()).trim()
         var epoch: Long = 0
         if (!dateCssQuery.isNullOrEmpty()) {
             val dateElement = e.selectFirst(dateCssQuery)
@@ -541,5 +542,12 @@ fun getUserAgent(site: Site): String {
         site.useMobileAgent(),
         site.useHentoidAgent(),
         site.useWebviewAgent()
+    )
+}
+
+fun cleanup(data: String?): String {
+    if (null == data) return BaseContentParser.NO_TITLE
+    return StringEscapeUtils.unescapeHtml4(
+        StringHelper.removeNonPrintableChars(data.trim()).replace('’', '\'')
     )
 }

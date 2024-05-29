@@ -5,11 +5,11 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.HentaifoxParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.Locale
@@ -39,7 +39,7 @@ class HentaifoxContent : BaseContentParser() {
         cover?.let {
             content.setCoverImageUrl(getImgSrc(it))
         }
-        content.setTitle(StringHelper.removeNonPrintableChars(title))
+        content.setTitle(cleanup(title))
 
         information?.let { info ->
             if (info.children().isEmpty()) return content

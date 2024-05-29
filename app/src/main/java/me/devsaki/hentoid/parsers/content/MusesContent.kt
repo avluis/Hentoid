@@ -6,6 +6,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttribute
 import me.devsaki.hentoid.parsers.parseAttributes
@@ -111,7 +112,7 @@ class MusesContent : BaseContentParser() {
                         }
                     }
                 }
-                content.setTitle(StringHelper.removeNonPrintableChars(bookTitle))
+                content.setTitle(cleanup(bookTitle))
             }
         }
         if (updateImages) {

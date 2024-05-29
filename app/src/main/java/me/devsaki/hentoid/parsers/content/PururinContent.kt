@@ -5,9 +5,9 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.removeBrackets
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.network.getHttpProtocol
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -55,7 +55,7 @@ class PururinContent : BaseContentParser() {
         content.setCoverImageUrl(coverUrl)
 
         title?.let {
-            content.setTitle(if (it.isNotEmpty()) StringHelper.removeNonPrintableChars(it[0]) else NO_TITLE)
+            content.setTitle(if (it.isNotEmpty()) cleanup(it[0]) else NO_TITLE)
         } ?: {
             content.setTitle(NO_TITLE)
         }

@@ -5,11 +5,11 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.images.MultpornParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -48,9 +48,7 @@ class MultpornContent : BaseContentParser() {
         content.setSite(Site.MULTPORN)
         if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
         content.setRawUrl(url)
-        if (title.isNotEmpty()) {
-            content.setTitle(StringHelper.removeNonPrintableChars(title))
-        } else content.setTitle(NO_TITLE)
+        content.setTitle(cleanup(title))
         val shortlinkParts = shortlink.split("/")
         content.uniqueSiteId = shortlinkParts[shortlinkParts.size - 1]
         if (publishingDate.isNotEmpty()) // e.g. 2018-11-12T20:04-05:00

@@ -7,12 +7,12 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.YoastGalleryMetadata
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -55,12 +55,9 @@ class AllPornComicContent : BaseContentParser() {
         content.setRawUrl(url)
         content.coverImageUrl = coverUrl
 
-        title?.let {
-            content.title =
-                StringHelper.removeNonPrintableChars(it.text())
-                    .replace(" - AllPornComic", "")
-                    .replace(" Porn Comic", "")
-        } ?: { content.title = NO_TITLE }
+        content.title = cleanup(title?.text())
+            .replace(" - AllPornComic", "")
+            .replace(" Porn Comic", "")
 
         metadata?.apply {
             if (childNodeSize() > 0) {

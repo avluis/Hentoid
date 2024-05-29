@@ -5,6 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.HdPornComicsParser
 import me.devsaki.hentoid.parsers.parseAttributes
@@ -45,7 +46,7 @@ class HdPornComicsContent : BaseContentParser() {
         content.setSite(Site.HDPORNCOMICS)
         if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED)
         content.setRawUrl(url)
-        content.setTitle(StringHelper.removeNonPrintableChars(title))
+        content.setTitle(cleanup(title))
         if (shortlink.isNotEmpty()) {
             val equalIndex = shortlink.lastIndexOf('=')
             if (equalIndex > -1) content.uniqueSiteId = shortlink.substring(equalIndex + 1)

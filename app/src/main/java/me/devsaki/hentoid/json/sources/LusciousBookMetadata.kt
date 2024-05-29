@@ -8,7 +8,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.parsers.cleanup
 
 @JsonClass(generateAdapter = true)
 data class LusciousBookMetadata(
@@ -61,12 +61,12 @@ data class LusciousBookMetadata(
         content.setSite(Site.LUSCIOUS)
 
         val info = data.album.get
-        if (null == info || null == info.url || null == info.title)
+        if (info?.url == null || null == info.title)
             return content.setStatus(StatusContent.IGNORED)
 
         content.setUrl(info.url)
         if (info.created.isNotEmpty()) content.setUploadDate(info.created.toLong() * 1000)
-        content.setTitle(StringHelper.removeNonPrintableChars(info.title))
+        content.setTitle(cleanup(info.title))
 
 //        result.setQtyPages(info.number_of_pictures);  <-- does not reflect the actual number of pictures reachable via the Luscious API / website
         info.cover?.apply { content.setCoverImageUrl(url) }
@@ -74,7 +74,7 @@ data class LusciousBookMetadata(
         val attributes = AttributeMap()
         info.language?.let {
             val name =
-                StringHelper.removeNonPrintableChars(it.title.replace(" Language", ""))
+                cleanup(it.title.replace(" Language", ""))
             val attribute = Attribute(
                 AttributeType.LANGUAGE,
                 name,
@@ -84,7 +84,7 @@ data class LusciousBookMetadata(
             attributes.add(attribute)
         }
         info.tags?.forEach { tag ->
-            var name = StringHelper.removeNonPrintableChars(tag.text)
+            var name = cleanup(tag.text)
             // Clean all tags starting with "Type :" (e.g. "Artist : someguy")
             if (name.contains(":")) name = name.substring(name.indexOf(':') + 1).trim()
             var type = AttributeType.TAG

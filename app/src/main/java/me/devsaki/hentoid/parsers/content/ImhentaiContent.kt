@@ -4,10 +4,10 @@ import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.removeTextualTags
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -43,7 +43,7 @@ class ImhentaiContent : BaseContentParser() {
         cover?.let {
             content.setCoverImageUrl(getImgSrc(it))
         }
-        var str = if (title.isNotEmpty()) StringHelper.removeNonPrintableChars(title) else ""
+        var str = cleanup(title)
         str = removeTextualTags(str)
         content.setTitle(str)
         if (updateImages) {

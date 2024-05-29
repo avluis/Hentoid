@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.json.sources;
 
-import androidx.annotation.NonNull;
+import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
 
-import org.apache.commons.text.StringEscapeUtils;
+import androidx.annotation.NonNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +13,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.StringHelper;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class EHentaiGalleriesMetadata {
@@ -38,12 +37,9 @@ public class EHentaiGalleriesMetadata {
         public Content update(@NonNull Content content, @NonNull String url, @NonNull Site site, boolean updatePages) {
             content.setSite(site);
 
-            String targetTitle = StringHelper.removeNonPrintableChars(title);
-            targetTitle = StringEscapeUtils.unescapeHtml4(targetTitle);
-
             content.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
                     .setCoverImageUrl(thumb)
-                    .setTitle(targetTitle)
+                    .setTitle(cleanup(title))
                     .setStatus(StatusContent.SAVED);
 
             if (posted != null && !posted.isEmpty())

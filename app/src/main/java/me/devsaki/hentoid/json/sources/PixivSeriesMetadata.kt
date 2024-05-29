@@ -3,6 +3,7 @@ package me.devsaki.hentoid.json.sources
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
@@ -53,7 +54,7 @@ data class PixivSeriesMetadata(
         content.setSite(Site.PIXIV)
         if (error || null == body || null == body.series) return content.setStatus(StatusContent.IGNORED)
         val data: SeriesData = body.series
-        content.setTitle(StringHelper.removeNonPrintableChars(data.getTitle()))
+        content.setTitle(cleanup(data.getTitle()))
         content.uniqueSiteId = data.getId()
         content.setUrl("user/" + data.getUserId() + "/series/" + data.getId())
         content.setCoverImageUrl(data.getCoverUrl())

@@ -5,6 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.util.StringHelper
@@ -38,7 +39,7 @@ class AnchiraContent : BaseContentParser() {
         content.site = Site.ANCHIRA
         content.setRawUrl(url)
         if (null == imgs) return content.setStatus(StatusContent.IGNORED)
-        content.title = title
+        content.title = cleanup(title)
         imgs?.let {
             if (it.isNotEmpty()) content.coverImageUrl = getImgSrc(it[0])
         }

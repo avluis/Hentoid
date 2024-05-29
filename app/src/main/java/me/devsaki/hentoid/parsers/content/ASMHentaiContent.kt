@@ -5,9 +5,9 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.Locale
@@ -56,7 +56,7 @@ class ASMHentaiContent : BaseContentParser() {
         cover?.let {
             content.coverImageUrl = "https:" + getImgSrc(it)
         }
-        content.title = StringHelper.removeNonPrintableChars(title)
+        content.title = cleanup(title)
 
         val attributes = AttributeMap()
         parseAttributes(

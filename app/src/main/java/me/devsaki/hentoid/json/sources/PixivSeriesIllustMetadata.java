@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
+import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
+
 import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
@@ -8,7 +10,6 @@ import java.util.List;
 import kotlin.Pair;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.StringHelper;
 
 /**
  * Data structure for Pixiv's "series-content" mobile endpoint
@@ -58,7 +59,7 @@ public class PixivSeriesIllustMetadata {
         for (SeriesContent sc : body.series_contents) {
             String forgedUrl = Site.PIXIV.getUrl() + "artworks/" + sc.getId();
             result.add(
-                    new Chapter(order++, forgedUrl, StringHelper.removeNonPrintableChars(sc.getTitle()))
+                    new Chapter(order++, forgedUrl, cleanup(sc.getTitle()))
                             .setUniqueId(sc.getId())
                             .setContentId(contentId)
             );

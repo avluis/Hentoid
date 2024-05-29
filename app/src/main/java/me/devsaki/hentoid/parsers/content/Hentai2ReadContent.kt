@@ -6,12 +6,12 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.Hentai2ReadParser
 import me.devsaki.hentoid.parsers.images.IMAGE_PATH
 import me.devsaki.hentoid.parsers.parseAttribute
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -61,8 +61,7 @@ class Hentai2ReadContent : BaseContentParser() {
         try {
             val info = Hentai2ReadParser.getDataFromScripts(scripts)
             if (info != null) {
-                val title = StringHelper.removeNonPrintableChars(info.title)
-                content.setTitle(title)
+                content.setTitle(cleanup(info.title))
                 val chapterImgs =
                     info.images.map { s -> IMAGE_PATH + s }
                 if (updateImages && chapterImgs.isNotEmpty()) {
@@ -90,11 +89,7 @@ class Hentai2ReadContent : BaseContentParser() {
         title?.let {
             if (it.isNotEmpty()) {
                 val titleStr = it[it.size - 1].text() // Last span is the title
-                content.setTitle(
-                    if (titleStr.isNotEmpty()) StringHelper.removeNonPrintableChars(
-                        titleStr
-                    ) else ""
-                )
+                content.setTitle(cleanup(titleStr))
             }
         } ?: { content.setTitle(NO_TITLE) }
         content.uniqueSiteId = uniqueId

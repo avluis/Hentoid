@@ -5,6 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.images.DoujinsParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
@@ -38,7 +39,7 @@ class DoujinsContent : BaseContentParser() {
         breadcrumbs?.let {
             if (it.isNotEmpty()) {
                 val e = it[it.size - 1]
-                content.title = StringHelper.removeNonPrintableChars(e.text())
+                content.title = cleanup(e.text())
             }
         }
         contentInfo?.let { ci ->
