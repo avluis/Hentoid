@@ -53,14 +53,13 @@
         android:layout_marginStart="4dp"
         android:fontFamily="sans-serif-medium"
         android:gravity="center_vertical|start"
-        android:lines="1"
-        android:singleLine="true"
+        android:maxLines="2"
         android:textDirection="anyRtl"
         android:textSize="@dimen/text_body_2"
         app:layout_constraintEnd_toStartOf="@id/ivReorder"
         app:layout_constraintStart_toEndOf="@id/ivCover"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="Some drawer text" />
+        tools:text="Some drawer text that might just be longer than one line" />
 
     <TextView
         android:id="@+id/material_drawer_description"

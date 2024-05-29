@@ -30,6 +30,7 @@ import com.mikepenz.fastadapter.ui.utils.StringHolder
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.requireById
+import me.devsaki.hentoid.core.setMiddleEllipsis
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.getThemedColor
@@ -156,6 +157,9 @@ class SubExpandableItem<T>(
 
         // Texts
         holder.name.text = name
+        holder.name.post {
+            holder.name.setMiddleEllipsis()
+        }
         StringHolder.applyToOrHide(description, holder.description)
 
         // Cover
