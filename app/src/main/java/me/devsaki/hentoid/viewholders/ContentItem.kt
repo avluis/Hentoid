@@ -1,13 +1,8 @@
 package me.devsaki.hentoid.viewholders
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.graphics.PorterDuff
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -22,9 +17,6 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
@@ -40,7 +32,6 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.core.Consumer
-import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.core.setMiddleEllipsis
 import me.devsaki.hentoid.database.domains.Chapter
@@ -55,8 +46,9 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
+import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.image.tintBitmap
+import me.devsaki.hentoid.util.isValidContextForGlide
 import timber.log.Timber
 import java.util.Locale
 
@@ -278,6 +270,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         var ivReorder: View? = view.findViewById(R.id.ivReorder)
         var downloadButton: View? = view.findViewById(R.id.ivRedownload)
 
+        private val glideRequestOptions = getGlideOptionCenterImage(view.context)
         private var deleteActionRunnable: Runnable? = null
 
         // Extra info to display in stacktraces
@@ -654,7 +647,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             deleteActionRunnable = null
             debugStr = "[no data]"
             swipeableView.translationX = 0f
-            if (Helper.isValidContextForGlide(ivCover)) Glide.with(ivCover).clear(ivCover)
+            if (isValidContextForGlide(ivCover)) Glide.with(ivCover).clear(ivCover)
         }
 
         override fun onDragged() {
@@ -697,21 +690,6 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 return true
             }
             return false
-        }
-    }
-
-    companion object {
-        private val glideRequestOptions: RequestOptions
-
-        init {
-            val context: Context = getInstance()
-
-            // Glide options
-            val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-            val tintColor = context.getThemedColor(R.color.light_gray)
-            val d: Drawable = BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
-            val centerInside: Transformation<Bitmap> = CenterInside()
-            glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
         }
     }
 }

@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
-import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Typeface
 import android.net.Uri
@@ -36,9 +35,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -85,6 +81,7 @@ import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.glideOptionCenterInside
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -107,9 +104,6 @@ import kotlin.concurrent.timer
 class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     ReaderBrowseModeDialogFragment.Parent, ReaderPrefsDialogFragment.Parent,
     ReaderDeleteDialogFragment.Parent, Pager {
-
-    private val centerInside: Transformation<Bitmap> = CenterInside()
-    private val glideRequestOptions = RequestOptions().optionalTransform(centerInside)
 
     private lateinit var adapter: ImagePagerAdapter
     private lateinit var llm: PrefetchLinearLayoutManager
@@ -1265,15 +1259,15 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 val nextImg = adapter.getImageAt(absIndex + 1)
                 if (previousImg != null) {
                     Glide.with(previousImageView).load(Uri.parse(previousImg.fileUri))
-                        .apply(glideRequestOptions).into(previousImageView)
+                        .apply(glideOptionCenterInside).into(previousImageView)
                     previousImageView.visibility = View.VISIBLE
                 } else previousImageView.visibility = View.INVISIBLE
                 if (currentImg != null) Glide.with(controlsOverlay.imagePreviewCenter)
-                    .load(Uri.parse(currentImg.fileUri)).apply(glideRequestOptions)
+                    .load(Uri.parse(currentImg.fileUri)).apply(glideOptionCenterInside)
                     .into(controlsOverlay.imagePreviewCenter)
                 if (nextImg != null) {
                     Glide.with(nextImageView).load(Uri.parse(nextImg.fileUri))
-                        .apply(glideRequestOptions).into(nextImageView)
+                        .apply(glideOptionCenterInside).into(nextImageView)
                     nextImageView.visibility = View.VISIBLE
                 } else nextImageView.visibility = View.INVISIBLE
             }

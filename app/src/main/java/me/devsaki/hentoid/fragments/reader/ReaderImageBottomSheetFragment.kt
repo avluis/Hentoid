@@ -2,11 +2,8 @@ package me.devsaki.hentoid.fragments.reader
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,9 +13,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -40,9 +34,9 @@ import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.file.shareFile
+import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.image.tintBitmap
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -62,20 +56,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
     private var imageIndex: Int = -1
     private var scale = -1f
     private var image: ImageFile? = null
-    private val glideRequestOptions: RequestOptions
-
-    init {
-        val context: Context = HentoidApp.getInstance()
-        val tintColor = context.getThemedColor(R.color.light_gray)
-
-        val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-        val d: Drawable = BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
-
-        val centerInside: Transformation<Bitmap> = CenterInside()
-        glideRequestOptions = RequestOptions()
-            .optionalTransform(centerInside)
-            .error(d)
-    }
+    private val glideRequestOptions = getGlideOptionCenterImage(HentoidApp.getInstance())
 
 
     override fun onAttach(context: Context) {

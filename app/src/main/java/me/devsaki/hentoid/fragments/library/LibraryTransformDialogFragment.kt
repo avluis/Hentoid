@@ -1,12 +1,8 @@
 package me.devsaki.hentoid.fragments.library
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -22,8 +18,6 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.textfield.TextInputLayout
 import com.mikepenz.fastadapter.FastAdapter
@@ -47,14 +41,13 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getInputStream
-import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.determineEncoder
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.screenHeight
 import me.devsaki.hentoid.util.image.screenWidth
-import me.devsaki.hentoid.util.image.tintBitmap
 import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.workers.TransformWorker
@@ -93,20 +86,10 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
     private var contentIndex = 0
     private var pageIndex = 0
     private var maxPages = -1
-    private val glideRequestOptions: RequestOptions
     private val itemAdapter = ItemAdapter<DrawerItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
 
-    init {
-        val context: Context = HentoidApp.getInstance()
-        val tintColor = context.getThemedColor(R.color.light_gray)
-
-        val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-        val d: Drawable = BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
-
-        val centerInside: Transformation<Bitmap> = CenterInside()
-        glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
-    }
+    private val glideRequestOptions = getGlideOptionCenterImage(HentoidApp.getInstance())
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

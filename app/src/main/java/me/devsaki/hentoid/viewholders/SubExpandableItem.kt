@@ -1,10 +1,5 @@
 package me.devsaki.hentoid.viewholders
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.MotionEvent
 import android.view.View
@@ -14,9 +9,6 @@ import androidx.annotation.StringRes
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.request.RequestOptions
 import com.mikepenz.fastadapter.ClickListener
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
@@ -33,8 +25,7 @@ import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.core.setMiddleEllipsis
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.image.tintBitmap
+import me.devsaki.hentoid.util.getGlideOptionCenterImage
 
 /**
  * Inspired by mikepenz
@@ -60,6 +51,8 @@ class SubExpandableItem<T>(
     private var draggable = false
 
     private var mOnClickListener: ClickListener<SubExpandableItem<T>>? = null
+
+    private val glideRequestOptions = getGlideOptionCenterImage(HentoidApp.getInstance())
 
     //we define a clickListener in here so we can directly animate
     /**
@@ -256,19 +249,5 @@ class SubExpandableItem<T>(
 
     override fun getLevel(): Int {
         return 0
-    }
-
-    companion object {
-        private val glideRequestOptions: RequestOptions
-
-        init {
-            val context: Context = HentoidApp.getInstance()
-            val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-            val tintColor = context.getThemedColor(R.color.light_gray)
-            val d: Drawable =
-                BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
-            val centerInside: Transformation<Bitmap> = CenterInside()
-            glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
-        }
     }
 }

@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities
 
-import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
@@ -14,9 +13,6 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.request.RequestOptions
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -48,6 +44,7 @@ import me.devsaki.hentoid.fragments.metadata.MetaRenameDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.applyTheme
+import me.devsaki.hentoid.util.glideOptionCenterInside
 import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
@@ -212,13 +209,13 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
                     if (glideUrl != null) {
                         Glide.with(it.ivCover)
                             .load(glideUrl)
-                            .apply(glideRequestOptions)
+                            .apply(glideOptionCenterInside)
                             .into(it.ivCover)
                     }
                 } else  // From stored picture
                     Glide.with(it.ivCover)
                         .load(Uri.parse(thumbLocation))
-                        .apply(glideRequestOptions)
+                        .apply(glideOptionCenterInside)
                         .into(it.ivCover)
             }
 
@@ -539,11 +536,5 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
 
     override fun onRenameAttribute(newName: String, id: Long, createRule: Boolean) {
         viewModel.renameAttribute(newName, id, createRule)
-    }
-
-    companion object {
-        val centerInside: Transformation<Bitmap> = CenterInside()
-        val glideRequestOptions = RequestOptions()
-            .optionalTransform(centerInside)
     }
 }

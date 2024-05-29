@@ -13,9 +13,7 @@ import androidx.core.view.ViewCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.signature.ObjectKey
 import com.github.penfeizhou.animation.FrameAnimationDrawable
@@ -28,7 +26,10 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.glideOptionCenterInside
+import me.devsaki.hentoid.util.isValidContextForGlide
+
+private const val HEART_SYMBOL = "❤"
 
 class ImageFileItem(private val image: ImageFile, private val showChapter: Boolean) :
     AbstractItem<ImageFileItem.ViewHolder>(),
@@ -38,12 +39,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
     private var isCurrent = false
     private val expanded = false
 
-    val glideRequestOptions: RequestOptions
-
     init {
-        val centerInside = CenterInside()
-        glideRequestOptions = RequestOptions().optionalTransform(centerInside)
-
         chapter = image.linkedChapter ?: Chapter(1, "", "") // Default display when nothing is set
         identifier = image.uniqueHash()
     }
@@ -183,7 +179,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
                         return handled
                     }
                 })
-                .apply(item.glideRequestOptions)
+                .apply(glideOptionCenterInside)
                 .into(image)
         }
 
@@ -202,12 +198,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
         }
 
         override fun unbindView(item: ImageFileItem) {
-            if (Helper.isValidContextForGlide(image))
-                Glide.with(image).clear(image)
-        }
-
-        companion object {
-            private const val HEART_SYMBOL = "❤"
+            if (isValidContextForGlide(image)) Glide.with(image).clear(image)
         }
     }
 }

@@ -308,33 +308,6 @@ public final class Helper {
     }
 
     /**
-     * Indicate whether the given View's context is usable by Glide
-     *
-     * @param view View whose Context to test
-     * @return True if the given View's context is usable by Glide; false if not
-     */
-    public static boolean isValidContextForGlide(final View view) {
-        return isValidContextForGlide(view.getContext());
-    }
-
-    /**
-     * Indicate whether the given Context is usable by Glide
-     *
-     * @param context Context to test
-     * @return True if the given Context is usable by Glide; false if not
-     */
-    public static boolean isValidContextForGlide(final Context context) {
-        if (context == null) {
-            return false;
-        }
-        if (context instanceof Activity) {
-            final Activity activity = (Activity) context;
-            return !activity.isDestroyed() && !activity.isFinishing();
-        }
-        return true;
-    }
-
-    /**
      * Build an 64-bit SIP hash from the given data
      *
      * @param data Data to hash
