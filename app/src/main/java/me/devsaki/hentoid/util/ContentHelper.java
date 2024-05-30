@@ -1927,6 +1927,7 @@ public final class ContentHelper {
             int pictureOrder = 1;
             int nbProcessedPics = 1;
             Chapter newChapter;
+            String chapterStr = context.getString(R.string.gallery_chapter_prefix);
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
                 newChapter = null;
@@ -1949,7 +1950,7 @@ public final class ContentHelper {
                         if (null == newChapter || !chapLink.getUniqueId().equals(newChapter.getUniqueId())) {
                             newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
                             if (appendBookTitle)
-                                newChapter.setName(c.getTitle() + " - " + newChapter.getName());
+                                newChapter.setName(c.getTitle() + " - " + chapterStr + " " + newChapter.getOrder());
                         }
                     }
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
