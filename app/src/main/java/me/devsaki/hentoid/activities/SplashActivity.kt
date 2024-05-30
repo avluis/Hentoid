@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.AppStartup.appKilled
 import me.devsaki.hentoid.core.AppStartup.initApp
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -23,6 +24,7 @@ class SplashActivity : BaseActivity() {
     private lateinit var secondaryPb: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        appKilled = false
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
         //ThemeHelper.applyTheme(this); <-- this won't help; the starting activity is shown with the default theme, aka Light

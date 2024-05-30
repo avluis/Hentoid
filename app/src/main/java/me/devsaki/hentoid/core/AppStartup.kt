@@ -59,12 +59,8 @@ typealias Consumer<T> = (T) -> Unit
 
 @Suppress("UNUSED_PARAMETER")
 object AppStartup {
-    private var isInitialized = false
 
-    @Synchronized
-    private fun setInitialized() {
-        isInitialized = true
-    }
+    var appKilled = true
 
     fun initApp(
         context: Context,
@@ -72,15 +68,11 @@ object AppStartup {
         onSecondaryProgress: (Float) -> Unit,
         onComplete: () -> Unit
     ) {
-        if (isInitialized) {
-            onComplete()
-            return
-        }
-
         val prelaunchTasks: MutableList<BiConsumer<Context, (Float) -> Unit>> = ArrayList()
         prelaunchTasks.addAll(getPreLaunchTasks())
         prelaunchTasks.addAll(DatabaseMaintenance.getPreLaunchCleanupTasks())
 
+        Timber.i("Init app : %d prelaunch tasks", prelaunchTasks.size)
         // Wait until pre-launch tasks are completed
         runPrelaunchTasks(
             context, prelaunchTasks, onMainProgress, onSecondaryProgress
@@ -90,7 +82,6 @@ object AppStartup {
     private fun postPrelaunch(
         context: Context, onComplete: () -> Unit
     ) {
-        setInitialized()
         onComplete()
         // Run post-launch tasks on a worker
         val workManager = WorkManager.getInstance(context)

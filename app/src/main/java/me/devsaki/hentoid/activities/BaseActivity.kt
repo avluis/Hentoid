@@ -14,6 +14,7 @@ import com.skydoves.powermenu.MenuAnimation
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.AppStartup
 import me.devsaki.hentoid.core.HentoidApp.Companion.getLockInstant
 import me.devsaki.hentoid.core.HentoidApp.Companion.isUnlocked
 import me.devsaki.hentoid.core.HentoidApp.Companion.setUnlocked
@@ -41,6 +42,13 @@ abstract class BaseActivity : AppCompatActivity {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Force a proper restart if app has been killed
+        if (AppStartup.appKilled) {
+            val intent = Intent(application, SplashActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            application.startActivity(intent)
+            this.finish()
+        }
         // Change locale if set manually
         this.convertLocaleToEnglish()
         applyTheme()
