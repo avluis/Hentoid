@@ -52,7 +52,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
-        android:text="@string/merge_append_book_title"
+        android:text="@string/merge_use_book_title"
         app:layout_constraintTop_toBottomOf="@id/title_new" />
 
     <com.google.android.material.materialswitch.MaterialSwitch
