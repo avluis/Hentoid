@@ -608,7 +608,7 @@
     <string name="split_progress">Splitting book…</string>
     <string name="merge_split">Split</string>
     <string name="new_title">New title</string>
-    <string name="merge_use_book_title">Use merged book title in chapter titles</string>
+    <string name="merge_use_book_title">Create one chapter per book</string>
     <string name="merge_delete_after_merging">Delete these books after merging</string>
     <string name="split_select_help">Hold and drag to select\nEach selected chapter creates one new book</string>
     <string name="split_no_chapters">No chapters created yet :-(</string>

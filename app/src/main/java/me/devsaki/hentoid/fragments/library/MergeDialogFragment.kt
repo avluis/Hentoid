@@ -172,7 +172,7 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
             parent?.mergeContents(
                 contents,
                 newTitleStr,
-                mergeAppendBookTitleSwitch.isChecked,
+                mergeOneChapterPerBookSwitch.isChecked,
                 mergeDeleteSwitch.isChecked
             )
         }

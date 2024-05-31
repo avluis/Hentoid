@@ -1837,6 +1837,7 @@ public final class ContentHelper {
      * @param context     Context to use
      * @param contentList List of Content to merge together
      * @param newTitle    Title of the new merged Content
+     * @param newTitle    True to ignore existing chapters of the merged books and create one chapter per book instead
      * @param dao         DAO to use
      * @throws ContentNotProcessedException If something terrible happens
      */
@@ -1844,7 +1845,7 @@ public final class ContentHelper {
             @NonNull Context context,
             @NonNull List<Content> contentList,
             @NonNull String newTitle,
-            boolean appendBookTitle,
+            boolean useBookAsChapter,
             @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
@@ -1943,14 +1944,13 @@ public final class ContentHelper {
                     newImg.setOrder(pictureOrder++);
                     newImg.computeName(nbMaxDigits);
                     Chapter chapLink = img.getLinkedChapter();
-                    if (null == chapLink) { // No chapter -> set content chapter
+                    // No chapter -> set content chapter
+                    if (null == chapLink || useBookAsChapter) {
                         newChapter = contentChapter;
                     } else {
                         if (chapLink.getUniqueId().isEmpty()) chapLink.populateUniqueId();
                         if (null == newChapter || !chapLink.getUniqueId().equals(newChapter.getUniqueId())) {
                             newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
-                            if (appendBookTitle)
-                                newChapter.setName(c.getTitle() + " - " + chapterStr + " " + newChapter.getOrder());
                         }
                     }
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);

@@ -48,7 +48,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.materialswitch.MaterialSwitch
-        android:id="@+id/merge_append_book_title_switch"
+        android:id="@+id/merge_one_chapter_per_book_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
@@ -61,7 +61,7 @@
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
         android:text="@string/merge_delete_after_merging"
-        app:layout_constraintTop_toBottomOf="@id/merge_append_book_title_switch" />
+        app:layout_constraintTop_toBottomOf="@id/merge_one_chapter_per_book_switch" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_button"
