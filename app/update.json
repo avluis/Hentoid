@@ -25,7 +25,7 @@
 	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"669"},
 	  {"sourceName":"TOONILY", "status":"RED", "fixedByBuild":"688"},
 	  {"sourceName":"MANHWA", "status":"BLACK"},
-	  {"sourceName":"ANCHIRA", "status":"RED"},
+	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"GREY"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
