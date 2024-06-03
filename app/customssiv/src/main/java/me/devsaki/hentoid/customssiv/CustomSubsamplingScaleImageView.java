@@ -1924,7 +1924,7 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull Uri source) throws Exception {
         Helper.assertNonUiThread();
         String sourceUri = source.toString();
-        view.debug("TilesInitTask.doInBackground");
+        Timber.d("Init tiles BEGIN %s", sourceUri);
         regionDecoder = new SkiaImageRegionDecoder(preferredBitmapConfig);
         Point dimensions = regionDecoder.init(context, source);
         int sWidthTile = dimensions.x;
@@ -1938,6 +1938,7 @@ public class CustomSubsamplingScaleImageView extends View {
             sWidthTile = view.sRegion.width();
             sHeightTile = view.sRegion.height();
         }
+        Timber.d("Init tiles END %s", sourceUri);
         return new int[]{sWidthTile, sHeightTile, exifOrientation};
     }
 

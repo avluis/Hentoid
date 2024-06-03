@@ -750,11 +750,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onImagesChanged(images: List<ImageFile>) {
         if (BuildConfig.DEBUG) {
             Timber.v("IMAGES CHANGED")
-            val imageUris = images.filterNot { img: ImageFile ->
-                img.fileUri.isEmpty()
-            }.map { img: ImageFile -> "[" + img.order + "] " + img.fileUri }.toList()
-            for (imageUri in imageUris) Timber.v("    %s", imageUri)
+            images.forEach {
+                if (it.fileUri.isNotEmpty()) Timber.v("[%d] %s", it.order, it.fileUri)
+            }
         }
+
         isComputingImageList = true
         binding?.apply {
             adapter.reset()

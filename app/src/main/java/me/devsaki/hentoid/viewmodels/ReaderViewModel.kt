@@ -79,7 +79,7 @@ import kotlin.math.floor
 import kotlin.math.roundToInt
 
 private const val DOWNLOAD_RANGE = 6 // Sequential download; not concurrent
-private const val EXTRACT_RANGE = 35
+private const val EXTRACT_RANGE = 15
 
 private var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
 
@@ -301,6 +301,7 @@ class ReaderViewModel(
                 val newImg = newImages[i]
                 val cacheUri = DiskCache.getFile(formatCacheKey(newImg))
                 if (cacheUri != null) newImg.fileUri = cacheUri.toString()
+                else newImg.fileUri = ""
             }
             processImages(theContent, pageNumber, newImages)
         }
@@ -1205,13 +1206,15 @@ class ReaderViewModel(
     }
 
     private fun onResourceExtracted(
-        identifier: String, uri: Uri, nbProcessed: AtomicInteger, maxElements: Int
+        identifier: String,
+        uri: Uri,
+        nbProcessed: AtomicInteger,
+        maxElements: Int
     ) {
 
-        val c = getContent().value
-        if (c != null && c.isFolderExists) cacheJson(
-            getApplication<Application>().applicationContext, c
-        )
+        getContent().value?.let {
+            if (it.isFolderExists) cacheJson(getApplication<Application>().applicationContext, it)
+        }
 
         nbProcessed.getAndIncrement()
         EventBus.getDefault().post(
