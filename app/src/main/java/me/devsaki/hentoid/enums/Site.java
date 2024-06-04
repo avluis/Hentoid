@@ -57,8 +57,9 @@ public enum Site {
     private static final Site[] INVISIBLE_SITES = {
             NEXUS, // Dead
             HBROWSE, // Dead
-            HENTAICAFE, // Removed as per Fakku request + dead
+            HENTAICAFE, // Dead
             KSK, // Dead
+            ANCHIRA, // Dead
             FAKKU, // Old Fakku; kept for retrocompatibility
             FAKKU2, // Dropped after Fakku decided to flag downloading accounts and IPs
             ASMHENTAI_COMICS, // Does not work directly
@@ -196,7 +197,9 @@ public enum Site {
         return galleryHeight;
     }
 
-    public int getJsoupOutputSyntax() { return jsoupOutputSyntax; }
+    public int getJsoupOutputSyntax() {
+        return jsoupOutputSyntax;
+    }
 
     public boolean isVisible() {
         for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;
