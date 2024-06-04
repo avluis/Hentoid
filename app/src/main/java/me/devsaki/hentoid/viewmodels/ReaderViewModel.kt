@@ -140,10 +140,12 @@ class ReaderViewModel(
     init {
         showFavouritesOnly.postValue(false)
         shuffled.postValue(false)
+        DiskCache.addCleanupObserver(this.javaClass.name) { this.onCacheCleanup() }
     }
 
     override fun onCleared() {
         dao.cleanup()
+        DiskCache.removeCleanupObserver(this.javaClass.name)
         super.onCleared()
     }
 
@@ -317,7 +319,7 @@ class ReaderViewModel(
         theContent: Content, newImages: MutableList<ImageFile>
     ) {
         require(!theContent.isArchive) { "Content must not be an archive" }
-        val missingUris = newImages.any { img: ImageFile -> img.fileUri.isEmpty() }
+        val missingUris = newImages.any { it.fileUri.isEmpty() }
         var newImageFiles: List<ImageFile> = ArrayList(newImages)
 
         // Reattach actual files to the book's pictures if they are empty or have no URI's
@@ -1054,7 +1056,7 @@ class ReaderViewModel(
         val img = images[pageIndex]
         return ((img.status == StatusContent.ONLINE || // Image has to be downloaded
                 img.isArchived) && // Image has to be extracted from an archive
-                null == DiskCache.getFile(formatCacheKey(img))) // It hasn't been cached
+                !DiskCache.peekFile(formatCacheKey(img))) // It hasn't been cached
     }
 
     /**
@@ -2048,6 +2050,16 @@ class ReaderViewModel(
                 order++
             }
             sequenceNumber++
+        }
+    }
+
+    private fun onCacheCleanup() {
+        synchronized(viewerImagesInternal) {
+            viewerImagesInternal.forEach {
+                if ((it.isArchived || it.status == StatusContent.ONLINE)
+                    && !DiskCache.peekFile(formatCacheKey(it))
+                ) it.fileUri = ""
+            }
         }
     }
 

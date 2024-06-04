@@ -18,17 +18,24 @@ import java.time.Instant
  */
 object DiskCache {
     private const val FOLDER_NAME = "disk_cache"
-    private const val SIZE_LIMIT_DEBUG = 50 * 1024 * 1024 // 50MB
+    private const val SIZE_LIMIT_DEBUG = 50 * 1024 * 1024
     private const val SIZE_LIMIT_PRODUCTION = 50 * 1024 * 1024 // 50MB
     private val SIZE_LIMIT = if (BuildConfig.DEBUG) SIZE_LIMIT_DEBUG else SIZE_LIMIT_PRODUCTION
 
+    // Location of the cache folder
+    private lateinit var folder: File
+
     // Key = URL
-    // Value.left = timestamp of last access
-    // Value.right = Uri of file
+    // Value.first = timestamp of last access
+    // Value.second = Uri of file
     private val entries = HashMap<String, Pair<Long, Uri>>()
+
+    // Timestamp for the last purge
     private var lastPurge = Instant.now().toEpochMilli()
 
-    private lateinit var folder: File
+    // To broadcast cleanup events
+    private var cleanupObservers = HashMap<String, () -> Unit>()
+
 
     fun init(context: Context) {
         Helper.assertNonUiThread()
@@ -45,11 +52,10 @@ object DiskCache {
     private fun purgeIfNeeded() {
         // Avoid straining the system
         if (Instant.now().toEpochMilli() - lastPurge < 1000) return
+        lastPurge = Instant.now().toEpochMilli()
 
         CoroutineScope(Dispatchers.Default).launch {
-            val sortedEntries: MutableList<MutableMap.MutableEntry<String, Pair<Long, Uri>>> by lazy {
-                entries.entries.sortedBy { e -> e.value.first }.toMutableList()
-            }
+            val sortedEntries = entries.entries.sortedBy { it.value.first }.toMutableList()
             withContext(Dispatchers.IO) {
                 var storageTaken = getUsedStorage()
                 while (storageTaken > SIZE_LIMIT) {
@@ -65,8 +71,8 @@ object DiskCache {
                     }
                     sortedEntries.removeAt(0)
                 }
-                lastPurge = Instant.now().toEpochMilli()
             }
+            cleanupObservers.values.forEach { it.invoke() }
         }
     }
 
@@ -98,5 +104,19 @@ object DiskCache {
             entries[key] = Pair(Instant.now().toEpochMilli(), entry.second)
             return entry.second
         }
+    }
+
+    fun peekFile(key: String): Boolean {
+        return entries.containsKey(key)
+    }
+
+    fun addCleanupObserver(key: String, observer: () -> Unit) {
+        cleanupObservers[key] = observer
+        Timber.d("Observer added; %d registered", cleanupObservers.size)
+    }
+
+    fun removeCleanupObserver(key: String) {
+        cleanupObservers.remove(key)
+        Timber.d("Observer removed; %d registered", cleanupObservers.size)
     }
 }
