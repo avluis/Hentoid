@@ -102,6 +102,7 @@ import me.devsaki.hentoid.util.exception.FileNotProcessedException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.file.ArchiveEntry;
 import me.devsaki.hentoid.util.file.ArchiveHelperKt;
+import me.devsaki.hentoid.util.file.Beholder;
 import me.devsaki.hentoid.util.file.FileExplorer;
 import me.devsaki.hentoid.util.file.NameFilter;
 import me.devsaki.hentoid.util.image.ImageHelperKt;
@@ -747,8 +748,11 @@ public final class ContentHelper {
      * @return Created or existing directory
      */
     @Nullable
-    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context
-                                                                     context, @NonNull Content content, @NonNull StorageLocation location, boolean createOnly) {
+    public static DocumentFile getOrCreateContentDownloadDir(
+            @NonNull Context context,
+            @NonNull Content content,
+            @NonNull StorageLocation location,
+            boolean createOnly) {
         // == Site folder
         DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, location, content.getSite());
         if (null == siteDownloadDir) return null;
@@ -1875,6 +1879,7 @@ public final class ContentHelper {
         mergedContent.addAttributes(mergedAttributes);
 
         // Create destination folder for new content
+        DocumentFile parentFolder;
         DocumentFile targetFolder;
         // External library root for external content
         if (mergedContent.getStatus().equals(StatusContent.EXTERNAL)) {
@@ -1894,9 +1899,11 @@ public final class ContentHelper {
                     }
                 }
             }
+            parentFolder = externalRootFolder;
         } else { // Primary folder for non-external content; using download strategy
             StorageLocation location = DownloadHelperKt.selectDownloadLocation(context);
             targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, location, true);
+            parentFolder = getDocumentFromTreeUriString(context, Preferences.getStorageUri(location));
         }
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
@@ -1989,6 +1996,10 @@ public final class ContentHelper {
             Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
             if (customGroup.isPresent())
                 GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
+
+            // If merged book is external, register it to the Beholder
+            if (StatusContent.EXTERNAL == mergedContent.getStatus() && parentFolder != null)
+                Beholder.INSTANCE.updateSnapshot(context, parentFolder.getUri().toString(), targetFolder, mergedContent.getId());
         }
 
         EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.Type.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));

@@ -18,6 +18,17 @@ object Beholder {
     //      Value : Content ID if any; -1 if none
     private val snapshot: MutableMap<String, Map<Long, Long>> = HashMap()
 
+
+    fun init(ctx: Context) {
+        if (snapshot.isNotEmpty()) return
+
+        val entries = loadSnapshot(ctx)
+        entries.forEach {
+            snapshot[it.uri] = it.documents
+        }
+        logSnapshot()
+    }
+
     /**
      * Scan folders
      *
@@ -88,6 +99,17 @@ object Beholder {
 
     fun updateSnapshot(
         ctx: Context,
+        parentUri: String,
+        contentDoc: DocumentFile,
+        contentId: Long
+    ) {
+        val map = HashMap<String, List<Pair<DocumentFile, Long>>>()
+        map[parentUri] = listOf(Pair(contentDoc, contentId))
+        updateSnapshot(ctx, map)
+    }
+
+    fun updateSnapshot(
+        ctx: Context,
         contentDocs: Map<String, List<Pair<DocumentFile, Long>>>
     ) {
         val result: MutableList<FolderEntry> = ArrayList()
@@ -151,16 +173,6 @@ object Beholder {
         }
         logSnapshot()
         return true
-    }
-
-    fun init(ctx: Context) {
-        if (snapshot.isNotEmpty()) return
-
-        val entries = loadSnapshot(ctx)
-        entries.forEach {
-            snapshot[it.uri] = it.documents
-        }
-        logSnapshot()
     }
 
     private fun loadSnapshot(ctx: Context): List<FolderEntry> {
