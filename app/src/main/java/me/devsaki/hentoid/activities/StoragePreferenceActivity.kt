@@ -100,15 +100,21 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             toolbar.setOnMenuItemClickListener { i -> onMenuItemSelected(i) }
 
             addPrimary1.setOnClickListener {
-                if (PrimaryImportWorker.isRunning(baseContext)) toast(R.string.pref_import_running)
+                if (PrimaryImportWorker.isRunning(baseContext)
+                    || ExternalImportWorker.isRunning(baseContext)
+                ) toast(R.string.pref_import_running)
                 else importLocation(StorageLocation.PRIMARY_1)
             }
             addPrimary2.setOnClickListener {
-                if (PrimaryImportWorker.isRunning(baseContext)) toast(R.string.pref_import_running)
+                if (PrimaryImportWorker.isRunning(baseContext)
+                    || ExternalImportWorker.isRunning(baseContext)
+                ) toast(R.string.pref_import_running)
                 else importLocation(StorageLocation.PRIMARY_2)
             }
             addExternal.setOnClickListener {
-                if (ExternalImportWorker.isRunning(baseContext)) toast(R.string.pref_import_running)
+                if (PrimaryImportWorker.isRunning(baseContext)
+                    || ExternalImportWorker.isRunning(baseContext)
+                ) toast(R.string.pref_import_running)
                 else importLocation(StorageLocation.EXTERNAL)
             }
 

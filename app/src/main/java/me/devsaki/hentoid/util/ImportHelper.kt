@@ -319,12 +319,10 @@ fun setAndScanPrimaryFolder(
     // Scan the folder for an existing library; start the import
     return if (hasBooks(context, hentoidFolder)) {
         if (!askScanExisting) {
-            runPrimaryImport(context, location, hentoidFolder.uri.toString(), options)
-            Pair(ProcessFolderResult.OK_LIBRARY_DETECTED, hentoidFolder.uri.toString())
-        } else Pair(
-            ProcessFolderResult.OK_LIBRARY_DETECTED_ASK,
-            hentoidFolder.uri.toString()
-        )
+            if (runPrimaryImport(context, location, hentoidFolder.uri.toString(), options))
+                Pair(ProcessFolderResult.OK_LIBRARY_DETECTED, hentoidFolder.uri.toString())
+            else Pair(ProcessFolderResult.KO_ALREADY_RUNNING, hentoidFolder.uri.toString())
+        } else Pair(ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, hentoidFolder.uri.toString())
     } else {
         // Create a new library or import an Hentoid folder without books
         // => Don't run the import worker and settle things here
@@ -545,7 +543,8 @@ private fun runPrimaryImport(
     location: StorageLocation,
     targetRoot: String,
     options: ImportOptions?
-) {
+): Boolean {
+    if (ExternalImportWorker.isRunning(context) || PrimaryImportWorker.isRunning(context)) return false
     ImportNotificationChannel.init(context)
     val builder = PrimaryImportData.Builder()
     builder.setLocation(location)
@@ -565,6 +564,7 @@ private fun runPrimaryImport(
             .setInputData(builder.data)
             .addTag(WORK_CLOSEABLE).build()
     )
+    return true
 }
 
 /**
@@ -576,7 +576,7 @@ fun runExternalImport(
     context: Context,
     behold: Boolean = false
 ): Boolean {
-    if (ExternalImportWorker.isRunning(context)) return false
+    if (ExternalImportWorker.isRunning(context) || PrimaryImportWorker.isRunning(context)) return false
     ImportNotificationChannel.init(context)
     val builder = ExternalImportData.Builder()
     builder.setBehold(behold)
