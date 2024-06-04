@@ -36,6 +36,7 @@
     <string name="resume">Resume</string>
     <string name="cancel">Cancel</string>
     <string name="cancel_all">Cancel all</string>
+    <string name="reset">Reset</string>
     <string name="freeze">Toggle freeze</string>
     <string name="menu_completed_single">Mark as completed</string>
     <string name="menu_reset_read">Mark as unread</string>
@@ -482,6 +483,7 @@
     <string name="group_edit_name">Edit group name</string>
     <string name="book_edit_title">Edit book title</string>
     <string name="delete_progress">Deleting books</string>
+    <string name="delete_pages_progress">Deleting pages</string>
     <string name="purge_progress">Purging books</string>
     <string name="cancel_queue_progress">Canceling queue items</string>
     <plurals name="delete_success_books">
@@ -606,6 +608,7 @@
     <string name="split_progress">Splitting book…</string>
     <string name="merge_split">Split</string>
     <string name="new_title">New title</string>
+    <string name="merge_use_book_title">Create one chapter per book</string>
     <string name="merge_delete_after_merging">Delete these books after merging</string>
     <string name="split_select_help">Hold and drag to select\nEach selected chapter creates one new book</string>
     <string name="split_no_chapters">No chapters created yet :-(</string>
@@ -851,6 +854,7 @@
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
+    <string name="gallery_edit_name">Edit name</string>
     <string name="gallery_display_page"><x:g example="&gt;" id="startMarker">%1$s</x:g>Page <x:g example="2" id="number">%2$d</x:g><x:g example="♥" id="isFavourite">%3$s</x:g><x:g example="&lt;" id="endMarker">%4$s</x:g></string>
     <string name="gallery_display_chapter">Chp <x:g example="2" id="number">%d</x:g></string>
     <string name="gallery_no_chapter">No chapter</string>
@@ -866,7 +870,7 @@
     <string name="slideshow_start">Starting slideshow (delay <x:g example="0.5" id="time">%.1f</x:g>s)</string>
     <string name="slideshow_start_vertical">Starting slideshow (<x:g example="fast" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Slideshow stopped</string>
-    <string name="ask_clear_chapters">Clear all chapters?</string>
+    <string name="ask_clear_chapters">Reset all chapters?</string>
     <string name="view_book">View book</string>
 
     <!-- Changelog -->
@@ -1021,8 +1025,8 @@
     <string name="notif_delete_fail">Deletion failed</string>
     <string name="notif_delete_prepurge_fail">Redownload/Stream pre-purge failed</string>
     <plurals name="notif_delete_fail_details">
-        <item quantity="one"><x:g example="1" id="number">%d</x:g> book failed</item>
-        <item quantity="other"><x:g example="2" id="number">%d</x:g> books failed</item>
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> item failed</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> items failed</item>
     </plurals>
 
     <!-- Update Json service -->

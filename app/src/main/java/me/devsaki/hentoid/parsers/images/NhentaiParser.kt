@@ -1,9 +1,9 @@
 package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 
@@ -17,9 +17,9 @@ class NhentaiParser : BaseImageListParser() {
             val result: MutableList<String> = ArrayList()
             var index = 1
             for (e in thumbs) {
-                val s = ParseHelper.getImgSrc(e)
+                val s = getImgSrc(e)
                 if (s.isEmpty()) continue
-                result.add(serverUrl + index++ + "." + FileHelper.getExtension(s))
+                result.add(serverUrl + index++ + "." + getExtension(s))
             }
             return result
         }

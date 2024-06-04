@@ -86,7 +86,9 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
@@ -742,13 +744,13 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 return
             }
             val folder =
-                FileHelper.getDocumentFromTreeUriString(context, c.storageUri)
+                getDocumentFromTreeUriString(context, c.storageUri)
             if (folder != null) {
                 selectExtension?.apply {
                     deselect(selections.toMutableSet())
                 }
                 activity.get()?.getSelectionToolbar()?.visibility = View.GONE
-                FileHelper.openFile(context, folder)
+                openFile(context, folder)
             }
         }
     }
@@ -1736,12 +1738,13 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     override fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
+        appendBookTitle: Boolean,
         deleteAfterMerging: Boolean
     ) {
         leaveSelectionMode()
         invoke(this, resources.getString(R.string.merge_progress), R.plurals.page)
         viewModel.mergeContents(
-            contentList, newTitle, deleteAfterMerging
+            contentList, newTitle, appendBookTitle, deleteAfterMerging
         ) { onMergeSuccess() }
     }
 
@@ -1911,7 +1914,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             Preferences.Constant.ORDER_FIELD_NB_PAGES -> c.qtyPages.toLong().toString()
             Preferences.Constant.ORDER_FIELD_READS -> c.reads.toString()
-            Preferences.Constant.ORDER_FIELD_SIZE -> FileHelper.formatHumanReadableSizeInt(
+            Preferences.Constant.ORDER_FIELD_SIZE -> formatHumanReadableSizeInt(
                 c.size,
                 resources
             )

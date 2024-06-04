@@ -5,7 +5,7 @@ import androidx.annotation.DrawableRes
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.json.core.JsonLangSettings
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.readStreamAsString
 import timber.log.Timber
 import java.io.IOException
 import java.util.Locale
@@ -18,8 +18,7 @@ object LanguageHelper {
         val context: Context = getInstance()
         try {
             context.resources.openRawResource(R.raw.languages).use { `is` ->
-                val siteSettingsStr =
-                    FileHelper.readStreamAsString(`is`)
+                val siteSettingsStr = readStreamAsString(`is`)
                 val langSettings = JsonHelper.jsonToObject(
                     siteSettingsStr,
                     JsonLangSettings::class.java

@@ -24,7 +24,10 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.listFiles
+import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.file.shareFile
 import me.devsaki.hentoid.viewholders.TextItem
 import timber.log.Timber
 import java.time.format.DateTimeFormatter
@@ -90,12 +93,12 @@ class LogsDialogFragment : BaseDialogFragment<Nothing>() {
     private suspend fun getLogs(): List<DocumentFile> {
         return withContext(Dispatchers.IO) {
             val rootFolder =
-                FileHelper.getDocumentFromTreeUriString(
+                getDocumentFromTreeUriString(
                     requireContext(),
                     Preferences.getStorageUri(StorageLocation.PRIMARY_1)
                 ) ?: return@withContext emptyList<DocumentFile>()
 
-            var files = FileHelper.listFiles(
+            var files = listFiles(
                 requireContext(), rootFolder
             ) { displayName: String ->
                 displayName.lowercase(
@@ -137,9 +140,9 @@ class LogsDialogFragment : BaseDialogFragment<Nothing>() {
         powerMenu.onMenuItemClickListener =
             OnMenuItemClickListener { p, _ ->
                 if (0 == p) {
-                    FileHelper.openFile(requireContext(), document)
+                    openFile(requireContext(), document)
                 } else {
-                    FileHelper.shareFile(
+                    shareFile(
                         requireContext(),
                         document.uri,
                         item.text

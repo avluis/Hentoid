@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.squareup.moshi.JsonClass
@@ -15,7 +16,13 @@ import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.DEFAULT_MIME_TYPE
+import me.devsaki.hentoid.util.file.findFile
+import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.listFiles
+import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.file.zipFiles
 import me.devsaki.hentoid.util.notification.BaseNotification
 import timber.log.Timber
@@ -34,16 +41,12 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         val deleteOnSuccess: Boolean
     )
 
-    private val dao: CollectionDAO
+    private val dao: CollectionDAO = ObjectBoxDAO()
 
     private var totalItems = 0
     private var nbOK = 0
     private var nbKO = 0
     private lateinit var globalProgress: ProgressManager
-
-    init {
-        dao = ObjectBoxDAO()
-    }
 
 
     override fun getStartNotification(): BaseNotification {
@@ -54,7 +57,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
     }
 
@@ -91,13 +94,12 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
     private fun archiveContent(content: Content, params: Params) {
         Timber.i(">> archive %s", content.title)
-        val bookFolder = FileHelper.getDocumentFromTreeUriString(
+        val bookFolder = getDocumentFromTreeUriString(
             applicationContext, content.storageUri
         ) ?: return
 
-        val files = FileHelper.listFiles(
-            applicationContext, bookFolder, null
-        ) // Everything (incl. JSON and thumb) gets into the archive
+        // Everything (incl. JSON and thumb) gets into the archive
+        val files = listFiles(applicationContext, bookFolder, null)
 
         if (files.isNotEmpty()) {
             val success: Boolean
@@ -154,25 +156,24 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
             return Pair(
                 // NB : specifying the ZIP Mime-Type here forces extension to ".zip"
                 // even when the file name already ends with ".cbr"
-                FileHelper.openNewDownloadOutputStream(
-                    applicationContext, displayName, FileHelper.DEFAULT_MIME_TYPE
+                openNewDownloadOutputStream(
+                    applicationContext, displayName, DEFAULT_MIME_TYPE
                 ), true
             )
         } else {
-            val targetFolder =
-                FileHelper.getDocumentFromTreeUriString(applicationContext, targetFolderUri)
+            val targetFolder = getDocumentFromTreeUriString(applicationContext, targetFolderUri)
             if (targetFolder != null) {
                 if (!overwrite) {
                     val existing =
-                        FileHelper.findFile(applicationContext, targetFolder, displayName)
+                        findFile(applicationContext, targetFolder, displayName)
                     // If the target file is already there, skip archiving
                     if (existing != null) return Pair(null, true)
                 }
-                val destFile = FileHelper.findOrCreateDocumentFile(
-                    applicationContext, targetFolder, FileHelper.DEFAULT_MIME_TYPE, displayName
+                val destFile = findOrCreateDocumentFile(
+                    applicationContext, targetFolder, DEFAULT_MIME_TYPE, displayName
                 )
                 if (destFile != null) return Pair(
-                    FileHelper.getOutputStream(
+                    getOutputStream(
                         applicationContext,
                         destFile
                     ), true

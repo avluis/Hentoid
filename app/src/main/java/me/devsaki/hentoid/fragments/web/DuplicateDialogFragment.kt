@@ -1,9 +1,5 @@
 package me.devsaki.hentoid.fragments.web
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,9 +8,6 @@ import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.fragment.app.FragmentActivity
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.request.RequestOptions
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.CollectionDAO
@@ -26,27 +19,17 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.image.tintBitmap
+import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import org.greenrobot.eventbus.EventBus
+
+private const val KEY_CONTENT_ID = "contentId"
+private const val KEY_ONLINE_CONTENT_PAGES = "onlineContentPages"
+private const val KEY_CONTENT_SIMILARITY = "similarity"
+private const val KEY_IS_DOWNLOAD_PLUS = "downloadPlus"
 
 class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Parent>() {
 
     companion object {
-        private const val KEY_CONTENT_ID = "contentId"
-        private const val KEY_ONLINE_CONTENT_PAGES = "onlineContentPages"
-        private const val KEY_CONTENT_SIMILARITY = "similarity"
-        private const val KEY_IS_DOWNLOAD_PLUS = "downloadPlus"
-
-        private var bmp: Bitmap =
-            BitmapFactory.decodeResource(getInstance().resources, R.drawable.ic_hentoid_trans)
-        private var tintColor = getInstance().getThemedColor(R.color.light_gray)
-        var d: Drawable = BitmapDrawable(getInstance().resources, tintBitmap(bmp, tintColor))
-
-        val centerInside: Transformation<Bitmap> = CenterInside()
-
-        val glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
-
         fun invoke(
             parent: FragmentActivity,
             libraryContentId: Long,
@@ -76,6 +59,9 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
     private var onlineContentPages = 0
     private var similarity = 0f
     private var isDownloadPlus = false
+
+    private val glideRequestOptions = getGlideOptionCenterImage(getInstance())
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

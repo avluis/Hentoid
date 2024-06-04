@@ -5,9 +5,9 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -46,7 +46,7 @@ class SimplyContent : BaseContentParser() {
         content.setCoverImageUrl(coverUrl)
         content.setRawUrl(url)
         if (title.isNotEmpty()) {
-            content.setTitle(StringHelper.removeNonPrintableChars(title))
+            content.setTitle(cleanup(title))
         } else content.setTitle(NO_TITLE)
 
         ulDateContainer?.let {
@@ -56,29 +56,29 @@ class SimplyContent : BaseContentParser() {
         }
 
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.LANGUAGE,
             languageTags,
             false,
             Site.SIMPLY
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CHARACTER,
             characterTags,
             false,
             Site.SIMPLY
         )
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, seriesTags, false, Site.SIMPLY)
-        ParseHelper.parseAttributes(
+        parseAttributes(attributes, AttributeType.SERIE, seriesTags, false, Site.SIMPLY)
+        parseAttributes(
             attributes,
             AttributeType.ARTIST,
             artistsTags,
             false,
             Site.SIMPLY
         )
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.SIMPLY)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.SIMPLY)
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

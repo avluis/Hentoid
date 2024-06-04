@@ -68,10 +68,16 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
-import me.devsaki.hentoid.util.file.FileHelper
-import me.devsaki.hentoid.util.file.FileHelper.MemoryUsageFigures
+import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.ZIP_MIME_TYPE
+import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntries
+import me.devsaki.hentoid.util.file.fileSizeFromUri
+import me.devsaki.hentoid.util.file.formatHumanReadableSize
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
+import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.assembleGif
 import me.devsaki.hentoid.util.network.Connectivity
@@ -156,7 +162,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         downloadInterrupted.set(true)
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         EventBus.getDefault().unregister(this)
         dao.cleanup()
     }
@@ -258,11 +264,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         // Folder already set (e.g. resume paused download)
         if (content.storageUri.isNotEmpty()) {
             // Reset storage URI if unreachable (will be re-created later in the method)
-            val rootFolder = FileHelper.getDocumentFromTreeUriString(context, content.storageUri)
-            if (null == rootFolder) content.storageUri = "" else {
+            val rootFolder = getDocumentFromTreeUriString(context, content.storageUri)
+            if (null == rootFolder) content.clearStorageDoc() else {
                 val result = testFolder(context, content.storageUri)
                 if (result != null) return result
-                dir = FileHelper.getDocumentFromTreeUriString(
+                dir = getDocumentFromTreeUriString(
                     context,
                     content.storageUri
                 ) // Will come out null if invalid
@@ -445,7 +451,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Folder creation succeeds -> memorize its path
         val targetFolder: DocumentFile = dir
-        content.storageUri = targetFolder.uri.toString()
+        content.storageDoc = targetFolder
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
         if (0 == content.qtyPages) content.qtyPages = images.count { i -> i.isReadable }
@@ -741,7 +747,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.d(
                 "deltaPages: %d / deltaNetworkBytes: %s",
                 deltaPages,
-                FileHelper.formatHumanReadableSize(
+                formatHumanReadableSize(
                     deltaNetworkBytes,
                     applicationContext.resources
                 )
@@ -899,7 +905,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 content.downloadDate = now
             }
             if (content.storageUri.isEmpty()) return
-            val dir = FileHelper.getDocumentFromTreeUriString(
+            val dir = getDocumentFromTreeUriString(
                 applicationContext, content.storageUri
             )
             if (dir != null) {
@@ -1205,7 +1211,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     // This is run on the I/O thread pool spawned by the downloader
     private fun onRequestSuccess(request: RequestOrder, fileUri: Uri) {
         val img = request.img
-        val imgFile = FileHelper.getFileFromSingleUriString(
+        val imgFile = getFileFromSingleUriString(
             applicationContext, fileUri.toString()
         )
         if (imgFile != null) {
@@ -1343,7 +1349,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     ) {
         var isError = false
         var errorMsg = ""
-        val ugoiraCacheFolder = FileHelper.getOrCreateCacheFolder(
+        val ugoiraCacheFolder = getOrCreateCacheFolder(
             applicationContext, UGOIRA_CACHE_FOLDER + File.separator + img.id
         )
         if (ugoiraCacheFolder != null) {
@@ -1410,7 +1416,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 ) ?: throw IOException("Couldn't assemble ugoira file")
 
                 // Save it to the book folder
-                val finalImgUri = FileHelper.copyFile(
+                val finalImgUri = copyFile(
                     applicationContext,
                     ugoiraGifFile,
                     dir.uri,
@@ -1419,7 +1425,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 ) ?: throw IOException("Couldn't copy result ugoira file")
 
                 img.mimeType = MIME_IMAGE_GIF
-                img.size = FileHelper.fileSizeFromUri(
+                img.size = fileSizeFromUri(
                     applicationContext,
                     ugoiraGifFile
                 )
@@ -1595,14 +1601,14 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER))
             return Pair(QueuingResult.QUEUE_END, null)
         }
-        val rootFolder = FileHelper.getDocumentFromTreeUriString(context, uriString)
+        val rootFolder = getDocumentFromTreeUriString(context, uriString)
         if (null == rootFolder) {
             Timber.i("Download folder has not been found. Please select it again.") // May happen if the folder has been moved or deleted after it has been selected
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND))
             return Pair(QueuingResult.QUEUE_END, null)
         }
-        if (!FileHelper.isUriPermissionPersisted(context.contentResolver, rootFolder.uri)) {
+        if (!isUriPermissionPersisted(context.contentResolver, rootFolder.uri)) {
             Timber.i("Insufficient credentials on download folder. Please select it again.")
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS))

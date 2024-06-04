@@ -4,7 +4,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.getCookies
@@ -24,7 +25,7 @@ class DeviantArtParser : BaseImageListParser() {
             var imgLink = ""
             var thumbLink = ""
             body.selectFirst("img[fetchpriority=high]")?.let {
-                imgLink = ParseHelper.getImgSrc(it)
+                imgLink = getImgSrc(it)
                 thumbLink = it.attr("srcSet").split(" ")[0]
             }
             return Triple(thumbLink, dlLink, imgLink)
@@ -107,7 +108,7 @@ class DeviantArtParser : BaseImageListParser() {
                     token,
                     daMinorVersion,
                     cookieStr,
-                    ParseHelper.getUserAgent(Site.DEVIANTART)
+                    getUserAgent(Site.DEVIANTART)
                 )
                 val response = call.execute()
                 if (response.isSuccessful) {

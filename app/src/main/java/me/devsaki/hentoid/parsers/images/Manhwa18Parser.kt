@@ -6,7 +6,13 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getChaptersFromLinks
+import me.devsaki.hentoid.parsers.getExtraChaptersbyUrl
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.getMaxChapterOrder
+import me.devsaki.hentoid.parsers.getMaxImageOrder
+import me.devsaki.hentoid.parsers.setDownloadParams
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.greenrobot.eventbus.EventBus
@@ -46,7 +52,7 @@ class Manhwa18Parser : BaseImageListParser() {
         val result: List<ImageFile>
         try {
             result = parseImageFiles(onlineContent, storedContent)
-            ParseHelper.setDownloadParams(result, onlineContent.site.url)
+            setDownloadParams(result, onlineContent.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }
@@ -69,7 +75,7 @@ class Manhwa18Parser : BaseImageListParser() {
             ?: return result
         var chapterLinks: List<Element> = doc.select("div ul a[href*=chap]").filterNotNull()
         if (chapterLinks.isEmpty()) chapterLinks = doc.select("div ul a[href*=ch-]").filterNotNull()
-        chapters = ParseHelper.getChaptersFromLinks(
+        chapters = getChaptersFromLinks(
             chapterLinks,
             onlineContent.id,
             "div.chapter-time",
@@ -86,15 +92,15 @@ class Manhwa18Parser : BaseImageListParser() {
         if (null == storedChapters) storedChapters = emptyList()
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
-        val extraChapters = ParseHelper.getExtraChaptersbyUrl(storedChapters, chapters)
+        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters)
         progressStart(onlineContent, storedContent, extraChapters.size)
 
         // Start numbering extra images right after the last position of stored and chaptered images
-        val imgOffset = ParseHelper.getMaxImageOrder(storedChapters)
+        val imgOffset = getMaxImageOrder(storedChapters)
 
         // 2. Open each chapter URL and get the image data until all images are found
         var minEpoch = Long.MAX_VALUE
-        var storedOrderOffset = ParseHelper.getMaxChapterOrder(storedChapters)
+        var storedOrderOffset = getMaxChapterOrder(storedChapters)
         for (chp in extraChapters) {
             chp.setOrder(++storedOrderOffset)
             if (chp.uploadDate > 0) minEpoch = minEpoch.coerceAtMost(chp.uploadDate)
@@ -137,7 +143,7 @@ class Manhwa18Parser : BaseImageListParser() {
         try {
             val ch = Chapter().setUrl(url) // Forge a chapter
             result = parseChapterImageFiles(content, ch, 1, null)
-            ParseHelper.setDownloadParams(result, content.site.url)
+            setDownloadParams(result, content.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }
@@ -159,8 +165,8 @@ class Manhwa18Parser : BaseImageListParser() {
         )
         if (doc != null) {
             val images = doc.select("#chapter-content img")
-            val imageUrls = images.mapNotNull { e -> ParseHelper.getImgSrc(e) }
-            if (imageUrls.isNotEmpty()) return ParseHelper.urlsToImageFiles(
+            val imageUrls = images.mapNotNull { e -> getImgSrc(e) }
+            if (imageUrls.isNotEmpty()) return urlsToImageFiles(
                 imageUrls,
                 targetOrder,
                 StatusContent.SAVED,

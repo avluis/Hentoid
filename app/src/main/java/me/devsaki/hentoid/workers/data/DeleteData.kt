@@ -16,6 +16,7 @@ private const val KEY_CONTENT_PURGE_IDS = "contentPurgeIds"
 private const val KEY_CONTENT_PURGE_KEEPCOVERS = "contentPurgeKeepCovers"
 private const val KEY_GROUP_IDS = "groupIds"
 private const val KEY_QUEUE_IDS = "queueIds"
+private const val KEY_IMAGE_IDS = "imageIds"
 private const val KEY_DELETE_ALL_QUEUE_RECORDS = "deleteAllQueueRecords"
 private const val KEY_DELETE_GROUPS_ONLY = "deleteGroupsOnly"
 private const val KEY_MASS_OPERATION = "massOperation"
@@ -45,6 +46,10 @@ class DeleteData {
 
         fun setQueueIds(value: List<Long>) {
             builder.putLongArray(KEY_QUEUE_IDS, value.toLongArray())
+        }
+
+        fun setImageIds(value: List<Long>) {
+            builder.putLongArray(KEY_IMAGE_IDS, value.toLongArray())
         }
 
         fun setDeleteAllQueueRecords(value: Boolean) {
@@ -85,25 +90,25 @@ class DeleteData {
 
         val contentIds: LongArray
             get() {
-                val storedValue = data.getLongArray(KEY_CONTENT_IDS)
-                return storedValue ?: longArrayOf()
+                return data.getLongArray(KEY_CONTENT_IDS) ?: longArrayOf()
             }
         val contentPurgeIds: LongArray
             get() {
-                val storedValue = data.getLongArray(KEY_CONTENT_PURGE_IDS)
-                return storedValue ?: longArrayOf()
+                return data.getLongArray(KEY_CONTENT_PURGE_IDS) ?: longArrayOf()
             }
         val contentPurgeKeepCovers: Boolean
             get() = data.getBoolean(KEY_CONTENT_PURGE_KEEPCOVERS, false)
         val groupIds: LongArray
             get() {
-                val storedValue = data.getLongArray(KEY_GROUP_IDS)
-                return storedValue ?: longArrayOf()
+                return data.getLongArray(KEY_GROUP_IDS) ?: longArrayOf()
             }
         val queueIds: LongArray
             get() {
-                val storedValue = data.getLongArray(KEY_QUEUE_IDS)
-                return storedValue ?: longArrayOf()
+                return data.getLongArray(KEY_QUEUE_IDS) ?: longArrayOf()
+            }
+        val imageIds: LongArray
+            get() {
+                return data.getLongArray(KEY_IMAGE_IDS) ?: longArrayOf()
             }
         val isDeleteAllQueueRecords: Boolean
             get() = data.getBoolean(KEY_DELETE_ALL_QUEUE_RECORDS, false)

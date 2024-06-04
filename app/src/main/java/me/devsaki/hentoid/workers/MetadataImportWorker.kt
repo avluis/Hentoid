@@ -36,7 +36,10 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.findFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.listFolders
 import me.devsaki.hentoid.util.importBookmarks
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.workers.data.MetadataImportData
@@ -75,7 +78,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
     }
 
@@ -107,7 +110,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         importCustomGroups: Boolean,
         importBookmarks: Boolean
     ) {
-        val jsonFile = FileHelper.getFileFromSingleUriString(context, jsonUri)
+        val jsonFile = getFileFromSingleUriString(context, jsonUri)
         if (null == jsonFile) {
             trace(Log.ERROR, "Couldn't find metadata JSON file at %s", jsonUri)
             return
@@ -283,7 +286,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
     private fun mapFilesToContent(context: Context, c: Content, siteFolder: DocumentFile): Boolean {
         val bookfolders: List<DocumentFile>?
         if (bookFoldersCache.containsKey(c.site)) bookfolders = bookFoldersCache[c.site] else {
-            bookfolders = FileHelper.listFolders(context, siteFolder)
+            bookfolders = listFolders(context, siteFolder)
             bookFoldersCache[c.site] = bookfolders
         }
         var filesFound = false
@@ -297,9 +300,9 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                 )
             ) {
                 // Cache folder Uri
-                c.storageUri = f.uri.toString()
+                c.storageDoc = f
                 // Cache JSON Uri
-                val json = FileHelper.findFile(context, f, JSON_FILE_NAME_V2)
+                val json = findFile(context, f, JSON_FILE_NAME_V2)
                 if (json != null) c.jsonUri = json.uri.toString()
                 // Create the images from detected files
                 c.setImageFiles(ContentHelper.createImageListFromFolder(context, f))
@@ -327,9 +330,9 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         data: MutableMap<Site, MutableList<DocumentFile>>,
         storageUri: String
     ) {
-        val rootFolder = FileHelper.getDocumentFromTreeUriString(context, storageUri)
+        val rootFolder = getDocumentFromTreeUriString(context, storageUri)
         if (null != rootFolder) {
-            val subfolders = FileHelper.listFolders(context, rootFolder)
+            val subfolders = listFolders(context, rootFolder)
             var folderName: String
             for (f in subfolders) if (f.name != null) {
                 folderName = f.name!!.lowercase(Locale.getDefault())

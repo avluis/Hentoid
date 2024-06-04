@@ -7,10 +7,12 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.YoastGalleryMetadata
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -59,22 +61,17 @@ class ManhwaContent : BaseContentParser() {
         url: String,
         updateImages: Boolean
     ): Content {
-        val title = StringHelper.removeNonPrintableChars(chapterTitle!!.text())
-        content.setTitle(title)
+        content.setTitle(cleanup(chapterTitle?.text()))
         val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 2]
         else content.uniqueSiteId = urlParts[0]
         if (updateImages) {
-            chapterImgs?.let {
-                val imgUrls = it.mapNotNull { e -> ParseHelper.getImgSrc(e) }
+            chapterImgs?.let { chpImg ->
+                val imgUrls = chpImg.map { getImgSrc(it) }
                 var coverUrl = ""
                 if (imgUrls.isNotEmpty()) coverUrl = imgUrls[0]
                 content.setImageFiles(
-                    ParseHelper.urlsToImageFiles(
-                        imgUrls,
-                        coverUrl,
-                        StatusContent.SAVED
-                    )
+                    urlsToImageFiles(imgUrls, coverUrl, StatusContent.SAVED)
                 )
                 content.setQtyPages(imgUrls.size)
             }
@@ -87,7 +84,7 @@ class ManhwaContent : BaseContentParser() {
         var title: String? = NO_TITLE
         breadcrumbs?.let {
             if (it.isNotEmpty())
-                title = StringHelper.removeNonPrintableChars(it[it.size - 1].text())
+                title = cleanup(it[it.size - 1].text())
         }
         content.setTitle(title)
         content.populateUniqueSiteId()
@@ -111,8 +108,8 @@ class ManhwaContent : BaseContentParser() {
             }
         }
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.MANHWA)
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.MANHWA)
+        parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.MANHWA)
+        parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.MANHWA)
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

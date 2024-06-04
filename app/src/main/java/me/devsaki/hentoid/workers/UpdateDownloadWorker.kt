@@ -1,13 +1,16 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.notification.update.UpdateFailedNotification
 import me.devsaki.hentoid.notification.update.UpdateInstallNotification
 import me.devsaki.hentoid.notification.update.UpdateProgressNotification
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.FILE_IO_BUFFER_SIZE
+import me.devsaki.hentoid.util.file.getFileUriCompat
+import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.network.getOnlineResource
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.workers.data.UpdateDownloadData
@@ -33,7 +36,7 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         // Nothing
     }
 
@@ -63,12 +66,12 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
         var size = body.contentLength()
         if (size < 1) size = 1
         Timber.d("WRITING DOWNLOADED APK TO %s (size %.2f KB)", file.absolutePath, size / 1024.0)
-        val buffer = ByteArray(FileHelper.FILE_IO_BUFFER_SIZE)
+        val buffer = ByteArray(FILE_IO_BUFFER_SIZE)
         var len: Int
         var processed: Long = 0
         var iteration = 0
         body.byteStream().use { `in` ->
-            FileHelper.getOutputStream(file).use { out ->
+            getOutputStream(file).use { out ->
                 while (`in`.read(buffer).also { len = it } > -1) {
                     processed += len.toLong()
                     if (0 == ++iteration % 50) // Notify every 200KB
@@ -80,7 +83,7 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
         Timber.d("Download successful")
         notificationManager.notifyLast(
-            UpdateInstallNotification(FileHelper.getFileUriCompat(context, file))
+            UpdateInstallNotification(getFileUriCompat(context, file))
         )
     }
 

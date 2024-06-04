@@ -1,8 +1,10 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.annotation.IdRes
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.annimon.stream.Optional
@@ -24,6 +26,7 @@ import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
+import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -47,6 +50,7 @@ abstract class BaseDeleteWorker(
     private val contentPurgeKeepCovers: Boolean
     private val groupIds: LongArray
     private val queueIds: LongArray
+    private val imageIds: LongArray
     private val isDeleteAllQueueRecords: Boolean
     private val isDeleteGroupsOnly: Boolean
     private val isDownloadPrepurge: Boolean
@@ -65,6 +69,7 @@ abstract class BaseDeleteWorker(
         contentPurgeKeepCovers = inputData.contentPurgeKeepCovers
         groupIds = inputData.groupIds
         queueIds = inputData.queueIds
+        imageIds = inputData.imageIds
         isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly
         isDownloadPrepurge = inputData.isDownloadPrepurge
@@ -96,7 +101,8 @@ abstract class BaseDeleteWorker(
             }
         }
         contentIds = askedContentIds
-        deleteMax = contentIds.size + contentPurgeIds.size + groupIds.size + queueIds.size
+        deleteMax =
+            contentIds.size + contentPurgeIds.size + groupIds.size + queueIds.size + imageIds.size
     }
 
     override fun getStartNotification(): BaseNotification {
@@ -107,7 +113,7 @@ abstract class BaseDeleteWorker(
         // Nothing to do here
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
     }
 
@@ -122,6 +128,9 @@ abstract class BaseDeleteWorker(
 
         // Remove Contents and associated QueueRecords
         if (queueIds.isNotEmpty()) removeQueue(queueIds)
+        // Remove files linked to the given ImageFile IDs
+        if (imageIds.isNotEmpty()) removeImageFiles(imageIds)
+
         // If asked, make sure all QueueRecords are removed including dead ones
         if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore()
         progressDone()
@@ -156,7 +165,7 @@ abstract class BaseDeleteWorker(
      */
     private fun deleteContent(content: Content) {
         Helper.assertNonUiThread()
-        progressItem(content, false)
+        progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
         try {
             ContentHelper.removeContent(applicationContext, dao, content)
             trace(Log.INFO, "Removed item: %s from database and file system.", content.title)
@@ -249,7 +258,7 @@ abstract class BaseDeleteWorker(
      * @param content Content to be purged
      */
     private fun purgeContentFiles(content: Content, removeCover: Boolean) {
-        progressItem(content, true)
+        progressItem(content, DeleteProgressNotification.ProgressType.PURGE_BOOKS)
         try {
             ContentHelper.purgeFiles(applicationContext, content, false, removeCover)
             // Update content folder and JSON Uri's after purging
@@ -284,7 +293,7 @@ abstract class BaseDeleteWorker(
     private fun deleteGroup(group: Group, deleteGroupsOnly: Boolean) {
         Helper.assertNonUiThread()
         var theGroup: Group? = group
-        progressItem(theGroup, false)
+        progressItem(theGroup, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
         try {
             // Reassign group for contained items
             if (deleteGroupsOnly) {
@@ -337,7 +346,7 @@ abstract class BaseDeleteWorker(
 
     private fun removeQueuedContent(content: Content) {
         try {
-            progressItem(content, false)
+            progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
             ContentHelper.removeQueuedContent(applicationContext, dao, content, true)
         } catch (e: ContentNotProcessedException) {
             // Don't throw the exception if we can't remove something that isn't there
@@ -353,9 +362,40 @@ abstract class BaseDeleteWorker(
         }
     }
 
-    private fun progressItem(item: Any?, isPurge: Boolean) {
+    private fun removeImageFiles(ids: LongArray) {
+        val imgs = dao.selectImageFiles(ids)
+        trace(Log.INFO, "Removing %s images...", imgs.size)
+        val uris = imgs.map { it.fileUri }
+        val contentIds = imgs.map { it.contentId }.distinct()
+        dao.deleteImageFiles(imgs)
+        uris.forEachIndexed { index, uri ->
+            if (isStopped) return
+            removeFile(applicationContext, Uri.parse(uri))
+            progressItem(
+                "Page " + (index + 1).toString(),
+                DeleteProgressNotification.ProgressType.DELETE_PAGES
+            )
+        }
+
+        // Update content JSON if it exists (i.e. if book is not queued)
+        contentIds.forEach { contentId ->
+            dao.selectContent(contentId)?.let { content ->
+                if (content.jsonUri.isNotEmpty())
+                    ContentHelper.updateJson(applicationContext, content)
+            }
+        }
+        progressDone()
+        trace(Log.INFO, "Removed %s images", imgs.size)
+    }
+
+
+    private fun progressItem(item: Any?, type: DeleteProgressNotification.ProgressType) {
         var title: String? = null
-        if (item is Content) title = item.title else if (item is Group) title = item.name
+        when (item) {
+            is Content -> title = item.title
+            is Group -> title = item.name
+            is String -> title = item
+        }
         if (title != null) {
             deleteProgress++
             notificationManager.notify(
@@ -363,7 +403,7 @@ abstract class BaseDeleteWorker(
                     title,
                     deleteProgress + nbError,
                     deleteMax,
-                    isPurge
+                    type
                 )
             )
             EventBus.getDefault().post(

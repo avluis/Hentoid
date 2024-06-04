@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.json.sources;
 
+import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
+import static me.devsaki.hentoid.parsers.ParseHelperKt.urlsToImageFiles;
+
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
@@ -11,8 +14,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.StringHelper;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class AnchiraGalleryMetadata {
@@ -55,7 +56,7 @@ public class AnchiraGalleryMetadata {
     }
 
     public void updateContent(@NonNull Content content) {
-        content.setTitle(StringHelper.removeNonPrintableChars(title));
+        content.setTitle(cleanup(title));
 
         long uploadDate = uploaded_at;
         if (0 == uploadDate) uploadDate = updated_at;
@@ -77,7 +78,7 @@ public class AnchiraGalleryMetadata {
                 pageUrls.add(IMG_HOST + "/" + id + "/" + key + "/" + hash + "/b/" + page.n);
             }
             String coverUrl = IMG_HOST + "/" + id + "/" + key + "/s/" + data.get(0).n;
-            content.setImageFiles(ParseHelper.INSTANCE.urlsToImageFiles(pageUrls, coverUrl, StatusContent.SAVED));
+            content.setImageFiles(urlsToImageFiles(pageUrls, coverUrl, StatusContent.SAVED));
             content.setCoverImageUrl(coverUrl);
         }
     }

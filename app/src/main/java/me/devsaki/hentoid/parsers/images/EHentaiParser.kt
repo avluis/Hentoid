@@ -13,7 +13,9 @@ import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.json.sources.EHentaiImageMetadata
 import me.devsaki.hentoid.json.sources.EHentaiImageQuery
 import me.devsaki.hentoid.json.sources.EHentaiImageResponse
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.getSavedCookieStr
+import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.exception.EmptyResultException
@@ -159,7 +161,7 @@ class EHentaiParser : ImageListParser {
          * @return Cookie string
          */
         fun getCookieStr(content: Content): String {
-            val cookieStr = ParseHelper.getSavedCookieStr(content.downloadParams)
+            val cookieStr = getSavedCookieStr(content.downloadParams)
             return cookieStr.ifEmpty { "nw=1" }
         }
 
@@ -203,7 +205,7 @@ class EHentaiParser : ImageListParser {
                 val imageUrl = getDisplayedImageUrl(doc).lowercase(Locale.getDefault())
                 // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
                 if (imageUrl.contains(LIMIT_509_URL)) throw LimitReachedException(site.description + " download points regenerate over time or can be bought if you're in a hurry")
-                if (imageUrl.isNotEmpty()) return ParseHelper.urlToImageFile(
+                if (imageUrl.isNotEmpty()) return urlToImageFile(
                     imageUrl,
                     order,
                     maxPages,
@@ -358,9 +360,9 @@ class EHentaiParser : ImageListParser {
 
         private fun getDisplayedImageUrl(doc: Document): String {
             var element = doc.selectFirst("img#img")
-            if (element != null) return ParseHelper.getImgSrc(element)
+            if (element != null) return getImgSrc(element)
             element = doc.selectFirst("#i3.img")
-            return if (element != null) ParseHelper.getImgSrc(element) else ""
+            return if (element != null) getImgSrc(element) else ""
         }
 
         private fun getFullImageUrl(doc: Document): String {

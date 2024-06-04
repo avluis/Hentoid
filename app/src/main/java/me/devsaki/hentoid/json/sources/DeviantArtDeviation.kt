@@ -9,8 +9,8 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
 import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
@@ -46,7 +46,7 @@ data class DeviantArtDeviation(
                 } catch (t: Throwable) {
                     Timber.w(t)
                 }
-                content.setTitle(StringHelper.removeNonPrintableChars(title))
+                content.setTitle(cleanup(title))
                 content.setCoverImageUrl(media.getThumbUrl())
             }
 
@@ -63,7 +63,7 @@ data class DeviantArtDeviation(
                 tags.forEach {
                     val tag = Attribute(
                         AttributeType.TAG,
-                        StringHelper.removeNonPrintableChars(it.name),
+                        cleanup(it.name),
                         it.url.replace("\\/", "/"),
                         Site.DEVIANTART
                     )

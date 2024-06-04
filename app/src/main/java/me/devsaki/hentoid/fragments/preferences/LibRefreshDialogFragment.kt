@@ -31,8 +31,8 @@ import me.devsaki.hentoid.util.PickFolderContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ProcessFolderResult
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
+import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.setAndScanExternalFolder
 import me.devsaki.hentoid.util.setAndScanPrimaryFolder
@@ -261,7 +261,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
             binding2.importStep1Button.setOnClickListener { pickFolder() }
             pickFolder() // Ask right away, there's no reason why the user should click again
         } else {
-            binding2.importStep1Folder.text = FileHelper.getFullPathFromUri(
+            binding2.importStep1Folder.text = getFullPathFromUri(
                 requireContext(), Uri.parse(Preferences.getStorageUri(location))
             )
             binding2.importStep1Folder.isVisible = true
@@ -375,7 +375,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
 
     private fun updateOnSelectFolder() {
         binding2.apply {
-            importStep1Folder.text = FileHelper.getFullPathFromUri(
+            importStep1Folder.text = getFullPathFromUri(
                 requireContext(), Uri.parse(
                     Preferences.getStorageUri(location)
                 )

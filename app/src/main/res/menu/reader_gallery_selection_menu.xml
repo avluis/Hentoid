@@ -18,6 +18,12 @@
         android:tooltipText="@string/viewer_make_cover"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_edit_chapter_name"
+        android:icon="@drawable/ic_edit"
+        android:title="@string/gallery_edit_name"
+        android:tooltipText="@string/gallery_edit_name"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_delete"
         android:icon="@drawable/ic_action_delete"
         android:title="@string/menu_delete_single"

@@ -14,7 +14,10 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.waynejo.androidndkgif.GifEncoder
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.NameFilter
+import me.devsaki.hentoid.util.file.findSequencePosition
+import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.file.getInputStream
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -53,9 +56,9 @@ private val WEBP_VP8L = "VP8L".toByteArray(CHARSET_LATIN_1)
 private val WEBP_ANIM = "ANIM".toByteArray(CHARSET_LATIN_1)
 
 val imageNamesFilter =
-    FileHelper.NameFilter { displayName ->
+    NameFilter { displayName ->
         isImageExtensionSupported(
-            FileHelper.getExtension(displayName)
+            getExtension(displayName)
         )
     }
 
@@ -90,7 +93,7 @@ private fun isImageExtensionSupported(mimeType: String): Boolean {
 }
 
 fun isSupportedImage(fileName: String): Boolean {
-    return isImageExtensionSupported(FileHelper.getExtension(fileName))
+    return isImageExtensionSupported(getExtension(fileName))
 }
 
 fun ByteArray.startsWith(data: ByteArray): Boolean {
@@ -114,14 +117,14 @@ fun getMimeTypeFromPictureBinary(binary: ByteArray): String {
     ) MIME_IMAGE_WEBP
     else if (binary.startsWith(PNG_SIGNATURE)) {
         // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
-        val acTlPos = FileHelper.findSequencePosition(
+        val acTlPos = findSequencePosition(
             binary,
             0,
             PNG_ACTL,
             (binary.size * 0.2).toInt()
         )
         if (acTlPos > -1) {
-            val idatPos = FileHelper.findSequencePosition(
+            val idatPos = findSequencePosition(
                 binary,
                 acTlPos,
                 PNG_IDAT,
@@ -148,14 +151,14 @@ fun isImageAnimated(data: ByteArray): Boolean {
         val limit = min(data.size, 1000)
         when (getMimeTypeFromPictureBinary(data)) {
             MIME_IMAGE_APNG -> true
-            MIME_IMAGE_GIF -> FileHelper.findSequencePosition(
+            MIME_IMAGE_GIF -> findSequencePosition(
                 data,
                 0,
                 GIF_NETSCAPE,
                 limit
             ) > -1
 
-            MIME_IMAGE_WEBP -> FileHelper.findSequencePosition(
+            MIME_IMAGE_WEBP -> findSequencePosition(
                 data,
                 0,
                 WEBP_ANIM,
@@ -179,7 +182,7 @@ fun isImageLossless(data: ByteArray): Boolean {
         MIME_IMAGE_PNG -> true
         MIME_IMAGE_APNG -> true
         MIME_IMAGE_GIF -> true
-        MIME_IMAGE_WEBP -> FileHelper.findSequencePosition(
+        MIME_IMAGE_WEBP -> findSequencePosition(
             data,
             0,
             WEBP_VP8L,
@@ -201,7 +204,7 @@ fun getMimeTypeFromUri(context: Context, uri: Uri): String? {
     var result: String? = MIME_IMAGE_GENERIC
     val buffer = ByteArray(12)
     try {
-        FileHelper.getInputStream(context, uri).use { input ->
+        getInputStream(context, uri).use { input ->
             if (buffer.size == input.read(buffer)) result = getMimeTypeFromPictureBinary(buffer)
         }
     } catch (e: IOException) {
@@ -341,7 +344,7 @@ fun assembleGif(
     require(frames.isNotEmpty()) { "No frames given" }
     var width: Int
     var height: Int
-    FileHelper.getInputStream(context, frames[0].first).use { input ->
+    getInputStream(context, frames[0].first).use { input ->
         val b = BitmapFactory.decodeStream(input)
         width = b.width
         height = b.height
@@ -356,7 +359,7 @@ fun assembleGif(
             GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY
         )
         for (frame in frames) {
-            FileHelper.getInputStream(context, frame.first).use { input ->
+            getInputStream(context, frame.first).use { input ->
                 val options = BitmapFactory.Options()
                 options.inPreferredConfig = Bitmap.Config.ARGB_8888
                 val b = BitmapFactory.decodeStream(input, null, options)

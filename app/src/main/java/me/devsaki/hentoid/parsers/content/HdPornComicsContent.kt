@@ -5,8 +5,11 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.HdPornComicsParser
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
@@ -43,7 +46,7 @@ class HdPornComicsContent : BaseContentParser() {
         content.setSite(Site.HDPORNCOMICS)
         if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED)
         content.setRawUrl(url)
-        content.setTitle(StringHelper.removeNonPrintableChars(title))
+        content.setTitle(cleanup(title))
         if (shortlink.isNotEmpty()) {
             val equalIndex = shortlink.lastIndexOf('=')
             if (equalIndex > -1) content.uniqueSiteId = shortlink.substring(equalIndex + 1)
@@ -56,28 +59,24 @@ class HdPornComicsContent : BaseContentParser() {
         ) // e.g. 2021-08-08T20:53:49+00:00
         var coverUrl = ""
         cover?.let {
-            coverUrl = ParseHelper.getImgSrc(it)
+            coverUrl = getImgSrc(it)
             content.setCoverImageUrl(coverUrl)
         }
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.ARTIST,
             artists,
             false,
             Site.HDPORNCOMICS
         )
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.HDPORNCOMICS)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.HDPORNCOMICS)
         content.putAttributes(attributes)
         if (updateImages) {
             pages?.let {
                 val imgs = HdPornComicsParser.parseImages(it)
                 content.setImageFiles(
-                    ParseHelper.urlsToImageFiles(
-                        imgs,
-                        coverUrl,
-                        StatusContent.SAVED
-                    )
+                    urlsToImageFiles(imgs, coverUrl, StatusContent.SAVED)
                 )
                 content.setQtyPages(imgs.size - 1) // Don't count the cover
             }

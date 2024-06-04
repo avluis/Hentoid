@@ -7,7 +7,13 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getExtraChaptersbyId
+import me.devsaki.hentoid.parsers.getExtraChaptersbyUrl
+import me.devsaki.hentoid.parsers.getMaxChapterOrder
+import me.devsaki.hentoid.parsers.getMaxImageOrder
+import me.devsaki.hentoid.parsers.getUserAgent
+import me.devsaki.hentoid.parsers.setDownloadParams
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
@@ -71,7 +77,7 @@ class PixivParser : BaseImageListParser() {
                 onlineContent.galleryUrl, null,
                 useMobileAgent, useHentoidAgent, useWebviewAgent
             )
-            val userAgent = ParseHelper.getUserAgent(Site.PIXIV)
+            val userAgent = getUserAgent(Site.PIXIV)
             val acceptAll = "*/*"
 
             // API calls seem to be protected against request spam; 2 is arbitrary
@@ -118,7 +124,7 @@ class PixivParser : BaseImageListParser() {
             if (galleryMetadata != null) message = galleryMetadata.message
             throw EmptyResultException(message!!)
         }
-        return ParseHelper.urlsToImageFiles(
+        return urlsToImageFiles(
             galleryMetadata.pageUrls,
             content.coverImageUrl,
             StatusContent.SAVED
@@ -182,11 +188,11 @@ class PixivParser : BaseImageListParser() {
         if (null == storedChapters) storedChapters = emptyList()
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
-        val extraChapters = ParseHelper.getExtraChaptersbyUrl(storedChapters, chapters)
+        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters)
         progressStart(onlineContent, storedContent, extraChapters.size)
 
         // Start numbering extra images right after the last position of stored and chaptered images
-        var imgOffset = ParseHelper.getMaxImageOrder(storedChapters) + 1
+        var imgOffset = getMaxImageOrder(storedChapters) + 1
 
         // Retrieve all Illust detailed info
         val result: MutableList<ImageFile> = ArrayList()
@@ -269,15 +275,15 @@ class PixivParser : BaseImageListParser() {
             storedChapters = storedContent.chapters
             if (storedChapters != null) storedChapters = storedChapters.toMutableList()
         }
-        if (null == storedChapters) storedChapters = emptyList() else illustIds =
-            ParseHelper.getExtraChaptersbyId(storedChapters, illustIds)
+        if (null == storedChapters) storedChapters = emptyList()
+        else illustIds = getExtraChaptersbyId(storedChapters, illustIds)
 
         // Work on detected extra chapters
         progressStart(onlineContent, storedContent, illustIds.size)
 
         // Start numbering extra images & chapters right after the last position of stored and chaptered images & chapters
-        var imgOffset = ParseHelper.getMaxImageOrder(storedChapters) + 1
-        var chpOffset = ParseHelper.getMaxChapterOrder(storedChapters) + 1
+        var imgOffset = getMaxImageOrder(storedChapters) + 1
+        var chpOffset = getMaxChapterOrder(storedChapters) + 1
 
         // Cycle through all Illusts
         val result: MutableList<ImageFile> = ArrayList()
@@ -348,7 +354,7 @@ class PixivParser : BaseImageListParser() {
         try {
             val ch = Chapter().setUrl(url) // Forge a chapter
             result = parseChapterImageFiles(content, ch, 1, null)
-            ParseHelper.setDownloadParams(result, content.site.url)
+            setDownloadParams(result, content.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }

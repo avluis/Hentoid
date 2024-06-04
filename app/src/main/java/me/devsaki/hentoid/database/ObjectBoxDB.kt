@@ -519,6 +519,15 @@ object ObjectBoxDB {
             .order(Content_.id).safeFind().toSet()
     }
 
+    fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content> {
+        val contentUrlCondition =
+            Content_.size.equal(size)
+                .and(Content_.qtyPages.equal(qtyPage))
+
+        return store.boxFor(Content::class.java).query(contentUrlCondition)
+            .order(Content_.id).safeFind().toSet()
+    }
+
     fun selectAllContentUrls(siteCode: Int): Set<String> {
         store.boxFor(Content::class.java).query().equal(Content_.site, siteCode.toLong())
             .`in`(Content_.status, libraryStatus).notNull(Content_.url)
@@ -1891,6 +1900,10 @@ object ObjectBoxDB {
     fun selectChapters(contentId: Long): List<Chapter> {
         return store.boxFor(Chapter::class.java).query().equal(Chapter_.contentId, contentId)
             .order(Chapter_.order).safeFind()
+    }
+
+    fun selectChapter(chapterId: Long): Chapter? {
+        return store.boxFor(Chapter::class.java).get(chapterId)
     }
 
     fun insertChapters(chapters: List<Chapter>?) {

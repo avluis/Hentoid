@@ -7,10 +7,9 @@ import androidx.fragment.app.commit
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.bundles.ToolsBundle
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.tools.ToolsFragment
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.openFile
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -62,7 +61,7 @@ class ToolsActivity : BaseActivity() {
                         R.string.task_done,
                         BaseTransientBottomBar.LENGTH_LONG
                     )
-                snackbar.setAction(R.string.read_log) { FileHelper.openFile(this, logFile) }
+                snackbar.setAction(R.string.read_log) { openFile(this, logFile) }
                 snackbar.show()
             }
         }

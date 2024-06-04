@@ -11,15 +11,27 @@ class DeleteProgressNotification(
     private val title: String,
     private val progress: Int,
     private val max: Int,
-    private val isPurge: Boolean
+    private val type: ProgressType
 ) : BaseNotification() {
+
+    enum class ProgressType {
+        DELETE_BOOKS, PURGE_BOOKS, DELETE_PAGES
+    }
 
     private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
 
     override fun onCreateNotification(context: Context): android.app.Notification {
         return NotificationCompat.Builder(context, DeleteNotificationChannel.ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
-            .setContentTitle(context.getString(if (isPurge) R.string.purge_progress else R.string.delete_progress))
+            .setContentTitle(
+                context.getString(
+                    when (type) {
+                        ProgressType.PURGE_BOOKS -> R.string.purge_progress
+                        ProgressType.DELETE_PAGES -> R.string.delete_pages_progress
+                        else -> R.string.delete_progress
+                    }
+                )
+            )
             .setContentText(title)
             .setContentInfo(progressString)
             .setProgress(max, progress, false)

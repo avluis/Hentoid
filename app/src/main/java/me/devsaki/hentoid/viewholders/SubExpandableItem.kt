@@ -1,24 +1,14 @@
 package me.devsaki.hentoid.viewholders
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.StringRes
-import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.request.RequestOptions
 import com.mikepenz.fastadapter.ClickListener
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
@@ -32,10 +22,10 @@ import com.mikepenz.fastadapter.ui.utils.StringHolder
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.requireById
+import me.devsaki.hentoid.core.setMiddleEllipsis
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.image.tintBitmap
+import me.devsaki.hentoid.util.getGlideOptionCenterImage
 
 /**
  * Inspired by mikepenz
@@ -57,9 +47,12 @@ class SubExpandableItem<T>(
     var header: String? = null
     var description: StringHolder? = null
     var cover: ImageFile? = null
-    private var draggable: Boolean = false
+    private var selectable = false
+    private var draggable = false
 
     private var mOnClickListener: ClickListener<SubExpandableItem<T>>? = null
+
+    private val glideRequestOptions = getGlideOptionCenterImage(HentoidApp.getInstance())
 
     //we define a clickListener in here so we can directly animate
     /**
@@ -73,13 +66,12 @@ class SubExpandableItem<T>(
             if (item.subItems.isNotEmpty()) {
                 v?.findViewById<View>(R.id.expand_handle)?.let {
                     if (!item.isExpanded) {
-                        ViewCompat.animate(it).rotation(180f).start()
+                        it.animate().rotation(180f).start()
                     } else {
-                        ViewCompat.animate(it).rotation(0f).start()
+                        it.animate().rotation(0f).start()
                     }
                 }
             }
-
             mOnClickListener?.invoke(v, adapter, item, position) ?: true
         }
         set(onClickListener) {
@@ -90,11 +82,10 @@ class SubExpandableItem<T>(
         get() = null
         set(_) {}
 
-    //this might not be true for your application
     override var isSelectable: Boolean
-        get() = subItems.isEmpty()
+        get() = selectable
         set(value) {
-            super.isSelectable = value
+            selectable = value
         }
 
     /**
@@ -151,13 +142,17 @@ class SubExpandableItem<T>(
 
         //set the background for the item
         holder.view.clearAnimation()
-        ViewCompat.setBackground(
-            holder.view,
-            FastAdapterUIUtils.getSelectableBackground(ctx, Color.RED, true)
+        holder.view.background = FastAdapterUIUtils.getSelectableBackground(
+            ctx,
+            ctx.getColor(R.color.white_opacity_25),
+            true
         )
 
         // Texts
         holder.name.text = name
+        holder.name.post {
+            holder.name.setMiddleEllipsis()
+        }
         StringHolder.applyToOrHide(description, holder.description)
 
         // Cover
@@ -165,17 +160,14 @@ class SubExpandableItem<T>(
 
         holder.dragHandle.visibility = if (draggable) View.VISIBLE else View.GONE
 
-        if (subItems.isEmpty()) {
-            holder.icon.visibility = View.GONE
-        } else {
-            holder.icon.visibility = View.VISIBLE
-        }
+        if (subItems.isEmpty() || isSelected) holder.expandHandle.visibility = View.GONE
+        else holder.expandHandle.visibility = View.VISIBLE
 
-        if (isExpanded) {
-            holder.icon.rotation = 0f
-        } else {
-            holder.icon.rotation = 180f
-        }
+        // TODO don't show subItems when selected ?
+        holder.selectedFlag.visibility = if (isSelected) View.VISIBLE else View.GONE
+
+        if (isExpanded) holder.expandHandle.rotation = 0f
+        else holder.expandHandle.rotation = 180f
     }
 
     private fun attachCover(ivCover: ImageView) {
@@ -188,10 +180,8 @@ class SubExpandableItem<T>(
             ivCover.visibility = View.VISIBLE
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")) {
-                val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, null)
-                if (glideUrl != null) {
-                    Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions)
-                        .into(ivCover)
+                ContentHelper.bindOnlineCover(thumbLocation, null)?.let { glideUrl ->
+                    Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions).into(ivCover)
                 }
             } else  // From stored picture
                 Glide.with(ivCover).load(Uri.parse(thumbLocation))
@@ -205,7 +195,7 @@ class SubExpandableItem<T>(
         holder.name.text = null
         holder.description.text = null
         //make sure all animations are stopped
-        holder.icon.clearAnimation()
+        holder.expandHandle.clearAnimation()
     }
 
     override fun getViewHolder(v: View): ViewHolder {
@@ -218,15 +208,18 @@ class SubExpandableItem<T>(
     class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.requireById(R.id.material_drawer_name)
         val description: TextView = view.requireById(R.id.material_drawer_description)
-        val icon: ImageView = view.requireById(R.id.expand_handle)
+        val expandHandle: ImageView = view.requireById(R.id.expand_handle)
+        val selectedFlag: ImageView = view.requireById(R.id.selected_flag)
         val dragHandle: ImageView = view.requireById(R.id.ivReorder)
         val cover: ImageView = view.requireById(R.id.ivCover)
     }
 
-    override val isDraggable: Boolean
-        get() = draggable
     override val touchHelper: ItemTouchHelper
         get() = mTouchHelper
+
+    // Dragging
+    override val isDraggable: Boolean
+        get() = draggable
 
     override fun getDragView(viewHolder: ViewHolder): View {
         return viewHolder.dragHandle
@@ -256,19 +249,5 @@ class SubExpandableItem<T>(
 
     override fun getLevel(): Int {
         return 0
-    }
-
-    companion object {
-        private val glideRequestOptions: RequestOptions
-
-        init {
-            val context: Context = HentoidApp.getInstance()
-            val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-            val tintColor = context.getThemedColor(R.color.light_gray)
-            val d: Drawable =
-                BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
-            val centerInside: Transformation<Bitmap> = CenterInside()
-            glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
-        }
     }
 }

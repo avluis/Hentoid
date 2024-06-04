@@ -7,10 +7,12 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.YoastGalleryMetadata
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -57,7 +59,7 @@ class ToonilyContent : BaseContentParser() {
     private fun updateSingleChapter(content: Content, url: String, updateImages: Boolean): Content {
         var title = NO_TITLE
         chapterTitle?.let {
-            title = StringHelper.removeNonPrintableChars(it.text())
+            title = cleanup(it.text())
         }
         content.setTitle(title)
         val urlParts = url.split("/")
@@ -66,18 +68,12 @@ class ToonilyContent : BaseContentParser() {
             urlParts[0]
 
         if (updateImages) {
-            chapterImgs?.let {
-                val imgUrls = it.mapNotNull { e ->
-                    ParseHelper.getImgSrc(e)
-                }.filterNot { str -> str.isEmpty() }.distinct()
+            chapterImgs?.let { chpImg ->
+                val imgUrls = chpImg.map { getImgSrc(it) }.filterNot { it.isEmpty() }.distinct()
                 var coverUrl = ""
                 if (imgUrls.isNotEmpty()) coverUrl = imgUrls[0]
                 content.setImageFiles(
-                    ParseHelper.urlsToImageFiles(
-                        imgUrls,
-                        coverUrl,
-                        StatusContent.SAVED
-                    )
+                    urlsToImageFiles(imgUrls, coverUrl, StatusContent.SAVED)
                 )
                 content.setQtyPages(imgUrls.size)
             }
@@ -90,7 +86,7 @@ class ToonilyContent : BaseContentParser() {
         var title = NO_TITLE
         breadcrumbs?.let {
             if (it.isNotEmpty())
-                title = StringHelper.removeNonPrintableChars(it[it.size - 1].text())
+                title = cleanup(it[it.size - 1].text())
         }
         content.setTitle(title)
         content.populateUniqueSiteId()
@@ -111,8 +107,8 @@ class ToonilyContent : BaseContentParser() {
             }
         }
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.TOONILY)
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.TOONILY)
+        parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.TOONILY)
+        parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.TOONILY)
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

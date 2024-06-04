@@ -160,6 +160,7 @@ class DuplicateViewModel(
     fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
+        appendBookTitle : Boolean,
         deleteAfterMerging: Boolean,
         onSuccess: Runnable
     ) {
@@ -173,7 +174,7 @@ class DuplicateViewModel(
             val result = withContext(Dispatchers.IO) {
                 try {
                     // Create merged book
-                    ContentHelper.mergeContents(context, contentList, newTitle, dao)
+                    ContentHelper.mergeContents(context, contentList, newTitle, appendBookTitle, dao)
 
                     // Mark as "is being deleted" to trigger blink animation
                     if (deleteAfterMerging) {

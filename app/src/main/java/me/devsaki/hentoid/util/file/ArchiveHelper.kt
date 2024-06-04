@@ -38,8 +38,8 @@ const val ZIP_MIME_TYPE = "application/zip"
 private val SUPPORTED_EXTENSIONS = setOf("zip", "epub", "cbz", "cbr", "cb7", "7z", "rar")
 
 private val archiveNamesFilter =
-    FileHelper.NameFilter { displayName: String ->
-        isArchiveExtensionSupported(FileHelper.getExtension(displayName))
+    NameFilter { displayName: String ->
+        isArchiveExtensionSupported(getExtension(displayName))
     }
 
 private const val INTERRUPTION_MSG = "Extract archive INTERRUPTED"
@@ -93,15 +93,15 @@ private fun isArchiveExtensionSupported(extension: String): Boolean {
  * @return True if the app supports the reading of the given file name as an archive; false if not
  */
 fun isSupportedArchive(fileName: String): Boolean {
-    return isArchiveExtensionSupported(FileHelper.getExtension(fileName))
+    return isArchiveExtensionSupported(getExtension(fileName))
 }
 
 /**
- * Build a [FileHelper.NameFilter] only accepting archive files supported by the app
+ * Build a [NameFilter] only accepting archive files supported by the app
  *
- * @return [FileHelper.NameFilter] only accepting archive files supported by the app
+ * @return [NameFilter] only accepting archive files supported by the app
  */
-fun getArchiveNamesFilter(): FileHelper.NameFilter {
+fun getArchiveNamesFilter(): NameFilter {
     return archiveNamesFilter
 }
 
@@ -134,7 +134,7 @@ private fun getTypeFromArchiveHeader(binary: ByteArray): ArchiveFormat? {
 fun Context.getArchiveEntries(file: DocumentFile): List<ArchiveEntry> {
     Helper.assertNonUiThread()
     var format: ArchiveFormat?
-    FileHelper.getInputStream(this, file).use { fi ->
+    getInputStream(this, file).use { fi ->
         val header = ByteArray(8)
         if (fi.read(header) < header.size) return emptyList()
         format = getTypeFromArchiveHeader(header)
@@ -253,7 +253,7 @@ private fun Context.extractArchiveEntries(
 ) {
     Helper.assertNonUiThread()
     var format: ArchiveFormat?
-    FileHelper.getInputStream(this, uri).use { fi ->
+    getInputStream(this, uri).use { fi ->
         val header = ByteArray(8)
         if (fi.read(header) < header.size) return
         format = getTypeFromArchiveHeader(header)
@@ -321,7 +321,7 @@ private fun Context.addFile(
     buffer: ByteArray
 ) {
     Timber.d("Adding: %s", file)
-    FileHelper.getInputStream(this, file).use { fi ->
+    getInputStream(this, file).use { fi ->
         BufferedInputStream(fi, BUFFER).use { origin ->
             val zipEntry = ZipEntry(file.name)
             stream.putNextEntry(zipEntry)
@@ -424,7 +424,7 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
             }
         }
         position += seekDelta
-        Timber.d("position : $position")
+        //Timber.v("position : $position")
         return position
     }
 
@@ -453,7 +453,7 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
         return try {
             var result = stream!!.read(bytes)
             position += result
-            if (result != bytes.size) Timber.w("diff %s expected; %s read", bytes.size, result)
+            //if (result != bytes.size) Timber.w("diff %s expected; %s read", bytes.size, result)
             if (result < 0) result = 0
             result
         } catch (e: IOException) {
@@ -516,10 +516,10 @@ private class ArchiveExtractCallback(
                 targetFile = fileCreator.invoke(fileName)
                 targetFile.createNewFile()
             } else {
-                targetFile = FileHelper.legacyFileFromUri(existing)!!
+                targetFile = legacyFileFromUri(existing)!!
             }
             uri = Uri.fromFile(targetFile)
-            stream = SequentialOutStream(FileHelper.getOutputStream(targetFile))
+            stream = SequentialOutStream(getOutputStream(targetFile))
             stream
         } catch (e: IOException) {
             throw SevenZipException(e)

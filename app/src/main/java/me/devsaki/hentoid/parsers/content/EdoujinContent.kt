@@ -7,10 +7,12 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.EdoujinParser
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -64,11 +66,7 @@ class EdoujinContent : BaseContentParser() {
             urlParts = urlParts[urlParts.size - 1].split("-")
             if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 1]
         }
-        title?.let {
-            val titleStr = it.text()
-            content.title =
-                if (titleStr.isNotEmpty()) StringHelper.removeNonPrintableChars(titleStr) else ""
-        } ?: { content.title = NO_TITLE }
+        content.title = cleanup(title?.text())
         try {
             val info = EdoujinParser.getDataFromScripts(scripts)
             if (info != null) {
@@ -76,7 +74,7 @@ class EdoujinContent : BaseContentParser() {
                 if (updateImages && chapterImgs.isNotEmpty()) {
                     val coverUrl = chapterImgs[0]
                     content.setImageFiles(
-                        ParseHelper.urlsToImageFiles(
+                        urlsToImageFiles(
                             chapterImgs,
                             coverUrl,
                             StatusContent.SAVED
@@ -93,13 +91,9 @@ class EdoujinContent : BaseContentParser() {
 
     private fun updateGallery(content: Content, url: String, updateImages: Boolean): Content {
         cover?.let {
-            content.coverImageUrl = ParseHelper.getImgSrc(it)
+            content.coverImageUrl = getImgSrc(it)
         }
-        title?.let {
-            val titleStr = it.text()
-            content.title =
-                if (titleStr.isNotEmpty()) StringHelper.removeNonPrintableChars(titleStr) else ""
-        } ?: { content.title = NO_TITLE }
+        content.title = cleanup(title?.text())
 
         val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 1]
@@ -122,7 +116,7 @@ class EdoujinContent : BaseContentParser() {
         }
 
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, properties, false, Site.EDOUJIN)
+        parseAttributes(attributes, AttributeType.TAG, properties, false, Site.EDOUJIN)
         var currentProperty = ""
 
         artist?.let { art ->
@@ -134,9 +128,11 @@ class EdoujinContent : BaseContentParser() {
                         when (currentProperty) {
                             "artist", "author" -> {
                                 val data =
-                                    StringHelper.removeNonPrintableChars(child.text().lowercase(
-                                        Locale.getDefault()
-                                    ).trim { it <= ' ' })
+                                    cleanup(
+                                        child.text().lowercase(
+                                            Locale.getDefault()
+                                        ).trim()
+                                    )
                                 if (data.length > 1) attributes.add(
                                     Attribute(
                                         AttributeType.ARTIST,

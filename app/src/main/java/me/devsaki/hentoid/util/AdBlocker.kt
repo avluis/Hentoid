@@ -5,7 +5,7 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.readStreamAsStrings
 import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
@@ -40,17 +40,17 @@ class AdBlocker(val site: Site) {
         HentoidApp.getInstance().resources.apply {
             openRawResource(R.raw.adblocker_url_blacklist).use { input ->
                 universalUrlBlacklist.addAll(
-                    FileHelper.readStreamAsStrings(input)
+                    readStreamAsStrings(input)
                         .map { s -> s.lowercase(Locale.getDefault()) })
             }
             openRawResource(R.raw.adblocker_url_whitelist).use { input ->
                 universalUrlWhitelist.addAll(
-                    FileHelper.readStreamAsStrings(input)
+                    readStreamAsStrings(input)
                         .map { s -> s.lowercase(Locale.getDefault()) })
             }
             openRawResource(R.raw.adblocker_js_word_blacklist).use { input ->
                 universalJsContentBlacklist.addAll(
-                    FileHelper.readStreamAsStrings(input)
+                    readStreamAsStrings(input)
                         .map { s -> s.lowercase(Locale.getDefault()) })
             }
         }

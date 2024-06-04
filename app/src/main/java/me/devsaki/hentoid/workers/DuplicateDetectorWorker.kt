@@ -2,6 +2,7 @@ package me.devsaki.hentoid.workers
 
 import android.content.Context
 import android.util.Log
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
@@ -46,17 +47,11 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
-    private val dao: CollectionDAO
-    private val duplicatesDao: DuplicatesDAO
+    private val dao: CollectionDAO = ObjectBoxDAO()
+    private val duplicatesDao: DuplicatesDAO = DuplicatesDAO()
 
     private val currentIndex = AtomicInteger(0)
     private val stopped = AtomicBoolean(false)
-
-
-    init {
-        dao = ObjectBoxDAO()
-        duplicatesDao = DuplicatesDAO()
-    }
 
     override fun getStartNotification(): BaseNotification {
         return DuplicateStartNotification()
@@ -66,7 +61,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         if (!isStopped && !isComplete) Preferences.setDuplicateLastIndex(currentIndex.get())
         else Preferences.setDuplicateLastIndex(-1)
         stopped.set(true)

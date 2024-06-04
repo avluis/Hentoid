@@ -4,7 +4,7 @@ import android.net.Uri
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.network.getCookies
@@ -38,7 +38,7 @@ class PixivContent : BaseContentParser() {
                     Site.PIXIV.useHentoidAgent(),
                     Site.PIXIV.useWebviewAgent()
                 )
-                val userAgent = ParseHelper.getUserAgent(Site.PIXIV)
+                val userAgent = getUserAgent(Site.PIXIV)
                 val acceptAll = "*/*"
                 when (entity) {
                     "artworks", "illust" -> {

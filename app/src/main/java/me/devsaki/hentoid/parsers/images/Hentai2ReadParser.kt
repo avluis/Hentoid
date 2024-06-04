@@ -6,7 +6,11 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getChaptersFromLinks
+import me.devsaki.hentoid.parsers.getExtraChaptersbyUrl
+import me.devsaki.hentoid.parsers.getMaxImageOrder
+import me.devsaki.hentoid.parsers.setDownloadParams
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
@@ -16,10 +20,10 @@ import org.jsoup.nodes.Element
 import timber.log.Timber
 import java.io.IOException
 
+const val IMAGE_PATH = "https://static.hentaicdn.com/hentai"
+
 class Hentai2ReadParser : BaseImageListParser() {
     companion object {
-        const val IMAGE_PATH = "https://static.hentaicdn.com/hentai"
-
         @Throws(IOException::class)
         fun getDataFromScripts(scripts: List<Element>?): H2RInfo? {
             if (scripts != null) {
@@ -75,7 +79,7 @@ class Hentai2ReadParser : BaseImageListParser() {
         val result: List<ImageFile>
         try {
             result = parseImageFiles(onlineContent, storedContent)
-            ParseHelper.setDownloadParams(result, onlineContent.site.url)
+            setDownloadParams(result, onlineContent.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }
@@ -100,7 +104,7 @@ class Hentai2ReadParser : BaseImageListParser() {
             ?: return result
         val chapterLinks: List<Element> =
             doc.select(".nav-chapters a[href^=" + onlineContent.galleryUrl + "]")
-        chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.id)
+        chapters = getChaptersFromLinks(chapterLinks, onlineContent.id)
 
         // If the stored content has chapters already, save them for comparison
         var storedChapters: List<Chapter>? = null
@@ -112,11 +116,11 @@ class Hentai2ReadParser : BaseImageListParser() {
         if (null == storedChapters) storedChapters = emptyList()
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
-        val extraChapters = ParseHelper.getExtraChaptersbyUrl(storedChapters, chapters)
+        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters)
         progressStart(onlineContent, storedContent, extraChapters.size)
 
         // Start numbering extra images right after the last position of stored and chaptered images
-        val imgOffset = ParseHelper.getMaxImageOrder(storedChapters)
+        val imgOffset = getMaxImageOrder(storedChapters)
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (chp in extraChapters) {
@@ -147,7 +151,7 @@ class Hentai2ReadParser : BaseImageListParser() {
         try {
             val ch = Chapter().setUrl(url) // Forge a chapter
             result = parseChapterImageFiles(content, ch, 1, null)
-            ParseHelper.setDownloadParams(result, content.site.url)
+            setDownloadParams(result, content.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }
@@ -172,7 +176,7 @@ class Hentai2ReadParser : BaseImageListParser() {
             val info = getDataFromScripts(scripts)
             if (info != null) {
                 val imageUrls = info.images.map { s -> IMAGE_PATH + s }
-                if (imageUrls.isNotEmpty()) return ParseHelper.urlsToImageFiles(
+                if (imageUrls.isNotEmpty()) return urlsToImageFiles(
                     imageUrls,
                     targetOrder,
                     StatusContent.SAVED,

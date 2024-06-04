@@ -5,9 +5,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -54,27 +55,27 @@ class TsuminoContent : BaseContentParser() {
 
         var coverUrl = ""
         cover?.let {
-            coverUrl = ParseHelper.getImgSrc(it)
+            coverUrl = getImgSrc(it)
         }
         if (!coverUrl.startsWith("http")) coverUrl = Site.TSUMINO.url + coverUrl
         content.setCoverImageUrl(coverUrl)
-        content.setTitle(StringHelper.removeNonPrintableChars(title))
+        content.setTitle(cleanup(title))
         content.setUploadDate(
             Helper.parseDateToEpoch(uploadDate, "yyyy MMMM dd")
         ) // e.g. 2021 December 13
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.TSUMINO)
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.TSUMINO)
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.TSUMINO)
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.TSUMINO)
-        ParseHelper.parseAttributes(
+        parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.TSUMINO)
+        parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.TSUMINO)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.TSUMINO)
+        parseAttributes(attributes, AttributeType.SERIE, series, false, Site.TSUMINO)
+        parseAttributes(
             attributes,
             AttributeType.CHARACTER,
             characters,
             false,
             Site.TSUMINO
         )
-        ParseHelper.parseAttributes(
+        parseAttributes(
             attributes,
             AttributeType.CATEGORY,
             categories,

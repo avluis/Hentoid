@@ -8,6 +8,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
@@ -175,7 +176,9 @@ public class Content implements Serializable {
     @Transient
     private int readPagesCount = -1;  // Read pages count fed by payload; only useful to update list display
     @Transient
-    private String archiveLocationUri;  // Only used when importing external archives
+    private String parentStorageUri;  // Only used when importing
+    @Transient
+    private DocumentFile storageDoc;  // Only used when importing
     @Transient
     private boolean isFrozen;  // Only used when importing queued items (temp location to simplify JSON structure; definite storage in QueueRecord)
     @Transient
@@ -773,13 +776,24 @@ public class Content implements Serializable {
         return this;
     }
 
+    public Content setStorageDoc(DocumentFile storageDoc) {
+        this.storageUri = storageDoc.getUri().toString();
+        this.storageDoc = storageDoc;
+        return this;
+    }
+
+    public void clearStorageDoc() {
+        storageUri = "";
+        storageDoc = null;
+    }
+
     public String getStorageUri() {
         return storageUri == null ? "" : storageUri;
     }
 
-    public Content setStorageUri(String storageUri) {
-        this.storageUri = storageUri;
-        return this;
+    @Nullable
+    public DocumentFile getStorageDoc() {
+        return storageDoc;
     }
 
     public boolean isCompleted() {
@@ -908,12 +922,12 @@ public class Content implements Serializable {
         return ArchiveHelperKt.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed (not in any spec) !
     }
 
-    public String getArchiveLocationUri() {
-        return archiveLocationUri;
+    public String getParentStorageUri() {
+        return parentStorageUri;
     }
 
-    public void setArchiveLocationUri(String archiveLocationUri) {
-        this.archiveLocationUri = archiveLocationUri;
+    public void setParentStorageUri(String data) {
+        this.parentStorageUri = data;
     }
 
     public List<GroupItem> getGroupItems(@NonNull Grouping grouping) {

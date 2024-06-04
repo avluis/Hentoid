@@ -148,6 +148,10 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectChapters(contentId)
     }
 
+    override fun selectChapter(chapterId: Long): Chapter? {
+        return ObjectBoxDB.selectChapter(chapterId)
+    }
+
     override fun selectErrorContentLive(): LiveData<List<Content>> {
         return ObjectBoxLiveData(ObjectBoxDB.selectErrorContentQ())
     }
@@ -330,6 +334,11 @@ class ObjectBoxDAO : CollectionDAO {
         contentUrl: String
     ): Set<Content> {
         return ObjectBoxDB.selectContentByUrl(site, contentUrl)
+    }
+
+    // Find any book that has the given quality of pages _and_ size
+    override fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content> {
+        return ObjectBoxDB.selectContentsByQtyPageAndSize(qtyPage, size)
     }
 
     override fun selectAllSourceUrls(site: Site): Set<String> {

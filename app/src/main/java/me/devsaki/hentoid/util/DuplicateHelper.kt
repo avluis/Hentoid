@@ -9,7 +9,8 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.AttributeType
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.image.ImagePHash
 import me.devsaki.hentoid.util.image.decodeSampledBitmapFromStream
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
@@ -121,7 +122,7 @@ fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
     if (content.cover.fileUri.isEmpty()) return null
 
     try {
-        FileHelper.getInputStream(context, Uri.parse(content.cover.fileUri))
+        getInputStream(context, Uri.parse(content.cover.fileUri))
             .use {
                 return getCoverBitmapFromStream(it)
             }
@@ -153,7 +154,7 @@ private fun savePhash(context: Context, dao: CollectionDAO, content: Content, pH
         // Update the book JSON if the book folder still exists
         if (content.storageUri.isNotEmpty()) {
             val folder =
-                FileHelper.getDocumentFromTreeUriString(context, content.storageUri)
+                getDocumentFromTreeUriString(context, content.storageUri)
             if (folder != null) {
                 if (content.jsonUri.isNotEmpty()) ContentHelper.updateJson(
                     context,
@@ -344,19 +345,34 @@ fun findDuplicateContentByUrl(content: Content, dao: CollectionDAO): Content? {
     val sourceImgs = content.imageList
     val sourceReadablePages = sourceImgs.count { it.isReadable }
     candidates.forEach {
-        it.imageList.let { imgs ->
-            val readablePages = imgs.count { i -> i.isReadable }
-            if (readablePages == sourceReadablePages) {
-                var mismatch = false
-                for (i in 0..<imgs.size) {
-                    if (sourceImgs[i].url != imgs[i].url) mismatch = true
-                    if (mismatch) break
-                }
-                if (!mismatch) return it
-            }
-        }
+        if (isAllPagesMatch(content, it)) return it
     }
     return null
+}
+
+/**
+ * Find if the given Content exists in the database, based on its URL and the URL of its images
+ * A duplicate is found when all URLs match
+ * Returns found duplicate or null if none is found
+ */
+fun findDuplicateContentByQtyPageAndSize(content: Content, dao: CollectionDAO): Content? {
+    val candidates = dao.selectContentsByQtyPageAndSize(content.qtyPages, content.size)
+    val sourceImgs = content.imageList
+    val sourceReadablePages = sourceImgs.count { it.isReadable }
+    candidates.forEach {
+        if (isAllPagesMatch(content, it)) return it
+    }
+    return null
+}
+
+private fun isAllPagesMatch(c1: Content, c2: Content): Boolean {
+    val sourceReadablePages = c1.imageList.filter { it.isReadable }
+    val readablePages = c2.imageList.filter { it.isReadable }
+    if (readablePages.size != sourceReadablePages.size) return false
+    for (i in readablePages.indices) {
+        if (sourceReadablePages[i].url != readablePages[i].url) return false
+    }
+    return true
 }
 
 class DuplicateCandidate(
@@ -372,10 +388,10 @@ class DuplicateCandidate(
     val coverHash =
         if (!useCover) Long.MIN_VALUE else if (Long.MIN_VALUE == forceCoverHash) content.cover.imageHash else forceCoverHash
     val size = content.size
-    val titleCleanup: String = if (useTitle) StringHelper.cleanup(content.title) else ""
+    val titleCleanup: String = if (useTitle) StringHelper.simplify(content.title) else ""
     val artistsCleanup: List<String>? =
         if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map {
-            StringHelper.cleanup(it.name)
+            StringHelper.simplify(it.name)
         } else Collections.emptyList()
     val countryCodes = if (useLanguage) content.attributeMap[AttributeType.LANGUAGE]?.map {
         LanguageHelper.getCountryCodeFromLanguage(it.name)

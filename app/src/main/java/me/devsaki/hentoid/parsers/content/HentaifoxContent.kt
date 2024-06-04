@@ -5,9 +5,11 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.HentaifoxParser
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.Locale
@@ -35,9 +37,9 @@ class HentaifoxContent : BaseContentParser() {
         content.setRawUrl(url)
         content.populateUniqueSiteId()
         cover?.let {
-            content.setCoverImageUrl(ParseHelper.getImgSrc(it))
+            content.setCoverImageUrl(getImgSrc(it))
         }
-        content.setTitle(StringHelper.removeNonPrintableChars(title))
+        content.setTitle(cleanup(title))
 
         information?.let { info ->
             if (info.children().isEmpty()) return content
@@ -54,14 +56,14 @@ class HentaifoxContent : BaseContentParser() {
                 } else if (e.children().size > 1) { // Tags
                     val metaType = e.child(0).text().replace(":", "").trim { it <= ' ' }
                     val tagLinks: List<Element> = e.select("a")
-                    if (metaType.equals("artists", ignoreCase = true)) ParseHelper.parseAttributes(
+                    if (metaType.equals("artists", ignoreCase = true)) parseAttributes(
                         attributes,
                         AttributeType.ARTIST,
                         tagLinks,
                         true,
                         Site.HENTAIFOX
                     )
-                    if (metaType.equals("parodies", ignoreCase = true)) ParseHelper.parseAttributes(
+                    if (metaType.equals("parodies", ignoreCase = true)) parseAttributes(
                         attributes,
                         AttributeType.SERIE,
                         tagLinks,
@@ -72,21 +74,21 @@ class HentaifoxContent : BaseContentParser() {
                             "characters",
                             ignoreCase = true
                         )
-                    ) ParseHelper.parseAttributes(
+                    ) parseAttributes(
                         attributes,
                         AttributeType.CHARACTER,
                         tagLinks,
                         true,
                         Site.HENTAIFOX
                     )
-                    if (metaType.equals("tags", ignoreCase = true)) ParseHelper.parseAttributes(
+                    if (metaType.equals("tags", ignoreCase = true)) parseAttributes(
                         attributes,
                         AttributeType.TAG,
                         tagLinks,
                         true,
                         Site.HENTAIFOX
                     )
-                    if (metaType.equals("groups", ignoreCase = true)) ParseHelper.parseAttributes(
+                    if (metaType.equals("groups", ignoreCase = true)) parseAttributes(
                         attributes,
                         AttributeType.CIRCLE,
                         tagLinks,
@@ -97,14 +99,14 @@ class HentaifoxContent : BaseContentParser() {
                             "languages",
                             ignoreCase = true
                         )
-                    ) ParseHelper.parseAttributes(
+                    ) parseAttributes(
                         attributes,
                         AttributeType.LANGUAGE,
                         tagLinks,
                         true,
                         Site.HENTAIFOX
                     )
-                    if (metaType.equals("category", ignoreCase = true)) ParseHelper.parseAttributes(
+                    if (metaType.equals("category", ignoreCase = true)) parseAttributes(
                         attributes,
                         AttributeType.CATEGORY,
                         tagLinks,
@@ -120,7 +122,7 @@ class HentaifoxContent : BaseContentParser() {
                 thumbs?.let { th ->
                     scripts?.let { scr ->
                         content.setImageFiles(
-                            ParseHelper.urlsToImageFiles(
+                            urlsToImageFiles(
                                 HentaifoxParser.parseImages(content, th, scr),
                                 content.coverImageUrl, StatusContent.SAVED
                             )

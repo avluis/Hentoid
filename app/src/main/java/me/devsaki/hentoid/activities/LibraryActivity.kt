@@ -74,6 +74,7 @@ import me.devsaki.hentoid.util.file.checkNotificationPermission
 import me.devsaki.hentoid.util.file.isLowDeviceStorage
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.file.requestNotificationPermission
+import me.devsaki.hentoid.util.runExternalImport
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
@@ -413,6 +414,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     override fun onStart() {
         super.onStart()
+        considerResumeReading()
+        considerRefreshExtLib()
+    }
+
+    private fun considerResumeReading() {
         val previouslyViewedContent = Preferences.getReaderCurrentContent()
         val previouslyViewedPage = Preferences.getReaderCurrentPageNum()
         if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ReaderActivity.isRunning()) {
@@ -450,6 +456,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             Preferences.setReaderCurrentContent(-1)
             Preferences.setReaderCurrentPageNum(-1)
         }
+    }
+
+    private fun considerRefreshExtLib() {
+        if (Preferences.getExternalLibraryUri().isNullOrEmpty()) return
+        runExternalImport(this, true)
     }
 
     override fun onResume() {

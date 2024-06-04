@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import static me.devsaki.hentoid.util.file.FileHelperKt.getDocumentFromTreeUriString;
+
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -24,7 +26,6 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.json.JsonContentCollection;
-import me.devsaki.hentoid.util.file.FileHelper;
 import timber.log.Timber;
 
 /**
@@ -113,7 +114,7 @@ public final class GroupHelper {
         List<Group> editedDateGroups = dao.selectEditedGroups(Grouping.DL_DATE.getId());
         contentCollection.setGroups(Grouping.DL_DATE, editedDateGroups);
 
-        DocumentFile rootFolder = FileHelper.getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
+        DocumentFile rootFolder = getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1));
         if (null == rootFolder) return false;
 
         try {

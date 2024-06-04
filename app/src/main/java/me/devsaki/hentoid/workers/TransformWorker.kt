@@ -26,7 +26,11 @@ import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtensionFromMimeType
+import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
+import me.devsaki.hentoid.util.file.saveBinary
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.determineEncoder
 import me.devsaki.hentoid.util.image.isImageLossless
@@ -42,17 +46,13 @@ import java.util.concurrent.atomic.AtomicInteger
 class TransformWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.transform_service, null) {
 
-    private val dao: CollectionDAO
+    private val dao: CollectionDAO = ObjectBoxDAO()
     private var upscaler: AiUpscaler? = null
 
     private var totalItems = 0
     private var nbOK = 0
     private var nbKO = 0
     private lateinit var globalProgress: ProgressManager
-
-    init {
-        dao = ObjectBoxDAO()
-    }
 
 
     override fun getStartNotification(): BaseNotification {
@@ -63,7 +63,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear() {
+    override fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
         upscaler?.cleanup()
 
@@ -117,8 +117,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun transformContent(content: Content, params: TransformParams) {
-        val contentFolder =
-            FileHelper.getDocumentFromTreeUriString(applicationContext, content.storageUri)
+        val contentFolder = getDocumentFromTreeUriString(applicationContext, content.storageUri)
         val images = content.imageList
         if (contentFolder != null) {
             val imagesWithoutChapters =
@@ -142,7 +141,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             // Achievements
             if (!isStopped) {
                 if (upscaler != null) { // AI upscale
-                    Settings.nbAIRescale = Settings.nbAIRescale + 1
+                    Settings.nbAIRescale += 1
                     if (Settings.nbAIRescale >= 2) AchievementsManager.trigger(20)
                 }
                 val pagesTotal = images.count { i -> i.isReadable }
@@ -174,12 +173,12 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         nbManhwa: AtomicInteger,
         nbPages: Int
     ) {
-        val sourceFile = FileHelper.getDocumentFromTreeUriString(applicationContext, img.fileUri)
+        val sourceFile = getDocumentFromTreeUriString(applicationContext, img.fileUri)
         if (null == sourceFile) {
             nextKO()
             return
         }
-        val rawData = FileHelper.getInputStream(applicationContext, sourceFile).use {
+        val rawData = getInputStream(applicationContext, sourceFile).use {
             return@use it.readBytes()
         }
         val imageId = img.fileUri
@@ -208,7 +207,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         BitmapFactory.decodeByteArray(targetData, 0, targetData.size, metadataOpts)
         val targetDims = Point(metadataOpts.outWidth, metadataOpts.outHeight)
         val targetMime = determineEncoder(isLossless, targetDims, params).mimeType
-        val targetName = img.name + "." + FileHelper.getExtensionFromMimeType(targetMime)
+        val targetName = img.name + "." + getExtensionFromMimeType(targetMime)
         val newFile = sourceName != targetName
 
         val targetUri = if (!newFile) sourceFile.uri
@@ -218,7 +217,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             targetFile?.uri
         }
         if (targetUri != null) {
-            FileHelper.saveBinary(applicationContext, targetUri, targetData)
+            saveBinary(applicationContext, targetUri, targetData)
             // Update image properties
             img.fileUri = targetUri.toString()
             img.size = targetData.size.toLong()
@@ -236,7 +235,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
     private fun upscale(imgId: String, rawData: ByteArray): ByteArray {
         val cacheDir =
-            FileHelper.getOrCreateCacheFolder(applicationContext, "upscale") ?: return rawData
+            getOrCreateCacheFolder(applicationContext, "upscale") ?: return rawData
         val outputFile = File(cacheDir, "upscale.png")
         val progress = ByteBuffer.allocateDirect(1)
         val killSwitch = ByteBuffer.allocateDirect(1)
@@ -280,7 +279,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             }
         }
 
-        FileHelper.getInputStream(applicationContext, outputFile.toUri()).use { input ->
+        getInputStream(applicationContext, outputFile.toUri()).use { input ->
             return input.readBytes()
         }
     }

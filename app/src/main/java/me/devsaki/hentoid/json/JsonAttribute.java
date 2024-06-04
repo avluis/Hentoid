@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json;
 
+import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -7,7 +9,6 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.StringHelper;
 
 class JsonAttribute {
 
@@ -20,7 +21,7 @@ class JsonAttribute {
 
     static JsonAttribute fromEntity(Attribute a, Site site) {
         JsonAttribute result = new JsonAttribute();
-        result.name = StringHelper.removeNonPrintableChars(a.getName());
+        result.name = cleanup(a.getName());
         result.type = a.getType();
         result.computeUrl(a.getLocations(), site);
         return result;
@@ -37,7 +38,7 @@ class JsonAttribute {
     }
 
     Attribute toEntity(Site site) {
-        return new Attribute(type, StringHelper.removeNonPrintableChars(name), url, site);
+        return new Attribute(type, cleanup(name), url, site);
     }
 
     public AttributeType getType() {

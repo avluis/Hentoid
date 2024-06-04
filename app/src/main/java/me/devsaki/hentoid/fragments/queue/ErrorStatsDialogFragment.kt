@@ -17,7 +17,8 @@ import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.file.shareFile
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.writeLog
 import org.greenrobot.eventbus.EventBus
@@ -160,13 +161,13 @@ class ErrorStatsDialogFragment : BaseDialogFragment<Nothing>() {
         toast(R.string.redownload_generating_log_file)
         val logInfo = createLog()
         val logFile = requireContext().writeLog(logInfo)
-        if (logFile != null) FileHelper.openFile(requireContext(), logFile)
+        if (logFile != null) openFile(requireContext(), logFile)
     }
 
     private fun shareErrorLog() {
         val logInfo = createLog()
         val logFile = requireContext().writeLog(logInfo)
-        if (logFile != null) FileHelper.shareFile(
+        if (logFile != null) shareFile(
             requireContext(),
             logFile.uri,
             resources.getString(R.string.error_log_header_queue)

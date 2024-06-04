@@ -1,13 +1,8 @@
 package me.devsaki.hentoid.viewholders
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.graphics.PorterDuff
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -19,15 +14,11 @@ import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.DuplicateItemBundle
-import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
@@ -35,10 +26,10 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.image.tintBitmap
+import me.devsaki.hentoid.util.isValidContextForGlide
 
 class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
     AbstractItem<DuplicateItem.ViewHolder>() {
@@ -118,6 +109,8 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         private var keepButton: TextView? = itemView.findViewById(R.id.keep_choice)
         private var deleteButton: TextView? = itemView.findViewById(R.id.delete_choice)
         var keepDeleteSwitch: MaterialSwitch? = itemView.findViewById(R.id.keep_delete)
+
+        private val glideRequestOptions = getGlideOptionCenterImage(view.context)
 
         override fun bindView(item: DuplicateItem, payloads: List<Any>) {
             item.content ?: return
@@ -330,22 +323,8 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
 
         override fun unbindView(item: DuplicateItem) {
             ivCover?.let {
-                if (Helper.isValidContextForGlide(it)) Glide.with(it).clear(it)
+                if (isValidContextForGlide(it)) Glide.with(it).clear(it)
             }
-        }
-    }
-
-    companion object {
-        private val glideRequestOptions: RequestOptions
-
-        init {
-            val context: Context = HentoidApp.getInstance()
-            val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.ic_hentoid_trans)
-            val tintColor = context.getThemedColor(R.color.light_gray)
-            val d: Drawable =
-                BitmapDrawable(context.resources, tintBitmap(bmp, tintColor))
-            val centerInside: Transformation<Bitmap> = CenterInside()
-            glideRequestOptions = RequestOptions().optionalTransform(centerInside).error(d)
         }
     }
 }

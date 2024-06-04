@@ -14,8 +14,8 @@ private fun Context.isLowDeviceStorage(
     threshold: Int?
 ): Boolean {
     val rootFolder =
-        FileHelper.getDocumentFromTreeUriString(this, Preferences.getStorageUri(location))
+        getDocumentFromTreeUriString(this, Preferences.getStorageUri(location))
             ?: return false
-    val freeSpaceRatio = FileHelper.MemoryUsageFigures(this, rootFolder).freeUsageRatio100
+    val freeSpaceRatio = MemoryUsageFigures(this, rootFolder).freeUsageRatio100
     return freeSpaceRatio < 100 - (threshold ?: Preferences.getMemoryAlertThreshold())
 }

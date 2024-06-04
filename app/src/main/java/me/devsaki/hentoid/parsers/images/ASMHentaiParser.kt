@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.getOnlineDocument
@@ -31,7 +31,7 @@ class ASMHentaiParser : BaseImageListParser() {
                 doc.select("div.full_gallery") // Older ASM layout
             val imgElt = imgContainer.select("a").select("img").first()
             if (imgElt != null) {
-                var imgUrl = ParseHelper.getImgSrc(imgElt)
+                var imgUrl = getImgSrc(imgElt)
                 if (!imgUrl.startsWith("http")) imgUrl = "https:$imgUrl"
                 val ext = imgUrl.substring(imgUrl.lastIndexOf('.'))
                 for (i in 0 until nbPages) {

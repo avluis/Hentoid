@@ -19,15 +19,16 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_add_remove_chapters"
-        android:icon="@drawable/ic_edit"
+        android:icon="@drawable/ic_edit_chapters"
         android:title="@string/gallery_add_remove_chapters"
         android:tooltipText="@string/gallery_add_remove_chapters"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_remove_chapters"
-        android:icon="@drawable/ic_action_delete"
-        android:title="@string/gallery_clear_chapters"
-        android:tooltipText="@string/gallery_clear_chapters"
+        android:id="@+id/action_reset_chapters"
+        android:icon="@drawable/ic_action_reset"
+        android:title="@string/reset"
+        android:tooltipText="@string/reset"
+        android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_edit_confirm"

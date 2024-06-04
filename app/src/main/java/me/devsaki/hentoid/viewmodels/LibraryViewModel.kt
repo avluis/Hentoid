@@ -44,7 +44,7 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.widget.ContentSearchManager
@@ -1006,6 +1006,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
+        appendBookTitle : Boolean,
         deleteAfterMerging: Boolean,
         onSuccess: Runnable
     ) {
@@ -1017,7 +1018,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     // Flag the content as "being deleted" (triggers blink animation)
                     if (deleteAfterMerging)
                         contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
-                    ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao)
+                    ContentHelper.mergeContents(getApplication(), contentList, newTitle, appendBookTitle, dao)
                 }
                 if (deleteAfterMerging) deleteItems(contentList, emptyList(), false, null)
                 onSuccess.run()
@@ -1075,7 +1076,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 splitContent,
                 "Could not create target directory"
             )
-            splitContent.storageUri = targetFolder.uri.toString()
+            splitContent.storageDoc = targetFolder
 
             // Copy the corresponding images to that folder
             val splitContentImages = splitContent.imageFiles
@@ -1086,7 +1087,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             for (img in splitContentImages) {
                 if (img.status == StatusContent.DOWNLOADED) {
                     val extension = getExtensionFromUri(img.fileUri)
-                    val newUri = FileHelper.copyFile(
+                    val newUri = copyFile(
                         getApplication(),
                         Uri.parse(img.fileUri),
                         targetFolder.uri,

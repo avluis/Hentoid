@@ -34,7 +34,11 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.applyTheme
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.MemoryUsageFigures
+import me.devsaki.hentoid.util.file.formatHumanReadableSize
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getFullPathFromUri
+import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -96,15 +100,21 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             toolbar.setOnMenuItemClickListener { i -> onMenuItemSelected(i) }
 
             addPrimary1.setOnClickListener {
-                if (PrimaryImportWorker.isRunning(baseContext)) toast(R.string.pref_import_running)
+                if (PrimaryImportWorker.isRunning(baseContext)
+                    || ExternalImportWorker.isRunning(baseContext)
+                ) toast(R.string.pref_import_running)
                 else importLocation(StorageLocation.PRIMARY_1)
             }
             addPrimary2.setOnClickListener {
-                if (PrimaryImportWorker.isRunning(baseContext)) toast(R.string.pref_import_running)
+                if (PrimaryImportWorker.isRunning(baseContext)
+                    || ExternalImportWorker.isRunning(baseContext)
+                ) toast(R.string.pref_import_running)
                 else importLocation(StorageLocation.PRIMARY_2)
             }
             addExternal.setOnClickListener {
-                if (ExternalImportWorker.isRunning(baseContext)) toast(R.string.pref_import_running)
+                if (PrimaryImportWorker.isRunning(baseContext)
+                    || ExternalImportWorker.isRunning(baseContext)
+                ) toast(R.string.pref_import_running)
                 else importLocation(StorageLocation.EXTERNAL)
             }
 
@@ -216,16 +226,16 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                 else -> number.text = " "
             }
             val uri = Uri.parse(uriStr)
-            path.text = FileHelper.getFullPathFromUri(baseContext, uri)
+            path.text = getFullPathFromUri(baseContext, uri)
 
-            val rootFolder = FileHelper.getDocumentFromTreeUriString(baseContext, uriStr)
+            val rootFolder = getDocumentFromTreeUriString(baseContext, uriStr)
             if (rootFolder != null) {
-                val memUsage = FileHelper.MemoryUsageFigures(baseContext, rootFolder)
+                val memUsage = MemoryUsageFigures(baseContext, rootFolder)
                 val locationFreeBytes = memUsage.getfreeUsageBytes()
                 val locationTotalBytes = memUsage.totalSpaceBytes
                 statsTxt.text = resources.getString(
                     R.string.location_storage,
-                    FileHelper.formatHumanReadableSize(locationFreeBytes, resources),
+                    formatHumanReadableSize(locationFreeBytes, resources),
                     locationFreeBytes * 100 / locationTotalBytes
                 )
                 statsGraph.apply {
@@ -342,11 +352,11 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
                 4 -> {
                     val folder =
-                        FileHelper.getDocumentFromTreeUriString(
+                        getDocumentFromTreeUriString(
                             this,
                             Preferences.getStorageUri(location)
                         )
-                    if (folder != null) FileHelper.openFile(this, folder)
+                    if (folder != null) openFile(this, folder)
                 }
             }
         }
@@ -406,9 +416,9 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
         var location1free = -1L
         val root1 = Preferences.getStorageUri(StorageLocation.PRIMARY_1)
         if (root1.isNotEmpty()) {
-            val root1Folder = FileHelper.getDocumentFromTreeUriString(this, root1)
+            val root1Folder = getDocumentFromTreeUriString(this, root1)
             if (root1Folder != null) {
-                location1free = FileHelper.MemoryUsageFigures(this, root1Folder).getfreeUsageBytes()
+                location1free = MemoryUsageFigures(this, root1Folder).getfreeUsageBytes()
             }
         }
 
@@ -487,7 +497,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                         R.string.task_done,
                         BaseTransientBottomBar.LENGTH_LONG
                     )
-                snackbar.setAction(R.string.read_log) { FileHelper.openFile(this, logFile) }
+                snackbar.setAction(R.string.read_log) { openFile(this, logFile) }
                 snackbar.show()
             }
         }

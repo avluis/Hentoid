@@ -6,9 +6,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -39,10 +40,7 @@ class MrmContent : BaseContentParser() {
         content.setSite(Site.MRM)
         if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
         content.setRawUrl(url)
-        if (title.isNotEmpty()) {
-            title = StringHelper.removeNonPrintableChars(title.trim { it <= ' ' })
-            content.setTitle(title)
-        } else content.setTitle(NO_TITLE)
+        content.setTitle(cleanup(title))
 
         if (uploadDate.isNotEmpty())
             content.setUploadDate(
@@ -51,7 +49,7 @@ class MrmContent : BaseContentParser() {
 
         images?.let {
             if (it.isNotEmpty())
-                content.setCoverImageUrl(ParseHelper.getImgSrc(it[0]))
+                content.setCoverImageUrl(getImgSrc(it[0]))
         }
 
         val attributes = AttributeMap()
@@ -68,10 +66,10 @@ class MrmContent : BaseContentParser() {
                 attributes.add(attribute)
             }
         }
-        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.MRM)
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.MRM)
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, genres, false, Site.MRM)
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MRM)
+        parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.MRM)
+        parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.MRM)
+        parseAttributes(attributes, AttributeType.TAG, genres, false, Site.MRM)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MRM)
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

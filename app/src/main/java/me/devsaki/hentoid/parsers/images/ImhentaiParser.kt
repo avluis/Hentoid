@@ -2,7 +2,8 @@ package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.parsers.ParseHelper
+import me.devsaki.hentoid.parsers.getExtensionFromFormat
+import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
@@ -52,13 +53,13 @@ class ImhentaiParser : BaseImageListParser() {
 
             // 2- Generate image URL from imagePath constant, gallery ID, page number and extension
             if (thumbs.isNotEmpty() && imageFormats != null) {
-                val thumbUrl = ParseHelper.getImgSrc(thumbs[0])
+                val thumbUrl = getImgSrc(thumbs[0])
                 val thumbPath = thumbUrl.substring(0, thumbUrl.lastIndexOf("/") + 1)
 
                 // Forge all page URLs
                 for (i in 0 until imageFormats.size) {
                     val imgUrl = thumbPath + (i + 1) + "." +
-                            ParseHelper.getExtensionFromFormat(imageFormats, i)
+                            getExtensionFromFormat(imageFormats, i)
                     result.add(imgUrl)
                 }
             }

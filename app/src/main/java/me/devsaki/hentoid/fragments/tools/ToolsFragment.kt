@@ -34,7 +34,10 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.DiskCache
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.formatHumanReadableSize
+import me.devsaki.hentoid.util.file.getDownloadsFolder
+import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -149,18 +152,18 @@ class ToolsFragment : PreferenceFragmentCompat(),
 
             RAM -> {
                 val usedAppHeap =
-                    FileHelper.formatHumanReadableSize(
+                    formatHumanReadableSize(
                         Helper.getAppHeapBytes().first,
                         resources
                     )
                 val usedAppTotal =
-                    FileHelper.formatHumanReadableSize(Helper.getAppTotalRamBytes(), resources)
+                    formatHumanReadableSize(Helper.getAppTotalRamBytes(), resources)
                 val systemHeap = Helper.getSystemHeapBytes(activity)
-                val systemHeapUsed = FileHelper.formatHumanReadableSize(
+                val systemHeapUsed = formatHumanReadableSize(
                     systemHeap.first,
                     resources
                 )
-                val systemHeapFree = FileHelper.formatHumanReadableSize(
+                val systemHeapFree = formatHumanReadableSize(
                     systemHeap.second,
                     resources
                 )
@@ -237,17 +240,14 @@ class ToolsFragment : PreferenceFragmentCompat(),
 
         rootView?.let {
             try {
-                FileHelper.openNewDownloadOutputStream(
+                openNewDownloadOutputStream(
                     requireContext(),
                     targetFileName,
                     JsonHelper.JSON_MIME_TYPE
-                ).use { newDownload ->
+                )?.use { newDownload ->
                     ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
                         .use { input ->
-                            Helper.copy(
-                                input,
-                                newDownload
-                            )
+                            Helper.copy(input, newDownload)
                         }
                 }
                 Snackbar.make(
@@ -256,9 +256,9 @@ class ToolsFragment : PreferenceFragmentCompat(),
                     BaseTransientBottomBar.LENGTH_LONG
                 )
                     .setAction(R.string.open_folder) {
-                        FileHelper.openFile(
+                        openFile(
                             requireContext(),
-                            FileHelper.getDownloadsFolder()
+                            getDownloadsFolder()
                         )
                     }
                     .show()

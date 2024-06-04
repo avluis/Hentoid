@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
+import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
+
 import androidx.annotation.NonNull;
 
 import com.annimon.stream.Stream;
@@ -117,7 +119,7 @@ public class PixivPreloadMetadata {
         IllustData illustData = Stream.of(illust.values()).toList().get(0);
 
         content.setUrl(url.replace(Site.PIXIV.getUrl(), ""));
-        content.setTitle(StringHelper.removeNonPrintableChars(illustData.getTitle()));
+        content.setTitle(cleanup(illustData.getTitle()));
         content.setUniqueSiteId(illustData.illustId);
 
         content.setQtyPages(illustData.getPageCount());
@@ -130,7 +132,7 @@ public class PixivPreloadMetadata {
         attributes.add(attribute);
 
         for (Pair<String, String> tag : illustData.getTags()) {
-            String name = StringHelper.removeNonPrintableChars(tag.getSecond());
+            String name = cleanup(tag.getSecond());
             AttributeType type = AttributeType.TAG;
             attribute = new Attribute(type, name, pixivPrefix + "tags/" + tag.getFirst(), Site.LUSCIOUS);
             attributes.add(attribute);

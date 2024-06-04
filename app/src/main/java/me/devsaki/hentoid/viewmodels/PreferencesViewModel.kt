@@ -11,7 +11,10 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
-import me.devsaki.hentoid.util.file.FileHelper
+import me.devsaki.hentoid.util.file.Beholder
+import me.devsaki.hentoid.util.file.copyFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.listFiles
 import org.greenrobot.eventbus.EventBus
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -39,6 +42,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                     dao
                 )
                 dao.cleanupOrphanAttributes()
+                Beholder.clearSnapshot(getApplication())
             }
 
             else -> {
@@ -93,12 +97,12 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                 if (targetFolder != null) {
                     // Transfer files
                     val sourceFolder =
-                        FileHelper.getDocumentFromTreeUriString(getApplication(), c.storageUri)
+                        getDocumentFromTreeUriString(getApplication(), c.storageUri)
                     if (sourceFolder != null) {
-                        val files = FileHelper.listFiles(getApplication(), sourceFolder, null)
+                        val files = listFiles(getApplication(), sourceFolder, null)
                         // TODO secondary progress for pages
                         files.forEach { it1 ->
-                            val newUri = FileHelper.copyFile(
+                            val newUri = copyFile(
                                 getApplication(),
                                 it1.uri,
                                 targetFolder.uri,
@@ -112,7 +116,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                             }
                         }
                         // Update Content Uris
-                        c.storageUri = targetFolder.uri.toString()
+                        c.storageDoc = targetFolder
                         dao.insertContentCore(c)
                         c.imageFiles?.let {
                             dao.insertImageFiles(it)

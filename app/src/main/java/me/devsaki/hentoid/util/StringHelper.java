@@ -138,17 +138,17 @@ public final class StringHelper {
     }
 
     /**
-     * Clean up the given string by
+     * Simplify the given string by
      * - Removing everything between ()'s, {}'s and []'s
      * - Replacing [-+_~/\,:;|.#"'=&!?]'s by a space
      * - Putting all characters lowercase
      * - Replacing HTML-escaped characters by their ASCII equivalent
      * - Trimming
      *
-     * @param s String to cleanup
-     * @return Cleaned-up string
+     * @param s String to simplify
+     * @return Simplified string
      */
-    public static String cleanup(@NonNull String s) {
+    public static String simplify(@NonNull String s) {
         boolean openBracket = false;
         String formattedS = StringEscapeUtils.unescapeHtml4(s.toLowerCase().trim());
         StringBuilder result = new StringBuilder();

@@ -3,10 +3,13 @@ package me.devsaki.hentoid.workers
 import android.content.Context
 import android.util.Log
 import androidx.annotation.IdRes
+import androidx.documentfile.provider.DocumentFile
+import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkManager
-import androidx.work.Worker
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.util.LogEntry
@@ -25,14 +28,15 @@ abstract class BaseWorker(
     parameters: WorkerParameters,
     @IdRes val serviceId: Int,
     logName: String?
-) : Worker(context, parameters) {
+) : CoroutineWorker(context, parameters) {
     protected lateinit var notificationManager: NotificationManager
 
     protected var isComplete = true
 
-    protected val logName: String
-    private var logs: MutableList<LogEntry>?
-
+    protected var logName: String
+    protected var logNoDataMessage = ""
+    protected var logs: MutableList<LogEntry>?
+        private set
 
     companion object {
         @JvmStatic
@@ -66,12 +70,6 @@ abstract class BaseWorker(
         }
     }
 
-    override fun onStopped() {
-        onInterrupt()
-        clear()
-        super.onStopped()
-    }
-
     private fun initNotifications(context: Context) {
         notificationManager = NotificationManager(context, serviceId)
         notificationManager.cancel()
@@ -90,37 +88,38 @@ abstract class BaseWorker(
     }
 
     private fun clear() {
-        onClear()
         logs?.apply {
             add(LogEntry("Worker destroyed / stopped=%s / complete=%s", isStopped, isComplete))
-            dumpLog()
         }
+        val logFile = dumpLog()
+        onClear(logFile)
 
         // Tell everyone the worker is shutting down
         EventBus.getDefault().post(ServiceDestroyedEvent(serviceId))
         Timber.d("%s worker destroyed", this.javaClass.simpleName)
     }
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         try {
             ensureLongRunning()
-            getToWork(inputData)
+            withContext(Dispatchers.IO) {
+                getToWork(inputData)
+            }
         } catch (e: Exception) {
+            onInterrupt()
             logs?.apply {
                 add(LogEntry("Exception caught ! %s : %s", e.message, e.stackTrace))
-                dumpLog()
             }
             Timber.e(e)
         } finally {
             clear()
         }
-
         // Retry when incomplete and not manually stopped
         return if (!isStopped && !isComplete) Result.retry() else Result.success()
     }
 
-    private fun dumpLog() {
-        logs?.let {
+    private fun dumpLog(): DocumentFile? {
+        return logs?.let {
             val logInfo = LogInfo(logName)
             logInfo.setHeaderName(logName)
             logInfo.setEntries(it)
@@ -132,7 +131,7 @@ abstract class BaseWorker(
 
     protected abstract fun onInterrupt()
 
-    protected abstract fun onClear()
+    protected abstract fun onClear(logFile: DocumentFile?)
 
     protected abstract fun getToWork(input: Data)
 }

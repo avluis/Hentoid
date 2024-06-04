@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
+import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
+
 import androidx.annotation.NonNull;
 
 import java.util.List;
@@ -67,7 +69,7 @@ public class HitomiGalleryInfo {
     }
 
     public void updateContent(@NonNull Content content) {
-        content.setTitle(StringHelper.removeNonPrintableChars(title));
+        content.setTitle(cleanup(title));
 
         long uploadDate = Helper.parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx");
         if (0 == uploadDate)

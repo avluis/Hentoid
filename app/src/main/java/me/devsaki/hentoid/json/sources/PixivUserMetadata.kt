@@ -7,6 +7,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.util.StringHelper
 
 /**
@@ -51,7 +52,7 @@ data class PixivUserMetadata(
         if (error || null == body || null == body.userDetails)
             return content.setStatus(StatusContent.IGNORED)
         val data: UserData = body.userDetails
-        content.setTitle(StringHelper.removeNonPrintableChars(data.name))
+        content.setTitle(cleanup(data.name))
         content.uniqueSiteId = data.id
         content.setUrl("users/" + data.id)
         content.setCoverImageUrl(data.coverUrl)

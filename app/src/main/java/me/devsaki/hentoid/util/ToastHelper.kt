@@ -16,7 +16,7 @@ fun Context.toast(@StringRes resource: Int, vararg args: Any) {
 
 fun <T : Fragment> T.toast(@StringRes resource: Int, vararg args: Any) {
     this.view?.context?.apply {
-        toastShort(resource, args)
+        toastShort(resource, *args)
     }
 }
 
@@ -26,7 +26,7 @@ fun Context.toastShort(@StringRes resource: Int, vararg args: Any) {
 
 fun <T : Fragment> T.toastShort(@StringRes resource: Int, vararg args: Any) {
     this.view?.context?.apply {
-        toastShort(resource, args)
+        toastShort(resource, *args)
     }
 }
 

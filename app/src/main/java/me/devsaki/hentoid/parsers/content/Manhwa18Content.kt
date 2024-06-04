@@ -6,9 +6,11 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.parsers.ParseHelper
-import me.devsaki.hentoid.util.StringHelper
-import org.apache.commons.text.StringEscapeUtils
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.removeTextualTags
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.regex.Pattern
@@ -52,23 +54,17 @@ class Manhwa18Content : BaseContentParser() {
         url: String,
         updateImages: Boolean
     ): Content {
-        var title = StringHelper.removeNonPrintableChars(chapterTitle)
-        title = StringEscapeUtils.unescapeHtml4(title)
-        content.setTitle(title)
+        content.setTitle(cleanup(chapterTitle))
         val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 2]
         else content.uniqueSiteId = urlParts[0]
         if (updateImages) {
             chapterImgs?.let {
-                val imgUrls = it.mapNotNull { e -> ParseHelper.getImgSrc(e) }
+                val imgUrls = it.map { e -> getImgSrc(e) }
                 var coverUrl = ""
                 if (imgUrls.isNotEmpty()) coverUrl = imgUrls[0]
                 content.setImageFiles(
-                    ParseHelper.urlsToImageFiles(
-                        imgUrls,
-                        coverUrl,
-                        StatusContent.SAVED
-                    )
+                    urlsToImageFiles(imgUrls, coverUrl, StatusContent.SAVED)
                 )
                 content.setQtyPages(imgUrls.size)
             }
@@ -85,8 +81,8 @@ class Manhwa18Content : BaseContentParser() {
         content.setCoverImageUrl(cover)
         var titleStr: String? = NO_TITLE
         title?.let {
-            titleStr = StringHelper.removeNonPrintableChars(it.text())
-            titleStr = ParseHelper.removeTextualTags(titleStr)
+            titleStr = cleanup(it.text())
+            titleStr = removeTextualTags(titleStr)
         }
         content.setTitle(titleStr)
         if (updateImages) {
@@ -94,8 +90,8 @@ class Manhwa18Content : BaseContentParser() {
             content.setQtyPages(0)
         }
         val attributes = AttributeMap()
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.MANHWA18)
-        ParseHelper.parseAttributes(
+        parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.MANHWA18)
+        parseAttributes(
             attributes,
             AttributeType.TAG,
             tags,
