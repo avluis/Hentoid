@@ -1838,11 +1838,11 @@ public final class ContentHelper {
      * Merge the given list of Content into one single new Content with the given title
      * NB : The Content's of the given list are _not_ removed
      *
-     * @param context     Context to use
-     * @param contentList List of Content to merge together
-     * @param newTitle    Title of the new merged Content
-     * @param newTitle    True to ignore existing chapters of the merged books and create one chapter per book instead
-     * @param dao         DAO to use
+     * @param context          Context to use
+     * @param contentList      List of Content to merge together
+     * @param newTitle         Title of the new merged Content
+     * @param useBookAsChapter True to ignore existing chapters of the merged books and create one chapter per book instead
+     * @param dao              DAO to use
      * @throws ContentNotProcessedException If something terrible happens
      */
     public static void mergeContents(
@@ -1917,51 +1917,50 @@ public final class ContentHelper {
         List<ImageFile> mergedImages = new ArrayList<>();
         List<Chapter> mergedChapters = new ArrayList<>();
 
-        ImageFile firstCover = firstContent.getCover();
-        ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
         boolean isError = false;
         try {
-            // Set cover
-            if (isInLibrary(coverPic.getStatus())) {
-                String extension = HttpHelperKt.getExtensionFromUri(firstCover.getFileUri());
-                Uri newUri = copyFile(context, Uri.parse(firstCover.getFileUri()), targetFolder.getUri(), firstCover.getMimeType(), firstCover.getName() + "." + extension);
-                if (newUri != null) coverPic.setFileUri(newUri.toString());
-                else Timber.w("Could not move file %s", firstCover.getFileUri());
-            }
-            mergedImages.add(coverPic);
-
             // Merge images and chapters
             int chapterOrder = 0;
             int pictureOrder = 1;
             int nbProcessedPics = 1;
+            boolean coverFound = false;
             Chapter newChapter;
-            String chapterStr = context.getString(R.string.gallery_chapter_prefix);
             for (Content c : contentList) {
-                if (null == c.getImageFiles()) continue;
                 newChapter = null;
                 // Create a default "content chapter" that represents the original book before merging
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
                 contentChapter.setUniqueId(c.getUniqueSiteId() + "-" + contentChapter.getOrder());
-                for (ImageFile img : c.getImageFiles()) {
-                    if (!img.isReadable()) continue;
+
+                List<ImageFile> imgs = c.getImageList();
+                boolean firstImageIsCover = !Stream.of(imgs).anyMatch(ImageFile::isCover);
+                for (ImageFile img : imgs) {
+                    if (!img.isReadable() && coverFound) continue;
                     ImageFile newImg = new ImageFile(img);
                     newImg.setId(0); // Force working on a new picture
                     newImg.getContent().setTarget(null); // Clear content
                     newImg.setFileUri(""); // Clear initial URI
                     newImg.setOrder(pictureOrder++);
                     newImg.computeName(nbMaxDigits);
-                    Chapter chapLink = img.getLinkedChapter();
-                    // No chapter -> set content chapter
-                    if (null == chapLink || useBookAsChapter) {
-                        newChapter = contentChapter;
-                    } else {
-                        if (chapLink.getUniqueId().isEmpty()) chapLink.populateUniqueId();
-                        if (null == newChapter || !chapLink.getUniqueId().equals(newChapter.getUniqueId())) {
-                            newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
-                        }
+                    if (firstImageIsCover) {
+                        newImg.setIsCover(true);
+                        firstImageIsCover = false;
                     }
-                    if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
-                    newImg.setChapter(newChapter);
+                    if (newImg.isCover()) coverFound = true;
+
+                    if (!newImg.isCover()) {
+                        Chapter chapLink = img.getLinkedChapter();
+                        // No chapter -> set content chapter
+                        if (null == chapLink || useBookAsChapter) {
+                            newChapter = contentChapter;
+                        } else {
+                            if (chapLink.getUniqueId().isEmpty()) chapLink.populateUniqueId();
+                            if (null == newChapter || !chapLink.getUniqueId().equals(newChapter.getUniqueId())) {
+                                newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
+                            }
+                        }
+                        if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
+                        newImg.setChapter(newChapter);
+                    }
 
                     // If exists, move the picture to the merged books' folder
                     if (isInLibrary(newImg.getStatus())) {
