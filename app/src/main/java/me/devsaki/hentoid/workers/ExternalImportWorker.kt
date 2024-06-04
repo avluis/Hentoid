@@ -201,8 +201,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 init(applicationContext)
 
                 // Update the beholder
-                Beholder.updateSnapshot(context, addedContent)
-                Beholder.saveSnapshot(context)
+                Beholder.registerContent(context, addedContent)
             }
         } catch (e: IOException) {
             Timber.w(e)

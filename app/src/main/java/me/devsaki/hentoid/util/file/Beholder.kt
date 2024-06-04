@@ -97,7 +97,7 @@ object Beholder {
         return Pair(allNewDocs, allDeletedDocs)
     }
 
-    fun updateSnapshot(
+    fun registerContent(
         ctx: Context,
         parentUri: String,
         contentDoc: DocumentFile,
@@ -105,10 +105,10 @@ object Beholder {
     ) {
         val map = HashMap<String, List<Pair<DocumentFile, Long>>>()
         map[parentUri] = listOf(Pair(contentDoc, contentId))
-        updateSnapshot(ctx, map)
+        registerContent(ctx, map)
     }
 
-    fun updateSnapshot(
+    fun registerContent(
         ctx: Context,
         contentDocs: Map<String, List<Pair<DocumentFile, Long>>>
     ) {
@@ -146,6 +146,7 @@ object Beholder {
             snapshot.remove(it.uri)
             snapshot[it.uri] = it.documents
         }
+        saveSnapshot(ctx)
     }
 
     fun clearSnapshot(ctx: Context) {
@@ -153,7 +154,7 @@ object Beholder {
         saveSnapshot(ctx)
     }
 
-    fun saveSnapshot(ctx: Context): Boolean {
+    private fun saveSnapshot(ctx: Context): Boolean {
         val outFile =
             ctx.filesDir.listFiles { f -> f.name == SNAPSHOT_LOCATION }?.let {
                 if (it.isNotEmpty()) it[0]

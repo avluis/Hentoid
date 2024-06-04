@@ -1999,7 +1999,7 @@ public final class ContentHelper {
 
             // If merged book is external, register it to the Beholder
             if (StatusContent.EXTERNAL == mergedContent.getStatus() && parentFolder != null)
-                Beholder.INSTANCE.updateSnapshot(context, parentFolder.getUri().toString(), targetFolder, mergedContent.getId());
+                Beholder.INSTANCE.registerContent(context, parentFolder.getUri().toString(), targetFolder, mergedContent.getId());
         }
 
         EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.Type.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
