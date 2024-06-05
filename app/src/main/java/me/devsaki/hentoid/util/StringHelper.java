@@ -3,8 +3,6 @@ package me.devsaki.hentoid.util;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.annimon.stream.Stream;
-
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.ArrayList;
@@ -12,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import kotlin.Triple;
 
