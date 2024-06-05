@@ -16,7 +16,6 @@ import org.junit.Rule;
 import java.io.File;
 
 import io.objectbox.BoxStore;
-import io.objectbox.DebugFlags;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import timber.log.Timber;
 
@@ -35,8 +34,6 @@ public abstract class AbstractObjectBoxTest {
         store = MyObjectBox.builder()
                 // add directory flag to change where ObjectBox puts its database files
                 .directory(TEST_DIRECTORY)
-                // optional: add debug flags for more detailed ObjectBox log output
-                .debugFlags(DebugFlags.LOG_QUERIES | DebugFlags.LOG_QUERY_PARAMETERS | DebugFlags.LOG_TRANSACTIONS_READ | DebugFlags.LOG_TRANSACTIONS_WRITE)
                 .build();
         println(">> DB set up");
     }
