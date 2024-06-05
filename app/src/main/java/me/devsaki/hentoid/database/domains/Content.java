@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.database.domains;
 
+import static me.devsaki.hentoid.util.ContentHelperKKt.formatBookAuthor;
 import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
 
 import android.text.TextUtils;
@@ -67,7 +68,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -603,7 +603,7 @@ public class Content implements Serializable {
     }
 
     public void computeAuthor() {
-        author = ContentHelper.formatBookAuthor(this);
+        author = formatBookAuthor(this);
     }
 
     public String getAuthor() {

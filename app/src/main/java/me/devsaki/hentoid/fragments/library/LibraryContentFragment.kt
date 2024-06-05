@@ -79,10 +79,10 @@ import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invok
 import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
@@ -90,8 +90,12 @@ import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.getIdForCurrentTheme
+import me.devsaki.hentoid.util.launchBrowserFor
+import me.devsaki.hentoid.util.openReader
+import me.devsaki.hentoid.util.shareContent
 import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.viewContentGalleryPage
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
@@ -639,7 +643,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         if (selectedItems.isNotEmpty()) {
             val c = selectedItems.mapNotNull { ci -> ci.content }
             leaveSelectionMode()
-            ContentHelper.shareContent(requireContext(), c)
+            shareContent(requireContext(), c)
         }
     }
 
@@ -784,7 +788,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 else viewModel.downloadContent(contents, // Update metadata only
                     reparseContent = true,
                     reparseImages = false,
-                    position = 0,
+                    position = QueuePosition.TOP,
                     onSuccess = { nbSuccess: Int? ->
                         val message = resources.getQuantityString(
                             R.plurals.add_to_queue,
@@ -1083,7 +1087,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             when (Site.searchByUrl(query)) {
                 null -> snack(R.string.malformed_url)
                 Site.NONE -> snack(R.string.unsupported_site)
-                else -> ContentHelper.launchBrowserFor(requireContext(), query)
+                else -> launchBrowserFor(requireContext(), query)
             }
         } else {
             viewModel.searchContentUniversal(query)
@@ -1562,7 +1566,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     // TODO doc
     override fun readBook(content: Content, forceShowGallery: Boolean) {
         topItemPosition = getTopItemPosition()
-        ContentHelper.openReader(
+        openReader(
             requireContext(),
             content,
             -1,
@@ -1578,7 +1582,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * @param content Content whose "source" button has been clicked on
      */
     private fun onBookSourceClick(content: Content) {
-        ContentHelper.viewContentGalleryPage(requireContext(), content)
+        viewContentGalleryPage(requireContext(), content)
     }
 
     /**
@@ -1612,15 +1616,18 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 AddQueueMenu.show(requireActivity(), it, this) { position, _ ->
                     redownloadFromScratch(
                         contentList,
-                        if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP
-                        else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+                        if (0 == position) QueuePosition.TOP
+                        else QueuePosition.BOTTOM
                     )
                 }
             }
-        } else redownloadFromScratch(contentList, Preferences.getQueueNewDownloadPosition())
+        } else redownloadFromScratch(
+            contentList,
+            QueuePosition.fromValue(Preferences.getQueueNewDownloadPosition())
+        )
     }
 
-    private fun redownloadFromScratch(contentList: List<Content>, addMode: Int) {
+    private fun redownloadFromScratch(contentList: List<Content>, addMode: QueuePosition) {
         topItemPosition = getTopItemPosition()
         binding?.recyclerView?.let {
             viewModel.downloadContent(contentList,
@@ -1651,15 +1658,23 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 AddQueueMenu.show(activity.get()!!, it, this) { position: Int, _: PowerMenuItem? ->
                     download(
                         contentList,
-                        if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM,
+                        if (0 == position) QueuePosition.TOP else QueuePosition.BOTTOM,
                         onError
                     )
                 }
             }
-        } else download(contentList, Preferences.getQueueNewDownloadPosition(), onError)
+        } else download(
+            contentList,
+            QueuePosition.fromValue(Preferences.getQueueNewDownloadPosition()),
+            onError
+        )
     }
 
-    private fun download(contentList: List<Content>, addMode: Int, onError: Consumer<Throwable>) {
+    private fun download(
+        contentList: List<Content>,
+        addMode: QueuePosition,
+        onError: Consumer<Throwable>
+    ) {
         topItemPosition = getTopItemPosition()
         binding?.recyclerView?.let {
             viewModel.downloadContent(
@@ -1951,7 +1966,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     override fun onSiteSelected(site: Site, altCode: Int) {
-        ContentHelper.launchBrowserFor(
+        launchBrowserFor(
             requireContext(), Content.getGalleryUrlFromId(site, getQuery(), altCode)
         )
     }

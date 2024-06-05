@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.database.domains;
 
+import static me.devsaki.hentoid.util.ContentHelperKKt.isInLibrary;
 import static me.devsaki.hentoid.util.image.ImageHelperKt.MIME_IMAGE_GENERIC;
 
 import java.io.File;
@@ -16,7 +17,6 @@ import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelperKt;
@@ -366,7 +366,7 @@ public class ImageFile {
 
     public String getUsableUri() {
         String result = "";
-        if (ContentHelper.isInLibrary(getStatus())) result = getFileUri();
+        if (isInLibrary(getStatus())) result = getFileUri();
         if (result.isEmpty()) result = getUrl();
         if (result.isEmpty() && !getContent().isNull())
             result = getContent().getTarget().getCoverImageUrl();

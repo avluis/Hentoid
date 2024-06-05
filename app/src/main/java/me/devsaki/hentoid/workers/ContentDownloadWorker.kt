@@ -44,11 +44,13 @@ import me.devsaki.hentoid.notification.download.DownloadWarningNotification
 import me.devsaki.hentoid.notification.userAction.UserActionNotification
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.computeAndSaveCoverHash
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.download.ContentQueueManager.pauseQueue
@@ -67,6 +69,7 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
+import me.devsaki.hentoid.util.fetchImageURLs
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.ZIP_MIME_TYPE
 import me.devsaki.hentoid.util.file.copyFile
@@ -77,6 +80,7 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.isUriPermissionPersisted
+import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.assembleGif
 import me.devsaki.hentoid.util.moveContentToCustomGroup
@@ -93,6 +97,9 @@ import me.devsaki.hentoid.util.network.parseCookies
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
+import me.devsaki.hentoid.util.parseDownloadParams
+import me.devsaki.hentoid.util.removeContent
+import me.devsaki.hentoid.util.updateQueueJson
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import timber.log.Timber
@@ -429,7 +436,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER, content))
 
         // Create destination folder for images to be downloaded
-        if (null == dir) dir = ContentHelper.getOrCreateContentDownloadDir(
+        if (null == dir) dir = getOrCreateContentDownloadDir(
             applicationContext, content,
             location, false
         )
@@ -529,7 +536,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                         covers.add(img)
                     }
                     if (img.needsPageParsing()) pagesToParse.add(img)
-                    else if (img.downloadParams.contains(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES))
+                    else if (img.downloadParams.contains(KEY_DL_PARAMS_UGOIRA_FRAMES))
                         ugoirasToDownload.add(img)
                     else if (!img.isCover) requestQueueManager.queueRequest(
                         buildImageDownloadRequest(img, targetFolder, content)
@@ -568,7 +575,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.SAVE_QUEUE, content))
-        if (ContentHelper.updateQueueJson(applicationContext, dao))
+        if (updateQueueJson(applicationContext, dao))
             Timber.i(context.getString(R.string.queue_json_saved))
         else Timber.w(context.getString(R.string.queue_json_failed))
         EventBus.getDefault()
@@ -606,8 +613,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     val forgedContent = Content().setSite(chapterSite)
                     forgedContent.qtyPages = ch.imageList.size
                     forgedContent.setRawUrl(ch.url)
-                    val onlineImages =
-                        ContentHelper.fetchImageURLs(forgedContent, ch.url, targetImageStatus)
+                    val onlineImages = fetchImageURLs(forgedContent, ch.url, targetImageStatus)
 
                     // Link the chapter to the found pages
                     for (img in onlineImages) img.chapterId = ch.id
@@ -643,10 +649,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Manually insert updated chapters
             dao.insertChapters(content.chaptersList)
         } else if (isCase1 || isCase2 || isCase3) {
-            val onlineImages =
-                ContentHelper.fetchImageURLs(content, content.galleryUrl, targetImageStatus)
+            val onlineImages = fetchImageURLs(content, content.galleryUrl, targetImageStatus)
             // Cases 1 and 2 : Replace existing images with the parsed images
-            if (isCase1 || isCase2) result = onlineImages
+            if (isCase1 || isCase2) result = onlineImages.toMutableList()
             // Case 3 : Replace images in ERROR state with the parsed images at the same position
             if (isCase3) {
                 for (i in result.indices) {
@@ -671,7 +676,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     private fun enrichImageDownloadParams(img: ImageFile, content: Content) {
         // Enrich download params just in case
         val downloadParams: MutableMap<String, String> =
-            if (img.downloadParams.length > 2) ContentHelper.parseDownloadParams(img.downloadParams) else HashMap()
+            if (img.downloadParams.length > 2) parseDownloadParams(img.downloadParams).toMutableMap()
+            else HashMap()
         // Add referer if unset
         if (!downloadParams.containsKey(HEADER_REFERER_KEY)) downloadParams[HEADER_REFERER_KEY] =
             content.galleryUrl
@@ -953,7 +959,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 }
 
                 // Compute perceptual hash for the cover picture
-                ContentHelper.computeAndSaveCoverHash(applicationContext, content, dao)
+                computeAndSaveCoverHash(applicationContext, content, dao)
 
                 // Mark content as downloaded (download processing date; if none set before)
                 if (0L == content.downloadDate) content.downloadDate = now
@@ -989,7 +995,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 } catch (e: IOException) {
                     Timber.e(e, "I/O Error saving JSON: %s", title)
                 }
-                ContentHelper.addContent(applicationContext, dao, content)
+                addContent(applicationContext, dao, content)
 
                 // Delete the duplicate book that was meant to be replaced, if any
                 if (!content.contentToReplace.isNull) {
@@ -1011,10 +1017,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                             )
                         )
                         try {
-                            ContentHelper.removeContent(
-                                applicationContext,
-                                dao, contentToReplace
-                            )
+                            removeContent(applicationContext, dao, contentToReplace)
                         } catch (e: ContentNotProcessedException) {
                             Timber.w(e)
                         }
@@ -1054,7 +1057,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
                 val context = applicationContext
                 if (
-                    ContentHelper.updateQueueJson(context, dao)
+                    updateQueueJson(context, dao)
                 ) Timber.i(context.getString(R.string.queue_json_saved)) else Timber.w(
                     context.getString(
                         R.string.queue_json_failed
@@ -1388,8 +1391,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 val frames: MutableList<Pair<Uri, Int>> = ArrayList()
 
                 // Get frame information
-                val downloadParams = ContentHelper.parseDownloadParams(img.downloadParams)
-                val ugoiraFramesStr = downloadParams[ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES]
+                val downloadParams = parseDownloadParams(img.downloadParams)
+                val ugoiraFramesStr = downloadParams[KEY_DL_PARAMS_UGOIRA_FRAMES]
                 val ugoiraFrames = JsonHelper.jsonToObject<List<Pair<String, Int>>>(
                     ugoiraFramesStr,
                     PixivIllustMetadata.UGOIRA_FRAMES_TYPE
@@ -1518,7 +1521,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     ): Map<String, String> {
         val result: MutableMap<String, String> = HashMap()
         var cookieStr = ""
-        val downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr)
+        val downloadParams = parseDownloadParams(downloadParamsStr)
         if (downloadParams.isNotEmpty()) {
             if (downloadParams.containsKey(HEADER_COOKIE_KEY)) {
                 val value = downloadParams[HEADER_COOKIE_KEY]
@@ -1555,8 +1558,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         dao.deleteQueue(content)
         trackDownloadEvent("Error")
         val context = applicationContext
-        if (ContentHelper.updateQueueJson(context, dao)
-        ) Timber.i(context.getString(R.string.queue_json_saved)) else Timber.w(
+        if (updateQueueJson(context, dao))
+            Timber.i(context.getString(R.string.queue_json_saved))
+        else Timber.w(
             context.getString(
                 R.string.queue_json_failed
             )

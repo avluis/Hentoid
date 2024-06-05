@@ -32,9 +32,11 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.AttributeQueryResult
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.widget.ContentSearchManager.Companion.searchContentIds
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle.Companion.fromSearchCriteria
@@ -107,8 +109,8 @@ class ObjectBoxDAO : CollectionDAO {
         filter: String?,
         groupId: Long,
         attrs: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int,
+        location: Location,
+        contentType: Type,
         includeFreeAttrs: Boolean,
         page: Int,
         booksPerPage: Int,
@@ -132,8 +134,8 @@ class ObjectBoxDAO : CollectionDAO {
     override fun countAttributesPerType(
         groupId: Long,
         filter: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int
+        location: Location,
+        contentType: Type
     ): SparseIntArray {
         return countAttributes(
             groupId,
@@ -189,16 +191,16 @@ class ObjectBoxDAO : CollectionDAO {
     override fun countBooks(
         groupId: Long,
         metadata: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int
+        location: Location,
+        contentType: Type
     ): LiveData<Int> {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
         // See https://github.com/objectbox/objectbox-java/issues/776
         val bundle = ContentSearchBundle()
         bundle.groupId = groupId
-        bundle.location = location
-        bundle.contentType = contentType
+        bundle.location = location.value
+        bundle.contentType = contentType.value
         bundle.sortField = Preferences.Constant.ORDER_FIELD_NONE
         val livedata = ObjectBoxLiveData(
             ObjectBoxDB.selectContentSearchContentQ(
@@ -314,7 +316,7 @@ class ObjectBoxDAO : CollectionDAO {
     }
 
     override fun selectContent(id: LongArray): List<Content> {
-        return ObjectBoxDB.selectContentById(id.toList()) ?: emptyList()
+        return ObjectBoxDB.selectContentById(id.toList())
     }
 
     // Find any book that has the given content URL _or_ a chapter with the given content URL _or_ has a cover starting with the given cover URL
@@ -636,10 +638,7 @@ class ObjectBoxDAO : CollectionDAO {
     private fun getLatestDlDate(g: Group): Long {
         // Manually select all content as g.getContents won't work (unresolved items)
         val contents = ObjectBoxDB.selectContentById(g.contentIds)
-        if (contents != null) {
-            return contents.maxOfOrNull { c -> c.downloadDate } ?: 0
-        }
-        return 0
+        return contents.maxOfOrNull { c -> c.downloadDate } ?: 0
     }
 
     override fun selectGroup(groupId: Long): Group? {
@@ -874,7 +873,7 @@ class ObjectBoxDAO : CollectionDAO {
         content: Content,
         sourceImageStatus: StatusContent?,
         targetImageStatus: StatusContent?,
-        position: Int,
+        position: QueuePosition,
         replacedContentId: Long,
         replacementTitle: String?,
         isQueueActive: Boolean
@@ -891,7 +890,7 @@ class ObjectBoxDAO : CollectionDAO {
         insertContent(content)
         if (!ObjectBoxDB.isContentInQueue(content)) {
             val targetPosition: Int =
-                if (position == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM) {
+                if (position == QueuePosition.BOTTOM) {
                     ObjectBoxDB.selectMaxQueueOrder().toInt() + 1
                 } else { // Top - don't put #1 if queue is active not to interrupt current download
                     if (isQueueActive) 2 else 1
@@ -953,8 +952,8 @@ class ObjectBoxDAO : CollectionDAO {
         groupId: Long,
         dynamicGroupContentIds: LongArray,
         attrs: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int,
+        location: Location,
+        contentType: Type,
         includeFreeAttrs: Boolean,
         sortOrder: Int,
         pageNum: Int,
@@ -1013,11 +1012,11 @@ class ObjectBoxDAO : CollectionDAO {
         groupId: Long,
         dynamicGroupContentIds: LongArray,
         filter: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int
+        location: Location,
+        contentType: Type
     ): SparseIntArray {
         val result: SparseIntArray
-        if (filter.isNullOrEmpty() && 0 == location && 0 == contentType && -1L == groupId) {
+        if (filter.isNullOrEmpty() && Location.ANY == location && Type.ANY == contentType && -1L == groupId) {
             result = ObjectBoxDB.countAvailableAttributesPerType()
             result.put(AttributeType.SOURCE.code, ObjectBoxDB.selectAvailableSources().size)
         } else {

@@ -2,13 +2,12 @@ package me.devsaki.hentoid.database
 
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
-import com.annimon.stream.function.Function
 import io.objectbox.reactive.DataObserver
 import java.util.Arrays
 
 // Inspired from ObjectBoxDataSource
 class ObjectBoxPredeterminedDataSource<T>(
-    private val fetcher: Function<List<Long>, List<T>>,
+    private val fetcher: (List<Long>) -> List<T>,
     private val ids: LongArray
 ) : PositionalDataSource<T>() {
     private val observer: DataObserver<List<T>> = DataObserver { this.invalidate() }
@@ -35,12 +34,12 @@ class ObjectBoxPredeterminedDataSource<T>(
 
     private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
         val subRange = Arrays.copyOfRange(ids, startPosition, startPosition + loadCount)
-        return fetcher.apply(subRange.asList())
+        return fetcher.invoke(subRange.asList())
     }
 
 
     class PredeterminedDataSourceFactory<I> internal constructor(
-        private val fetcher: Function<List<Long>, List<I>>,
+        private val fetcher: (List<Long>) -> List<I>,
         private val ids: LongArray
     ) : Factory<Int, I>() {
         override fun create(): DataSource<Int, I> {

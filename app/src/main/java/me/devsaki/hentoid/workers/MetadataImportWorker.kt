@@ -30,18 +30,23 @@ import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.createImageListFromFolder
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.listFolders
+import me.devsaki.hentoid.util.formatBookId
 import me.devsaki.hentoid.util.importBookmarks
+import me.devsaki.hentoid.util.isDownloadable
+import me.devsaki.hentoid.util.isInQueue
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.updateGroupsJson
+import me.devsaki.hentoid.util.updateQueueJson
 import me.devsaki.hentoid.workers.data.MetadataImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -177,7 +182,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                 nextKO(context, e)
             }
         }
-        ContentHelper.updateQueueJson(context, dao)
+        updateQueueJson(context, dao)
         if (!isStopped) onFinish.run()
     }
 
@@ -216,7 +221,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         if (!mappedToFiles) {
             // Insert queued content into the queue
             if (c.status == StatusContent.DOWNLOADING || c.status == StatusContent.PAUSED) {
-                val newContentId = ContentHelper.addContent(context, dao, c)
+                val newContentId = addContent(context, dao, c)
                 val lst: MutableList<QueueRecord> = ArrayList()
                 val qr = QueueRecord(newContentId, queueSize++)
                 qr.isFrozen = c.isFrozen
@@ -227,9 +232,8 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             when (emptyBooksOption) {
                 MetaImportDialogFragment.IMPORT_AS_STREAMED -> {
                     // Greenlighted if images exist and are available online
-                    if (c.imageFiles != null
-                        && c.imageFiles!!.size > 0
-                        && ContentHelper.isDownloadable(c)
+                    if (c.imageList.size > 0
+                        && isDownloadable(c)
                     ) {
                         c.downloadMode = Content.DownloadMode.STREAM
                         c.status = StatusContent.DOWNLOADED
@@ -260,7 +264,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                 }
 
                 MetaImportDialogFragment.IMPORT_AS_ERROR -> {
-                    if (!ContentHelper.isInQueue(c.status)) c.status = StatusContent.ERROR
+                    if (!isInQueue(c.status)) c.status = StatusContent.ERROR
                     val errors: MutableList<ErrorRecord> = ArrayList()
                     errors.add(
                         ErrorRecord(
@@ -280,7 +284,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         }
 
         // All checks successful => create the content
-        ContentHelper.addContent(context, dao, c)
+        addContent(context, dao, c)
     }
 
     private fun mapFilesToContent(context: Context, c: Content, siteFolder: DocumentFile): Boolean {
@@ -294,9 +298,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             // Look for the book ID
             c.populateUniqueSiteId()
             for (f in bookfolders) if (f.name != null && f.name!!.contains(
-                    ContentHelper.formatBookId(
-                        c
-                    )
+                    formatBookId(c)
                 )
             ) {
                 // Cache folder Uri
@@ -305,7 +307,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                 val json = findFile(context, f, JSON_FILE_NAME_V2)
                 if (json != null) c.jsonUri = json.uri.toString()
                 // Create the images from detected files
-                c.setImageFiles(ContentHelper.createImageListFromFolder(context, f))
+                c.setImageFiles(createImageListFromFolder(context, f))
                 filesFound = true
                 break
             }

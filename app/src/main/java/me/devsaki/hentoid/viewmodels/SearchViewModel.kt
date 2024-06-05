@@ -14,7 +14,8 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.AttributeQueryResult
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.Location
+import me.devsaki.hentoid.util.Type
 import java.util.Objects
 
 class SearchViewModel(
@@ -42,11 +43,9 @@ class SearchViewModel(
     private var selectedGroup: Long = -1
 
     // Location and type (bottom spinners)
-    @ContentHelper.Location
-    private var location = ContentHelper.Location.ANY
+    private var location = Location.ANY
 
-    @ContentHelper.Type
-    private var contentType = ContentHelper.Type.ANY
+    private var contentType = Type.ANY
 
 
     init {
@@ -143,12 +142,12 @@ class SearchViewModel(
         setSelectedAttributes(selectedAttributesList)
     }
 
-    fun setLocation(@ContentHelper.Location location: Int) {
+    fun setLocation(location: Location) {
         this.location = location
         update()
     }
 
-    fun setContentType(@ContentHelper.Type contentType: Int) {
+    fun setContentType(contentType: Type) {
         this.contentType = contentType
         update()
     }

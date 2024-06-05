@@ -56,11 +56,11 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.invokeInputDialog
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.GroupDisplayItem
@@ -843,7 +843,7 @@ class LibraryGroupsFragment : Fragment(),
             when (Site.searchByUrl(query)) {
                 null -> snack(R.string.malformed_url)
                 Site.NONE -> snack(R.string.unsupported_site)
-                else -> ContentHelper.launchBrowserFor(requireContext(), query)
+                else -> launchBrowserFor(requireContext(), query)
             }
         } else {
             viewModel.setGroupQuery(query)

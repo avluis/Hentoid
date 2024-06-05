@@ -7,6 +7,7 @@ import android.webkit.CookieManager
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import me.devsaki.hentoid.BuildConfig
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.file.DEFAULT_MIME_TYPE
@@ -14,6 +15,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okhttp3.ResponseBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import timber.log.Timber
@@ -58,7 +60,7 @@ private const val AGENT_INIT_ISSUE = "Call initUserAgents first to initialize th
  */
 @Throws(IOException::class)
 fun getOnlineDocument(url: String): Document? {
-    return getOnlineDocument(url, null, true, true)
+    return getOnlineDocument(url, null, useHentoidAgent = true, useWebviewAgent = true)
 }
 
 /**
@@ -617,7 +619,7 @@ fun getCookies(
  * @return Raw cookies string
  */
 fun peekCookies(url: String): String {
-    return peekCookies(url, null, true, false, true)
+    return peekCookies(url, null, true, useHentoidAgent = false, useWebviewAgent = true)
 }
 
 /**
@@ -789,6 +791,59 @@ fun waitBlocking429(response: retrofit2.Response<*>, defaultDelayMs: Int): Boole
         return true
     }
     return false
+}
+
+@Throws(IOException::class, CloudflareHelper.CloudflareProtectedException::class)
+fun fetchBodyFast(
+    url: String,
+    site: Site,
+    requestHeaders: MutableList<Pair<String, String>>?,
+    targetContentType: String?
+): Pair<ResponseBody?, String> {
+    val requestHeadersList: MutableList<Pair<String, String>>
+    if (null == requestHeaders) {
+        requestHeadersList = ArrayList()
+        requestHeadersList.add(Pair(HEADER_REFERER_KEY, url))
+    } else {
+        requestHeadersList = requestHeaders
+    }
+    val cookieStr = getCookies(
+        url,
+        requestHeadersList,
+        site.useMobileAgent(),
+        site.useHentoidAgent(),
+        site.useWebviewAgent()
+    )
+    if (cookieStr.isNotEmpty()) requestHeadersList.add(Pair(HEADER_COOKIE_KEY, cookieStr))
+
+    val response = getOnlineResourceFast(
+        url,
+        requestHeadersList,
+        site.useMobileAgent(),
+        site.useHentoidAgent(),
+        site.useWebviewAgent()
+    )
+
+    // Raise exception if blocked by Cloudflare
+    if (503 == response.code && site.isUseCloudflare) throw CloudflareHelper.CloudflareProtectedException()
+
+    // Scram if the response is a redirection or an error
+    if (response.code >= 300) throw IOException("Network error " + response.code + " @ " + url)
+
+    // Scram if the response content-type is something else than the target type
+    if (targetContentType != null) {
+        val contentType =
+            cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")))
+        if (contentType.first.isNotEmpty() && !contentType.first.equals(
+                targetContentType,
+                ignoreCase = true
+            )
+        ) throw IOException(
+            "Not an HTML resource $url"
+        )
+    }
+
+    return Pair(response.body, cookieStr)
 }
 
 data class Cookie(

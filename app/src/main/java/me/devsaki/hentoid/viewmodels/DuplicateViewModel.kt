@@ -20,8 +20,8 @@ import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.notification.duplicates.DuplicateNotificationChannel
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
+import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -160,7 +160,7 @@ class DuplicateViewModel(
     fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
-        appendBookTitle : Boolean,
+        appendBookTitle: Boolean,
         deleteAfterMerging: Boolean,
         onSuccess: Runnable
     ) {
@@ -174,7 +174,7 @@ class DuplicateViewModel(
             val result = withContext(Dispatchers.IO) {
                 try {
                     // Create merged book
-                    ContentHelper.mergeContents(context, contentList, newTitle, appendBookTitle, dao)
+                    mergeContents(context, contentList, newTitle, appendBookTitle, dao)
 
                     // Mark as "is being deleted" to trigger blink animation
                     if (deleteAfterMerging) {

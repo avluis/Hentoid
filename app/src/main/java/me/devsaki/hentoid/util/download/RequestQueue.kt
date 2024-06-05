@@ -3,10 +3,9 @@ package me.devsaki.hentoid.util.download
 import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
-import com.annimon.stream.Optional
-import com.annimon.stream.function.BiConsumer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
@@ -76,18 +75,18 @@ class RequestQueue(
 
     private fun handleSuccess(
         requestOrder: RequestOrder,
-        resultOpt: Optional<Triple<Int, Uri, String>>
+        resultOpt: Triple<Int, Uri, String>?
     ) {
         // Nothing to download => this is actually an error
-        if (resultOpt.isEmpty) {
+        if (null == resultOpt) {
             handleError(requestOrder, ParseException("No image found"))
             return
         }
 
         handleComplete(requestOrder)
-        successHandler.accept(
+        successHandler.invoke(
             requestOrder,
-            resultOpt.get().second
+            resultOpt.second
         )
     }
 
@@ -114,7 +113,7 @@ class RequestQueue(
             message,
             errorCode
         )
-        errorHandler.accept(requestOrder, error)
+        errorHandler.invoke(requestOrder, error)
     }
 
     /**
@@ -139,7 +138,7 @@ class RequestQueue(
         targetFileNameNoExt: String,
         pageIndex: Int,
         killSwitch: AtomicBoolean
-    ): Optional<Triple<Int, Uri, String>> {
+    ): Triple<Int, Uri, String> {
         Helper.assertNonUiThread()
 
         val requestHeaders =
@@ -169,12 +168,6 @@ class RequestQueue(
         val mimeType = result.second
         if (null == targetFileUri) throw ParseException("Resource not available");
 
-        return Optional.of(
-            Triple(
-                pageIndex,
-                targetFileUri,
-                mimeType
-            )
-        )
+        return Triple(pageIndex, targetFileUri, mimeType)
     }
 }

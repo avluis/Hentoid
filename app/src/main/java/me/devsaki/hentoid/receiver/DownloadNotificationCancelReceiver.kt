@@ -9,8 +9,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
+import me.devsaki.hentoid.util.removeQueuedContent
 import timber.log.Timber
 
 /**
@@ -26,7 +26,7 @@ class DownloadNotificationCancelReceiver : BroadcastReceiver() {
                     val queue = dao.selectQueue()
                     if (queue.isNotEmpty()) {
                         val content = queue[0].content.target
-                        ContentHelper.removeQueuedContent(context, dao, content, true)
+                        removeQueuedContent(context, dao, content, true)
                     }
                 } catch (e: ContentNotProcessedException) {
                     Timber.w(e)

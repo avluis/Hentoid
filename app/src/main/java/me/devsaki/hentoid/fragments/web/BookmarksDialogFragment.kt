@@ -34,8 +34,8 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.toastShort
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
@@ -469,7 +469,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             if (!invalidateNextBookClick && item.getObject() != null) {
                 val url = item.getObject()!!.url
                 if (site == initialSite) parent?.loadUrl(url)
-                else ContentHelper.launchBrowserFor(requireActivity(), url)
+                else launchBrowserFor(requireActivity(), url)
                 dismiss()
             } else invalidateNextBookClick = false
             return true

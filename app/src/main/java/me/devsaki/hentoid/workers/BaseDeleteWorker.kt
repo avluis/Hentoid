@@ -7,7 +7,6 @@ import androidx.annotation.IdRes
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import com.annimon.stream.Optional
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.database.CollectionDAO
@@ -21,14 +20,21 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.delete.DeleteCompleteNotification
 import me.devsaki.hentoid.notification.delete.DeleteProgressNotification
 import me.devsaki.hentoid.notification.delete.DeleteStartNotification
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
+import me.devsaki.hentoid.util.fetchImageURLs
 import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.purgeFiles
+import me.devsaki.hentoid.util.removeContent
+import me.devsaki.hentoid.util.removeQueuedContent
+import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.updateGroupsJson
+import me.devsaki.hentoid.util.updateJson
+import me.devsaki.hentoid.util.updateQueueJson
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -95,7 +101,10 @@ abstract class BaseDeleteWorker(
             }
 
             askedContentIds = if (inputData.isMassKeepFavGroups) {
-                val favGroupsContent = dao.selectStoredFavContentIds(false, true).toSet()
+                val favGroupsContent = dao.selectStoredFavContentIds(
+                    bookFavs = false,
+                    groupFavs = true
+                ).toSet()
                 scope.filterNot { e -> favGroupsContent.contains(e) }.toLongArray()
             } else {
                 scope.toLongArray()
@@ -168,7 +177,7 @@ abstract class BaseDeleteWorker(
         Helper.assertNonUiThread()
         progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
         try {
-            ContentHelper.removeContent(applicationContext, dao, content)
+            removeContent(applicationContext, dao, content)
             trace(Log.INFO, "Removed item: %s from database and file system.", content.title)
         } catch (cnre: ContentNotProcessedException) {
             nbError++
@@ -190,35 +199,34 @@ abstract class BaseDeleteWorker(
     private fun streamContent(content: Content) {
         Timber.d("Checking pages availability")
         // Reparse content from scratch if images KO
-        val res = if (!ContentHelper.isDownloadable(content)) {
+        val res = if (!isDownloadable(content)) {
             trace(Log.INFO, "Pages unreachable; reparsing content %s", content.title)
             // Reparse content itself
-            val newContent = ContentHelper.reparseFromScratch(content)
-            if (newContent.isEmpty) {
+            val newContent = reparseFromScratch(content)
+            if (null == newContent) {
                 dao.updateContentProcessedFlag(content.id, false)
-                newContent
+                null
             } else {
-                val reparsedContent = newContent.get()
                 // Reparse pages
                 val newImages =
-                    ContentHelper.fetchImageURLs(
-                        reparsedContent,
-                        reparsedContent.galleryUrl,
+                    fetchImageURLs(
+                        newContent,
+                        newContent.galleryUrl,
                         StatusContent.ONLINE
                     )
-                reparsedContent.setImageFiles(newImages)
+                newContent.setImageFiles(newImages)
                 // Associate new pages' cover with current cover file (that won't be deleted)
-                reparsedContent.cover.setStatus(StatusContent.DOWNLOADED).fileUri =
+                newContent.cover.setStatus(StatusContent.DOWNLOADED).fileUri =
                     content.cover.fileUri
                 // Save everything
-                dao.replaceImageList(reparsedContent.id, newImages)
-                Optional.of<Content>(reparsedContent)
+                dao.replaceImageList(newContent.id, newImages)
+                newContent
             }
-        } else Optional.of<Content>(content)
+        } else content
 
-        if (res.isPresent) {
-            dao.selectContent(res.get().id)?.let {
-                ContentHelper.purgeFiles(applicationContext, it, false, false)
+        if (res != null) {
+            dao.selectContent(res.id)?.let {
+                purgeFiles(applicationContext, it, removeJson = false, removeCover = false)
                 // Update content folder and JSON Uri's after purging
                 it.downloadMode = Content.DownloadMode.STREAM
                 dao.insertContentCore(it)
@@ -232,7 +240,7 @@ abstract class BaseDeleteWorker(
                 it.forceSize(0)
                 it.setIsBeingProcessed(false)
                 dao.insertContent(it)
-                ContentHelper.updateJson(applicationContext, it)
+                updateJson(applicationContext, it)
             }
             trace(Log.INFO, "Streaming succeeded for %s", content.title)
         } else {
@@ -261,7 +269,7 @@ abstract class BaseDeleteWorker(
     private fun purgeContentFiles(content: Content, removeCover: Boolean) {
         progressItem(content, DeleteProgressNotification.ProgressType.PURGE_BOOKS)
         try {
-            ContentHelper.purgeFiles(applicationContext, content, false, removeCover)
+            purgeFiles(applicationContext, content, false, removeCover)
             // Update content folder and JSON Uri's after purging
             dao.insertContentCore(content)
             trace(Log.INFO, "Purged item: %s.", content.title)
@@ -301,7 +309,7 @@ abstract class BaseDeleteWorker(
                 val containedContentList = dao.selectContent(theGroup!!.contentIds.toLongArray())
                 for (c in containedContentList) {
                     val movedContent = moveContentToCustomGroup(c, null, dao)
-                    ContentHelper.updateJson(applicationContext, movedContent)
+                    updateJson(applicationContext, movedContent)
                 }
                 theGroup = dao.selectGroup(theGroup.id)
             } else if (theGroup!!.grouping == Grouping.DYNAMIC) { // Delete books from dynamic group
@@ -333,7 +341,7 @@ abstract class BaseDeleteWorker(
                 if (isStopped) break
             }
         } finally {
-            if (ContentHelper.updateQueueJson(applicationContext, dao)) trace(
+            if (updateQueueJson(applicationContext, dao)) trace(
                 Log.INFO,
                 "Queue JSON successfully saved"
             ) else trace(
@@ -345,7 +353,7 @@ abstract class BaseDeleteWorker(
     private fun removeQueuedContent(content: Content) {
         try {
             progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
-            ContentHelper.removeQueuedContent(applicationContext, dao, content, true)
+            removeQueuedContent(applicationContext, dao, content, true)
         } catch (e: ContentNotProcessedException) {
             // Don't throw the exception if we can't remove something that isn't there
             if (!(e is FileNotProcessedException && content.storageUri.isEmpty())) {
@@ -379,7 +387,7 @@ abstract class BaseDeleteWorker(
         contentIds.forEach { contentId ->
             dao.selectContent(contentId)?.let { content ->
                 if (content.jsonUri.isNotEmpty())
-                    ContentHelper.updateJson(applicationContext, content)
+                    updateJson(applicationContext, content)
             }
         }
         progressDone()

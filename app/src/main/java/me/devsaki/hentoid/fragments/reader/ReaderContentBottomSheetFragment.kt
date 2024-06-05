@@ -22,8 +22,11 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.IncludeReaderContentBottomPanelBinding
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.bindOnlineCover
+import me.devsaki.hentoid.util.formatArtistForDisplay
+import me.devsaki.hentoid.util.formatTagsForDisplay
 import me.devsaki.hentoid.util.getGlideOptionCenterImage
+import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -117,7 +120,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
             } else {
                 ivCover.visibility = View.VISIBLE
                 if (thumbLocation.startsWith("http")) {
-                    val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, content)
+                    val glideUrl = bindOnlineCover(thumbLocation, content)
                     if (glideUrl != null) {
                         Glide.with(ivCover)
                             .load(glideUrl)
@@ -130,21 +133,21 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
                     .into(ivCover)
             }
             if (openOnTap) ivCover.setOnClickListener {
-                ContentHelper.openReader(
+                openReader(
                     requireActivity(),
                     content,
                     -1,
                     null,
-                    false,
-                    true
+                    forceShowGallery = false,
+                    newTask = true
                 )
             }
 
             contentTitle.text = content.title
-            contentArtist.text = ContentHelper.formatArtistForDisplay(requireContext(), content)
+            contentArtist.text = formatArtistForDisplay(requireContext(), content)
             updateFavouriteDisplay(content.isFavourite)
             updateRatingDisplay(content.rating)
-            val tagTxt = ContentHelper.formatTagsForDisplay(content)
+            val tagTxt = formatTagsForDisplay(content)
             if (tagTxt.isEmpty()) {
                 contentTags.visibility = View.GONE
             } else {

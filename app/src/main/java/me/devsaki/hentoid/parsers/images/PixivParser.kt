@@ -15,7 +15,7 @@ import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.retrofit.sources.PixivServer
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.KEY_DL_PARAMS_NB_CHAPTERS
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.DownloadRateLimiter.setRateLimit
@@ -24,6 +24,7 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.waitBlocking429
+import me.devsaki.hentoid.util.parseDownloadParams
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 
@@ -148,7 +149,7 @@ class PixivParser : BaseImageListParser() {
 
         // Retrieve the number of Illusts
         val nbChaptersStr =
-            ContentHelper.parseDownloadParams(onlineContent.downloadParams)[ContentHelper.KEY_DL_PARAMS_NB_CHAPTERS]
+            parseDownloadParams(onlineContent.downloadParams)[KEY_DL_PARAMS_NB_CHAPTERS]
         require(nbChaptersStr != null) { "Chapter count not saved" }
         require(StringHelper.isNumeric(nbChaptersStr)) { "Chapter count not saved" }
         val nbChapters = nbChaptersStr.toInt()

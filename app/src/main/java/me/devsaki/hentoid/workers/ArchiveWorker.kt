@@ -13,9 +13,9 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.canBeArchived
 import me.devsaki.hentoid.util.file.DEFAULT_MIME_TYPE
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
@@ -24,7 +24,9 @@ import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.file.zipFiles
+import me.devsaki.hentoid.util.formatBookFolderName
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.removeContent
 import timber.log.Timber
 import java.io.IOException
 import java.io.OutputStream
@@ -82,7 +84,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         for (contentId in contentIds) {
             val content = dao.selectContent(contentId)
             content?.let {
-                if (ContentHelper.canBeArchived(content)) archiveContent(content, params)
+                if (canBeArchived(content)) archiveContent(content, params)
                 else {
                     globalProgress.setProgress(content.id.toString(), 1f)
                     nextKO()
@@ -117,7 +119,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                 success = destFileResult.second
             }
             if (success && params.deleteOnSuccess) {
-                ContentHelper.removeContent(applicationContext, dao, content)
+                removeContent(applicationContext, dao, content)
             }
             if (!success) {
                 globalProgress.setProgress(content.id.toString(), 1f)
@@ -128,7 +130,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
     private fun getFileResult(content: Content, params: Params): Pair<OutputStream?, Boolean> {
         // Build destination file
-        val bookFolderName = ContentHelper.formatBookFolderName(content)
+        val bookFolderName = formatBookFolderName(content)
         val ext = if (0 == params.targetFormat) "zip" else "cbz"
         // First try creating the file with the new naming...
         var destName = bookFolderName.first + "." + ext

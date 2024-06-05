@@ -40,14 +40,20 @@ import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.bindOnlineCover
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
+import me.devsaki.hentoid.util.formatArtistForDisplay
+import me.devsaki.hentoid.util.formatSeriesForDisplay
+import me.devsaki.hentoid.util.formatTagsForDisplay
+import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getGlideOptionCenterImage
+import me.devsaki.hentoid.util.getRatingResourceId
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.isInQueue
 import me.devsaki.hentoid.util.isValidContextForGlide
 import timber.log.Timber
 import java.util.Locale
@@ -183,7 +189,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     fun updateProgress(vh: RecyclerView.ViewHolder, isPausedEvent: Boolean, isIndividual: Boolean) {
         content ?: return
         val pb = vh.itemView.findViewById<ProgressBar>(R.id.pbDownload) ?: return
-        if (!ContentHelper.isInQueue(content.status)) {
+        if (!isInQueue(content.status)) {
             pb.visibility = View.GONE
             return
         }
@@ -387,7 +393,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             ivCover.visibility = View.VISIBLE
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")) {
-                val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, content)
+                val glideUrl = bindOnlineCover(thumbLocation, content)
                 if (glideUrl != null) {
                     Glide.with(ivCover).load(glideUrl).signature(ObjectKey(content.uniqueHash()))
                         .apply(glideRequestOptions).into(ivCover)
@@ -405,10 +411,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 val glideRequest = Glide.with(ivCover)
 
                 val builder = if (thumbLocation.startsWith("http")) glideRequest.load(
-                    ContentHelper.bindOnlineCover(
-                        thumbLocation,
-                        null
-                    )
+                    bindOnlineCover(thumbLocation, null)
                 )
                 else glideRequest.load(Uri.parse(thumbLocation))
 
@@ -421,7 +424,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
         private fun attachFlag(content: Content, isGrid: Boolean) {
             ivFlag?.apply {
-                @DrawableRes val resId = ContentHelper.getFlagResourceId(context, content)
+                @DrawableRes val resId = getFlagResourceId(context, content)
                 visibility = if (resId != 0 && (!isGrid || Settings.libraryDisplayGridLanguage)) {
                     setImageResource(resId)
                     View.VISIBLE
@@ -475,13 +478,13 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
         private fun attachArtist(content: Content) {
             tvArtist?.apply {
-                text = ContentHelper.formatArtistForDisplay(context, content)
+                text = formatArtistForDisplay(context, content)
             }
         }
 
         private fun attachSeries(content: Content) {
             tvSeries?.apply {
-                val text = ContentHelper.formatSeriesForDisplay(context, content)
+                val text = formatSeriesForDisplay(context, content)
                 if (text.isEmpty()) {
                     visibility = View.GONE
                 } else {
@@ -558,7 +561,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
         private fun attachTags(content: Content) {
             tvTags?.apply {
-                val tagTxt = ContentHelper.formatTagsForDisplay(content)
+                val tagTxt = formatTagsForDisplay(content)
                 if (tagTxt.isEmpty()) {
                     visibility = View.GONE
                 } else {
@@ -629,7 +632,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
                 ivRating?.apply {
                     isVisible = (!isGrid || Settings.libraryDisplayGridRating)
-                    setImageResource(ContentHelper.getRatingResourceId(content.rating))
+                    setImageResource(getRatingResourceId(content.rating))
                 }
             }
         }

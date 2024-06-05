@@ -8,13 +8,16 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.detachAllExternalContent
+import me.devsaki.hentoid.util.detachAllPrimaryContent
 import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.listFiles
+import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
+import me.devsaki.hentoid.util.getPathRoot
 import org.greenrobot.eventbus.EventBus
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -30,14 +33,14 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
         when (location) {
             StorageLocation.PRIMARY_1,
             StorageLocation.PRIMARY_2 -> {
-                ContentHelper.detachAllPrimaryContent(
+                detachAllPrimaryContent(
                     dao,
                     location
                 )
             }
 
             StorageLocation.EXTERNAL -> {
-                ContentHelper.detachAllExternalContent(
+                detachAllExternalContent(
                     getApplication<Application>().applicationContext,
                     dao
                 )
@@ -58,7 +61,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
         withContext(Dispatchers.IO) {
             val ids = ArrayList<Long>()
             dao.streamAllInternalBooks(
-                ContentHelper.getPathRoot(StorageLocation.PRIMARY_2), false
+                getPathRoot(StorageLocation.PRIMARY_2), false
             ) { c -> ids.add(c.id) }
             ids.forEach {
                 mergeTo1(it, nbOK, nbKO, nbBooks)
@@ -88,7 +91,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
 
             content?.let { c ->
                 // Create book folder in Location 1
-                val targetFolder = ContentHelper.getOrCreateContentDownloadDir(
+                val targetFolder = getOrCreateContentDownloadDir(
                     getApplication(),
                     c,
                     StorageLocation.PRIMARY_1,

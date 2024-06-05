@@ -19,15 +19,17 @@ import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companio
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.isInQueue
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.CloudflareHelper.CloudflareProtectedException
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.parseFromScratch
 import me.devsaki.hentoid.workers.data.DownloadsImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -70,7 +72,7 @@ class DownloadsImportWorker(
         startImport(
             applicationContext,
             data.fileUri,
-            data.queuePosition,
+            QueuePosition.entries.first { it.value == data.queuePosition },
             data.importAsStreamed
         )
     }
@@ -81,7 +83,7 @@ class DownloadsImportWorker(
     private fun startImport(
         context: Context,
         fileUri: String,
-        queuePosition: Int,
+        queuePosition: QueuePosition,
         importAsStreamed: Boolean
     ) {
         val file = getFileFromSingleUriString(context, fileUri)
@@ -118,7 +120,7 @@ class DownloadsImportWorker(
     @Throws(InterruptedException::class)
     private fun importGallery(
         url: String,
-        queuePosition: Int,
+        queuePosition: QueuePosition,
         importAsStreamed: Boolean,
         hasPassedCf: Boolean
     ) {
@@ -132,23 +134,22 @@ class DownloadsImportWorker(
             dao!!.selectContentByUrlOrCover(site, Content.transformRawUrl(site, url), null)
         if (existingContent != null) {
             val location =
-                if (ContentHelper.isInQueue(existingContent.status)) "queue" else "library"
+                if (isInQueue(existingContent.status)) "queue" else "library"
             trace(Log.INFO, "ERROR : Content already in %s @ %s", location, url)
             nextKO(applicationContext, null)
             return
         }
         try {
-            val content = ContentHelper.parseFromScratch(url)
-            if (content.isEmpty) {
+            val content = parseFromScratch(url)
+            if (null == content) {
                 trace(Log.WARN, "ERROR : Unreachable content @ %s", url)
                 nextKO(applicationContext, null)
             } else {
                 trace(Log.INFO, "Added content @ %s", url)
-                val c = content.get()
-                c.downloadMode =
+                content.downloadMode =
                     if (importAsStreamed) Content.DownloadMode.STREAM else Content.DownloadMode.DOWNLOAD
                 dao!!.addContentToQueue(
-                    c,
+                    content,
                     null,
                     null,
                     queuePosition,

@@ -20,7 +20,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryMergeBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.InnerNameNumberContentComparator
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
@@ -134,7 +134,7 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
         var contentList = loadContentList()
         if (contentList.isEmpty()) return emptyList()
 
-        contentList = contentList.sortedWith(ContentHelper.InnerNameNumberContentComparator())
+        contentList = contentList.sortedWith(InnerNameNumberContentComparator())
         sortAsc?.let { if (!it) contentList = contentList.reversed() }
 
         itemAdapter.set(contentList.map { c ->

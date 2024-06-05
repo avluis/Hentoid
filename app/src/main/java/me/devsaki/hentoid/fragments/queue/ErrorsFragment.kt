@@ -39,11 +39,12 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.getIdForCurrentTheme
+import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.viewContentGalleryPage
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
 import me.devsaki.hentoid.viewmodels.QueueViewModel
@@ -363,7 +364,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                 item: ContentItem
             ) {
                 val c = item.content
-                if (c != null) ContentHelper.viewContentGalleryPage(v.context, c)
+                if (c != null) viewContentGalleryPage(v.context, c)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
@@ -473,13 +474,13 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     private fun onItemClick(item: ContentItem): Boolean {
         if (selectExtension.selections.isEmpty()) {
             val c = item.content
-            if (c != null && !ContentHelper.openReader(
+            if (c != null && !openReader(
                     requireContext(),
                     c,
                     -1,
                     null,
-                    false,
-                    false
+                    forceShowGallery = false,
+                    newTask = false
                 )
             ) toast(R.string.err_no_content)
             return true

@@ -17,9 +17,12 @@ import me.devsaki.hentoid.databinding.DialogWebDuplicateBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.formatArtistForDisplay
+import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getGlideOptionCenterImage
+import me.devsaki.hentoid.util.isInQueue
+import me.devsaki.hentoid.util.openReader
 import org.greenrobot.eventbus.EventBus
 
 private const val KEY_CONTENT_ID = "contentId"
@@ -108,33 +111,35 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
             } else {
                 ivCover.visibility = View.VISIBLE
                 ivCover.setOnClickListener {
-                    ContentHelper.openReader(
-                        context, libraryContent, -1, null, false, true
+                    openReader(
+                        context, libraryContent, -1, null,
+                        forceShowGallery = false,
+                        newTask = true
                     )
                 }
                 if (thumbLocation.startsWith("http")) Glide.with(ivCover).load(thumbLocation)
                     .apply(glideRequestOptions).into(ivCover) else Glide.with(ivCover)
                     .load(Uri.parse(thumbLocation)).apply(glideRequestOptions).into(ivCover)
             }
-            @DrawableRes val resId = ContentHelper.getFlagResourceId(context, libraryContent)
+            @DrawableRes val resId = getFlagResourceId(context, libraryContent)
             if (resId != 0) {
                 ivFlag.setImageResource(resId)
                 ivFlag.visibility = View.VISIBLE
             } else {
                 ivFlag.visibility = View.GONE
             }
-            tvArtist.text = ContentHelper.formatArtistForDisplay(context, libraryContent)
+            tvArtist.text = formatArtistForDisplay(context, libraryContent)
             tvPagesLibrary.visibility =
                 if (0 == libraryContent.qtyPages) View.INVISIBLE else View.VISIBLE
             val stringRes: Int =
-                if (ContentHelper.isInQueue(libraryContent.status)) R.string.work_pages_duplicate_dialog_queue else R.string.work_pages_duplicate_dialog_library
+                if (isInQueue(libraryContent.status)) R.string.work_pages_duplicate_dialog_queue else R.string.work_pages_duplicate_dialog_library
             tvPagesLibrary.text = resources.getString(stringRes, libraryContent.qtyPages)
             tvPagesSource.visibility = if (0 == onlineContentPages) View.INVISIBLE else View.VISIBLE
             tvPagesSource.text = resources.getString(
                 R.string.work_pages_duplicate_dialog_source, onlineContentPages
             )
             tvStatus.text =
-                if (ContentHelper.isInQueue(libraryContent.status)) resources.getString(R.string.duplicate_in_queue)
+                if (isInQueue(libraryContent.status)) resources.getString(R.string.duplicate_in_queue)
                 else resources.getString(R.string.duplicate_in_library)
 
             // Buttons

@@ -156,11 +156,8 @@ private fun savePhash(context: Context, dao: CollectionDAO, content: Content, pH
             val folder =
                 getDocumentFromTreeUriString(context, content.storageUri)
             if (folder != null) {
-                if (content.jsonUri.isNotEmpty()) ContentHelper.updateJson(
-                    context,
-                    content
-                )
-                else ContentHelper.createJson(context, content)
+                if (content.jsonUri.isNotEmpty()) updateJson(context, content)
+                else createJson(context, content)
             }
         }
     } catch (e: IOException) {
@@ -342,8 +339,6 @@ private fun computeArtistScore(
  */
 fun findDuplicateContentByUrl(content: Content, dao: CollectionDAO): Content? {
     val candidates = dao.selectContentsByUrl(content.site, content.url)
-    val sourceImgs = content.imageList
-    val sourceReadablePages = sourceImgs.count { it.isReadable }
     candidates.forEach {
         if (isAllPagesMatch(content, it)) return it
     }
@@ -357,8 +352,6 @@ fun findDuplicateContentByUrl(content: Content, dao: CollectionDAO): Content? {
  */
 fun findDuplicateContentByQtyPageAndSize(content: Content, dao: CollectionDAO): Content? {
     val candidates = dao.selectContentsByQtyPageAndSize(content.qtyPages, content.size)
-    val sourceImgs = content.imageList
-    val sourceReadablePages = sourceImgs.count { it.isReadable }
     candidates.forEach {
         if (isAllPagesMatch(content, it)) return it
     }

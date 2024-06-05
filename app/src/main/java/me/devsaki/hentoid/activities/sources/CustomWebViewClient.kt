@@ -31,7 +31,6 @@ import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.selectX
 import me.devsaki.hentoid.util.AdBlocker
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
@@ -58,6 +57,7 @@ import me.devsaki.hentoid.util.network.okHttpResponseToWebkitResponse
 import me.devsaki.hentoid.util.network.setCookies
 import me.devsaki.hentoid.util.network.simplifyUrl
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
+import me.devsaki.hentoid.util.parseDownloadParams
 import me.devsaki.hentoid.util.toast
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -754,7 +754,7 @@ open class CustomWebViewClient : WebViewClient {
 
         // Save useful download params for future use during download
         val params = if (content.downloadParams.length > 2) // Params already contain values
-            ContentHelper.parseDownloadParams(content.downloadParams) else HashMap()
+            parseDownloadParams(content.downloadParams).toMutableMap() else java.util.HashMap()
         params[HEADER_COOKIE_KEY] = getCookies(url)
         params[HEADER_REFERER_KEY] = content.site.url
         content.downloadParams =

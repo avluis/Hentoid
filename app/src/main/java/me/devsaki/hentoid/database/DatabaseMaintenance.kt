@@ -14,8 +14,10 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Type
+import me.devsaki.hentoid.util.isInLibrary
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
@@ -294,7 +296,7 @@ object DatabaseMaintenance {
             max = contents.size
             pos = 1f
             for (c in contents) {
-                if (ContentHelper.isInLibrary(c.status)) c.downloadCompletionDate =
+                if (isInLibrary(c.status)) c.downloadCompletionDate =
                     c.downloadDate else c.downloadCompletionDate =
                     0
                 db.insertContentCore(c)
@@ -386,8 +388,8 @@ object DatabaseMaintenance {
                             -1,
                             LongArray(0),
                             null,
-                            ContentHelper.Location.ANY,
-                            ContentHelper.Type.ANY,
+                            Location.ANY,
+                            Type.ANY,
                             false,
                             null,
                             Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
@@ -400,8 +402,8 @@ object DatabaseMaintenance {
                                 -1,
                                 LongArray(0),
                                 null,
-                                ContentHelper.Location.ANY,
-                                ContentHelper.Type.ANY,
+                                Location.ANY,
+                                Type.ANY,
                                 false,
                                 null,
                                 Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,

@@ -29,8 +29,9 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.viewContentGalleryPage
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -157,7 +158,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
                 item: DuplicateItem
             ) {
                 val c = item.content
-                if (c != null) ContentHelper.viewContentGalleryPage(requireContext(), c)
+                if (c != null) viewContentGalleryPage(requireContext(), c)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
@@ -216,7 +217,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             return
         }
 
-        if (!ContentHelper.openReader(requireContext(), c, -1, null, false, true))
+        if (!openReader(requireContext(), c, -1, null, forceShowGallery = false, newTask = true))
             toast(R.string.err_no_content)
     }
 

@@ -5,8 +5,10 @@ import android.os.Bundle
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.intArrayList
 import me.devsaki.hentoid.util.long
@@ -27,7 +29,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
     // Used both internally and externally (i.e. to communicate with LibraryActivity) for actual search
     var groupId by bundle.long(default = -1)
 
-    var uri by bundle.string(default = "")
+    var uri: String by bundle.string(default = "")
 
 
     // Helper methods
@@ -39,8 +41,8 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
             return buildSearchUri(
                 searchCriteria.attributes,
                 query ?: searchCriteria.query,
-                searchCriteria.location,
-                searchCriteria.contentType
+                searchCriteria.location.value,
+                searchCriteria.contentType.value
             )
         }
 
@@ -110,7 +112,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
                         uri.getQueryParameters(typeStr)[0].toInt()
                 }
             }
-            return SearchCriteria(query, attrs, location, contentType)
+            return SearchCriteria(query, attrs, Location.fromValue(location), Type.fromValue(contentType))
         }
     }
 }

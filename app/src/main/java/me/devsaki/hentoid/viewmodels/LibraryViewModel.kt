@@ -15,7 +15,6 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import com.annimon.stream.Optional
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,21 +32,35 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.Type
+import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.createJson
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
+import me.devsaki.hentoid.util.fetchImageURLs
 import me.devsaki.hentoid.util.file.copyFile
+import me.devsaki.hentoid.util.getLocation
+import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
+import me.devsaki.hentoid.util.isDownloadable
+import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.getExtensionFromUri
+import me.devsaki.hentoid.util.parseFromScratch
+import me.devsaki.hentoid.util.persistJson
+import me.devsaki.hentoid.util.purgeContent
+import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.updateGroupsJson
+import me.devsaki.hentoid.util.updateJson
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -166,13 +179,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun searchContentUniversal(query: String) {
         // If user searches in main toolbar, universal search takes over advanced search
         contentSearchManager.clearSelectedSearchTags()
-        contentSearchManager.setLocation(ContentHelper.Location.ANY)
-        contentSearchManager.setContentType(ContentHelper.Type.ANY)
+        contentSearchManager.setLocation(Location.ANY.value)
+        contentSearchManager.setContentType(Type.ANY.value)
         contentSearchManager.setQuery(query)
         newContentSearch.value = true
         if (query.isNotEmpty()) {
             val searchUri =
-                buildSearchUri(null, query, ContentHelper.Location.ANY, ContentHelper.Type.ANY)
+                buildSearchUri(null, query, Location.ANY.value, Type.ANY.value)
             dao.insertSearchRecord(SearchRecord.fromContentUniversalSearch(searchUri), 10)
         }
         doSearchContent()
@@ -187,8 +200,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun searchContent(query: String, metadata: SearchCriteria, searchUri: Uri) {
         contentSearchManager.setQuery(query)
         contentSearchManager.setTags(metadata.attributes)
-        contentSearchManager.setLocation(metadata.location)
-        contentSearchManager.setContentType(metadata.contentType)
+        contentSearchManager.setLocation(metadata.location.value)
+        contentSearchManager.setContentType(metadata.contentType.value)
         newContentSearch.value = true
         if (!metadata.isEmpty()) dao.insertSearchRecord(
             SearchRecord.fromContentAdvancedSearch(
@@ -390,7 +403,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (theContent != null) {
             if (theContent.isBeingProcessed) return
             theContent.isCompleted = !theContent.isCompleted
-            ContentHelper.persistJson(getApplication(), theContent)
+            persistJson(getApplication(), theContent)
             dao.insertContentCore(theContent)
             return
         }
@@ -431,7 +444,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 for (img in imgs) img.isRead = false
                 dao.insertImageFiles(imgs)
             }
-            ContentHelper.persistJson(getApplication(), theContent)
+            persistJson(getApplication(), theContent)
             dao.insertContentCore(theContent)
             return
         }
@@ -469,7 +482,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val theContent = dao.selectContent(contentId)
         if (theContent != null) {
             theContent.isFavourite = !theContent.isFavourite
-            ContentHelper.persistJson(getApplication(), theContent)
+            persistJson(getApplication(), theContent)
             dao.insertContent(theContent)
             return theContent
         }
@@ -511,7 +524,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val theContent = dao.selectContent(contentId)
         if (theContent != null) {
             theContent.rating = targetRating
-            ContentHelper.persistJson(getApplication(), theContent)
+            persistJson(getApplication(), theContent)
             dao.insertContent(theContent)
             return theContent
         }
@@ -527,7 +540,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         contentList: List<Content>,
         reparseContent: Boolean,
         reparseImages: Boolean,
-        position: Int,
+        position: QueuePosition,
         onSuccess: Consumer<Int>,
         onError: Consumer<Throwable>
     ) {
@@ -552,62 +565,62 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             try {
                 withContext(Dispatchers.IO) {
                     contentList.forEach { c ->
-                        var res = Optional.of(c)
+                        var res: Content? = c
                         var areModifiedImages = false
 
                         // Merged books
                         val chaps = c.chaptersList.toMutableList() // Safe copy
                         if (c.isManuallyMerged && chaps.isNotEmpty()) {
                             // Reparse main book from scratch if images are KO
-                            if (reparseContent || !ContentHelper.isDownloadable(c)) {
+                            if (reparseContent || !isDownloadable(c)) {
                                 if (!reparseContent) Timber.d("Pages unreachable; reparsing content")
                                 // Reparse content itself
-                                res = ContentHelper.reparseFromScratch(c)
+                                res = reparseFromScratch(c)
                             }
 
                             // Reparse chapters from scratch if images are KO
                             chaps.forEachIndexed { idx, ch ->
-                                if (res.isPresent) {
-                                    if (reparseContent || !ContentHelper.isDownloadable(ch)) {
+                                if (res != null) {
+                                    if (reparseContent || !isDownloadable(ch)) {
                                         if (!reparseContent) Timber.d("Pages unreachable; reparsing chapter $idx")
-                                        if (ContentHelper.parseFromScratch(ch.url).isPresent) {
+                                        if (parseFromScratch(ch.url) != null) {
                                             // Flagging all pics as ERROR; will be reparsed by the downloader
                                             ch.imageList.forEach { img ->
                                                 img.status = StatusContent.ERROR
                                             }
                                             areModifiedImages = true
-                                        } else res = Optional.empty()
+                                        } else res = null
                                     }
                                 }
                             }
-                            if (res.isPresent) {
-                                res.get().setChapters(chaps)
-                                res.get().setImageFiles(chaps.flatMap { ch -> ch.imageList })
+                            res?.let {
+                                it.setChapters(chaps)
+                                it.setImageFiles(chaps.flatMap { ch -> ch.imageList })
                             }
                         } else { // Classic content
-                            if (reparseContent || !ContentHelper.isDownloadable(c)) {
+                            if (reparseContent || !isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content")
                                 // Reparse content itself
-                                res = ContentHelper.reparseFromScratch(c)
+                                res = reparseFromScratch(c)
                             }
                         }
 
-                        if (res.isPresent) {
-                            res.get().downloadMode = Content.DownloadMode.DOWNLOAD
+                        if (res != null) {
+                            res!!.downloadMode = Content.DownloadMode.DOWNLOAD
                             if (areModifiedImages) {
-                                dao.insertChapters(res.get().chaptersList)
-                                dao.insertImageFiles(res.get().imageList)
+                                dao.insertChapters(res!!.chaptersList)
+                                dao.insertImageFiles(res!!.imageList)
                             }
 
                             // Non-blocking performance bottleneck; run in a dedicated worker
-                            if (reparseImages) ContentHelper.purgeContent(
+                            if (reparseImages) purgeContent(
                                 getApplication(),
-                                res.get(),
-                                false,
-                                true
+                                res!!,
+                                keepCover = false,
+                                isDownloadPrepurge = true
                             )
                             dao.addContentToQueue(
-                                res.get(), sourceImageStatus, targetImageStatus, position, -1, null,
+                                res!!, sourceImageStatus, targetImageStatus, position, -1, null,
                                 isQueueActive(getApplication())
                             )
                         } else {
@@ -653,40 +666,39 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     contentList.forEach { c ->
                         Timber.d("Checking pages availability")
                         // Reparse content from scratch if images KO
-                        val res = if (!ContentHelper.isDownloadable(c)) {
+                        val res = if (!isDownloadable(c)) {
                             Timber.d("Pages unreachable; reparsing content")
                             // Reparse content itself
-                            val newContent = ContentHelper.reparseFromScratch(c)
-                            if (newContent.isEmpty) {
+                            val newContent = reparseFromScratch(c)
+                            if (null == newContent) {
                                 dao.updateContentProcessedFlag(c.id, false)
-                                newContent
+                                null
                             } else {
-                                val reparsedContent = newContent.get()
                                 // Reparse pages
                                 val newImages =
-                                    ContentHelper.fetchImageURLs(
-                                        reparsedContent,
-                                        reparsedContent.galleryUrl,
+                                    fetchImageURLs(
+                                        newContent,
+                                        newContent.galleryUrl,
                                         StatusContent.ONLINE
                                     )
-                                reparsedContent.setImageFiles(newImages)
+                                newContent.setImageFiles(newImages)
                                 // Associate new pages' cover with current cover file (that won't be deleted)
-                                reparsedContent.cover.setStatus(StatusContent.DOWNLOADED).fileUri =
+                                newContent.cover.setStatus(StatusContent.DOWNLOADED).fileUri =
                                     c.cover.fileUri
                                 // Save everything
-                                dao.replaceImageList(reparsedContent.id, newImages)
-                                Optional.of<Content>(reparsedContent)
+                                dao.replaceImageList(newContent.id, newImages)
+                                newContent
                             }
-                        } else Optional.of<Content>(c)
+                        } else c
 
-                        if (res.isPresent) {
-                            dao.selectContent(res.get().id)?.let {
+                        if (res != null) {
+                            dao.selectContent(res.id)?.let {
                                 // Non-blocking performance bottleneck; scheduled in a dedicated worker
-                                ContentHelper.purgeContent(
+                                purgeContent(
                                     getApplication(),
-                                    res.get(),
-                                    true,
-                                    true
+                                    res,
+                                    keepCover = true,
+                                    isDownloadPrepurge = true
                                 )
                                 it.downloadMode = Content.DownloadMode.STREAM
                                 val imgs: List<ImageFile> = it.imageList
@@ -699,7 +711,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 it.forceSize(0)
                                 it.setIsBeingProcessed(false)
                                 dao.insertContent(it)
-                                ContentHelper.updateJson(getApplication(), it)
+                                updateJson(getApplication(), it)
                             }
                         } else {
                             onError.invoke(
@@ -986,7 +998,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     contentIds.forEach {
                         dao.selectContent(it)?.let { c ->
                             moveContentToCustomGroup(c, group, dao)
-                            ContentHelper.updateJson(getApplication(), c)
+                            updateJson(getApplication(), c)
                         }
                     }
                     refreshAvailableGroupings()
@@ -1019,7 +1031,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     // Flag the content as "being deleted" (triggers blink animation)
                     if (deleteAfterMerging)
                         contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
-                    ContentHelper.mergeContents(
+                    mergeContents(
                         getApplication(),
                         contentList,
                         newTitle,
@@ -1072,8 +1084,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             val splitContent = createContentFromChapter(content, chap)
 
             // Create a new folder for the split content
-            val location = ContentHelper.getLocation(content)
-            val targetFolder = ContentHelper.getOrCreateContentDownloadDir(
+            val location = getLocation(content)
+            val targetFolder = getOrCreateContentDownloadDir(
                 getApplication(),
                 splitContent,
                 location,
@@ -1117,11 +1129,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             }
 
             // Save the JSON for the new book
-            val jsonFile = ContentHelper.createJson(getApplication(), splitContent)
+            val jsonFile = createJson(getApplication(), splitContent)
             if (jsonFile != null) splitContent.jsonUri = jsonFile.uri.toString()
 
             // Save new content (incl. onn-custom group operations)
-            ContentHelper.addContent(getApplication(), dao, splitContent)
+            addContent(getApplication(), dao, splitContent)
 
             // Set custom group, if any
             val customGroups = content.getGroupItems(Grouping.CUSTOM)

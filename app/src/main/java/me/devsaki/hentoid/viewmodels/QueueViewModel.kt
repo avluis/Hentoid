@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import com.annimon.stream.Optional
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,15 +23,17 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.exception.EmptyResultException
+import me.devsaki.hentoid.util.removeQueuedContent
+import me.devsaki.hentoid.util.reparseFromScratch
+import me.devsaki.hentoid.util.updateQueueJson
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.PurgeWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import org.greenrobot.eventbus.EventBus
-import timber.log.Timber
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -285,7 +286,7 @@ class QueueViewModel(
         contentList: List<Content>,
         reparseContent: Boolean,
         reparseImages: Boolean,
-        position: Int,
+        position: QueuePosition,
         onSuccess: (Int) -> Unit,
         onError: (Throwable) -> Unit
     ) {
@@ -297,17 +298,16 @@ class QueueViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 contentList.forEach {
-                    val res = if (reparseContent) ContentHelper.reparseFromScratch(it)
-                    else Optional.of(it)
+                    val res = if (reparseContent) reparseFromScratch(it)
+                    else it
 
-                    if (res.isPresent) {
-                        val content = res.get()
+                    if (res != null) {
                         // Non-blocking performance bottleneck; run in a dedicated worker
-                        if (reparseImages) purgeItem(content)
+                        if (reparseImages) purgeItem(res)
                         okCount.incrementAndGet()
                         dao.addContentToQueue(
-                            content, sourceImageStatus, targetImageStatus, position,
-                            -1, content.replacementTitle,
+                            res, sourceImageStatus, targetImageStatus, position,
+                            -1, res.replacementTitle,
                             ContentQueueManager.isQueueActive(getApplication())
                         )
                     } else {
@@ -315,7 +315,7 @@ class QueueViewModel(
                         val c = dao.selectContent(it.id)
                         if (c != null) {
                             // Remove the content from the regular queue
-                            ContentHelper.removeQueuedContent(
+                            removeQueuedContent(
                                 getApplication(),
                                 dao,
                                 c,
@@ -337,7 +337,7 @@ class QueueViewModel(
                             c.setErrorLog(errors)
                             dao.insertContent(c)
                             // Save the regular queue
-                            ContentHelper.updateQueueJson(getApplication(), dao)
+                            updateQueueJson(getApplication(), dao)
                         }
                         errorCount.incrementAndGet()
                         onError.invoke(EmptyResultException("Redownload from scratch -> Content unreachable"))
@@ -384,7 +384,7 @@ class QueueViewModel(
                         dao.insertContent(theContent)
                     }
                 }
-                ContentHelper.updateQueueJson(getApplication(), dao)
+                updateQueueJson(getApplication(), dao)
                 // Force display by updating queue
                 dao.updateQueue(dao.selectQueue())
             }
@@ -400,7 +400,7 @@ class QueueViewModel(
                 }
                 dao.updateQueue(queue)
                 // Update queue JSON
-                ContentHelper.updateQueueJson(getApplication(), dao)
+                updateQueueJson(getApplication(), dao)
             }
         }
     }

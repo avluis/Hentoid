@@ -42,6 +42,7 @@ import me.devsaki.hentoid.fragments.queue.QueueFragment
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -353,14 +354,14 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
                         contentList,
                         reparseContent,
                         reparseImages,
-                        if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+                        if (0 == position) QueuePosition.TOP else QueuePosition.BOTTOM
                     )
                 }
             } else redownloadContent(
                 contentList,
                 reparseContent,
                 reparseImages,
-                Preferences.getQueueNewDownloadPosition()
+                QueuePosition.entries.first { e -> e.value == Preferences.getQueueNewDownloadPosition() }
             )
         }
     }
@@ -378,7 +379,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
         contentList: List<Content>,
         reparseContent: Boolean,
         reparseImages: Boolean,
-        position: Int
+        position: QueuePosition
     ) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
             if (WebkitPackageHelper.getWebViewUpdating())

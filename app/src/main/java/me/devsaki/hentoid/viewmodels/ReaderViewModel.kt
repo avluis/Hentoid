@@ -14,7 +14,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import com.annimon.stream.Optional
 import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,10 +32,11 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
+import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.download.downloadToFileCached
@@ -53,7 +53,9 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
+import me.devsaki.hentoid.util.getPictureFilesFromContent
 import me.devsaki.hentoid.util.image.getMimeTypeFromUri
+import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.UriParts
@@ -61,6 +63,12 @@ import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.peekCookies
+import me.devsaki.hentoid.util.persistJson
+import me.devsaki.hentoid.util.purgeContent
+import me.devsaki.hentoid.util.removePages
+import me.devsaki.hentoid.util.reparseFromScratch
+import me.devsaki.hentoid.util.setAndSaveContentCover
+import me.devsaki.hentoid.util.updateContentReadStats
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -324,16 +332,15 @@ class ReaderViewModel(
 
         // Reattach actual files to the book's pictures if they are empty or have no URI's
         if (missingUris || newImages.isEmpty()) {
-            val pictureFiles =
-                ContentHelper.getPictureFilesFromContent(getApplication(), theContent)
+            val pictureFiles = getPictureFilesFromContent(getApplication(), theContent)
             if (pictureFiles.isNotEmpty()) {
                 if (newImages.isEmpty()) {
-                    newImageFiles = ContentHelper.createImageListFromFiles(pictureFiles)
+                    newImageFiles = createImageListFromFiles(pictureFiles)
                     theContent.setImageFiles(newImageFiles)
                     dao.insertContent(theContent)
                 } else {
                     // Match files for viewer display; no need to persist that
-                    ContentHelper.matchFilesToImageList(pictureFiles, newImageFiles)
+                    matchFilesToImageList(pictureFiles, newImageFiles)
                 }
             } else { // Try to get some from the cache
                 newImageFiles.forEach {
@@ -585,7 +592,7 @@ class ReaderViewModel(
                 savedContent.computeReadProgress()
             }
             if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.isCompleted != markAsCompleted)
-                ContentHelper.updateContentReadStats(
+                updateContentReadStats(
                     getApplication(),
                     dao,
                     savedContent,
@@ -667,7 +674,7 @@ class ReaderViewModel(
 
         // Persist new values in JSON
         theContent.setImageFiles(dbImages)
-        ContentHelper.persistJson(getApplication<Application>().applicationContext, theContent)
+        persistJson(getApplication<Application>().applicationContext, theContent)
     }
 
     /**
@@ -705,7 +712,7 @@ class ReaderViewModel(
         dao.insertContent(content)
 
         // Persist new values in JSON
-        ContentHelper.persistJson(getApplication<Application>().applicationContext, content)
+        persistJson(getApplication<Application>().applicationContext, content)
     }
 
     /**
@@ -719,7 +726,7 @@ class ReaderViewModel(
                 withContext(Dispatchers.IO) {
                     targetContent.rating = rating
                     dao.insertContent(targetContent)
-                    ContentHelper.persistJson(
+                    persistJson(
                         getApplication<Application>().applicationContext, targetContent
                     )
                 }
@@ -808,7 +815,7 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    ContentHelper.removePages(pages, dao, getApplication())
+                    removePages(pages, dao, getApplication())
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -826,7 +833,7 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    ContentHelper.setAndSaveContentCover(page, dao, getApplication())
+                    setAndSaveContentCover(page, dao, getApplication())
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -936,7 +943,7 @@ class ReaderViewModel(
                 withContext(Dispatchers.IO) {
                     // Persist in JSON
                     theContent?.let {
-                        ContentHelper.persistJson(getApplication(), it)
+                        persistJson(getApplication(), it)
                     }
                 }
             } catch (t: Throwable) {
@@ -1084,19 +1091,19 @@ class ReaderViewModel(
                     try {
                         val resultOpt = downloadPic(index, stopDownload)
                         indexDlInProgress.remove(index)
-                        if (resultOpt.isEmpty) { // Nothing to download
+                        if (null == resultOpt) { // Nothing to download
                             Timber.d("NO IMAGE FOUND AT INDEX %d", index)
                             notifyDownloadProgress(-1f, index)
                             return@withContext
                         }
-                        val downloadedPageIndex = resultOpt.get().first
+                        val downloadedPageIndex = resultOpt.first
                         synchronized(viewerImagesInternal) {
                             if (viewerImagesInternal.size <= downloadedPageIndex) return@withContext
 
                             // Instanciate a new ImageFile not to modify the one used by the UI
                             val downloadedPic = ImageFile(viewerImagesInternal[downloadedPageIndex])
-                            downloadedPic.fileUri = resultOpt.get().second
-                            downloadedPic.mimeType = resultOpt.get().third
+                            downloadedPic.fileUri = resultOpt.second
+                            downloadedPic.mimeType = resultOpt.third
                             viewerImagesInternal.removeAt(downloadedPageIndex)
                             viewerImagesInternal.add(downloadedPageIndex, downloadedPic)
                             Timber.d(
@@ -1292,15 +1299,14 @@ class ReaderViewModel(
      */
     private fun downloadPic(
         pageIndex: Int, stopDownload: AtomicBoolean
-    ): Optional<Triple<Int, String?, String?>> {
+    ): Triple<Int, String?, String?>? {
         Helper.assertNonUiThread()
-        if (viewerImagesInternal.size <= pageIndex) return Optional.empty()
+        if (viewerImagesInternal.size <= pageIndex) return null
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
         // Already downloaded
-        if (img.fileUri.isNotEmpty() && DiskCache.getFile(formatCacheKey(img)) != null) return Optional.of(
-            Triple(pageIndex, img.fileUri, img.mimeType)
-        )
+        if (img.fileUri.isNotEmpty() && DiskCache.getFile(formatCacheKey(img)) != null)
+            return Triple(pageIndex, img.fileUri, img.mimeType)
 
         // Initiate download
         try {
@@ -1353,17 +1359,14 @@ class ReaderViewModel(
             targetFile = File(targetFileUri.path!!)
             mimeType = result.second
 
-            return Optional.of(
-                Triple(
-                    pageIndex, Uri.fromFile(targetFile).toString(), mimeType
-                )
-            )
+            return Triple(pageIndex, Uri.fromFile(targetFile).toString(), mimeType)
+
         } catch (ie: DownloadInterruptedException) {
             Timber.d("Download interrupted for pic %d", pageIndex)
         } catch (e: Exception) {
             Timber.w(e)
         }
-        return Optional.empty()
+        return null
     }
 
     /**
@@ -1440,13 +1443,12 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val c = ContentHelper.reparseFromScratch(theContent)
-                    if (c.isEmpty) throw EmptyResultException()
+                    val c = reparseFromScratch(theContent) ?: throw EmptyResultException()
                     dao.addContentToQueue(
-                        c.get(),
+                        c,
                         null,
                         StatusContent.SAVED,
-                        ContentHelper.QueuePosition.TOP,
+                        QueuePosition.TOP,
                         -1,
                         null,
                         isQueueActive(getApplication())
@@ -1486,12 +1488,16 @@ class ReaderViewModel(
                 withContext(Dispatchers.IO) {
                     contentList.forEach {
                         // Non-blocking performance bottleneck; run in a dedicated worker
-                        ContentHelper.purgeContent(getApplication(), it, false, true)
+                        purgeContent(
+                            getApplication(), it,
+                            keepCover = false,
+                            isDownloadPrepurge = true
+                        )
                         dao.addContentToQueue(
                             it,
                             null,
                             targetImageStatus,
-                            ContentHelper.QueuePosition.TOP,
+                            QueuePosition.TOP,
                             -1,
                             null,
                             isQueueActive(getApplication())
@@ -1677,7 +1683,7 @@ class ReaderViewModel(
         // Save chapters
         dao.insertChapters(updatedChapters)
         val finalContent = dao.selectContent(contentId)
-        if (finalContent != null) ContentHelper.persistJson(getApplication(), finalContent)
+        if (finalContent != null) persistJson(getApplication(), finalContent)
     }
 
     /**
@@ -1964,7 +1970,7 @@ class ReaderViewModel(
         // Finalize
         dao.insertImageFiles(orderedImages)
         val finalContent = dao.selectContent(contentId)
-        if (finalContent != null) ContentHelper.persistJson(getApplication(), finalContent)
+        if (finalContent != null) persistJson(getApplication(), finalContent)
         EventBus.getDefault().postSticky(
             ProcessEvent(
                 ProcessEvent.Type.COMPLETE, R.id.generic_progress, 0, nbTasks, 0, nbTasks

@@ -9,7 +9,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.parsers.content.BaseContentParser
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
@@ -17,6 +16,7 @@ import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
+import me.devsaki.hentoid.util.parseDownloadParams
 import org.apache.commons.text.StringEscapeUtils
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
@@ -291,7 +291,7 @@ fun signalProgress(contentId: Long, storedId: Long, currentStep: Int, maxSteps: 
  * @return Cookie string, if any in the given download parameters; empty string if none
  */
 fun getSavedCookieStr(downloadParams: String?): String {
-    val downloadParamsMap = ContentHelper.parseDownloadParams(downloadParams)
+    val downloadParamsMap = parseDownloadParams(downloadParams)
     return if (downloadParamsMap.containsKey(HEADER_COOKIE_KEY)) StringHelper.protect(
         downloadParamsMap[HEADER_COOKIE_KEY]
     ) else ""

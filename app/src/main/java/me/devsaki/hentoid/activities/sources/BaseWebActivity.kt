@@ -69,22 +69,26 @@ import me.devsaki.hentoid.fragments.web.UrlDialogFragment
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.ui.invokeNumberInputDialog
-import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.ContentHelper.QueuePosition
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Preferences.Constant
+import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.calcPhash
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.findDuplicate
+import me.devsaki.hentoid.util.getBlockedTags
 import me.devsaki.hentoid.util.getCoverBitmapFromStream
 import me.devsaki.hentoid.util.getHashEngine
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.isInLibrary
+import me.devsaki.hentoid.util.isInQueue
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -92,6 +96,8 @@ import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import me.devsaki.hentoid.util.network.simplifyUrl
+import me.devsaki.hentoid.util.openReader
+import me.devsaki.hentoid.util.parseDownloadParams
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.views.NestedScrollWebView
@@ -356,7 +362,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     @Suppress("unused")
     fun onDownloadPreparationEvent(event: DownloadPreparationEvent) {
         // Show progress if it's about current content or its best duplicate
-        if (currentContent != null && ContentHelper.isInLibrary(currentContent!!.status) && event.getRelevantId() == currentContent!!.id || duplicateId > 0 && event.getRelevantId() == duplicateId) {
+        if (currentContent != null && isInLibrary(currentContent!!.status) && event.getRelevantId() == currentContent!!.id || duplicateId > 0 && event.getRelevantId() == duplicateId) {
             binding?.apply {
                 progressBar.max = event.total
                 progressBar.progress = event.done
@@ -851,7 +857,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     currentContent!!.qtyPages,
                     duplicateSimilarity,
                     false
-                ) else processDownload(false, false, false)
+                ) else processDownload(
+                    quickDownload = false,
+                    isDownloadPlus = false,
+                    isReplaceDuplicate = false
+                )
             }
 
             ActionMode.DOWNLOAD_PLUS -> {
@@ -861,7 +871,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     currentContent!!.qtyPages,
                     duplicateSimilarity,
                     true
-                ) else processDownload(false, true, false)
+                ) else processDownload(
+                    quickDownload = false,
+                    isDownloadPlus = true,
+                    isReplaceDuplicate = false
+                )
             }
 
             ActionMode.VIEW_QUEUE -> goToQueue()
@@ -873,10 +887,13 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     currentContent!!.url,
                     searchUrl
                 )
-                if (currentContent != null && (StatusContent.DOWNLOADED == currentContent!!.status || StatusContent.ERROR == currentContent!!.status || StatusContent.MIGRATED == currentContent!!.status)) ContentHelper.openReader(
-                    this,
-                    currentContent!!, -1, null, false, false
-                ) else {
+                if (currentContent != null && (StatusContent.DOWNLOADED == currentContent!!.status || StatusContent.ERROR == currentContent!!.status || StatusContent.MIGRATED == currentContent!!.status))
+                    openReader(
+                        this, currentContent!!, -1, null,
+                        forceShowGallery = false,
+                        newTask = false
+                    )
+                else {
                     binding?.apply {
                         actionButton.visibility = View.INVISIBLE
                         actionBtnBadge.visibility = View.INVISIBLE
@@ -980,7 +997,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
 
             // Determine base book : browsed downloaded book or best duplicate ?
-            if (!ContentHelper.isInLibrary(currentContent!!.status) && duplicateId > 0) {
+            if (!isInLibrary(currentContent!!.status) && duplicateId > 0) {
                 currentContent = dao.selectContent(duplicateId)
                 if (null == currentContent) return
             }
@@ -1027,7 +1044,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         } // isDownloadPlus
 
         // Check if the tag blocker applies here
-        val blockedTagsLocal = ContentHelper.getBlockedTags(currentContent!!)
+        val blockedTagsLocal = getBlockedTags(currentContent!!)
         if (blockedTagsLocal.isNotEmpty()) {
             if (Preferences.getTagBlockingBehaviour() == Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
                 toast(R.string.blocked_tag, blockedTagsLocal[0])
@@ -1088,7 +1105,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 webView, this,
                 { position, _ ->
                     addToQueue(
-                        Preferences.getQueueNewDownloadPosition(),
+                        QueuePosition.entries.first { it.value == Preferences.getQueueNewDownloadPosition() },
                         if (0 == position) DownloadMode.DOWNLOAD else DownloadMode.STREAM,
                         isReplaceDuplicate,
                         replacementTitleFinal
@@ -1097,7 +1114,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             )
         } else {
             addToQueue(
-                Preferences.getQueueNewDownloadPosition(),
+                QueuePosition.entries.first { it.value == Preferences.getQueueNewDownloadPosition() },
                 Preferences.getBrowserDlAction(),
                 isReplaceDuplicate,
                 replacementTitleFinal
@@ -1113,7 +1130,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * @param isReplaceDuplicate True if existing duplicate book has to be replaced upon download completion
      */
     private fun addToQueue(
-        @QueuePosition position: Int,
+        position: QueuePosition,
         @DownloadMode downloadMode: Int,
         isReplaceDuplicate: Boolean,
         replacementTitle: String?
@@ -1211,8 +1228,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // TODO manage DB calls concurrency to avoid getting read transaction conflicts
         val contentDB =
             dao.selectContentByUrlOrCover(onlineContent.site, onlineContent.url, searchUrl)
-        val isInCollection = contentDB != null && ContentHelper.isInLibrary(contentDB.status)
-        val isInQueue = contentDB != null && ContentHelper.isInQueue(contentDB.status)
+        val isInCollection = contentDB != null && isInLibrary(contentDB.status)
+        val isInQueue = contentDB != null && isInQueue(contentDB.status)
         if (!isInCollection && !isInQueue) {
             if (Preferences.isDownloadDuplicateAsk() && onlineContent.coverImageUrl.isNotEmpty()) {
                 // Index the content's cover picture
@@ -1220,7 +1237,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 try {
                     val requestHeadersList: List<Pair<String, String>> = ArrayList()
                     val downloadParams =
-                        ContentHelper.parseDownloadParams(onlineContent.downloadParams)
+                        parseDownloadParams(onlineContent.downloadParams).toMutableMap()
                     downloadParams[HEADER_COOKIE_KEY] =
                         getCookies(onlineContent.coverImageUrl)
                     downloadParams[HEADER_REFERER_KEY] = onlineContent.site.url
@@ -1245,7 +1262,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 }
                 // Look for duplicates
                 try {
-                    val duplicateResult = ContentHelper.findDuplicate(
+                    val duplicateResult = findDuplicate(
                         this,
                         onlineContent,
                         Preferences.isDuplicateBrowserUseTitle(),
@@ -1273,7 +1290,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
                 onlineContent.status = StatusContent.SAVED
-                ContentHelper.addContent(this, dao, onlineContent)
+                addContent(this, dao, onlineContent)
             } else {
                 currentContent = contentDB
             }
@@ -1336,7 +1353,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 setActionMode(ActionMode.VIEW_QUEUE)
             }
         }
-        blockedTags = ContentHelper.getBlockedTags(currentContent!!)
+        blockedTags = getBlockedTags(currentContent!!).toMutableList()
     }
 
     override fun onNoResult() {
@@ -1375,7 +1392,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         var maxStoredImageOrder = 0
         if (storedContent.imageFiles != null) {
             val opt = storedContent.imageFiles!!
-                .filter { i: ImageFile -> ContentHelper.isInLibrary(i.status) }
+                .filter { i: ImageFile -> isInLibrary(i.status) }
                 .maxOfOrNull { img -> img.order }
 
             if (opt != null) maxStoredImageOrder = opt
@@ -1437,7 +1454,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             val storedUrls: MutableSet<String> = HashSet()
             storedContent.imageFiles?.let {
                 storedUrls.addAll(it
-                    .filter { img -> ContentHelper.isInLibrary(img.status) }
+                    .filter { img -> isInLibrary(img.status) }
                     .map { obj: ImageFile -> obj.url }.toList()
                 )
             }

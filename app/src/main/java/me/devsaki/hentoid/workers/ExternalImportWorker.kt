@@ -16,9 +16,9 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createJsonFileFor
 import me.devsaki.hentoid.util.existsInCollection
 import me.devsaki.hentoid.util.file.Beholder
@@ -29,6 +29,7 @@ import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.removeContent
 import me.devsaki.hentoid.util.scanArchive
 import me.devsaki.hentoid.util.scanFolderRecursive
 import me.devsaki.hentoid.util.trace
@@ -60,7 +61,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     override fun onClear(logFile: DocumentFile?) {
         // Final event; should be step 4
         eventComplete(
-            PrimaryImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile
+            STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile
         )
     }
 
@@ -129,7 +130,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 } finally {
                     dao.cleanup()
                 }
-                eventComplete(PrimaryImportWorker.STEP_2_BOOK_FOLDERS, 0, 0, 0, null)
+                eventComplete(STEP_2_BOOK_FOLDERS, 0, 0, 0, null)
 
                 // Write JSON file for every found book and persist it in the DB
                 trace(
@@ -158,7 +159,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             continue
                         }
                         createJsonFileFor(context, content, explorer, logs)
-                        ContentHelper.addContent(context, dao, content)
+                        addContent(context, dao, content)
                         trace(
                             Log.INFO, 1, logs, "Import book OK : %s", content.storageUri
                         )
@@ -169,7 +170,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             )
                         )
                         eventProgress(
-                            PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size, booksOK, booksKO
+                            STEP_3_BOOKS, detectedContent.size, booksOK, booksKO
                         )
                         content.parentStorageUri?.let { parentUri ->
                             val entry = addedContent[parentUri] ?: ArrayList()
@@ -194,7 +195,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     detectedContent.size.toString() + ""
                 )
                 eventComplete(
-                    PrimaryImportWorker.STEP_3_BOOKS, detectedContent.size, booksOK, booksKO, null
+                    STEP_3_BOOKS, detectedContent.size, booksOK, booksKO, null
                 )
 
                 // Clear disk cache as import may reuse previous image IDs
@@ -293,7 +294,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     addedContent.forEach {
                         if (!existsInCollection(it, dao, true, logs)) {
                             createJsonFileFor(context, it, explorer, logs)
-                            ContentHelper.addContent(context, dao, it)
+                            addContent(context, dao, it)
                         }
                     }
                 } // explorer
@@ -306,7 +307,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 Timber.d("delta- => $idToRemove")
                 Content().apply {
                     id = idToRemove
-                    ContentHelper.removeContent(context, dao, this)
+                    removeContent(context, dao, this)
                 }
             }
         } catch (e: Exception) {

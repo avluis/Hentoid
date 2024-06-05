@@ -31,9 +31,8 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Consumer;
 import androidx.exifinterface.media.ExifInterface;
-
-import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -474,6 +473,7 @@ public class CustomSubsamplingScaleImageView extends View {
         quickScaleThreshold = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, context.getResources().getDisplayMetrics());
         scaleDebouncer = new Debouncer<>(context, 200, scaleOut -> {
             if (scaleListener != null) scaleListener.accept(scaleOut);
+            return null;
         });
     }
 

@@ -18,40 +18,38 @@ data class SearchCriteria(
     var query: String = "",
     // From advanced search
     var attributes: MutableSet<Attribute> = HashSet(),
-    @ContentHelper.Location var location: Int = ContentHelper.Location.ANY,
-    @ContentHelper.Type var contentType: Int = ContentHelper.Type.ANY
+    var location: Location = Location.ANY,
+    var contentType: Type = Type.ANY
 ) {
     fun clear() {
         query = ""
         attributes.clear()
-        location = ContentHelper.Location.ANY
-        contentType = ContentHelper.Type.ANY
+        location = Location.ANY
+        contentType = Type.ANY
     }
 
     fun isEmpty(): Boolean {
-        return (query.isEmpty() && attributes.isEmpty() && ContentHelper.Location.ANY == location && ContentHelper.Type.ANY == contentType)
+        return (query.isEmpty() && attributes.isEmpty() && Location.ANY == location && Type.ANY == contentType)
     }
 
     @StringRes
-    private fun formatLocation(@ContentHelper.Location value: Int): Int {
+    private fun formatLocation(value: Location): Int {
         return when (value) {
-            ContentHelper.Location.PRIMARY -> R.string.refresh_location_internal
-            ContentHelper.Location.PRIMARY_1 -> R.string.refresh_location_internal_1
-            ContentHelper.Location.PRIMARY_2 -> R.string.refresh_location_internal_2
-            ContentHelper.Location.EXTERNAL -> R.string.refresh_location_external
-            ContentHelper.Location.ANY -> R.string.search_location_entries_1
-            else -> R.string.search_location_entries_1
+            Location.PRIMARY -> R.string.refresh_location_internal
+            Location.PRIMARY_1 -> R.string.refresh_location_internal_1
+            Location.PRIMARY_2 -> R.string.refresh_location_internal_2
+            Location.EXTERNAL -> R.string.refresh_location_external
+            Location.ANY -> R.string.search_location_entries_1
         }
     }
 
     @StringRes
-    private fun formatContentType(@ContentHelper.Type value: Int): Int {
+    private fun formatContentType(value: Type): Int {
         return when (value) {
-            ContentHelper.Type.FOLDER -> R.string.search_type_entries_2
-            ContentHelper.Type.STREAMED -> R.string.search_type_entries_3
-            ContentHelper.Type.ARCHIVE -> R.string.search_type_entries_4
-            ContentHelper.Type.PLACEHOLDER -> R.string.search_type_entries_5
-            ContentHelper.Type.ANY -> R.string.search_type_entries_1
+            Type.FOLDER -> R.string.search_type_entries_2
+            Type.STREAMED -> R.string.search_type_entries_3
+            Type.ARCHIVE -> R.string.search_type_entries_4
+            Type.PLACEHOLDER -> R.string.search_type_entries_5
             else -> R.string.search_type_entries_1
         }
     }
@@ -71,10 +69,10 @@ data class SearchCriteria(
         // Advanced search
         val labelElts: MutableList<String> =
             attributes.map { a -> formatAttribute(a, context.resources) }.toMutableList()
-        if (location != ContentHelper.Location.ANY) labelElts.add(
+        if (location != Location.ANY) labelElts.add(
             "loc:" + context.resources.getString(formatLocation(location)).lowercase()
         )
-        if (contentType != ContentHelper.Type.ANY) labelElts.add(
+        if (contentType != Type.ANY) labelElts.add(
             "type:" + context.resources.getString(formatContentType(contentType)).lowercase()
         )
         var label = TextUtils.join("|", labelElts)

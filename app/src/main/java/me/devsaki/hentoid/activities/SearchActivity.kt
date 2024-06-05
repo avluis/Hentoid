@@ -19,8 +19,10 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.ActivitySearchBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment.Companion.invoke
+import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.viewmodels.SearchViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
@@ -137,19 +139,21 @@ class SearchActivity : BaseActivity() {
             if (preSelectedCriteria != null) {
                 if (preSelectedCriteria.attributes.isNotEmpty())
                     viewModel.setSelectedAttributes(preSelectedCriteria.attributes.toList())
-                if (preSelectedCriteria.location > 0) viewModel.setLocation(preSelectedCriteria.location)
-                locationPicker.index = preSelectedCriteria.location
-                if (preSelectedCriteria.contentType > 0) viewModel.setContentType(
+                if (preSelectedCriteria.location.value > 0) viewModel.setLocation(
+                    preSelectedCriteria.location
+                )
+                locationPicker.index = preSelectedCriteria.location.value
+                if (preSelectedCriteria.contentType.value > 0) viewModel.setContentType(
                     preSelectedCriteria.contentType
                 )
-                typePicker.index = preSelectedCriteria.contentType
+                typePicker.index = preSelectedCriteria.contentType.value
             } else {
                 locationPicker.index = 0
                 typePicker.index = 0
                 viewModel.update()
             }
-            locationPicker.setOnIndexChangeListener { index: Int -> viewModel.setLocation(index) }
-            typePicker.setOnIndexChangeListener { index: Int -> viewModel.setContentType(index) }
+            locationPicker.setOnIndexChangeListener { index -> viewModel.setLocation(Location.entries.first { it.value == index }) }
+            typePicker.setOnIndexChangeListener { index -> viewModel.setContentType(Type.entries.first { it.value == index }) }
         }
     }
 
@@ -182,13 +186,13 @@ class SearchActivity : BaseActivity() {
             val (_, attributes, location, contentType) = parseSearchUri(searchUri)
             if (attributes.isNotEmpty()) viewModel.setSelectedAttributes(attributes.toList())
             binding?.apply {
-                if (location > 0) {
+                if (location.value > 0) {
                     viewModel.setLocation(location)
-                    locationPicker.index = location
+                    locationPicker.index = location.value
                 }
-                if (contentType > 0) {
+                if (contentType.value > 0) {
                     viewModel.setContentType(contentType)
-                    typePicker.index = contentType
+                    typePicker.index = contentType.value
                 }
             }
         }

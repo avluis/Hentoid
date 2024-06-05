@@ -38,7 +38,10 @@ import me.devsaki.hentoid.util.setAndScanExternalFolder
 import me.devsaki.hentoid.util.setAndScanPrimaryFolder
 import me.devsaki.hentoid.util.showExistingLibraryDialog
 import me.devsaki.hentoid.util.toastShort
-import me.devsaki.hentoid.workers.PrimaryImportWorker
+import me.devsaki.hentoid.workers.STEP_2_BOOK_FOLDERS
+import me.devsaki.hentoid.workers.STEP_3_BOOKS
+import me.devsaki.hentoid.workers.STEP_3_PAGES
+import me.devsaki.hentoid.workers.STEP_4_QUEUE_FINAL
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -413,9 +416,9 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     private fun importEvent(event: ProcessEvent) {
         binding2.apply {
             val progressBar: ProgressBar = when (event.step) {
-                PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> importStep2Bar
-                PrimaryImportWorker.STEP_3_BOOKS -> importStep3Bar
-                PrimaryImportWorker.STEP_3_PAGES -> importStep3SubBar
+                STEP_2_BOOK_FOLDERS -> importStep2Bar
+                STEP_3_BOOKS -> importStep3Bar
+                STEP_3_PAGES -> importStep3SubBar
                 else -> importStep4Bar
             }
             if (ProcessEvent.Type.PROGRESS == event.eventType) {
@@ -427,11 +430,11 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                     progressBar.isIndeterminate = true
                 }
                 when (event.step) {
-                    PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> {
+                    STEP_2_BOOK_FOLDERS -> {
                         importStep2Text.text = event.elementName
                     }
 
-                    PrimaryImportWorker.STEP_3_BOOKS -> {
+                    STEP_3_BOOKS -> {
                         importStep2Bar.isIndeterminate = false
                         importStep2Bar.max = 1
                         importStep2Bar.progress = 1
@@ -445,18 +448,18 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                         )
                     }
 
-                    PrimaryImportWorker.STEP_3_PAGES -> {
+                    STEP_3_PAGES -> {
                         progressBar.visibility = View.VISIBLE
                     }
 
-                    PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
+                    STEP_4_QUEUE_FINAL -> {
                         importStep3Check.visibility = View.VISIBLE
                         importStep4.visibility = View.VISIBLE
                     }
                 }
             } else if (ProcessEvent.Type.COMPLETE == event.eventType) {
                 when (event.step) {
-                    PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> {
+                    STEP_2_BOOK_FOLDERS -> {
                         importStep2Bar.isIndeterminate = false
                         importStep2Bar.max = 1
                         importStep2Bar.progress = 1
@@ -465,7 +468,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                         importStep3.visibility = View.VISIBLE
                     }
 
-                    PrimaryImportWorker.STEP_3_BOOKS -> {
+                    STEP_3_BOOKS -> {
                         importStep3Text.text = resources.getString(
                             R.string.refresh_step3,
                             event.elementsTotal,
@@ -475,11 +478,11 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                         importStep4.visibility = View.VISIBLE
                     }
 
-                    PrimaryImportWorker.STEP_3_PAGES -> {
+                    STEP_3_PAGES -> {
                         progressBar.visibility = View.GONE
                     }
 
-                    PrimaryImportWorker.STEP_4_QUEUE_FINAL -> {
+                    STEP_4_QUEUE_FINAL -> {
                         importStep4Check.visibility = View.VISIBLE
 
                         isServiceGracefulClose = true

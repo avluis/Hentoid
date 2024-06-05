@@ -19,12 +19,16 @@ import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.AttributeQueryResult
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Type
+import me.devsaki.hentoid.util.addAttribute
 import me.devsaki.hentoid.util.addContentToAttributeGroup
 import me.devsaki.hentoid.util.getOrCreateNoArtistGroup
+import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeContentFromGrouping
+import me.devsaki.hentoid.util.setContentCover
 import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
@@ -111,7 +115,7 @@ class MetadataEditViewModel(
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
                     try {
-                        ContentHelper.setContentCover(content, imageFiles, img)
+                        setContentCover(content, imageFiles, img)
                         contentList.postValue(mutableListOf(content))
                     } catch (t: Throwable) {
                         Timber.e(t)
@@ -145,8 +149,8 @@ class MetadataEditViewModel(
                     query,
                     -1,
                     emptySet(),
-                    ContentHelper.Location.ANY,
-                    ContentHelper.Type.ANY,
+                    Location.ANY,
+                    Type.ANY,
                     true,
                     pageNum,
                     itemsPerPage,
@@ -188,7 +192,7 @@ class MetadataEditViewModel(
     }
 
     fun createAssignNewAttribute(attrName: String, type: AttributeType): Attribute {
-        val attr = ContentHelper.addAttribute(type, attrName, dao)
+        val attr = addAttribute(type, attrName, dao)
         addContentAttribute(attr)
         return attr
     }
@@ -364,7 +368,7 @@ class MetadataEditViewModel(
                 // Update the 'author' pre-calculated field for all related books if needed
                 if (attr.type.equals(AttributeType.ARTIST) || attr.type.equals(AttributeType.CIRCLE)) {
                     it.computeAuthor()
-                    ContentHelper.persistJson(getApplication(), it)
+                    persistJson(getApplication(), it)
                 }
                 it.lastEditDate = Instant.now().toEpochMilli()
                 dao.insertContent(it)

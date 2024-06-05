@@ -15,8 +15,8 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.updateJson.UpdateJsonCompleteNotification
 import me.devsaki.hentoid.notification.updateJson.UpdateJsonProgressNotification
 import me.devsaki.hentoid.notification.updateJson.UpdateJsonStartNotification
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import org.greenrobot.eventbus.EventBus
@@ -60,7 +60,7 @@ class UpdateJsonWorker(context: Context, parameters: WorkerParameters) :
 
         for (id in contentIds) {
             val c = dao.selectContent(id)
-            if (c != null) ContentHelper.persistJson(applicationContext, c)
+            if (c != null) persistJson(applicationContext, c)
             nextOK()
         }
         progressDone()

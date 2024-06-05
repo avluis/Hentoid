@@ -331,7 +331,7 @@ fun setAndScanPrimaryFolder(
         if (Preferences.getStorageUri(location).isNotEmpty()) {
             val dao: CollectionDAO = ObjectBoxDAO()
             try {
-                ContentHelper.detachAllPrimaryContent(dao, location)
+                detachAllPrimaryContent(dao, location)
             } finally {
                 dao.cleanup()
             }
@@ -912,10 +912,7 @@ private fun scanFolderImages(
     var namePrefix = ""
     if (addFolderNametoImgName) namePrefix = "$folderName-"
     images.addAll(
-        ContentHelper.createImageListFromFiles(
-            imageFiles, targetStatus, order,
-            namePrefix
-        )
+        createImageListFromFiles(imageFiles, targetStatus, order, namePrefix)
     )
 }
 
@@ -1136,13 +1133,13 @@ fun scanArchive(
         return Pair(2, null)
     }
 
-    val images = ContentHelper.createImageListFromArchiveEntries(
+    val images = createImageListFromArchiveEntries(
         archive.uri,
         imageEntries,
         targetStatus,
         0,
         ""
-    )
+    ).toMutableList()
     val coverExists = images.any { obj: ImageFile -> obj.isCover }
     if (!coverExists) createCover(images)
 
@@ -1311,7 +1308,7 @@ fun existsInCollection(
         existingDuplicate = findDuplicateContentByUrl(content, dao)
         // Ignore the duplicate if it is queued; we do prefer to import a full book
         if (existingDuplicate != null) {
-            if (ContentHelper.isInQueue(existingDuplicate.status)) existingDuplicate = null
+            if (isInQueue(existingDuplicate.status)) existingDuplicate = null
             else duplicateOrigin = "book"
         }
     }
@@ -1321,7 +1318,7 @@ fun existsInCollection(
         existingDuplicate = findDuplicateContentByQtyPageAndSize(content, dao)
         // Ignore the duplicate if it is queued; we do prefer to import a full book
         if (existingDuplicate != null) {
-            if (ContentHelper.isInQueue(existingDuplicate.status)) existingDuplicate = null
+            if (isInQueue(existingDuplicate.status)) existingDuplicate = null
             else duplicateOrigin = "book"
         }
     }

@@ -15,7 +15,8 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.mocks.AbstractObjectBoxTest
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.Location
+import me.devsaki.hentoid.util.Type
 import net.lachlanmckee.timberjunit.TimberTestRule
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -83,8 +84,8 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
             name,
             -1,
             null,
-            ContentHelper.Location.ANY,
-            ContentHelper.Type.ANY,
+            Location.ANY,
+            Type.ANY,
             true,
             1,
             40,

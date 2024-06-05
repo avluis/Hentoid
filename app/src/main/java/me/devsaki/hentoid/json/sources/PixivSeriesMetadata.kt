@@ -4,8 +4,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.KEY_DL_PARAMS_NB_CHAPTERS
 import me.devsaki.hentoid.util.StringHelper
 
 /**
@@ -60,7 +60,7 @@ data class PixivSeriesMetadata(
         content.setCoverImageUrl(data.getCoverUrl())
         //        content.setUploadDate(
         val downloadParams: MutableMap<String, String> = HashMap()
-        downloadParams[ContentHelper.KEY_DL_PARAMS_NB_CHAPTERS] = data.getNbIllust()
+        downloadParams[KEY_DL_PARAMS_NB_CHAPTERS] = data.getNbIllust()
         content.setDownloadParams(
             JsonHelper.serializeToJson<Map<String, String>>(
                 downloadParams,

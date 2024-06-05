@@ -41,9 +41,10 @@ import me.devsaki.hentoid.fragments.metadata.AttributeTypePickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.GalleryPickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.fragments.metadata.MetaRenameDialogFragment
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.applyTheme
+import me.devsaki.hentoid.util.bindOnlineCover
+import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.glideOptionCenterInside
 import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
@@ -205,8 +206,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
             } else {
                 it.ivCover.visibility = View.VISIBLE
                 if (thumbLocation.startsWith("http")) {
-                    val glideUrl = ContentHelper.bindOnlineCover(thumbLocation, contents[0])
-                    if (glideUrl != null) {
+                    bindOnlineCover(thumbLocation, contents[0])?.let { glideUrl ->
                         Glide.with(it.ivCover)
                             .load(glideUrl)
                             .apply(glideOptionCenterInside)
@@ -232,7 +232,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
         attrContainer.putAttributes(mergeAttributeMaps(contents, setOf(AttributeType.LANGUAGE)))
         if (1 == contents.size) {
             binding?.ivFlag?.visibility = View.VISIBLE
-            @DrawableRes val resId = ContentHelper.getFlagResourceId(this, attrContainer)
+            @DrawableRes val resId = getFlagResourceId(this, attrContainer)
             if (resId != 0) {
                 binding?.ivFlag?.setImageResource(resId)
             } else {
@@ -354,6 +354,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
         }
     }
 
+    @Suppress("SameReturnValue")
     private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_edit_confirm -> confirmEdit()

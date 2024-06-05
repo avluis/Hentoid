@@ -60,7 +60,6 @@ import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
@@ -71,8 +70,10 @@ import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
+import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.viewContentGalleryPage
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
@@ -409,7 +410,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             ) {
                 if (selectExtension.selections.isNotEmpty()) return
                 val c = item.content
-                if (c != null) ContentHelper.viewContentGalleryPage(v.context, c)
+                if (c != null) viewContentGalleryPage(v.context, c)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
@@ -908,10 +909,13 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             // (may happen when the item is fetched before it is processed by the downloader)
             if (c.storageUri.isEmpty()) c = ObjectBoxDAO().selectContent(c.id)
             return if (c != null) {
-                if (!ContentHelper.openReader(
-                        requireContext(), c, -1, null, false, false
+                if (!openReader(
+                        requireContext(), c, -1, null,
+                        forceShowGallery = false,
+                        newTask = false
                     )
-                ) toast(R.string.err_no_content)
+                )
+                    toast(R.string.err_no_content)
                 true
             } else false
         }

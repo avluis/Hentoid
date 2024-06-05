@@ -10,8 +10,8 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.urlToImageFile
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.StringHelper
 import java.lang.reflect.Type
 
@@ -114,7 +114,7 @@ data class PixivIllustMetadata(
                         ugoiraMeta.getFrameList(),
                         UGOIRA_FRAMES_TYPE
                     )
-                    downloadParams[ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES] = framesJson
+                    downloadParams[KEY_DL_PARAMS_UGOIRA_FRAMES] = framesJson
                     img.setDownloadParams(
                         JsonHelper.serializeToJson<Map<String, String>>(
                             downloadParams,

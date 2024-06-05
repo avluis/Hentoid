@@ -28,12 +28,12 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.file.getDownloadsFolder
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.util.getPathRoot
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -187,7 +187,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
     private fun getSelectedRootPath(locationIndex: Int): String {
         return if (locationIndex > 0) {
             var root =
-                ContentHelper.getPathRoot(if (1 == locationIndex) StorageLocation.PRIMARY_1 else StorageLocation.PRIMARY_2)
+                getPathRoot(if (1 == locationIndex) StorageLocation.PRIMARY_1 else StorageLocation.PRIMARY_2)
             if (root.isEmpty()) root = "FAIL" // Auto-fails condition if location is not set
             root
         } else ""

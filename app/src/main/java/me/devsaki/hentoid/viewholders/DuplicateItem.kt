@@ -25,8 +25,10 @@ import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.bindOnlineCover
+import me.devsaki.hentoid.util.formatArtistForDisplay
+import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.isValidContextForGlide
@@ -151,7 +153,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
                 it.visibility = View.VISIBLE
                 // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
                 if (thumbLocation.startsWith("http")) {
-                    ContentHelper.bindOnlineCover(thumbLocation, content)?.let { glideUrl ->
+                    bindOnlineCover(thumbLocation, content)?.let { glideUrl ->
                         Glide.with(it).load(glideUrl).apply(glideRequestOptions).into(it)
                     }
                 } else Glide.with(it)
@@ -162,7 +164,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         }
 
         private fun attachFlag(content: Content) {
-            @DrawableRes val resId = ContentHelper.getFlagResourceId(ivFlag.context, content)
+            @DrawableRes val resId = getFlagResourceId(ivFlag.context, content)
             if (resId != 0) {
                 ivFlag.setImageResource(resId)
                 ivFlag.visibility = View.VISIBLE
@@ -187,7 +189,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         }
 
         private fun attachArtist(content: Content) {
-            tvArtist!!.text = ContentHelper.formatArtistForDisplay(tvArtist.context, content)
+            tvArtist!!.text = formatArtistForDisplay(tvArtist.context, content)
         }
 
         private fun attachPages(content: Content) {

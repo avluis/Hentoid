@@ -40,22 +40,28 @@ import me.devsaki.hentoid.json.URLBuilder
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.file.DiskCache.init
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.findDuplicateContentByUrl
+import me.devsaki.hentoid.util.formatBookFolderName
+import me.devsaki.hentoid.util.getPathRoot
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.importBookmarks
 import me.devsaki.hentoid.util.importRenamingRules
+import me.devsaki.hentoid.util.isInQueue
+import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeExternalAttributes
 import me.devsaki.hentoid.util.scanBookFolder
 import me.devsaki.hentoid.util.trace
@@ -69,17 +75,18 @@ import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.max
 
+
+const val STEP_GROUPS = 0
+const val STEP_1 = 1
+const val STEP_2_BOOK_FOLDERS = 2
+const val STEP_3_BOOKS = 3
+const val STEP_3_PAGES = 4
+const val STEP_4_QUEUE_FINAL = 5
+
 class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.import_service, null) {
 
     companion object {
-        const val STEP_GROUPS = 0
-        const val STEP_1 = 1
-        const val STEP_2_BOOK_FOLDERS = 2
-        const val STEP_3_BOOKS = 3
-        const val STEP_3_PAGES = 4
-        const val STEP_4_QUEUE_FINAL = 5
-
         fun isRunning(context: Context): Boolean {
             return isRunning(context, R.id.import_service)
         }
@@ -280,7 +287,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 var dao: CollectionDAO = ObjectBoxDAO()
                 try {
                     dao.flagAllInternalBooks(
-                        ContentHelper.getPathRoot(previousUriStr),
+                        getPathRoot(previousUriStr),
                         removePlaceholders
                     )
                     dao.flagAllErrorBooksWithJson()
@@ -398,7 +405,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             if (!isStopped) { // Should only be done when things have run properly
                 val dao: CollectionDAO = ObjectBoxDAO()
                 try {
-                    dao.deleteAllFlaggedBooks(true, ContentHelper.getPathRoot(previousUriStr))
+                    dao.deleteAllFlaggedBooks(true, getPathRoot(previousUriStr))
                     dao.deleteAllFlaggedGroups()
                     dao.cleanupOrphanAttributes()
                 } finally {
@@ -506,7 +513,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion) {
                     booksKO++
                     val location =
-                        if (ContentHelper.isInQueue(existingDuplicate.status)) "queue" else "collection"
+                        if (isInQueue(existingDuplicate.status)) "queue" else "collection"
                     trace(
                         Log.INFO, STEP_2_BOOK_FOLDERS, log,
                         "Import book KO! (already in $location) : %s", bookFolder.uri.toString()
@@ -516,7 +523,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 var contentImages: List<ImageFile>?
                 contentImages = if (content.imageFiles != null) content.imageFiles else ArrayList()
                 if (rename) {
-                    val canonicalBookFolderName = ContentHelper.formatBookFolderName(content)
+                    val canonicalBookFolderName = formatBookFolderName(content)
                     val currentPathParts = bookFolder.uri.pathSegments
                     val bookUriParts =
                         currentPathParts[currentPathParts.size - 1].split(":")
@@ -561,7 +568,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 if (imageFiles.isNotEmpty()) {
                     // No images described in the JSON -> recreate them
                     if (contentImages!!.isEmpty()) {
-                        contentImages = ContentHelper.createImageListFromFiles(imageFiles)
+                        contentImages = createImageListFromFiles(imageFiles)
                         content.setImageFiles(contentImages)
                         content.getCover().setUrl(content.coverImageUrl)
                     } else { // Existing images described in the JSON
@@ -602,18 +609,15 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         }
 
                         // Map files to image list
-                        contentImages = ContentHelper.matchFilesToImageList(
-                            imageFiles,
-                            contentImages
-                        )
+                        contentImages = matchFilesToImageList(imageFiles, contentImages)
                         content.setImageFiles(contentImages)
-                        if (cleaned) ContentHelper.persistJson(context, content)
+                        if (cleaned) persistJson(context, content)
                     }
                     if (renumberPages) renumberPages(context, content, contentImages, log)
                 } else if (Preferences.isImportQueueEmptyBooks()
                     && !content.isManuallyMerged && content.downloadMode == Content.DownloadMode.DOWNLOAD
                 ) { // If no image file found, it goes in the errors queue
-                    if (!ContentHelper.isInQueue(content.status)) content.setStatus(StatusContent.ERROR)
+                    if (!isInQueue(content.status)) content.setStatus(StatusContent.ERROR)
                     val errors: MutableList<ErrorRecord> = ArrayList()
                     errors.add(
                         ErrorRecord(
@@ -630,7 +634,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 // If content has an external-library tag or an EXTERNAL status, remove it because we're importing for the primary library now
                 removeExternalAttributes(content)
                 content.computeSize()
-                ContentHelper.addContent(context, dao, content)
+                addContent(context, dao, content)
                 trace(
                     Log.INFO,
                     STEP_2_BOOK_FOLDERS,
@@ -749,7 +753,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         JsonContent::class.java, bookFolder, JSON_FILE_NAME_V2
                     )
                     storedContent.jsonUri = newJson.uri.toString()
-                    ContentHelper.addContent(context, dao, storedContent)
+                    addContent(context, dao, storedContent)
                     trace(
                         Log.INFO,
                         STEP_2_BOOK_FOLDERS,
@@ -904,7 +908,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 nbRenumbered
             )
             content.setImageFiles(contentImages)
-            ContentHelper.persistJson(context, content)
+            persistJson(context, content)
         }
     }
 
@@ -936,10 +940,10 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     if (c.status == StatusContent.ERROR) {
                         // Add error books as library entries, not queue entries
                         c.computeSize()
-                        ContentHelper.addContent(context, dao, c)
+                        addContent(context, dao, c)
                     } else {
                         // Only add at the end of the queue if it isn't a duplicate
-                        val newContentId = ContentHelper.addContent(context, dao, c)
+                        val newContentId = addContent(context, dao, c)
                         lst.add(QueueRecord(newContentId, queueSize++))
                     }
                 }

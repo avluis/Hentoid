@@ -199,8 +199,8 @@ class ContentSearchManager(val dao: CollectionDAO) {
                 result.apply {
                     groupId = -1 // Not applicable
                     attributes = SearchActivityBundle.buildSearchUri(data).toString()
-                    location = data.location
-                    contentType = data.contentType
+                    location = data.location.value
+                    contentType = data.contentType.value
                     query = data.query
                 }
 

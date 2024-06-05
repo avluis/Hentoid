@@ -61,12 +61,13 @@ import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.file.RQST_NOTIFICATION_PERMISSION
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.checkExternalStorageReadWritePermission
@@ -74,6 +75,7 @@ import me.devsaki.hentoid.util.file.checkNotificationPermission
 import me.devsaki.hentoid.util.file.isLowDeviceStorage
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.file.requestNotificationPermission
+import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.runExternalImport
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.snack
@@ -164,9 +166,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     // Current search criteria; one per tab
     private val searchCriteria = mutableListOf(
-        SearchCriteria("", HashSet(), ContentHelper.Location.ANY, ContentHelper.Type.ANY),
+        SearchCriteria("", HashSet(), Location.ANY, Type.ANY),
         SearchCriteria(
-            "", HashSet(), ContentHelper.Location.ANY, ContentHelper.Type.ANY
+            "", HashSet(), Location.ANY, Type.ANY
         )
     )
 
@@ -438,13 +440,13 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                     val dao: CollectionDAO = ObjectBoxDAO()
                     try {
                         val c = dao.selectContent(previouslyViewedContent)
-                        if (c != null) ContentHelper.openReader(
+                        if (c != null) openReader(
                             this,
                             c,
                             previouslyViewedPage,
                             contentSearchBundle,
-                            false,
-                            false
+                            forceShowGallery = false,
+                            newTask = false
                         )
                     } finally {
                         dao.cleanup()

@@ -23,9 +23,9 @@ import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.isReachable
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getGlideOptionCenterImage
+import me.devsaki.hentoid.util.getRatingResourceId
 import me.devsaki.hentoid.util.isValidContextForGlide
 
 class GroupDisplayItem(
@@ -144,7 +144,7 @@ class GroupDisplayItem(
             }
 
             ivRating.isVisible = (!isGrid || Settings.libraryDisplayGridRating)
-            ivRating.setImageResource(ContentHelper.getRatingResourceId(item.group.rating))
+            ivRating.setImageResource(getRatingResourceId(item.group.rating))
         }
 
         private fun attachCover(uri: String) {

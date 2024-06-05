@@ -30,7 +30,6 @@ import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.preferences.DownloadStrategyDialogFragment
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
 import me.devsaki.hentoid.fragments.preferences.StorageUsageDialogFragment
-import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.applyTheme
@@ -39,6 +38,7 @@ import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.getPathRoot
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -403,10 +403,10 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
             val location2Usages =
-                dao.selectPrimaryMemoryUsagePerSource(ContentHelper.getPathRoot(StorageLocation.PRIMARY_2))
+                dao.selectPrimaryMemoryUsagePerSource(getPathRoot(StorageLocation.PRIMARY_2))
             location2Usage = location2Usages.map { e -> e.value.second }.sum()
             nbBooks = dao.countAllInternalBooks(
-                ContentHelper.getPathRoot(StorageLocation.PRIMARY_2),
+                getPathRoot(StorageLocation.PRIMARY_2),
                 false
             )
         } finally {

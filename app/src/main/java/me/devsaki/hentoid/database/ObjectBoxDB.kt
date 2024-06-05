@@ -45,11 +45,15 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.enums.StorageLocation
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.RandomSeed.getSeed
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.file.getSupportedExtensions
+import me.devsaki.hentoid.util.getLibraryStatuses
+import me.devsaki.hentoid.util.getQueueStatuses
+import me.devsaki.hentoid.util.getQueueTabStatuses
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import org.apache.commons.lang3.ArrayUtils
 import timber.log.Timber
@@ -63,8 +67,8 @@ object ObjectBoxDB {
     val store: BoxStore by lazy { initStore() }
 
     // Status displayed in the library view (all books of the library; both internal and external)
-    val libraryStatus: IntArray = ContentHelper.getLibraryStatuses()
-    val queueStatus: IntArray = ContentHelper.getQueueStatuses()
+    val libraryStatus: IntArray = getLibraryStatuses()
+    val queueStatus: IntArray = getQueueStatuses()
     private val libraryQueueStatus: IntArray = ArrayUtils.addAll(libraryStatus, *queueStatus)
 
     private const val DAY_IN_MILLIS = 1000L * 60 * 60 * 24
@@ -249,7 +253,7 @@ object ObjectBoxDB {
         // Strong check to make sure selected books are _actually_ part of the queue (i.e. attached to a QueueRecord)
         // NB : Can't use QueryCondition here because there's no way to query the existence of a relation (see https://github.com/objectbox/objectbox-java/issues/1110)
         return store.boxFor(Content::class.java).query()
-            .`in`(Content_.status, ContentHelper.getQueueStatuses()).filter { c: Content ->
+            .`in`(Content_.status, getQueueStatuses()).filter { c: Content ->
                 StatusContent.ERROR == c.status || c.queueRecords != null && !c.queueRecords!!.isEmpty()
             }.build()
     }
@@ -258,7 +262,7 @@ object ObjectBoxDB {
         // Strong check to make sure selected books are _actually_ part of the queue (i.e. attached to a QueueRecord)
         // NB : Can't use QueryCondition here because there's no way to query the existence of a relation (see https://github.com/objectbox/objectbox-java/issues/1110)
         return store.boxFor(Content::class.java).query()
-            .`in`(Content_.status, ContentHelper.getQueueStatuses())
+            .`in`(Content_.status, getQueueStatuses())
             .startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE)
             .filter { c: Content ->
                 StatusContent.ERROR == c.status || c.queueRecords != null && !c.queueRecords!!
@@ -396,7 +400,7 @@ object ObjectBoxDB {
             val contentIds = selectContentHybridSearchId(
                 bundle,
                 LongArray(0),
-                ContentHelper.getQueueTabStatuses()
+                getQueueTabStatuses()
             )
             qb.`in`(QueueRecord_.contentId, contentIds)
         }
@@ -463,8 +467,8 @@ object ObjectBoxDB {
         return store.boxFor(Content::class.java)[id]
     }
 
-    fun selectContentById(id: List<Long>): List<Content>? {
-        return store.boxFor(Content::class.java)[id]
+    fun selectContentById(ids: List<Long>): List<Content> {
+        return store.boxFor(Content::class.java)[ids]
     }
 
     private fun selectContentIdsByChapterUrl(url: String): LongArray {
@@ -661,8 +665,10 @@ object ObjectBoxDB {
                 }
             }
         }
-        qc = applyContentLocationFilter(qc, searchBundle.location)
-        qc = applyContentTypeFilter(qc, searchBundle.contentType)
+        qc = applyContentLocationFilter(
+            qc,
+            Location.entries.first { it.value == searchBundle.location })
+        qc = applyContentTypeFilter(qc, Type.entries.first { it.value == searchBundle.contentType })
         val query = store.boxFor(Content::class.java).query(qc)
         if (searchBundle.filterPageFavourites) filterWithPageFavs(query)
         applySortOrder(query, searchBundle.sortField, searchBundle.sortDesc)
@@ -1007,8 +1013,8 @@ object ObjectBoxDB {
             -1,
             LongArray(0),
             attrs,
-            ContentHelper.Location.ANY,
-            ContentHelper.Type.ANY
+            Location.ANY,
+            Type.ANY
         )
     }
 
@@ -1016,11 +1022,11 @@ object ObjectBoxDB {
         groupId: Long,
         dynamicGroupContentIds: LongArray,
         attributesFilter: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int
+        location: Location,
+        contentType: Type
     ): LongArray {
         val attrs = attributesFilter ?: emptySet()
-        if (attrs.isEmpty() && groupId < 1 && ContentHelper.Location.ANY == location && ContentHelper.Type.ANY == contentType)
+        if (attrs.isEmpty() && groupId < 1 && Location.ANY == location && Type.ANY == contentType)
             return LongArray(0)
 
         // Handle simple case where no attributes have been selected
@@ -1037,7 +1043,7 @@ object ObjectBoxDB {
         // Content from attribute
         val contentFromAttributesQuery: Query<Content>
         var useCachedAttrQuery = false
-        if (groupId < 1 && ContentHelper.Location.ANY == location && ContentHelper.Type.ANY == contentType) { // Standard cached query
+        if (groupId < 1 && Location.ANY == location && Type.ANY == contentType) { // Standard cached query
             contentFromAttributesQuery = contentFromAttributesSearchQ
             useCachedAttrQuery = true
         } else { // On-demand query
@@ -1056,7 +1062,7 @@ object ObjectBoxDB {
         // Content from source (distinct query as source is not an actual Attribute of the data model)
         val contentFromSourceQuery: Query<Content>
         var useCachedSourceQuery = false
-        if (groupId < 1 && ContentHelper.Location.ANY == location && ContentHelper.Type.ANY == contentType) { // Standard cached query
+        if (groupId < 1 && Location.ANY == location && Type.ANY == contentType) { // Standard cached query
             contentFromSourceQuery = contentFromSourceSearchQ
             useCachedSourceQuery = true
         } else { // On-demand query
@@ -1124,8 +1130,8 @@ object ObjectBoxDB {
             -1,
             LongArray(0),
             null,
-            ContentHelper.Location.ANY,
-            ContentHelper.Type.ANY,
+            Location.ANY,
+            Type.ANY,
             false
         )
     }
@@ -1134,8 +1140,8 @@ object ObjectBoxDB {
         groupId: Long,
         dynamicGroupContentIds: LongArray,
         filter: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int,
+        location: Location,
+        contentType: Type,
         includeFreeAttrs: Boolean
     ): List<Attribute> {
         var qc: QueryCondition<Content> = Content_.status.oneOf(libraryStatus)
@@ -1254,8 +1260,8 @@ object ObjectBoxDB {
         groupId: Long,
         dynamicGroupContentIds: LongArray,
         attributeFilter: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int,
+        location: Location,
+        contentType: Type,
         includeFreeAttrs: Boolean,
         filter: String?
     ): Long {
@@ -1281,8 +1287,8 @@ object ObjectBoxDB {
         groupId: Long,
         dynamicGroupContentIds: LongArray,
         attributeFilter: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int,
+        location: Location,
+        contentType: Type,
         includeFreeAttrs: Boolean,
         filter: String?,
         sortOrder: Int,
@@ -1341,8 +1347,8 @@ object ObjectBoxDB {
             -1,
             LongArray(0),
             null,
-            ContentHelper.Location.ANY,
-            ContentHelper.Type.ANY
+            Location.ANY,
+            Type.ANY
         )
     }
 
@@ -1350,8 +1356,8 @@ object ObjectBoxDB {
         groupId: Long,
         dynamicGroupContentIds: LongArray,
         attributeFilter: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int
+        location: Location,
+        contentType: Type
     ): SparseIntArray {
         // Get Content filtered by current selection
         val filteredContent = selectFilteredContent(
@@ -1393,11 +1399,11 @@ object ObjectBoxDB {
 
     private fun applyContentLocationFilter(
         qc: QueryCondition<Content>,
-        @ContentHelper.Location location: Int
+        location: Location
     ): QueryCondition<Content> {
         return when (location) {
-            ContentHelper.Location.PRIMARY -> qc.and(Content_.status.notEqual(StatusContent.EXTERNAL.code))
-            ContentHelper.Location.PRIMARY_1 -> {
+            Location.PRIMARY -> qc.and(Content_.status.notEqual(StatusContent.EXTERNAL.code))
+            Location.PRIMARY_1 -> {
                 var root = Preferences.getStorageUri(StorageLocation.PRIMARY_1)
                 if (root.isEmpty()) root = "FAIL" // Auto-fails condition
                 qc.and(
@@ -1408,7 +1414,7 @@ object ObjectBoxDB {
                 )
             }
 
-            ContentHelper.Location.PRIMARY_2 -> {
+            Location.PRIMARY_2 -> {
                 var root = Preferences.getStorageUri(StorageLocation.PRIMARY_2)
                 if (root.isEmpty()) root = "FAIL" // Auto-fails condition
                 qc.and(
@@ -1419,22 +1425,22 @@ object ObjectBoxDB {
                 )
             }
 
-            ContentHelper.Location.EXTERNAL -> qc.and(Content_.status.equal(StatusContent.EXTERNAL.code))
+            Location.EXTERNAL -> qc.and(Content_.status.equal(StatusContent.EXTERNAL.code))
             else -> qc
         }
     }
 
     private fun applyContentTypeFilter(
         inQc: QueryCondition<Content>,
-        @ContentHelper.Type contentType: Int
+        contentType: Type
     ): QueryCondition<Content> {
         var qc = inQc
         return when (contentType) {
-            ContentHelper.Type.STREAMED -> qc.and(
+            Type.STREAMED -> qc.and(
                 Content_.downloadMode.equal(Content.DownloadMode.STREAM)
             )
 
-            ContentHelper.Type.ARCHIVE -> {
+            Type.ARCHIVE -> {
                 qc = qc.and(Content_.status.equal(StatusContent.EXTERNAL.code))
                 var combinedCondition: QueryCondition<Content>? = null
                 for (ext in getSupportedExtensions()) {
@@ -1451,14 +1457,14 @@ object ObjectBoxDB {
                 if (combinedCondition != null) qc.and(combinedCondition) else qc
             }
 
-            ContentHelper.Type.PLACEHOLDER -> qc.and(Content_.status.equal(StatusContent.PLACEHOLDER.code))
-            ContentHelper.Type.FOLDER -> {
+            Type.PLACEHOLDER -> qc.and(Content_.status.equal(StatusContent.PLACEHOLDER.code))
+            Type.FOLDER -> {
                 // TODO : Should also not be an archive, but that would require Content_.storageUri.doesNotEndWith (see ObjectBox issue #1129)
                 qc = qc.and(Content_.downloadMode.equal(Content.DownloadMode.DOWNLOAD))
                 qc.and(Content_.status.notEqual(StatusContent.PLACEHOLDER.code))
             }
 
-            ContentHelper.Type.ANY -> qc
+            Type.ANY -> qc
             else -> qc
         }
     }

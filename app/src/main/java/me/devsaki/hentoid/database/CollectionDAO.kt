@@ -21,8 +21,9 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.AttributeQueryResult
-import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.ContentHelper.QueuePosition
+import me.devsaki.hentoid.util.Location
+import me.devsaki.hentoid.util.QueuePosition
+import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 
 interface CollectionDAO {
@@ -185,8 +186,8 @@ interface CollectionDAO {
     fun countBooks(
         groupId: Long,
         metadata: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int
+        location: Location,
+        contentType: Type
     ): LiveData<Int>
 
     fun countAllBooksLive(): LiveData<Int>
@@ -241,7 +242,7 @@ interface CollectionDAO {
         content: Content,
         sourceImageStatus: StatusContent?,
         targetImageStatus: StatusContent?,
-        @QueuePosition position: Int,
+        position: QueuePosition,
         replacedContentId: Long,
         replacementTitle: String?,
         isQueueActive: Boolean
@@ -266,8 +267,8 @@ interface CollectionDAO {
         filter: String?,
         groupId: Long,
         attrs: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int,
+        location: Location,
+        contentType: Type,
         includeFreeAttrs: Boolean,
         page: Int,
         booksPerPage: Int,
@@ -277,8 +278,8 @@ interface CollectionDAO {
     fun countAttributesPerType(
         groupId: Long,
         filter: Set<Attribute>?,
-        @ContentHelper.Location location: Int,
-        @ContentHelper.Type contentType: Int
+        location: Location,
+        contentType: Type
     ): SparseIntArray
 
 

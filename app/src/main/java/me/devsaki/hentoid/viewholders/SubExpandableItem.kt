@@ -24,7 +24,7 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.core.setMiddleEllipsis
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.bindOnlineCover
 import me.devsaki.hentoid.util.getGlideOptionCenterImage
 
 /**
@@ -180,7 +180,7 @@ class SubExpandableItem<T>(
             ivCover.visibility = View.VISIBLE
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")) {
-                ContentHelper.bindOnlineCover(thumbLocation, null)?.let { glideUrl ->
+                bindOnlineCover(thumbLocation, null)?.let { glideUrl ->
                     Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions).into(ivCover)
                 }
             } else  // From stored picture

@@ -5,15 +5,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilter
 
+private const val SURFACE_TYPE_SURFACE_VIEW = 0
+private const val SURFACE_TYPE_TEXTURE_VIEW = 1
+
 class GPUImage(val context: Context) {
 
     enum class ScaleType {
         CENTER_INSIDE, CENTER_CROP
-    }
-
-    companion object {
-        const val SURFACE_TYPE_SURFACE_VIEW = 0
-        const val SURFACE_TYPE_TEXTURE_VIEW = 1
     }
 
     private val renderer: GPUImageRenderer
