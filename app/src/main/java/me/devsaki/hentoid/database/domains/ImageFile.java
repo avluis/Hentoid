@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.database.domains;
 
-import static me.devsaki.hentoid.util.ContentHelperKKt.isInLibrary;
+import static me.devsaki.hentoid.util.ContentHelperKt.isInLibrary;
 import static me.devsaki.hentoid.util.image.ImageHelperKt.MIME_IMAGE_GENERIC;
 
 import java.io.File;

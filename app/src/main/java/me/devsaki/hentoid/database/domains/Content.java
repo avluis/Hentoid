@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.database.domains;
 
-import static me.devsaki.hentoid.util.ContentHelperKKt.formatBookAuthor;
+import static me.devsaki.hentoid.util.ContentHelperKt.formatBookAuthor;
 import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
 
 import android.text.TextUtils;
