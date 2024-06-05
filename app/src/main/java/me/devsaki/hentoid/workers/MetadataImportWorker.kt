@@ -31,7 +31,6 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
@@ -42,6 +41,7 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.listFolders
 import me.devsaki.hentoid.util.importBookmarks
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.workers.data.MetadataImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -171,7 +171,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             if (isStopped) break
             try {
                 importItem(context, c, emptyBooksOption, dao)
-                if (isGroup) GroupHelper.updateGroupsJson(context, dao)
+                if (isGroup) updateGroupsJson(context, dao)
                 nextOK(context)
             } catch (e: Exception) {
                 nextKO(context, e)

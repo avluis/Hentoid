@@ -22,12 +22,13 @@ import me.devsaki.hentoid.notification.delete.DeleteCompleteNotification
 import me.devsaki.hentoid.notification.delete.DeleteProgressNotification
 import me.devsaki.hentoid.notification.delete.DeleteStartNotification
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
 import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -279,7 +280,7 @@ abstract class BaseDeleteWorker(
                 if (isStopped) break
             }
         } finally {
-            GroupHelper.updateGroupsJson(applicationContext, dao)
+            updateGroupsJson(applicationContext, dao)
         }
     }
 
@@ -299,10 +300,7 @@ abstract class BaseDeleteWorker(
             if (deleteGroupsOnly) {
                 val containedContentList = dao.selectContent(theGroup!!.contentIds.toLongArray())
                 for (c in containedContentList) {
-                    val movedContent = GroupHelper.moveContentToCustomGroup(
-                        c, null,
-                        dao
-                    )
+                    val movedContent = moveContentToCustomGroup(c, null, dao)
                     ContentHelper.updateJson(applicationContext, movedContent)
                 }
                 theGroup = dao.selectGroup(theGroup.id)

@@ -16,8 +16,8 @@ import me.devsaki.hentoid.notification.updateJson.UpdateJsonCompleteNotification
 import me.devsaki.hentoid.notification.updateJson.UpdateJsonProgressNotification
 import me.devsaki.hentoid.notification.updateJson.UpdateJsonStartNotification
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -65,7 +65,7 @@ class UpdateJsonWorker(context: Context, parameters: WorkerParameters) :
         }
         progressDone()
 
-        if (data.updateGroups) GroupHelper.updateGroupsJson(applicationContext, dao)
+        if (data.updateGroups) updateGroupsJson(applicationContext, dao)
     }
 
     private fun nextOK() {

@@ -34,7 +34,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.RandomSeed
@@ -45,8 +44,10 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.copyFile
+import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.getExtensionFromUri
+import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -758,7 +759,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             try {
                 withContext(Dispatchers.IO) {
                     doSaveContentPositions(orderedContent)
-                    GroupHelper.updateGroupsJson(getApplication(), dao)
+                    updateGroupsJson(getApplication(), dao)
                 }
                 onSuccess.run()
             } catch (t: Throwable) {
@@ -786,7 +787,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             try {
                 withContext(Dispatchers.IO) {
                     doSaveGroupPositions(orderedGroups)
-                    GroupHelper.updateGroupsJson(getApplication(), dao)
+                    updateGroupsJson(getApplication(), dao)
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -827,7 +828,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     withContext(Dispatchers.IO) {
                         dao.insertGroup(newGroup)
                         refreshAvailableGroupings()
-                        GroupHelper.updateGroupsJson(getApplication(), dao)
+                        updateGroupsJson(getApplication(), dao)
                     }
                 } catch (t: Throwable) {
                     Timber.e(t)
@@ -917,7 +918,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         dao.insertGroup(theGroup)
 
         // Persist in it JSON
-        GroupHelper.updateGroupsJson(getApplication(), dao)
+        updateGroupsJson(getApplication(), dao)
         return theGroup
     }
 
@@ -957,7 +958,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (!theGroup.isBeingProcessed) {
             theGroup.rating = targetRating
             // Persist in it JSON
-            GroupHelper.updateGroupsJson(getApplication(), dao)
+            updateGroupsJson(getApplication(), dao)
 
             // Persist in it DB
             dao.insertGroup(theGroup)
@@ -984,12 +985,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 withContext(Dispatchers.IO) {
                     contentIds.forEach {
                         dao.selectContent(it)?.let { c ->
-                            GroupHelper.moveContentToCustomGroup(c, group, dao)
+                            moveContentToCustomGroup(c, group, dao)
                             ContentHelper.updateJson(getApplication(), c)
                         }
                     }
                     refreshAvailableGroupings()
-                    GroupHelper.updateGroupsJson(getApplication(), dao)
+                    updateGroupsJson(getApplication(), dao)
                 }
                 onSuccess.run()
             } catch (t: Throwable) {
@@ -1006,7 +1007,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
-        appendBookTitle : Boolean,
+        appendBookTitle: Boolean,
         deleteAfterMerging: Boolean,
         onSuccess: Runnable
     ) {
@@ -1018,7 +1019,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     // Flag the content as "being deleted" (triggers blink animation)
                     if (deleteAfterMerging)
                         contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
-                    ContentHelper.mergeContents(getApplication(), contentList, newTitle, appendBookTitle, dao)
+                    ContentHelper.mergeContents(
+                        getApplication(),
+                        contentList,
+                        newTitle,
+                        appendBookTitle,
+                        dao
+                    )
                 }
                 if (deleteAfterMerging) deleteItems(contentList, emptyList(), false, null)
                 onSuccess.run()
@@ -1118,10 +1125,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
             // Set custom group, if any
             val customGroups = content.getGroupItems(Grouping.CUSTOM)
-            if (customGroups.isNotEmpty()) GroupHelper.moveContentToCustomGroup(
-                splitContent, customGroups[0].getGroup(),
-                dao
-            )
+            if (customGroups.isNotEmpty())
+                moveContentToCustomGroup(splitContent, customGroups[0].getGroup(), dao)
         }
         EventBus.getDefault().postSticky(
             ProcessEvent(

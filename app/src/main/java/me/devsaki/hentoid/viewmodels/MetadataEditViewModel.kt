@@ -20,9 +20,12 @@ import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.addContentToAttributeGroup
+import me.devsaki.hentoid.util.getOrCreateNoArtistGroup
+import me.devsaki.hentoid.util.removeContentFromGrouping
+import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
@@ -271,7 +274,7 @@ class MetadataEditViewModel(
             dao.insertContent(it)
 
             // Assign Content to each artist/circle group
-            GroupHelper.removeContentFromGrouping(
+            removeContentFromGrouping(
                 me.devsaki.hentoid.enums.Grouping.ARTIST,
                 it,
                 dao
@@ -279,13 +282,13 @@ class MetadataEditViewModel(
             var artistFound = false
             it.attributes.forEach { attr ->
                 if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
-                    GroupHelper.addContentToAttributeGroup(attr.group.target, attr, it, dao)
+                    addContentToAttributeGroup(attr.group.target, attr, it, dao)
                     artistFound = true
                 }
             }
             if (!artistFound) {
                 // Add to the "no artist" group if no artist has been found
-                val group = GroupHelper.getOrCreateNoArtistGroup(getApplication(), dao)
+                val group = getOrCreateNoArtistGroup(getApplication(), dao)
                 val item = GroupItem(it, group, -1)
                 dao.insertGroupItem(item)
             }
@@ -351,7 +354,7 @@ class MetadataEditViewModel(
         if (group != null) {
             group.name = newName
             dao.insertGroup(group)
-            GroupHelper.updateGroupsJson(getApplication(), dao)
+            updateGroupsJson(getApplication(), dao)
         }
 
         // Mark all related books for update

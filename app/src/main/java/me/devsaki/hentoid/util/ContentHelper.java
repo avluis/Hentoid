@@ -1,5 +1,9 @@
 package me.devsaki.hentoid.util;
 
+import static me.devsaki.hentoid.util.GroupHelperKt.addArtistToAttributesGroup;
+import static me.devsaki.hentoid.util.GroupHelperKt.addContentToAttributeGroup;
+import static me.devsaki.hentoid.util.GroupHelperKt.getOrCreateNoArtistGroup;
+import static me.devsaki.hentoid.util.GroupHelperKt.moveContentToCustomGroup;
 import static me.devsaki.hentoid.util.file.FileHelperKt.URI_ELEMENTS_SEPARATOR;
 import static me.devsaki.hentoid.util.file.FileHelperKt.cleanFileName;
 import static me.devsaki.hentoid.util.file.FileHelperKt.copyFile;
@@ -561,7 +565,7 @@ public final class ContentHelper {
                         if (sublist != null) artists.addAll(sublist);
 
                         if (artists.isEmpty()) { // Add to the "no artist" group if no artist has been found
-                            Group group = GroupHelper.getOrCreateNoArtistGroup(context, dao);
+                            Group group = getOrCreateNoArtistGroup(context, dao);
                             GroupItem item = new GroupItem(content, group, -1);
                             dao.insertGroupItem(item);
                         } else {
@@ -573,7 +577,7 @@ public final class ContentHelper {
                                     if (!a.contents.isEmpty())
                                         group.coverContent.setTarget(a.contents.get(0));
                                 }
-                                GroupHelper.addContentToAttributeGroup(group, a, content, dao);
+                                addContentToAttributeGroup(group, a, content, dao);
                             }
                         }
                     }
@@ -646,7 +650,7 @@ public final class ContentHelper {
                                          @NonNull final String name, @NonNull final CollectionDAO dao) {
         Group artistGroup = null;
         if (type.equals(AttributeType.ARTIST) || type.equals(AttributeType.CIRCLE))
-            artistGroup = GroupHelper.addArtistToAttributesGroup(name, dao);
+            artistGroup = addArtistToAttributesGroup(name, dao);
         Attribute attr = new Attribute(type, name);
         long newId = dao.insertAttribute(attr);
         attr.setId(newId);
@@ -1994,7 +1998,7 @@ public final class ContentHelper {
             // Merged book can be a member of one custom group only
             Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
             if (customGroup.isPresent())
-                GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
+                moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
 
             // If merged book is external, register it to the Beholder
             if (StatusContent.EXTERNAL == mergedContent.getStatus() && parentFolder != null)

@@ -45,7 +45,6 @@ import me.devsaki.hentoid.notification.userAction.UserActionNotification
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
@@ -80,6 +79,7 @@ import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.assembleGif
+import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.Connectivity
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.addSampleNow
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
@@ -999,9 +999,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                         val groupItems = contentToReplace.getGroupItems(Grouping.CUSTOM)
                         if (groupItems.isNotEmpty()) {
                             for (gi in groupItems) {
-                                GroupHelper.moveContentToCustomGroup(
-                                    content, gi.group.target, gi.order,
-                                    dao
+                                moveContentToCustomGroup(
+                                    content, gi.group.target, gi.order, dao
                                 )
                             }
                         }
