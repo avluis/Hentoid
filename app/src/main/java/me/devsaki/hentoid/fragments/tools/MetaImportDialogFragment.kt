@@ -27,10 +27,10 @@ import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.workers.MetadataImportWorker
 import me.devsaki.hentoid.workers.data.MetadataImportData
 import org.greenrobot.eventbus.EventBus
@@ -238,16 +238,15 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     private fun deserialiseJson(jsonFile: DocumentFile): JsonContentCollection? {
-        val result: JsonContentCollection = try {
-            JsonHelper.jsonToObject(
+        try {
+            return jsonToObject(
                 requireContext(), jsonFile,
                 JsonContentCollection::class.java
             )
         } catch (e: IOException) {
             Timber.w(e)
-            return null
         }
-        return result
+        return null
     }
 
     private fun runImport(

@@ -4,8 +4,9 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.parsers.getExtensionFromFormat
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.exception.ParseException
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import timber.log.Timber
@@ -32,9 +33,9 @@ class HentaifoxParser : BaseImageListParser() {
                 try {
                     val jsonBeginIndex = s.data().indexOf("'{\"1\"")
                     if (jsonBeginIndex > -1) {
-                        imageFormats = JsonHelper.jsonToObject(
+                        imageFormats = jsonToObject(
                             s.data().substring(jsonBeginIndex + 1).replace("\"}');", "\"}")
-                                .replace("\n", ""), JsonHelper.MAP_STRINGS
+                                .replace("\n", ""), MAP_STRINGS
                         )
                         break
                     }

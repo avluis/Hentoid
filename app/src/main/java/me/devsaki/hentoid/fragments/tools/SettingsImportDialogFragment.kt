@@ -19,10 +19,10 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogToolsSettingsImportBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.jsonToObject
 import timber.log.Timber
 import java.io.IOException
 
@@ -133,8 +133,8 @@ class SettingsImportDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     private fun deserialiseJson(jsonFile: DocumentFile): JsonSettings? {
-        val result: JsonSettings = try {
-            JsonHelper.jsonToObject(requireContext(), jsonFile, JsonSettings::class.java)
+        val result = try {
+            jsonToObject(requireContext(), jsonFile, JsonSettings::class.java)
         } catch (e: IOException) {
             Timber.w(e)
             return null

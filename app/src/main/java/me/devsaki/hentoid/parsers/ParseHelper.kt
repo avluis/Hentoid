@@ -10,13 +10,14 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.parsers.content.BaseContentParser
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
 import me.devsaki.hentoid.util.parseDownloadParams
+import me.devsaki.hentoid.util.serializeToJson
 import org.apache.commons.text.StringEscapeUtils
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
@@ -325,12 +326,7 @@ fun setDownloadParams(imgs: List<ImageFile>, referrer: String) {
         val cookieStr = getCookies(img.url)
         if (cookieStr.isNotEmpty()) params[HEADER_COOKIE_KEY] = cookieStr
         params[HEADER_REFERER_KEY] = referrer
-        img.setDownloadParams(
-            JsonHelper.serializeToJson<Map<String, String>>(
-                params,
-                JsonHelper.MAP_STRINGS
-            )
-        )
+        img.setDownloadParams(serializeToJson<Map<String, String>>(params, MAP_STRINGS))
     }
 }
 

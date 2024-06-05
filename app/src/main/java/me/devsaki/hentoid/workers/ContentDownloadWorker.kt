@@ -45,8 +45,8 @@ import me.devsaki.hentoid.notification.userAction.UserActionNotification
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
+import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
@@ -83,6 +83,8 @@ import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.assembleGif
+import me.devsaki.hentoid.util.jsonToFile
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.Connectivity
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.addSampleNow
@@ -99,6 +101,7 @@ import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
 import me.devsaki.hentoid.util.parseDownloadParams
 import me.devsaki.hentoid.util.removeContent
+import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.util.updateQueueJson
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -684,11 +687,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         // Add cookies if unset or if the site needs fresh cookies
         if (!downloadParams.containsKey(HEADER_COOKIE_KEY) || content.site.isUseCloudflare) downloadParams[HEADER_COOKIE_KEY] =
             getCookies(img.url)
-        img.downloadParams =
-            JsonHelper.serializeToJson<Map<String, String>>(
-                downloadParams,
-                JsonHelper.MAP_STRINGS
-            )
+        img.downloadParams = serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
     }
 
     /**
@@ -982,16 +981,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
                 // Save JSON file
                 try {
-                    val jsonFile = JsonHelper.jsonToFile(
+                    val jsonFile = jsonToFile(
                         applicationContext, JsonContent.fromEntity(content),
                         JsonContent::class.java, dir, JSON_FILE_NAME_V2
                     )
                     // Cache its URI to the newly created content
-                    if (jsonFile != null) {
-                        content.jsonUri = jsonFile.uri.toString()
-                    } else {
-                        Timber.w("JSON file could not be cached for %s", title)
-                    }
+                    content.jsonUri = jsonFile.uri.toString()
                 } catch (e: IOException) {
                     Timber.e(e, "I/O Error saving JSON: %s", title)
                 }
@@ -1354,104 +1349,104 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val ugoiraCacheFolder = getOrCreateCacheFolder(
             applicationContext, UGOIRA_CACHE_FOLDER + File.separator + img.id
         )
-        if (ugoiraCacheFolder != null) {
-            val targetFileName = img.name
-            try {
-                // == Download archive
-                val result = downloadToFile(
-                    applicationContext,
-                    site,
-                    img.url,
-                    webkitRequestHeadersToOkHttpHeaders(
-                        getRequestHeaders(
-                            img.url,
-                            img.downloadParams
-                        ), img.url
-                    ),
-                    Uri.fromFile(ugoiraCacheFolder),
-                    targetFileName,
-                    downloadInterrupted,
-                    ZIP_MIME_TYPE,
-                    resourceId = img.order
-                )
+        if (null == ugoiraCacheFolder) return
 
-                val targetFileUri = result.first
-                targetFileUri
-                    ?: throw IOException("Couldn't download ugoira file : resource not available")
+        val targetFileName = img.name
+        try {
+            // == Download archive
+            val result = downloadToFile(
+                applicationContext,
+                site,
+                img.url,
+                webkitRequestHeadersToOkHttpHeaders(
+                    getRequestHeaders(
+                        img.url,
+                        img.downloadParams
+                    ), img.url
+                ),
+                Uri.fromFile(ugoiraCacheFolder),
+                targetFileName,
+                downloadInterrupted,
+                ZIP_MIME_TYPE,
+                resourceId = img.order
+            )
 
-                // == Extract all frames
-                applicationContext.extractArchiveEntries(
-                    targetFileUri,
-                    ugoiraCacheFolder,
-                    null,  // Extract everything; keep original names
-                    downloadInterrupted
-                )
+            val targetFileUri = result.first
+            targetFileUri
+                ?: throw IOException("Couldn't download ugoira file : resource not available")
 
-                // == Build the GIF using download params and extracted pics
-                val frames: MutableList<Pair<Uri, Int>> = ArrayList()
+            // == Extract all frames
+            applicationContext.extractArchiveEntries(
+                targetFileUri,
+                ugoiraCacheFolder,
+                null,  // Extract everything; keep original names
+                downloadInterrupted
+            )
 
-                // Get frame information
-                val downloadParams = parseDownloadParams(img.downloadParams)
-                val ugoiraFramesStr = downloadParams[KEY_DL_PARAMS_UGOIRA_FRAMES]
-                val ugoiraFrames = JsonHelper.jsonToObject<List<Pair<String, Int>>>(
-                    ugoiraFramesStr,
-                    PixivIllustMetadata.UGOIRA_FRAMES_TYPE
-                )
+            // == Build the GIF using download params and extracted pics
+            val frames: MutableList<Pair<Uri, Int>> = ArrayList()
 
-                // Map frame name to the downloaded file
-                if (ugoiraFrames != null) {
-                    for (frame in ugoiraFrames) {
-                        val files = ugoiraCacheFolder.listFiles(FileFilter { pathname: File ->
-                            pathname.name.endsWith(frame.first)
-                        })
-                        if (files != null && files.isNotEmpty()) {
-                            frames.add(Pair(Uri.fromFile(files[0]), frame.second))
-                        }
-                    }
+            // Get frame information
+            val downloadParams = parseDownloadParams(img.downloadParams)
+            val ugoiraFramesStr = downloadParams[KEY_DL_PARAMS_UGOIRA_FRAMES]
+                ?: throw IOException("Couldn't read ugoira frames string")
+
+            val ugoiraFrames = jsonToObject<List<Pair<String, Int>>>(
+                ugoiraFramesStr,
+                PixivIllustMetadata.UGOIRA_FRAMES_TYPE
+            ) ?: throw IOException("Couldn't read ugoira frames")
+
+            // Map frame name to the downloaded file
+            for (frame in ugoiraFrames) {
+                val files = ugoiraCacheFolder.listFiles(FileFilter { pathname: File ->
+                    pathname.name.endsWith(frame.first)
+                })
+                if (files != null && files.isNotEmpty()) {
+                    frames.add(Pair(Uri.fromFile(files[0]), frame.second))
                 }
-
-                // Assemble the GIF
-                val ugoiraGifFile = assembleGif(
-                    applicationContext,
-                    ugoiraCacheFolder,
-                    frames
-                ) ?: throw IOException("Couldn't assemble ugoira file")
-
-                // Save it to the book folder
-                val finalImgUri = copyFile(
-                    applicationContext,
-                    ugoiraGifFile,
-                    dir.uri,
-                    MIME_IMAGE_GIF,
-                    img.name + ".gif"
-                ) ?: throw IOException("Couldn't copy result ugoira file")
-
-                img.mimeType = MIME_IMAGE_GIF
-                img.size = fileSizeFromUri(
-                    applicationContext,
-                    ugoiraGifFile
-                )
-                updateImageProperties(img, true, finalImgUri.toString())
-            } catch (e: Exception) {
-                Timber.w(e)
-                isError = true
-                errorMsg = StringHelper.protect(e.message)
-            } finally {
-                if (!ugoiraCacheFolder.delete()) Timber.w(
-                    "Couldn't delete ugoira folder %s",
-                    ugoiraCacheFolder.absolutePath
-                )
             }
-            if (isError) {
-                updateImageProperties(img, false, "")
-                logErrorRecord(
-                    img.content.targetId,
-                    ErrorType.IMG_PROCESSING,
-                    img.url,
-                    img.name,
-                    errorMsg
-                )
-            }
+
+            // Assemble the GIF
+            val ugoiraGifFile = assembleGif(
+                applicationContext,
+                ugoiraCacheFolder,
+                frames
+            ) ?: throw IOException("Couldn't assemble ugoira file")
+
+            // Save it to the book folder
+            val finalImgUri = copyFile(
+                applicationContext,
+                ugoiraGifFile,
+                dir.uri,
+                MIME_IMAGE_GIF,
+                img.name + ".gif"
+            ) ?: throw IOException("Couldn't copy result ugoira file")
+
+            img.mimeType = MIME_IMAGE_GIF
+            img.size = fileSizeFromUri(
+                applicationContext,
+                ugoiraGifFile
+            )
+            updateImageProperties(img, true, finalImgUri.toString())
+        } catch (e: Exception) {
+            Timber.w(e)
+            isError = true
+            errorMsg = StringHelper.protect(e.message)
+        } finally {
+            if (!ugoiraCacheFolder.delete()) Timber.w(
+                "Couldn't delete ugoira folder %s",
+                ugoiraCacheFolder.absolutePath
+            )
+        }
+        if (isError) {
+            updateImageProperties(img, false, "")
+            logErrorRecord(
+                img.content.targetId,
+                ErrorType.IMG_PROCESSING,
+                img.url,
+                img.name,
+                errorMsg
+            )
         }
     }
 

@@ -1,7 +1,8 @@
 package me.devsaki.hentoid.database.domains;
 
 import static me.devsaki.hentoid.util.ContentHelperKt.formatBookAuthor;
-import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
+import static me.devsaki.hentoid.util.JsonHelperKt.jsonToObject;
+import static me.devsaki.hentoid.util.JsonHelperKt.serializeToJson;
 
 import android.text.TextUtils;
 
@@ -69,7 +70,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.JsonHelperKt;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelperKt;
@@ -1072,7 +1073,7 @@ public class Content implements Serializable {
             if (null == databaseValue) return new HashMap<>();
 
             try {
-                return JsonHelper.jsonToObject(databaseValue, MAP_STRINGS);
+                return jsonToObject(databaseValue, JsonHelperKt.getMAP_STRINGS());
             } catch (IOException e) {
                 Timber.w(e);
                 return new HashMap<>();
@@ -1081,7 +1082,7 @@ public class Content implements Serializable {
 
         @Override
         public String convertToDatabaseValue(Map<String, String> entityProperty) {
-            return JsonHelper.serializeToJson(entityProperty, MAP_STRINGS);
+            return serializeToJson(entityProperty, JsonHelperKt.getMAP_STRINGS());
         }
     }
 

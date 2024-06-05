@@ -32,7 +32,7 @@ import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.selectX
 import me.devsaki.hentoid.util.AdBlocker
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
@@ -58,6 +58,7 @@ import me.devsaki.hentoid.util.network.setCookies
 import me.devsaki.hentoid.util.network.simplifyUrl
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import me.devsaki.hentoid.util.parseDownloadParams
+import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.util.toast
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -757,8 +758,7 @@ open class CustomWebViewClient : WebViewClient {
             parseDownloadParams(content.downloadParams).toMutableMap() else java.util.HashMap()
         params[HEADER_COOKIE_KEY] = getCookies(url)
         params[HEADER_REFERER_KEY] = content.site.url
-        content.downloadParams =
-            JsonHelper.serializeToJson<Map<String, String>>(params, JsonHelper.MAP_STRINGS)
+        content.downloadParams = serializeToJson<Map<String, String>>(params, MAP_STRINGS)
         isHtmlLoaded.set(true)
         return content
     }

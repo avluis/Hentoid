@@ -31,7 +31,6 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
@@ -44,6 +43,7 @@ import me.devsaki.hentoid.util.formatBookId
 import me.devsaki.hentoid.util.importBookmarks
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.isInQueue
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.util.updateQueueJson
@@ -361,16 +361,15 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         context: Context,
         jsonFile: DocumentFile
     ): JsonContentCollection? {
-        val result: JsonContentCollection = try {
-            JsonHelper.jsonToObject(
+        try {
+            return jsonToObject(
                 context, jsonFile,
                 JsonContentCollection::class.java
             )
         } catch (e: IOException) {
             Timber.w(e)
-            return null
         }
-        return result
+        return null
     }
 
 

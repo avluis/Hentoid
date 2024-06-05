@@ -12,7 +12,7 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.jsonToObject
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -93,14 +93,16 @@ class ToonilyContent : BaseContentParser() {
         metadata?.let {
             if (it.childNodeSize() > 0) {
                 try {
-                    val galleryMeta = JsonHelper.jsonToObject(
+                    jsonToObject(
                         it.childNode(0).toString(),
                         YoastGalleryMetadata::class.java
-                    )
-                    val publishDate = galleryMeta.datePublished // e.g. 2021-01-27T15:20:38+00:00
-                    if (publishDate.isNotEmpty()) content.setUploadDate(
-                        Helper.parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
-                    )
+                    )?.let { galleryMeta ->
+                        val publishDate =
+                            galleryMeta.datePublished // e.g. 2021-01-27T15:20:38+00:00
+                        if (publishDate.isNotEmpty()) content.setUploadDate(
+                            Helper.parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
+                        )
+                    }
                 } catch (e: IOException) {
                     Timber.i(e)
                 }

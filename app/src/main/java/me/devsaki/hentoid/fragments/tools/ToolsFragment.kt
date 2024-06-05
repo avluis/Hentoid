@@ -31,7 +31,7 @@ import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.JSON_MIME_TYPE
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
@@ -39,6 +39,7 @@ import me.devsaki.hentoid.util.file.getDownloadsFolder
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
+import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -209,10 +210,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
             val result = withContext(Dispatchers.IO) {
                 try {
                     val settings = getExportedSettings()
-                    return@withContext JsonHelper.serializeToJson(
-                        settings,
-                        JsonSettings::class.java
-                    )
+                    return@withContext serializeToJson(settings, JsonSettings::class.java)
                 } catch (e: Exception) {
                     Timber.w(e)
                 }
@@ -243,7 +241,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
                 openNewDownloadOutputStream(
                     requireContext(),
                     targetFileName,
-                    JsonHelper.JSON_MIME_TYPE
+                    JSON_MIME_TYPE
                 )?.use { newDownload ->
                     ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
                         .use { input ->

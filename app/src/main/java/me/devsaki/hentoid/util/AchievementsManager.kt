@@ -29,30 +29,31 @@ object AchievementsManager {
 
         context.resources.openRawResource(R.raw.achievements).use { `is` ->
             val achievementsStr = readStreamAsString(`is`)
-            val achievementsObj = JsonHelper.jsonToObject(
+            jsonToObject(
                 achievementsStr,
                 JsonAchievements::class.java
-            )
-            achievementsObj.achievements.forEach { entry ->
-                val id = entry.id
-                val title = context.resources.getIdentifier(
-                    "ach_name_$id",
-                    "string",
-                    context.packageName
-                )
-                val desc = context.resources.getIdentifier(
-                    "ach_desc_$id",
-                    "string",
-                    context.packageName
-                )
-                result[entry.id] = Achievement(
-                    entry.id,
-                    entry.type,
-                    false,
-                    title,
-                    desc,
-                    R.drawable.ic_achievement
-                )
+            )?.let { achievementsObj ->
+                achievementsObj.achievements.forEach { entry ->
+                    val id = entry.id
+                    val title = context.resources.getIdentifier(
+                        "ach_name_$id",
+                        "string",
+                        context.packageName
+                    )
+                    val desc = context.resources.getIdentifier(
+                        "ach_desc_$id",
+                        "string",
+                        context.packageName
+                    )
+                    result[entry.id] = Achievement(
+                        entry.id,
+                        entry.type,
+                        false,
+                        title,
+                        desc,
+                        R.drawable.ic_achievement
+                    )
+                }
             }
         }
         result[62] = Achievement(

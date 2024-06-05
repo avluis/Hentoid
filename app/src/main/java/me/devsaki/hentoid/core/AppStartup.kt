@@ -39,13 +39,13 @@ import me.devsaki.hentoid.notification.userAction.UserActionNotificationChannel
 import me.devsaki.hentoid.receiver.PlugEventsReceiver
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.readStreamAsString
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.workers.StartupWorker
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import org.conscrypt.Conscrypt
@@ -155,14 +155,13 @@ object AppStartup {
         try {
             context.resources.openRawResource(R.raw.sites).use { stream ->
                 val siteSettingsStr = readStreamAsString(stream)
-                val siteSettings = JsonHelper.jsonToObject(
-                    siteSettingsStr, JsonSiteSettings::class.java
-                )
-                for ((key, value) in siteSettings.sites) {
-                    for (site in Site.entries) {
-                        if (site.name.equals(key, ignoreCase = true)) {
-                            site.updateFrom(value)
-                            break
+                jsonToObject(siteSettingsStr, JsonSiteSettings::class.java)?.let { siteSettings ->
+                    for ((key, value) in siteSettings.sites) {
+                        for (site in Site.entries) {
+                            if (site.name.equals(key, ignoreCase = true)) {
+                                site.updateFrom(value)
+                                break
+                            }
                         }
                     }
                 }
@@ -283,7 +282,7 @@ object AppStartup {
 
     private fun initTLS(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Init Conscrypt : start")
-        Security.insertProviderAt(Conscrypt.newProvider(), 1);
+        Security.insertProviderAt(Conscrypt.newProvider(), 1)
         Timber.i("Init Conscrypt : done")
     }
 

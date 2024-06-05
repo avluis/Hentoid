@@ -13,12 +13,15 @@ import me.devsaki.hentoid.json.sources.HitomiGalleryInfo
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.LIST_STRINGS
+import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.getAssetAsString
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.views.HitomiBackgroundWebView
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -61,8 +64,7 @@ class HitomiParser : BaseImageListParser() {
         // Add referer information to downloadParams for future image download
         val downloadParams: MutableMap<String, String> = HashMap()
         downloadParams[HEADER_REFERER_KEY] = pageUrl
-        val downloadParamsStr =
-            JsonHelper.serializeToJson<Map<String, String>>(downloadParams, JsonHelper.MAP_STRINGS)
+        val downloadParamsStr = serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
         val galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + onlineContent.uniqueSiteId + ".js"
 
         // Get the gallery JSON
@@ -108,7 +110,7 @@ class HitomiParser : BaseImageListParser() {
         if (null == jsResult || jsResult.isEmpty()) throw EmptyResultException("Unable to detect pages (empty result)")
         val result: MutableList<ImageFile> = ArrayList()
         jsResult = jsResult.replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"")
-        val imageUrls = JsonHelper.jsonToObject<List<String>>(jsResult, JsonHelper.LIST_STRINGS)
+        val imageUrls = jsonToObject<List<String>>(jsResult, LIST_STRINGS)
         if (!imageUrls.isNullOrEmpty()) {
             onlineContent.setCoverImageUrl(imageUrls[0])
             result.add(ImageFile.newCover(imageUrls[0], StatusContent.SAVED))
@@ -151,11 +153,8 @@ class HitomiParser : BaseImageListParser() {
         val lastBrace = galleryInfoStr.lastIndexOf("}")
         if (firstBrace > -1 && lastBrace > -1) {
             val galleryJson = galleryInfoStr.substring(firstBrace, lastBrace + 1)
-            val galleryInfo = JsonHelper.jsonToObject(
-                galleryJson,
-                HitomiGalleryInfo::class.java
-            )
-            galleryInfo.updateContent(content)
+            val galleryInfo = jsonToObject(galleryJson, HitomiGalleryInfo::class.java)
+            galleryInfo?.updateContent(content)
         } else throw EmptyResultException("Couldn't find gallery information")
     }
 

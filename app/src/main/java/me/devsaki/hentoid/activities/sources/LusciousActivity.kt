@@ -9,7 +9,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.json.sources.LusciousQuery
 import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.content.LusciousContent
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.jsonToObject
 import timber.log.Timber
 import java.io.IOException
 
@@ -48,13 +48,14 @@ class LusciousActivity : BaseWebActivity() {
         fun onFetchCall(url: String, body: String) {
             if (!isGalleryPage(url)) return
             try {
-                val query = JsonHelper.jsonToObject(body, LusciousQuery::class.java)
-                val id = query.getIdVariable()
-                if (id.isNotEmpty()) parseResponse(
-                    id, null,
-                    analyzeForDownload = true,
-                    quickDownload = false
-                )
+                jsonToObject(body, LusciousQuery::class.java)?.let { query ->
+                    val id = query.getIdVariable()
+                    if (id.isNotEmpty()) parseResponse(
+                        id, null,
+                        analyzeForDownload = true,
+                        quickDownload = false
+                    )
+                }
             } catch (e: IOException) {
                 Timber.e(e)
             }

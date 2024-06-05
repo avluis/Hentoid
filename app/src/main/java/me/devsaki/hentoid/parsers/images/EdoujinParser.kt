@@ -11,9 +11,9 @@ import me.devsaki.hentoid.parsers.getExtraChaptersbyUrl
 import me.devsaki.hentoid.parsers.getMaxImageOrder
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
@@ -48,7 +48,7 @@ class EdoujinParser : BaseImageListParser() {
                             .replace("\n", "").trim()
                             .replace("});", "}")
                         jsonStr = jsonStr.substring(jsonStr.indexOf('{'))
-                        return JsonHelper.jsonToObject(jsonStr, EdoujinInfo::class.java)
+                        return jsonToObject(jsonStr, EdoujinInfo::class.java)
                     }
                 }
             }

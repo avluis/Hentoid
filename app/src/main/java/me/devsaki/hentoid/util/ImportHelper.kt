@@ -632,7 +632,7 @@ fun scanFolderRecursive(
         if (file.isDirectory) subFolders.add(file)
         else if (imageNamesFilter.accept(fileName)) images.add(file)
         else if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
-        else if (JsonHelper.getJsonNamesFilter().accept(fileName)) {
+        else if (getJsonNamesFilter().accept(fileName)) {
             jsons.add(file)
             if (getContentJsonNamesFilter().accept(fileName)) contentJsons.add(file)
         }
@@ -738,12 +738,14 @@ fun scanBookFolder(
     var result: Content? = null
     if (jsonFile != null) {
         try {
-            val content = JsonHelper.jsonToObject(
+            val content = jsonToObject(
                 context, jsonFile,
                 JsonContent::class.java
             )
-            result = content.toEntity(dao)
-            result.jsonUri = jsonFile.uri.toString()
+            if (content != null) {
+                result = content.toEntity(dao)
+                result.jsonUri = jsonFile.uri.toString()
+            }
         } catch (e: IOException) {
             Timber.w(e)
         } catch (e: JsonDataException) {
@@ -838,12 +840,14 @@ fun scanChapterFolders(
     var result: Content? = null
     if (jsonFile != null) {
         try {
-            val content = JsonHelper.jsonToObject(
+            val content = jsonToObject(
                 context, jsonFile,
                 JsonContent::class.java
             )
-            result = content.toEntity(dao)
-            result.jsonUri = jsonFile.uri.toString()
+            if (content != null) {
+                result = content.toEntity(dao)
+                result.jsonUri = jsonFile.uri.toString()
+            }
         } catch (e: IOException) {
             Timber.w(e)
         } catch (e: JsonDataException) {
@@ -1006,7 +1010,7 @@ fun scanForArchives(
         for (file in files) {
             val fileName = file.name ?: ""
             if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
-            else if (JsonHelper.getJsonNamesFilter().accept(fileName)) jsons.add(file)
+            else if (getJsonNamesFilter().accept(fileName)) jsons.add(file)
         }
         for (archive in archives) {
             val json = getFileWithName(jsons, archive.name)
@@ -1102,12 +1106,14 @@ fun scanArchive(
     var result: Content? = null
     if (jsonFile != null) {
         try {
-            val content = JsonHelper.jsonToObject(
+            val content = jsonToObject(
                 context, jsonFile,
                 JsonContent::class.java
             )
-            result = content.toEntity(dao)
-            result.jsonUri = jsonFile.uri.toString()
+            if (content != null) {
+                result = content.toEntity(dao)
+                result.jsonUri = jsonFile.uri.toString()
+            }
         } catch (e: IOException) {
             Timber.w(e)
         } catch (e: JsonDataException) {
@@ -1275,7 +1281,7 @@ private fun createJsonFileFor(
 
     val jsonFile = explorer.findFile(context, contentFolder, jsonName)
     return if (jsonFile != null && jsonFile.exists()) jsonFile.uri
-    else JsonHelper.jsonToFile(
+    else jsonToFile(
         context,
         JsonContent.fromEntity(content),
         JsonContent::class.java,

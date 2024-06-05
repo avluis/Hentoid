@@ -29,11 +29,12 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.JSON_MIME_TYPE
 import me.devsaki.hentoid.util.file.getDownloadsFolder
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.getPathRoot
+import me.devsaki.hentoid.util.serializeToJson
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -219,7 +220,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
                             exportQueue,
                             exportBookmarks
                         )
-                        return@withContext JsonHelper.serializeToJson(
+                        return@withContext serializeToJson(
                             collection,
                             JsonContentCollection::class.java
                         )
@@ -314,7 +315,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
             openNewDownloadOutputStream(
                 requireContext(),
                 targetFileName,
-                JsonHelper.JSON_MIME_TYPE
+                JSON_MIME_TYPE
             )?.use { newDownload ->
                 ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
                     .use { input -> Helper.copy(input, newDownload) }

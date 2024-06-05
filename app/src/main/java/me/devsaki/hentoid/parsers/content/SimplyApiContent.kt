@@ -5,7 +5,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.SimplyContentMetadata
 import me.devsaki.hentoid.parsers.addSavedCookiesToHeader
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import timber.log.Timber
 import java.io.IOException
@@ -26,10 +26,8 @@ class SimplyApiContent : BaseContentParser() {
                     Site.SIMPLY.useWebviewAgent()
                 )
                 if (doc != null) {
-                    val metadata = JsonHelper.jsonToObject(
-                        doc.body().ownText(),
-                        SimplyContentMetadata::class.java
-                    )
+                    val metadata =
+                        jsonToObject(doc.body().ownText(), SimplyContentMetadata::class.java)
                     if (metadata != null) return metadata.update(content, updateImages)
                 }
             } catch (e: IOException) {

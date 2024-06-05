@@ -251,7 +251,7 @@ fun updateJson(context: Context, content: Content): Boolean {
         try {
             getOutputStream(context, file).use { output ->
                 if (output != null) {
-                    JsonHelper.updateJson(
+                    updateJson(
                         JsonContent.fromEntity(content),
                         JsonContent::class.java, output
                     )
@@ -281,7 +281,7 @@ fun createJson(context: Context, content: Content): DocumentFile? {
 
     val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return null
     try {
-        val newJson = JsonHelper.jsonToFile<JsonContent>(
+        val newJson = jsonToFile<JsonContent>(
             context, JsonContent.fromEntity(content),
             JsonContent::class.java, folder, JSON_FILE_NAME_V2
         )
@@ -333,9 +333,12 @@ fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
         val contentCollection = JsonContentCollection()
         contentCollection.queue = queuedContent
 
-        JsonHelper.jsonToFile<JsonContentCollection>(
-            context, contentCollection,
-            JsonContentCollection::class.java, rootFolder, QUEUE_JSON_FILE_NAME
+        jsonToFile(
+            context,
+            contentCollection,
+            JsonContentCollection::class.java,
+            rootFolder,
+            QUEUE_JSON_FILE_NAME
         )
     } catch (e: IOException) {
         // NB : IllegalArgumentException might happen for an unknown reason on certain devices
@@ -1055,7 +1058,7 @@ fun parseDownloadParams(downloadParamsStr: String?): Map<String, String> {
     // Handle empty and {}
     if (null == downloadParamsStr || downloadParamsStr.trim().length <= 2) return HashMap()
     try {
-        return JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS)!!
+        return jsonToObject(downloadParamsStr, MAP_STRINGS)!!
     } catch (e: IOException) {
         Timber.w(e)
     }
@@ -1414,12 +1417,7 @@ private fun reparseFromScratch(
         val cookieStr = fetchResponse.second
         if (cookieStr.isNotEmpty()) params[HEADER_COOKIE_KEY] = cookieStr
 
-        newContent.setDownloadParams(
-            JsonHelper.serializeToJson<Map<String, String>>(
-                params,
-                JsonHelper.MAP_STRINGS
-            )
-        )
+        newContent.setDownloadParams(serializeToJson<Map<String, String>>(params, MAP_STRINGS))
         return newContent
     }
 }
@@ -1448,10 +1446,7 @@ fun fetchImageURLs(
             val downloadParams: MutableMap<String, String> = HashMap()
             downloadParams[HEADER_COOKIE_KEY] = cookieStr
             content.setDownloadParams(
-                JsonHelper.serializeToJson<Map<String, String>>(
-                    downloadParams,
-                    JsonHelper.MAP_STRINGS
-                )
+                serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
             )
         }
     }
@@ -1478,12 +1473,7 @@ fun fetchImageURLs(
                 // Referer, just in case
                 if (!imageDownloadParams.containsKey(HEADER_REFERER_KEY)) imageDownloadParams[HEADER_REFERER_KEY] =
                     content.site.url
-                i.setDownloadParams(
-                    JsonHelper.serializeToJson(
-                        imageDownloadParams,
-                        JsonHelper.MAP_STRINGS
-                    )
-                )
+                i.setDownloadParams(serializeToJson(imageDownloadParams, MAP_STRINGS))
             } else {
                 i.setDownloadParams(contentDownloadParamsStr)
             }
@@ -2179,7 +2169,7 @@ fun mergeContents(
                             0,
                             nbProcessedPics++,
                             0,
-                            nbImages.toInt()
+                            nbImages
                         )
                     )
                 }
@@ -2224,9 +2214,9 @@ fun mergeContents(
             ProcessEvent.Type.COMPLETE,
             R.id.generic_progress,
             0,
-            nbImages.toInt(),
+            nbImages,
             0,
-            nbImages.toInt()
+            nbImages
         )
     )
 }

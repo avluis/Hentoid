@@ -19,11 +19,11 @@ object LanguageHelper {
         try {
             context.resources.openRawResource(R.raw.languages).use { `is` ->
                 val siteSettingsStr = readStreamAsString(`is`)
-                val langSettings = JsonHelper.jsonToObject(
+                val langSettings = jsonToObject(
                     siteSettingsStr,
                     JsonLangSettings::class.java
                 )
-                for (entry in langSettings.languages) {
+                langSettings?.languages?.forEach { entry ->
                     val properties =
                         Pair(
                             entry.langCode,

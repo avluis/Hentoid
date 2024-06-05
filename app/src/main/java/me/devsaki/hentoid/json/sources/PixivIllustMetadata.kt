@@ -10,9 +10,10 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.urlToImageFile
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
+import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.serializeToJson
 import java.lang.reflect.Type
 
 /**
@@ -110,16 +111,10 @@ data class PixivIllustMetadata(
                 } else { // One single ugoira
                     img = urlToImageFile(ugoiraMeta.src, 1, 1, StatusContent.SAVED)
                     val downloadParams: MutableMap<String, String> = HashMap()
-                    val framesJson = JsonHelper.serializeToJson(
-                        ugoiraMeta.getFrameList(),
-                        UGOIRA_FRAMES_TYPE
-                    )
+                    val framesJson = serializeToJson(ugoiraMeta.getFrameList(), UGOIRA_FRAMES_TYPE)
                     downloadParams[KEY_DL_PARAMS_UGOIRA_FRAMES] = framesJson
                     img.setDownloadParams(
-                        JsonHelper.serializeToJson<Map<String, String>>(
-                            downloadParams,
-                            JsonHelper.MAP_STRINGS
-                        )
+                        serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
                     )
                 }
                 listOf(img)
@@ -181,7 +176,7 @@ data class PixivIllustMetadata(
             if (null == label) label = romaji
             if (null == label) label = tag
             if (null == label) label = ""
-            return Pair<String, String>(tag ?: "", label)
+            return Pair(tag ?: "", label)
         }
     }
 

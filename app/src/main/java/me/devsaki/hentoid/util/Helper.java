@@ -1,11 +1,11 @@
 package me.devsaki.hentoid.util;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
+import static me.devsaki.hentoid.util.JsonHelperKt.jsonToFile;
 import static me.devsaki.hentoid.util.file.FileHelperKt.FILE_IO_BUFFER_SIZE;
 import static me.devsaki.hentoid.util.file.FileHelperKt.getDocumentFromTreeUriString;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -482,7 +482,7 @@ public final class Helper {
         if (null == rootFolder) return false;
 
         try {
-            JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
+            jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
         } catch (IOException | IllegalArgumentException e) {
             // NB : IllegalArgumentException might happen for an unknown reason on certain devices
             // even though all the file existence checks are in place
@@ -513,7 +513,7 @@ public final class Helper {
         if (null == rootFolder) return false;
 
         try {
-            JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.RENAMING_RULES_JSON_FILE_NAME);
+            jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.RENAMING_RULES_JSON_FILE_NAME);
         } catch (IOException | IllegalArgumentException e) {
             // NB : IllegalArgumentException might happen for an unknown reason on certain devices
             // even though all the file existence checks are in place

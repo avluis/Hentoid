@@ -16,12 +16,13 @@ import me.devsaki.hentoid.json.sources.EHentaiImageResponse
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.getSavedCookieStr
 import me.devsaki.hentoid.parsers.urlToImageFile
-import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.JSON_MIME_TYPE
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.HEADER_ACCEPT_KEY
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
@@ -30,6 +31,7 @@ import me.devsaki.hentoid.util.network.getOnlineDocument
 import me.devsaki.hentoid.util.network.parseCookies
 import me.devsaki.hentoid.util.network.postOnlineResource
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
+import me.devsaki.hentoid.util.serializeToJson
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.jsoup.nodes.Document
@@ -89,7 +91,8 @@ class EHentaiParser : ImageListParser {
             requestHeaders: List<Pair<String, String>>,
             site: Site
         ): Pair<String, String?> {
-            val mpvInfo = JsonHelper.jsonToObject(json, MpvImageInfo::class.java)
+            val mpvInfo = jsonToObject(json, MpvImageInfo::class.java)
+                ?: throw EmptyResultException("MPV : No metadata found")
             val imageMetadata = getMpvImage(
                 mpvInfo,
                 requestHeaders,
@@ -230,10 +233,7 @@ class EHentaiParser : ImageListParser {
                 imageInfo.mpvkey,
                 imageInfo.pageNum
             )
-            val jsonRequest = JsonHelper.serializeToJson(
-                query,
-                EHentaiImageQuery::class.java
-            )
+            val jsonRequest = serializeToJson(query, EHentaiImageQuery::class.java)
             var bodyStr: String
             postOnlineResource(
                 imageInfo.apiUrl,
@@ -242,14 +242,15 @@ class EHentaiParser : ImageListParser {
                 useHentoidAgent,
                 useWebviewAgent,
                 jsonRequest,
-                JsonHelper.JSON_MIME_TYPE
+                JSON_MIME_TYPE
             ).use { response ->
                 val body = response.body
                     ?: throw EmptyResultException("API " + imageInfo.apiUrl + " returned an empty body")
                 bodyStr = body.string()
             }
             if (!bodyStr.contains("{") || !bodyStr.contains("}")) throw EmptyResultException("API " + imageInfo.apiUrl + " returned non-JSON data")
-            return JsonHelper.jsonToObject(bodyStr, EHentaiImageResponse::class.java)
+            return jsonToObject(bodyStr, EHentaiImageResponse::class.java)
+                ?: throw EmptyResultException("API " + imageInfo.apiUrl + " returned non-JSON data")
         }
 
         @Throws(IOException::class, EmptyResultException::class)
@@ -283,7 +284,7 @@ class EHentaiParser : ImageListParser {
                 result.add(
                     ImageFile.fromPageUrl(
                         pageNum,
-                        JsonHelper.serializeToJson(
+                        serializeToJson(
                             mpvInfo.getImageInfo(pageNum - 1),
                             MpvImageInfo::class.java
                         ),
@@ -425,7 +426,7 @@ class EHentaiParser : ImageListParser {
                                 result.apiUrl = parts[1].replace("\"", "").trim()
                             } else if (parts[0].contains("var imagelist")) {
                                 val imgs: MutableList<EHentaiImageMetadata>? =
-                                    JsonHelper.jsonToObject(
+                                    jsonToObject(
                                         parts[1].trim(), Types.newParameterizedType(
                                             MutableList::class.java,
                                             EHentaiImageMetadata::class.java

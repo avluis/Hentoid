@@ -4,9 +4,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_NB_CHAPTERS
+import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.serializeToJson
 
 /**
  * Data structure for Pixiv's "series" mobile endpoint
@@ -61,12 +62,7 @@ data class PixivSeriesMetadata(
         //        content.setUploadDate(
         val downloadParams: MutableMap<String, String> = HashMap()
         downloadParams[KEY_DL_PARAMS_NB_CHAPTERS] = data.getNbIllust()
-        content.setDownloadParams(
-            JsonHelper.serializeToJson<Map<String, String>>(
-                downloadParams,
-                JsonHelper.MAP_STRINGS
-            )
-        )
+        content.setDownloadParams(serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS))
         if (updateImages) {
             content.setImageFiles(emptyList())
             content.setQtyPages(0)

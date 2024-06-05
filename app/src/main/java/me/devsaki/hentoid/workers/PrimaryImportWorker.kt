@@ -40,7 +40,6 @@ import me.devsaki.hentoid.json.URLBuilder
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.Preferences
@@ -59,6 +58,8 @@ import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.importBookmarks
 import me.devsaki.hentoid.util.importRenamingRules
 import me.devsaki.hentoid.util.isInQueue
+import me.devsaki.hentoid.util.jsonToFile
+import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.persistJson
@@ -682,7 +683,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             // If the book is still present in the DB, regenerate the JSON and unflag the book
             if (existingFlaggedContent != null) {
                 try {
-                    val newJson = JsonHelper.jsonToFile(
+                    val newJson = jsonToFile(
                         context, JsonContent.fromEntity(existingFlaggedContent),
                         JsonContent::class.java, bookFolder, JSON_FILE_NAME_V2
                     )
@@ -748,7 +749,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         null,
                         null
                     )
-                    val newJson = JsonHelper.jsonToFile(
+                    val newJson = jsonToFile(
                         context, JsonContent.fromEntity(storedContent),
                         JsonContent::class.java, bookFolder, JSON_FILE_NAME_V2
                     )
@@ -1136,19 +1137,14 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         context: Context,
         jsonFile: DocumentFile
     ): JsonContentCollection? {
-        val result: JsonContentCollection = try {
-            JsonHelper.jsonToObject(
-                context, jsonFile,
-                JsonContentCollection::class.java
-            )
+        try {
+            return jsonToObject(context, jsonFile, JsonContentCollection::class.java)
         } catch (e: IOException) {
             Timber.w(e)
-            return null
         } catch (e: JsonDataException) {
             Timber.w(e)
-            return null
         }
-        return result
+        return null
     }
 
     @Throws(ParseException::class)
@@ -1209,61 +1205,59 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         json: DocumentFile,
         parentFolder: DocumentFile
     ): Content {
-        return try {
-            val doujinBuilder = JsonHelper.jsonToObject(
-                context, json,
-                DoujinBuilder::class.java
-            )
-            val content = ContentV1()
-            content.setUrl(doujinBuilder.getId())
-            content.htmlDescription = doujinBuilder.description
-            content.title = doujinBuilder.title
-            content.setSeries(
-                from(
-                    doujinBuilder.series,
-                    AttributeType.SERIE, content.getSite()
+        try {
+            jsonToObject(context, json, DoujinBuilder::class.java)?.let { doujinBuilder ->
+                val content = ContentV1()
+                content.setUrl(doujinBuilder.getId())
+                content.htmlDescription = doujinBuilder.description
+                content.title = doujinBuilder.title
+                content.setSeries(
+                    from(
+                        doujinBuilder.series,
+                        AttributeType.SERIE, content.getSite()
+                    )
                 )
-            )
-            val artist = from(
-                doujinBuilder.artist,
-                AttributeType.ARTIST, content.getSite()
-            )
-            var artists: MutableList<Attribute?>? = null
-            if (artist != null) {
-                artists = ArrayList(1)
-                artists.add(artist)
-            }
-            content.setArtists(artists)
-            content.setCoverImageUrl(doujinBuilder.urlImageTitle)
-            content.setQtyPages(doujinBuilder.qtyPages)
-            val translator = from(
-                doujinBuilder.translator,
-                AttributeType.TRANSLATOR, content.getSite()
-            )
-            var translators: MutableList<Attribute?>? = null
-            if (translator != null) {
-                translators = ArrayList(1)
-                translators.add(translator)
-            }
-            content.setTranslators(translators)
-            content.setTags(from(doujinBuilder.lstTags, content.getSite()))
-            content.setLanguage(
-                from(
-                    doujinBuilder.language,
-                    AttributeType.LANGUAGE,
-                    content.getSite()
+                val artist = from(
+                    doujinBuilder.artist,
+                    AttributeType.ARTIST, content.getSite()
                 )
-            )
-            content.setMigratedStatus()
-            content.setDownloadDate(Instant.now().toEpochMilli())
-            val contentV2 = content.toV2Content()
-            contentV2.setStorageDoc(parentFolder)
-            val newJson = JsonHelper.jsonToFile(
-                context, JsonContent.fromEntity(contentV2),
-                JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
-            )
-            contentV2.jsonUri = newJson.uri.toString()
-            contentV2
+                var artists: MutableList<Attribute?>? = null
+                if (artist != null) {
+                    artists = ArrayList(1)
+                    artists.add(artist)
+                }
+                content.setArtists(artists)
+                content.setCoverImageUrl(doujinBuilder.urlImageTitle)
+                content.setQtyPages(doujinBuilder.qtyPages)
+                val translator = from(
+                    doujinBuilder.translator,
+                    AttributeType.TRANSLATOR, content.getSite()
+                )
+                var translators: MutableList<Attribute?>? = null
+                if (translator != null) {
+                    translators = ArrayList(1)
+                    translators.add(translator)
+                }
+                content.setTranslators(translators)
+                content.setTags(from(doujinBuilder.lstTags, content.getSite()))
+                content.setLanguage(
+                    from(
+                        doujinBuilder.language,
+                        AttributeType.LANGUAGE,
+                        content.getSite()
+                    )
+                )
+                content.setMigratedStatus()
+                content.setDownloadDate(Instant.now().toEpochMilli())
+                val contentV2 = content.toV2Content()
+                contentV2.setStorageDoc(parentFolder)
+                val newJson = jsonToFile(
+                    context, JsonContent.fromEntity(contentV2),
+                    JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
+                )
+                contentV2.jsonUri = newJson.uri.toString()
+                return contentV2
+            } ?: throw ParseException("Error reading JSON (old) file")
         } catch (e: IOException) {
             Timber.e(e, "Error reading JSON (old) file")
             throw ParseException("Error reading JSON (old) file : " + e.message)
@@ -1281,21 +1275,22 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         json: DocumentFile,
         parentFolder: DocumentFile
     ): Content {
-        return try {
-            val content = JsonHelper.jsonToObject(context, json, ContentV1::class.java)
-            if (content.status != StatusContent.DOWNLOADED
-                && content.status != StatusContent.ERROR
-            ) {
-                content.setMigratedStatus()
-            }
-            val contentV2 = content.toV2Content()
-            contentV2.setStorageDoc(parentFolder)
-            val newJson = JsonHelper.jsonToFile(
-                context, JsonContent.fromEntity(contentV2),
-                JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
-            )
-            contentV2.jsonUri = newJson.uri.toString()
-            contentV2
+        try {
+            jsonToObject(context, json, ContentV1::class.java)?.let { content ->
+                if (content.status != StatusContent.DOWNLOADED
+                    && content.status != StatusContent.ERROR
+                ) {
+                    content.setMigratedStatus()
+                }
+                val contentV2 = content.toV2Content()
+                contentV2.setStorageDoc(parentFolder)
+                val newJson = jsonToFile(
+                    context, JsonContent.fromEntity(contentV2),
+                    JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
+                )
+                contentV2.jsonUri = newJson.uri.toString()
+                return contentV2
+            } ?: throw ParseException("Error reading JSON (v1) file")
         } catch (e: IOException) {
             Timber.e(e, "Error reading JSON (v1) file")
             throw ParseException("Error reading JSON (v1) file : " + e.message)
@@ -1313,12 +1308,13 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         parentFolder: DocumentFile,
         dao: CollectionDAO
     ): Content {
-        return try {
-            val content = JsonHelper.jsonToObject(context, json, JsonContent::class.java)
-            val result = content.toEntity(dao)
-            result.jsonUri = json.uri.toString()
-            result.setStorageDoc(parentFolder)
-            result
+        try {
+            jsonToObject(context, json, JsonContent::class.java)?.let { content ->
+                val result = content.toEntity(dao)
+                result.jsonUri = json.uri.toString()
+                result.setStorageDoc(parentFolder)
+                return result
+            } ?: throw ParseException("Error reading JSON (v2) file")
         } catch (e: IOException) {
             Timber.e(e, "Error reading JSON (v2) file")
             throw ParseException("Error reading JSON (v2) file : " + e.message, e)

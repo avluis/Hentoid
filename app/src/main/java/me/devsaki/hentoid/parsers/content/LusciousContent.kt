@@ -8,8 +8,8 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.LusciousQueryParam
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.jsonToObject
 import timber.log.Timber
 import java.io.IOException
 
@@ -23,7 +23,7 @@ class LusciousContent : BaseContentParser() {
                     return Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED)
                 }
                 try {
-                    JsonHelper.jsonToObject(vars, LusciousQueryParam::class.java).id
+                    jsonToObject(vars, LusciousQueryParam::class.java)!!.id
                 } catch (e: Exception) {
                     Timber.w(e)
                     return Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED)

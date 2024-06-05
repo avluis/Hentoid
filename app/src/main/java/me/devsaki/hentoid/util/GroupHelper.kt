@@ -107,7 +107,7 @@ fun updateGroupsJson(context: Context, dao: CollectionDAO): Boolean {
             ?: return false
 
     try {
-        JsonHelper.jsonToFile(
+        jsonToFile(
             context, contentCollection,
             JsonContentCollection::class.java, rootFolder, GROUPS_JSON_FILE_NAME
         )
