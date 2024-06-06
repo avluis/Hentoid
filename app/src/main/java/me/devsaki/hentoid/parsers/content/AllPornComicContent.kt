@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
-import me.devsaki.hentoid.activities.sources.AllPornComicActivity
+import me.devsaki.hentoid.activities.sources.APC_GALLERY_PATTERN
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -19,10 +19,9 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.regex.Pattern
 
+private val GALLERY_PATTERN = Pattern.compile(APC_GALLERY_PATTERN)
+
 class AllPornComicContent : BaseContentParser() {
-    companion object {
-        private val GALLERY_PATTERN = Pattern.compile(AllPornComicActivity.GALLERY_PATTERN)
-    }
 
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
     private lateinit var coverUrl: String
@@ -76,10 +75,9 @@ class AllPornComicContent : BaseContentParser() {
                 }
             }
         }
-        return if (GALLERY_PATTERN.matcher(url).find()) updateGallery(
-            content,
-            updateImages
-        ) else updateSingleChapter(content, updateImages)
+        return if (GALLERY_PATTERN.matcher(url).find())
+            updateGallery(content, updateImages)
+        else updateSingleChapter(content, updateImages)
     }
 
     private fun updateSingleChapter(content: Content, updateImages: Boolean): Content {

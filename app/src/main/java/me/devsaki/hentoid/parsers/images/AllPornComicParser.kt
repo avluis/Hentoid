@@ -9,7 +9,7 @@ import org.jsoup.nodes.Element
 
 class AllPornComicParser : BaseImageListParser() {
     override fun isChapterUrl(url: String): Boolean {
-        return url.split("/").filterNot { obj: String -> obj.isEmpty() }.count() > 4
+        return url.split("/").filterNot { it.isEmpty() }.count() > 4
     }
 
     @Throws(Exception::class)
@@ -64,8 +64,7 @@ class AllPornComicParser : BaseImageListParser() {
         )
         if (doc != null) {
             val images: List<Element> = doc.select("[class^=page-break] img")
-            return images.map { e -> getImgSrc(e) }
-                .filterNot { s -> s.isEmpty() }
+            return images.map { getImgSrc(it) }.filterNot { it.isEmpty() }
         }
         return emptyList()
     }
