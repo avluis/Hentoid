@@ -18,6 +18,7 @@ import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
 import org.apache.commons.text.StringEscapeUtils
+import org.apache.commons.collections4.map.HashedMap
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
 import java.util.regex.Pattern
@@ -319,7 +320,7 @@ fun addSavedCookiesToHeader(
  * @param referrer Referrer to set
  */
 fun setDownloadParams(imgs: List<ImageFile>, referrer: String) {
-    val params: MutableMap<String, String> = HashMap()
+    val params: MutableMap<String, String> = HashedMap()
     for (img in imgs) {
         params.clear()
         val cookieStr = getCookies(img.url)

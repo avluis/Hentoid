@@ -46,6 +46,7 @@ import me.devsaki.hentoid.util.image.screenHeight
 import me.devsaki.hentoid.util.image.screenWidth
 import me.devsaki.hentoid.views.ZoomableRecyclerView
 import me.devsaki.hentoid.widget.OnZoneTapListener
+import org.apache.commons.collections4.map.HashedMap
 import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -86,8 +87,8 @@ class ImagePagerAdapter(val context: Context) :
     private var animationAlertListener: Runnable? = null
 
     private var recyclerView: ZoomableRecyclerView? = null
-    private val initialAbsoluteScales: MutableMap<Int, Float> = HashMap()
-    private val absoluteScales: MutableMap<Int, Float> = HashMap()
+    private val initialAbsoluteScales: MutableMap<Int, Float> = HashedMap()
+    private val absoluteScales: MutableMap<Int, Float> = HashedMap()
     private var isGlInit = false
     private val glEsRenderer: GPUImage by lazy {
         isGlInit = true

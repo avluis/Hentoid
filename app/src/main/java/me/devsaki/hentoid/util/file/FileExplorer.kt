@@ -12,6 +12,7 @@ import android.provider.DocumentsContract
 import androidx.documentfile.provider.CachedDocumentFile
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.util.MaxSizeHashMap
+import org.apache.commons.collections4.map.HashedMap
 import timber.log.Timber
 import java.io.Closeable
 import java.io.IOException
@@ -24,7 +25,7 @@ private const val DOCPROVIDER_PATH_TREE = "tree"
 class FileExplorer : Closeable {
     private var treeDocumentFileConstructor: Constructor<*>? = null
 
-    private val providersCache: MutableMap<String?, Boolean> = HashMap()
+    private val providersCache: MutableMap<String?, Boolean> = HashedMap()
     private val documentIdCache = MaxSizeHashMap<String, String?>(2000)
 
     private var client: ContentProviderClient? = null

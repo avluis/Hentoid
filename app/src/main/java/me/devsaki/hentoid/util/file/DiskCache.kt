@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.util.Helper
+import org.apache.commons.collections4.map.HashedMap
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
@@ -28,7 +29,7 @@ object DiskCache {
     // Key = URL
     // Value.first = timestamp of last access
     // Value.second = Uri of file
-    private val entries = HashMap<String, Pair<Long, Uri>>()
+    private val entries = HashedMap<String, Pair<Long, Uri>>()
 
     // Timestamp for the last purge
     private var lastPurge = Instant.now().toEpochMilli()

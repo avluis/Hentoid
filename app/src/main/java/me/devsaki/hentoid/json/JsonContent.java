@@ -10,7 +10,7 @@ import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
+import org.apache.commons.collections4.map.HashedMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +46,7 @@ public class JsonContent {
     private int lastReadPageIndex;
     private int downloadMode;
     private boolean manuallyMerged;
-    private Map<String, String> bookPreferences = new HashMap<>();
+    private Map<String, String> bookPreferences = new HashedMap<>();
 
     private Map<AttributeType, List<JsonAttribute>> attributes;
     private final List<JsonImageFile> imageFiles = new ArrayList<>();

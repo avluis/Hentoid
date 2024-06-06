@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util.file
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
+import org.apache.commons.collections4.map.HashedMap
 import timber.log.Timber
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -16,7 +17,7 @@ object Beholder {
     // Key : Root document Uri
     //      Key : hash64(name, size)
     //      Value : Content ID if any; -1 if none
-    private val snapshot: MutableMap<String, Map<Long, Long>> = HashMap()
+    private val snapshot: MutableMap<String, Map<Long, Long>> = HashedMap()
 
 
     fun init(ctx: Context) {
@@ -114,7 +115,7 @@ object Beholder {
     ) {
         val result: MutableList<FolderEntry> = ArrayList()
         contentDocs.forEach { (uri, docs) ->
-            val contentDocsMap = HashMap<String, Pair<DocumentFile, Long>>()
+            val contentDocsMap = HashedMap<String, Pair<DocumentFile, Long>>()
             docs.forEach {
                 contentDocsMap[it.first.uri.toString()] = Pair(it.first, it.second)
             }
@@ -217,7 +218,7 @@ data class FolderEntry(
         fun fromStream(dis: DataInputStream): FolderEntry {
             val entryUri = dis.readUTF()
             val nbDocs = dis.readInt()
-            val docs = HashMap<Long, Long>()
+            val docs = HashedMap<Long, Long>()
             for (j in 1..nbDocs) {
                 val key = dis.readLong()
                 val value = dis.readLong()

@@ -20,7 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import org.apache.commons.collections4.map.HashedMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -133,7 +133,7 @@ public class Content implements Serializable {
     private int lastReadPageIndex = 0;
     private boolean manuallyMerged = false;
     @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
-    private Map<String, String> bookPreferences = new HashMap<>();
+    private Map<String, String> bookPreferences = new HashedMap<>();
 
     private @DownloadMode
     int downloadMode;
@@ -1069,13 +1069,13 @@ public class Content implements Serializable {
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {
         @Override
         public Map<String, String> convertToEntityProperty(String databaseValue) {
-            if (null == databaseValue) return new HashMap<>();
+            if (null == databaseValue) return new HashedMap<>();
 
             try {
                 return JsonHelper.jsonToObject(databaseValue, MAP_STRINGS);
             } catch (IOException e) {
                 Timber.w(e);
-                return new HashMap<>();
+                return new HashedMap<>();
             }
         }
 

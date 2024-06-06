@@ -97,6 +97,7 @@ import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.views.NestedScrollWebView
 import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
+import org.apache.commons.collections4.map.HashedMap
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -1385,7 +1386,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Attach chapters to books downloaded before chapters were implemented
         var maxOnlineImageOrder = 0
         var minOnlineImageOrder = Int.MAX_VALUE
-        val positionMap: MutableMap<Int, Chapter?> = HashMap()
+        val positionMap: MutableMap<Int, Chapter?> = HashedMap()
         for (img in onlineImgs) {
             maxOnlineImageOrder = maxOnlineImageOrder.coerceAtLeast(img.order)
             minOnlineImageOrder = minOnlineImageOrder.coerceAtMost(img.order)

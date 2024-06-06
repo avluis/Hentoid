@@ -14,6 +14,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import org.apache.commons.collections4.map.HashedMap
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import timber.log.Timber
@@ -356,7 +357,7 @@ fun okHttpResponseToWebkitResponse(
  * @return "Flattened" HTTP headers structured according to the convention used by Webkit
  */
 private fun okHttpHeadersToWebResourceHeaders(okHttpHeaders: Map<String, List<String?>>): Map<String, String> {
-    val result: MutableMap<String, String> = HashMap()
+    val result: MutableMap<String, String> = HashedMap()
     for ((key, values) in okHttpHeaders) {
         result[key] = TextUtils.join(getValuesSeparatorFromHttpHeader(key), values)
     }
@@ -480,7 +481,7 @@ fun getHttpProtocol(url: String): String {
  * @return Parsed cookies (key and value of each cookie; key only if there's no value)
  */
 fun parseCookies(cookiesStr: String): Map<String, String> {
-    val result: MutableMap<String, String> = HashMap()
+    val result: MutableMap<String, String> = HashedMap()
     val cookiesParts = cookiesStr.split(";").map { s -> s.trim() }
     for (part in cookiesParts) {
         // Don't use split as the value of the cookie may contain an '='
@@ -505,7 +506,7 @@ fun setCookies(url: String?, cookieStr: String) {
     It's not smart to do that if the very same cookie is already set for a longer lifespan.
      */
     val cookies = parseCookies(cookieStr)
-    val names: MutableMap<String, String?> = HashMap()
+    val names: MutableMap<String, String?> = HashedMap()
     val paramsToSet: MutableList<String> = ArrayList()
     val namesToSet: MutableList<String?> = ArrayList()
     for ((key, value) in cookies) {
@@ -564,7 +565,7 @@ fun fixUrl(url: String?, baseUrl: String): String {
  * @return Parsed parameters, where each key is the parameters name and each corresponding value their respective value
  */
 fun parseParameters(uri: Uri): Map<String, String> {
-    val result: MutableMap<String, String> = HashMap()
+    val result: MutableMap<String, String> = HashedMap()
     val keys = uri.queryParameterNames
     for (k in keys) result[k] = StringHelper.protect(uri.getQueryParameter(k))
     return result

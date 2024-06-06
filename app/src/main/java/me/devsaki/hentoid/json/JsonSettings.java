@@ -2,12 +2,12 @@ package me.devsaki.hentoid.json;
 
 import androidx.annotation.NonNull;
 
-import java.util.HashMap;
+import org.apache.commons.collections4.map.HashedMap;
 import java.util.Map;
 
 public class JsonSettings {
 
-    private Map<String, Object> settings = new HashMap<>();
+    private Map<String, Object> settings = new HashedMap<>();
 
     public JsonSettings() {
         // Nothing special do to here

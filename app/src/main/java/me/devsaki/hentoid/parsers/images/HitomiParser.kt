@@ -20,6 +20,7 @@ import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import me.devsaki.hentoid.views.HitomiBackgroundWebView
+import org.apache.commons.collections4.map.HashedMap
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
@@ -59,7 +60,7 @@ class HitomiParser : BaseImageListParser() {
         val pageUrl = onlineContent.readerUrl
 
         // Add referer information to downloadParams for future image download
-        val downloadParams: MutableMap<String, String> = HashMap()
+        val downloadParams: MutableMap<String, String> = HashedMap()
         downloadParams[HEADER_REFERER_KEY] = pageUrl
         val downloadParamsStr =
             JsonHelper.serializeToJson<Map<String, String>>(downloadParams, JsonHelper.MAP_STRINGS)

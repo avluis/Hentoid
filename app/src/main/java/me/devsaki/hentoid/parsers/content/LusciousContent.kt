@@ -10,6 +10,7 @@ import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
+import org.apache.commons.collections4.map.HashedMap
 import timber.log.Timber
 import java.io.IOException
 
@@ -36,7 +37,7 @@ class LusciousContent : BaseContentParser() {
                 val lastIndex = url.lastIndexOf('_')
                 url.substring(lastIndex + 1, url.length - 1)
             }
-        val query: MutableMap<String, String> = HashMap()
+        val query: MutableMap<String, String> = HashedMap()
         query["id"] = Helper.getRandomInt(10).toString() + ""
         query["operationName"] = "AlbumGet"
         query["query"] =

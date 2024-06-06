@@ -12,6 +12,7 @@ import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.databinding.DialogReaderBookPrefsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
+import org.apache.commons.collections4.map.HashedMap
 
 class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.Parent>() {
     companion object {
@@ -147,7 +148,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
 
         val okBtn = rootView.findViewById<View>(R.id.action_button)
         okBtn.setOnClickListener {
-            val newPrefs: MutableMap<String, String> = HashMap()
+            val newPrefs: MutableMap<String, String> = HashedMap()
             binding?.apply {
                 if (renderingPicker.index > 0) newPrefs[Preferences.Key.VIEWER_RENDERING] =
                     (renderingPicker.index - 1).toString() + ""

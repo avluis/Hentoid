@@ -4,6 +4,7 @@ import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
 import io.objectbox.query.Query
 import io.objectbox.reactive.DataObserver
+import org.apache.commons.collections4.map.HashedMap
 import kotlin.math.min
 
 // Inspired from ObjectBoxDataSource
@@ -13,7 +14,7 @@ class ObjectBoxRandomDataSource<T>(
 ) : PositionalDataSource<T>() {
     private val shuffledList: List<Long>
     private val observer: DataObserver<List<T>>
-    private val idsToQueryListIndexes: MutableMap<Long, Int> = HashMap()
+    private val idsToQueryListIndexes: MutableMap<Long, Int> = HashedMap()
 
     init {
         val queryIds = query.findIds()

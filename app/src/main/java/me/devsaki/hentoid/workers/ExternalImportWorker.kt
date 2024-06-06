@@ -33,6 +33,7 @@ import me.devsaki.hentoid.util.scanArchive
 import me.devsaki.hentoid.util.scanFolderRecursive
 import me.devsaki.hentoid.util.trace
 import me.devsaki.hentoid.workers.data.ExternalImportData
+import org.apache.commons.collections4.map.HashedMap
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
@@ -148,7 +149,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     dao.cleanup()
                 }
 
-                val addedContent = HashMap<String, MutableList<Pair<DocumentFile, Long>>>()
+                val addedContent = HashedMap<String, MutableList<Pair<DocumentFile, Long>>>()
                 dao = ObjectBoxDAO()
                 try {
                     for (content in detectedContent) {

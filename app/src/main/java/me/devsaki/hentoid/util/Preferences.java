@@ -9,8 +9,10 @@ import androidx.preference.PreferenceManager;
 
 import com.annimon.stream.Stream;
 
+import org.apache.commons.collections4.map.HashedMap;
+
 import java.util.Collections;
-import java.util.HashMap;
+import org.apache.commons.collections4.map.HashedMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,7 +72,7 @@ public final class Preferences {
     }
 
     public static Map<String, Object> extractPortableInformation() {
-        Map<String, Object> result = new HashMap<>(sharedPreferences.getAll());
+        Map<String, Object> result = new HashedMap<>(sharedPreferences.getAll());
 
         // Remove non-exportable settings that make no sense on another instance
         result.remove(Key.FIRST_RUN);

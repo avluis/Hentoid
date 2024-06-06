@@ -10,9 +10,10 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.enums.Theme.Companion.searchById
+import org.apache.commons.collections4.map.HashedMap
 import java.util.Locale
 
-private val colorCache: MutableMap<String, Int> = HashMap()
+private val colorCache: MutableMap<String, Int> = HashedMap()
 
 /**
  * Apply the app's current color theme to the given activity

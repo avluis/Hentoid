@@ -93,6 +93,7 @@ import me.devsaki.hentoid.util.network.parseCookies
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
+import org.apache.commons.collections4.map.HashedMap
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import timber.log.Timber
@@ -671,7 +672,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     private fun enrichImageDownloadParams(img: ImageFile, content: Content) {
         // Enrich download params just in case
         val downloadParams: MutableMap<String, String> =
-            if (img.downloadParams.length > 2) ContentHelper.parseDownloadParams(img.downloadParams) else HashMap()
+            if (img.downloadParams.length > 2) ContentHelper.parseDownloadParams(img.downloadParams) else HashedMap()
         // Add referer if unset
         if (!downloadParams.containsKey(HEADER_REFERER_KEY)) downloadParams[HEADER_REFERER_KEY] =
             content.galleryUrl
@@ -1517,7 +1518,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         url: String,
         downloadParamsStr: String
     ): Map<String, String> {
-        val result: MutableMap<String, String> = HashMap()
+        val result: MutableMap<String, String> = HashedMap()
         var cookieStr = ""
         val downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr)
         if (downloadParams.isNotEmpty()) {

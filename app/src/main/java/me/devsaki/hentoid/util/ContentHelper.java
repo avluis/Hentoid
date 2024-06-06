@@ -60,7 +60,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import org.apache.commons.collections4.map.HashedMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -166,7 +166,7 @@ public final class ContentHelper {
     private static final int[] queueTabStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode()};
 
     // TODO empty this cache at some point
-    private static final Map<String, String> fileNameMatchCache = new HashMap<>();
+    private static final Map<String, String> fileNameMatchCache = new HashedMap<>();
 
 
     private ContentHelper() {
@@ -949,13 +949,13 @@ public final class ContentHelper {
     public static Map<String, String> parseDownloadParams(final String downloadParamsStr) {
         // Handle empty and {}
         if (null == downloadParamsStr || downloadParamsStr.trim().length() <= 2)
-            return new HashMap<>();
+            return new HashedMap<>();
         try {
             return JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
         } catch (IOException e) {
             Timber.w(e);
         }
-        return new HashMap<>();
+        return new HashedMap<>();
     }
 
 
@@ -1004,7 +1004,7 @@ public final class ContentHelper {
      */
     public static List<ImageFile> matchFilesToImageList(
             @NonNull final List<DocumentFile> files, @NonNull final List<ImageFile> images) {
-        Map<String, Pair<String, Long>> fileNameProperties = new HashMap<>(files.size());
+        Map<String, Pair<String, Long>> fileNameProperties = new HashedMap<>(files.size());
         List<ImageFile> result = new ArrayList<>();
         boolean coverFound = false;
 
@@ -1278,7 +1278,7 @@ public final class ContentHelper {
             newContent.clearChapters();
 
             // Save cookies for future calls during download
-            Map<String, String> params = new HashMap<>();
+            Map<String, String> params = new HashedMap<>();
             String cookieStr = fetchResponse.getSecond();
             if (!cookieStr.isEmpty()) params.put(HEADER_COOKIE_KEY, cookieStr);
 
@@ -1343,7 +1343,7 @@ public final class ContentHelper {
         if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
             String cookieStr = HttpHelperKt.getCookies(url);
             if (!cookieStr.isEmpty()) {
-                Map<String, String> downloadParams = new HashMap<>();
+                Map<String, String> downloadParams = new HashedMap<>();
                 downloadParams.put(HEADER_COOKIE_KEY, cookieStr);
                 content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
             }
