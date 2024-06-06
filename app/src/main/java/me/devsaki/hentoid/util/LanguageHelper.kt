@@ -6,13 +6,14 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.json.core.JsonLangSettings
 import me.devsaki.hentoid.util.file.readStreamAsString
+import org.apache.commons.collections4.map.HashedMap
 import timber.log.Timber
 import java.io.IOException
 import java.util.Locale
 
 object LanguageHelper {
     // label -> (language code, flag country code)
-    private var languageCodes: MutableMap<String, Pair<String, String>> = HashMap()
+    private var languageCodes: MutableMap<String, Pair<String, String>> = HashedMap()
 
     init {
         val context: Context = getInstance()

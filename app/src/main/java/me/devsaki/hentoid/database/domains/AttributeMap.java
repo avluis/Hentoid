@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
 import java.util.Collection;
-import java.util.HashMap;
+import org.apache.commons.collections4.map.HashedMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,7 +10,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 /**
  * Builds AttributeMaps
  */
-public class AttributeMap extends HashMap<AttributeType, Set<Attribute>> {
+public class AttributeMap extends HashedMap<AttributeType, Set<Attribute>> {
     public void add(Attribute attributeItem) {
         if (null == attributeItem) return;
 

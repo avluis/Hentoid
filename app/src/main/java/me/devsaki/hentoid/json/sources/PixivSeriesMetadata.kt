@@ -7,6 +7,7 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
+import org.apache.commons.collections4.map.HashedMap
 
 /**
  * Data structure for Pixiv's "series" mobile endpoint
@@ -59,7 +60,7 @@ data class PixivSeriesMetadata(
         content.setUrl("user/" + data.getUserId() + "/series/" + data.getId())
         content.setCoverImageUrl(data.getCoverUrl())
         //        content.setUploadDate(
-        val downloadParams: MutableMap<String, String> = HashMap()
+        val downloadParams: MutableMap<String, String> = HashedMap()
         downloadParams[ContentHelper.KEY_DL_PARAMS_NB_CHAPTERS] = data.getNbIllust()
         content.setDownloadParams(
             JsonHelper.serializeToJson<Map<String, String>>(

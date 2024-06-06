@@ -10,6 +10,7 @@ import me.devsaki.hentoid.events.AchievementEvent
 import me.devsaki.hentoid.json.core.JsonAchievements
 import me.devsaki.hentoid.util.file.isLowDeviceStorage
 import me.devsaki.hentoid.util.file.readStreamAsString
+import org.apache.commons.collections4.map.HashedMap
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.time.Instant
@@ -25,7 +26,7 @@ object AchievementsManager {
     val masterdata: Map<Int, Achievement> by lazy { init(HentoidApp.getInstance()) }
 
     fun init(context: Context): Map<Int, Achievement> {
-        val result = HashMap<Int, Achievement>()
+        val result = HashedMap<Int, Achievement>()
 
         context.resources.openRawResource(R.raw.achievements).use { `is` ->
             val achievementsStr = readStreamAsString(`is`)

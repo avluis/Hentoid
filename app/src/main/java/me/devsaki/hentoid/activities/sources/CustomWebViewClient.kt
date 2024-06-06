@@ -60,6 +60,7 @@ import me.devsaki.hentoid.util.network.simplifyUrl
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import me.devsaki.hentoid.util.toast
 import okhttp3.Response
+import org.apache.commons.collections4.map.HashedMap
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -754,7 +755,7 @@ open class CustomWebViewClient : WebViewClient {
 
         // Save useful download params for future use during download
         val params = if (content.downloadParams.length > 2) // Params already contain values
-            ContentHelper.parseDownloadParams(content.downloadParams) else HashMap()
+            ContentHelper.parseDownloadParams(content.downloadParams) else HashedMap()
         params[HEADER_COOKIE_KEY] = getCookies(url)
         params[HEADER_REFERER_KEY] = content.site.url
         content.downloadParams =
@@ -866,7 +867,7 @@ open class CustomWebViewClient : WebViewClient {
             // Key = simplified HREF
             // Value.left = plain link ("a")
             // Value.right = corresponding linked images ("a img"), if any
-            val elements: MutableMap<String, Pair<Element, Element?>> = HashMap()
+            val elements: MutableMap<String, Pair<Element, Element?>> = HashedMap()
             for (link in plainLinks) {
                 if (site.bookCardExcludedParentClasses.isNotEmpty()) {
                     val isForbidden = link.parents().any { e: Element ->
@@ -935,7 +936,7 @@ open class CustomWebViewClient : WebViewClient {
 
             // Key= plain link ("a")
             // Value = simplified HREF
-            val elements: MutableMap<Element, String> = HashMap()
+            val elements: MutableMap<Element, String> = HashedMap()
             for (link in plainLinks) {
                 if (site.bookCardExcludedParentClasses.isNotEmpty()) {
                     val isForbidden = link.parents().any { e: Element ->

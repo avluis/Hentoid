@@ -13,6 +13,7 @@ import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.StringHelper
+import org.apache.commons.collections4.map.HashedMap
 import java.lang.reflect.Type
 
 /**
@@ -109,7 +110,7 @@ data class PixivIllustMetadata(
                     img = urlToImageFile(urlBig!!, 1, 1, StatusContent.SAVED)
                 } else { // One single ugoira
                     img = urlToImageFile(ugoiraMeta.src, 1, 1, StatusContent.SAVED)
-                    val downloadParams: MutableMap<String, String> = HashMap()
+                    val downloadParams: MutableMap<String, String> = HashedMap()
                     val framesJson = JsonHelper.serializeToJson(
                         ugoiraMeta.getFrameList(),
                         UGOIRA_FRAMES_TYPE

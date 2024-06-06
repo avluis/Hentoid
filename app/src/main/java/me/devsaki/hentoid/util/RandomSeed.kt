@@ -1,12 +1,13 @@
 package me.devsaki.hentoid.util
 
+import org.apache.commons.collections4.map.HashedMap
 import kotlin.math.roundToLong
 
 /**
  * Singleton used to manage RNG seed generation app-wide
  */
 object RandomSeed {
-    private val seeds: MutableMap<String, Long> = HashMap()
+    private val seeds: MutableMap<String, Long> = HashedMap()
 
     /**
      * Get the seed for the given key

@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.util.string_similarity;
 
 import java.util.Collections;
-import java.util.HashMap;
+import org.apache.commons.collections4.map.HashedMap;
 import java.util.Map;
 
 import me.devsaki.hentoid.util.StringHelper;
@@ -71,7 +71,7 @@ public abstract class ShingleBased {
      * @return the profile of this string, as an unmodifiable Map
      */
     public final Map<String, Integer> getProfile(final String string) {
-        HashMap<String, Integer> shingles = new HashMap<String, Integer>();
+        HashedMap<String, Integer> shingles = new HashedMap<String, Integer>();
 
         String string_no_space = StringHelper.cleanMultipleSpaces(string);
         for (int i = 0; i < (string_no_space.length() - k + 1); i++) {

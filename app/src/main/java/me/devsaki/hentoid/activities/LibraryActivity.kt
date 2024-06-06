@@ -83,6 +83,7 @@ import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import me.devsaki.hentoid.widget.GroupSearchManager.GroupSearchBundle
+import org.apache.commons.collections4.map.HashedMap
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -174,7 +175,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private var editMode = false
 
     // Titles of each of the Viewpager2's tabs
-    private val titles: MutableMap<Int, String> = HashMap()
+    private val titles: MutableMap<Int, String> = HashedMap()
 
     // Current group
     private var group: Group? = null

@@ -12,7 +12,7 @@ import com.annimon.stream.Stream;
 import org.apache.commons.collections4.map.HashedMap;
 
 import java.util.Collections;
-import java.util.HashMap;
+import org.apache.commons.collections4.map.HashedMap;
 import java.util.List;
 import java.util.Map;
 

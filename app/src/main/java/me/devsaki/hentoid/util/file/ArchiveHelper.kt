@@ -18,6 +18,7 @@ import net.sf.sevenzipjbinding.ISequentialOutStream
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
+import org.apache.commons.collections4.map.HashedMap
 import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -259,8 +260,8 @@ private fun Context.extractArchiveEntries(
         format = getTypeFromArchiveHeader(header)
     }
     if (null == format) return
-    val fileNames: MutableMap<Int, String> = HashMap()
-    val identifiers: MutableMap<Int, String> = HashMap()
+    val fileNames: MutableMap<Int, String> = HashedMap()
+    val identifiers: MutableMap<Int, String> = HashedMap()
 
     // TODO handle the case where the extracted elements would saturate disk space
     try {

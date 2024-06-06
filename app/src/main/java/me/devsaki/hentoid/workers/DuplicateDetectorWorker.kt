@@ -29,6 +29,7 @@ import me.devsaki.hentoid.util.processContent
 import me.devsaki.hentoid.util.string_similarity.Cosine
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import me.devsaki.hentoid.workers.data.DuplicateData
+import org.apache.commons.collections4.map.HashedMap
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
@@ -109,8 +110,8 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         // Mark process as incomplete until all combinations are searched
         // to support abort and retry
         isComplete = false
-        val matchedIds: MutableMap<Long, MutableList<Long>> = HashMap()
-        val reverseMatchedIds: MutableMap<Long, MutableList<Long>> = HashMap()
+        val matchedIds: MutableMap<Long, MutableList<Long>> = HashedMap()
+        val reverseMatchedIds: MutableMap<Long, MutableList<Long>> = HashedMap()
 
         // Retrieve number of lines done in previous iteration (ended with RETRY)
         val startIndex = Preferences.getDuplicateLastIndex() + 1

@@ -6,6 +6,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.util.Helper
+import org.apache.commons.collections4.map.HashedMap
 import timber.log.Timber
 import java.io.IOException
 
@@ -58,7 +59,7 @@ class LusciousParser : BaseImageListParser() {
         isManga: Boolean,
         imageFiles: MutableList<ImageFile>
     ) {
-        val query: MutableMap<String, String> = HashMap()
+        val query: MutableMap<String, String> = HashedMap()
         query["id"] = Helper.getRandomInt(10).toString() + ""
         if (isManga) { // Mangas : order by page number
             query["operationName"] = "AlbumListOwnPictures"

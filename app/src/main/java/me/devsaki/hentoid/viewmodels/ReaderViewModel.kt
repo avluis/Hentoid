@@ -64,6 +64,7 @@ import me.devsaki.hentoid.util.network.peekCookies
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
+import org.apache.commons.collections4.map.HashedMap
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.File
@@ -1849,7 +1850,7 @@ class ReaderViewModel(
         val nbMaxDigits = orderedImages.maxOf { it.name.length }
         // Key = source Uri
         // Value = operation
-        val operations = HashMap<String, FileOperation>()
+        val operations = HashedMap<String, FileOperation>()
         orderedImages.forEachIndexed { index, img ->
             img.order = index + 1
             img.computeName(nbMaxDigits)

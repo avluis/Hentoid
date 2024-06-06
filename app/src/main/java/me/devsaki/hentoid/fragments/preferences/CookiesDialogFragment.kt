@@ -20,6 +20,7 @@ import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.parseCookies
 import me.devsaki.hentoid.util.shortSnack
+import org.apache.commons.collections4.map.HashedMap
 import timber.log.Timber
 
 class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
@@ -74,7 +75,7 @@ class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
         binding?.apply {
             val cookies: Map<String, String>
             if (0 == sitePicker.index) {
-                cookies = HashMap()
+                cookies = HashedMap()
                 sites.forEach { s ->
                     val siteCookies = parseCookies(getCookies(s.url))
                     siteCookies.forEach {
