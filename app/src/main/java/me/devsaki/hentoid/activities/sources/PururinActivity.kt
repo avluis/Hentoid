@@ -2,12 +2,11 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class PururinActivity : BaseWebActivity() {
+private const val DOMAIN_FILTER = "pururin.to"
+const val PUR_GALLERY_PATTERN = "//pururin.to/browse/tags/collection/"
+private val GALLERY_FILTER = arrayOf(PUR_GALLERY_PATTERN, "//pururin.to/gallery/")
 
-    companion object {
-        private const val DOMAIN_FILTER = "pururin.to"
-        private val GALLERY_FILTER = arrayOf("//pururin.to/gallery/")
-    }
+class PururinActivity : BaseWebActivity() {
 
     override fun getStartSite(): Site {
         return Site.PURURIN

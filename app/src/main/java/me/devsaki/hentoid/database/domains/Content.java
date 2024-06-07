@@ -269,6 +269,7 @@ public class Content implements Serializable {
             case TSUMINO:
                 return url.replace("/Read/Index", "");
             case PURURIN:
+                if (url.contains("/collection/")) return url;
                 return url.replace(HttpHelperKt.getHttpProtocol(url) + "://pururin.to/gallery", "");
             case NHENTAI:
                 return url.replace(site.getUrl(), "").replace("/g/", "/").replaceFirst("/1/$", "/");
@@ -321,6 +322,7 @@ public class Content implements Serializable {
             case EHENTAI:
             case EXHENTAI:
             case PURURIN:
+                if (url.contains("/collection/")) return "";
                 paths = url.split("/");
                 return (paths.length > 1) ? paths[1] : paths[0];
             case MRM:
@@ -437,7 +439,8 @@ public class Content implements Serializable {
         switch (site) {
             case PURURIN:
             case IMHENTAI:
-                galleryConst = "/gallery";
+                if (url.contains("/collection/")) return url;
+                else galleryConst = "/gallery";
                 break;
             case HITOMI:
                 galleryConst = "/galleries";
@@ -484,6 +487,7 @@ public class Content implements Serializable {
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
             case PURURIN:
+                if (url.contains("/collection/")) return getGalleryUrl();
                 return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
             case FAKKU2:
                 return getGalleryUrl() + "/read/page/1";
