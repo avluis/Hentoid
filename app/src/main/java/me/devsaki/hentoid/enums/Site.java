@@ -51,6 +51,7 @@ public enum Site {
     KSK(30, "Koushoku", "https://ksk.moe", R.drawable.ic_site_ksk),
     ANCHIRA(31, "Anchira", "https://anchira.to", R.drawable.ic_site_anchira),
     DEVIANTART(32, "DeviantArt", "https://www.deviantart.com/", R.drawable.ic_site_deviantart),
+    MANGAGO(33, "Mangago", "https://www.mangago.me/", R.drawable.ic_site_mangago),
     NONE(98, "none", "", R.drawable.ic_attribute_source), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_site_panda); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 

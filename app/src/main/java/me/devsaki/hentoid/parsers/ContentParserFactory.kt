@@ -18,6 +18,7 @@ import me.devsaki.hentoid.parsers.content.HentaifoxContent
 import me.devsaki.hentoid.parsers.content.HitomiContent
 import me.devsaki.hentoid.parsers.content.ImhentaiContent
 import me.devsaki.hentoid.parsers.content.LusciousContent
+import me.devsaki.hentoid.parsers.content.MangagoContent
 import me.devsaki.hentoid.parsers.content.Manhwa18Content
 import me.devsaki.hentoid.parsers.content.ManhwaContent
 import me.devsaki.hentoid.parsers.content.MrmContent
@@ -46,6 +47,7 @@ import me.devsaki.hentoid.parsers.images.HitomiParser
 import me.devsaki.hentoid.parsers.images.ImageListParser
 import me.devsaki.hentoid.parsers.images.ImhentaiParser
 import me.devsaki.hentoid.parsers.images.LusciousParser
+import me.devsaki.hentoid.parsers.images.MangagoParser
 import me.devsaki.hentoid.parsers.images.Manhwa18Parser
 import me.devsaki.hentoid.parsers.images.ManhwaParser
 import me.devsaki.hentoid.parsers.images.MrmParser
@@ -89,6 +91,7 @@ object ContentParserFactory {
             Site.EDOUJIN -> EdoujinContent::class.java
             Site.ANCHIRA -> AnchiraContent::class.java
             Site.DEVIANTART -> DeviantArtContent::class.java
+            Site.MANGAGO -> MangagoContent::class.java
             else -> DummyContent::class.java
         }
     }
@@ -125,6 +128,7 @@ object ContentParserFactory {
             Site.EDOUJIN -> EdoujinParser()
             Site.ANCHIRA -> AnchiraParser()
             Site.DEVIANTART -> DeviantArtParser()
+            Site.MANGAGO -> MangagoParser()
             else -> DummyParser()
         }
     }

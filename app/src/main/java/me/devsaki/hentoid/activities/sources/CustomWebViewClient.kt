@@ -86,7 +86,7 @@ import java.util.regex.Pattern
 open class CustomWebViewClient : WebViewClient {
 
     // Site for the session
-    protected val site: Site
+    val site: Site
 
     // Listener to the results of the page parser
     protected val activity: CustomWebActivity?

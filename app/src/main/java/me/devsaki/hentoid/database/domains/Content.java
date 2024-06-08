@@ -52,6 +52,7 @@ import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.ImhentaiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
+import me.devsaki.hentoid.activities.sources.MangagoActivity;
 import me.devsaki.hentoid.activities.sources.Manhwa18Activity;
 import me.devsaki.hentoid.activities.sources.ManhwaActivity;
 import me.devsaki.hentoid.activities.sources.MrmActivity;
@@ -305,6 +306,8 @@ public class Content implements Serializable {
             case EDOUJIN:
             case LUSCIOUS:
                 return url.replace(site.getUrl().replace("/manga/", ""), "");
+            case MANGAGO:
+                return url.replace(site.getUrl() + "read-manga/", "");
             case PORNCOMIX:
             default:
                 return url;
@@ -429,6 +432,8 @@ public class Content implements Serializable {
                 return AnchiraActivity.class;
             case DEVIANTART:
                 return DeviantArtActivity.class;
+            case MANGAGO:
+                return MangagoActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -469,6 +474,9 @@ public class Content implements Serializable {
                 if (result.endsWith("/1/")) result = result.substring(0, result.length() - 3);
                 if (result.endsWith("/1")) result = result.substring(0, result.length() - 2);
                 return result;
+            case MANGAGO:
+                galleryConst = "read-manga/";
+                break;
             default:
                 galleryConst = "";
         }

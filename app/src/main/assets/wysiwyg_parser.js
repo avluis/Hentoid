@@ -31,19 +31,23 @@ document.addEventListener("DOMContentLoaded", (event) => {
 function eval() {
   return new Promise((resolve) => {
     setTimeout(() => {
-        if (document.querySelector("#metadata") != null) {
+        if (document.querySelector("$selector") != null) {
+            console.info("resolve OK");
             $interface.$fun(document.URL, document.querySelector("html").innerHTML);
             resolve(true);
         } else {
+            console.info("resolve KO");
             resolve(false);
         }
-    }, 1500);
+    }, 750);
   });
 }
 
 async function aaa() {
     console.info("ready");
     var result = await eval();
+    if (!result) result = await eval();
+    if (!result) result = await eval();
     if (!result) result = await eval();
     if (!result) result = await eval();
 }

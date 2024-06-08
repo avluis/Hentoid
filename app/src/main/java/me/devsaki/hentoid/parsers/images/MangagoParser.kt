@@ -1,6 +1,16 @@
 package me.devsaki.hentoid.parsers.images
 
+import android.os.Handler
+import android.os.Looper
 import android.webkit.URLUtil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import me.devsaki.hentoid.activities.sources.MGG_CHAPTER_PATTERN
+import me.devsaki.hentoid.activities.sources.MangagoActivity
+import me.devsaki.hentoid.activities.sources.WebResultConsumer
+import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -12,17 +22,24 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.getMaxImageOrder
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.exception.ParseException
+import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
+import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getOnlineDocument
+import me.devsaki.hentoid.views.WysiwygBackgroundWebView
 import org.greenrobot.eventbus.EventBus
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
-class PorncomixParser : BaseImageListParser() {
+class MangagoParser : BaseImageListParser(), WebResultConsumer {
+    private val resultCode = AtomicInteger(-1)
+    private val resultContent = AtomicReference<Content>()
+    private var webview: WysiwygBackgroundWebView? = null
+
     override fun isChapterUrl(url: String): Boolean {
-        return url.split("/").count() > 6
+        return MGG_CHAPTER_PATTERN.matcher(url).find()
     }
 
     override fun parseImages(content: Content): List<String> {
@@ -49,12 +66,16 @@ class PorncomixParser : BaseImageListParser() {
         require(URLUtil.isValidUrl(readerUrl)) { "Invalid gallery URL : $readerUrl" }
         Timber.d("Gallery URL: %s", readerUrl)
         EventBus.getDefault().register(this)
-        val result: List<ImageFile>
+        var result: List<ImageFile>
         try {
             result = parseImageFiles(onlineContent, storedContent)
             setDownloadParams(result, onlineContent.site.url)
+        } catch (e: Exception) {
+            Helper.logException(e)
+            result = emptyList()
         } finally {
             EventBus.getDefault().unregister(this)
+            clear()
         }
         return result
     }
@@ -73,8 +94,7 @@ class PorncomixParser : BaseImageListParser() {
             Site.PORNCOMIX.useWebviewAgent()
         )
             ?: return result
-        val chapterLinks: List<Element> =
-            doc.select(".wp-manga-chapter a[href^=" + onlineContent.galleryUrl + "]")
+        val chapterLinks = doc.select("#chapter_table a[href*='/read-manga/']")
         chapters = getChaptersFromLinks(chapterLinks, onlineContent.id)
 
         // If the stored content has chapters already, save them for comparison
@@ -100,7 +120,6 @@ class PorncomixParser : BaseImageListParser() {
                     onlineContent,
                     chp,
                     imgOffset + result.size + 1,
-                    headers,
                     false
                 )
             )
@@ -122,85 +141,92 @@ class PorncomixParser : BaseImageListParser() {
         val result: List<ImageFile>
         try {
             val ch = Chapter().setUrl(url) // Forge a chapter
-            result = parseChapterImageFiles(content, ch, 1, null)
+            result = parseChapterImageFiles(content, ch, 1)
             setDownloadParams(result, content.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
+            clear()
         }
         return result
     }
 
     @Throws(Exception::class)
-    private fun parseChapterImageFiles(
+    fun parseChapterImageFiles(
         content: Content,
         chp: Chapter,
         targetOrder: Int,
-        headers: List<Pair<String, String>>?,
         fireProgressEvents: Boolean = true
     ): List<ImageFile> {
-        // Fetch the book gallery page
-        val doc = getOnlineDocument(
-            chp.url,
-            headers ?: fetchHeaders(content),
-            Site.PORNCOMIX.useHentoidAgent(),
-            Site.PORNCOMIX.useWebviewAgent()
-        ) ?: throw ParseException("Document unreachable : " + content.galleryUrl)
+        val picSelector = "#pic_container img"
+        val result: MutableList<String> = ArrayList()
+        var done = false
 
-        var result = parseComixImages(content, doc, fireProgressEvents)
-        if (result.isEmpty()) result = parseXxxToonImages(doc)
-        if (result.isEmpty()) result = parseGedeComixImages(doc)
-        if (result.isEmpty()) result = parseAllPornComixImages(doc)
+        CoroutineScope(Dispatchers.Default).launch {
+            withContext(Dispatchers.Main) {
+                Timber.d("Attaching wv BEGIN")
+                webview = WysiwygBackgroundWebView(
+                    getInstance(),
+                    MangagoActivity.MangagoWebClient(this@MangagoParser)
+                )
+                Timber.d("Attaching wv END")
+            }
+
+            Timber.d("Loading 1st page")
+            val pageUrls: MutableList<String> = ArrayList()
+            webview?.loadUrlBlocking(chp.url, processHalted)?.let { doc ->
+                Timber.d("Document loaded !")
+                val pageNav = doc.select("#dropdown-menu-page a")
+                pageUrls.addAll(pageNav.map { fixUrl(it.attr("href"), content.site.url) })
+
+                val pics = doc.select(picSelector)
+                result.addAll(pics.map { getImgSrc(it) })
+            }
+            if (fireProgressEvents) progressStart(content, null, pageUrls.size)
+            Timber.d("Looping through pages")
+            while (result.size < pageUrls.size) {
+                if (processHalted.get()) break
+                webview?.loadUrlBlocking(pageUrls[result.size], processHalted)?.let { doc ->
+                    Timber.d("Document loaded !")
+                    val pics = doc.select(picSelector)
+                    result.addAll(pics.map { getImgSrc(it) }
+                        // Cuz domain names with an _ (see https://github.com/google/conscrypt/issues/821)
+                        .map { it.replace("https:", "http:") }
+                    )
+                    if (fireProgressEvents) progressPlus(pics.size)
+                }
+                Timber.d("%d pages found / %d", result.size, pageUrls.size)
+            }
+            if (fireProgressEvents) progressComplete()
+            done = true
+        }
+
+        // Block calling thread until done
+        var remainingIterations = 5 * 60 * 2 // Timeout 5 mins
+        while (!done && remainingIterations-- > 0 && !processHalted.get()) Helper.pause(500)
+        Timber.v("%s with %d iterations remaining", done, remainingIterations)
+        if (processHalted.get()) throw EmptyResultException("Unable to detect pages (empty result)")
 
         return urlsToImageFiles(result, targetOrder, StatusContent.SAVED, 1000, chp)
     }
 
-    @Throws(Exception::class)
-    fun parseComixImages(
-        content: Content,
-        doc: Document,
-        fireProgressEvents: Boolean
-    ): List<String> {
-        val pagesNavigator: List<Element> = doc.select(".select-pagination select option")
-        if (pagesNavigator.isEmpty()) return emptyList()
-        val pageUrls =
-            pagesNavigator.mapNotNull { e -> e.attr("data-redirect") }.distinct()
-        val result: MutableList<String> = ArrayList()
-        if (fireProgressEvents) progressStart(content, null, pageUrls.size)
-        for (pageUrl in pageUrls) {
-            getOnlineDocument(
-                pageUrl,
-                null,
-                Site.PORNCOMIX.useHentoidAgent(),
-                Site.PORNCOMIX.useWebviewAgent()
-            )?.let {
-                it.selectFirst(".entry-content img")?.let { img ->
-                    result.add(getImgSrc(img))
-                }
-            }
-            if (processHalted.get()) break
-            if (fireProgressEvents) progressPlus()
+    override fun clear() {
+        val handler = Handler(Looper.getMainLooper())
+        handler.post {
+            webview?.destroy()
+            webview = null
         }
-        // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted.get()) throw PreparationInterruptedException()
-        if (fireProgressEvents) progressComplete()
-        return result
     }
 
-    private fun parseXxxToonImages(doc: Document): List<String> {
-        val pages: List<Element> = doc.select("figure.msnry_items a").filterNotNull()
-        return if (pages.isEmpty()) emptyList()
-        else pages.mapNotNull { it.attr("href") }.distinct()
+    override fun onContentReady(result: Content, quickDownload: Boolean) {
+        resultContent.set(result)
+        resultCode.set(0)
     }
 
-    private fun parseGedeComixImages(doc: Document): List<String> {
-        val pages: List<Element> = doc.select(".reading-content img").filterNotNull()
-        return if (pages.isEmpty()) emptyList()
-        else pages.map { getImgSrc(it) }.distinct()
+    override fun onNoResult() {
+        resultCode.set(1)
     }
 
-    private fun parseAllPornComixImages(doc: Document): List<String> {
-        val pages: List<Element> = doc.select("#jig1 a").filterNotNull()
-        return if (pages.isEmpty()) emptyList()
-        else pages.mapNotNull { it.attr("href") }.distinct()
+    override fun onResultFailed() {
+        resultCode.set(2)
     }
 }

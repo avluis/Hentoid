@@ -128,8 +128,8 @@ abstract class BaseImageListParser : ImageListParser {
         progress.start(onlineContent.id, storedId, maxSteps)
     }
 
-    open fun progressPlus() {
-        progress.advance()
+    open fun progressPlus(steps: Int = 1) {
+        for (i in 1..steps) progress.advance()
     }
 
     open fun progressComplete() {

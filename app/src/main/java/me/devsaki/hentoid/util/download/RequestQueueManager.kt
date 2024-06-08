@@ -135,8 +135,7 @@ class RequestQueueManager private constructor(
      */
     private fun isNewRequestAllowed(): Boolean {
         val remainingSlots = downloadThreadCount - nbActiveRequests
-        if (remainingSlots < 1) return false
-        return true
+        return remainingSlots >= 1
     }
 
     /**

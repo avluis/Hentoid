@@ -135,6 +135,9 @@
             android:name=".activities.sources.DeviantArtActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.MangagoActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -628,6 +631,17 @@
 
                 <data
                     android:host="deviantart.com"
+                    android:pathPattern="/..*/art/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="mangago.me"
                     android:pathPattern="/..*/art/"
                     android:scheme="https" />
             </intent-filter>

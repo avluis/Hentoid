@@ -1259,6 +1259,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     }
                 } catch (e: IOException) {
                     Timber.w(e)
+                } catch (e: IllegalArgumentException) {
+                    Timber.w(e)
                 }
                 // Look for duplicates
                 try {
