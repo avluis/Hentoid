@@ -929,13 +929,15 @@ data class Cookie(
 
 /**
  * Class to parse and manipulate Uri parts
+ * Example source Uri : http://host.ext:80/this/is/the/police.jpg?query=here#anchor
  */
 class UriParts(uri: String, lowercase: Boolean = false) {
-    var path: String
-    var fileNameNoExt: String
-    var extension: String
-    var query: String
-    private var fragment: String
+    val host: String // Host alone (e.g. http://host.ext:80)
+    var path: String // Entire path, host included (e.g. http://host.ext:80/this/is/the/police)
+    var fileNameNoExt: String // Filename without extension (e.g. police)
+    var extension: String // File extension alone (e.g. jpg)
+    var query: String // Query alone (e.g. query=here)
+    private var fragment: String // Fragment alone (e.g. anchor)
 
     init {
         var uriNoParams = if (lowercase) uri.lowercase(Locale.getDefault()) else uri
@@ -951,6 +953,10 @@ class UriParts(uri: String, lowercase: Boolean = false) {
         } else query = ""
         val pathIndex = uriNoParams.lastIndexOf('/')
         path = if (pathIndex > -1) uriNoParams.substring(0, pathIndex) else uriNoParams
+        val protocolEndIndex = path.indexOf("://")
+        val hostEndIndex = path.indexOf("/", protocolEndIndex + 3)
+        host = if (hostEndIndex > -1) path.substring(0, hostEndIndex) else path
+
         val extIndex = uriNoParams.lastIndexOf('.')
         // No file extension detected
         if (extIndex < 0 || extIndex < pathIndex) {

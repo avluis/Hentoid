@@ -25,6 +25,7 @@ import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import me.devsaki.hentoid.views.WysiwygBackgroundWebView
@@ -107,14 +108,14 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
         // If the stored content has chapters already, save them for comparison
         var storedChapters: List<Chapter>? = null
         if (storedContent != null) {
-            storedChapters = storedContent.chapters
-            if (storedChapters != null) storedChapters =
-                storedChapters.toMutableList() // Work on a copy
+            storedChapters = storedContent.chaptersList.toMutableList() // Work on a copy
         }
         if (null == storedChapters) storedChapters = emptyList()
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
-        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters, 1)
+        // NB : Interesting part depends on where the chapter is hosted; assuming all chapters are stored in the same place for now....
+        val lastPartIndex = if (chapters.any { it.url.contains("/mangago.me/") }) 1 else 0
+        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters, lastPartIndex)
         progressStart(onlineContent, storedContent, extraChapters.size)
 
         // Start numbering extra images right after the last position of stored and chaptered images
@@ -182,7 +183,9 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
             webview?.loadUrlBlocking(chp.url, processHalted)?.let { doc ->
                 Timber.d("Document loaded !")
                 val pageNav = doc.select("#dropdown-menu-page a")
-                pageUrls.addAll(pageNav.map { fixUrl(it.attr("href"), content.site.url) })
+                // The prefix of the URL is not necessarily the Site's, as Mangago can link chapters from its sister websites (e.g. mangago.zone, youhim.me)
+                val domain = UriParts(chp.url).host
+                pageUrls.addAll(pageNav.map { fixUrl(it.attr("href"), domain) })
 
                 val pics = doc.select(PIC_SELECTOR)
                 result.addAll(pics.map { getImgSrc(it) })
