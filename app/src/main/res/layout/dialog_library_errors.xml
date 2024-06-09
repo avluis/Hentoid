@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:gravity="start"
     android:padding="16dp"
-    app:theme="@style/Theme.Light.DialogFragment">
+    android:theme="@style/Theme.Light.DialogFragment">
 
     <TextView
         android:id="@+id/redownload_title"

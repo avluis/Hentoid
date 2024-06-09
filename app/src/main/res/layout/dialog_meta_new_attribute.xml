@@ -6,19 +6,19 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:padding="16dp"
-    app:theme="@style/Theme.Light.DialogFragment">
+    android:theme="@style/Theme.Light.DialogFragment">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        tools:text="@string/meta_choose_type"
         android:textSize="@dimen/text_header_6"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/meta_choose_type" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
