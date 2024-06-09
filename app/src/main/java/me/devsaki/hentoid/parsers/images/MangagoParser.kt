@@ -150,6 +150,10 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
         try {
             val ch = Chapter().setUrl(url) // Forge a chapter
             result = parseChapterImageFiles(content, ch, 1)
+            if (result.isNotEmpty()) {
+                content.coverImageUrl = result[0].url
+                content.isUpdatedProperties = true
+            }
             setDownloadParams(result, content.site.url)
         } finally {
             EventBus.getDefault().unregister(this)

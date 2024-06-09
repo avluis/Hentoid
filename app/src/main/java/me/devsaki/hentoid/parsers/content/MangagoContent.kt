@@ -25,11 +25,25 @@ class MangagoContent : BaseContentParser() {
     @Selector(value = "#information a[href*='/genre/']")
     private var tags: List<Element>? = null
 
+    @Selector(value = "title", defValue = "")
+    private lateinit var chapterTitle1: String
+
+    @Selector(value = "#series", defValue = "")
+    private lateinit var chapterTitle2: String
+
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         content.site = Site.MANGAGO
         content.setRawUrl(url)
         content.title = cleanup(title)
+
+        if (content.title.isEmpty())
+            content.title = cleanup(
+                chapterTitle1
+                    .replace(" - Mangago", "")
+                    .replace(" Page 1", "")
+            )
+        if (content.title.isEmpty()) content.title = cleanup(chapterTitle2)
 
         if (!coverUrl.startsWith("http")) coverUrl += getHttpProtocol(url) + ":" + coverUrl
         content.setCoverImageUrl(coverUrl)
