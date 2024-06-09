@@ -8,14 +8,21 @@ import me.devsaki.hentoid.util.exception.LimitReachedException
 import java.io.IOException
 
 interface ImageListParser {
+    /**
+     * Parse image list from the given URL, enriching the given Content if relevant (see Content.updatedProperties)
+     */
     @Throws(Exception::class)
     fun parseImageList(content: Content, url: String): List<ImageFile>
 
+    /**
+     * Parse image list from the given online Content, retrieving only images from chapters
+     * that aren't already in the given stored Content
+     */
     @Throws(Exception::class)
     fun parseImageList(onlineContent: Content, storedContent: Content): List<ImageFile>
 
     /**
-     * Returns URL and backup URL
+     * Returns image URL and backup URL from the given page URL
      */
     @Throws(IOException::class, LimitReachedException::class, EmptyResultException::class)
     fun parseImagePage(
