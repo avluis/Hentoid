@@ -190,7 +190,7 @@ class PixivParser : BaseImageListParser() {
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
         val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters)
-        progressStart(onlineContent, storedContent, extraChapters.size)
+        progressStart(onlineContent, storedContent)
 
         // Start numbering extra images right after the last position of stored and chaptered images
         var imgOffset = getMaxImageOrder(storedChapters) + 1
@@ -199,7 +199,8 @@ class PixivParser : BaseImageListParser() {
         val result: MutableList<ImageFile> = ArrayList()
         result.add(ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED))
         val attrs: MutableSet<Attribute> = HashSet()
-        for (ch in extraChapters) {
+        extraChapters.forEachIndexed { index, ch ->
+            if (processHalted.get()) return@forEachIndexed
             take()
             val illustMetadata =
                 PixivServer.api.getIllustMetadata(ch.uniqueId, cookieStr, acceptAll, userAgent)
@@ -214,8 +215,7 @@ class PixivParser : BaseImageListParser() {
             val chapterImages = illustMetadata.getImageFiles()
             for (img in chapterImages) img.setOrder(imgOffset++).computeName(4).setChapter(ch)
             result.addAll(chapterImages)
-            if (processHalted.get()) break
-            progressPlus()
+            progressPlus(index + 1f / extraChapters.size)
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
@@ -280,7 +280,7 @@ class PixivParser : BaseImageListParser() {
         else illustIds = getExtraChaptersbyId(storedChapters, illustIds)
 
         // Work on detected extra chapters
-        progressStart(onlineContent, storedContent, illustIds.size)
+        progressStart(onlineContent, storedContent)
 
         // Start numbering extra images & chapters right after the last position of stored and chaptered images & chapters
         var imgOffset = getMaxImageOrder(storedChapters) + 1
@@ -290,10 +290,10 @@ class PixivParser : BaseImageListParser() {
         val result: MutableList<ImageFile> = ArrayList()
         result.add(ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED))
         val attrs: MutableSet<Attribute> = HashSet()
-        var index = 0
-        for (illustId in illustIds) {
+        illustIds.forEachIndexed { index, illustId ->
             waited = 0
             take()
+            if (processHalted.get()) return@forEachIndexed
             var illustResp =
                 PixivServer.api.getIllustMetadata(illustId, cookieStr, acceptAll, userAgent)
                     .execute()
@@ -332,9 +332,7 @@ class PixivParser : BaseImageListParser() {
             val chapterImages = illustMetadata.getImageFiles()
             for (img in chapterImages) img.setOrder(imgOffset++).computeName(4).setChapter(chp)
             result.addAll(chapterImages)
-            if (processHalted.get()) break
-            progressPlus()
-            index++
+            progressPlus(index + 1f / illustIds.size)
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()

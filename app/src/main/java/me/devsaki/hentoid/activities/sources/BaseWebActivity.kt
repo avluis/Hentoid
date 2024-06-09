@@ -110,6 +110,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.time.Instant
 import java.util.Locale
+import kotlin.math.round
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -364,8 +365,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Show progress if it's about current content or its best duplicate
         if (currentContent != null && isInLibrary(currentContent!!.status) && event.getRelevantId() == currentContent!!.id || duplicateId > 0 && event.getRelevantId() == duplicateId) {
             binding?.apply {
-                progressBar.max = event.total
-                progressBar.progress = event.done
+                progressBar.max = 100
+                progressBar.progress = round(event.progress * 100).toInt()
                 progressBar.progressTintList = ColorStateList.valueOf(
                     ContextCompat.getColor(baseContext, R.color.secondary_light)
                 )

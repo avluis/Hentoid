@@ -110,14 +110,15 @@ class ManhwaParser : BaseImageListParser() {
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
         val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters)
-        progressStart(onlineContent, storedContent, extraChapters.size)
+        progressStart(onlineContent, storedContent)
 
         // Start numbering extra images right after the last position of stored and chaptered images
         val imgOffset = getMaxImageOrder(storedChapters)
 
         // 2- Open each chapter URL and get the image data until all images are found
         var storedOrderOffset = getMaxChapterOrder(storedChapters)
-        for (chp in extraChapters) {
+        extraChapters.forEachIndexed { index, chp ->
+            if (processHalted.get()) return@forEachIndexed
             chp.setOrder(++storedOrderOffset)
             result.addAll(
                 parseChapterImageFiles(
@@ -127,8 +128,7 @@ class ManhwaParser : BaseImageListParser() {
                     headers
                 )
             )
-            if (processHalted.get()) break
-            progressPlus()
+            progressPlus(index + 1f / extraChapters.size)
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
@@ -168,16 +168,14 @@ class ManhwaParser : BaseImageListParser() {
         targetOrder: Int,
         headers: List<Pair<String, String>>?
     ): List<ImageFile> {
-        val doc = getOnlineDocument(
+        getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
             content.site.useHentoidAgent(),
             content.site.useWebviewAgent()
-        )
-        if (doc != null) {
+        )?.let { doc ->
             val images: List<Element> = doc.select(".reading-content img")
-            val urls = images.map { e -> getImgSrc(e) }
-                .filterNot { e -> e.isEmpty() }
+            val urls = images.map { getImgSrc(it) }.filterNot { it.isEmpty() }
             if (urls.isNotEmpty()) return urlsToImageFiles(
                 urls,
                 targetOrder,
@@ -185,7 +183,7 @@ class ManhwaParser : BaseImageListParser() {
                 1000,
                 chp
             ) else Timber.w("Chapter parsing failed for %s : no pictures found", chp.url)
-        } else {
+        } ?: {
             Timber.w("Chapter parsing failed for %s : no response", chp.url)
         }
         return emptyList()

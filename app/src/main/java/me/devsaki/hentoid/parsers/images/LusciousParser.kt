@@ -38,6 +38,7 @@ class LusciousParser : BaseImageListParser() {
         val isManga = (!cats.isNullOrEmpty() && cats.first().name.equals("manga"))
 
         result.add(ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED))
+        progressStart(onlineContent)
         getPages(
             onlineContent,
             onlineContent.uniqueSiteId,
@@ -45,7 +46,6 @@ class LusciousParser : BaseImageListParser() {
             isManga,
             result
         )
-
         progressComplete()
 
         return result
@@ -83,8 +83,7 @@ class LusciousParser : BaseImageListParser() {
                 }
                 imageFiles.addAll(metadata.toImageFileList(imageFiles.size - 1)) // Don't count cover in the offset
                 if (metadata.getNbPages() > pageNumber) {
-                    progressStart(content, null, metadata.getNbPages())
-                    progressPlus()
+                    progressPlus(pageNumber * 1f / metadata.getNbPages())
                     getPages(content, bookId, pageNumber + 1, isManga, imageFiles)
                 } else {
                     content.setImageFiles(imageFiles)

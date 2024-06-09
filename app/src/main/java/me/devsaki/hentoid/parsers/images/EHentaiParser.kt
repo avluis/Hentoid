@@ -311,7 +311,7 @@ class EHentaiParser : ImageListParser {
 
             val tabId = if (1 == elements.size) 0 else elements.size - 2
             val nbGalleryPages = elements[tabId].text().toInt()
-            progress.start(content.id, -1, nbGalleryPages)
+            progress.start(content.id)
 
             // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
             val pageUrls: MutableList<String> = ArrayList()
@@ -319,14 +319,13 @@ class EHentaiParser : ImageListParser {
             if (nbGalleryPages > 1) {
                 var i = 1
                 while (i < nbGalleryPages && !progress.isProcessHalted()) {
-                    val pageDoc = getOnlineDocument(
+                    getOnlineDocument(
                         content.galleryUrl + "/?p=" + i,
                         headers,
                         useHentoidAgent,
                         useWebviewAgent
-                    )
-                    pageDoc?.let { fetchPageUrls(it, pageUrls) }
-                    progress.advance()
+                    )?.let { fetchPageUrls(it, pageUrls) }
+                    progress.advance(i * 1f / nbGalleryPages)
                     i++
                 }
             }

@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.util
 
-class ProgressManager(private val nbSteps: Int) {
+import kotlin.math.max
+
+class ProgressManager(private val nbSteps: Int = 1) {
     private val steps = HashMap<String, Float>()
 
     fun setProgress(step: String, progress: Float) {
@@ -8,6 +10,6 @@ class ProgressManager(private val nbSteps: Int) {
     }
 
     fun getGlobalProgress(): Float {
-        return steps.values.sum() / nbSteps
+        return steps.values.sum() / max(nbSteps, steps.size)
     }
 }

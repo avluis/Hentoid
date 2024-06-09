@@ -275,14 +275,13 @@ fun urlToImageFile(
 /**
  * Signal download preparation event for the given processed elements
  *
- * @param contentId   Online content ID being processed
- * @param storedId    Stored content ID being processed
- * @param currentStep Current processing step
- * @param maxSteps    Maximum processing step
+ * @param contentId Online content ID being processed
+ * @param storedId  Stored content ID being processed
+ * @param progress  Progress (0.0 -> 1.0)
  */
-fun signalProgress(contentId: Long, storedId: Long, currentStep: Int, maxSteps: Int) {
+fun signalProgress(contentId: Long, storedId: Long, progress: Float) {
     EventBus.getDefault()
-        .post(DownloadPreparationEvent(contentId, storedId, currentStep, maxSteps))
+        .post(DownloadPreparationEvent(contentId, storedId, progress))
 }
 
 /**

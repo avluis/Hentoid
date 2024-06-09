@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.parsers.images
 
-import android.os.Handler
-import android.os.Looper
 import android.webkit.URLUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -114,7 +112,7 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
         // NB : Interesting part depends on where the chapter is hosted; assuming all chapters are stored in the same place for now....
-        val lastPartIndex = if (chapters.any { it.url.contains("/mangago.me/") }) 1 else 0
+        val lastPartIndex = if (chapters.any { it.url.contains("mangago.me/") }) 1 else 0
         val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters, lastPartIndex)
         progressStart(onlineContent, storedContent, extraChapters.size)
 
@@ -122,7 +120,8 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
         val imgOffset = getMaxImageOrder(storedChapters)
 
         // 2. Open each chapter URL and get the image data until all images are found
-        for (chp in extraChapters) {
+        extraChapters.forEach { chp ->
+            if (processHalted.get()) return@forEach
             result.addAll(
                 parseChapterImageFiles(
                     onlineContent,
@@ -131,8 +130,7 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
                     false
                 )
             )
-            if (processHalted.get()) break
-            progressPlus()
+            progressNext()
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
@@ -194,7 +192,7 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
                 val pics = doc.select(PIC_SELECTOR)
                 result.addAll(pics.map { getImgSrc(it) })
             }
-            if (fireProgressEvents) progressStart(content, null, pageUrls.size)
+            if (fireProgressEvents) progressStart(content)
             Timber.d("Looping through pages")
             while (result.size < pageUrls.size) {
                 if (processHalted.get()) break
@@ -205,7 +203,7 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
                         // Cuz domain names with an _ (see https://github.com/google/conscrypt/issues/821)
                         .map { it.replace("https:", "http:") }
                     )
-                    if (fireProgressEvents) progressPlus(pics.size)
+                    progressPlus(result.size * 1f / pageUrls.size)
                 }
                 Timber.d("%d pages found / %d", result.size, pageUrls.size)
             }
@@ -223,8 +221,8 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
     }
 
     override fun clear() {
-        val handler = Handler(Looper.getMainLooper())
-        handler.post {
+        CoroutineScope(Dispatchers.Main).launch {
+            webview?.clear()
             webview?.destroy()
             webview = null
         }

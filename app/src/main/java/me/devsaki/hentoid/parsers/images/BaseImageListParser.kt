@@ -122,14 +122,22 @@ abstract class BaseImageListParser : ImageListParser {
         return result
     }
 
-    open fun progressStart(onlineContent: Content, storedContent: Content?, maxSteps: Int) {
+    open fun progressStart(
+        onlineContent: Content,
+        storedContent: Content? = null,
+        maxSteps: Int = 1
+    ) {
         if (progress.hasStarted()) return
         val storedId = storedContent?.id ?: -1
         progress.start(onlineContent.id, storedId, maxSteps)
     }
 
-    open fun progressPlus(steps: Int = 1) {
-        for (i in 1..steps) progress.advance()
+    open fun progressPlus(progress: Float) {
+        this.progress.advance(progress)
+    }
+
+    open fun progressNext() {
+        progress.nextStep()
     }
 
     open fun progressComplete() {

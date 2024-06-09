@@ -117,13 +117,14 @@ class Hentai2ReadParser : BaseImageListParser() {
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
         val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters)
-        progressStart(onlineContent, storedContent, extraChapters.size)
+        progressStart(onlineContent, storedContent)
 
         // Start numbering extra images right after the last position of stored and chaptered images
         val imgOffset = getMaxImageOrder(storedChapters)
 
         // 2. Open each chapter URL and get the image data until all images are found
-        for (chp in extraChapters) {
+        extraChapters.forEachIndexed { index, chp ->
+            if (processHalted.get()) return@forEachIndexed
             result.addAll(
                 parseChapterImageFiles(
                     onlineContent,
@@ -132,8 +133,7 @@ class Hentai2ReadParser : BaseImageListParser() {
                     headers
                 )
             )
-            if (processHalted.get()) break
-            progressPlus()
+            progressPlus(index + 1f / extraChapters.size)
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
@@ -165,16 +165,14 @@ class Hentai2ReadParser : BaseImageListParser() {
         targetOrder: Int,
         headers: List<Pair<String, String>>?
     ): List<ImageFile> {
-        val doc = getOnlineDocument(
+        getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
             content.site.useHentoidAgent(),
             content.site.useWebviewAgent()
-        )
-        if (doc != null) {
+        )?.let { doc ->
             val scripts: List<Element> = doc.select("script")
-            val info = getDataFromScripts(scripts)
-            if (info != null) {
+            getDataFromScripts(scripts)?.let { info ->
                 val imageUrls = info.images.map { s -> IMAGE_PATH + s }
                 if (imageUrls.isNotEmpty()) return urlsToImageFiles(
                     imageUrls,
@@ -183,8 +181,8 @@ class Hentai2ReadParser : BaseImageListParser() {
                     1000,
                     chp
                 )
-            } else Timber.i("Chapter parsing failed for %s : no pictures found", chp.url)
-        } else {
+            } ?: Timber.i("Chapter parsing failed for %s : no pictures found", chp.url)
+        } ?: {
             Timber.i("Chapter parsing failed for %s : no response", chp.url)
         }
         return emptyList()

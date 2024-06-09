@@ -176,11 +176,11 @@ class DeviantArtParser : BaseImageListParser() {
 
     override fun parseImagePage(
         url: String,
-        headers: List<Pair<String, String>>
+        requestHeaders: List<Pair<String, String>>
     ): Pair<String, String?> {
         getOnlineDocument(
             url,
-            headers,
+            requestHeaders,
             Site.DEVIANTART.useHentoidAgent(),
             Site.DEVIANTART.useWebviewAgent()
         )?.let {

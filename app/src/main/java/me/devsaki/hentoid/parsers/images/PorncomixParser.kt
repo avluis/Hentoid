@@ -94,7 +94,8 @@ class PorncomixParser : BaseImageListParser() {
         val imgOffset = getMaxImageOrder(storedChapters)
 
         // 2. Open each chapter URL and get the image data until all images are found
-        for (chp in extraChapters) {
+        extraChapters.forEach { chp ->
+            if (processHalted.get()) return@forEach
             result.addAll(
                 parseChapterImageFiles(
                     onlineContent,
@@ -104,8 +105,7 @@ class PorncomixParser : BaseImageListParser() {
                     false
                 )
             )
-            if (processHalted.get()) break
-            progressPlus()
+            progressNext()
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
@@ -165,8 +165,9 @@ class PorncomixParser : BaseImageListParser() {
         val pageUrls =
             pagesNavigator.mapNotNull { e -> e.attr("data-redirect") }.distinct()
         val result: MutableList<String> = ArrayList()
-        if (fireProgressEvents) progressStart(content, null, pageUrls.size)
-        for (pageUrl in pageUrls) {
+        if (fireProgressEvents) progressStart(content)
+        pageUrls.forEachIndexed { index, pageUrl ->
+            if (processHalted.get()) return@forEachIndexed
             getOnlineDocument(
                 pageUrl,
                 null,
@@ -177,8 +178,7 @@ class PorncomixParser : BaseImageListParser() {
                     result.add(getImgSrc(img))
                 }
             }
-            if (processHalted.get()) break
-            if (fireProgressEvents) progressPlus()
+            progressPlus(index + 1f / pageUrls.size)
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()

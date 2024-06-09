@@ -85,13 +85,14 @@ class PururinParser : BaseImageListParser() {
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
         val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters)
-        progressStart(onlineContent, storedContent, extraChapters.size)
+        progressStart(onlineContent, storedContent)
 
         // Start numbering extra images right after the last position of stored and chaptered images
         val imgOffset = getMaxImageOrder(storedChapters)
 
         // 2. Open each chapter URL and get the image data until all images are found
-        for (chp in extraChapters) {
+        extraChapters.forEachIndexed { index, chp ->
+            if (processHalted.get()) return@forEachIndexed
             result.addAll(
                 parseChapterImageFiles(
                     onlineContent,
@@ -100,8 +101,7 @@ class PururinParser : BaseImageListParser() {
                     headers
                 )
             )
-            if (processHalted.get()) break
-            progressPlus()
+            progressPlus(index + 1f / extraChapters.size)
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()

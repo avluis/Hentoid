@@ -1,22 +1,22 @@
 package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.parsers.signalProgress
+import me.devsaki.hentoid.util.ProgressManager
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ParseProgress {
     private var contentId: Long = 0
     private var storedId: Long = 0
-    private var currentStep = 0
-    private var maxSteps = 0
     private var hasStarted = false
+    private var currentStep = 0
+    private lateinit var progressMgr: ProgressManager
     private val processHalted = AtomicBoolean(false)
 
-    fun start(contentId: Long, storedId: Long, maxSteps: Int) {
+    fun start(contentId: Long, storedId: Long = -1, maxSteps: Int = 1) {
         this.contentId = contentId
         this.storedId = storedId
-        currentStep = 0
-        this.maxSteps = maxSteps
-        signalProgress(contentId, storedId, currentStep, maxSteps)
+        progressMgr = ProgressManager(maxSteps)
+        signalProgress(contentId, storedId, 0f)
         hasStarted = true
     }
 
@@ -32,11 +32,17 @@ class ParseProgress {
         processHalted.set(true)
     }
 
-    fun advance() {
-        signalProgress(contentId, storedId, ++currentStep, maxSteps)
+    fun nextStep() {
+        progressMgr.setProgress(currentStep.toString(), 1f)
+        currentStep++
+    }
+
+    fun advance(progress: Float) {
+        progressMgr.setProgress(currentStep.toString(), progress)
+        signalProgress(contentId, storedId, progressMgr.getGlobalProgress())
     }
 
     fun complete() {
-        signalProgress(contentId, storedId, maxSteps, maxSteps)
+        signalProgress(contentId, storedId, 1f)
     }
 }

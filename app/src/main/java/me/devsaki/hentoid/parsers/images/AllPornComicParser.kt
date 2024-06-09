@@ -20,13 +20,12 @@ class AllPornComicParser : BaseImageListParser() {
 
         // 1. Scan the gallery page for chapter URLs
         val chapterUrls: MutableList<String> = ArrayList()
-        val doc = getOnlineDocument(
+        getOnlineDocument(
             content.galleryUrl,
             headers,
             Site.ALLPORNCOMIC.useHentoidAgent(),
             Site.ALLPORNCOMIC.useWebviewAgent()
-        )
-        if (doc != null) {
+        )?.let { doc ->
             val chapters: List<Element> = doc.select("[class^=wp-manga-chapter] a")
             for (e in chapters) {
                 val link = e.attr("href")
@@ -34,13 +33,13 @@ class AllPornComicParser : BaseImageListParser() {
             }
         }
         chapterUrls.reverse() // Put the chapters in the correct reading order
-        progressStart(content, null, chapterUrls.size)
+        progressStart(content)
 
         // 2. Open each chapter URL and get the image data until all images are found
-        for (url in chapterUrls) {
+        chapterUrls.forEachIndexed { index, url ->
+            if (processHalted.get()) return@forEachIndexed
             result.addAll(parseImages(url, null, headers))
-            if (processHalted.get()) break
-            progressPlus()
+            progressPlus((index + 1f) / chapterUrls.size)
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
@@ -56,13 +55,12 @@ class AllPornComicParser : BaseImageListParser() {
         val theHeaders = headers ?: fetchHeaders(chapterUrl, downloadParams)
 
         if (processedUrl.isEmpty()) processedUrl = chapterUrl
-        val doc = getOnlineDocument(
+        getOnlineDocument(
             chapterUrl,
             theHeaders,
             Site.ALLPORNCOMIC.useHentoidAgent(),
             Site.ALLPORNCOMIC.useWebviewAgent()
-        )
-        if (doc != null) {
+        )?.let { doc ->
             val images: List<Element> = doc.select("[class^=page-break] img")
             return images.map { getImgSrc(it) }.filterNot { it.isEmpty() }
         }

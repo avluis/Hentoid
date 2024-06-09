@@ -39,13 +39,13 @@ class MrmParser : BaseImageListParser() {
         }
         if (chapterUrls.isEmpty()) chapterUrls.add(content.galleryUrl) // "one-shot" book
 
-        progressStart(content, null, chapterUrls.size)
+        progressStart(content)
 
         // 2. Open each chapter URL and get the image data until all images are found
-        for (url in chapterUrls) {
+        chapterUrls.forEachIndexed { index, url ->
+            if (processHalted.get()) return@forEachIndexed
             result.addAll(parseImages(url, null, headers))
-            if (processHalted.get()) break
-            progressPlus()
+            progressPlus(index + 1f / chapterUrls.size)
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
@@ -63,15 +63,14 @@ class MrmParser : BaseImageListParser() {
     ): List<String> {
         if (processedUrl.isEmpty()) processedUrl = chapterUrl
 
-        val doc = getOnlineDocument(
+        getOnlineDocument(
             chapterUrl,
             headers ?: fetchHeaders(chapterUrl, downloadParams),
             Site.MRM.useHentoidAgent(),
             Site.MRM.useWebviewAgent()
-        )
-        if (doc != null) {
+        )?.let { doc ->
             val images: List<Element> = doc.select(".entry-content img").filterNotNull()
-            return images.map { e -> getImgSrc(e) }.filterNot { s -> s.isEmpty() }
+            return images.map { getImgSrc(it) }.filterNot { it.isEmpty() }
         }
         return emptyList()
     }

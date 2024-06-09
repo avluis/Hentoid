@@ -91,6 +91,7 @@ import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.lang.ref.WeakReference
 import kotlin.math.max
+import kotlin.math.round
 
 /**
  * Downloads queue screen
@@ -604,10 +605,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 visibility = View.INVISIBLE
             }
 
-            progress = if (event.total > 0)
-                event.done * 100 / event.total
-            else
-                100
+            progress = round(event.progress * 100).toInt()
         }
     }
 
