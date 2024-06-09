@@ -4,6 +4,9 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.URLUtil
 import android.webkit.WebView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -31,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 class HitomiParser : BaseImageListParser() {
 
-    private var hitomiWv: HitomiBackgroundWebView? = null
+    private var webview: HitomiBackgroundWebView? = null
 
     @Throws(Exception::class)
     override fun parseImageListImpl(
@@ -88,10 +91,10 @@ class HitomiParser : BaseImageListParser() {
         val handler = Handler(Looper.getMainLooper())
         if (null == webview) {
             handler.post {
-                hitomiWv = HitomiBackgroundWebView(getInstance(), Site.HITOMI)
+                this.webview = HitomiBackgroundWebView(getInstance(), Site.HITOMI)
                 Timber.d(">> loading url %s", pageUrl)
 
-                hitomiWv?.apply {
+                this.webview?.apply {
                     loadUrl(pageUrl) {
                         evaluateJs(this, galleryInfo, imagesStr, done)
                     }
@@ -178,10 +181,9 @@ class HitomiParser : BaseImageListParser() {
     }
 
     override fun clear() {
-        val handler = Handler(Looper.getMainLooper())
-        handler.post {
-            hitomiWv?.destroy()
-            hitomiWv = null
+        CoroutineScope(Dispatchers.Main).launch {
+            webview?.clear()
+            webview = null
         }
     }
 }

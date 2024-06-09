@@ -1399,7 +1399,12 @@ class ReaderViewModel(
         val site = content.site
         val pageUrl = fixUrl(img.pageUrl, site.url)
         val parser = ContentParserFactory.getImageListParser(content.site)
-        val pages = parser.parseImagePage(pageUrl, requestHeaders)
+        val pages: Pair<String, String?>
+        try {
+            pages = parser.parseImagePage(pageUrl, requestHeaders)
+        } finally {
+            parser.clear()
+        }
         img.url = pages.first
         // Download the picture
         try {

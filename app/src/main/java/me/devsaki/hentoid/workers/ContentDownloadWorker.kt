@@ -1099,7 +1099,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         try {
             val reqHeaders = webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.pageUrl)
             val parser = ContentParserFactory.getImageListParser(content.site)
-            val pages = parser.parseImagePage(img.pageUrl, reqHeaders)
+            val pages: Pair<String, String?>
+            try {
+                pages = parser.parseImagePage(img.pageUrl, reqHeaders)
+            } finally {
+                parser.clear()
+            }
             img.url = pages.first
             // Set backup URL
             if (pages.second != null) img.backupUrl = pages.second
@@ -1302,6 +1307,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 "Cannot process backup image : message=" + e.message
             )
             Timber.e(e, "Error processing backup image.")
+        } finally {
+            parser.clear()
         }
     }
 

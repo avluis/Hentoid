@@ -43,8 +43,12 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
         super.loadUrl(url)
     }
 
-    internal class SingleLoadWebViewClient(private val site: Site) :
-        WebViewClient() {
+    fun clear() {
+        removeAllViews()
+        destroy()
+    }
+
+    internal class SingleLoadWebViewClient(private val site: Site) : WebViewClient() {
         private var targetUrl: String = ""
         private var onLoaded: Runnable? = null
         private val isPageLoading = AtomicBoolean(false)

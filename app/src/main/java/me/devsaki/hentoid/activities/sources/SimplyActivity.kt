@@ -39,7 +39,7 @@ class SimplyActivity : BaseWebActivity() {
     }
 
 
-    private inner class SimplyViewClient constructor(
+    private inner class SimplyViewClient(
         site: Site,
         filter: Array<String>,
         activity: CustomWebActivity,
@@ -57,10 +57,8 @@ class SimplyActivity : BaseWebActivity() {
 
         override fun destroy() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                if (swClient != null) {
-                    swClient!!.destroy()
-                    swClient = null
-                }
+                swClient?.destroy()
+                swClient = null
             }
             super.destroy()
         }

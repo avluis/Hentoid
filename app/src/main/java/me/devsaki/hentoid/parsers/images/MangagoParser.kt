@@ -223,7 +223,6 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
     override fun clear() {
         CoroutineScope(Dispatchers.Main).launch {
             webview?.clear()
-            webview?.destroy()
             webview = null
         }
     }

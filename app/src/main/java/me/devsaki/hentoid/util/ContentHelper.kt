@@ -1453,7 +1453,11 @@ fun fetchImageURLs(
 
     // Use ImageListParser to query the source
     val parser = getImageListParser(content.site)
-    imgs = parser.parseImageList(content, url)
+    try {
+        imgs = parser.parseImageList(content, url)
+    } finally {
+        parser.clear()
+    }
 
     // If no images found, or just the cover, image detection has failed
     if (imgs.isEmpty() || (1 == imgs.size && imgs[0].isCover)) throw EmptyResultException(url)
@@ -1961,7 +1965,12 @@ private fun testDownloadPictureFromPage(
 ): Boolean {
     val pageUrl = fixUrl(img.pageUrl, site.url)
     val parser = getImageListParser(site)
-    val pages = parser.parseImagePage(pageUrl, requestHeaders)
+    val pages: Pair<String, String?>
+    try {
+        pages = parser.parseImagePage(pageUrl, requestHeaders)
+    } finally {
+        parser.clear()
+    }
     img.setUrl(pages.first)
     // Download the picture
     try {

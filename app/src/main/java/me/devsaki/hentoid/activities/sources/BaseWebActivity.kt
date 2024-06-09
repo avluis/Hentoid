@@ -1390,8 +1390,14 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         val parser = ContentParserFactory.getImageListParser(onlineContent)
         // Call the parser to retrieve all the pages
         // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
-        val onlineImgs = parser.parseImageList(onlineContent, storedContent)
-        if (onlineImgs.isEmpty()) return result
+        val onlineImgs: List<ImageFile>?
+        try {
+            onlineImgs = parser.parseImageList(onlineContent, storedContent)
+        } finally {
+            parser.clear()
+        }
+        if (onlineImgs.isNullOrEmpty()) return result
+
         var maxStoredImageOrder = 0
         if (storedContent.imageFiles != null) {
             val opt = storedContent.imageFiles!!
