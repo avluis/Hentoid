@@ -414,16 +414,21 @@ fun getChaptersFromLinks(
 }
 
 /**
- * Extract the last useful part of the path of the given URL
- * e.g. if the url is "http://aa.com/look/at/me" or "http://aa.com/look/at/me/", the result will be "me"
+ * Extract the last but N useful part of the path of the given URL
+ * e.g. if the url is "http://aa.com/look/at/me" or "http://aa.com/look/at/me/" :
+ *      the result will be "me" if N is 1
+ *      the result will be "at" if N is 2
  *
  * @param url URL to extract from
- * @return Last useful part of the path of the given URL
+ * @param index Index of the part to extract (0-indexed; counted from the end)
+ * @return Last but N useful part of the path of the given URL
  */
-private fun getLastPathPart(url: String): String {
-    val parts = url.split("/")
-    if (parts.size < 2) return url
-    return parts[parts.size - 1].ifEmpty { parts[parts.size - 2] }
+private fun getLastPathPart(url: String, index: Int = 0): String {
+    var workUrl = url.trim()
+    if (workUrl.endsWith("/")) workUrl = workUrl.substring(0, workUrl.length - 1)
+    val parts = workUrl.split("/")
+    if (index > parts.size - 1) return workUrl
+    return parts[parts.size - 1 - index]
 }
 
 /**
@@ -435,10 +440,11 @@ private fun getLastPathPart(url: String): String {
  */
 fun getExtraChaptersbyUrl(
     storedChapters: List<Chapter>,
-    detectedChapters: List<Chapter>
+    detectedChapters: List<Chapter>,
+    lastPartIndex: Int = 0
 ): List<Chapter> {
-    val storedChps = storedChapters.groupBy { c -> getLastPathPart(c.url) }
-    val detectedChps = detectedChapters.groupBy { c -> getLastPathPart(c.url) }
+    val storedChps = storedChapters.groupBy { c -> getLastPathPart(c.url, lastPartIndex) }
+    val detectedChps = detectedChapters.groupBy { c -> getLastPathPart(c.url, lastPartIndex) }
 
     var tmpList: MutableList<Chapter> = ArrayList()
     val storedUrlParts = storedChps.keys

@@ -5,17 +5,18 @@ import android.os.Looper
 import android.webkit.WebResourceResponse
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.parsers.images.PIC_SELECTOR
 import me.devsaki.hentoid.views.WysiwygBackgroundWebView
 import java.util.regex.Pattern
 
 
 private val MGG_IMG_PATTERN = Pattern.compile("/[0-9]+/[0-9]+_[0-9]+.[a-z]+$")
 
-private const val DOMAIN_FILTER = "mangago.me"
+private val DOMAIN_FILTER = arrayOf("mangago.me", "mangago.zone", "youhim.me")
 
-val MGG_GALLERY = "//www.mangago.me/read-manga/[%\\w\\-_]+/$"
+const val MGG_GALLERY = "//www.mangago.me/read-manga/[%\\w\\-_]+/$"
 val MGG_CHAPTER = MGG_GALLERY.replace("$", "") + "[%\\w\\-_]+/[%\\w\\-_]+/pg-[%\\w\\-_]+/$"
-val MGG_CHAPTER_PATTERN = Pattern.compile(MGG_CHAPTER)
+val MGG_CHAPTER_PATTERN: Pattern = Pattern.compile(MGG_CHAPTER)
 
 class MangagoActivity : BaseWebActivity() {
 
@@ -25,8 +26,8 @@ class MangagoActivity : BaseWebActivity() {
 
     override fun createWebClient(): MangagoWebClient {
         val client = MangagoWebClient(this)
-        client.restrictTo(DOMAIN_FILTER)
-        client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
+        client.restrictTo(*DOMAIN_FILTER)
+        client.adBlocker.addToJsUrlWhitelist(*DOMAIN_FILTER)
         return client
     }
 
@@ -39,7 +40,7 @@ class MangagoActivity : BaseWebActivity() {
             setJsStartupScripts("wysiwyg_parser.js")
             addJsReplacement("\$interface", WysiwygBackgroundWebView.interfaceName)
             addJsReplacement("\$fun", WysiwygBackgroundWebView.functionName)
-            addJsReplacement("\$selector", "#pic_container img")
+            addJsReplacement("\$selector", PIC_SELECTOR)
         }
 
         internal constructor(
@@ -48,7 +49,7 @@ class MangagoActivity : BaseWebActivity() {
             setJsStartupScripts("wysiwyg_parser.js")
             addJsReplacement("\$interface", WysiwygBackgroundWebView.interfaceName)
             addJsReplacement("\$fun", WysiwygBackgroundWebView.functionName)
-            addJsReplacement("\$selector", "#pic_container img")
+            addJsReplacement("\$selector", PIC_SELECTOR)
         }
 
         override fun parseResponse(

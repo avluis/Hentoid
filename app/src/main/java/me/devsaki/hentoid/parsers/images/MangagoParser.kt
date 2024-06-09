@@ -33,6 +33,8 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
+const val PIC_SELECTOR = "#pic_container img"
+
 class MangagoParser : BaseImageListParser(), WebResultConsumer {
     private val resultCode = AtomicInteger(-1)
     private val resultContent = AtomicReference<Content>()
@@ -94,7 +96,12 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
             Site.PORNCOMIX.useWebviewAgent()
         )
             ?: return result
-        val chapterLinks = doc.select("#chapter_table a[href*='/read-manga/']")
+        var chapterLinks = doc.select("#chapter_table a[href*='/read-manga/']")
+        if (chapterLinks.isEmpty()) chapterLinks =
+            doc.select("table.uk-table a[href*='/read-manga/']")
+        if (chapterLinks.isEmpty()) chapterLinks = doc.select("#chapter_table a[href*='/chapter/']")
+        if (chapterLinks.isEmpty()) chapterLinks =
+            doc.select("table.uk-table a[href*='/chapter/']")
         chapters = getChaptersFromLinks(chapterLinks, onlineContent.id)
 
         // If the stored content has chapters already, save them for comparison
@@ -107,7 +114,7 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
         if (null == storedChapters) storedChapters = emptyList()
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
-        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters)
+        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters, 1)
         progressStart(onlineContent, storedContent, extraChapters.size)
 
         // Start numbering extra images right after the last position of stored and chaptered images
@@ -157,7 +164,6 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
         targetOrder: Int,
         fireProgressEvents: Boolean = true
     ): List<ImageFile> {
-        val picSelector = "#pic_container img"
         val result: MutableList<String> = ArrayList()
         var done = false
 
@@ -178,7 +184,7 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
                 val pageNav = doc.select("#dropdown-menu-page a")
                 pageUrls.addAll(pageNav.map { fixUrl(it.attr("href"), content.site.url) })
 
-                val pics = doc.select(picSelector)
+                val pics = doc.select(PIC_SELECTOR)
                 result.addAll(pics.map { getImgSrc(it) })
             }
             if (fireProgressEvents) progressStart(content, null, pageUrls.size)
@@ -187,7 +193,7 @@ class MangagoParser : BaseImageListParser(), WebResultConsumer {
                 if (processHalted.get()) break
                 webview?.loadUrlBlocking(pageUrls[result.size], processHalted)?.let { doc ->
                     Timber.d("Document loaded !")
-                    val pics = doc.select(picSelector)
+                    val pics = doc.select(PIC_SELECTOR)
                     result.addAll(pics.map { getImgSrc(it) }
                         // Cuz domain names with an _ (see https://github.com/google/conscrypt/issues/821)
                         .map { it.replace("https:", "http:") }

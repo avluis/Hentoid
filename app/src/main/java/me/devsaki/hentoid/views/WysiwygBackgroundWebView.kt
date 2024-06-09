@@ -51,12 +51,14 @@ class WysiwygBackgroundWebView(
 
     suspend fun loadUrlBlocking(url: String, killSwitch: AtomicBoolean): Document? {
         isLoaded = false
+        Timber.v("Loading %s", url)
         withContext(Dispatchers.Main) {
             loadUrl(url)
         }
-        var remainingIterations = 15 * 2 // Timeout 15s
+        var remainingIterations = 6 * 2 // Timeout 6s
         while (!isLoaded && remainingIterations-- > 0 && !killSwitch.get()) Helper.pause(500)
         Timber.v("%s with %d iterations remaining", isLoaded, remainingIterations)
+        if (!isLoaded) result = null
         return result
     }
 
