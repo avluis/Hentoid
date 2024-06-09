@@ -73,16 +73,13 @@ class PorncomixParser : BaseImageListParser() {
             Site.PORNCOMIX.useWebviewAgent()
         )
             ?: return result
-        val chapterLinks: List<Element> =
-            doc.select(".wp-manga-chapter a[href^=" + onlineContent.galleryUrl + "]")
+        val chapterLinks = doc.select(".wp-manga-chapter a[href^=" + onlineContent.galleryUrl + "]")
         chapters = getChaptersFromLinks(chapterLinks, onlineContent.id)
 
         // If the stored content has chapters already, save them for comparison
         var storedChapters: List<Chapter>? = null
         if (storedContent != null) {
-            storedChapters = storedContent.chapters
-            if (storedChapters != null) storedChapters =
-                storedChapters.toMutableList() // Work on a copy
+            storedChapters = storedContent.chaptersList.toMutableList() // Work on a copy
         }
         if (null == storedChapters) storedChapters = emptyList()
 
