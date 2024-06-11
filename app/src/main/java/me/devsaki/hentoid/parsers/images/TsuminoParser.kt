@@ -8,9 +8,6 @@ import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class TsuminoParser : BaseImageListParser() {
-    override fun isChapterUrl(url: String): Boolean {
-        return false
-    }
 
     override fun parseImages(content: Content): List<String> {
         val headers = fetchHeaders(content)
@@ -39,15 +36,6 @@ class TsuminoParser : BaseImageListParser() {
             }
         }
 
-        return emptyList()
-    }
-
-    override fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String> {
-        // Nothing; no chapters for this source
         return emptyList()
     }
 

@@ -190,22 +190,8 @@ class DeviantArtParser : BaseImageListParser() {
         return Pair("", null)
     }
 
-
-    override fun isChapterUrl(url: String): Boolean {
-        return false // no chapters on this source
-    }
-
     override fun parseImages(content: Content): List<String> {
         // Already overrides parseImageListImpl
-        return emptyList()
-    }
-
-    override fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String> {
-        // No chapters for this source
         return emptyList()
     }
 }

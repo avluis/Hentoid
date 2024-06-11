@@ -9,10 +9,6 @@ import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class SimplyParser : BaseImageListParser() {
-    override fun isChapterUrl(url: String): Boolean {
-        return false
-    }
-
     override fun parseImages(content: Content): List<String> {
         var result: List<String> = ArrayList()
         processedUrl = content.galleryUrl
@@ -64,14 +60,4 @@ class SimplyParser : BaseImageListParser() {
 
         return result
     }
-
-    override fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String> {
-        // Nothing; no chapters for this source
-        return emptyList()
-    }
-
 }

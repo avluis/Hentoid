@@ -39,7 +39,5 @@ interface ImageListParser {
         chapter: Chapter?
     ): ImageFile?
 
-    fun getAltUrl(url: String): String
-
     fun clear()
 }

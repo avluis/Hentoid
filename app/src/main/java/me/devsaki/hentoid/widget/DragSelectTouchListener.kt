@@ -5,7 +5,6 @@ import android.content.res.Resources
 import android.view.MotionEvent
 import android.view.animation.LinearInterpolator
 import android.widget.OverScroller
-import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import timber.log.Timber
 import kotlin.math.max
@@ -41,7 +40,7 @@ class DragSelectTouchListener// -----------------------
         override fun run() {
             if (mScroller != null && mScroller!!.computeScrollOffset()) {
                 scrollBy(mScrollDistance)
-                ViewCompat.postOnAnimation(mRecyclerView!!, this)
+                mRecyclerView?.postOnAnimation(this)
             }
         }
     }
@@ -210,9 +209,9 @@ class DragSelectTouchListener// -----------------------
         if (mRecyclerView == null) return
         initScroller(mRecyclerView!!.context)
         if (mScroller!!.isFinished) {
-            mRecyclerView!!.removeCallbacks(mScrollRunnable)
+            mRecyclerView?.removeCallbacks(mScrollRunnable)
             mScroller!!.startScroll(0, mScroller!!.currY, 0, 5000, 100000)
-            ViewCompat.postOnAnimation(mRecyclerView!!, mScrollRunnable)
+            mRecyclerView?.postOnAnimation(mScrollRunnable)
         }
     }
 
@@ -222,8 +221,8 @@ class DragSelectTouchListener// -----------------------
 
     fun stopAutoScroll() {
         if (mScroller != null && !mScroller!!.isFinished) {
-            mRecyclerView!!.removeCallbacks(mScrollRunnable)
-            mScroller!!.abortAnimation()
+            mRecyclerView?.removeCallbacks(mScrollRunnable)
+            mScroller?.abortAnimation()
         }
     }
 

@@ -7,10 +7,6 @@ import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class ASMHentaiParser : BaseImageListParser() {
-    override fun isChapterUrl(url: String): Boolean {
-        return false
-    }
-
     override fun parseImages(content: Content): List<String> {
         val result: MutableList<String> = ArrayList()
 
@@ -42,14 +38,5 @@ class ASMHentaiParser : BaseImageListParser() {
         }
 
         return result
-    }
-
-    override fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String> {
-        // Nothing as ASM doesn't have chapters
-        return emptyList()
     }
 }

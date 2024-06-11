@@ -33,13 +33,12 @@ class MultpornParser : BaseImageListParser() {
             val headers: MutableList<Pair<String, String>> = java.util.ArrayList()
             addCurrentCookiesToHeader(juiceboxUrl, headers)
             headers.add(Pair(HEADER_REFERER_KEY, galleryUrl))
-            val doc = getOnlineDocument(
+            getOnlineDocument(
                 juiceboxUrl,
                 headers,
                 Site.MULTPORN.useHentoidAgent(),
                 Site.MULTPORN.useWebviewAgent()
-            )
-            if (doc != null) {
+            )?.let { doc ->
                 var images: List<Element> = doc.select("juicebox image")
                 if (images.isEmpty()) images = doc.select("juicebox img")
                 for (img in images) {
@@ -51,36 +50,20 @@ class MultpornParser : BaseImageListParser() {
         }
     }
 
-    override fun isChapterUrl(url: String): Boolean {
-        return false
-    }
-
     override fun parseImages(content: Content): List<String> {
         val result: MutableList<String> = ArrayList()
         processedUrl = content.galleryUrl
 
-        val headers = fetchHeaders(content)
-
-        val doc = getOnlineDocument(
+        getOnlineDocument(
             content.galleryUrl,
-            headers,
+            fetchHeaders(content),
             Site.ALLPORNCOMIC.useHentoidAgent(),
             Site.ALLPORNCOMIC.useWebviewAgent()
-        )
-        if (doc != null) {
+        )?.let { doc ->
             val juiceboxUrl = getJuiceboxRequestUrl(doc.select("head script"))
             result.addAll(getImagesUrls(juiceboxUrl, processedUrl))
         }
 
         return result
-    }
-
-    override fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String> {
-        // Nothing; no chapters for this source
-        return emptyList()
     }
 }

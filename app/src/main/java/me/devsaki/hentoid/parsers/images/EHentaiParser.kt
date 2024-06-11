@@ -13,6 +13,7 @@ import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.json.sources.EHentaiImageMetadata
 import me.devsaki.hentoid.json.sources.EHentaiImageQuery
 import me.devsaki.hentoid.json.sources.EHentaiImageResponse
+import me.devsaki.hentoid.parsers.ParseProgress
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.getSavedCookieStr
 import me.devsaki.hentoid.parsers.urlToImageFile
@@ -557,11 +558,7 @@ class EHentaiParser : ImageListParser {
             chapter
         )
     }
-
-    override fun getAltUrl(url: String): String {
-        return ""
-    }
-
+    
     override fun clear() {
         // No need for that here
     }

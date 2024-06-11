@@ -1465,7 +1465,6 @@ object ObjectBoxDB {
             }
 
             Type.ANY -> qc
-            else -> qc
         }
     }
 

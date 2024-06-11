@@ -383,16 +383,11 @@ fun getChaptersFromLinks(
         val url = e.attr("href").trim()
         var name = e.attr("title").trim()
         if (name.isEmpty()) name = cleanup(e.ownText()).trim()
-        var epoch: Long = 0
-        if (!dateCssQuery.isNullOrEmpty()) {
-            val dateElement = e.selectFirst(dateCssQuery)
-            if (dateElement != null) {
-                val dateStr =
-                    dateElement.text().split("-")
-                if (dateStr.size > 1) epoch = Helper.parseDateToEpoch(
-                    dateStr[1],
-                    datePattern!!
-                )
+        var epoch = 0L
+        if (!dateCssQuery.isNullOrEmpty() && !datePattern.isNullOrEmpty()) {
+            e.selectFirst(dateCssQuery)?.let { dateElement ->
+                val dateStr = dateElement.text().split("-")
+                if (dateStr.size > 1) epoch = Helper.parseDateToEpoch(dateStr[1], datePattern)
             }
         }
         // Make sure we're not adding duplicates

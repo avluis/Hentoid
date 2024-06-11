@@ -68,8 +68,7 @@ class EdoujinContent : BaseContentParser() {
         }
         content.title = cleanup(title?.text())
         try {
-            val info = EdoujinParser.getDataFromScripts(scripts)
-            if (info != null) {
+            EdoujinParser.getDataFromScripts(scripts)?.let { info ->
                 val chapterImgs = info.getImages()
                 if (updateImages && chapterImgs.isNotEmpty()) {
                     val coverUrl = chapterImgs[0]

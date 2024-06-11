@@ -6,6 +6,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
+import me.devsaki.hentoid.parsers.ParseProgress
 import me.devsaki.hentoid.parsers.addSavedCookiesToHeader
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlsToImageFiles
@@ -21,24 +22,11 @@ abstract class BaseImageListParser : ImageListParser {
     protected var processHalted = AtomicBoolean(false)
     protected var processedUrl = ""
 
-    protected abstract fun isChapterUrl(url: String): Boolean
-
     @Throws(Exception::class)
     protected abstract fun parseImages(content: Content): List<String>
 
-    @Throws(Exception::class)
-    protected abstract fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String>
-
-    override fun parseImageList(
-        content: Content,
-        url: String
-    ): List<ImageFile> {
-        return if (isChapterUrl(url)) parseChapterImageListImpl(url, content)
-        else parseImageListImpl(content, null)
+    override fun parseImageList(content: Content, url: String): List<ImageFile> {
+        return parseImageListImpl(content, null)
     }
 
     override fun parseImageList(onlineContent: Content, storedContent: Content): List<ImageFile> {
@@ -63,10 +51,6 @@ abstract class BaseImageListParser : ImageListParser {
         val img = ImageFile.fromImageUrl(order, url, StatusContent.SAVED, maxPages)
         if (chapter != null) img.setChapter(chapter)
         return img
-    }
-
-    override fun getAltUrl(url: String): String {
-        return ""
     }
 
     override fun clear() {
@@ -96,26 +80,6 @@ abstract class BaseImageListParser : ImageListParser {
                 null
             )
             setDownloadParams(result, onlineContent.site.url)
-        } finally {
-            EventBus.getDefault().unregister(this)
-        }
-        return result
-    }
-
-    @Throws(Exception::class)
-    protected open fun parseChapterImageListImpl(
-        url: String,
-        content: Content
-    ): List<ImageFile> {
-        require(URLUtil.isValidUrl(url)) { "Invalid URL : $url" }
-        Timber.d("Chapter URL: %s", url)
-        processedUrl = url
-        EventBus.getDefault().register(this)
-        val result: List<ImageFile>
-        try {
-            val imgUrls = parseImages(url, content.downloadParams, null)
-            result = urlsToImageFiles(imgUrls, StatusContent.SAVED, null, null)
-            setDownloadParams(result, content.site.url)
         } finally {
             EventBus.getDefault().unregister(this)
         }
@@ -171,7 +135,7 @@ abstract class BaseImageListParser : ImageListParser {
 
     protected open fun fetchHeaders(
         url: String,
-        downloadParams: String?
+        downloadParams: String? = null
     ): List<Pair<String, String>> {
         val headers: MutableList<Pair<String, String>> = ArrayList()
         if (downloadParams != null) addSavedCookiesToHeader(downloadParams, headers)

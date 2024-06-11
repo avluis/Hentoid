@@ -1,6 +1,5 @@
-package me.devsaki.hentoid.parsers.images
+package me.devsaki.hentoid.parsers
 
-import me.devsaki.hentoid.parsers.signalProgress
 import me.devsaki.hentoid.util.ProgressManager
 import java.util.concurrent.atomic.AtomicBoolean
 

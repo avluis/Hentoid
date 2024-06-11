@@ -36,6 +36,12 @@ class HitomiParser : BaseImageListParser() {
 
     private var webview: HitomiBackgroundWebView? = null
 
+
+    override fun parseImages(content: Content): List<String> {
+        // We won't use that as parseImageListImpl is overriden directly
+        return emptyList()
+    }
+
     @Throws(Exception::class)
     override fun parseImageListImpl(
         onlineContent: Content,
@@ -83,7 +89,6 @@ class HitomiParser : BaseImageListParser() {
         val body = response.body ?: throw IOException("Empty body")
         val galleryInfo = body.string()
         updateContentInfo(onlineContent, galleryInfo)
-        onlineContent.isUpdatedProperties = true
 
         // Get pages URL
         val done = AtomicBoolean(false)
@@ -159,25 +164,6 @@ class HitomiParser : BaseImageListParser() {
             val galleryInfo = jsonToObject(galleryJson, HitomiGalleryInfo::class.java)
             galleryInfo?.updateContent(content)
         } else throw EmptyResultException("Couldn't find gallery information")
-    }
-
-
-    override fun isChapterUrl(url: String): Boolean {
-        return false
-    }
-
-    override fun parseImages(content: Content): List<String> {
-        // We won't use that as parseImageListImpl is overriden directly
-        return emptyList()
-    }
-
-    override fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String> {
-        // Nothing; no chapters for this source
-        return emptyList()
     }
 
     override fun clear() {

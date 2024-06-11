@@ -45,8 +45,10 @@ class MangagoContent : BaseContentParser() {
             )
         if (content.title.isEmpty()) content.title = cleanup(chapterTitle2)
 
-        if (!coverUrl.startsWith("http")) coverUrl += getHttpProtocol(url) + ":" + coverUrl
-        content.setCoverImageUrl(coverUrl)
+        if (coverUrl.isNotEmpty()) {
+            if (!coverUrl.startsWith("http")) coverUrl += getHttpProtocol(url) + ":" + coverUrl
+            content.setCoverImageUrl(coverUrl)
+        }
 
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MANGAGO)

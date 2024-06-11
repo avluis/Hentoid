@@ -184,8 +184,6 @@ public class Content implements Serializable {
     @Transient
     private boolean isFrozen;  // Only used when importing queued items (temp location to simplify JSON structure; definite storage in QueueRecord)
     @Transient
-    private boolean updatedProperties = false;  // Only used when using ImageListParsers to indicate the passed Content has been updated
-    @Transient
     private boolean folderExists = true;  // Only used when loading the Content into the reader
     @Transient
     private boolean isDynamic = false;  // Only used when loading the Content into the reader
@@ -1029,14 +1027,6 @@ public class Content implements Serializable {
 
     public void setLastEditDate(long lastEditDate) {
         this.lastEditDate = lastEditDate;
-    }
-
-    public boolean isUpdatedProperties() {
-        return updatedProperties;
-    }
-
-    public void setUpdatedProperties(boolean updatedProperties) {
-        this.updatedProperties = updatedProperties;
     }
 
     public ToOne<Content> getContentToReplace() {

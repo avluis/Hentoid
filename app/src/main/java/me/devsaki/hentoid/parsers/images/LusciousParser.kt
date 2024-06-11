@@ -10,21 +10,9 @@ import timber.log.Timber
 import java.io.IOException
 
 class LusciousParser : BaseImageListParser() {
-    override fun isChapterUrl(url: String): Boolean {
-        return false
-    }
 
     override fun parseImages(content: Content): List<String> {
         // We won't use that as parseImageListImpl is overriden directly
-        return emptyList()
-    }
-
-    override fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String> {
-        // Nothing; no chapters for this source
         return emptyList()
     }
 

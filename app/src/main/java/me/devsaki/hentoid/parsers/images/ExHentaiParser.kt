@@ -5,6 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.DownloadCommandEvent
+import me.devsaki.hentoid.parsers.ParseProgress
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
@@ -53,11 +54,7 @@ class ExHentaiParser : ImageListParser {
             chapter
         )
     }
-
-    override fun getAltUrl(url: String): String {
-        return ""
-    }
-
+    
     override fun clear() {
         // No need for that here
     }

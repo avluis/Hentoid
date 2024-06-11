@@ -167,6 +167,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
         }
     }
 
+    /*
     override fun getAltUrl(url: String): String {
         val parts = UriParts(url, false)
         val ext = parts.extension
@@ -174,22 +175,9 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
         parts.extension = altExt
         return parts.toUri()
     }
-
-    override fun isChapterUrl(url: String): Boolean {
-        // No chapters for this source
-        return false
-    }
+     */
 
     override fun parseImages(content: Content): List<String> {
-        // We won't use that as parseImageListImpl is overriden directly
-        return emptyList()
-    }
-
-    override fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String> {
         // We won't use that as parseImageListImpl is overriden directly
         return emptyList()
     }

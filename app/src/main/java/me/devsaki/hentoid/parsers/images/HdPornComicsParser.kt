@@ -9,13 +9,8 @@ import org.jsoup.nodes.Element
 class HdPornComicsParser : BaseImageListParser() {
     companion object {
         fun parseImages(pages: List<Element>): List<String> {
-            return pages.map { e -> getImgSrc(e) }
-                .map { s -> s.replace("thumbs", "uploads") }
+            return pages.map { getImgSrc(it) }.map { it.replace("thumbs", "uploads") }
         }
-    }
-
-    override fun isChapterUrl(url: String): Boolean {
-        return false
     }
 
     override fun parseImages(content: Content): List<String> {
@@ -24,14 +19,5 @@ class HdPornComicsParser : BaseImageListParser() {
             ?: throw ParseException("Document unreachable : " + content.galleryUrl)
 
         return parseImages(doc.select("figure a picture img").filterNotNull())
-    }
-
-    override fun parseImages(
-        chapterUrl: String,
-        downloadParams: String?,
-        headers: List<Pair<String, String>>?
-    ): List<String> {
-        // Nothing because no chapters for this source
-        return emptyList()
     }
 }
