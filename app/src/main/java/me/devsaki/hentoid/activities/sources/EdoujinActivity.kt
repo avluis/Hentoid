@@ -4,9 +4,9 @@ import me.devsaki.hentoid.enums.Site
 
 class EdoujinActivity : BaseWebActivity() {
     companion object {
-        const val GALLERY_PATTERN = "edoujin.net/manga/[\\w\\-_%]+/$"
+        const val GALLERY_PATTERN = "ehentaimanga.com/manga/[\\w\\-_%]+/$"
 
-        private const val DOMAIN_FILTER = "edoujin.net"
+        private const val DOMAIN_FILTER = "ehentaimanga.com"
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("/$", "\\-") + "[0-9]+/$")
 
