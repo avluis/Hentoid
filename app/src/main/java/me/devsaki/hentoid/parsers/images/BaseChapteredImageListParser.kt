@@ -114,7 +114,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
                     false
                 )
             )
-            progressNext() // TODO check if that's enough for the simple cases where parseChapterImageFiles doesn't loop
+            progressNext()
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
