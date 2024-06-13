@@ -13,11 +13,11 @@ data class DeviantArtGallection(
 ) {
     fun getImages(): List<ImageFile> {
         val result: MutableList<ImageFile> = ArrayList()
-        results.forEach {
-            val imgs = it.getImages()
-            result.addAll(imgs.filter { i -> i.isReadable }.map { i -> ImageFile(i) })
-            if (null == result.find { i -> i.isCover }) {
-                val cover = ImageFile(imgs.first { i -> i.isCover })
+        results.forEach {res ->
+            val imgs = res.getImages()
+            result.addAll(imgs.filter { it.isReadable }.map { ImageFile(it, true, true) })
+            if (null == result.find { it.isCover }) {
+                val cover = ImageFile(imgs.first { it.isCover }, true, true)
                 result.add(0, cover)
             }
         }

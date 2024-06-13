@@ -2112,7 +2112,7 @@ fun mergeContents(
     val nbMaxDigits = (floor(log10(nbImages.toDouble())) + 1).toInt()
 
     val mergedImages: MutableList<ImageFile> = ArrayList()
-    val mergedChapters: MutableList<Chapter?> = ArrayList()
+    val mergedChapters: MutableList<Chapter> = ArrayList()
 
     var isError = false
     try {
@@ -2122,6 +2122,7 @@ fun mergeContents(
         var nbProcessedPics = 1
         var coverFound = false
         var newChapter: Chapter?
+        var firstImageIsCover: Boolean
         for (c in contentList) {
             newChapter = null
             // Create a default "content chapter" that represents the original book before merging
@@ -2129,22 +2130,20 @@ fun mergeContents(
             contentChapter.setUniqueId(c.uniqueSiteId + "-" + contentChapter.order)
 
             val imgs = c.imageList
-            var firstImageIsCover = !imgs.any { it.isCover }
+            firstImageIsCover = !imgs.any { it.isCover }
             for (img in imgs) {
-                if (!img.isReadable && coverFound) continue
-                val newImg = ImageFile(img)
+                if (!img.isReadable && coverFound) continue // Skip secondary covers if one exists
+                val newImg = ImageFile(img, false, false)
                 newImg.id = 0 // Force working on a new picture
-                newImg.content.target = null // Clear content
                 newImg.setFileUri("") // Clear initial URI
                 newImg.setOrder(pictureOrder++)
                 newImg.computeName(nbMaxDigits)
-                if (firstImageIsCover) {
+                if (firstImageIsCover && !coverFound) {
                     newImg.setIsCover(true)
-                    firstImageIsCover = false
+                    coverFound = true
                 }
-                if (newImg.isCover) coverFound = true
 
-                if (!newImg.isCover) {
+                if (newImg.isReadable) {
                     val chapLink = img.linkedChapter
                     // No chapter -> set content chapter
                     if (null == chapLink || useBookAsChapter) {
@@ -2155,7 +2154,8 @@ fun mergeContents(
                             newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++)
                         }
                     }
-                    if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter)
+                    if (newChapter != null && !mergedChapters.contains(newChapter))
+                        mergedChapters.add(newChapter)
                     newImg.setChapter(newChapter)
                 }
 

@@ -1101,7 +1101,8 @@ class ReaderViewModel(
                             if (viewerImagesInternal.size <= downloadedPageIndex) return@withContext
 
                             // Instanciate a new ImageFile not to modify the one used by the UI
-                            val downloadedPic = ImageFile(viewerImagesInternal[downloadedPageIndex])
+                            val downloadedPic =
+                                ImageFile(viewerImagesInternal[downloadedPageIndex], true, true)
                             downloadedPic.fileUri = resultOpt.second
                             downloadedPic.mimeType = resultOpt.third
                             viewerImagesInternal.removeAt(downloadedPageIndex)
@@ -1252,7 +1253,7 @@ class ReaderViewModel(
 
     private fun updateImgWithExtractedUri(img: ImageFile, idx: Int, uri: Uri, refresh: Boolean) {
         // Instanciate a new ImageFile not to modify the one used by the UI
-        val extractedPic = ImageFile(img)
+        val extractedPic = ImageFile(img, true, true)
         extractedPic.fileUri = uri.toString()
         extractedPic.mimeType = getMimeTypeFromUri(
             getApplication<Application>().applicationContext, uri

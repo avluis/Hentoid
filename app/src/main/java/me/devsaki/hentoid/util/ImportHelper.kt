@@ -928,7 +928,7 @@ private fun scanFolderImages(
 fun createCover(images: MutableList<ImageFile>) {
     if (images.isNotEmpty()) {
         // Create a new cover entry from the 1st element
-        images.add(0, ImageFile(images[0]).setIsCover(true))
+        images.add(0, ImageFile(images[0], true, true).setIsCover(true))
     }
 }
 

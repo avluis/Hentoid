@@ -76,7 +76,11 @@ public class ImageFile {
     public ImageFile() { // Required by ObjectBox when an alternate constructor exists
     }
 
-    public ImageFile(ImageFile img) {
+    public ImageFile(
+            ImageFile img,
+            Boolean populateContent,
+            Boolean populateChapter
+    ) {
         this.id = img.id;
         this.order = img.order;
         this.url = img.url;
@@ -87,15 +91,19 @@ public class ImageFile {
         this.favourite = img.favourite;
         this.isCover = img.isCover;
         this.status = img.status;
-        if (DBHelper.isReachable(img, img.content)) {
-            this.content.setTarget(img.content.getTarget());
-        } else {
-            this.content.setTargetId(img.content.getTargetId());
+        if (populateContent) {
+            if (DBHelper.isReachable(img, img.content)) {
+                this.content.setTarget(img.content.getTarget());
+            } else {
+                this.content.setTargetId(img.content.getTargetId());
+            }
         }
-        if (DBHelper.isReachable(img, img.chapter)) {
-            this.chapter.setTarget(img.chapter.getTarget());
-        } else {
-            this.chapter.setTargetId(img.chapter.getTargetId());
+        if (populateChapter) {
+            if (DBHelper.isReachable(img, img.chapter)) {
+                this.chapter.setTarget(img.chapter.getTarget());
+            } else {
+                this.chapter.setTargetId(img.chapter.getTargetId());
+            }
         }
         this.mimeType = img.mimeType;
         this.size = img.size;
