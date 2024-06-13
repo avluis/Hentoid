@@ -533,9 +533,9 @@ object DatabaseMaintenance {
     private fun cleanOrphanGroups(context: Context, emitter: (Float) -> Unit) {
         val db = MaintenanceDAO()
         try {
-            Timber.i("Clean orphan groups : start")
-            db.deleteOrphanGroups()
-            Timber.i("Clean orphan groups : done")
+            Timber.i("Clean orphan artist groups : start")
+            db.deleteOrphanArtistGroups()
+            Timber.i("Clean orphan artist groups : done")
         } finally {
             db.cleanup()
         }

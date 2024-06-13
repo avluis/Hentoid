@@ -135,7 +135,7 @@ class MaintenanceDAO {
         ObjectBoxDB.deleteQueueRecords(ids)
     }
 
-    fun deleteOrphanGroups() {
-        ObjectBoxDB.deleteOrphanGroups()
+    fun deleteOrphanArtistGroups() {
+        ObjectBoxDB.deleteOrphanArtistGroups()
     }
 }

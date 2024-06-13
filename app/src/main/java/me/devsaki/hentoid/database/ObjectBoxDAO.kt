@@ -686,8 +686,8 @@ class ObjectBoxDAO : CollectionDAO {
         }
     }
 
-    override fun deleteOrphanGroups() {
-        ObjectBoxDB.deleteOrphanGroups()
+    override fun deleteOrphanArtistGroups() {
+        ObjectBoxDB.deleteOrphanArtistGroups()
     }
 
     override fun insertGroupItem(item: GroupItem): Long {
