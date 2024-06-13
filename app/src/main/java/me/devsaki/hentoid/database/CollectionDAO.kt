@@ -137,6 +137,8 @@ interface CollectionDAO {
 
     fun deleteAllFlaggedGroups()
 
+    fun deleteOrphanGroups()
+
     fun insertGroupItem(item: GroupItem): Long
 
     fun selectGroupItems(contentId: Long, grouping: Grouping): List<GroupItem>

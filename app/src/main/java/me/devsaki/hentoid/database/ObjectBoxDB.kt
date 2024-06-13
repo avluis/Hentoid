@@ -1873,6 +1873,11 @@ object ObjectBoxDB {
         store.boxFor(Group::class.java).remove(groupId)
     }
 
+    fun deleteOrphanGroups() {
+        return ObjectBoxDB.store.boxFor(Group::class.java).query()
+            .relationCount(Group_.items, 0).safeRemove()
+    }
+
     fun selectGroupsByGroupingQ(groupingId: Int): Query<Group> {
         return store.boxFor(Group::class.java).query()
             .equal(Group_.grouping, groupingId.toLong())

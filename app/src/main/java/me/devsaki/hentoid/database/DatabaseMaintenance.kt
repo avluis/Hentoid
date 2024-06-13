@@ -37,7 +37,8 @@ object DatabaseMaintenance {
             this::computeContentSize,
             this::createGroups,
             this::computeReadingProgress,
-            this::reattachGroupCovers
+            this::reattachGroupCovers,
+            this::cleanOrphanGroups
         )
     }
 
@@ -524,6 +525,17 @@ object DatabaseMaintenance {
                 emitter(pos++ / max)
             }
             Timber.i("Reattaching group covers : done")
+        } finally {
+            db.cleanup()
+        }
+    }
+
+    private fun cleanOrphanGroups(context: Context, emitter: (Float) -> Unit) {
+        val db = MaintenanceDAO()
+        try {
+            Timber.i("Clean orphan groups : start")
+            db.deleteOrphanGroups()
+            Timber.i("Clean orphan groups : done")
         } finally {
             db.cleanup()
         }

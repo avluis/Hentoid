@@ -134,4 +134,8 @@ class MaintenanceDAO {
     fun deleteQueueRecords(ids: LongArray) {
         ObjectBoxDB.deleteQueueRecords(ids)
     }
+
+    fun deleteOrphanGroups() {
+        ObjectBoxDB.deleteOrphanGroups()
+    }
 }

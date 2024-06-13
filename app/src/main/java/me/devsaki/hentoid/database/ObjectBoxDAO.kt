@@ -686,6 +686,10 @@ class ObjectBoxDAO : CollectionDAO {
         }
     }
 
+    override fun deleteOrphanGroups() {
+        ObjectBoxDB.deleteOrphanGroups()
+    }
+
     override fun insertGroupItem(item: GroupItem): Long {
         // Auto-number max order when not provided
         if (-1 == item.order) item.order = ObjectBoxDB.getMaxGroupItemOrderFor(item.groupId) + 1

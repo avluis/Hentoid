@@ -278,11 +278,7 @@ class MetadataEditViewModel(
             dao.insertContent(it)
 
             // Assign Content to each artist/circle group
-            removeContentFromGrouping(
-                me.devsaki.hentoid.enums.Grouping.ARTIST,
-                it,
-                dao
-            )
+            removeContentFromGrouping(me.devsaki.hentoid.enums.Grouping.ARTIST, it, dao)
             var artistFound = false
             it.attributes.forEach { attr ->
                 if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
@@ -296,6 +292,7 @@ class MetadataEditViewModel(
                 val item = GroupItem(it, group, -1)
                 dao.insertGroupItem(item)
             }
+            dao.deleteOrphanGroups()
         }
 
         contentList.value?.let {
