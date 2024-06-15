@@ -293,23 +293,22 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         viewModel =
             ViewModelProvider(this@LibraryActivity, vmFactory)[LibraryViewModel::class.java]
 
-        viewModel.contentSearchBundle.observe(this)
-        { b: Bundle? -> contentSearchBundle = b }
+        viewModel.contentSearchBundle.observe(this) { contentSearchBundle = it }
 
         viewModel.group.observe(this) { g: Group? ->
             group = g
             updateToolbar()
         }
 
-        viewModel.groupSearchBundle.observe(this) { b: Bundle? ->
+        viewModel.groupSearchBundle.observe(this) { b ->
             groupSearchBundle = b
-            val searchBundle = GroupSearchBundle(b!!)
+            val searchBundle = GroupSearchBundle(b)
             onGroupingChanged(searchBundle.groupingId)
         }
 
-        viewModel.searchRecords.observe(this) { records: List<SearchRecord>? ->
+        viewModel.searchRecords.observe(this) { records ->
             searchRecords.clear()
-            searchRecords.addAll(records!!)
+            searchRecords.addAll(records)
         }
 
         if (!Preferences.getRecentVisibility()) {
@@ -1067,22 +1066,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         reorderConfirmMenu!!.isVisible = editMode
         reorderCancelMenu!!.isVisible = editMode
         sortMenu!!.isVisible = !editMode
-        var isToolbarNavigationDrawer = true
         if (isGroupDisplayed()) {
-            reorderMenu!!.isVisible = currentGrouping.canReorderGroups
+            reorderMenu?.isVisible = currentGrouping.canReorderGroups
         } else {
-            reorderMenu!!.isVisible =
+            reorderMenu?.isVisible =
                 currentGrouping.canReorderBooks && group != null && group!!.getSubtype() != 1
-            isToolbarNavigationDrawer = currentGrouping == Grouping.FLAT
-        }
-        binding?.toolbar?.apply {
-            if (isToolbarNavigationDrawer) { // Open the left drawer
-                setNavigationIcon(R.drawable.ic_drawer)
-                setNavigationOnClickListener { openNavigationDrawer() }
-            } else { // Go back to groups
-                setNavigationIcon(R.drawable.ic_arrow_back)
-                setNavigationOnClickListener { goBackToGroups() }
-            }
         }
         signalCurrentFragment(CommunicationEvent.Type.UPDATE_TOOLBAR)
     }

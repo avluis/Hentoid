@@ -26,6 +26,21 @@
         tools:ignore="ContentDescription" />
 
     <ImageView
+        android:id="@+id/back_books_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_arrow_back"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+
+    <ImageView
         android:id="@+id/drawer_app_prefs_btn"
         android:layout_width="40dp"
         android:layout_height="40dp"

@@ -980,20 +980,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onActivityEvent(event: CommunicationEvent) {
+    fun onCommunicationEvent(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.CONTENTS && event.recipient != CommunicationEvent.Recipient.ALL) return
         when (event.type) {
             CommunicationEvent.Type.UPDATE_TOOLBAR -> {
                 addCustomBackControl()
-                selectExtension?.let {
-                    activity.get()?.initFragmentToolbars(
-                        it,
-                        { menuItem: MenuItem ->
-                            onToolbarItemClicked(menuItem)
-                        }
-                    ) { menuItem: MenuItem ->
-                        onSelectionToolbarItemClicked(menuItem)
-                    }
+                selectExtension?.let { se ->
+                    activity.get()?.initFragmentToolbars(se, { onToolbarItemClicked(it) })
+                    { onSelectionToolbarItemClicked(it) }
                 }
             }
 

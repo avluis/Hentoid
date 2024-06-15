@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.mikepenz.fastadapter.FastAdapter
@@ -25,6 +26,7 @@ import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.activities.bundles.ToolsBundle
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
+import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.UpdateEvent
@@ -33,6 +35,7 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.widget.GroupSearchManager
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -85,7 +88,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = FragmentNavigationDrawerBinding.inflate(inflater, container, false)
 
         fastAdapter.onClickListener = { _, _, _, pos -> onItemClick(pos) }
@@ -95,22 +98,38 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
             drawerAppPrefsBtn.setOnClickListener { onPrefsClick() }
             drawerToolsBtn.setOnClickListener { onToolsClick() }
             drawerAppQueueBtn.setOnClickListener { onQueueClick() }
+            backBooksBtn.setOnClickListener { onBackClick() }
             drawerList.adapter = fastAdapter
         }
 
         Preferences.registerPrefsChangedListener(prefsListener)
 
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
-        viewModel.totalQueue.observe(viewLifecycleOwner) { tq -> onTotalQueueChanged(tq) }
-        viewModel.favPages.observe(viewLifecycleOwner) { fp -> onFavPagesChanged(fp) }
-        viewModel.contentSearchBundle.observe(viewLifecycleOwner) { b -> contentSearchBundle = b }
+        viewModel.totalQueue.observe(viewLifecycleOwner) { onTotalQueueChanged(it) }
+        viewModel.favPages.observe(viewLifecycleOwner) { onFavPagesChanged(it) }
+        viewModel.contentSearchBundle.observe(viewLifecycleOwner) { contentSearchBundle = it }
+        viewModel.groupSearchBundle.observe(viewLifecycleOwner) {
+            val searchBundle = GroupSearchManager.GroupSearchBundle(it)
+            onGroupingChanged(searchBundle.groupingId)
+        }
         updateItems()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onCommunicationEvent(event: CommunicationEvent) {
+        if (event.type != CommunicationEvent.Type.DISABLE) return
+        binding?.backBooksBtn?.isVisible = (CommunicationEvent.Recipient.GROUPS == event.recipient)
+    }
+
+    private fun onGroupingChanged(targetGroupingId: Int) {
+        val targetGrouping = Grouping.searchById(targetGroupingId)
+        if (Grouping.FLAT == targetGrouping) binding?.backBooksBtn?.isVisible = false
     }
 
     private fun updateItems() {
@@ -237,6 +256,13 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     private fun onQueueClick() {
         launchActivity(QueueActivity::class.java)
+    }
+
+    private fun onBackClick() {
+        activity.get()?.let {
+            it.goBackToGroups()
+            it.closeNavigationDrawer()
+        }
     }
 
     /**

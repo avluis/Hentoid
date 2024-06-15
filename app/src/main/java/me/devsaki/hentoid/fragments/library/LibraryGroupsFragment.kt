@@ -609,27 +609,21 @@ class LibraryGroupsFragment : Fragment(),
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onActivityEvent(event: CommunicationEvent) {
+    fun onCommunicationEvent(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.GROUPS && event.recipient != CommunicationEvent.Recipient.ALL) return
         when (event.type) {
             CommunicationEvent.Type.UPDATE_TOOLBAR -> {
                 addCustomBackControl()
-                selectExtension?.let {
-                    activity.get()?.initFragmentToolbars(
-                        it,
-                        { menuItem: MenuItem ->
-                            onToolbarItemClicked(menuItem)
-                        }
-                    ) { menuItem: MenuItem ->
-                        onSelectionToolbarItemClicked(menuItem)
-                    }
+                selectExtension?.let { se ->
+                    activity.get()?.initFragmentToolbars(se, { onToolbarItemClicked(it) })
+                    { onSelectionToolbarItemClicked(it) }
                 }
             }
 
             CommunicationEvent.Type.SEARCH -> onSubmitSearch(event.message)
             CommunicationEvent.Type.ENABLE -> onEnable()
             CommunicationEvent.Type.DISABLE -> onDisable()
-            CommunicationEvent.Type.SCROLL_TOP -> llm!!.scrollToPositionWithOffset(0, 0)
+            CommunicationEvent.Type.SCROLL_TOP -> llm?.scrollToPositionWithOffset(0, 0)
             else -> {}
         }
     }
