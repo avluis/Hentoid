@@ -15,7 +15,6 @@ import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.getFixedContext
 import me.devsaki.hentoid.util.pause
 import timber.log.Timber
@@ -50,11 +49,8 @@ class CloudflareHelper {
         revivedSite: Site,
         oldCookie: String?
     ): Boolean {
-        val oldCookieInternal: String = oldCookie ?: StringHelper.protect(
-            parseCookies(
-                getCookies(revivedSite.url)
-            )[CLOUDFLARE_COOKIE]
-        )
+        val oldCookieInternal: String =
+            oldCookie ?: parseCookies(getCookies(revivedSite.url))[CLOUDFLARE_COOKIE] ?: ""
 
         // Nuke the cookie to force its refresh
         val domain = "." + getDomainFromUri(revivedSite.url)

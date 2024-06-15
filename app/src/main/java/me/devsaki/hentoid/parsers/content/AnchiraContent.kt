@@ -8,7 +8,8 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.isNumeric
+import me.devsaki.hentoid.util.keepDigits
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.Locale
@@ -53,8 +54,8 @@ class AnchiraContent : BaseContentParser() {
             for (e in it) {
                 var txt = e.text().lowercase(Locale.getDefault())
                 if (txt.contains("page")) {
-                    txt = StringHelper.keepDigits(txt)
-                    if (StringHelper.isNumeric(txt)) {
+                    txt = keepDigits(txt)
+                    if (isNumeric(txt)) {
                         nbPages = txt.toInt()
                         break
                     }

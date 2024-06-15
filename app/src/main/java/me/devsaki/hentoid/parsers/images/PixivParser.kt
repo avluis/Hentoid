@@ -15,11 +15,11 @@ import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_NB_CHAPTERS
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.DownloadRateLimiter.setRateLimit
 import me.devsaki.hentoid.util.download.DownloadRateLimiter.take
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.waitBlocking429
 import me.devsaki.hentoid.util.parseDownloadParams
@@ -85,7 +85,7 @@ class PixivParser : BaseImageListParser() {
             )
         } catch (e: Exception) {
             Timber.d(e)
-            throw EmptyResultException(StringHelper.protect(e.message))
+            throw EmptyResultException(e.message ?: "")
         }
         take() // One last delay before download phase
         return emptyList()
@@ -133,7 +133,7 @@ class PixivParser : BaseImageListParser() {
         val nbChaptersStr =
             parseDownloadParams(onlineContent.downloadParams)[KEY_DL_PARAMS_NB_CHAPTERS]
         require(nbChaptersStr != null) { "Chapter count not saved" }
-        require(StringHelper.isNumeric(nbChaptersStr)) { "Chapter count not saved" }
+        require(isNumeric(nbChaptersStr)) { "Chapter count not saved" }
         val nbChapters = nbChaptersStr.toInt()
 
         // List all Illust IDs (API is paged, hence the loop)

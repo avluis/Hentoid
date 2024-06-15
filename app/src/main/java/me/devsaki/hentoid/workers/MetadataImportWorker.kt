@@ -31,7 +31,6 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createImageListFromFolder
 import me.devsaki.hentoid.util.file.findFile
@@ -91,7 +90,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
 
         startImport(
             applicationContext,
-            StringHelper.protect(data.jsonUri),
+            data.jsonUri ?: "",
             data.isAdd,
             data.isImportLibrary,
             data.emptyBooksOption,

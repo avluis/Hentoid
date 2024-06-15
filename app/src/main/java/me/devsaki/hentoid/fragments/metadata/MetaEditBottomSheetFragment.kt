@@ -29,7 +29,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.LanguageHelper
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.capitalizeString
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -261,7 +261,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             // Image that displays current metadata type title (e.g. "Character search")
             binding.tagWaitTitle.text = getString(
                 R.string.search_category,
-                StringHelper.capitalizeString(getString(mainAttr.accusativeName))
+                capitalizeString(getString(mainAttr.accusativeName))
             )
         } else {
             binding.tagWaitImage.visibility = View.INVISIBLE

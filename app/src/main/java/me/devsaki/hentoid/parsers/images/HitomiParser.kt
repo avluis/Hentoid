@@ -17,7 +17,6 @@ import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.LIST_STRINGS
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.jsonToObject
@@ -143,7 +142,7 @@ class HitomiParser : BaseImageListParser() {
         Timber.d(">> evaluating JS")
         webview.evaluateJavascript(getJsPagesScript(galleryInfo)) { s: String? ->
             Timber.d(">> JS evaluated")
-            imagesStr.set(StringHelper.protect(s))
+            imagesStr.set(s ?: "")
             done.set(true)
         }
     }

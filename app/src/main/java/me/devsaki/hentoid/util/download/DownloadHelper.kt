@@ -7,7 +7,6 @@ import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.take
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
@@ -24,6 +23,7 @@ import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.isMimeTypeSupported
+import me.devsaki.hentoid.util.keepDigits
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getOnlineResourceDownloader
@@ -312,10 +312,10 @@ fun getCanonicalUrl(doc: Document): String {
     if (ogUrlElt != null) ogUrl = ogUrlElt.attr("content").trim { it <= ' ' }
     val finalUrl: String =
         if (canonicalUrl.isNotEmpty() && ogUrl.isNotEmpty() && ogUrl != canonicalUrl) {
-            val canonicalDigitsStr = StringHelper.keepDigits(canonicalUrl)
+            val canonicalDigitsStr = keepDigits(canonicalUrl)
             val canonicalDigits =
                 if (canonicalDigitsStr.isEmpty()) 0 else canonicalDigitsStr.toInt()
-            val ogDigitsStr = StringHelper.keepDigits(ogUrl)
+            val ogDigitsStr = keepDigits(ogUrl)
             val ogDigits = if (ogDigitsStr.isEmpty()) 0 else ogDigitsStr.toInt()
             if (canonicalDigits > ogDigits) canonicalUrl else ogUrl
         } else {

@@ -48,7 +48,6 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.RandomSeed.getSeed
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.file.getSupportedExtensions
 import me.devsaki.hentoid.util.getLibraryStatuses
@@ -390,7 +389,7 @@ object ObjectBoxDB {
         val qb = store.boxFor(QueueRecord::class.java).query()
         if (!query.isNullOrEmpty() || source != null && source != Site.NONE) {
             val bundle = ContentSearchBundle()
-            bundle.query = StringHelper.protect(query)
+            bundle.query = query ?: ""
             if (source != null && source != Site.NONE) {
                 val sourceAttr: MutableSet<Attribute> = HashSet()
                 sourceAttr.add(Attribute(source))

@@ -18,7 +18,6 @@ import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 
 /**
@@ -182,7 +181,7 @@ public class ImageFile {
     }
 
     public String getUrl() {
-        return StringHelper.protect(url);
+        return (null == url) ? "" : url;
     }
 
     public ImageFile setUrl(String url) {

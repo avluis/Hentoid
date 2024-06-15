@@ -2,7 +2,6 @@ package me.devsaki.hentoid.workers.data
 
 import androidx.work.Data
 import me.devsaki.hentoid.enums.StorageLocation
-import me.devsaki.hentoid.util.StringHelper
 
 /**
  * Helper class to transfer data from any Activity to {@link PrimaryImportWorker}
@@ -82,6 +81,6 @@ class PrimaryImportData {
                 StorageLocation.NONE.ordinal
             )]
         val targetRoot: String
-            get() = StringHelper.protect(data.getString(KEY_TARGET_ROOT))
+            get() = data.getString(KEY_TARGET_ROOT) ?: ""
     }
 }

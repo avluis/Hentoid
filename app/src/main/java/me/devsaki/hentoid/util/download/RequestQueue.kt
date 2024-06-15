@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
@@ -95,7 +94,7 @@ class RequestQueue(
 
         var statusCode = 0
         var errorCode = RequestOrder.NetworkErrorType.NETWORK_ERROR
-        val message = StringHelper.protect(t.message)
+        val message = t.message ?: ""
 
         // Classify error messages
         // May happen when resetting OkHttp while some requests are still active

@@ -47,7 +47,6 @@ import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.computeAndSaveCoverHash
 import me.devsaki.hentoid.util.download.ContentQueueManager
@@ -1262,8 +1261,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.STALE_CREDENTIALS))
             dao.clearDownloadParams(contentId)
-            val cfCookie =
-                StringHelper.protect(parseCookies(getCookies(img.url))[CLOUDFLARE_COOKIE])
+            val cfCookie = parseCookies(getCookies(img.url))[CLOUDFLARE_COOKIE] ?: ""
             userActionNotificationManager.notify(UserActionNotification(request.site, cfCookie))
             if (isInForeground()) EventBus.getDefault()
                 .post(DownloadReviveEvent(request.site, cfCookie))
@@ -1432,7 +1430,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         } catch (e: Exception) {
             Timber.w(e)
             isError = true
-            errorMsg = StringHelper.protect(e.message)
+            errorMsg = e.message ?: ""
         } finally {
             if (!ugoiraCacheFolder.delete()) Timber.w(
                 "Couldn't delete ugoira folder %s",

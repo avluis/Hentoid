@@ -12,7 +12,6 @@ import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.StringHelper;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class HitomiGalleryInfo {
@@ -41,7 +40,7 @@ public class HitomiGalleryInfo {
         private String male;
 
         String getLabel() {
-            String result = StringHelper.protect(tag);
+            String result = (null == tag) ? "" : tag;
             if (female != null && female.equals("1")) result += " ♀";
             else if (male != null && male.equals("1")) result += " ♂";
             return result;

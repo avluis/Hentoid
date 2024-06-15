@@ -21,11 +21,11 @@ import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.isInQueue
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.CloudflareHelper.CloudflareProtectedException
 import me.devsaki.hentoid.util.notification.BaseNotification
@@ -101,7 +101,7 @@ class DownloadsImportWorker(
         try {
             for (s in downloads) {
                 var galleryUrl = s
-                if (StringHelper.isNumeric(galleryUrl)) galleryUrl = Content.getGalleryUrlFromId(
+                if (isNumeric(galleryUrl)) galleryUrl = Content.getGalleryUrlFromId(
                     Site.NHENTAI,
                     galleryUrl
                 ) // We assume any launch code is Nhentai's

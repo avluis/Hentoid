@@ -6,7 +6,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_NB_CHAPTERS
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.serializeToJson
 
 /**
@@ -30,23 +30,23 @@ data class PixivSeriesMetadata(
         private val workCount: String?
     ) {
         fun getNbIllust(): String {
-            return if (workCount != null && StringHelper.isNumeric(workCount)) workCount else "0"
+            return if (workCount != null && isNumeric(workCount)) workCount else "0"
         }
 
         fun getId(): String {
-            return StringHelper.protect(id)
+            return id ?: ""
         }
 
         fun getUserId(): String {
-            return StringHelper.protect(userId)
+            return userId ?: ""
         }
 
         fun getTitle(): String {
-            return StringHelper.protect(title)
+            return title ?: ""
         }
 
         fun getCoverUrl(): String {
-            return StringHelper.protect(coverImage)
+            return coverImage ?: ""
         }
     }
 

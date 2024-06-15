@@ -21,8 +21,8 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.SearchCriteria
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.Type
+import me.devsaki.hentoid.util.capitalizeString
 import me.devsaki.hentoid.viewmodels.SearchViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
@@ -238,7 +238,7 @@ class SearchActivity : BaseActivity() {
         var count = 0
         for (type in types) count += attrCount[type.code, 0]
         button.text = String.format(
-            "%s (%s)", StringHelper.capitalizeString(getString(types[0].displayName)), count
+            "%s (%s)", capitalizeString(getString(types[0].displayName)), count
         )
         button.isEnabled = count > 0
     }

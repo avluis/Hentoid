@@ -1,10 +1,10 @@
 package me.devsaki.hentoid.util.string_similarity;
 
+import static me.devsaki.hentoid.util.StringHelperKt.cleanMultipleSpaces;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import me.devsaki.hentoid.util.StringHelper;
 
 /**
  * Abstract class for string similarities that rely on set operations (like
@@ -73,7 +73,7 @@ public abstract class ShingleBased {
     public final Map<String, Integer> getProfile(final String string) {
         HashMap<String, Integer> shingles = new HashMap<String, Integer>();
 
-        String string_no_space = StringHelper.cleanMultipleSpaces(string);
+        String string_no_space = cleanMultipleSpaces(string);
         for (int i = 0; i < (string_no_space.length() - k + 1); i++) {
             String shingle = string_no_space.substring(i, i + k);
             Integer old = shingles.get(shingle);

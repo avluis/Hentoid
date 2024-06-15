@@ -62,12 +62,12 @@ import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companio
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.formatIntAsStr
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.util.openReader
@@ -693,7 +693,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
                 val message = StringBuilder()
                 val processedPagesFmt =
-                    StringHelper.formatIntAsStr(pagesOKDisplay, totalPagesDisplay.toString().length)
+                    formatIntAsStr(pagesOKDisplay, totalPagesDisplay.toString().length)
                 message.append(
                     resources.getString(
                         R.string.queue_bottom_bar_processed, processedPagesFmt, totalPagesDisplay

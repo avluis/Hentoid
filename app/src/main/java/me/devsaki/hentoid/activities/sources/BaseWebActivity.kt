@@ -73,7 +73,6 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Preferences.Constant
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.calcPhash
@@ -322,7 +321,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
         if (intent.extras != null) {
             val bundle = BaseWebActivityBundle(intent.extras!!)
-            val intentUrl = StringHelper.protect(bundle.url)
+            val intentUrl = bundle.url
             if (intentUrl.isNotEmpty()) return intentUrl
         }
 
@@ -785,8 +784,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         BookmarksDialogFragment.invoke(
             this,
             getStartSite(),
-            StringHelper.protect(webView.title),
-            StringHelper.protect(webView.url)
+            webView.title ?: "",
+            webView.url ?: ""
         )
     }
 
@@ -808,7 +807,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * Handler for the "Manage link" button
      */
     private fun onManageLinkClick() {
-        val url = StringHelper.protect(webView.url)
+        val url = webView.url ?: ""
         if (copyPlainTextToClipboard(this, url)) toast(R.string.web_url_clipboard)
         UrlDialogFragment.invoke(this, url)
     }
@@ -1031,7 +1030,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 updatedImgs.addAll(additionalNonExistingImages)
                 currentContent!!.setImageFiles(updatedImgs)
                 // Update content title if extra pages are found and title has changed
-                if (StringHelper.protect(onlineContentTitle).isNotEmpty()
+                if (onlineContentTitle.isNotEmpty()
                     && !onlineContentTitle.equals(currentContent!!.title, ignoreCase = true)
                 ) replacementTitle = onlineContentTitle
             }
@@ -1201,7 +1200,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
             val webBFL = webView.copyBackForwardList()
-            val originalUrl = StringHelper.protect(webView.originalUrl)
+            val originalUrl = webView.originalUrl ?: ""
             var i = webBFL.currentIndex
             do {
                 i--
