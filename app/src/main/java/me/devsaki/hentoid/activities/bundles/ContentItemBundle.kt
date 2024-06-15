@@ -32,5 +32,7 @@ class ContentItemBundle(val bundle: Bundle = Bundle()) {
 
     var frozen by bundle.boolean()
 
+    var processed by bundle.boolean()
+
     val isEmpty get() = bundle.isEmpty
 }

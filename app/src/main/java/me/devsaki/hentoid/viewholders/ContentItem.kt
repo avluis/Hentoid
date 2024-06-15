@@ -320,6 +320,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 if (intValue != null) item.content?.downloadMode = intValue
                 boolValue = bundleParser.frozen
                 if (boolValue != null) item.queueRecord?.isFrozen = boolValue
+                boolValue = bundleParser.processed
+                if (boolValue != null) item.content?.setIsBeingProcessed(boolValue)
             }
 
             if (BuildConfig.DEBUG) item.content?.apply {
@@ -364,9 +366,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             baseLayout.isVisible = !item.isEmpty
             selectionBorder?.isVisible = item.isSelected
 
-            if (item.content != null && item.content.isBeingProcessed) baseLayout.startAnimation(
-                BlinkAnimation(500, 250)
-            ) else baseLayout.clearAnimation()
+            if (item.content != null && item.content.isBeingProcessed)
+                baseLayout.startAnimation(BlinkAnimation(500, 250))
+            else baseLayout.clearAnimation()
 
             if (item.isSelected && BuildConfig.DEBUG) Timber.d("SELECTED " + item.title)
 

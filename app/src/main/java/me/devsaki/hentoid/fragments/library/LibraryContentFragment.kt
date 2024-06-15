@@ -295,6 +295,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 if (oldItem.reads != newItem.reads) return false
                 if (oldItem.readPagesCount != newItem.readPagesCount) return false
                 if (oldItem.coverImageUrl != newItem.coverImageUrl) return false
+                if (oldItem.isBeingProcessed != newItem.isBeingProcessed) return false
                 if (oldItem.title != newItem.title) return false
                 return true
             }
@@ -318,6 +319,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 }
                 if (oldItem.coverImageUrl != newItem.coverImageUrl) {
                     diffBundleBuilder.coverUri = newItem.cover.fileUri
+                }
+                if (oldItem.isBeingProcessed != newItem.isBeingProcessed) {
+                    diffBundleBuilder.processed = newItem.isBeingProcessed
                 }
                 if (oldItem.title != newItem.title) {
                     diffBundleBuilder.title = newItem.title
