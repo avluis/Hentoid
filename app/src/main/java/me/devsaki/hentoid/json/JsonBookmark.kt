@@ -1,30 +1,21 @@
-package me.devsaki.hentoid.json;
+package me.devsaki.hentoid.json
 
-import me.devsaki.hentoid.database.domains.SiteBookmark;
-import me.devsaki.hentoid.enums.Site;
+import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.domains.SiteBookmark
+import me.devsaki.hentoid.enums.Site
 
-class JsonBookmark {
+@JsonClass(generateAdapter = true)
+data class JsonBookmark(
+    val site: Site,
+    val title: String,
+    val url: String,
+    val order: Int = 0
+) {
+    constructor(b: SiteBookmark) : this(b.site, b.title, b.url, b.order)
 
-    private Site site;
-    private String title;
-    private String url;
-    private int order;
-
-    private JsonBookmark() {
-    }
-
-    static JsonBookmark fromEntity(SiteBookmark b) {
-        JsonBookmark result = new JsonBookmark();
-        result.site = b.getSite();
-        result.title = b.getTitle();
-        result.url = b.getUrl();
-        result.order = b.getOrder();
-        return result;
-    }
-
-    SiteBookmark toEntity() {
-        SiteBookmark result = new SiteBookmark(site, title, url);
-        result.setOrder(order);
-        return result;
+    fun toEntity(): SiteBookmark {
+        val result = SiteBookmark(site, title, url)
+        result.order = order
+        return result
     }
 }

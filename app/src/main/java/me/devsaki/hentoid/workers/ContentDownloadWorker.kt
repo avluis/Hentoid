@@ -981,7 +981,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 // Save JSON file
                 try {
                     val jsonFile = jsonToFile(
-                        applicationContext, JsonContent.fromEntity(content),
+                        applicationContext, JsonContent(content),
                         JsonContent::class.java, dir, JSON_FILE_NAME_V2
                     )
                     // Cache its URI to the newly created content

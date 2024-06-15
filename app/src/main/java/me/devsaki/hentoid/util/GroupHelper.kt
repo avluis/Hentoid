@@ -90,17 +90,17 @@ fun updateGroupsJson(context: Context, dao: CollectionDAO): Boolean {
 
     // Save dynamic groups
     val dynamicGroups = dao.selectGroups(Grouping.DYNAMIC.id)
-    contentCollection.setGroups(Grouping.DYNAMIC, dynamicGroups)
+    contentCollection.replaceGroups(Grouping.DYNAMIC, dynamicGroups)
 
     // Save custom groups
     val customGroups = dao.selectGroups(Grouping.CUSTOM.id)
-    contentCollection.setGroups(Grouping.CUSTOM, customGroups)
+    contentCollection.replaceGroups(Grouping.CUSTOM, customGroups)
 
     // Save other groups whose favourite or rating has been set
     val editedArtistGroups = dao.selectEditedGroups(Grouping.ARTIST.id)
-    contentCollection.setGroups(Grouping.ARTIST, editedArtistGroups)
+    contentCollection.replaceGroups(Grouping.ARTIST, editedArtistGroups)
     val editedDateGroups = dao.selectEditedGroups(Grouping.DL_DATE.id)
-    contentCollection.setGroups(Grouping.DL_DATE, editedDateGroups)
+    contentCollection.replaceGroups(Grouping.DL_DATE, editedDateGroups)
 
     val rootFolder =
         getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1))

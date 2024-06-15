@@ -1,27 +1,18 @@
-package me.devsaki.hentoid.json;
+package me.devsaki.hentoid.json
 
-import me.devsaki.hentoid.database.domains.Chapter;
+import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.domains.Chapter
 
-class JsonChapter {
+@JsonClass(generateAdapter = true)
+data class JsonChapter(
+    val order: Int,
+    val url: String,
+    val name: String,
+    val uniqueId: String
+) {
+    constructor(c: Chapter) : this(c.order, c.url, c.name, c.uniqueId)
 
-    private Integer order;
-    private String url;
-    private String name;
-    private String uniqueId;
-
-    private JsonChapter() {
-    }
-
-    static JsonChapter fromEntity(Chapter c) {
-        JsonChapter result = new JsonChapter();
-        result.order = c.getOrder();
-        result.url = c.getUrl();
-        result.name = c.getName();
-        result.uniqueId = c.getUniqueId();
-        return result;
-    }
-
-    Chapter toEntity() {
-        return new Chapter(order, url, name).setUniqueId(uniqueId);
+    fun toEntity(): Chapter {
+        return Chapter(order, url, name).setUniqueId(uniqueId)
     }
 }

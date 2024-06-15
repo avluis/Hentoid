@@ -683,7 +683,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             if (existingFlaggedContent != null) {
                 try {
                     val newJson = jsonToFile(
-                        context, JsonContent.fromEntity(existingFlaggedContent),
+                        context, JsonContent(existingFlaggedContent),
                         JsonContent::class.java, bookFolder, JSON_FILE_NAME_V2
                     )
                     existingFlaggedContent.jsonUri = newJson.uri.toString()
@@ -749,7 +749,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         null
                     )
                     val newJson = jsonToFile(
-                        context, JsonContent.fromEntity(storedContent),
+                        context, JsonContent(storedContent),
                         JsonContent::class.java, bookFolder, JSON_FILE_NAME_V2
                     )
                     storedContent.jsonUri = newJson.uri.toString()
@@ -923,7 +923,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         val contentCollection = deserialiseCollectionJson(context, queueFile)
         if (null != contentCollection) {
             var queueSize = dao.countAllQueueBooks().toInt()
-            val queuedContent = contentCollection.queue
+            val queuedContent = contentCollection.getEntityQueue()
             eventProgress(STEP_4_QUEUE_FINAL, queuedContent.size, 0, 0)
             trace(
                 Log.INFO,
@@ -995,7 +995,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         dao: CollectionDAO,
         log: MutableList<LogEntry>
     ) {
-        val groups = contentCollection.getGroups(Grouping.CUSTOM)
+        val groups = contentCollection.getEntityGroups(Grouping.CUSTOM)
         eventProgress(STEP_GROUPS, groups.size, 0, 0)
         trace(
             Log.INFO,
@@ -1033,7 +1033,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         dao: CollectionDAO,
         log: MutableList<LogEntry>
     ) {
-        val editedArtistGroups = contentCollection.getGroups(grouping)
+        val editedArtistGroups = contentCollection.getEntityGroups(grouping)
         trace(
             Log.INFO,
             STEP_GROUPS,
@@ -1070,7 +1070,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0)
         val contentCollection = deserialiseCollectionJson(context, bookmarksFile)
         if (null != contentCollection) {
-            val bookmarks = contentCollection.bookmarks
+            val bookmarks = contentCollection.getEntityBookmarks()
             eventProgress(STEP_4_QUEUE_FINAL, bookmarks.size, 0, 0)
             trace(
                 Log.INFO,
@@ -1106,7 +1106,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0)
         val contentCollection = deserialiseCollectionJson(context, rulesFile)
         if (null != contentCollection) {
-            val rules = contentCollection.renamingRules
+            val rules = contentCollection.getEntityRenamingRules()
             eventProgress(STEP_4_QUEUE_FINAL, rules.size, 0, 0)
             trace(
                 Log.INFO,
@@ -1251,7 +1251,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 val contentV2 = content.toV2Content()
                 contentV2.setStorageDoc(parentFolder)
                 val newJson = jsonToFile(
-                    context, JsonContent.fromEntity(contentV2),
+                    context, JsonContent(contentV2),
                     JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
                 )
                 contentV2.jsonUri = newJson.uri.toString()
@@ -1284,7 +1284,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 val contentV2 = content.toV2Content()
                 contentV2.setStorageDoc(parentFolder)
                 val newJson = jsonToFile(
-                    context, JsonContent.fromEntity(contentV2),
+                    context, JsonContent(contentV2),
                     JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
                 )
                 contentV2.jsonUri = newJson.uri.toString()

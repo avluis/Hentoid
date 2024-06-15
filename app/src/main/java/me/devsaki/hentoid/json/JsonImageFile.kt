@@ -1,70 +1,56 @@
-package me.devsaki.hentoid.json;
+package me.devsaki.hentoid.json
 
-import androidx.annotation.NonNull;
+import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.domains.Chapter
+import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.enums.StatusContent
 
-import com.annimon.stream.Optional;
-import com.annimon.stream.Stream;
+@JsonClass(generateAdapter = true)
+data class JsonImageFile(
+    val order: Int,
+    val url: String,
+    val pageUrl: String,
+    val name: String,
+    val isCover: Boolean,
+    val favourite: Boolean,
+    val isRead: Boolean,
+    val status: StatusContent,
+    val mimeType: String,
+    val pHash: Long,
+    val isTransformed: Boolean,
+    val chapterOrder: Int
+) {
+    constructor(f: ImageFile) : this(
+        f.order,
+        f.url,
+        f.pageUrl,
+        f.name,
+        f.isCover,
+        f.isFavourite,
+        f.isRead,
+        f.status,
+        f.mimeType,
+        f.imageHash,
+        f.isTransformed,
+        f.linkedChapter?.order ?: -1
+    )
 
-import java.util.List;
+    fun toEntity(chapters: List<Chapter>): ImageFile {
+        var result = ImageFile.fromImageUrl(order, url, status, name)
+        if (url.isEmpty()) result = ImageFile.fromPageUrl(order, pageUrl, status, name)
+        result.setName(name)
+        result.setIsCover(isCover)
+        result.isFavourite = favourite
+        result.isRead = isRead
+        result.setMimeType(mimeType)
+        result.imageHash = pHash
+        result.isTransformed = isTransformed
 
-import me.devsaki.hentoid.database.domains.Chapter;
-import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.enums.StatusContent;
-
-class JsonImageFile {
-
-    private Integer order;
-    private String url;
-    private String pageUrl;
-    private String name;
-    private boolean isCover;
-    private boolean favourite;
-    private boolean isRead;
-    private StatusContent status;
-    private String mimeType;
-    private long pHash;
-
-    private boolean isTransformed;
-
-    private int chapterOrder = -1;
-
-    private JsonImageFile() {
-    }
-
-    static JsonImageFile fromEntity(ImageFile f) {
-        JsonImageFile result = new JsonImageFile();
-        result.order = f.getOrder();
-        result.url = f.getUrl();
-        result.pageUrl = f.getPageUrl();
-        result.name = f.getName();
-        result.status = f.getStatus();
-        result.isCover = f.isCover();
-        result.favourite = f.isFavourite();
-        result.isRead = f.isRead();
-        result.mimeType = f.getMimeType();
-        result.pHash = f.getImageHash();
-        result.isTransformed = f.isTransformed();
-        if (f.getLinkedChapter() != null)
-            result.chapterOrder = f.getLinkedChapter().getOrder();
-        return result;
-    }
-
-    ImageFile toEntity(@NonNull List<Chapter> chapters) {
-        ImageFile result = ImageFile.fromImageUrl(order, url, status, name);
-        if (url.isEmpty()) result = ImageFile.fromPageUrl(order, pageUrl, status, name);
-        result.setName(name);
-        result.setIsCover(isCover);
-        result.setFavourite(favourite);
-        result.setRead(isRead);
-        result.setMimeType(mimeType);
-        result.setImageHash(pHash);
-        result.setTransformed(isTransformed);
-
-        if (!chapters.isEmpty() && chapterOrder > -1) {
-            Optional<Chapter> chapter = Stream.of(chapters).filter(c -> c.getOrder().equals(chapterOrder)).findFirst();
-            if (chapter.isPresent()) result.setChapter(chapter.get());
+        if (chapters.isNotEmpty() && chapterOrder > -1) {
+            val chapter = chapters.firstOrNull { it.order == chapterOrder }
+            if (chapter != null) result.setChapter(chapter)
         }
 
-        return result;
+        return result
     }
 }

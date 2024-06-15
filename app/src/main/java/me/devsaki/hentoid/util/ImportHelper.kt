@@ -1281,7 +1281,7 @@ private fun createJsonFileFor(
     return if (jsonFile != null && jsonFile.exists()) jsonFile.uri
     else jsonToFile(
         context,
-        JsonContent.fromEntity(content),
+        JsonContent(content),
         JsonContent::class.java,
         contentFolder,
         jsonName

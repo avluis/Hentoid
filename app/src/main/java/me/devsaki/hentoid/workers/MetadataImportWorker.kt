@@ -133,18 +133,18 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
 
         // Done in one shot
         if (importBookmarks) {
-            val bookmarks = collection.bookmarks
+            val bookmarks = collection.getEntityBookmarks()
             totalItems += bookmarks.size
             importBookmarks(dao, bookmarks)
             nbOK += bookmarks.size
         }
         val contentToImport: MutableList<JsonContent> = ArrayList()
-        if (importLibrary) contentToImport.addAll(collection.jsonLibrary)
-        if (importQueue) contentToImport.addAll(collection.jsonQueue)
+        if (importLibrary) contentToImport.addAll(collection.library)
+        if (importQueue) contentToImport.addAll(collection.queue)
         queueSize = dao.countAllQueueBooks().toInt()
         totalItems += contentToImport.size
         if (importCustomGroups) {
-            val customGroups = collection.getGroups(Grouping.CUSTOM)
+            val customGroups = collection.getEntityGroups(Grouping.CUSTOM)
             totalItems += customGroups.size
             // Chain group import followed by content import
             runImportItems(

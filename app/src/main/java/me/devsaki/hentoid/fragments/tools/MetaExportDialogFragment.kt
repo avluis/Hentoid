@@ -282,19 +282,20 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
                     return@map c
                 }.toMutableList()
             exportedQueue.addAll(errorsQueue)
-            jsonContentCollection.queue = exportedQueue
+            jsonContentCollection.replaceQueue(exportedQueue)
         }
-        jsonContentCollection.setGroups(
+        jsonContentCollection.replaceGroups(
             Grouping.DYNAMIC,
             dao.selectGroups(Grouping.DYNAMIC.id)
         )
-        if (exportCustomgroups) jsonContentCollection.setGroups(
+        if (exportCustomgroups) jsonContentCollection.replaceGroups(
             Grouping.CUSTOM,
             dao.selectGroups(Grouping.CUSTOM.id)
         )
-        if (exportBookmarks) jsonContentCollection.bookmarks = dao.selectAllBookmarks()
-        jsonContentCollection.renamingRules =
+        if (exportBookmarks) jsonContentCollection.replaceBookmarks(dao.selectAllBookmarks())
+        jsonContentCollection.replaceRenamingRules(
             dao.selectRenamingRules(AttributeType.UNDEFINED, null)
+        )
         return jsonContentCollection
     }
 

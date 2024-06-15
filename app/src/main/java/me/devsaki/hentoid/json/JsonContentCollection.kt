@@ -1,92 +1,63 @@
-package me.devsaki.hentoid.json;
+package me.devsaki.hentoid.json
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.Group
+import me.devsaki.hentoid.database.domains.RenamingRule
+import me.devsaki.hentoid.database.domains.SiteBookmark
+import me.devsaki.hentoid.enums.Grouping
 
-import com.annimon.stream.Stream;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.Group;
-import me.devsaki.hentoid.database.domains.RenamingRule;
-import me.devsaki.hentoid.database.domains.SiteBookmark;
-import me.devsaki.hentoid.enums.Grouping;
-
-public class JsonContentCollection {
-
-    private List<JsonContent> library = new ArrayList<>();
-    private List<JsonContent> queue = new ArrayList<>();
-    private List<JsonCustomGrouping> groupings = new ArrayList<>();
-    private List<JsonBookmark> bookmarks = new ArrayList<>();
-    private List<JsonRenamingRule> renamingRules = new ArrayList<>();
+@JsonClass(generateAdapter = true)
+class JsonContentCollection {
+    var library: MutableList<JsonContent> = ArrayList()
+    var queue: List<JsonContent> = ArrayList()
+    var groupings: MutableList<JsonCustomGrouping> = ArrayList()
+    var bookmarks: List<JsonBookmark> = ArrayList()
+    var renamingRules: List<JsonRenamingRule> = ArrayList()
 
 
-    public JsonContentCollection() {
-        // Nothing special do to here
+    fun addToLibrary(content: Content) {
+        library.add(JsonContent(content, false))
     }
 
-    public List<Content> getLibrary(@Nullable CollectionDAO dao) {
-        return Stream.of(library).map(c -> c.toEntity(dao)).toList();
+    fun getEntityQueue(): List<Content> {
+        return queue.map { it.toEntity() }
     }
 
-    public List<JsonContent> getJsonLibrary() {
-        return library;
+    fun replaceQueue(queue: List<Content>) {
+        this.queue = queue.map { JsonContent(it, false) }
     }
 
-    public void setLibrary(@NonNull List<Content> library) {
-        this.library = Stream.of(library).map(c -> JsonContent.fromEntity(c, false)).toList();
+    fun getEntityGroups(grouping: Grouping): List<Group> {
+        return groupings
+            .filter { it.groupingId == grouping.id }
+            .flatMap { it.groups }
+            .map { it.toEntity(grouping) }
     }
 
-    public void addToLibrary(@NonNull Content content) {
-        library.add(JsonContent.fromEntity(content, false));
-    }
-
-    public List<Content> getQueue() {
-        return Stream.of(queue).map(c -> c.toEntity(null)).toList();
-    }
-
-    public List<JsonContent> getJsonQueue() {
-        return queue;
-    }
-
-    public void setQueue(@NonNull List<Content> queue) {
-        this.queue = Stream.of(queue).map(c -> JsonContent.fromEntity(c, false)).toList();
-    }
-
-    public List<Group> getGroups(Grouping grouping) {
-        return Stream.of(groupings)
-                .filter(gr -> gr.getGroupingId() == grouping.getId())
-                .flatMap(gr -> Stream.of(gr.getGroups()))
-                .map(g -> g.toEntity(grouping))
-                .toList();
-    }
-
-    public void setGroups(Grouping grouping, @NonNull List<Group> groups) {
+    fun replaceGroups(grouping: Grouping, groups: List<Group>) {
         // Clear previous entries of the same grouping
-        this.groupings = Stream.of(groupings).filterNot(jcg -> jcg.getGroupingId() == grouping.getId()).toList();
-        this.groupings.add(JsonCustomGrouping.fromEntity(grouping, groups));
+        groupings = groupings.filterNot { it.groupingId == grouping.id }.toMutableList()
+        if (groups.isNotEmpty()) groupings.add(JsonCustomGrouping(grouping, groups))
     }
 
-    public List<SiteBookmark> getBookmarks() {
-        return Stream.of(bookmarks).map(JsonBookmark::toEntity).toList();
+    fun getEntityBookmarks(): List<SiteBookmark> {
+        return bookmarks.map { it.toEntity() }
     }
 
-    public void setBookmarks(@NonNull List<SiteBookmark> bookmarks) {
-        this.bookmarks = Stream.of(bookmarks).map(JsonBookmark::fromEntity).toList();
+    fun replaceBookmarks(bookmarks: List<SiteBookmark>) {
+        this.bookmarks = bookmarks.map { JsonBookmark(it) }
     }
 
-    public List<RenamingRule> getRenamingRules() {
-        return Stream.of(renamingRules).map(JsonRenamingRule::toEntity).toList();
+    fun getEntityRenamingRules(): List<RenamingRule> {
+        return renamingRules.map { it.toEntity() }
     }
 
-    public void setRenamingRules(List<RenamingRule> data) {
-        this.renamingRules = Stream.of(data).map(JsonRenamingRule::fromEntity).toList();
+    fun replaceRenamingRules(data: List<RenamingRule>) {
+        this.renamingRules = data.map { JsonRenamingRule(it) }
     }
 
-    public boolean isEmpty() {
-        return library.isEmpty() && queue.isEmpty() && groupings.isEmpty() && bookmarks.isEmpty() && renamingRules.isEmpty();
+    fun isEmpty(): Boolean {
+        return library.isEmpty() && queue.isEmpty() && groupings.isEmpty() && bookmarks.isEmpty() && renamingRules.isEmpty()
     }
 }

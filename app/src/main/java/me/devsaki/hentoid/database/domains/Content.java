@@ -712,6 +712,10 @@ public class Content implements Serializable {
         return errorLog;
     }
 
+    public List<ErrorRecord> getErrorList() {
+        return DBHelper.reach(this, errorLog);
+    }
+
     public void setErrorLog(List<ErrorRecord> errorLog) {
         if (errorLog != null && !errorLog.equals(this.errorLog)) {
             this.errorLog.clear();
@@ -941,8 +945,12 @@ public class Content implements Serializable {
         this.parentStorageUri = data;
     }
 
+    public List<GroupItem> getGroupItemList() {
+        return DBHelper.reach(this, groupItems);
+    }
+
     public List<GroupItem> getGroupItems(@NonNull Grouping grouping) {
-        return Stream.of(groupItems).filter(gi -> gi.group.getTarget().grouping.equals(grouping)).toList();
+        return Stream.of(getGroupItemList()).filter(gi -> gi.group.getTarget().grouping.equals(grouping)).toList();
     }
 
     public int computeReadPagesCount() {

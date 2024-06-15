@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToOne;
+import me.devsaki.hentoid.database.DBHelper;
 
 @Entity
 public class GroupItem {
@@ -38,6 +39,10 @@ public class GroupItem {
 
     public Group getGroup() {
         return group.getTarget();
+    }
+
+    public Group reachGroup() {
+        return DBHelper.reach(this, group);
     }
 
     public long getContentId() {

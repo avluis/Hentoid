@@ -1,62 +1,46 @@
-package me.devsaki.hentoid.json;
+package me.devsaki.hentoid.json
 
-import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
+import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.domains.Attribute
+import me.devsaki.hentoid.database.domains.AttributeLocation
+import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.parsers.cleanup
+import java.util.Objects
 
-import java.util.List;
-import java.util.Objects;
+@JsonClass(generateAdapter = true)
+data class JsonAttribute(
+    val name: String,
+    val type: AttributeType,
+    var url: String = ""
+) {
 
-import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.AttributeLocation;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
-
-class JsonAttribute {
-
-    private String name;
-    private AttributeType type;
-    private String url = "";
-
-    private JsonAttribute() {
+    constructor(a: Attribute, site: Site) : this(cleanup(a.name), a.type) {
+        this.computeUrl(a.locations, site)
     }
 
-    static JsonAttribute fromEntity(Attribute a, Site site) {
-        JsonAttribute result = new JsonAttribute();
-        result.name = cleanup(a.getName());
-        result.type = a.getType();
-        result.computeUrl(a.getLocations(), site);
-        return result;
-    }
-
-    private void computeUrl(List<AttributeLocation> locations, Site site) {
-        for (AttributeLocation location : locations) {
-            if (location.site.equals(site)) {
-                url = location.url;
-                return;
+    private fun computeUrl(locations: List<AttributeLocation>, site: Site) {
+        for (location in locations) {
+            if (location.site == site) {
+                url = location.url
+                return
             }
         }
-        url = ""; // Field shouldn't be null
+        url = "" // Field shouldn't be null
     }
 
-    Attribute toEntity(Site site) {
-        return new Attribute(type, cleanup(name), url, site);
+    fun toEntity(site: Site): Attribute {
+        return Attribute(type, cleanup(name), url, site)
     }
 
-    public AttributeType getType() {
-        return type;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val that = other as JsonAttribute
+        return name == that.name && type == that.type && url == that.url
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        JsonAttribute that = (JsonAttribute) o;
-        return Objects.equals(name, that.name) &&
-                type == that.type &&
-                Objects.equals(url, that.url);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, type, url);
+    override fun hashCode(): Int {
+        return Objects.hash(name, type, url)
     }
 }

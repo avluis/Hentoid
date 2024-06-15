@@ -1,32 +1,27 @@
-package me.devsaki.hentoid.json;
+package me.devsaki.hentoid.json
 
-import java.time.Instant;
+import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.domains.ErrorRecord
+import me.devsaki.hentoid.enums.ErrorType
+import java.time.Instant
 
-import me.devsaki.hentoid.database.domains.ErrorRecord;
-import me.devsaki.hentoid.enums.ErrorType;
+@JsonClass(generateAdapter = true)
+data class JsonErrorRecord(
+    val type: ErrorType,
+    val url: String,
+    val contentPart: String,
+    val description: String,
+    val timestamp: Long
+) {
+    constructor(er: ErrorRecord) : this(
+        er.type,
+        er.url,
+        er.contentPart,
+        er.description,
+        er.timestamp.toEpochMilli()
+    )
 
-class JsonErrorRecord {
-
-    private ErrorType type;
-    private String url;
-    private String contentPart;
-    private String description;
-    private Long timestamp;
-
-    private JsonErrorRecord() {
-    }
-
-    static JsonErrorRecord fromEntity(ErrorRecord er) {
-        JsonErrorRecord result = new JsonErrorRecord();
-        result.type = er.getType();
-        result.url = er.getUrl();
-        result.contentPart = er.getContentPart();
-        result.description = er.getDescription();
-        result.timestamp = er.getTimestamp().toEpochMilli();
-        return result;
-    }
-
-    ErrorRecord toEntity() {
-        return new ErrorRecord(type, url, contentPart, description, Instant.ofEpochMilli(timestamp));
+    fun toEntity(): ErrorRecord {
+        return ErrorRecord(type, url, contentPart, description, Instant.ofEpochMilli(timestamp))
     }
 }

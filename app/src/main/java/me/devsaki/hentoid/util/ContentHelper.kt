@@ -252,7 +252,7 @@ fun updateJson(context: Context, content: Content): Boolean {
             getOutputStream(context, file).use { output ->
                 if (output != null) {
                     updateJson(
-                        JsonContent.fromEntity(content),
+                        JsonContent(content),
                         JsonContent::class.java, output
                     )
                     return true
@@ -282,7 +282,7 @@ fun createJson(context: Context, content: Content): DocumentFile? {
     val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return null
     try {
         val newJson = jsonToFile<JsonContent>(
-            context, JsonContent.fromEntity(content),
+            context, JsonContent(content),
             JsonContent::class.java, folder, JSON_FILE_NAME_V2
         )
         content.jsonUri = newJson.uri.toString()
@@ -331,7 +331,7 @@ fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
 
     try {
         val contentCollection = JsonContentCollection()
-        contentCollection.queue = queuedContent
+        contentCollection.replaceQueue(queuedContent)
 
         jsonToFile(
             context,
