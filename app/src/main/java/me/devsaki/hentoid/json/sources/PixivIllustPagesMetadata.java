@@ -5,8 +5,6 @@ import com.annimon.stream.Stream;
 import java.util.List;
 import java.util.Map;
 
-import me.devsaki.hentoid.util.StringHelper;
-
 /**
  * Data structure for Pixiv's "illust pages" desktop endpoint
  */
@@ -36,7 +34,7 @@ public class PixivIllustPagesMetadata {
             if (null == urls) return "";
             String result = urls.get("original");
             if (null == result) result = urls.get("regular");
-            return StringHelper.protect(result);
+            return (null == result) ? "" : result;
         }
     }
 }

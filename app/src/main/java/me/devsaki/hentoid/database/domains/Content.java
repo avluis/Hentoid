@@ -4,6 +4,7 @@ import static me.devsaki.hentoid.util.ContentHelperKt.formatBookAuthor;
 import static me.devsaki.hentoid.util.HelperKt.hash64;
 import static me.devsaki.hentoid.util.JsonHelperKt.jsonToObject;
 import static me.devsaki.hentoid.util.JsonHelperKt.serializeToJson;
+import static me.devsaki.hentoid.util.StringHelperKt.isNumeric;
 
 import android.text.TextUtils;
 
@@ -73,7 +74,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.JsonHelperKt;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 import me.devsaki.hentoid.util.network.HttpHelperKt;
 import me.devsaki.hentoid.util.network.UriParts;
@@ -564,7 +564,7 @@ public class Content implements Serializable {
             String[] nameParts = parts.getFileNameNoExt().split("-");
             String[] lastPartParts = nameParts[nameParts.length - 1].split("x");
             for (String s : lastPartParts)
-                if (!StringHelper.isNumeric(s)) return url;
+                if (!isNumeric(s)) return url;
 
             nameParts = Arrays.copyOf(nameParts, nameParts.length - 1);
             return parts.getPath() + TextUtils.join("-", nameParts);
@@ -605,7 +605,7 @@ public class Content implements Serializable {
     }
 
     public String getTitle() {
-        return StringHelper.protect(title);
+        return (null == title) ? "" : title;
     }
 
     public Content setTitle(String title) {

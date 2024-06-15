@@ -9,7 +9,6 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.detachAllExternalContent
 import me.devsaki.hentoid.util.detachAllPrimaryContent
 import me.devsaki.hentoid.util.file.Beholder
@@ -109,8 +108,8 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                                 getApplication(),
                                 it1.uri,
                                 targetFolder.uri,
-                                StringHelper.protect(it1.type),
-                                StringHelper.protect(it1.name)
+                                it1.type ?: "",
+                                it1.name ?: ""
                             )
                             c.imageFiles?.forEach { it2 ->
                                 if (it1.uri.toString() == it2.fileUri) {

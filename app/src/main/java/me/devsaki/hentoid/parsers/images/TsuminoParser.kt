@@ -2,9 +2,9 @@ package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.CaptchaException
 import me.devsaki.hentoid.util.exception.ParseException
+import me.devsaki.hentoid.util.locateDigits
 import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class TsuminoParser : BaseImageListParser() {
@@ -25,7 +25,7 @@ class TsuminoParser : BaseImageListParser() {
             var nbPages = 0
             val nbPagesE = doc.select("h1").first()
             if (null != nbPagesE) {
-                val digits = StringHelper.locateDigits(nbPagesE.text())
+                val digits = locateDigits(nbPagesE.text())
                 if (digits.isNotEmpty()) nbPages = digits[digits.size - 1].third
             }
             if (-1 == nbPages) throw ParseException("Couldn't find the number of pages")

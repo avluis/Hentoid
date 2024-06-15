@@ -928,7 +928,7 @@ fun formatBookId(content: Content): String {
     var id = content.uniqueSiteId
     // For certain sources (8muses, fakku), unique IDs are strings that may be very long
     // => shorten them by using their hashCode
-    if (id.length > 10) id = StringHelper.formatIntAsStr(abs(id.hashCode().toDouble()).toInt(), 10)
+    if (id.length > 10) id = formatIntAsStr(abs(id.hashCode().toDouble()).toInt(), 10)
     return "[$id]"
 }
 
@@ -957,7 +957,7 @@ fun formatBookAuthor(content: Content): String {
         }
     }
 
-    return StringHelper.protect(result)
+    return result
 }
 
 /**
@@ -1014,10 +1014,8 @@ fun getOrCreateSiteDownloadDir(
 
                 // Create new one with the next number (taken from the name of the last folder itself, to handle cases where numbering is not contiguous)
                 var newDigits = siteFolders.size
-                val lastDigits = StringHelper.keepDigits(
-                    StringHelper.protect(
-                        siteFolders[siteFolders.size - 1].name
-                    ).lowercase(Locale.getDefault())
+                val lastDigits = keepDigits(
+                    (siteFolders[siteFolders.size - 1].name ?: "").lowercase(Locale.getDefault())
                         .replace(site.folder.lowercase(Locale.getDefault()), "")
                 )
                 if (lastDigits.isNotEmpty()) newDigits = lastDigits.toInt() + 1
@@ -1315,7 +1313,7 @@ fun getBlockedTags(content: Content): List<String> {
         for (blocked in Preferences.getBlockedTags()) for (tag in tags) if (blocked.equals(
                 tag,
                 ignoreCase = true
-            ) || StringHelper.isPresentAsWord(blocked, tag!!)
+            ) || isPresentAsWord(blocked, tag!!)
         ) {
             if (result.isEmpty()) result = ArrayList()
             result.add(tag)
@@ -1540,8 +1538,8 @@ fun purgeFiles(
                         context,
                         file.uri,
                         Uri.fromFile(tempFolder),
-                        StringHelper.protect(file.type),
-                        StringHelper.protect(file.name)
+                        file.type ?: "",
+                        file.name ?: ""
                     )
                     if (uri != null) {
                         val tmpFile = legacyFileFromUri(uri)
@@ -1769,7 +1767,7 @@ fun findDuplicate(
     // First find good rough candidates by searching for the longest word in the title
     var pHash = pHashIn
     val words =
-        StringHelper.cleanMultipleSpaces(StringHelper.simplify(content.title)).split(" ")
+        cleanMultipleSpaces(simplify(content.title)).split(" ")
     val longestWord = words.sortedWith(Comparator.comparingInt { it.length }).lastOrNull()
     // Too many resources consumed if the longest word is 1 character long
     if (null == longestWord || longestWord.length < 2) return null

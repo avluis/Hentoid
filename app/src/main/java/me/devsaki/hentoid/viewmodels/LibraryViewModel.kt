@@ -37,7 +37,6 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.SearchCriteria
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.assertNonUiThread
@@ -1154,7 +1153,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     private fun createContentFromChapter(content: Content, chapter: Chapter): Content {
         val splitContent = Content()
-        var url = StringHelper.protect(chapter.url)
+        var url = chapter.url ?: ""
         if (url.isEmpty()) { // Default (e.g. manually created chapters)
             url = content.url
             splitContent.site = content.site
@@ -1194,7 +1193,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             splitContent.setChapters(null)
             splitContent.qtyPages = images.count { imf -> imf.isReadable }
             splitContent.computeSize()
-            var coverImageUrl = StringHelper.protect(images[0].url)
+            var coverImageUrl = images[0].url ?: ""
             if (coverImageUrl.isEmpty()) coverImageUrl = content.coverImageUrl
             splitContent.coverImageUrl = coverImageUrl
         }

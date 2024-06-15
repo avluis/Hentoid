@@ -8,7 +8,6 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
-import me.devsaki.hentoid.util.StringHelper
 
 /**
  * Data structure for Pixiv's "user details" mobile endpoint
@@ -34,11 +33,11 @@ data class PixivUserMetadata(
         private val profileImg: ProfileImgData?
     ) {
         val id: String
-            get() = StringHelper.protect(userId)
+            get() = userId
         val name: String
-            get() = StringHelper.protect(userName)
+            get() = userName
         val coverUrl: String
-            get() = if (null == profileImg) "" else StringHelper.protect(profileImg.main)
+            get() = profileImg?.main ?: ""
 
     }
 

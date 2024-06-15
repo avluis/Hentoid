@@ -84,7 +84,6 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dimensAsPx
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
@@ -92,6 +91,7 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.util.getIdForCurrentTheme
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.shareContent
@@ -1471,7 +1471,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
-        if (newSearch && StringHelper.isNumeric(query)) {
+        if (newSearch && isNumeric(query)) {
             val dialogTitle = getString(R.string.search_bookid_label, query)
             val excludedSiteCodes = result.toList().filterNotNull()
                 .filter { content -> query == content.uniqueSiteId }

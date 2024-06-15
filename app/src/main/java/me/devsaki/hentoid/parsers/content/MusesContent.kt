@@ -10,7 +10,8 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttribute
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.capitalizeString
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -53,7 +54,7 @@ class MusesContent : BaseContentParser() {
             for (thumbLink in it) {
                 val href = thumbLink.attr("href")
                 val numSeparator = href.lastIndexOf('/')
-                if (StringHelper.isNumeric(href.substring(numSeparator + 1))) {
+                if (isNumeric(href.substring(numSeparator + 1))) {
                     val img = thumbLink.select("img").first() ?: continue
                     val src = getImgSrc(img)
                     if (src.isEmpty()) continue
@@ -73,8 +74,7 @@ class MusesContent : BaseContentParser() {
         breadcrumbs?.let {
             if (it.size > 1) {
                 // Default : book title is the last breadcrumb
-                var bookTitle =
-                    StringHelper.capitalizeString(it[it.size - 1].text())
+                var bookTitle = capitalizeString(it[it.size - 1].text())
                 if (it.size > 2) {
                     // Element 1 is always the publisher (using CIRCLE as publisher never appears on the Hentoid UI)
                     val publisher = it[1].text().lowercase(Locale.getDefault())

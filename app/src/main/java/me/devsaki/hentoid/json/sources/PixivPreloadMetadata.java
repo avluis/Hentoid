@@ -20,7 +20,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.StringHelper;
 
 /**
  * Data structure for Pixiv's "illust details" desktop website header data
@@ -50,7 +49,7 @@ public class PixivPreloadMetadata {
             if (null == urls) return "";
             String result = urls.get("thumb");
             if (null == result) result = urls.get("small");
-            return StringHelper.protect(result);
+            return (null == result) ? "" : result;
         }
 
         public String getIllustId() {

@@ -25,7 +25,6 @@ import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.util.hash64
@@ -161,7 +160,7 @@ private fun getVolumePath(context: Context, volumeId: String): String? {
         }
 
         for (volume in result) {
-            val uuid = StringHelper.protect(getUuid.invoke(volume) as String?)
+            val uuid = (getUuid.invoke(volume) as String?) ?: ""
             val primary = isPrimary.invoke(volume) as Boolean
 
             if (volumeIdMatch(uuid, primary, volumeId)) return getVolumePath(volume)
@@ -582,7 +581,7 @@ fun openFile(context: Context, aFile: DocumentFile) {
  * @param uri     Uri of the resource to be opened
  */
 fun openUri(context: Context, uri: Uri) {
-    tryOpenFile(context, uri, StringHelper.protect(uri.lastPathSegment), false)
+    tryOpenFile(context, uri, uri.lastPathSegment ?: "", false)
 }
 
 /**
@@ -995,7 +994,7 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
             for (v in volumes) {
                 if (v.isPrimary) primaryVolume = v
 
-                if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
+                if (volumeIdMatch(v, volumeId)) {
                     targetVolume = v
                     break
                 }
@@ -1074,7 +1073,7 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
  */
 @TargetApi(26)
 private fun volumeIdMatch(volume: StorageVolume, treeVolumeId: String): Boolean {
-    return volumeIdMatch(StringHelper.protect(volume.uuid), volume.isPrimary, treeVolumeId)
+    return volumeIdMatch(volume.uuid ?: "", volume.isPrimary, treeVolumeId)
 }
 
 /**

@@ -34,7 +34,6 @@ import me.devsaki.hentoid.util.AdBlocker
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.getAssetAsString
@@ -45,6 +44,7 @@ import me.devsaki.hentoid.util.image.MIME_IMAGE_WEBP
 import me.devsaki.hentoid.util.image.bitmapToWebp
 import me.devsaki.hentoid.util.image.getBitmapFromVectorDrawable
 import me.devsaki.hentoid.util.image.tintBitmap
+import me.devsaki.hentoid.util.isPresentAsWord
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
@@ -385,7 +385,7 @@ open class CustomWebViewClient : WebViewClient {
                     }
                     openFile(view.context, uri)
                 } catch (t: Throwable) {
-                    view.context.toast(R.string.torrent_dl_fail, StringHelper.protect(t.message))
+                    view.context.toast(R.string.torrent_dl_fail, t.message ?: "")
                     Timber.w(t)
                 }
             }
@@ -450,7 +450,7 @@ open class CustomWebViewClient : WebViewClient {
         if (BuildConfig.DEBUG) Timber.v("WebView : page finished %s", url)
         isPageLoading.set(false)
         isHtmlLoaded.set(false) // Reset for the next page
-        activity?.onPageFinished(url, isResultsPage(StringHelper.protect(url)), isGalleryPage(url))
+        activity?.onPageFinished(url, isResultsPage(url), isGalleryPage(url))
     }
 
     /**
@@ -640,9 +640,9 @@ open class CustomWebViewClient : WebViewClient {
                 // NB1 : shouldInterceptRequest doesn't trigger on redirects
                 // NB2 : parsing alone won't cut it because the adblocker needs the new content on the new URL
                 if (response.code >= 300) {
-                    var targetUrl = StringHelper.protect(response.header("location"))
+                    var targetUrl = response.header("location") ?: ""
                     if (targetUrl.isEmpty())
-                        targetUrl = StringHelper.protect(response.header("Location"))
+                        targetUrl = response.header("Location") ?: ""
                     if (BuildConfig.DEBUG)
                         Timber.v("WebView : redirection from %s to %s", url, targetUrl)
                     if (targetUrl.isNotEmpty())
@@ -958,7 +958,7 @@ open class CustomWebViewClient : WebViewClient {
                             if (tag == null) break
                             if (blockedTag.equals(
                                     tag, ignoreCase = true
-                                ) || StringHelper.isPresentAsWord(blockedTag, tag)
+                                ) || isPresentAsWord(blockedTag, tag)
                             ) {
                                 var imgParent = entry.key
                                 for (i in 0..site.galleryHeight) {

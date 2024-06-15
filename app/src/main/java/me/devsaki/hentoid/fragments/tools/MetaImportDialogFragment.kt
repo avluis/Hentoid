@@ -29,7 +29,6 @@ import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.workers.MetadataImportWorker
 import me.devsaki.hentoid.workers.data.MetadataImportData
@@ -137,7 +136,7 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
                 onFileDeserialized(result, jsonFile)
             } catch (e: Exception) {
                 binding?.apply {
-                    val fileName = StringHelper.protect(jsonFile.name)
+                    val fileName = jsonFile.name ?: ""
                     binding?.apply {
                         importProgressText.text = resources.getString(
                             R.string.import_file_invalid,

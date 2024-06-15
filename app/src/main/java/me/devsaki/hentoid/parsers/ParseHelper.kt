@@ -10,13 +10,14 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.parsers.content.BaseContentParser
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
 import me.devsaki.hentoid.util.parseDateToEpoch
 import me.devsaki.hentoid.util.parseDownloadParams
+import me.devsaki.hentoid.util.removeNonPrintableChars
 import me.devsaki.hentoid.util.serializeToJson
 import org.apache.commons.text.StringEscapeUtils
 import org.greenrobot.eventbus.EventBus
@@ -66,7 +67,7 @@ fun removeTextualTags(s: String?): String {
 private fun removeTrailingNumbers(s: String?): String {
     if (s.isNullOrEmpty()) return ""
     val parts = s.split(" ")
-    if (parts.size > 1 && StringHelper.isNumeric(parts[parts.size - 1])) {
+    if (parts.size > 1 && isNumeric(parts[parts.size - 1])) {
         val sb = StringBuilder()
         for (i in 0 until parts.size - 1) sb.append(parts[i]).append(" ")
         return sb.toString().trim()
@@ -292,9 +293,9 @@ fun signalProgress(contentId: Long, storedId: Long, progress: Float) {
  */
 fun getSavedCookieStr(downloadParams: String?): String {
     val downloadParamsMap = parseDownloadParams(downloadParams)
-    return if (downloadParamsMap.containsKey(HEADER_COOKIE_KEY)) StringHelper.protect(
-        downloadParamsMap[HEADER_COOKIE_KEY]
-    ) else ""
+    return if (downloadParamsMap.containsKey(HEADER_COOKIE_KEY))
+        downloadParamsMap[HEADER_COOKIE_KEY] ?: ""
+    else ""
 }
 
 /**
@@ -544,6 +545,6 @@ fun getUserAgent(site: Site): String {
 fun cleanup(data: String?): String {
     if (null == data) return BaseContentParser.NO_TITLE
     return StringEscapeUtils.unescapeHtml4(
-        StringHelper.removeNonPrintableChars(data.trim()).replace('’', '\'')
+        removeNonPrintableChars(data.trim()).replace('’', '\'')
     )
 }

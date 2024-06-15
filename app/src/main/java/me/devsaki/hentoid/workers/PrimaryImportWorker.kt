@@ -43,7 +43,6 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.exception.ParseException
@@ -226,7 +225,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         siteFolders.size,
                         foldersProcessed,
                         0,
-                        StringHelper.protect(f.name)
+                        f.name ?: ""
                     )
                     bookFolders.addAll(explorer.listFolders(context, f))
                 }
@@ -463,7 +462,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         if (cleanNoImages) {
             bookFiles = explorer.listFiles(context, bookFolder, null)
             val nbImages = bookFiles.count { f ->
-                isSupportedImage(StringHelper.protect(f.name))
+                isSupportedImage(f.name ?: "")
             }
             if (0 == nbImages && !explorer.hasFolders(bookFolder)) { // No supported images nor subfolders
                 var doRemove = true
@@ -564,7 +563,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
                 // Attach image file Uri's to the book's images
                 val imageFiles = bookFiles.filter { f ->
-                    isSupportedImage(StringHelper.protect(f.name))
+                    isSupportedImage(f.name ?: "")
                 }
                 if (imageFiles.isNotEmpty()) {
                     // No images described in the JSON -> recreate them
@@ -799,7 +798,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 bookFolder.uri.toString()
             )
         }
-        val bookName = StringHelper.protect(bookFolder.name)
+        val bookName = bookFolder.name ?: ""
         notificationManager.notify(
             ImportProgressNotification(
                 bookName,
@@ -873,7 +872,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 img.computeName(nbMaxDigits)
                 val file = getDocumentFromTreeUriString(context, img.fileUri)
                 if (file != null) {
-                    val extension = getExtension(StringHelper.protect(file.name))
+                    val extension = getExtension(file.name ?: "")
                     file.renameTo(img.name + "." + extension)
                     img.setFileUri(file.uri.toString())
                 }
@@ -1155,12 +1154,12 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         dao: CollectionDAO
     ): Content? {
         var file = bookFiles.firstOrNull { f ->
-            StringHelper.protect(f.name) == JSON_FILE_NAME_V2
+            (f.name ?: "") == JSON_FILE_NAME_V2
         }
         if (file != null) return importJsonV2(context, file, folder, dao)
-        file = bookFiles.firstOrNull { f -> StringHelper.protect(f.name) == JSON_FILE_NAME }
+        file = bookFiles.firstOrNull { f -> (f.name ?: "") == JSON_FILE_NAME }
         if (file != null) return importJsonV1(context, file, folder)
-        file = bookFiles.firstOrNull { f -> StringHelper.protect(f.name) == JSON_FILE_NAME_OLD }
+        file = bookFiles.firstOrNull { f -> (f.name ?: "") == JSON_FILE_NAME_OLD }
         return if (file != null) importJsonLegacy(context, file, folder) else null
     }
 

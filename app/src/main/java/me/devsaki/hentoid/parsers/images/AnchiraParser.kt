@@ -11,9 +11,10 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.ParseException
+import me.devsaki.hentoid.util.formatIntAsStr
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.pause
@@ -121,10 +122,10 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
                     val fileName = parts.fileNameNoExt
                     val urls: MutableList<String> =
                         ArrayList()
-                    if (StringHelper.isNumeric(fileName)) {
+                    if (isNumeric(fileName)) {
                         val length = fileName.length
                         for (i in 1..nbPages) {
-                            parts.fileNameNoExt = StringHelper.formatIntAsStr(i, length)
+                            parts.fileNameNoExt = formatIntAsStr(i, length)
                             parts.extension =
                                 if (1 == i) "jpg" else "png" // Try to minimize failed requests
                             urls.add(parts.toUri())
@@ -136,7 +137,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
                         val part1 = fileName.substring(0, startIndex)
                         val part2 = fileName.substring(endIndex)
                         for (i in 1..nbPages) {
-                            parts.fileNameNoExt = part1 + StringHelper.formatIntAsStr(
+                            parts.fileNameNoExt = part1 + formatIntAsStr(
                                 i,
                                 length
                             ) + part2

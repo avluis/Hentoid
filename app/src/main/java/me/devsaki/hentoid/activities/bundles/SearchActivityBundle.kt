@@ -7,7 +7,6 @@ import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.SearchCriteria
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.intArrayList
@@ -89,7 +88,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
             val attrs: MutableSet<Attribute> = HashSet()
             var location = 0
             var contentType = 0
-            var query = StringHelper.protect(uri.path)
+            var query = uri.path ?: ""
             // Remove the leading '/'
             if (query.isNotEmpty()) query = query.substring(1)
             for (typeStr in uri.queryParameterNames) {
@@ -112,7 +111,12 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
                         uri.getQueryParameters(typeStr)[0].toInt()
                 }
             }
-            return SearchCriteria(query, attrs, Location.fromValue(location), Type.fromValue(contentType))
+            return SearchCriteria(
+                query,
+                attrs,
+                Location.fromValue(location),
+                Type.fromValue(contentType)
+            )
         }
     }
 }

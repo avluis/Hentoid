@@ -12,7 +12,7 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.serializeToJson
 import java.lang.reflect.Type
 
@@ -91,7 +91,7 @@ data class PixivIllustMetadata(
     ) {
 
         fun getThumbUrl(): String {
-            return StringHelper.protect(urlS)
+            return urlS ?: ""
         }
 
         fun getTags(): List<Pair<String, String>> {
@@ -100,7 +100,7 @@ data class PixivIllustMetadata(
 
         fun getImageFiles(): List<ImageFile> {
             var pageCount = 0
-            if (this.pageCount != null && StringHelper.isNumeric(this.pageCount)) pageCount =
+            if (this.pageCount != null && isNumeric(this.pageCount)) pageCount =
                 this.pageCount.toInt()
 
             // TODO include cover in the page list (getThumbUrl) ?
@@ -161,7 +161,7 @@ data class PixivIllustMetadata(
         fun getUrl(): String {
             var result = urlBig
             if (null == result) result = url
-            return StringHelper.protect(result)
+            return result ?: ""
         }
     }
 
@@ -185,7 +185,7 @@ data class PixivIllustMetadata(
         private val canonical: String?
     ) {
         fun getCanonicalUrl(): String {
-            return StringHelper.protect(canonical)
+            return canonical ?: ""
         }
     }
 

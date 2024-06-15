@@ -5,7 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
@@ -41,7 +41,7 @@ class Hentai2ReadParser : BaseChapteredImageListParser() {
         val parts = url.split("/")
         var part = parts[parts.size - 1]
         if (part.isEmpty()) part = parts[parts.size - 2]
-        return StringHelper.isNumeric(part)
+        return isNumeric(part)
     }
 
     override fun getChapterSelector(): ChapterSelector {

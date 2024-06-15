@@ -35,7 +35,6 @@ import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.widget.ContentSearchManager.Companion.searchContentIds
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -1163,13 +1162,13 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxLiveData(
             ObjectBoxDB.selectRenamingRulesQ(
                 type,
-                StringHelper.protect(nameFilter)
+                nameFilter ?: ""
             )
         )
     }
 
     override fun selectRenamingRules(type: AttributeType, nameFilter: String?): List<RenamingRule> {
-        return ObjectBoxDB.selectRenamingRulesQ(type, StringHelper.protect(nameFilter)).safeFind()
+        return ObjectBoxDB.selectRenamingRulesQ(type, nameFilter ?: "").safeFind()
     }
 
     override fun insertRenamingRule(rule: RenamingRule): Long {

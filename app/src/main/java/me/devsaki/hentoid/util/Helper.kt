@@ -439,7 +439,7 @@ fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boolean {
 
 fun logException(t: Throwable) {
     val log: MutableList<LogEntry> = ArrayList()
-    log.add(LogEntry(StringHelper.protect(t.message)))
+    log.add(LogEntry(t.message ?: ""))
     log.add(LogEntry(getStackTraceString(t)))
 
     val logInfo = LogInfo("latest-crash")

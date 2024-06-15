@@ -808,11 +808,11 @@ fun scanBookFolder(
 }
 
 private fun cleanTitle(s: String?): String {
-    var result = StringHelper.protect(s)
+    var result = s ?: ""
     result = result.replace("_", " ")
     // Remove expressions between []'s
     result = result.replace("\\[[^(\\[\\])]*\\]".toRegex(), "")
-    return result.trim { it <= ' ' }
+    return result.trim()
 }
 
 /**
@@ -1272,9 +1272,7 @@ private fun createJsonFileFor(
     // If a JSON file already exists at that location, use it as is, don't overwrite it
     val jsonName = if (content.isArchive) {
         val archiveFile = getFileFromSingleUriString(context, content.storageUri)
-        getFileNameWithoutExtension(
-            StringHelper.protect(archiveFile!!.name)
-        ) + ".json"
+        getFileNameWithoutExtension(archiveFile?.name ?: "") + ".json"
     } else {
         JSON_FILE_NAME_V2
     }

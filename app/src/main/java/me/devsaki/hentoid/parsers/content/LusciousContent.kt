@@ -7,8 +7,8 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.LusciousQueryParam
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.getRandomInt
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.jsonToObject
 import timber.log.Timber
 import java.io.IOException
@@ -28,7 +28,7 @@ class LusciousContent : BaseContentParser() {
                     Timber.w(e)
                     return Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED)
                 }
-            } else if (StringHelper.isNumeric(url)) { // Book ID is directly provided
+            } else if (isNumeric(url)) { // Book ID is directly provided
                 url
             } else { // Triggered by the loading of the page itself
                 // ID is the last numeric part of the URL

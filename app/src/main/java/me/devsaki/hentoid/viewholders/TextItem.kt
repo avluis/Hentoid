@@ -18,7 +18,7 @@ import com.mikepenz.fastadapter.utils.DragDropUtil.bindDragHandle
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.requireById
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.capitalizeString
 import me.devsaki.hentoid.util.getThemedColor
 
 class TextItem<T> : AbstractItem<TextItem.ViewHolder<T>>,
@@ -83,7 +83,7 @@ class TextItem<T> : AbstractItem<TextItem.ViewHolder<T>>,
     }
 
     private fun getDisplayText(): String {
-        return if (reformatCase) StringHelper.capitalizeString(text) else text
+        return if (reformatCase) capitalizeString(text) else text
     }
 
     override val isDraggable: Boolean
