@@ -29,7 +29,6 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.toastLong
-import org.apache.commons.io.FileUtils
 import timber.log.Timber
 import java.io.BufferedOutputStream
 import java.io.BufferedReader
@@ -263,14 +262,25 @@ fun syncStream(stream: FileOutputStream): Boolean {
 
 /**
  * Create an OutputStream opened the given file
- * NB : File length will be truncated to the length of the written data
+ * NB1 : File length will be truncated to the length of the written data
+ * NB2 : Code initially from org.apache.commons.io.FileUtils
  *
- * @param target File to open the OutputStream on
+ * @param file File to open the OutputStream on
  * @return New OutputStream opened on the given file
  */
 @Throws(IOException::class)
-fun getOutputStream(target: File): OutputStream {
-    return FileUtils.openOutputStream(target)
+fun getOutputStream(file: File): OutputStream {
+    if (file.exists()) {
+        if (!file.isFile) throw IOException(file.path + " is not a File")
+        if (!file.canWrite()) throw IOException(file.path + " can't be written to")
+    } else {
+        file.parentFile?.let { dir ->
+            if ((!dir.mkdirs() && !dir.isDirectory())) {
+                throw IOException("Cannot create directory '$dir'.")
+            }
+        }
+    }
+    return FileOutputStream(file, false)
 }
 
 /**
@@ -1420,23 +1430,23 @@ fun byteCountToDisplayRoundedSize(
     val sizeInLong = size.toLong()
     val formatPattern = "%." + places + "f"
     val displaySize =
-        if (size.divide(FileUtils.ONE_GB_BI) > BigInteger.ZERO) {
+        if (size.divide(ONE_GB_BI) > BigInteger.ZERO) {
             String.format(
                 locale,
                 formatPattern,
-                sizeInLong / FileUtils.ONE_GB_BI.toDouble()
+                sizeInLong / ONE_GB_BI.toDouble()
             ) + " " + res.getString(R.string.u_gigabyte)
-        } else if (size.divide(FileUtils.ONE_MB_BI) > BigInteger.ZERO) {
+        } else if (size.divide(ONE_MB_BI) > BigInteger.ZERO) {
             String.format(
                 locale,
                 formatPattern,
-                sizeInLong / FileUtils.ONE_MB_BI.toDouble()
+                sizeInLong / ONE_MB_BI.toDouble()
             ) + " " + res.getString(R.string.u_megabyte)
-        } else if (size.divide(FileUtils.ONE_KB_BI) > BigInteger.ZERO) {
+        } else if (size.divide(ONE_KB_BI) > BigInteger.ZERO) {
             String.format(
                 locale,
                 formatPattern,
-                sizeInLong / FileUtils.ONE_KB_BI.toDouble()
+                sizeInLong / ONE_KB_BI.toDouble()
             ) + " " + res.getString(R.string.u_kilobyte)
         } else {
             size.toString() + " " + res.getString(R.string.u_byte)

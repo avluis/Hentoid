@@ -112,11 +112,11 @@ dependencies {
      * TESTING
      */
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'org.mockito:mockito-core:5.12.0'
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
-    testImplementation 'org.robolectric:robolectric:4.11.1'
+    testImplementation 'org.robolectric:robolectric:4.12.2'
     // Auto Timber trees that redirect logs to the JUnit output
     testImplementation 'net.lachlanmckee:timber-junit-rule:1.0.1'
     androidTestImplementation 'androidx.test:runner:1.5.2'
@@ -277,9 +277,6 @@ dependencies {
     if (includeLeakCanary.toBoolean()) {
         debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
     }
-
-    // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation 'commons-io:commons-io:2.11.0'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation 'org.apache.commons:commons-lang3:3.14.0'
