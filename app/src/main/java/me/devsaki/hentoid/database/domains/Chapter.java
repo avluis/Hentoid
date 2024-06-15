@@ -92,7 +92,12 @@ public class Chapter {
 
     // NB : Doesn't work when Content is not linked
     public void populateUniqueId() {
-        this.uniqueId = content.getTarget().getUniqueSiteId() + "-" + order;
+        Content c = DBHelper.reach(this, content);
+        if (c != null) {
+            this.uniqueId = c.getUniqueSiteId() + "-" + order;
+        } else {
+            this.uniqueId = order.toString();
+        }
     }
 
     public long getContentId() {
