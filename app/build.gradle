@@ -139,7 +139,7 @@ dependencies {
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1'
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation "androidx.webkit:webkit:1.10.0"
+    implementation 'androidx.webkit:webkit:1.11.0'
 
     def android_work_version = '2.9.0'
     implementation "androidx.work:work-runtime:$android_work_version"
