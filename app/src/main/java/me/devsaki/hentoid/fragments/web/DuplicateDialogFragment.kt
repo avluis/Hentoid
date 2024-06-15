@@ -87,9 +87,9 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogWebDuplicateBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
@@ -151,8 +151,18 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
             } else {
                 ivSite.visibility = View.GONE
             }
-            ivExternal.visibility =
-                if (libraryContent.status == StatusContent.EXTERNAL) View.VISIBLE else View.GONE
+
+            val isStreamed = libraryContent.downloadMode == Content.DownloadMode.STREAM
+            if (libraryContent.status == StatusContent.EXTERNAL) {
+                var resourceId =
+                    if (libraryContent.isArchive) R.drawable.ic_archive else R.drawable.ic_folder_full
+                // External streamed is streamed icon
+                if (isStreamed) resourceId = R.drawable.ic_action_download_stream
+                ivStorage.setImageResource(resourceId)
+            } else {
+                ivStorage.setImageResource(if (isStreamed) R.drawable.ic_action_download_stream else R.drawable.ic_storage)
+            }
+
             if (libraryContent.isFavourite) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full)
             } else {

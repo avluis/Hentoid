@@ -146,11 +146,11 @@
         tools:targetApi="o" />
 
     <ImageView
-        android:id="@+id/ivExternal"
+        android:id="@+id/ivStorage"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginEnd="8dp"
-        android:src="@drawable/ic_folder_full"
+        android:src="@drawable/ic_storage"
         android:tooltipText="@string/external_help"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/ivFavourite"
