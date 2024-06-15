@@ -24,10 +24,10 @@ import me.devsaki.hentoid.events.AchievementEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings.lockType
 import me.devsaki.hentoid.util.applyTheme
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.toast
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -106,7 +106,7 @@ abstract class BaseActivity : AppCompatActivity {
             .setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
             .setMenuColor(ContextCompat.getColor(this, R.color.dark_gray))
-            .setTextSize(Helper.dimensAsDp(this, R.dimen.text_subtitle_1))
+            .setTextSize(dimensAsDp(this, R.dimen.text_subtitle_1))
             .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt()).setAutoDismiss(true)
             .build()
 

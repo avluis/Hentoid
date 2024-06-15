@@ -40,7 +40,6 @@ import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.bindOnlineCover
@@ -49,6 +48,7 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.formatArtistForDisplay
 import me.devsaki.hentoid.util.formatSeriesForDisplay
 import me.devsaki.hentoid.util.formatTagsForDisplay
+import me.devsaki.hentoid.util.generateIdForPlaceholder
 import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getRatingResourceId
@@ -90,7 +90,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         touchHelper = null
         isEmpty = true
         isSwipeable = true
-        identifier = Helper.generateIdForPlaceholder()
+        identifier = generateIdForPlaceholder()
     }
 
     // Constructor for library and error item
@@ -132,7 +132,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         this.isFirst = isFirst
         isEmpty = null == content
         isSwipeable = true
-        identifier = content?.uniqueHash() ?: Helper.generateIdForPlaceholder()
+        identifier = content?.uniqueHash() ?: generateIdForPlaceholder()
     }
 
     // Constructor for split

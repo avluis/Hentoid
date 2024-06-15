@@ -10,7 +10,7 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.NhentaiParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -79,7 +79,7 @@ class NhentaiContent : BaseContentParser() {
         if (titleDef.isEmpty()) titleDef = titleAlt.trim()
         content.setTitle(cleanup(titleDef))
         content.setUploadDate(
-            Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")
+            parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")
         ) // e.g. 2022-03-20T00:09:43.309901+00:00
         val attributes = AttributeMap()
         parseAttributes(

@@ -11,11 +11,12 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.ParseException
+import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.network.UriParts
+import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.views.AnchiraBackgroundWebView
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -42,7 +43,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
             result = parseImageListWithWebview(onlineContent)
             setDownloadParams(result, onlineContent.site.url)
         } catch (e: Exception) {
-            Helper.logException(e)
+            logException(e)
             result = emptyList()
         } finally {
             EventBus.getDefault().unregister(this)
@@ -68,7 +69,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
 
         var remainingIterations = 30 // Timeout
         while (-1 == resultCode.get() && remainingIterations-- > 0 && !processHalted.get())
-            Helper.pause(500)
+            pause(500)
         if (processHalted.get()) throw EmptyResultException("Unable to detect content (empty result)")
 
         synchronized(resultCode) {
@@ -103,7 +104,7 @@ class AnchiraParser : BaseImageListParser(), WebResultConsumer {
 
         var remainingIterations = 30 // Timeout
         while (-1 == resultCode.get() && remainingIterations-- > 0 && !processHalted.get())
-            Helper.pause(500)
+            pause(500)
         if (processHalted.get()) throw EmptyResultException("Unable to detect pages (empty result)")
 
         synchronized(resultCode) {

@@ -8,9 +8,9 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.file.DEFAULT_MIME_TYPE
+import me.devsaki.hentoid.util.pause
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -787,7 +787,7 @@ fun waitBlocking429(response: retrofit2.Response<*>, defaultDelayMs: Int): Boole
         if (retryDelay != null && StringHelper.isNumeric(retryDelay)) {
             delay = retryDelay.toInt() + 1000 // 1s extra margin
         }
-        Helper.pause(delay)
+        pause(delay)
         return true
     }
     return false

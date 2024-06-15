@@ -84,7 +84,7 @@ fun addContentsToAttributeGroup(
  * @return True if the groups JSON file has been updated properly; false instead
  */
 fun updateGroupsJson(context: Context, dao: CollectionDAO): Boolean {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     val contentCollection = JsonContentCollection()
 
@@ -147,7 +147,7 @@ fun moveContentToCustomGroup(
     order: Int,
     dao: CollectionDAO
 ): Content {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     // Get all groupItems of the given content for custom grouping
     val groupItems = dao.selectGroupItems(content.id, Grouping.CUSTOM)
 

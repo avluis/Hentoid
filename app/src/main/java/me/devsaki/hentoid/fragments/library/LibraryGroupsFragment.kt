@@ -56,9 +56,10 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.invokeInputDialog
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.dimensAsDp
+import me.devsaki.hentoid.util.dimensAsPx
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.snack
@@ -242,7 +243,7 @@ class LibraryGroupsFragment : Fragment(),
                 false
             ) else AutofitGridLayoutManager(
                 requireContext(),
-                Helper.dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
+                dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
             )
 
         binding?.recyclerView?.let {
@@ -413,7 +414,7 @@ class LibraryGroupsFragment : Fragment(),
                     .setMenuColor(
                         requireContext().getThemedColor(R.color.window_background_light)
                     )
-                    .setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
+                    .setTextSize(dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
                     .setAutoDismiss(true)
                 if (!Preferences.getGroupingDisplay().canDeleteGroups) {
                     // Delete books only

@@ -30,14 +30,18 @@ import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JSON_MIME_TYPE
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDownloadsFolder
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.util.getAppHeapBytes
+import me.devsaki.hentoid.util.getAppTotalRamBytes
+import me.devsaki.hentoid.util.getRandomInt
+import me.devsaki.hentoid.util.getSystemHeapBytes
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.util.toast
@@ -154,12 +158,12 @@ class ToolsFragment : PreferenceFragmentCompat(),
             RAM -> {
                 val usedAppHeap =
                     formatHumanReadableSize(
-                        Helper.getAppHeapBytes().first,
+                        getAppHeapBytes().first,
                         resources
                     )
                 val usedAppTotal =
-                    formatHumanReadableSize(Helper.getAppTotalRamBytes(), resources)
-                val systemHeap = Helper.getSystemHeapBytes(activity)
+                    formatHumanReadableSize(getAppTotalRamBytes(), resources)
+                val systemHeap = getSystemHeapBytes(requireContext())
                 val systemHeapUsed = formatHumanReadableSize(
                     systemHeap.first,
                     resources
@@ -233,7 +237,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
 
     private fun onJsonSerialized(json: String) {
         // Use a random number to avoid erasing older exports by mistake
-        var targetFileName = Helper.getRandomInt(9999).toString() + ".json"
+        var targetFileName = getRandomInt(9999).toString() + ".json"
         targetFileName = "settings-$targetFileName"
 
         rootView?.let {
@@ -245,7 +249,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
                 )?.use { newDownload ->
                     ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
                         .use { input ->
-                            Helper.copy(input, newDownload)
+                            copy(input, newDownload)
                         }
                 }
                 Snackbar.make(

@@ -6,9 +6,9 @@ import android.net.Uri
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.take
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
@@ -127,7 +127,7 @@ private fun downloadToFile(
     resourceId: Int,
     notifyProgress: Consumer<Float>? = null
 ): Pair<Uri?, String> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val url = fixUrl(rawUrl, site.url)
     if (interruptDownload.get()) throw DownloadInterruptedException("Download interrupted")
     Timber.d("DOWNLOADING %d %s", resourceId, url)

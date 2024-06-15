@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.databinding.DialogWebUrlBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.shareText
 
 /**
  * Dialog for URL operations
@@ -49,7 +49,7 @@ class UrlDialogFragment : BaseDialogFragment<Nothing>() {
         binding?.let {
             it.url.text = url
             it.externalBrowserBtn.setOnClickListener { requireActivity().startBrowserActivity(url) }
-            it.shareBtn.setOnClickListener { Helper.shareText(requireContext(), "", url) }
+            it.shareBtn.setOnClickListener { shareText(requireContext(), "", url) }
         }
     }
 }

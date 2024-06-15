@@ -9,13 +9,13 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.parsers.content.BaseContentParser
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
+import me.devsaki.hentoid.util.parseDateToEpoch
 import me.devsaki.hentoid.util.parseDownloadParams
 import me.devsaki.hentoid.util.serializeToJson
 import org.apache.commons.text.StringEscapeUtils
@@ -387,7 +387,7 @@ fun getChaptersFromLinks(
         if (!dateCssQuery.isNullOrEmpty() && !datePattern.isNullOrEmpty()) {
             e.selectFirst(dateCssQuery)?.let { dateElement ->
                 val dateStr = dateElement.text().split("-")
-                if (dateStr.size > 1) epoch = Helper.parseDateToEpoch(dateStr[1], datePattern)
+                if (dateStr.size > 1) epoch = parseDateToEpoch(dateStr[1], datePattern)
             }
         }
         // Make sure we're not adding duplicates

@@ -32,10 +32,12 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
+import me.devsaki.hentoid.util.assertNonUiThread
+import me.devsaki.hentoid.util.coerceIn
+import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
@@ -63,6 +65,7 @@ import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.peekCookies
+import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.purgeContent
 import me.devsaki.hentoid.util.removePages
@@ -570,7 +573,7 @@ class ReaderViewModel(
     private fun doLeaveBook(
         contentId: Long, indexToSet: Int, updateReads: Boolean, markAsCompleted: Boolean
     ) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Use a brand new DAO for that (the viewmodel's DAO may be in the process of being cleaned up)
         val dao: CollectionDAO = ObjectBoxDAO()
@@ -658,7 +661,7 @@ class ReaderViewModel(
      * @param images images whose flag to toggle
      */
     private fun doToggleImageFavourite(images: List<ImageFile>) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         if (images.isEmpty()) return
         val theContent: Content = dao.selectContent(images[0].content.targetId) ?: return
 
@@ -705,7 +708,7 @@ class ReaderViewModel(
      * @param content content whose flag to toggle
      */
     private fun doToggleContentFavourite(content: Content) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         content.isFavourite = !content.isFavourite
 
         // Persist in DB
@@ -959,7 +962,7 @@ class ReaderViewModel(
      * @param content Content to cache the JSON URI for
      */
     private fun cacheJson(context: Context, content: Content) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         if (content.jsonUri.isNotEmpty() || content.isArchive) return
         val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return
         val foundFile = findFile(getApplication(), folder, JSON_FILE_NAME_V2)
@@ -1011,7 +1014,7 @@ class ReaderViewModel(
         val quantity = if (isArchive) EXTRACT_RANGE else DOWNLOAD_RANGE
         // pageIndex at 1/3rd of the range to extract/download -> determine its bound
         val initialIndex = floor(
-            Helper.coerceIn(
+            coerceIn(
                 1f * viewerIndex - quantity * increment / 3f,
                 0f,
                 (viewerImagesInternal.size - 1).toFloat()
@@ -1146,14 +1149,14 @@ class ReaderViewModel(
     }
 
     private fun doExtractPics(indexesToLoad: List<Int>, archiveFile: DocumentFile) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         // Interrupt current extracting process, if any
         if (indexExtractInProgress.isNotEmpty()) {
             archiveExtractKillSwitch.set(true)
             // Wait until extraction has actually stopped
             var remainingIterations = 15 // Timeout
             do {
-                Helper.pause(500)
+                pause(500)
             } while (indexExtractInProgress.isNotEmpty() && remainingIterations-- > 0)
             if (indexExtractInProgress.isNotEmpty()) return
         }
@@ -1301,7 +1304,7 @@ class ReaderViewModel(
     private fun downloadPic(
         pageIndex: Int, stopDownload: AtomicBoolean
     ): Triple<Int, String?, String?>? {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         if (viewerImagesInternal.size <= pageIndex) return null
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
@@ -1628,7 +1631,7 @@ class ReaderViewModel(
      * @param selectedPageId ID of the page to remove or create a chapter at
      */
     private fun doCreateRemoveChapter(contentId: Long, selectedPageId: Long) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         val chapterStr = getApplication<Application>().getString(R.string.gallery_chapter_prefix)
         if (null == VANILLA_CHAPTERNAME_PATTERN) VANILLA_CHAPTERNAME_PATTERN = Pattern.compile(
             "$chapterStr [0-9]+"
@@ -1829,7 +1832,7 @@ class ReaderViewModel(
 
     @Throws(IOException::class)
     private fun doSaveChapterPositions(contentId: Long, newChapterOrder: List<Long>) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         val chapterStr =
             getApplication<Application>().getString(R.string.gallery_chapter_prefix)
         if (null == VANILLA_CHAPTERNAME_PATTERN)
@@ -1954,7 +1957,7 @@ class ReaderViewModel(
                     )
                     getOutputStream(getApplication(), op.target!!)?.use { os ->
                         getInputStream(getApplication(), op.source!!).use { input ->
-                            Helper.copy(input, os)
+                            copy(input, os)
                         }
                     }
                     op.targetData.fileUri = op.target?.uri?.toString()

@@ -9,8 +9,8 @@ import android.widget.TextView
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.AppStartup.appKilled
 import me.devsaki.hentoid.core.AppStartup.initApp
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.getRandomInt
 import timber.log.Timber
 import kotlin.math.roundToInt
 
@@ -32,7 +32,7 @@ class SplashActivity : BaseActivity() {
         secondaryPb = findViewById(R.id.progress_secondary)
         val quote = findViewById<TextView>(R.id.quote)
         val quotes = resources.getStringArray(R.array.splash_quotes)
-        val random = Helper.getRandomInt(quotes.size)
+        val random = getRandomInt(quotes.size)
         quote.text = quotes[random]
         Timber.d("Splash / Init")
         initApp(

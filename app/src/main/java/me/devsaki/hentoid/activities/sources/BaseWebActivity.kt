@@ -69,14 +69,15 @@ import me.devsaki.hentoid.fragments.web.UrlDialogFragment
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.ui.invokeNumberInputDialog
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Preferences.Constant
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.calcPhash
+import me.devsaki.hentoid.util.copyPlainTextToClipboard
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
@@ -84,7 +85,9 @@ import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.findDuplicate
 import me.devsaki.hentoid.util.getBlockedTags
+import me.devsaki.hentoid.util.getCenter
 import me.devsaki.hentoid.util.getCoverBitmapFromStream
+import me.devsaki.hentoid.util.getFixedContext
 import me.devsaki.hentoid.util.getHashEngine
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.isInLibrary
@@ -98,8 +101,10 @@ import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import me.devsaki.hentoid.util.network.simplifyUrl
 import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.parseDownloadParams
+import me.devsaki.hentoid.util.setMargins
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.views.NestedScrollWebView
 import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
@@ -243,7 +248,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Toolbar
         // Top toolbar
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        Helper.tryShowMenuIcons(this, toolbar.menu)
+        tryShowMenuIcons(this, toolbar.menu)
         toolbar.setOnMenuItemClickListener { item ->
             this.onMenuItemSelected(item)
         }
@@ -473,7 +478,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         } catch (e: NotFoundException) {
             // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
             // Creating with the application Context fixes this, but is not generally recommended for view creation
-            NestedScrollWebView(Helper.getFixedContext(this))
+            NestedScrollWebView(getFixedContext(this))
         }
         webView.isHapticFeedbackEnabled = false
         webView.webChromeClient = object : WebChromeClient() {
@@ -566,7 +571,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
         if (!url.isNullOrEmpty() && webClient.isGalleryPage(url)) {
             binding?.apply {
-                Helper.setMargins(
+                setMargins(
                     quickDlFeedback,
                     x - quickDlFeedback.width / 2,
                     y - quickDlFeedback.height / 2 + topBar.bottom,
@@ -804,8 +809,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      */
     private fun onManageLinkClick() {
         val url = StringHelper.protect(webView.url)
-        if (Helper.copyPlainTextToClipboard(this, url))
-            toast(R.string.web_url_clipboard)
+        if (copyPlainTextToClipboard(this, url)) toast(R.string.web_url_clipboard)
         UrlDialogFragment.invoke(this, url)
     }
 
@@ -1138,9 +1142,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     ) {
         if (null == currentContent) return
         binding?.apply {
-            val coords = Helper.getCenter(quickDlFeedback)
+            val coords = getCenter(quickDlFeedback)
             if (coords != null && View.VISIBLE == quickDlFeedback.visibility) {
-                Helper.setMargins(
+                setMargins(
                     animatedCheck,
                     coords.x - animatedCheck.width / 2,
                     coords.y - animatedCheck.height / 2,
@@ -1148,7 +1152,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     0
                 )
             } else {
-                Helper.setMargins(
+                setMargins(
                     animatedCheck,
                     webView.width / 2 - animatedCheck.width / 2,
                     webView.height / 2 - animatedCheck.height / 2, 0, 0
@@ -1219,7 +1223,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * @return The status of the Content after being processed
      */
     private fun processContent(onlineContent: Content, quickDownload: Boolean): ContentStatus {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         if (onlineContent.url.isEmpty()) return ContentStatus.UNDOWNLOADABLE
         if (onlineContent.status != null && onlineContent.status == StatusContent.IGNORED) return ContentStatus.UNDOWNLOADABLE
         currentContent = null

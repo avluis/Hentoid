@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
 import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
+import static me.devsaki.hentoid.util.HelperKt.parseDatetimeToEpoch;
 
 import androidx.annotation.NonNull;
 
@@ -11,7 +12,6 @@ import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
@@ -71,9 +71,9 @@ public class HitomiGalleryInfo {
     public void updateContent(@NonNull Content content) {
         content.setTitle(cleanup(title));
 
-        long uploadDate = Helper.parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx");
+        long uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx");
         if (0 == uploadDate)
-            uploadDate = Helper.parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSSx");
+            uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSSx");
         content.setUploadDate(uploadDate);
 
         AttributeMap attributes = new AttributeMap();

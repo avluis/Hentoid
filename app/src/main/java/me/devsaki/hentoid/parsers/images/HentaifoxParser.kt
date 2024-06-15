@@ -3,9 +3,9 @@ package me.devsaki.hentoid.parsers.images
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.parsers.getExtensionFromFormat
 import me.devsaki.hentoid.parsers.getImgSrc
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.exception.ParseException
+import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
@@ -53,7 +53,7 @@ class HentaifoxParser : BaseImageListParser() {
                 // Forge all page URLs
                 for (i in 0 until imageFormats.size) {
                     val imgUrl =
-                        "https://" + HOSTS[Helper.getRandomInt(HOSTS.size)] + "/" +
+                        "https://" + HOSTS[getRandomInt(HOSTS.size)] + "/" +
                                 thumbPath +
                                 (i + 1) + "." + getExtensionFromFormat(imageFormats, i)
                     result.add(imgUrl)

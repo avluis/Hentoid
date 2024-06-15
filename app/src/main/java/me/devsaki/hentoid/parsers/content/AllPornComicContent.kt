@@ -11,8 +11,8 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -68,7 +68,7 @@ class AllPornComicContent : BaseContentParser() {
                         val publishDate =
                             galleryMeta.datePublished // e.g. 2021-01-27T15:20:38+00:00
                         if (publishDate.isNotEmpty()) content.uploadDate =
-                            Helper.parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
+                            parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
                     }
                 } catch (e: IOException) {
                     Timber.i(e)

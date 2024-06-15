@@ -28,12 +28,14 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JSON_MIME_TYPE
+import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.file.getDownloadsFolder
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.getPathRoot
+import me.devsaki.hentoid.util.getRandomInt
+import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.serializeToJson
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -226,7 +228,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
                         )
                     } catch (e: Exception) {
                         Timber.w(e)
-                        Helper.logException(e)
+                        logException(e)
                         Snackbar.make(
                             it.root,
                             R.string.export_failed,
@@ -304,7 +306,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
         exportBookmarks: Boolean
     ) {
         // Use a random number to avoid erasing older exports by mistake
-        var targetFileName = Helper.getRandomInt(9999).toString() + ".json"
+        var targetFileName = getRandomInt(9999).toString() + ".json"
         if (exportBookmarks) targetFileName = "bkmks-$targetFileName"
         if (exportQueue) targetFileName = "queue-$targetFileName"
         if (exportLibrary && !exportFavsOnly) targetFileName =
@@ -318,7 +320,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
                 JSON_MIME_TYPE
             )?.use { newDownload ->
                 ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
-                    .use { input -> Helper.copy(input, newDownload) }
+                    .use { input -> copy(input, newDownload) }
             }
             binding?.let {
                 Snackbar.make(

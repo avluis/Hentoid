@@ -80,15 +80,17 @@ import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.dimensAsDp
+import me.devsaki.hentoid.util.dimensAsPx
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.openReader
@@ -408,7 +410,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 false
             ) else AutofitGridLayoutManager(
                 requireContext(),
-                Helper.dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
+                dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
             )
         binding?.recyclerView?.apply {
             layoutManager = llm
@@ -1318,7 +1320,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         @DimenRes val dimen: Int =
             if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) R.dimen.delete_drawer_width_list else R.dimen.delete_drawer_width_grid
         val dragSwipeCallback = SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
-            .withSwipeLeft(Helper.dimensAsDp(requireContext(), dimen))
+            .withSwipeLeft(dimensAsDp(requireContext(), dimen))
             .withSensitivity(1.5f)
             .withSurfaceThreshold(0.3f)
             .withNotifyAllDrops(true)
@@ -1938,22 +1940,22 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 (c.readProgress * 100).roundToInt()
             )
 
-            Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> Helper.formatEpochToDate(
+            Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> formatEpochToDate(
                 c.downloadDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_UPLOAD_DATE -> Helper.formatEpochToDate(
+            Preferences.Constant.ORDER_FIELD_UPLOAD_DATE -> formatEpochToDate(
                 c.uploadDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_READ_DATE -> Helper.formatEpochToDate(
+            Preferences.Constant.ORDER_FIELD_READ_DATE -> formatEpochToDate(
                 c.lastReadDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> Helper.formatEpochToDate(
+            Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> formatEpochToDate(
                 c.downloadCompletionDate,
                 formatter
             )

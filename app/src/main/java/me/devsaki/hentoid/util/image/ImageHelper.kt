@@ -13,7 +13,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.waynejo.androidndkgif.GifEncoder
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.findSequencePosition
 import me.devsaki.hentoid.util.file.getExtension
@@ -307,7 +307,7 @@ fun decodeSampledBitmapFromStream(
     targetWidth: Int,
     targetHeight: Int
 ): Bitmap? {
-    val streams = Helper.duplicateInputStream(stream, 2)
+    val streams = duplicateInputStream(stream, 2)
     val workStream1 = streams[0]
     var workStream2 = streams[1]
 

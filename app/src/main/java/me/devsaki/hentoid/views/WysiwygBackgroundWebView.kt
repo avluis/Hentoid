@@ -9,7 +9,8 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.activities.sources.CustomWebViewClient
 import me.devsaki.hentoid.core.Consumer
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.getRandomInt
+import me.devsaki.hentoid.util.pause
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import timber.log.Timber
@@ -56,7 +57,7 @@ class WysiwygBackgroundWebView(
             loadUrl(url)
         }
         var remainingIterations = 6 * 2 // Timeout 6s
-        while (!isLoaded && remainingIterations-- > 0 && !killSwitch.get()) Helper.pause(500)
+        while (!isLoaded && remainingIterations-- > 0 && !killSwitch.get()) pause(500)
         Timber.v("%s with %d iterations remaining", isLoaded, remainingIterations)
         if (!isLoaded) result = null
         return result
@@ -75,7 +76,7 @@ class WysiwygBackgroundWebView(
         private fun generateName(): String {
             val sb = StringBuilder()
             for (i in 1..10) {
-                val randomChar = 65 + Helper.getRandomInt(26)
+                val randomChar = 65 + getRandomInt(26)
                 sb.append(randomChar.toChar())
             }
             return sb.toString()

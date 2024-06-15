@@ -244,7 +244,7 @@ fun viewContentGalleryPage(context: Context, content: Content, wrapPin: Boolean)
  * @param content Content whose JSON file to update
  */
 fun updateJson(context: Context, content: Content): Boolean {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     val file = getFileFromSingleUriString(context, content.jsonUri)
     if (file != null) {
@@ -275,7 +275,7 @@ fun updateJson(context: Context, content: Content): Boolean {
  * @return Created JSON file, or null if it couldn't be created
  */
 fun createJson(context: Context, content: Content): DocumentFile? {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     if (content.isArchive) return null // Keep that as is, we can't find the parent folder anyway
 
 
@@ -313,7 +313,7 @@ fun persistJson(context: Context, content: Content) {
  * @return True if the queue JSON file has been updated properly; false instead
  */
 fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val queue = dao.selectQueue()
     val errors = dao.selectErrorContent()
 
@@ -438,7 +438,7 @@ fun updateContentReadStats(
  * @return List of picture files
  */
 fun getPictureFilesFromContent(context: Context, content: Content): List<DocumentFile> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val storageUri = content.storageUri
 
     Timber.d("Opening: %s from: %s", content.title, storageUri)
@@ -467,7 +467,7 @@ fun getPictureFilesFromContent(context: Context, content: Content): List<Documen
  */
 @Throws(ContentNotProcessedException::class)
 fun removeContent(context: Context, dao: CollectionDAO, content: Content) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     // Remove from DB
     // NB : start with DB to have a LiveData feedback, because file removal can take much time
     dao.deleteContent(content)
@@ -531,7 +531,7 @@ fun removeQueuedContent(
     content: Content,
     deleteContent: Boolean
 ) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     // Check if the content is on top of the queue; if so, send a CANCEL event
     if (isInQueueTab(content.status)) {
@@ -605,7 +605,7 @@ fun getPathRoot(locationUriStr: String): String {
  * @return ID of the newly added Content
  */
 fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val newContentId = dao.insertContent(content)
     content.setId(newContentId)
 
@@ -689,7 +689,7 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                                         val resizedBitmap =
                                             getScaledDownBitmap(
                                                 b,
-                                                Helper.dimensAsPx(
+                                                dimensAsPx(
                                                     context,
                                                     libraryGridCardWidthDP
                                                 ),
@@ -756,7 +756,7 @@ fun addAttribute(
  * @param context Context to be used
  */
 fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     // Remove from DB
     // NB : start with DB to have a LiveData feedback, because file removal can take much time
     dao.deleteImageFiles(images)
@@ -782,7 +782,7 @@ fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) {
  * @param context  Context to be used
  */
 fun setAndSaveContentCover(newCover: ImageFile, dao: CollectionDAO, context: Context) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     // Get all images from the DB
     val content = dao.selectContent(newCover.content.targetId) ?: return
@@ -1045,7 +1045,7 @@ fun shareContent(
     val subject = if ((1 == items.size)) items[0].title else ""
     val text = StringUtils.join(items.map { it.galleryUrl }, System.lineSeparator())
 
-    Helper.shareText(context, subject, text)
+    shareText(context, subject, text)
 }
 
 /**
@@ -1215,7 +1215,7 @@ fun createImageListFromFiles(
     files: List<DocumentFile>, targetStatus: StatusContent,
     startingOrder: Int, namePrefix: String
 ): List<ImageFile> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val result: MutableList<ImageFile> = ArrayList()
     var order = startingOrder
     var coverFound = false
@@ -1253,7 +1253,7 @@ fun createImageListFromArchiveEntries(
     targetStatus: StatusContent, startingOrder: Int,
     namePrefix: String
 ): List<ImageFile> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val result: MutableList<ImageFile> = ArrayList()
     var order = startingOrder
     // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
@@ -1369,7 +1369,7 @@ private fun reparseFromScratch(
     url: String,
     content: Content?
 ): Content? {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     val urlToLoad: String
     val site: Site?
@@ -1849,7 +1849,7 @@ fun isDownloadable(content: Content): Boolean {
     if (images.isNullOrEmpty()) return false
 
     // Pick a random picture
-    val img = images[Helper.getRandomInt(images.size)]
+    val img = images[getRandomInt(images.size)]
 
     // Peek it to see if downloads work
     val headers: MutableList<Pair<String, String>> = ArrayList()
@@ -1906,7 +1906,7 @@ fun isDownloadable(chapter: Chapter): Boolean {
     val content = chapter.content.reach(chapter) ?: return false
 
     // Pick a random picture
-    val img = images[Helper.getRandomInt(images.size)]
+    val img = images[getRandomInt(images.size)]
 
     // Peek it to see if downloads work
     val headers: MutableList<Pair<String, String>> = ArrayList()
@@ -2042,7 +2042,7 @@ fun mergeContents(
     useBookAsChapter: Boolean,
     dao: CollectionDAO
 ) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     // New book inherits properties of the first content of the list
     // which takes "precedence" as the 1st chapter

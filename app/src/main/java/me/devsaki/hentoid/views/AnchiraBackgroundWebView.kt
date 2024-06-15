@@ -11,7 +11,7 @@ import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.ContentParserFactory
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.getRandomInt
 import pl.droidsonroids.jspoon.Jspoon
 
 class AnchiraBackgroundWebView(
@@ -71,7 +71,7 @@ class AnchiraBackgroundWebView(
         private fun generateName(): String {
             val sb = StringBuilder()
             for (i in 1..10) {
-                val randomChar = 65 + Helper.getRandomInt(26)
+                val randomChar = 65 + getRandomInt(26)
                 sb.append(randomChar.toChar())
             }
             return sb.toString()

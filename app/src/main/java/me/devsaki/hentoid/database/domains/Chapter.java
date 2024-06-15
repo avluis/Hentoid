@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import static me.devsaki.hentoid.util.HelperKt.hash64;
+
 import androidx.annotation.Nullable;
 
 import com.annimon.stream.Stream;
@@ -14,7 +16,6 @@ import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.database.DBHelper;
-import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 @Entity
@@ -182,6 +183,6 @@ public class Chapter {
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + order + "." + url + "." + name).getBytes());
+        return hash64((id + "." + order + "." + url + "." + name).getBytes());
     }
 }

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
 import static me.devsaki.hentoid.util.ContentHelperKt.formatBookAuthor;
+import static me.devsaki.hentoid.util.HelperKt.hash64;
 import static me.devsaki.hentoid.util.JsonHelperKt.jsonToObject;
 import static me.devsaki.hentoid.util.JsonHelperKt.serializeToJson;
 
@@ -70,7 +71,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelperKt;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
@@ -1116,7 +1116,7 @@ public class Content implements Serializable {
     }
 
     public long uniqueHash() {
-        if (0 == uniqueHash) uniqueHash = Helper.hash64((id + "." + uniqueSiteId).getBytes());
+        if (0 == uniqueHash) uniqueHash = hash64((id + "." + uniqueSiteId).getBytes());
         return uniqueHash;
     }
 }

@@ -10,8 +10,7 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.HdPornComicsParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -52,10 +51,7 @@ class HdPornComicsContent : BaseContentParser() {
             if (equalIndex > -1) content.uniqueSiteId = shortlink.substring(equalIndex + 1)
         }
         if (uploadDate.isNotEmpty()) content.setUploadDate(
-            Helper.parseDatetimeToEpoch(
-                uploadDate,
-                "yyyy-MM-dd'T'HH:mm:ssXXX"
-            )
+            parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
         ) // e.g. 2021-08-08T20:53:49+00:00
         var coverUrl = ""
         cover?.let {

@@ -41,9 +41,9 @@ import me.devsaki.hentoid.fragments.metadata.AttributeTypePickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.GalleryPickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.fragments.metadata.MetaRenameDialogFragment
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.bindOnlineCover
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.glideOptionCenterInside
 import me.devsaki.hentoid.viewholders.AttributeItem
@@ -422,7 +422,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
             .setTextTypeface(Typeface.DEFAULT)
             .setMenuColor(ContextCompat.getColor(this, R.color.dark_gray))
             .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
-            .setTextSize(Helper.dimensAsDp(this, R.dimen.text_subtitle_1))
+            .setTextSize(dimensAsDp(this, R.dimen.text_subtitle_1))
             .setAutoDismiss(true)
 
         if (contents.size > 1)

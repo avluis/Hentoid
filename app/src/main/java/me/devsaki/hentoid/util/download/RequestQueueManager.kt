@@ -9,9 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.HentoidApp
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton
+import me.devsaki.hentoid.util.pause
 import timber.log.Timber
 import java.util.Collections
 import java.util.LinkedList
@@ -159,7 +159,7 @@ class RequestQueueManager private constructor(
     private suspend fun doRefill() {
         var newRequestAllowed = isNewRequestAllowed()
         while (!newRequestAllowed && 0 == nbActiveRequests) { // Dry queue
-            Helper.pause(250)
+            pause(250)
             newRequestAllowed = isNewRequestAllowed()
         }
         if (newRequestAllowed) {

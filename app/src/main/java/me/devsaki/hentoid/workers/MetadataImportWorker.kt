@@ -30,7 +30,6 @@ import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
@@ -316,7 +315,6 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
     }
 
     private fun getSiteFolders(context: Context): Map<Site, List<DocumentFile>> {
-        Helper.assertNonUiThread()
         val result: MutableMap<Site, MutableList<DocumentFile>> = EnumMap(
             Site::class.java
         )

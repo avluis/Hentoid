@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import static me.devsaki.hentoid.util.HelperKt.hash64;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -19,7 +21,6 @@ import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**
@@ -257,7 +258,7 @@ public class Attribute {
         if (0 == uniqueHash) {
             long idComp = id;
             if (externalId != 0) idComp = externalId;
-            uniqueHash = Helper.hash64((idComp + "." + name + "." + type.getCode()).getBytes());
+            uniqueHash = hash64((idComp + "." + name + "." + type.getCode()).getBytes());
         }
         return uniqueHash;
     }

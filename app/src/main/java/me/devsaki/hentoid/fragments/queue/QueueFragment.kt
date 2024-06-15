@@ -61,9 +61,9 @@ import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
@@ -243,7 +243,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 this@QueueFragment
             )
                 .withSwipeLeft(
-                    Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list)
+                    dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list)
                 )
                 .withSensitivity(1.5f)
                 .withSurfaceThreshold(0.3f)

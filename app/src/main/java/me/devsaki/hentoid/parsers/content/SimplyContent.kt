@@ -7,7 +7,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.parseDateToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -51,7 +51,7 @@ class SimplyContent : BaseContentParser() {
 
         ulDateContainer?.let {
             content.setUploadDate(
-                Helper.parseDateToEpoch(it.ownText(), "M/d/yyyy")
+                parseDateToEpoch(it.ownText(), "M/d/yyyy")
             ) // e.g. 10/23/2022, 12/8/2022
         }
 

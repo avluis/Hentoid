@@ -8,7 +8,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.parseDateToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -61,7 +61,7 @@ class TsuminoContent : BaseContentParser() {
         content.setCoverImageUrl(coverUrl)
         content.setTitle(cleanup(title))
         content.setUploadDate(
-            Helper.parseDateToEpoch(uploadDate, "yyyy MMMM dd")
+            parseDateToEpoch(uploadDate, "yyyy MMMM dd")
         ) // e.g. 2021 December 13
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.TSUMINO)

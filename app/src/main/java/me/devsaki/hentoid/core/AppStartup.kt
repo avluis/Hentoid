@@ -38,7 +38,6 @@ import me.devsaki.hentoid.notification.updateJson.UpdateJsonNotificationChannel
 import me.devsaki.hentoid.notification.userAction.UserActionNotificationChannel
 import me.devsaki.hentoid.receiver.PlugEventsReceiver
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.DiskCache
@@ -46,6 +45,7 @@ import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.readStreamAsString
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.updateBookmarksJson
 import me.devsaki.hentoid.workers.StartupWorker
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import org.conscrypt.Conscrypt
@@ -252,7 +252,7 @@ object AppStartup {
                 Timber.i("Create bookmarks JSON : creating JSON")
                 val dao: CollectionDAO = ObjectBoxDAO()
                 try {
-                    Helper.updateBookmarksJson(context, dao)
+                    updateBookmarksJson(context, dao)
                 } finally {
                     dao.cleanup()
                 }

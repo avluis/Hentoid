@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import static me.devsaki.hentoid.util.HelperKt.hash64;
+
 import androidx.annotation.NonNull;
 
 import com.annimon.stream.Stream;
@@ -16,7 +18,6 @@ import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.Grouping;
-import me.devsaki.hentoid.util.Helper;
 
 @Entity
 public class Group {
@@ -162,7 +163,7 @@ public class Group {
     }
 
     public long uniqueHash() {
-        return Helper.hash64((grouping.name() + "." + name).getBytes());
+        return hash64((grouping.name() + "." + name).getBytes());
     }
 
     public static class GroupingConverter implements PropertyConverter<Grouping, Integer> {

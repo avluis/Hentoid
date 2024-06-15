@@ -16,9 +16,9 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.getFixedContext
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.views.NestedScrollWebView
@@ -58,7 +58,7 @@ fun Context.clearWebviewCache(callback: Consumer<Boolean>?) {
             } catch (nfe: Resources.NotFoundException) {
                 // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
                 // Creating with the application Context fixes this, but is not generally recommended for view creation
-                webView = NestedScrollWebView(Helper.getFixedContext(this))
+                webView = NestedScrollWebView(getFixedContext(this))
                 callback?.accept(true)
             }
             webView?.clearCache(true)

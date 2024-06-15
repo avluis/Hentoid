@@ -20,11 +20,11 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.delete.DeleteCompleteNotification
 import me.devsaki.hentoid.notification.delete.DeleteProgressNotification
 import me.devsaki.hentoid.notification.delete.DeleteStartNotification
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
 import me.devsaki.hentoid.util.fetchImageURLs
 import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.getStackTraceString
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.notification.BaseNotification
@@ -174,7 +174,6 @@ abstract class BaseDeleteWorker(
      * @param content Content to be deleted
      */
     private fun deleteContent(content: Content) {
-        Helper.assertNonUiThread()
         progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
         try {
             removeContent(applicationContext, dao, content)
@@ -190,7 +189,7 @@ abstract class BaseDeleteWorker(
                 "Error when trying to delete %s : %s - %s",
                 content.title,
                 e.message,
-                Helper.getStackTraceString(e)
+                getStackTraceString(e)
             )
             dao.updateContentProcessedFlag(content.id, false)
         }
@@ -300,7 +299,6 @@ abstract class BaseDeleteWorker(
      * @param group Group to be deleted
      */
     private fun deleteGroup(group: Group, deleteGroupsOnly: Boolean) {
-        Helper.assertNonUiThread()
         var theGroup: Group? = group
         progressItem(theGroup, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
         try {

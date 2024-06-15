@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util.network;
 
+import static me.devsaki.hentoid.util.HelperKt.assertNonUiThread;
 import static me.devsaki.hentoid.util.network.HttpHelperKt.DEFAULT_REQUEST_TIMEOUT;
 import static me.devsaki.hentoid.util.network.HttpHelperKt.HEADER_USER_AGENT;
 
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.core.HentoidApp;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import okhttp3.Cache;
 import okhttp3.Interceptor;
@@ -51,7 +51,7 @@ public class OkHttpClientSingleton {
     }
 
     public static void reset() {
-        Helper.assertNonUiThread(); // Closing network operations shouldn't happen on the UI thread
+        assertNonUiThread(); // Closing network operations shouldn't happen on the UI thread
         synchronized (OkHttpClientSingleton.class) {
             int size = instance.size();
             for (int i = 0; i < size; i++) {

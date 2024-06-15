@@ -16,7 +16,6 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createJsonFileFor
@@ -28,6 +27,7 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.removeContent
 import me.devsaki.hentoid.util.scanArchive
@@ -206,7 +206,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             }
         } catch (e: IOException) {
             Timber.w(e)
-            Helper.logException(e)
+            logException(e)
         } finally {
             notificationManager.notify(ImportCompleteNotification(booksOK, booksKO))
         }

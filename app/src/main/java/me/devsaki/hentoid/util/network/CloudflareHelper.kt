@@ -14,9 +14,10 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.getFixedContext
+import me.devsaki.hentoid.util.pause
 import timber.log.Timber
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -38,7 +39,7 @@ class CloudflareHelper {
             } catch (e: Resources.NotFoundException) {
                 // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
                 // Creating with the application Context fixes this, but is not generally recommended for view creation
-                CloudflareWebView(Helper.getFixedContext(HentoidApp.getInstance()))
+                CloudflareWebView(getFixedContext(HentoidApp.getInstance()))
             }
         }
     }
@@ -93,7 +94,7 @@ class CloudflareHelper {
                 }
             }
             // We're polling the DB because we can't observe LiveData from a background service
-            Helper.pause(1500)
+            pause(1500)
         } while (reloadCounter < RELOAD_LIMIT && !passed && !stopped.get())
 
         return passed

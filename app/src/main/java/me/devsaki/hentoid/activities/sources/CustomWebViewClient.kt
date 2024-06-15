@@ -31,14 +31,16 @@ import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.selectX
 import me.devsaki.hentoid.util.AdBlocker
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.assertNonUiThread
+import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.saveBinary
+import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.image.MIME_IMAGE_WEBP
 import me.devsaki.hentoid.util.image.bitmapToWebp
 import me.devsaki.hentoid.util.image.getBitmapFromVectorDrawable
@@ -417,7 +419,7 @@ open class CustomWebViewClient : WebViewClient {
             val cacheDir = context.cacheDir
             // Using a random file name rather than the original name to avoid errors caused by path length
             val file = File(
-                cacheDir.absolutePath + File.separator + Helper.getRandomInt(
+                cacheDir.absolutePath + File.separator + getRandomInt(
                     10000
                 ) + "." + getExtensionFromUri(url)
             )
@@ -586,7 +588,7 @@ open class CustomWebViewClient : WebViewClient {
         analyzeForDownload: Boolean,
         quickDownload: Boolean
     ): WebResourceResponse? {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         if (BuildConfig.DEBUG) Timber.v(
             "WebView : parseResponse %s %s", if (analyzeForDownload) "DL" else "", url
         )
@@ -663,7 +665,7 @@ open class CustomWebViewClient : WebViewClient {
                     if (analyzeForDownload) {
                         // Response body bytestream needs to be duplicated
                         // because Jsoup closes it, which makes it unavailable for the WebView to use
-                        val `is` = Helper.duplicateInputStream(body.byteStream(), 2)
+                        val `is` = duplicateInputStream(body.byteStream(), 2)
                         parserStream = `is`[0]
                         browserStream = `is`[1]
                     } else {

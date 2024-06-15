@@ -22,7 +22,7 @@ import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.IncludeReaderImageBottomPanelBinding
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.fileSizeFromUri
@@ -217,7 +217,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
                     it.mimeType
                 )?.use { newDownload ->
                     getInputStream(requireContext(), fileUri)
-                        .use { input -> Helper.copy(input, newDownload) }
+                        .use { input -> copy(input, newDownload) }
                 }
                 Snackbar.make(
                     binding.root,

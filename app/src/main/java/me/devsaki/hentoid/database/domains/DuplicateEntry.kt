@@ -2,7 +2,8 @@ package me.devsaki.hentoid.database.domains
 
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.weightedAverage
 import kotlin.math.abs
 
 @Entity
@@ -43,11 +44,11 @@ data class DuplicateEntry(
         val operands = ArrayList<Pair<Float, Float>>()
         if (titleScore > -1) operands.add(Pair(titleScore, 1f))
         if (coverScore > -1) operands.add(Pair(coverScore, 1f))
-        return Helper.weightedAverage(operands) * (if (artistScore > -1) artistScore else 1f)
+        return weightedAverage(operands) * (if (artistScore > -1) artistScore else 1f)
     }
 
     fun uniqueHash(): Long {
-        return Helper.hash64(("$referenceId.$duplicateId").toByteArray())
+        return hash64(("$referenceId.$duplicateId").toByteArray())
     }
 
     override fun compareTo(other: DuplicateEntry): Int {

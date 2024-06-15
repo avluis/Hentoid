@@ -34,9 +34,10 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.copyPlainTextToClipboard
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.toastShort
+import me.devsaki.hentoid.util.updateBookmarksJson
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
@@ -105,7 +106,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             withContext(Dispatchers.IO) {
                 val dao: CollectionDAO = ObjectBoxDAO()
                 try {
-                    Helper.updateBookmarksJson(HentoidApp.getInstance(), dao)
+                    updateBookmarksJson(HentoidApp.getInstance(), dao)
                 } finally {
                     dao.cleanup()
                 }
@@ -360,7 +361,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         val context: Context? = activity
         if (1 == selectedItems.size && context != null) {
             val b = selectedItems.first().getObject()
-            if (b != null && Helper.copyPlainTextToClipboard(context, b.url)) {
+            if (b != null && copyPlainTextToClipboard(context, b.url)) {
                 toastShort(R.string.web_url_clipboard)
                 binding?.selectionToolbar?.visibility = View.INVISIBLE
             }

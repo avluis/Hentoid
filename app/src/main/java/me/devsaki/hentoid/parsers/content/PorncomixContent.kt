@@ -11,8 +11,8 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.YoastGalleryMetadata
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -75,7 +75,7 @@ class PorncomixContent : BaseContentParser() {
                         val publishDate =
                             galleryMeta.datePublished // e.g. 2021-01-27T15:20:38+00:00
                         if (publishDate.isNotEmpty()) content.setUploadDate(
-                            Helper.parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
+                            parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
                         )
                     }
                 } catch (e: IOException) {

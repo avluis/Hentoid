@@ -32,7 +32,6 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
@@ -41,6 +40,7 @@ import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.createJson
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
@@ -396,7 +396,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param contentId ID of the content whose completed state to toggle
      */
     private fun doToggleContentCompleted(contentId: Long) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theContent = dao.selectContent(contentId)
@@ -429,7 +429,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param contentId ID of the content whose read stats to reset
      */
     private fun doResetReadStats(contentId: Long) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theContent = dao.selectContent(contentId)
@@ -476,7 +476,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @return Resulting content
      */
     private fun doToggleContentFavourite(contentId: Long): Content {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theContent = dao.selectContent(contentId)
@@ -518,7 +518,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param targetRating Rating to set
      */
     private fun doRateContent(contentId: Long, targetRating: Int): Content {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theContent = dao.selectContent(contentId)
@@ -918,7 +918,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @return Resulting group
      */
     private fun doToggleGroupFavourite(groupId: Long): Group {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given group still exists in DB
         val theGroup = dao.selectGroup(groupId)
@@ -961,7 +961,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param targetRating Rating to set
      */
     private fun doRateGroup(groupId: Long, targetRating: Int): Group {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theGroup = dao.selectGroup(groupId)
@@ -1070,7 +1070,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     @Throws(Exception::class)
     private fun doSplitContent(content: Content, chapters: List<Chapter>) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         val images: List<ImageFile>? = content.imageFiles
         if (chapters.isEmpty()) throw ContentNotProcessedException(content, "No chapters detected")
         if (images.isNullOrEmpty()) throw ContentNotProcessedException(

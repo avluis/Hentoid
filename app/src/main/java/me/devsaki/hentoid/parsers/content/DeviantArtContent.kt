@@ -14,9 +14,9 @@ import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.parsers.images.DeviantArtParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.retrofit.DeviantArtServer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.getCookies
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -57,7 +57,7 @@ class DeviantArtContent : BaseContentParser() {
 
         if (uploadDate.isNotEmpty())
             content.setUploadDate(
-                Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss.SSSX")
+                parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss.SSSX")
             ) // e.g. 2022-03-20T00:09:43.000Z
 
         val attributes = AttributeMap()

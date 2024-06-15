@@ -10,7 +10,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
@@ -39,7 +39,7 @@ data class DeviantArtDeviation(
                 content.setRawUrl(url.replace("\\/", "/"))
                 try {
                     if (publishedTime.isNotEmpty())
-                        content.uploadDate = Helper.parseDatetimeToEpoch(
+                        content.uploadDate = parseDatetimeToEpoch(
                             publishedTime,
                             "yyyy-MM-dd'T'HH:mm:ssZ"
                         ) // e.g. 2024-01-22T08:27:45-0800

@@ -44,7 +44,6 @@ import me.devsaki.hentoid.notification.download.DownloadWarningNotification
 import me.devsaki.hentoid.notification.userAction.UserActionNotification
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Preferences
@@ -100,6 +99,7 @@ import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
 import me.devsaki.hentoid.util.parseDownloadParams
+import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.removeContent
 import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.util.updateQueueJson
@@ -481,7 +481,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.d("Waiting for purge to complete")
             content = dao.selectContent(content.id)
             if (null == content) return Pair(QueuingResult.CONTENT_SKIPPED, null)
-            Helper.pause(1000)
+            pause(1000)
             if (downloadInterrupted.get()) break
         }
         if (isBeingDeleted && !downloadInterrupted.get()) Timber.d("Purge completed; resuming download")
@@ -816,7 +816,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             // We're polling the DB because we can't observe LiveData from a background service
-            Helper.pause(refreshDelayMs)
+            pause(refreshDelayMs)
         } while (!isDone && !downloadInterrupted.get() && !contentQueueManager.isQueuePaused)
         if (isDone && !downloadInterrupted.get()) {
             // NB : no need to supply the Content itself as it has not been updated during the loop

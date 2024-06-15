@@ -25,8 +25,10 @@ import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.copy
+import me.devsaki.hentoid.util.formatEpochToDate
+import me.devsaki.hentoid.util.hash64
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.toastLong
 import timber.log.Timber
@@ -820,7 +822,7 @@ fun copyFile(
 
     getOutputStream(context, targetFileUri)?.use { output ->
         getInputStream(context, sourceFileUri)
-            .use { input -> Helper.copy(input, output) }
+            .use { input -> copy(input, output) }
     }
     return targetFileUri
 }
@@ -899,7 +901,7 @@ private fun openNewDownloadOutputStreamQ(
     // Make filename unique to avoid failures on certain devices when creating a file with the same name multiple times
     val fileExt = getExtension(fileName)
     val fileNoExt =
-        getFileNameWithoutExtension(fileName) + "_" + Helper.formatEpochToDate(
+        getFileNameWithoutExtension(fileName) + "_" + formatEpochToDate(
             Instant.now().toEpochMilli(), "yyyyMMdd-hhmm"
         )
     values.put(MediaStore.MediaColumns.DISPLAY_NAME, "$fileNoExt.$fileExt")
@@ -1479,7 +1481,7 @@ fun byteCountToDisplayRoundedSize(size: Long, places: Int, res: Resources): Stri
 }
 
 fun DocumentFile.uniqueHash(): Long {
-    return Helper.hash64((this.name + "." + this.length()).toByteArray())
+    return hash64((this.name + "." + this.length()).toByteArray())
 }
 
 fun interface NameFilter {

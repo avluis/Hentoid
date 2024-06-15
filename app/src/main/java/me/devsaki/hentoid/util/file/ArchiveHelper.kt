@@ -5,8 +5,9 @@ import android.content.Context
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.documentfile.provider.DocumentFile
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.image.startsWith
+import me.devsaki.hentoid.util.pause
 import net.sf.sevenzipjbinding.ArchiveFormat
 import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
@@ -132,7 +133,7 @@ private fun getTypeFromArchiveHeader(binary: ByteArray): ArchiveFormat? {
  */
 @Throws(IOException::class)
 fun Context.getArchiveEntries(file: DocumentFile): List<ArchiveEntry> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     var format: ArchiveFormat?
     getInputStream(this, file).use { fi ->
         val header = ByteArray(8)
@@ -150,7 +151,7 @@ private fun Context.getArchiveEntries(
     format: ArchiveFormat,
     uri: Uri
 ): List<ArchiveEntry> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val callback = ArchiveOpenCallback()
     val result = ArrayList<ArchiveEntry>()
     try {
@@ -225,7 +226,7 @@ fun Context.extractArchiveEntriesSimple(
     val delay = 250
     var nbPauses = 0
     while (result.size < entriesToExtract.size && nbPauses++ < 4000 / delay) {
-        Helper.pause(delay)
+        pause(delay)
     }
     return result
 }
@@ -251,7 +252,7 @@ private fun Context.extractArchiveEntries(
     onExtract: ((String, Uri) -> Unit)?,
     onComplete: (() -> Unit)?
 ) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     var format: ArchiveFormat?
     getInputStream(this, uri).use { fi ->
         val header = ByteArray(8)
@@ -346,7 +347,7 @@ fun Context.zipFiles(
     out: OutputStream,
     progress: ((Float) -> Unit)? = null
 ) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     ZipOutputStream(BufferedOutputStream(out)).use { zipOutputStream ->
         val data = ByteArray(BUFFER)
         files.forEachIndexed { index, file ->

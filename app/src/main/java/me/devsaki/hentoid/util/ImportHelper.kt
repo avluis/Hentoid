@@ -614,7 +614,7 @@ fun scanFolderRecursive(
     progressFeedback: Consumer<String>? = null,
     log: MutableList<LogEntry>? = null
 ) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     if (parentNames.size > 4) return  // We've descended too far
     val rootName = toScan.name ?: ""
     progressFeedback?.invoke(rootName)

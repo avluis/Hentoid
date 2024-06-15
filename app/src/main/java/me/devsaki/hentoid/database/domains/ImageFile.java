@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
 import static me.devsaki.hentoid.util.ContentHelperKt.isInLibrary;
+import static me.devsaki.hentoid.util.HelperKt.hash64;
 import static me.devsaki.hentoid.util.image.ImageHelperKt.MIME_IMAGE_GENERIC;
 
 import java.io.File;
@@ -17,7 +18,6 @@ import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.DBHelper;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.file.ArchiveHelperKt;
 
@@ -422,7 +422,7 @@ public class ImageFile {
 
     public long uniqueHash() {
         if (0 == uniqueHash)
-            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId()).getBytes());
+            uniqueHash = hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId()).getBytes());
         return uniqueHash;
     }
 }

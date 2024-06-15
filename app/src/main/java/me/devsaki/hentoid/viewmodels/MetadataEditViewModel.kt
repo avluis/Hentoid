@@ -19,7 +19,6 @@ import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.AttributeQueryResult
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Type
@@ -30,6 +29,7 @@ import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeContentFromGrouping
 import me.devsaki.hentoid.util.setContentCover
 import me.devsaki.hentoid.util.updateGroupsJson
+import me.devsaki.hentoid.util.updateRenamingRulesJson
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
@@ -338,7 +338,7 @@ class MetadataEditViewModel(
             val existingRules = HashSet(dao.selectRenamingRules(AttributeType.UNDEFINED, null))
             if (!existingRules.contains(newRule)) {
                 dao.insertRenamingRule(newRule)
-                Helper.updateRenamingRulesJson(getApplication(), dao)
+                updateRenamingRulesJson(getApplication(), dao)
             }
         }
 

@@ -7,8 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.ParseException
@@ -139,7 +139,7 @@ class RequestQueue(
         pageIndex: Int,
         killSwitch: AtomicBoolean
     ): Triple<Int, Uri, String> {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         val requestHeaders =
             webkitRequestHeadersToOkHttpHeaders(headers, url).toMutableList()
@@ -166,7 +166,7 @@ class RequestQueue(
 
         val targetFileUri = result.first
         val mimeType = result.second
-        if (null == targetFileUri) throw ParseException("Resource not available");
+        if (null == targetFileUri) throw ParseException("Resource not available")
 
         return Triple(pageIndex, targetFileUri, mimeType)
     }

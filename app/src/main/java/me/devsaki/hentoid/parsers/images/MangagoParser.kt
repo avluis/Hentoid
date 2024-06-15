@@ -14,10 +14,10 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.fixUrl
+import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.views.WysiwygBackgroundWebView
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
@@ -105,7 +105,7 @@ class MangagoParser : BaseChapteredImageListParser(), WebResultConsumer {
 
         // Block calling thread until done
         var remainingIterations = 5 * 60 * 2 // Timeout 5 mins
-        while (!done && remainingIterations-- > 0 && !processHalted.get()) Helper.pause(500)
+        while (!done && remainingIterations-- > 0 && !processHalted.get()) pause(500)
         Timber.v("%s with %d iterations remaining", done, remainingIterations)
         if (processHalted.get()) throw EmptyResultException("Unable to detect pages (empty result)")
 
