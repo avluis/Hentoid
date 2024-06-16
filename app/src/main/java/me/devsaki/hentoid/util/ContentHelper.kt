@@ -320,7 +320,7 @@ fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
     // Save current queue (to be able to restore it in case the app gets uninstalled)
     val queuedContent = queue.mapNotNull { qr ->
         val c = qr.content.target
-        if (c != null) c.isFrozen = qr.isFrozen
+        if (c != null) c.isFrozen = qr.frozen
         c
     }.toMutableList()
     queuedContent.addAll(errors)

@@ -222,7 +222,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                 val newContentId = addContent(context, dao, c)
                 val lst: MutableList<QueueRecord> = ArrayList()
                 val qr = QueueRecord(newContentId, queueSize++)
-                qr.isFrozen = c.isFrozen
+                qr.frozen = c.isFrozen
                 lst.add(qr)
                 dao.updateQueue(lst)
                 return

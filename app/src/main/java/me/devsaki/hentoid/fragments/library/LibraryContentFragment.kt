@@ -156,7 +156,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     var result = oldItem.content == newItem.content
                     if (oldItem.queueRecord != null && newItem.queueRecord != null) {
                         result =
-                            result and (oldItem.queueRecord.isFrozen == newItem.queueRecord.isFrozen)
+                            result and (oldItem.queueRecord.frozen == newItem.queueRecord.frozen)
                     }
                     return result
                 }
@@ -195,8 +195,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     if (oldContent.downloadMode != newContent.downloadMode) {
                         diffBundleBuilder.downloadMode = newContent.downloadMode
                     }
-                    if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord.isFrozen != newItem.queueRecord.isFrozen) {
-                        diffBundleBuilder.frozen = newItem.queueRecord.isFrozen
+                    if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord.frozen != newItem.queueRecord.frozen) {
+                        diffBundleBuilder.frozen = newItem.queueRecord.frozen
                     }
                     return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
                 }

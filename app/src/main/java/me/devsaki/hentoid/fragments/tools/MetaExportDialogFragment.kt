@@ -275,10 +275,10 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
         if (exportQueue) {
             val regularQueue = dao.selectQueue()
             val errorsQueue = dao.selectErrorContent()
-            val exportedQueue = regularQueue.filter { qr -> qr.contentId > 0 }
+            val exportedQueue = regularQueue.filter { qr -> qr.content.targetId > 0 }
                 .map { qr ->
                     val c = qr.content.target
-                    c.isFrozen = qr.isFrozen
+                    c.isFrozen = qr.frozen
                     return@map c
                 }.toMutableList()
             exportedQueue.addAll(errorsQueue)

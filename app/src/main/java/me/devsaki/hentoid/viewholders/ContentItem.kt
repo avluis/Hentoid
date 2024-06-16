@@ -319,7 +319,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 intValue = bundleParser.downloadMode
                 if (intValue != null) item.content?.downloadMode = intValue
                 boolValue = bundleParser.frozen
-                if (boolValue != null) item.queueRecord?.isFrozen = boolValue
+                if (boolValue != null) item.queueRecord?.frozen = boolValue
                 boolValue = bundleParser.processed
                 if (boolValue != null) item.content?.setIsBeingProcessed(boolValue)
             }
@@ -456,7 +456,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
 
             var colorId: Int = R.color.card_title_light
-            if (queueRecord != null && queueRecord.isFrozen) colorId = R.color.frozen_blue
+            if (queueRecord != null && queueRecord.frozen) colorId = R.color.frozen_blue
             if (isGrid) colorId = R.color.white_opacity_87
             tvTitle.setTextColor(tvTitle.context.getThemedColor(colorId))
         }

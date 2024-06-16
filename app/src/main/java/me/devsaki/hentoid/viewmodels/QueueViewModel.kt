@@ -396,7 +396,7 @@ class QueueViewModel(
             launch(Dispatchers.IO) {
                 val queue = dao.selectQueue()
                 queue.forEach {
-                    if (recordId.contains(it.id)) it.isFrozen = !it.isFrozen
+                    if (recordId.contains(it.id)) it.frozen = !it.frozen
                 }
                 dao.updateQueue(queue)
                 // Update queue JSON

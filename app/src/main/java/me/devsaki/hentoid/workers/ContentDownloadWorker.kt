@@ -244,7 +244,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         var content: Content? = null
         var index = 0
         for (rec in queue) {
-            if (!rec.isFrozen) {
+            if (!rec.frozen) {
                 content = rec.content.reach(rec)
                 if (content != null) break // Don't take broken links
             }
