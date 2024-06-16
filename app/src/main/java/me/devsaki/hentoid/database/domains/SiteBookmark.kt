@@ -1,90 +1,49 @@
-package me.devsaki.hentoid.database.domains;
+package me.devsaki.hentoid.database.domains
 
-import androidx.annotation.NonNull;
+import io.objectbox.annotation.Convert
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.enums.Site.SiteConverter
+import java.util.Objects
 
-import java.util.Objects;
-
-import io.objectbox.annotation.Convert;
-import io.objectbox.annotation.Entity;
-import io.objectbox.annotation.Id;
-import me.devsaki.hentoid.enums.Site;
-
-/**
- * Site bookmarks
- */
 @Entity
-public class SiteBookmark {
-
+data class SiteBookmark(
     @Id
-    public long id;
-    @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
-    private Site site;
-    private String title;
-    private String url;
-    private int order = -1;
-    private boolean isHomepage;
+    var id: Long = 0,
+    @Convert(converter = SiteConverter::class, dbType = Long::class)
+    val site: Site,
+    var title: String,
+    val url: String,
+    var order: Int = -1,
+    var isHomepage: Boolean = false
+) {
+    constructor() : this(0, Site.NONE, "", "")
 
-    public SiteBookmark() { // Required by ObjectBox when an alternate constructor exists
+    constructor(site: Site, title: String, url: String) : this(
+        0, site, title, url
+    )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val that = other as SiteBookmark
+        return urlsAreSame(url, that.url)
     }
 
-    public SiteBookmark(@NonNull final Site site, @NonNull final String title, @NonNull final String url) {
-        this.site = site;
-        this.title = title;
-        this.url = url;
+    override fun hashCode(): Int {
+        return Objects.hash(neutralizeUrl(url))
     }
 
-    public Site getSite() {
-        return site;
-    }
+    companion object {
+        fun neutralizeUrl(url: String?): String {
+            if (null == url) return ""
+            return if (url.endsWith("/")) url.substring(0, url.length - 1) else url
+        }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    public boolean isHomepage() {
-        return isHomepage;
-    }
-
-    public void setHomepage(boolean homepage) {
-        isHomepage = homepage;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SiteBookmark that = (SiteBookmark) o;
-        return urlsAreSame(getUrl(), that.getUrl());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(neutralizeUrl(getUrl()));
-    }
-
-    public static String neutralizeUrl(String url) {
-        if (null == url) return "";
-        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
-    }
-
-    // Quick comparator to avoid host/someurl and host/someurl/ to be considered as different by the bookmarks managaer
-    public static boolean urlsAreSame(String url1, String url2) {
-        return neutralizeUrl(url1).equalsIgnoreCase(neutralizeUrl(url2));
+        // Quick comparator to avoid host/someurl and host/someurl/ to be considered as different by the bookmarks managaer
+        fun urlsAreSame(url1: String?, url2: String?): Boolean {
+            return neutralizeUrl(url1).equals(neutralizeUrl(url2), ignoreCase = true)
+        }
     }
 }
