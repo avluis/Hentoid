@@ -1,114 +1,92 @@
-package me.devsaki.hentoid.database.domains;
+package me.devsaki.hentoid.database.domains
 
-import androidx.annotation.NonNull;
-
-import java.util.Locale;
-import java.util.Objects;
-
-import io.objectbox.annotation.Convert;
-import io.objectbox.annotation.Entity;
-import io.objectbox.annotation.Id;
-import io.objectbox.annotation.Index;
-import io.objectbox.annotation.Transient;
-import me.devsaki.hentoid.enums.AttributeType;
+import io.objectbox.annotation.Convert
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.Transient
+import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.enums.AttributeType.AttributeTypeConverter
+import me.devsaki.hentoid.enums.AttributeType.UNDEFINED
+import java.util.Objects
 
 @Entity
-public class RenamingRule {
-
+data class RenamingRule(
     @Id
-    public long id;
+    var id: Long = 0,
     @Index
-    @Convert(converter = AttributeType.AttributeTypeConverter.class, dbType = Integer.class)
-    private AttributeType attributeType;
+    @Convert(converter = AttributeTypeConverter::class, dbType = Int::class)
+    val attributeType: AttributeType,
     @Index
-    private String sourceName;
-    private String targetName;
+    var sourceName: String,
+    var targetName: String
+) {
+    @Transient
+    var leftPart: String = ""
 
     @Transient
-    String leftPart;
-    @Transient
-    String rightPart;
+    var rightPart: String = ""
 
 
-    public RenamingRule() { // Required by ObjectBox when an alternate constructor exists
-    }
+    constructor() : this(UNDEFINED, "", "")
 
-    public RenamingRule(AttributeType type, String sourceName, String targetName) {
-        attributeType = type;
-        this.sourceName = sourceName;
-        this.targetName = targetName;
-    }
+    constructor(type: AttributeType, sourceName: String, targetName: String) : this(
+        0,
+        type,
+        sourceName,
+        targetName
+    )
 
-    public AttributeType getAttributeType() {
-        return attributeType;
-    }
 
-    public String getSourceName() {
-        return sourceName;
-    }
-
-    public String getTargetName() {
-        return targetName;
-    }
-
-    public void setSourceName(String sourceName) {
-        this.sourceName = sourceName;
-    }
-
-    public void setTargetName(String targetName) {
-        this.targetName = targetName;
-    }
-
-    public boolean doesMatchSourceName(@NonNull String name) {
-        int starIndex = sourceName.indexOf('*');
-        if (-1 == starIndex) return sourceName.equalsIgnoreCase(name);
+    fun doesMatchSourceName(name: String): Boolean {
+        val starIndex = sourceName.indexOf('*')
+        if (-1 == starIndex) return sourceName.equals(name, ignoreCase = true)
         else {
-            boolean result = true;
-            String strLower = name.toLowerCase(Locale.ROOT);
-            if (!leftPart.isEmpty()) result = strLower.startsWith(leftPart);
-            if (!rightPart.isEmpty()) result &= strLower.endsWith(rightPart);
-            return result;
+            var result = true
+            val strLower = name.lowercase()
+            if (leftPart.isNotEmpty()) result = strLower.startsWith(leftPart)
+            if (rightPart.isNotEmpty()) result = result and strLower.endsWith(rightPart)
+            return result
         }
     }
 
-    public String getTargetName(@NonNull String name) {
-        if (!targetName.contains("*")) return targetName;
+    fun getTargetName(name: String): String {
+        if (!targetName.contains("*")) return targetName
 
-        int starIndex = sourceName.indexOf('*');
-        if (-1 == starIndex) return targetName;
+        val starIndex = sourceName.indexOf('*')
+        if (-1 == starIndex) return targetName
         else {
-            String sourceWildcard = name;
-            if (!leftPart.isEmpty()) sourceWildcard = sourceWildcard.substring(leftPart.length());
-            if (!rightPart.isEmpty())
-                sourceWildcard = sourceWildcard.substring(0, sourceWildcard.length() - rightPart.length() - 1);
-            return targetName.replaceFirst("\\*", sourceWildcard);
+            var sourceWildcard = name
+            if (leftPart.isNotEmpty()) sourceWildcard = sourceWildcard.substring(leftPart.length)
+            if (rightPart.isNotEmpty()) sourceWildcard =
+                sourceWildcard.substring(0, sourceWildcard.length - rightPart.length - 1)
+            return targetName.replaceFirst("\\*".toRegex(), sourceWildcard)
         }
     }
 
-    public void computeParts() {
-        int starIndex = sourceName.indexOf('*');
+    fun computeParts() {
+        val starIndex = sourceName.indexOf('*')
         if (starIndex > -1) {
-            leftPart = sourceName.substring(0, starIndex).toLowerCase(Locale.ROOT);
-            rightPart = (starIndex < sourceName.length() - 1) ? sourceName.substring(starIndex + 1, sourceName.length() - 1).toLowerCase(Locale.ROOT) : "";
+            leftPart = sourceName.substring(0, starIndex).lowercase()
+            rightPart = if ((starIndex < sourceName.length - 1)) sourceName.substring(
+                starIndex + 1,
+                sourceName.length - 1
+            ).lowercase() else ""
         }
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return attributeType + ":" + sourceName + "=>" + targetName;
+    override fun toString(): String {
+        return "$attributeType:$sourceName=>$targetName"
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RenamingRule that = (RenamingRule) o;
-        return attributeType.equals(that.attributeType) && Objects.equals(sourceName, that.sourceName) && Objects.equals(targetName, that.targetName);
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val that = other as RenamingRule
+        return attributeType == that.attributeType && sourceName == that.sourceName && targetName == that.targetName
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(attributeType, sourceName, targetName);
+    override fun hashCode(): Int {
+        return Objects.hash(attributeType, sourceName, targetName)
     }
 }
