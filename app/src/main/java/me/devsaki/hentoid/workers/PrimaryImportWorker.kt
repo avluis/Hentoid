@@ -1046,8 +1046,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             // Only add if it isn't a duplicate
             val duplicate = dao.selectGroupByName(grouping.id, g.name)
             if (null == duplicate) dao.insertGroup(g) else { // If it is, copy attributes
-                duplicate.setFavourite(g.isFavourite)
-                duplicate.setRating(g.rating)
+                duplicate.favourite = g.favourite
+                duplicate.rating = g.rating
                 dao.insertGroup(duplicate)
             }
         }

@@ -18,18 +18,22 @@ data class JsonCustomGroup(
         g.name,
         g.order,
         g.subtype,
-        g.isFavourite,
+        g.favourite,
         g.rating,
         g.hasCustomBookOrder,
         g.searchUri
     )
 
     fun toEntity(grouping: Grouping): Group {
-        return Group(grouping, name, order)
-            .setSubtype(subtype)
-            .setFavourite(favourite)
-            .setRating(rating)
-            .setHasCustomBookOrder(hasCustomBookOrder)
-            .setSearchUri(searchUri)
+        return Group(
+            grouping = grouping,
+            name = name,
+            order = order,
+            subtype = subtype,
+            favourite = favourite,
+            rating = rating,
+            hasCustomBookOrder = hasCustomBookOrder,
+            searchUri = searchUri
+        )
     }
 }

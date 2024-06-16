@@ -740,7 +740,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     ) {
         val builder = DeleteData.Builder()
         if (contents.isNotEmpty()) builder.setContentIds(contents.map { c -> c.id })
-        if (groups.isNotEmpty()) builder.setGroupIds(groups.map { g -> g.getId() })
+        if (groups.isNotEmpty()) builder.setGroupIds(groups.map { g -> g.id })
         builder.setDeleteGroupsOnly(deleteGroupsOnly)
         val workManager = WorkManager.getInstance(getApplication())
         val request: WorkRequest =
@@ -785,7 +785,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         // Update the "has custom book order" group flag
         localGroup.hasCustomBookOrder = true
         var order = 0
-        for (c in orderedContent) for (gi in localGroup.items) if (gi.content.targetId == c.id) {
+        for (c in orderedContent) for (gi in localGroup.getItems()) if (gi.content.targetId == c.id) {
             gi.order = order++
             dao.insertGroupItem(gi)
             break
@@ -923,7 +923,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val theGroup = dao.selectGroup(groupId)
             ?: throw InvalidParameterException("Invalid GroupId : $groupId")
 
-        theGroup.isFavourite = !theGroup.isFavourite
+        theGroup.favourite = !theGroup.favourite
 
         // Persist in it DB
         dao.insertGroup(theGroup)

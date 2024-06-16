@@ -142,9 +142,9 @@ class LibraryGroupsFragment : Fragment(),
                     newItem: GroupDisplayItem
                 ): Boolean {
                     return oldItem.group.coverContent.targetId == newItem.group.coverContent.targetId
-                            && oldItem.group.isFavourite == newItem.group.isFavourite
+                            && oldItem.group.favourite == newItem.group.favourite
                             && oldItem.group.rating == newItem.group.rating
-                            && oldItem.group.items.size == newItem.group.items.size
+                            && oldItem.group.getItems().size == newItem.group.getItems().size
                 }
 
                 override fun getChangePayload(
@@ -158,8 +158,8 @@ class LibraryGroupsFragment : Fragment(),
                         diffBundleBuilder.coverUri =
                             newItem.group.coverContent.target.cover.usableUri
                     }
-                    if (oldItem.group.isFavourite != newItem.group.isFavourite) {
-                        diffBundleBuilder.isFavourite = newItem.group.isFavourite
+                    if (oldItem.group.favourite != newItem.group.favourite) {
+                        diffBundleBuilder.isFavourite = newItem.group.favourite
                     }
                     if (oldItem.group.rating != newItem.group.rating) {
                         diffBundleBuilder.rating = newItem.group.rating
@@ -362,7 +362,7 @@ class LibraryGroupsFragment : Fragment(),
      * @param group Group whose "rating" button has been clicked on
      */
     private fun onGroupRatingClick(group: Group) {
-        invoke(this, longArrayOf(group.getId()), group.rating)
+        invoke(this, longArrayOf(group.id), group.rating)
     }
 
     /**
@@ -944,8 +944,8 @@ class LibraryGroupsFragment : Fragment(),
         val g = itemAdapter.getAdapterItem(position).group
         return when (Preferences.getGroupSortField()) {
 
-            Preferences.Constant.ORDER_FIELD_TITLE -> if (g.getName().isEmpty()) ""
-            else (g.getName()[0].toString() + "").uppercase(Locale.getDefault())
+            Preferences.Constant.ORDER_FIELD_TITLE -> if (g.name.isEmpty()) ""
+            else (g.name[0].toString() + "").uppercase(Locale.getDefault())
 
             Preferences.Constant.ORDER_FIELD_CHILDREN -> g.contentIds.size.toString()
 

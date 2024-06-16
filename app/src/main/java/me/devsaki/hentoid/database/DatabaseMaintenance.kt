@@ -413,7 +413,8 @@ object DatabaseMaintenance {
                         var order = 1
                         for (a in artists) {
                             val group = Group(Grouping.ARTIST, a.name, order++)
-                            group.setSubtype(if (a.type == AttributeType.ARTIST) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS else Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS)
+                            group.subtype =
+                                if (a.type == AttributeType.ARTIST) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS else Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS
                             if (!a.contents.isEmpty()) group.coverContent.target = a.contents[0]
                             bookInsertCount += a.contents.size
                             toInsert.add(
@@ -450,11 +451,9 @@ object DatabaseMaintenance {
                     }
 
                     Grouping.CUSTOM -> {
-                        val group = Group(
-                            Grouping.CUSTOM,
-                            res.getString(R.string.group_no_group),
-                            1
-                        ).setSubtype(1)
+                        val group =
+                            Group(Grouping.CUSTOM, res.getString(R.string.group_no_group), 1)
+                        group.subtype = 1
                         toInsert.add(Triple(group, null, emptyList()))
                     }
 

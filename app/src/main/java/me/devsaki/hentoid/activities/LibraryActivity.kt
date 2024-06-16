@@ -1071,7 +1071,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             reorderMenu?.isVisible = currentGrouping.canReorderGroups
         } else {
             reorderMenu?.isVisible =
-                currentGrouping.canReorderBooks && group != null && group!!.getSubtype() != 1
+                currentGrouping.canReorderBooks && group != null && group!!.subtype != 1
         }
         signalCurrentFragment(CommunicationEvent.Type.UPDATE_TOOLBAR)
     }

@@ -317,7 +317,7 @@ abstract class BaseDeleteWorker(
                 processContentList(containedContentList, ToolsActivity.MassOperation.DELETE)
             }
             if (theGroup != null) {
-                if (!theGroup.items.isEmpty()) {
+                if (theGroup.getItems().isNotEmpty()) {
                     nbError++
                     trace(Log.WARN, "Group is not empty : %s", theGroup.name)
                     return

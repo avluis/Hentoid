@@ -950,7 +950,7 @@ public class Content implements Serializable {
     }
 
     public List<GroupItem> getGroupItems(@NonNull Grouping grouping) {
-        return Stream.of(getGroupItemList()).filter(gi -> gi.group.getTarget().grouping.equals(grouping)).toList();
+        return Stream.of(getGroupItemList()).filter(gi -> gi.group.getTarget().getGrouping().equals(grouping)).toList();
     }
 
     public int computeReadPagesCount() {

@@ -340,7 +340,7 @@ object ObjectBoxDB {
                     for (groupItem in groupItems) {
                         // If we're not in the Custom grouping and it's the only item of its group, delete the group
                         val g = groupItem.group.target
-                        if (g != null && g.grouping != Grouping.CUSTOM && g.items.size < 2)
+                        if (g != null && g.grouping != Grouping.CUSTOM && g.getItems().size < 2)
                             groupBox.remove(g)
                         // Delete the item
                         groupItemBox.remove(groupItem)
