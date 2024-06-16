@@ -570,7 +570,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     if (contentImages!!.isEmpty()) {
                         contentImages = createImageListFromFiles(imageFiles)
                         content.setImageFiles(contentImages)
-                        content.getCover().setUrl(content.coverImageUrl)
+                        content.getCover().url = content.coverImageUrl
                     } else { // Existing images described in the JSON
                         // CLEANUPS
                         var cleaned = false
@@ -868,13 +868,13 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             naturalOrder++
             if (img.order != naturalOrder) {
                 nbRenumbered++
-                img.setOrder(naturalOrder)
+                img.order = naturalOrder
                 img.computeName(nbMaxDigits)
                 val file = getDocumentFromTreeUriString(context, img.fileUri)
                 if (file != null) {
                     val extension = getExtension(file.name ?: "")
                     file.renameTo(img.name + "." + extension)
-                    img.setFileUri(file.uri.toString())
+                    img.fileUri = file.uri.toString()
                 }
             }
             if (nbRenumbered > 0) EventBus.getDefault().post(

@@ -1036,7 +1036,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
             // Save additional chapters to stored book
             val additionalNonExistingChapters =
-                additionalNonExistingImages.mapNotNull { img -> img.linkedChapter }
+                additionalNonExistingImages.mapNotNull { it.linkedChapter }
                     .filterNot { ch -> existingChapterOrders.contains(ch.order) }
             if (additionalNonExistingChapters.isNotEmpty()) {
                 val updatedChapters = currentContent!!.chaptersList.toMutableList()

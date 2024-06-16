@@ -215,8 +215,8 @@ abstract class BaseDeleteWorker(
                     )
                 newContent.setImageFiles(newImages)
                 // Associate new pages' cover with current cover file (that won't be deleted)
-                newContent.cover.setStatus(StatusContent.DOWNLOADED).fileUri =
-                    content.cover.fileUri
+                newContent.cover.status = StatusContent.DOWNLOADED
+                newContent.cover.fileUri = content.cover.fileUri
                 // Save everything
                 dao.replaceImageList(newContent.id, newImages)
                 newContent

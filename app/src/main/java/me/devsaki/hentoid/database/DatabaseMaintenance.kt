@@ -137,15 +137,12 @@ object DatabaseMaintenance {
                     "api.pururin.to/images/",
                     "cdn.pururin.to/assets/images/data/"
                 )
-                if (c.imageFiles != null) for (i in c.imageFiles!!) {
-                    db.updateImageFileUrl(
-                        i.setUrl(
-                            i.url.replace(
-                                "api.pururin.to/images/",
-                                "cdn.pururin.to/assets/images/data/"
-                            )
-                        )
+                c.imageList.forEach {
+                    it.url = it.url.replace(
+                        "api.pururin.to/images/",
+                        "cdn.pururin.to/assets/images/data/"
                     )
+                    db.updateImageFileUrl(it)
                 }
                 db.insertContentCore(c)
                 emitter(pos++ / max)
@@ -195,9 +192,10 @@ object DatabaseMaintenance {
             for (c in contents) {
                 val images: MutableList<ImageFile> = c.imageList.toMutableList()
                 val newCover =
-                    ImageFile.newCover(c.coverImageUrl, StatusContent.ONLINE).setContentId(c.id)
+                    ImageFile.newCover(c.coverImageUrl, StatusContent.ONLINE)
+                newCover.contentId = c.id
                 images.add(0, newCover)
-                images[1].setIsCover(false)
+                images[1].isCover = false
                 db.insertImageFiles(images)
                 emitter(pos++ / max)
             }

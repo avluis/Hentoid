@@ -440,7 +440,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             theContent.lastReadDate = 0
             val imgs: List<ImageFile>? = theContent.imageFiles
             if (imgs != null) {
-                for (img in imgs) img.isRead = false
+                for (img in imgs) img.read = false
                 dao.insertImageFiles(imgs)
             }
             persistJson(getApplication(), theContent)
@@ -682,8 +682,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                     )
                                 newContent.setImageFiles(newImages)
                                 // Associate new pages' cover with current cover file (that won't be deleted)
-                                newContent.cover.setStatus(StatusContent.DOWNLOADED).fileUri =
-                                    c.cover.fileUri
+                                newContent.cover.status = StatusContent.DOWNLOADED
+                                newContent.cover.fileUri = c.cover.fileUri
                                 // Save everything
                                 dao.replaceImageList(newContent.id, newImages)
                                 newContent
@@ -1185,7 +1185,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 img.id = 0 // Force working on a new picture
                 img.setChapter(null)
                 img.content.target = null // Clear content
-                img.setIsCover(0 == position)
+                img.isCover = (0 == position)
                 img.order = position
                 img.computeName(nbMaxDigits)
             }
@@ -1193,7 +1193,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             splitContent.setChapters(null)
             splitContent.qtyPages = images.count { imf -> imf.isReadable }
             splitContent.computeSize()
-            var coverImageUrl = images[0].url ?: ""
+            var coverImageUrl = images[0].url
             if (coverImageUrl.isEmpty()) coverImageUrl = content.coverImageUrl
             splitContent.coverImageUrl = coverImageUrl
         }

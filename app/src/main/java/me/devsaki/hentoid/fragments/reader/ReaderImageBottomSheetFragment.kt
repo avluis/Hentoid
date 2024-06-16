@@ -170,7 +170,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
                 binding.imgActionDelete.imageTintList = null
                 binding.imgActionDelete.isEnabled = true
             }
-            updateFavouriteDisplay(it.isFavourite)
+            updateFavouriteDisplay(it.favourite)
         }
     }
 
@@ -187,7 +187,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
      * Success callback when the new favourite'd state has been successfully persisted
      */
     private fun onToggleFavouriteSuccess(newState: Boolean) {
-        image!!.isFavourite = newState
+        image!!.favourite = newState
         updateFavouriteDisplay(newState)
     }
 

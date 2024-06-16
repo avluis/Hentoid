@@ -266,9 +266,9 @@ fun urlToImageFile(
     status: StatusContent,
     chapter: Chapter?
 ): ImageFile {
-    val result = ImageFile()
+    val result = ImageFile(dbOrder = order, dbUrl = imgUrl, status = status)
     val nbMaxDigits = (floor(log10(totalBookPages.toDouble())) + 1).toInt()
-    result.setOrder(order).setUrl(imgUrl).setStatus(status).computeName(nbMaxDigits)
+    result.computeName(nbMaxDigits)
     if (chapter != null) result.setChapter(chapter)
     return result
 }
@@ -326,7 +326,7 @@ fun setDownloadParams(imgs: List<ImageFile>, referrer: String) {
         val cookieStr = getCookies(img.url)
         if (cookieStr.isNotEmpty()) params[HEADER_COOKIE_KEY] = cookieStr
         params[HEADER_REFERER_KEY] = referrer
-        img.setDownloadParams(serializeToJson<Map<String, String>>(params, MAP_STRINGS))
+        img.downloadParams = serializeToJson<Map<String, String>>(params, MAP_STRINGS)
     }
 }
 

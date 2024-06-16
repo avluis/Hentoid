@@ -693,7 +693,7 @@ public class Content implements Serializable {
     public ImageFile getCover() {
         List<ImageFile> images = getImageList();
         for (ImageFile img : images) if (img.isCover()) return img;
-        ImageFile makeupCover = ImageFile.fromImageUrl(0, getCoverImageUrl(), StatusContent.ONLINE, 1);
+        ImageFile makeupCover = ImageFile.Companion.fromImageUrl(0, getCoverImageUrl(), StatusContent.ONLINE, 1);
         makeupCover.setImageHash(Long.MIN_VALUE); // Makeup cover is unhashable
         return makeupCover;
     }
@@ -955,7 +955,7 @@ public class Content implements Serializable {
 
     public int computeReadPagesCount() {
         if (null == imageFiles) return 0;
-        int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).count();
+        int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::getRead).filter(ImageFile::isReadable).count();
         if (0 == countReadPages && lastReadPageIndex > 0)
             return lastReadPageIndex; // pre-v1.13 content
         else return countReadPages; // post v1.13 content

@@ -140,8 +140,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 val oldImage = oldItem.getImage()
                 val newImage = newItem.getImage()
                 val diffBundleBuilder = ImageItemBundle()
-                if (oldImage.isFavourite != newImage.isFavourite) {
-                    diffBundleBuilder.isFavourite = newImage.isFavourite
+                if (oldImage.favourite != newImage.favourite) {
+                    diffBundleBuilder.isFavourite = newImage.favourite
                 }
                 if (oldItem.getChapterOrder() != newItem.getChapterOrder()) {
                     diffBundleBuilder.chapterOrder = newItem.getChapterOrder()

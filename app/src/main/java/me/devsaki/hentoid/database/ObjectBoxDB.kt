@@ -1471,11 +1471,11 @@ object ObjectBoxDB {
         val imgBox = store.boxFor(ImageFile::class.java)
         val img = imgBox[image.id]
         if (img != null) {
-            img.setStatus(image.status)
-            img.setDownloadParams(image.downloadParams)
-            img.setMimeType(image.mimeType)
-            img.setFileUri(image.fileUri)
-            img.setSize(image.size)
+            img.status = image.status
+            img.downloadParams = image.downloadParams
+            img.mimeType = image.mimeType
+            img.fileUri = image.fileUri
+            img.size = image.size
             imgBox.put(img)
         }
     }
@@ -1489,7 +1489,7 @@ object ObjectBoxDB {
         if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.code.toLong())
         val imgs = query.equal(ImageFile_.contentId, contentId).safeFind()
         if (imgs.isEmpty()) return
-        for (img in imgs) img.setStatus(updateTo)
+        for (img in imgs) img.status = updateTo
         store.boxFor(ImageFile::class.java).put(imgs)
     }
 
@@ -1497,7 +1497,7 @@ object ObjectBoxDB {
         val imgBox = store.boxFor(ImageFile::class.java)
         val img = imgBox[image.id]
         if (img != null) {
-            img.setUrl(image.url)
+            img.url = image.url
             imgBox.put(img)
         }
     }
@@ -1608,7 +1608,7 @@ object ObjectBoxDB {
     fun replaceImageFiles(contentId: Long, newList: List<ImageFile>) {
         store.runInTx {
             deleteImageFiles(contentId)
-            for (img in newList) img.setContentId(contentId)
+            for (img in newList) img.contentId = contentId
             insertImageFiles(newList)
         }
     }
@@ -1633,7 +1633,7 @@ object ObjectBoxDB {
                 StatusContent.PLACEHOLDER.code
             )
         )
-        builder.order(ImageFile_.order)
+        builder.order(ImageFile_.dbOrder)
         return builder.build()
     }
 
@@ -1985,7 +1985,7 @@ object ObjectBoxDB {
         ).notNull(Content_.storageUri)
             .notEqual(Content_.storageUri, "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
         val imageQuery = query.backlink(ImageFile_.content)
-        imageQuery.equal(ImageFile_.isCover, true).isNull(ImageFile_.imageHash).or()
+        imageQuery.equal(ImageFile_.dbIsCover, true).isNull(ImageFile_.imageHash).or()
             .`in`(ImageFile_.imageHash, longArrayOf(0, -1))
             .notEqual(ImageFile_.status, StatusContent.ONLINE.code.toLong())
         return query.build()

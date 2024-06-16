@@ -113,9 +113,8 @@ data class PixivIllustMetadata(
                     val downloadParams: MutableMap<String, String> = HashMap()
                     val framesJson = serializeToJson(ugoiraMeta.getFrameList(), UGOIRA_FRAMES_TYPE)
                     downloadParams[KEY_DL_PARAMS_UGOIRA_FRAMES] = framesJson
-                    img.setDownloadParams(
+                    img.downloadParams =
                         serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
-                    )
                 }
                 listOf(img)
             } else { // Classic page list

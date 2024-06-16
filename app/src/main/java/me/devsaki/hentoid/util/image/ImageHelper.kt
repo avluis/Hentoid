@@ -200,8 +200,8 @@ fun isImageLossless(data: ByteArray): Boolean {
  * @param uri     URI of the picture file to detect the mime-type for
  * @return Mime-type of the picture file at the given URI; MIME_IMAGE_GENERIC if no Mime-type detected
  */
-fun getMimeTypeFromUri(context: Context, uri: Uri): String? {
-    var result: String? = MIME_IMAGE_GENERIC
+fun getMimeTypeFromUri(context: Context, uri: Uri): String {
+    var result = MIME_IMAGE_GENERIC
     val buffer = ByteArray(12)
     try {
         getInputStream(context, uri).use { input ->

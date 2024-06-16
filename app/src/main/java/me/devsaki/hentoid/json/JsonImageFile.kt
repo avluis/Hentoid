@@ -26,8 +26,8 @@ data class JsonImageFile(
         f.pageUrl,
         f.name,
         f.isCover,
-        f.isFavourite,
-        f.isRead,
+        f.favourite,
+        f.read,
         f.status,
         f.mimeType,
         f.imageHash,
@@ -38,11 +38,11 @@ data class JsonImageFile(
     fun toEntity(chapters: List<Chapter>): ImageFile {
         var result = ImageFile.fromImageUrl(order, url, status, name)
         if (url.isEmpty()) result = ImageFile.fromPageUrl(order, pageUrl, status, name)
-        result.setName(name)
-        result.setIsCover(isCover)
-        result.isFavourite = favourite
-        result.isRead = isRead
-        result.setMimeType(mimeType)
+        result.name = name
+        result.isCover = isCover
+        result.favourite = favourite
+        result.read = isRead
+        result.mimeType = mimeType
         result.imageHash = pHash
         result.isTransformed = isTransformed
 

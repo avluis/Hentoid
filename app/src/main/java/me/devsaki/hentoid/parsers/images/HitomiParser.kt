@@ -125,7 +125,7 @@ class HitomiParser : BaseImageListParser() {
             var order = 1
             for (s in imageUrls) {
                 val img = urlToImageFile(s, order++, imageUrls.size, StatusContent.SAVED)
-                img.setDownloadParams(downloadParamsStr)
+                img.downloadParams = downloadParamsStr
                 result.add(img)
             }
         }

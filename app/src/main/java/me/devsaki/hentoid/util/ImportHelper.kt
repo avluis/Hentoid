@@ -794,8 +794,10 @@ fun scanBookFolder(
     // If streamed, keep everything and update cover URI
     if (result.downloadMode == Content.DownloadMode.STREAM) {
         val coverFile = images.firstOrNull { obj: ImageFile -> obj.isCover }
-        if (coverFile != null) result.getCover().setFileUri(coverFile.fileUri)
-            .setSize(coverFile.size)
+        if (coverFile != null) {
+            result.cover.fileUri = coverFile.fileUri
+            result.cover.size = coverFile.size
+        }
     } else { // Set all detected images
         result.setImageFiles(images)
     }
@@ -927,8 +929,10 @@ private fun scanFolderImages(
  */
 fun createCover(images: MutableList<ImageFile>) {
     if (images.isNotEmpty()) {
+        val img = ImageFile(images[0], populateContent = true, populateChapter = true)
+        img.isCover = true
         // Create a new cover entry from the 1st element
-        images.add(0, ImageFile(images[0], true, true).setIsCover(true))
+        images.add(0, img)
     }
 }
 
@@ -1053,7 +1057,7 @@ fun scanForArchives(
             chapter.setContent(content)
             chapter.setImageFiles(c.imageList.filter { i -> i.isReadable })
             chapter.imageFiles?.forEachIndexed { iidx, img ->
-                img.setOrder(chapterOffset + iidx + 1)
+                img.order = chapterOffset + iidx + 1
                 img.computeName(5)
                 img.setChapter(chapter)
             }

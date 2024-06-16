@@ -775,7 +775,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 viewerNoImgTxt.visibility = View.GONE
                 viewerLoadingTxt.visibility = View.GONE
                 if (absImageIndex > -1 && absImageIndex < images.size) {
-                    isPageFavourite = images[absImageIndex].isFavourite
+                    isPageFavourite = images[absImageIndex].favourite
                     updateFavouriteButtonIcon()
                 }
             }
@@ -942,7 +942,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
             adapter.getImageAt(absImageIndex)?.let {
                 viewModel.markPageAsRead(it.order)
-                isPageFavourite = it.isFavourite
+                isPageFavourite = it.favourite
                 updateFavouriteButtonIcon()
                 Preferences.setReaderCurrentPageNum(it.order)
             }

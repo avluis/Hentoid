@@ -79,6 +79,7 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
+import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.assembleGif
 import me.devsaki.hentoid.util.jsonToFile
@@ -537,7 +538,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                         if (images.size > idx + 1) img.backupUrl = images[index + 1].url
                         covers.add(img)
                     }
-                    if (img.needsPageParsing()) pagesToParse.add(img)
+                    if (img.needsPageParsing) pagesToParse.add(img)
                     else if (img.downloadParams.contains(KEY_DL_PARAMS_UGOIRA_FRAMES))
                         ugoirasToDownload.add(img)
                     else if (!img.isCover) requestQueueManager.queueRequest(
@@ -1106,7 +1107,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
             img.url = pages.first
             // Set backup URL
-            if (pages.second != null) img.backupUrl = pages.second
+            if (pages.second != null) img.backupUrl = pages.second ?: ""
             // Queue the picture
             requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content))
         } catch (e: UnsupportedOperationException) {
@@ -1211,7 +1212,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         )
         if (imgFile != null) {
             img.size = imgFile.length()
-            img.mimeType = imgFile.type
+            img.mimeType = imgFile.type ?: MIME_IMAGE_GENERIC
             updateImageProperties(img, true, fileUri.toString())
         } else {
             Timber.i(

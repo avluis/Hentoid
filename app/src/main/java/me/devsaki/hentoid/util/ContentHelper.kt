@@ -281,7 +281,7 @@ fun createJson(context: Context, content: Content): DocumentFile? {
 
     val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return null
     try {
-        val newJson = jsonToFile<JsonContent>(
+        val newJson = jsonToFile(
             context, JsonContent(content),
             JsonContent::class.java, folder, JSON_FILE_NAME_V2
         )
@@ -712,9 +712,9 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                             )
                         }
                         Timber.i(">> Set cover for %s", content.title)
-                        content.cover.setFileUri(uri.toString())
-                        content.cover.setName(uri.lastPathSegment)
-                        dao.replaceImageList(newContentId, content.imageFiles!!)
+                        content.cover.fileUri = uri.toString()
+                        content.cover.name = uri.lastPathSegment ?: ""
+                        dao.replaceImageList(newContentId, content.imageList)
                     }
                 }
             } catch (e: IOException) {
@@ -765,7 +765,7 @@ fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) {
     for (image in images) removeFile(context, Uri.parse(image.fileUri))
 
     // Lists all relevant content
-    val contents = images.mapNotNull { it.content?.targetId }.distinct()
+    val contents = images.map { it.content.targetId }.distinct()
 
     // Update content JSON if it exists (i.e. if book is not queued)
     for (contentId in contents) {
@@ -812,14 +812,15 @@ fun setAndSaveContentCover(newCover: ImageFile, dao: CollectionDAO, context: Con
 fun setContentCover(content: Content, images: MutableList<ImageFile>, newCover: ImageFile) {
     // Remove current cover from the set
     for (i in images.indices) if (images[i].isCover) {
-        if (images[i].isReadable) images[i].setIsCover(false)
+        if (images[i].isReadable) images[i].isCover = false
         else images.removeAt(i)
         break
     }
 
     // Duplicate given picture and set it as a cover
-    val cover = ImageFile.newCover(newCover.url, newCover.status).setFileUri(newCover.fileUri)
-        .setMimeType(newCover.mimeType)
+    val cover = ImageFile.newCover(newCover.url, newCover.status)
+    cover.fileUri = newCover.fileUri
+    cover.mimeType = newCover.mimeType
     images.add(0, cover)
 
     // Update cover URL to "ping" the content to be updated too (useful for library screen that only detects "direct" content updates)
@@ -1126,7 +1127,7 @@ fun matchFilesToImageList(
         val img = orderedImages[i]
         val imgName = removeLeadingZeroesAndExtensionCached(img.name)
 
-        var property: Pair<String?, Long?>?
+        var property: Pair<String, Long>?
         val isOnline = img.status == StatusContent.ONLINE
         if (isOnline) {
             property = Pair("", 0L)
@@ -1146,7 +1147,8 @@ fun matchFilesToImageList(
                             StatusContent.DOWNLOADED,
                             orderedImages.size
                         )
-                        newImage.setFileUri(localProperty.first).setSize(localProperty.second)
+                        newImage.fileUri = localProperty.first
+                        newImage.size = localProperty.second
                         result.add(max(0.0, (result.size - 1).toDouble()).toInt(), newImage)
                     }
                 }
@@ -1158,17 +1160,17 @@ fun matchFilesToImageList(
         if (property != null) {
             if (imgName.startsWith(THUMB_FILE_NAME)) {
                 coverFound = true
-                img.setIsCover(true)
+                img.isCover = true
             }
-            result.add(
-                img.setFileUri(property.first).setSize(property.second!!)
-                    .setStatus(if (isOnline) StatusContent.ONLINE else StatusContent.DOWNLOADED)
-            )
+            img.fileUri = property.first
+            img.size = property.second
+            img.status = if (isOnline) StatusContent.ONLINE else StatusContent.DOWNLOADED
+            result.add(img)
         } else Timber.i(">> image not found among files : %s", imgName)
     }
 
     // If no thumb found, set the 1st image as cover
-    if (!coverFound && result.isNotEmpty()) result[0].setIsCover(true)
+    if (!coverFound && result.isNotEmpty()) result[0].isCover = true
     return result
 }
 
@@ -1224,15 +1226,19 @@ fun createImageListFromFiles(
         val img = ImageFile()
         if (name.startsWith(THUMB_FILE_NAME)) {
             coverFound = true
-            img.setIsCover(true)
+            img.isCover = true
         } else order++
-        img.setName(getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.uri.toString())
-            .setStatus(targetStatus).setFileUri(f.uri.toString()).setSize(f.length())
-        img.setMimeType(getMimeTypeFromFileName(name))
+        img.name = getFileNameWithoutExtension(name)
+        img.order = order
+        img.url = f.uri.toString()
+        img.status = targetStatus
+        img.fileUri = f.uri.toString()
+        img.size = f.length()
+        img.mimeType = getMimeTypeFromFileName(name)
         result.add(img)
     }
     // If no thumb found, set the 1st image as cover
-    if (!coverFound && result.isNotEmpty()) result[0].setIsCover(true)
+    if (!coverFound && result.isNotEmpty()) result[0].isCover = true
     return result
 }
 
@@ -1260,11 +1266,15 @@ fun createImageListFromArchiveEntries(
         val name = namePrefix + path1
         val path = archiveFileUri.toString() + File.separator + path1
         val img = ImageFile()
-        if (name.startsWith(THUMB_FILE_NAME)) img.setIsCover(true)
+        if (name.startsWith(THUMB_FILE_NAME)) img.isCover = true
         else order++
-        img.setName(getFileNameWithoutExtension(name)).setOrder(order).setUrl(path)
-            .setStatus(targetStatus).setFileUri(path).setSize(size)
-        img.setMimeType(getMimeTypeFromFileName(name))
+        img.name = getFileNameWithoutExtension(name)
+        img.order = order
+        img.url = path
+        img.status = targetStatus
+        img.fileUri = path
+        img.size = size
+        img.mimeType = getMimeTypeFromFileName(name)
         result.add(img)
     }
     return result
@@ -1465,7 +1475,7 @@ fun fetchImageURLs(
     if (contentDownloadParamsStr != null && contentDownloadParamsStr.length > 2) {
         val contentDownloadParams = parseDownloadParams(contentDownloadParamsStr)
         for (i in imgs) {
-            if (i.downloadParams != null && i.downloadParams.length > 2) {
+            if (i.downloadParams.length > 2) {
                 val imageDownloadParams = parseDownloadParams(i.downloadParams).toMutableMap()
                 // Content's params
                 contentDownloadParams.forEach {
@@ -1475,9 +1485,9 @@ fun fetchImageURLs(
                 // Referer, just in case
                 if (!imageDownloadParams.containsKey(HEADER_REFERER_KEY)) imageDownloadParams[HEADER_REFERER_KEY] =
                     content.site.url
-                i.setDownloadParams(serializeToJson(imageDownloadParams, MAP_STRINGS))
+                i.downloadParams = serializeToJson(imageDownloadParams, MAP_STRINGS)
             } else {
-                i.setDownloadParams(contentDownloadParamsStr)
+                i.downloadParams = contentDownloadParamsStr
             }
         }
     }
@@ -1485,8 +1495,8 @@ fun fetchImageURLs(
     // Cleanup and enrich generated objects
     for (img in imgs) {
         img.id = 0
-        img.setStatus(targetImageStatus)
-        img.setContentId(content.id)
+        img.status = targetImageStatus
+        img.contentId = content.id
     }
 
     return imgs
@@ -1859,7 +1869,7 @@ fun isDownloadable(content: Content): Boolean {
     ) // Useful for Hitomi and Toonily
 
     try {
-        if (img.needsPageParsing()) {
+        if (img.needsPageParsing) {
             // Get cookies from the app jar
             var cookieStr = getCookies(img.pageUrl)
             // If nothing found, peek from the site
@@ -1912,7 +1922,7 @@ fun isDownloadable(chapter: Chapter): Boolean {
     headers.add(Pair(HEADER_REFERER_KEY, content.readerUrl))
 
     try {
-        if (img.needsPageParsing()) {
+        if (img.needsPageParsing) {
             // Get cookies from the app jar
             var cookieStr = getCookies(img.pageUrl)
             // If nothing found, peek from the site
@@ -1969,7 +1979,7 @@ private fun testDownloadPictureFromPage(
     } finally {
         parser.clear()
     }
-    img.setUrl(pages.first)
+    img.url = pages.first
     // Download the picture
     try {
         return testDownloadPicture(site, img, requestHeaders)
@@ -1981,7 +1991,7 @@ private fun testDownloadPictureFromPage(
         else throw e
     }
     // Trying with backup URL
-    img.setUrl(pages.second)
+    img.url = pages.second ?: ""
     return testDownloadPicture(site, img, requestHeaders)
 }
 
@@ -2131,13 +2141,13 @@ fun mergeContents(
             firstImageIsCover = !imgs.any { it.isCover }
             for (img in imgs) {
                 if (!img.isReadable && coverFound) continue // Skip secondary covers if one exists
-                val newImg = ImageFile(img, false, false)
+                val newImg = ImageFile(img, populateContent = false, populateChapter = false)
                 newImg.id = 0 // Force working on a new picture
-                newImg.setFileUri("") // Clear initial URI
-                newImg.setOrder(pictureOrder++)
+                newImg.fileUri = "" // Clear initial URI
+                newImg.order = pictureOrder++
                 newImg.computeName(nbMaxDigits)
                 if (firstImageIsCover && !coverFound) {
-                    newImg.setIsCover(true)
+                    newImg.isCover = true
                     coverFound = true
                 }
 
@@ -2167,7 +2177,7 @@ fun mergeContents(
                         newImg.mimeType,
                         newImg.name + "." + extension
                     )
-                    if (newUri != null) newImg.setFileUri(newUri.toString())
+                    if (newUri != null) newImg.fileUri = newUri.toString()
                     else Timber.w("Could not move file %s", img.fileUri)
                     EventBus.getDefault().post(
                         ProcessEvent(

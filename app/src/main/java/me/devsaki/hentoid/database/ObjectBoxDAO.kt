@@ -415,7 +415,7 @@ class ObjectBoxDAO : CollectionDAO {
         c.setDownloadParams("")
         ObjectBoxDB.insertContentCore(c)
         val imgs = c.imageFiles ?: return
-        for (img in imgs) img.setDownloadParams("")
+        for (img in imgs) img.downloadParams = ""
         ObjectBoxDB.insertImageFiles(imgs)
     }
 

@@ -472,7 +472,7 @@ class ReaderViewModel(
         imgs = imgs.filter { obj -> obj.isReadable }
         val showFavouritesOnlyVal = getShowFavouritesOnly().value
         if (showFavouritesOnlyVal != null && showFavouritesOnlyVal) {
-            imgs = imgs.filter { obj -> obj.isFavourite }
+            imgs = imgs.filter { obj -> obj.favourite }
         }
         for (i in imgs.indices) imgs[i].displayOrder = i
 
@@ -585,13 +585,13 @@ class ReaderViewModel(
 
             // Update image read status with the cached read statuses
             val previousReadPageNumbers =
-                theImages.filter { obj -> obj.isRead && obj.isReadable }
+                theImages.filter { obj -> obj.read && obj.isReadable }
                     .map { obj -> obj.order }
                     .toSet()
             val reReadPagesNumbers = readPageNumbers.toMutableSet()
             reReadPagesNumbers.retainAll(previousReadPageNumbers)
             if (readPageNumbers.size > reReadPagesNumbers.size) {
-                for (img in theImages) if (readPageNumbers.contains(img.order)) img.isRead = true
+                for (img in theImages) if (readPageNumbers.contains(img.order)) img.read = true
                 savedContent.computeReadProgress()
             }
             if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.isCompleted != markAsCompleted)
@@ -630,7 +630,7 @@ class ReaderViewModel(
      */
     fun toggleImageFavourite(viewerIndex: Int, successCallback: (Boolean) -> Unit) {
         val file = viewerImagesInternal[viewerIndex]
-        val newState = !file.isFavourite
+        val newState = !file.favourite
         toggleImageFavourite(listOf(file)) {
             successCallback.invoke(newState)
         }
@@ -668,7 +668,7 @@ class ReaderViewModel(
         // We can't work on the given objects as they are tied to the UI (part of ImageFileItem)
         val dbImages = theContent.imageFiles ?: return
         for (img in images) for (dbImg in dbImages) if (img.id == dbImg.id) {
-            dbImg.isFavourite = !dbImg.isFavourite
+            dbImg.favourite = !dbImg.favourite
             break
         }
 
@@ -1049,7 +1049,7 @@ class ReaderViewModel(
         }
 
         val onlineIndexes =
-            indexesToLoad.filter { viewerImagesInternal[it].status.equals(StatusContent.ONLINE) }
+            indexesToLoad.filter { viewerImagesInternal[it].status == StatusContent.ONLINE }
         downloadPics(onlineIndexes)
     }
 
@@ -1105,7 +1105,11 @@ class ReaderViewModel(
 
                             // Instanciate a new ImageFile not to modify the one used by the UI
                             val downloadedPic =
-                                ImageFile(viewerImagesInternal[downloadedPageIndex], true, true)
+                                ImageFile(
+                                    viewerImagesInternal[downloadedPageIndex],
+                                    populateContent = true,
+                                    populateChapter = true
+                                )
                             downloadedPic.fileUri = resultOpt.second
                             downloadedPic.mimeType = resultOpt.third
                             viewerImagesInternal.removeAt(downloadedPageIndex)
@@ -1256,7 +1260,7 @@ class ReaderViewModel(
 
     private fun updateImgWithExtractedUri(img: ImageFile, idx: Int, uri: Uri, refresh: Boolean) {
         // Instanciate a new ImageFile not to modify the one used by the UI
-        val extractedPic = ImageFile(img, true, true)
+        val extractedPic = ImageFile(img, populateContent = true, populateChapter = true)
         extractedPic.fileUri = uri.toString()
         extractedPic.mimeType = getMimeTypeFromUri(
             getApplication<Application>().applicationContext, uri
@@ -1303,7 +1307,7 @@ class ReaderViewModel(
      */
     private fun downloadPic(
         pageIndex: Int, stopDownload: AtomicBoolean
-    ): Triple<Int, String?, String?>? {
+    ): Triple<Int, String, String>? {
         assertNonUiThread()
         if (viewerImagesInternal.size <= pageIndex) return null
         val img = viewerImagesInternal[pageIndex]!!
@@ -1323,7 +1327,7 @@ class ReaderViewModel(
                 Pair(HEADER_REFERER_KEY, content.readerUrl)
             ) // Useful for Hitomi and Toonily
             val result: Pair<Uri?, String>
-            if (img.needsPageParsing()) {
+            if (img.needsPageParsing) {
                 val pageUrl = fixUrl(img.pageUrl, content.site.url)
                 // Get cookies from the app jar
                 var cookieStr = getCookies(pageUrl)
@@ -1364,7 +1368,6 @@ class ReaderViewModel(
             mimeType = result.second
 
             return Triple(pageIndex, Uri.fromFile(targetFile).toString(), mimeType)
-
         } catch (ie: DownloadInterruptedException) {
             Timber.d("Download interrupted for pic %d", pageIndex)
         } catch (e: Exception) {
@@ -1427,7 +1430,7 @@ class ReaderViewModel(
             if (pages.second != null) Timber.d("First download failed; trying backup URL") else throw e
         }
         // Trying with backup URL
-        img.url = pages.second
+        img.url = pages.second ?: ""
         return downloadToFileCached(
             getApplication(),
             content.site,
@@ -1658,10 +1661,9 @@ class ReaderViewModel(
         require(selectedPage.order >= 2) { "Can't create or remove chapter on first page" }
 
         // If we tap the 1st page of an existing chapter, it means we're removing it
-        val firstChapterPic =
-            chapterImages.sortedBy { obj: ImageFile -> obj.order }.firstOrNull()
+        val firstChapterPic = chapterImages.minByOrNull { it.order }
         val isRemoving =
-            if (firstChapterPic != null) firstChapterPic.order.toInt() == selectedPage.order.toInt() else false
+            if (firstChapterPic != null) firstChapterPic.order == selectedPage.order else false
 
         if (isRemoving) doRemoveChapter(theContent, currentChapter, chapterImages)
         else doCreateChapter(theContent, selectedPage, currentChapter, chapterImages)
@@ -1932,7 +1934,7 @@ class ReaderViewModel(
                         getOutputStream(getApplication(), op.target!!).use { os ->
                             os?.write(firstFileContent)
                         }
-                        op.targetData.fileUri = op.target?.uri?.toString()
+                        op.targetData.fileUri = op.target?.uri?.toString() ?: ""
                         return@forEachIndexed
                     }
                 }
@@ -1946,7 +1948,7 @@ class ReaderViewModel(
                         op.sourceUri
                     )
                     op.source?.renameTo(op.targetName)
-                    op.targetData.fileUri = op.source?.uri?.toString()
+                    op.targetData.fileUri = op.source?.uri?.toString() ?: ""
                 } else {
                     if (BuildConfig.DEBUG) Timber.d(
                         "[%d.%d] Swap %s <- %s",
@@ -1960,7 +1962,7 @@ class ReaderViewModel(
                             copy(input, os)
                         }
                     }
-                    op.targetData.fileUri = op.target?.uri?.toString()
+                    op.targetData.fileUri = op.target?.uri?.toString() ?: ""
                 }
             }
 

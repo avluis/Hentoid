@@ -128,7 +128,7 @@ class MusesContent : BaseContentParser() {
                 nbImages
             )
             content.setCoverImageUrl(cover.url)
-            cover.setIsCover(true)
+            cover.isCover = true
             images.add(cover)
             // Images
             for (u in imagesUrls) {

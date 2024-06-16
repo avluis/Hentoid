@@ -1,427 +1,319 @@
-package me.devsaki.hentoid.database.domains;
+package me.devsaki.hentoid.database.domains
 
-import static me.devsaki.hentoid.util.ContentHelperKt.isInLibrary;
-import static me.devsaki.hentoid.util.HelperKt.hash64;
-import static me.devsaki.hentoid.util.image.ImageHelperKt.MIME_IMAGE_GENERIC;
+import io.objectbox.annotation.Convert
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Transient
+import io.objectbox.annotation.Uid
+import io.objectbox.relation.ToOne
+import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
+import me.devsaki.hentoid.core.THUMB_FILE_NAME
+import me.devsaki.hentoid.database.isReachable
+import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.util.file.getSupportedExtensions
+import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
+import me.devsaki.hentoid.util.isInLibrary
+import java.io.File
+import java.util.Locale
+import java.util.Objects
+import kotlin.math.floor
+import kotlin.math.log10
 
-import java.io.File;
-import java.util.Locale;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import io.objectbox.annotation.Convert;
-import io.objectbox.annotation.Entity;
-import io.objectbox.annotation.Id;
-import io.objectbox.annotation.Transient;
-import io.objectbox.relation.ToOne;
-import me.devsaki.hentoid.core.Consts;
-import me.devsaki.hentoid.database.DBHelper;
-import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.file.ArchiveHelperKt;
-
-/**
- * Image File builder
- */
 @Entity
-public class ImageFile {
-
+data class ImageFile(
     @Id
-    private long id;
-    private Integer order = -1;
-    private String url = "";
-    private String pageUrl = "";
-    private String name = "";
-    private String fileUri = "";
-    private boolean read = false;
-    private boolean favourite = false;
-    private boolean isCover = false;
-    @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
-    private StatusContent status = StatusContent.UNHANDLED_ERROR;
-    private ToOne<Content> content;
-    private ToOne<Chapter> chapter;
-    private String mimeType;
-    private long size = 0;
-    private long imageHash = 0;
-    private boolean isTransformed = false;
+    var id: Long = 0,
+    @Uid(4786164809804019689L)
+    var dbOrder: Int = -1,
+    @Uid(8847017078500757224L)
+    var dbUrl: String = "",
+    @Uid(4756936261641767706L)
+    var dbPageUrl: String = "",
+    var name: String = "",
+    var fileUri: String = "",
+    var read: Boolean = false,
+    var favourite: Boolean = false,
+    @Uid(946562145146984364L)
+    var dbIsCover: Boolean = false,
+    @Convert(converter = StatusContent.StatusContentConverter::class, dbType = Integer::class)
+    var status: StatusContent = StatusContent.UNHANDLED_ERROR,
+    var mimeType: String = MIME_IMAGE_GENERIC,
+    var size: Long = 0,
+    var imageHash: Long = 0,
+    var isTransformed: Boolean = false
+) {
+    lateinit var content: ToOne<Content>
+    lateinit var chapter: ToOne<Chapter>
 
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
-    private String downloadParams = "";
+    var downloadParams = ""
+
 
     // WARNING : Update copy constructor when adding attributes
-
 
     // == Runtime attributes; no need to expose them nor to persist them
-
     // cached value of uniqueHash
     @Transient
-    private long uniqueHash = 0;
+    var uniqueHash: Long = 0
+
     // Display order of the image in the image viewer (read-time only; 0-indexed)
     @Transient
-    private int displayOrder;
+    var displayOrder = 0
+
     // Backup URL for that picture (download-time only)
     @Transient
-    private String backupUrl = "";
+    var backupUrl = ""
+
     // Has the image been read from a backup URL ? (download-time only)
     @Transient
-    private boolean isBackup = false;
+    var isBackup = false
+
     // Force refresh (read-time only)
     @Transient
-    public boolean isForceRefresh = false;
-
-    // WARNING : Update copy constructor when adding attributes
+    var isForceRefresh: Boolean = false
 
 
-    public ImageFile() { // Required by ObjectBox when an alternate constructor exists
-    }
-
-    public ImageFile(
-            ImageFile img,
-            Boolean populateContent,
-            Boolean populateChapter
+    constructor(img: ImageFile, populateContent: Boolean, populateChapter: Boolean) : this(
+        img.id,
+        img.order,
+        img.url,
+        img.pageUrl,
+        img.name,
+        img.fileUri,
+        img.read,
+        img.favourite,
+        img.isCover,
+        img.status,
+        img.mimeType,
+        img.size,
+        img.imageHash,
+        img.isTransformed
     ) {
-        this.id = img.id;
-        this.order = img.order;
-        this.url = img.url;
-        this.pageUrl = img.pageUrl;
-        this.name = img.name;
-        this.fileUri = img.fileUri;
-        this.read = img.read;
-        this.favourite = img.favourite;
-        this.isCover = img.isCover;
-        this.status = img.status;
+        this.downloadParams = img.downloadParams
+        this.uniqueHash = img.uniqueHash
+        this.displayOrder = img.displayOrder
+        this.backupUrl = img.backupUrl
+        this.isBackup = img.isBackup
+        this.isForceRefresh = img.isForceRefresh
+
         if (populateContent) {
-            if (DBHelper.isReachable(img, img.content)) {
-                this.content.setTarget(img.content.getTarget());
+            if (img.content.isReachable(img)) {
+                content.setTarget(img.content.target)
             } else {
-                this.content.setTargetId(img.content.getTargetId());
+                content.setTargetId(img.content.targetId)
             }
         }
         if (populateChapter) {
-            if (DBHelper.isReachable(img, img.chapter)) {
-                this.chapter.setTarget(img.chapter.getTarget());
+            if (img.chapter.isReachable(img)) {
+                chapter.setTarget(img.chapter.target)
             } else {
-                this.chapter.setTargetId(img.chapter.getTargetId());
+                chapter.setTargetId(img.chapter.targetId)
             }
         }
-        this.mimeType = img.mimeType;
-        this.size = img.size;
-        this.imageHash = img.imageHash;
-        this.downloadParams = img.downloadParams;
-        this.isTransformed = img.isTransformed;
-
-        this.uniqueHash = img.uniqueHash;
-        this.displayOrder = img.displayOrder;
-        this.backupUrl = img.backupUrl;
-        this.isBackup = img.isBackup;
-        this.isForceRefresh = img.isForceRefresh;
     }
 
-    public static ImageFile fromImageUrl(int order, String url, StatusContent status, int maxPages) {
-        ImageFile result = new ImageFile();
-        init(result, order, status, maxPages, null);
-        result.url = url;
-        return result;
-    }
+    companion object {
+        fun fromImageUrl(
+            order: Int,
+            url: String,
+            status: StatusContent,
+            maxPages: Int
+        ): ImageFile {
+            val result = ImageFile(dbOrder = order, status = status, dbUrl = url)
+            initName(result, maxPages, null)
+            return result
+        }
 
-    public static ImageFile fromImageUrl(int order, String url, StatusContent status, String name) {
-        ImageFile result = new ImageFile();
-        init(result, order, status, -1, name);
-        result.url = url;
-        return result;
-    }
+        fun fromImageUrl(
+            order: Int,
+            url: String,
+            status: StatusContent,
+            name: String
+        ): ImageFile {
+            val result = ImageFile(dbOrder = order, status = status, dbUrl = url)
+            initName(result, -1, name)
+            return result
+        }
 
-    public static ImageFile fromPageUrl(int order, String url, StatusContent status, int maxPages) {
-        ImageFile result = new ImageFile();
-        init(result, order, status, maxPages, null);
-        result.pageUrl = url;
-        return result;
-    }
+        fun fromPageUrl(
+            order: Int,
+            url: String,
+            status: StatusContent,
+            maxPages: Int
+        ): ImageFile {
+            val result = ImageFile(dbOrder = order, status = status, dbPageUrl = url)
+            initName(result, maxPages, null)
+            return result
+        }
 
-    public static ImageFile fromPageUrl(int order, String url, StatusContent status, String name) {
-        ImageFile result = new ImageFile();
-        init(result, order, status, -1, name);
-        result.pageUrl = url;
-        return result;
-    }
+        fun fromPageUrl(
+            order: Int,
+            url: String,
+            status: StatusContent,
+            name: String
+        ): ImageFile {
+            val result = ImageFile(dbOrder = order, status = status, dbPageUrl = url)
+            initName(result, -1, name)
+            return result
+        }
 
-    public static ImageFile newCover(String url, StatusContent status) {
-        ImageFile result = new ImageFile().setOrder(0).setUrl(url).setStatus(status);
-        result.setName(Consts.THUMB_FILE_NAME).setIsCover(true);
-        return result;
-    }
+        fun newCover(url: String, status: StatusContent): ImageFile {
+            val result = ImageFile(
+                dbOrder = 0,
+                dbUrl = url,
+                status = status,
+                name = THUMB_FILE_NAME,
+                dbIsCover = true,
+                read = true,
+            )
+            return result
+        }
 
-    private static void init(ImageFile imgFile, int order, StatusContent status, int maxPages, String name) {
-        imgFile.order = order;
-        imgFile.status = status;
-        if (null == name || name.isEmpty()) {
-            int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
-            imgFile.computeName(nbMaxDigits);
-        } else {
-            imgFile.name = name;
+        private fun initName(
+            imgFile: ImageFile,
+            maxPages: Int,
+            name: String?
+        ) {
+            if (name.isNullOrEmpty()) {
+                val nbMaxDigits = (floor(log10(maxPages.toDouble())) + 1).toInt()
+                imgFile.computeName(nbMaxDigits)
+            } else {
+                imgFile.name = name
+            }
         }
     }
 
-    public long getId() {
-        return this.id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public Integer getOrder() {
-        return order;
-    }
-
-    public ImageFile setOrder(Integer order) {
-        this.order = order;
-        uniqueHash = 0;
-        return this;
-    }
-
-    public String getUrl() {
-        return (null == url) ? "" : url;
-    }
-
-    public ImageFile setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
-    public String getPageUrl() {
-        return pageUrl;
-    }
-
-    public void setPageUrl(String pageUrl) {
-        this.pageUrl = pageUrl;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public ImageFile setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public ImageFile computeName(int nbMaxDigits) {
-        name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
-        return this;
-    }
-
-    public StatusContent getStatus() {
-        return status;
-    }
-
-    public ImageFile setStatus(StatusContent status) {
-        this.status = status;
-        return this;
-    }
-
-    public String getDownloadParams() {
-        return (null == downloadParams) ? "" : downloadParams;
-    }
-
-    public ImageFile setDownloadParams(String params) {
-        downloadParams = params;
-        return this;
-    }
-
-    public boolean isCover() {
-        return isCover;
-    }
-
-    public ImageFile setIsCover(boolean isCover) {
-        this.isCover = isCover;
-        if (isCover) this.read = true;
-        uniqueHash = 0;
-        return this;
-    }
-
-    public boolean isFavourite() {
-        return favourite;
-    }
-
-    public void setFavourite(boolean favourite) {
-        this.favourite = favourite;
-        uniqueHash = 0;
-    }
-
-    public String getFileUri() {
-        return (null == fileUri) ? "" : fileUri;
-    }
-
-    public ImageFile setFileUri(String fileUri) {
-        this.fileUri = fileUri;
-        return this;
-    }
-
-    public int getDisplayOrder() {
-        return displayOrder;
-    }
-
-    public void setDisplayOrder(int displayOrder) {
-        this.displayOrder = displayOrder;
-    }
-
-    public boolean isBackup() {
-        return isBackup;
-    }
-
-    public void setBackup(boolean backup) {
-        isBackup = backup;
-    }
-
-    public String getBackupUrl() {
-        return backupUrl;
-    }
-
-    public void setBackupUrl(String backupUrl) {
-        this.backupUrl = backupUrl;
-    }
-
-    public String getMimeType() {
-        return (null == mimeType) ? MIME_IMAGE_GENERIC : mimeType;
-    }
-
-    public ImageFile setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-        return this;
-    }
-
-    public long getContentId() {
-        return this.content.getTargetId();
-    }
-
-    public ImageFile setContentId(long id) {
-        this.content.setTargetId(id);
-        return this;
-    }
-
-    public long getSize() {
-        return size;
-    }
-
-    public ImageFile setSize(long size) {
-        this.size = size;
-        return this;
-    }
-
-    public long getImageHash() {
-        return imageHash;
-    }
-
-    public void setImageHash(long hash) {
-        this.imageHash = hash;
-    }
-
-    public boolean isTransformed() {
-        return isTransformed;
-    }
-
-    public void setTransformed(boolean transformed) {
-        isTransformed = transformed;
-    }
-
-    public boolean isRead() {
-        return read;
-    }
-
-    public void setRead(boolean read) {
-        this.read = read;
-    }
-
-    public ToOne<Content> getContent() {
-        return content;
-    }
-
-    public void setContent(ToOne<Content> content) {
-        this.content = content;
-    }
-
-    @Nullable
-    public Chapter getLinkedChapter() {
-        return DBHelper.reach(this, chapter);
-    }
-
-    @Nullable
-    public ToOne<Chapter> getChapter() {
-        return chapter;
-    }
-
-    public long getChapterId() {
-        return this.chapter.getTargetId();
-    }
-
-    public ImageFile setChapterId(long id) {
-        this.chapter.setTargetId(id);
-        return this;
-    }
-
-    public void setChapter(Chapter chapter) {
-        if (null == this.chapter)
-            this.chapter = new ToOne<>(this, ImageFile_.chapter);
-        this.chapter.setTarget(chapter);
-        uniqueHash = 0;
-    }
-
-    public boolean isReadable() {
-        return !name.startsWith(Consts.THUMB_FILE_NAME) && !name.startsWith(Consts.EXT_THUMB_FILE_PREFIX);
-    }
-
-    public String getUsableUri() {
-        String result = "";
-        if (isInLibrary(getStatus())) result = getFileUri();
-        if (result.isEmpty()) result = getUrl();
-        if (result.isEmpty() && !getContent().isNull())
-            result = getContent().getTarget().getCoverImageUrl();
-
-        return result;
-    }
-
-    public boolean isArchived() {
-        String lowerUri = url.toLowerCase();
-        for (String ext : ArchiveHelperKt.getSupportedExtensions()) {
-            if (lowerUri.contains("." + ext + File.separator)) return true;
+    var isCover: Boolean
+        get() {
+            return dbIsCover
         }
-        return false;
+        set(value) {
+            dbIsCover = value
+            if (value) read = true
+            uniqueHash = 0
+        }
+
+    var url: String
+        get() {
+            return dbUrl
+        }
+        set(value) {
+            dbUrl = value
+            uniqueHash = 0
+        }
+
+    var pageUrl: String
+        get() {
+            return dbPageUrl
+        }
+        set(value) {
+            dbPageUrl = value
+            uniqueHash = 0
+        }
+
+
+    var order: Int
+        get() {
+            return dbOrder
+        }
+        set(value) {
+            dbOrder = value
+            uniqueHash = 0
+        }
+
+    var contentId: Long
+        get() {
+            return content.targetId
+        }
+        set(value) {
+            content.targetId = value
+        }
+
+    val linkedChapter: Chapter?
+        get() {
+            return chapter.reach(this)
+        }
+
+    var chapterId: Long
+        get() {
+            return chapter.targetId
+        }
+        set(value) {
+            chapter.targetId = value
+            uniqueHash = 0
+        }
+
+    fun setChapter(chapter: Chapter?) {
+        this.chapter.target = chapter
+        uniqueHash = 0
     }
 
-    public boolean needsPageParsing() {
-        return (pageUrl != null && !pageUrl.isEmpty() && (null == url || url.isEmpty()));
+    fun computeName(nbMaxDigits: Int): ImageFile {
+        name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order)
+        return this
     }
+
+    val isReadable: Boolean
+        get() {
+            return !name.startsWith(THUMB_FILE_NAME) && !name.startsWith(EXT_THUMB_FILE_PREFIX)
+        }
+
+    val usableUri: String
+        get() {
+            var result = ""
+            if (isInLibrary(status)) result = fileUri
+            if (result.isEmpty()) result = url
+            if (result.isEmpty() && !content.isNull) result = content.target.coverImageUrl
+
+            return result
+        }
+
+    val isArchived: Boolean
+        get() {
+            val lowerUri = url.lowercase(Locale.getDefault())
+            for (ext in getSupportedExtensions()) {
+                if (lowerUri.contains("." + ext + File.separator)) return true
+            }
+            return false
+        }
+
+    val needsPageParsing: Boolean
+        get() {
+            return pageUrl.isNotEmpty() && (url.isEmpty())
+        }
 
     // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI
     // If not done, FastAdapter's PagedItemListImpl cache won't detect changes to the object
     // and items won't be visually updated on screen
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ImageFile imageFile = (ImageFile) o;
-        if (imageFile.isForceRefresh || isForceRefresh) return false;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val imageFile = other as ImageFile
+        if (imageFile.isForceRefresh || isForceRefresh) return false
 
-        return getId() == imageFile.getId() &&
-                Objects.equals(getUrl(), imageFile.getUrl())
-                && Objects.equals(getPageUrl(), imageFile.getPageUrl())
-                && Objects.equals(getFileUri(), imageFile.getFileUri())
-                && Objects.equals(getOrder(), imageFile.getOrder())
-                && Objects.equals(isCover(), imageFile.isCover()) // Sometimes the thumb picture has the same URL as the 1st page
-                && isFavourite() == imageFile.isFavourite()
-                && chapter.getTargetId() == imageFile.chapter.getTargetId();
+        return id == imageFile.id && url == imageFile.url && pageUrl == imageFile.pageUrl && fileUri == imageFile.fileUri && order == imageFile.order && isCover == imageFile.isCover && favourite == imageFile.favourite && chapter.targetId == imageFile.chapter.targetId
     }
 
-    @Override
-    public int hashCode() {
+    override fun hashCode(): Int {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getPageUrl(), getUrl(), getFileUri(), getOrder(), isCover(), isFavourite(), chapter.getTargetId(), isForceRefresh);
+        return Objects.hash(
+            id,
+            pageUrl,
+            url,
+            fileUri,
+            order,
+            isCover,
+            favourite,
+            chapter.targetId,
+            isForceRefresh
+        )
     }
 
-    public long uniqueHash() {
-        if (0 == uniqueHash)
-            uniqueHash = hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId()).getBytes());
-        return uniqueHash;
+    fun uniqueHash(): Long {
+        if (0L == uniqueHash) uniqueHash =
+            hash64((id.toString() + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.targetId).toByteArray())
+        return uniqueHash
     }
 }

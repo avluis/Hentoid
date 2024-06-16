@@ -195,7 +195,11 @@ class PixivParser : BaseImageListParser() {
             val chapterAttrs = illustMetadata.getAttributes()
             attrs.addAll(chapterAttrs)
             val chapterImages = illustMetadata.getImageFiles()
-            for (img in chapterImages) img.setOrder(imgOffset++).computeName(4).setChapter(ch)
+            for (img in chapterImages) {
+                img.order = imgOffset++
+                img.setChapter(ch)
+                img.computeName(4)
+            }
             result.addAll(chapterImages)
             progressPlus((index + 1f) / extraChapters.size)
         }
@@ -311,7 +315,11 @@ class PixivParser : BaseImageListParser() {
                 illustMetadata.getTitle()
             ).setUniqueId(illustMetadata.getId()).setContentId(onlineContent.id)
             val chapterImages = illustMetadata.getImageFiles()
-            for (img in chapterImages) img.setOrder(imgOffset++).computeName(4).setChapter(chp)
+            for (img in chapterImages) {
+                img.order = imgOffset++
+                img.setChapter(chp)
+                img.computeName(4)
+            }
             result.addAll(chapterImages)
             progressPlus((index + 1f) / illustIds.size)
         }
