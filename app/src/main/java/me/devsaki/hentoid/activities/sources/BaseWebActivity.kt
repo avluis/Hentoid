@@ -1056,11 +1056,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 val errors: MutableList<ErrorRecord> = ArrayList()
                 errors.add(
                     ErrorRecord(
-                        ErrorType.BLOCKED,
-                        currentContent!!.url,
-                        "tags",
-                        "blocked tags : " + TextUtils.join(", ", blockedTagsLocal),
-                        Instant.now()
+                        type = ErrorType.BLOCKED,
+                        url = currentContent!!.url,
+                        contentPart = "tags",
+                        description = "blocked tags : " + TextUtils.join(", ", blockedTagsLocal),
+                        timestamp = Instant.now()
                     )
                 )
                 currentContent!!.setErrorLog(errors)

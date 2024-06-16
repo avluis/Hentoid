@@ -621,11 +621,13 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     val errors: MutableList<ErrorRecord> = ArrayList()
                     errors.add(
                         ErrorRecord(
-                            ErrorType.IMPORT,
-                            "",
-                            applicationContext.resources.getQuantityString(R.plurals.book, 1),
-                            "No local images found when importing - Please redownload",
-                            Instant.now()
+                            type = ErrorType.IMPORT,
+                            contentPart = applicationContext.resources.getQuantityString(
+                                R.plurals.book,
+                                1
+                            ),
+                            description = "No local images found when importing - Please redownload",
+                            timestamp = Instant.now()
                         )
                     )
                     content.setErrorLog(errors)

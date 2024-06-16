@@ -22,6 +22,12 @@ data class JsonErrorRecord(
     )
 
     fun toEntity(): ErrorRecord {
-        return ErrorRecord(type, url, contentPart, description, Instant.ofEpochMilli(timestamp))
+        return ErrorRecord(
+            type = type,
+            url = url,
+            contentPart = contentPart,
+            description = description,
+            timestamp = Instant.ofEpochMilli(timestamp)
+        )
     }
 }

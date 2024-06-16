@@ -266,11 +266,10 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                     val errors: MutableList<ErrorRecord> = ArrayList()
                     errors.add(
                         ErrorRecord(
-                            ErrorType.IMPORT,
-                            "",
-                            context.resources.getQuantityString(R.plurals.book, 1),
-                            "No local images found when importing - Please redownload",
-                            Instant.now()
+                            type = ErrorType.IMPORT,
+                            contentPart = context.resources.getQuantityString(R.plurals.book, 1),
+                            description = "No local images found when importing - Please redownload",
+                            timestamp = Instant.now()
                         )
                     )
                     c.setErrorLog(errors)
