@@ -66,7 +66,7 @@ public class Group {
     }
 
     public List<Long> getContentIds() {
-        return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContentId).toList();
+        return Stream.of(items).withoutNulls().sortBy(GroupItem::getOrder).map(GroupItem::getContentId).toList();
     }
 
     public List<GroupItem> getItems() {

@@ -813,8 +813,7 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.deleteImageFiles(imgs)
 
         // Lists all relevant content
-        val contents = imgs.filter { i -> i.content != null }
-            .map { i: ImageFile -> i.content.targetId }.distinct()
+        val contents = imgs.map { it.content.targetId }.distinct()
 
         // Update the content with its new size
         for (contentId in contents) {

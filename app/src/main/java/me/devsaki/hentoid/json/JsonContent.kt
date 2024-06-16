@@ -68,7 +68,7 @@ data class JsonContent(
         c.chaptersList.map { JsonChapter(it) },
         c.errorList.map { JsonErrorRecord(it) },
         c.groupItemList.filter {
-            it.reachGroup().run { grouping == Grouping.CUSTOM || hasCustomBookOrder }
+            it.getGroup().run { grouping == Grouping.CUSTOM || hasCustomBookOrder }
         }.map { JsonGroupItem(it) },
         c.isFrozen
     )

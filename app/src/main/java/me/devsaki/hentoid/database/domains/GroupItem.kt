@@ -1,59 +1,40 @@
-package me.devsaki.hentoid.database.domains;
+package me.devsaki.hentoid.database.domains
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import io.objectbox.annotation.Entity;
-import io.objectbox.annotation.Id;
-import io.objectbox.relation.ToOne;
-import me.devsaki.hentoid.database.DBHelper;
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.relation.ToOne
 
 @Entity
-public class GroupItem {
-
+data class GroupItem(
     @Id
-    public long id;
-    public ToOne<Content> content;
-    public ToOne<Group> group;
-    public int order;
+    var id: Long = 0,
+    var order: Int = 0
+) {
+    lateinit var content: ToOne<Content>
+    lateinit var group: ToOne<Group>
 
-    public GroupItem() { // Required by ObjectBox when an alternate constructor exists
+    constructor(content: Content, group: Group, order: Int) : this(0, order) {
+        this.content.target = content
+        this.group.target = group
     }
 
-    public GroupItem(@NonNull final Content content, @NonNull final Group group, int order) {
-        this.content.setTarget(content);
-        this.group.setTarget(group);
-        this.order = order;
+    constructor(contentId: Long, group: Group, order: Int) : this(0, order) {
+        content.targetId = contentId
+        this.group.target = group
     }
 
-    public GroupItem(long contentId, @NonNull final Group group, int order) {
-        this.content.setTargetId(contentId);
-        this.group.setTarget(group);
-        this.order = order;
+
+    fun getContent(): Content? {
+        return if (content.isResolved) content.target else null
     }
 
-    @Nullable
-    public Content getContent() {
-        return content.isResolved() ? content.getTarget() : null;
+    fun getGroup(): Group {
+        return group.target
     }
 
-    public Group getGroup() {
-        return group.getTarget();
-    }
+    val contentId: Long
+        get() = content.targetId
 
-    public Group reachGroup() {
-        return DBHelper.reach(this, group);
-    }
-
-    public long getContentId() {
-        return content.getTargetId();
-    }
-
-    public long getGroupId() {
-        return group.getTargetId();
-    }
-
-    public int getOrder() {
-        return order;
-    }
+    val groupId: Long
+        get() = group.targetId
 }
