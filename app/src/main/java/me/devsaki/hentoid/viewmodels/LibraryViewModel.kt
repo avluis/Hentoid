@@ -185,7 +185,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (query.isNotEmpty()) {
             val searchUri =
                 buildSearchUri(null, query, Location.ANY.value, Type.ANY.value)
-            dao.insertSearchRecord(SearchRecord.fromContentUniversalSearch(searchUri), 10)
+            dao.insertSearchRecord(SearchRecord(searchUri), 10)
         }
         doSearchContent()
     }
@@ -203,7 +203,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         contentSearchManager.setContentType(metadata.contentType.value)
         newContentSearch.value = true
         if (!metadata.isEmpty()) dao.insertSearchRecord(
-            SearchRecord.fromContentAdvancedSearch(
+            SearchRecord(
                 searchUri,
                 metadata.toString(getApplication())
             ), 10
