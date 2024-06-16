@@ -1,26 +1,14 @@
-package me.devsaki.hentoid.database.domains;
+package me.devsaki.hentoid.database.domains
 
-import javax.annotation.Nullable;
-
-import io.objectbox.annotation.Entity;
-import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 
 @Entity
-public class ShuffleRecord {
-
+data class ShuffleRecord(
     @Id
-    public long id;
-    private Long contentId;
-
-    public ShuffleRecord() { // Required by ObjectBox when an alternate constructor exists
-    }
-
-    public ShuffleRecord(Long contentId) {
-        this.contentId = contentId;
-    }
-
-    @Nullable
-    public Long getContentId() {
-        return contentId;
-    }
+    var id: Long = 0,
+    val contentId: Long
+) {
+    constructor() : this(-1)
+    constructor(contentId: Long) : this(0, contentId)
 }
