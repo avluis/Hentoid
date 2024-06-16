@@ -8,10 +8,9 @@ import io.objectbox.annotation.Id
 data class SearchRecord(
     @Id
     var id: Long = 0,
-    val searchString: String,
-    var label: String
+    val searchString: String = "",
+    var label: String = ""
 ) {
-    constructor() : this("", "")
     constructor(searchString: String, label: String) : this(0, searchString, label)
     constructor(searchUri: Uri) : this(searchUri.toString(), searchUri.path?.substring(1) ?: "")
     constructor(searchUri: Uri, label: String) : this(searchUri.toString(), label)

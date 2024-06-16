@@ -59,7 +59,13 @@ class RulesEditViewModel(
     fun createRule(type: AttributeType, source: String, target: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                dao.insertRenamingRule(RenamingRule(type, source, target))
+                dao.insertRenamingRule(
+                    RenamingRule(
+                        attributeType = type,
+                        sourceName = source,
+                        targetName = target
+                    )
+                )
                 updateRenamingRulesJson(
                     getApplication<Application>().applicationContext, dao
                 )

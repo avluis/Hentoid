@@ -16,26 +16,16 @@ data class RenamingRule(
     var id: Long = 0,
     @Index
     @Convert(converter = AttributeTypeConverter::class, dbType = Int::class)
-    val attributeType: AttributeType,
+    val attributeType: AttributeType = UNDEFINED,
     @Index
-    var sourceName: String,
-    var targetName: String
+    var sourceName: String = "",
+    var targetName: String = ""
 ) {
     @Transient
     var leftPart: String = ""
 
     @Transient
     var rightPart: String = ""
-
-
-    constructor() : this(UNDEFINED, "", "")
-
-    constructor(type: AttributeType, sourceName: String, targetName: String) : this(
-        0,
-        type,
-        sourceName,
-        targetName
-    )
 
 
     fun doesMatchSourceName(name: String): Boolean {

@@ -13,8 +13,6 @@ data class QueueRecord(
 ) {
     lateinit var content: ToOne<Content>
 
-    constructor() : this(0)
-
     constructor(contentId: Long, rank: Int) : this(0, rank, false) {
         content.targetId = contentId
     }

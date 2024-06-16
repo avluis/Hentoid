@@ -7,8 +7,5 @@ import io.objectbox.annotation.Id
 data class ShuffleRecord(
     @Id
     var id: Long = 0,
-    val contentId: Long
-) {
-    constructor() : this(-1)
-    constructor(contentId: Long) : this(0, contentId)
-}
+    val contentId: Long = 0
+)

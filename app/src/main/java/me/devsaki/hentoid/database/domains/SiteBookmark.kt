@@ -12,18 +12,12 @@ data class SiteBookmark(
     @Id
     var id: Long = 0,
     @Convert(converter = SiteConverter::class, dbType = Long::class)
-    val site: Site,
-    var title: String,
-    val url: String,
+    val site: Site = Site.NONE,
+    var title: String = "",
+    val url: String = "",
     var order: Int = -1,
     var isHomepage: Boolean = false
 ) {
-    constructor() : this(0, Site.NONE, "", "")
-
-    constructor(site: Site, title: String, url: String) : this(
-        0, site, title, url
-    )
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false

@@ -211,7 +211,10 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     private fun reloadBookmarks(dao: CollectionDAO): List<SiteBookmark> {
         val bookmarks = dao.selectBookmarks(site).toMutableList()
         // Add site home as 1st bookmark
-        bookmarks.add(0, SiteBookmark(site, getString(R.string.bookmark_homepage), site.url))
+        bookmarks.add(
+            0,
+            SiteBookmark(site = site, title = getString(R.string.bookmark_homepage), url = site.url)
+        )
         itemAdapter.set(bookmarks.mapIndexed { index, b ->
             TextItem(
                 b.title,
@@ -285,7 +288,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         invokeInputDialog(requireContext(), R.string.bookmark_edit_title, {
             val dao: CollectionDAO = ObjectBoxDAO()
             try {
-                bookmarkId = dao.insertBookmark(SiteBookmark(site, it, url))
+                bookmarkId = dao.insertBookmark(SiteBookmark(site = site, title = it, url = url))
                 reloadBookmarks(dao)
                 fastAdapter.notifyAdapterDataSetChanged()
             } finally {
@@ -497,7 +500,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             if (oldPosition < 0 || oldPosition >= bookmarks.size) return
 
             // Add a bogus item on Position 0 to simulate the "Homepage" UI item
-            bookmarks.add(0, SiteBookmark(Site.NONE, "", ""))
+            bookmarks.add(0, SiteBookmark(site = Site.NONE))
 
             // Move the item
             val fromValue = bookmarks[oldPosition]

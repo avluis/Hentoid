@@ -14,7 +14,7 @@ data class JsonBookmark(
     constructor(b: SiteBookmark) : this(b.site, b.title, b.url, b.order)
 
     fun toEntity(): SiteBookmark {
-        val result = SiteBookmark(site, title, url)
+        val result = SiteBookmark(site = site, title = title, url = url)
         result.order = order
         return result
     }

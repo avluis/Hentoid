@@ -334,7 +334,11 @@ class MetadataEditViewModel(
 
         // Persist rule
         if (createRule) {
-            val newRule = RenamingRule(attr.type, attr.name, newName)
+            val newRule = RenamingRule(
+                attributeType = attr.type,
+                sourceName = attr.name,
+                targetName = newName
+            )
             val existingRules = HashSet(dao.selectRenamingRules(AttributeType.UNDEFINED, null))
             if (!existingRules.contains(newRule)) {
                 dao.insertRenamingRule(newRule)

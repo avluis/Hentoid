@@ -16,7 +16,4 @@ data class SiteHistory(
     @Convert(converter = SiteConverter::class, dbType = Long::class)
     val site: Site = Site.NONE,
     var url: String = ""
-) {
-    constructor() : this(Site.NONE, "")
-    constructor(site: Site, url: String) : this(0, site, url)
-}
+)

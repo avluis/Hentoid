@@ -13,6 +13,6 @@ data class JsonRenamingRule(
     constructor(data: RenamingRule) : this(data.attributeType, data.sourceName, data.targetName)
 
     fun toEntity(): RenamingRule {
-        return RenamingRule(type, sourceName, targetName)
+        return RenamingRule(attributeType = type, sourceName = sourceName, targetName = targetName)
     }
 }

@@ -1643,7 +1643,7 @@ object ObjectBoxDB {
             siteHistory.url = url
             store.boxFor(SiteHistory::class.java).put(siteHistory)
         } else {
-            store.boxFor(SiteHistory::class.java).put(SiteHistory(site, url))
+            store.boxFor(SiteHistory::class.java).put(SiteHistory(site = site, url = url))
         }
     }
 
