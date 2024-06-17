@@ -1,33 +1,25 @@
-package me.devsaki.hentoid.database.domains;
+package me.devsaki.hentoid.database.domains
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import me.devsaki.hentoid.enums.AttributeType
 
-import me.devsaki.hentoid.enums.AttributeType;
+class AttributeMap : HashMap<AttributeType, MutableSet<Attribute>>() {
+    fun add(attributeItem: Attribute?) {
+        if (null == attributeItem) return
 
-/**
- * Builds AttributeMaps
- */
-public class AttributeMap extends HashMap<AttributeType, Set<Attribute>> {
-    public void add(Attribute attributeItem) {
-        if (null == attributeItem) return;
-
-        Set<Attribute> attrs;
-        AttributeType type = attributeItem.getType();
+        val attrs: MutableSet<Attribute>?
+        val type = attributeItem.type
 
         if (containsKey(type)) {
-            attrs = get(type);
+            attrs = get(type)
         } else {
-            attrs = new HashSet<>();
-            put(type, attrs);
+            attrs = HashSet()
+            put(type, attrs)
         }
-        if (attrs != null) attrs.add(attributeItem);
+        attrs?.add(attributeItem)
     }
 
-    public void addAll(Collection<Attribute> attrs) {
-        if (null == attrs) return;
-        for (Attribute item : attrs) add(item);
+    fun addAll(attrs: Collection<Attribute>?) {
+        if (null == attrs) return
+        for (item in attrs) add(item)
     }
 }
