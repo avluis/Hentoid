@@ -13,12 +13,9 @@ import me.devsaki.hentoid.database.isReachable
 import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.AttributeType.AttributeTypeConverter
-import me.devsaki.hentoid.enums.AttributeType.Companion.searchByCode
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.hash64
 import timber.log.Timber
-import java.io.DataInputStream
-import java.io.IOException
 import java.util.Objects
 
 @Entity
@@ -99,17 +96,6 @@ data class Attribute(
         computeLocation(site, url)
     }
 
-    @Throws(IOException::class)
-    constructor(input: DataInputStream) : this() {
-        input.readInt() // file version
-        name = input.readUTF()
-        type = searchByCode(input.readInt())!!
-        count = input.readInt()
-        externalId = input.readInt()
-        val nbLocations = input.readInt()
-        for (i in 0 until nbLocations) locations.add(AttributeLocation(input))
-    }
-
     var id: Long
         get() = if (0 == externalId) this.dbId else externalId.toLong()
         set(value) {
@@ -131,7 +117,7 @@ data class Attribute(
     }
 
     private fun computeLocation(site: Site, url: String): Attribute {
-        locations.add(AttributeLocation(site, url))
+        locations.add(AttributeLocation(site = site, url = url))
         return this
     }
 
