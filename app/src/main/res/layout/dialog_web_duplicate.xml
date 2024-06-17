@@ -152,14 +152,12 @@
         android:layout_marginEnd="8dp"
         android:src="@drawable/ic_storage"
         android:tooltipText="@string/external_help"
-        android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/ivFavourite"
         app:layout_constraintTop_toTopOf="@id/ivSite"
         app:layout_constraintVertical_bias="1.0"
         app:tint="@color/medium_gray"
         tools:ignore="ContentDescription"
-        tools:targetApi="o"
-        tools:visibility="visible" />
+        tools:targetApi="o" />
 
     <TextView
         android:id="@+id/tvScore"
