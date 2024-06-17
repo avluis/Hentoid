@@ -10,7 +10,7 @@
       "properties": [
         {
           "id": "1:5108740755096578000",
-          "name": "id",
+          "name": "dbId",
           "type": 6,
           "flags": 1
         },

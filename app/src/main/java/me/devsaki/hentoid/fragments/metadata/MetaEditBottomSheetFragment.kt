@@ -219,7 +219,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             if (filteredContentAttr.contains(attr)) continue
 
             // Translate language names if present
-            if (attr.type.equals(AttributeType.LANGUAGE))
+            if (attr.type == AttributeType.LANGUAGE)
                 attr.displayName = LanguageHelper.getLocalNameFromLanguage(
                     requireContext(),
                     attr.name
@@ -231,8 +231,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         if (!isQueryPresent && query.isNotEmpty()) {
             val targetType =
                 if (1 == selectedAttributeTypes.size) selectedAttributeTypes[0] else AttributeType.UNDEFINED
-            val newAttr =
-                Attribute(targetType, query.lowercase())
+            val newAttr = Attribute(type = targetType, name = query.lowercase())
             newAttr.isNew = true
             attrs.add(0, newAttr)
         }
@@ -285,7 +284,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
     private fun onAttributeClicked(button: View) {
         val attr = button.tag as Attribute
         if (attr.isNew) { // Create new attribute
-            if (attr.type.equals(AttributeType.UNDEFINED))
+            if (attr.type == AttributeType.UNDEFINED)
                 AttributeTypePickerDialogFragment.invoke(activity as FragmentActivity, attr.name)
             else // Type already known
                 onNewAttributeSelected(attr.name, attr.type)

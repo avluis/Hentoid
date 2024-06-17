@@ -1,265 +1,189 @@
-package me.devsaki.hentoid.database.domains;
+package me.devsaki.hentoid.database.domains
 
-import static me.devsaki.hentoid.util.HelperKt.hash64;
+import io.objectbox.annotation.Backlink
+import io.objectbox.annotation.Convert
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.Transient
+import io.objectbox.annotation.Uid
+import io.objectbox.relation.ToMany
+import io.objectbox.relation.ToOne
+import me.devsaki.hentoid.database.isReachable
+import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.enums.AttributeType.AttributeTypeConverter
+import me.devsaki.hentoid.enums.AttributeType.Companion.searchByCode
+import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.util.hash64
+import timber.log.Timber
+import java.io.DataInputStream
+import java.io.IOException
+import java.util.Objects
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.Locale;
-import java.util.Objects;
-
-import io.objectbox.annotation.Backlink;
-import io.objectbox.annotation.Convert;
-import io.objectbox.annotation.Entity;
-import io.objectbox.annotation.Id;
-import io.objectbox.annotation.Index;
-import io.objectbox.annotation.Transient;
-import io.objectbox.relation.ToMany;
-import io.objectbox.relation.ToOne;
-import me.devsaki.hentoid.database.DBHelper;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
-import timber.log.Timber;
-
-/**
- * Attribute builder
- */
 @Entity
-public class Attribute {
-
+data class Attribute(
     @Id
-    private long id;
+    @Uid(5108740755096578000L)
+    var dbId: Long = 0,
     @Index
-    private String name;
+    var name: String = "",
     @Index
-    @Convert(converter = AttributeType.AttributeTypeConverter.class, dbType = Integer.class)
-    private AttributeType type;
+    @Convert(converter = AttributeTypeConverter::class, dbType = Int::class)
+    var type: AttributeType = AttributeType.UNDEFINED,
+) {
     @Backlink(to = "attribute")
-    private ToMany<AttributeLocation> locations; // One entry per site
-    private ToOne<Group> group; // Associated group
+    lateinit var locations: ToMany<AttributeLocation> // One entry per site
+    lateinit var group: ToOne<Group> // Associated group
+
+    @Backlink(to = "attributes") // backed by the to-many relation in Content
+    lateinit var contents: ToMany<Content>
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
-    private boolean excluded = false;
-    @Transient
-    private boolean isNew = false;
-    @Transient
-    private int count = 0;
-    @Transient
-    private int externalId = 0;
-    @Backlink(to = "attributes") // backed by the to-many relation in Content
-    public ToMany<Content> contents;
-    @Transient
-    private String displayName = "";
-    @Transient
-    private long uniqueHash = 0;    // cached value of uniqueHash
+    var isExcluded = false
 
-    // WARNING : Update copy constructor when adding attributes
+    @Transient
+    var isNew = false
 
+    @Transient
+    var count = 0
 
-    public Attribute() { // Required by ObjectBox when an alternate constructor exists
-    }
+    @Transient
+    var externalId = 0
 
-    public Attribute(Attribute data) {
-        this.id = data.id;
-        this.name = data.name;
-        this.type = data.type;
-        if (DBHelper.isReachable(this, locations)) {
-            this.locations.clear();
-            this.locations.addAll(data.locations); // this isn't a deep copy
+    @Transient
+    private var m_displayName = ""
+
+    @Transient
+    var uniqueHash: Long = 0 // cached value of uniqueHash
+
+    constructor(data: Attribute) : this(
+        dbId = data.dbId,
+        name = data.name,
+        type = data.type
+    ) {
+        if (locations.isReachable(this)) {
+            locations.clear()
+            locations.addAll(data.locations) // this isn't a deep copy
         } else {
-            this.locations = data.locations;
+            this.locations = data.locations
         }
-        if (DBHelper.isReachable(data, data.group)) {
-            this.group.setTarget(data.group.getTarget());
+        if (data.group.isReachable(data)) {
+            group.setTarget(data.group.target)
         } else {
-            this.group.setTargetId(data.group.getTargetId());
+            group.setTargetId(data.group.targetId)
         }
-        this.excluded = data.excluded;
-        this.isNew = data.isNew;
-        this.count = data.count;
-        this.externalId = data.externalId;
-        if (DBHelper.isReachable(this, contents)) {
-            this.contents.clear();
-            this.contents.addAll(data.contents); // this isn't a deep copy
+        this.isExcluded = data.isExcluded
+        this.isNew = data.isNew
+        this.count = data.count
+        this.externalId = data.externalId
+        if (contents.isReachable(this)) {
+            contents.clear()
+            contents.addAll(data.contents) // this isn't a deep copy
         } else {
-            this.contents = data.contents;
+            this.contents = data.contents
         }
-        this.displayName = data.displayName;
-        this.uniqueHash = data.uniqueHash;
+        this.m_displayName = data.m_displayName
+        this.uniqueHash = data.uniqueHash
     }
 
-    public Attribute(Site site) {
-        this.id = site.getCode();
-        this.type = AttributeType.SOURCE;
-        this.name = site.getDescription();
+    constructor(site: Site) : this(
+        type = AttributeType.SOURCE,
+        name = site.description
+    )
+
+    constructor(type: AttributeType, name: String, url: String, site: Site) : this(
+        type = type, name = name
+    ) {
+        computeLocation(site, url)
     }
 
-    public Attribute(@NonNull AttributeType type, @NonNull String name) {
-        this.type = type;
-        this.name = name;
+    @Throws(IOException::class)
+    constructor(input: DataInputStream) : this() {
+        input.readInt() // file version
+        name = input.readUTF()
+        type = searchByCode(input.readInt())!!
+        count = input.readInt()
+        externalId = input.readInt()
+        val nbLocations = input.readInt()
+        for (i in 0 until nbLocations) locations.add(AttributeLocation(input))
     }
 
-    public Attribute(@NonNull AttributeType type, @NonNull String name, @NonNull String url, @NonNull Site site) {
-        this.type = type;
-        this.name = name;
-        computeLocation(site, url);
+    var id: Long
+        get() = if (0 == externalId) this.dbId else externalId.toLong()
+        set(value) {
+            this.dbId = value
+        }
+
+    var displayName: String
+        get() = m_displayName.ifEmpty { name }
+        set(value) {
+            this.m_displayName = value
+        }
+
+    fun getLinkedGroup(): Group? {
+        return group.reach(this)
     }
 
-    public Attribute(@NonNull DataInputStream input) throws IOException {
-        input.readInt(); // file version
-        name = input.readUTF();
-        type = AttributeType.Companion.searchByCode(input.readInt());
-        count = input.readInt();
-        externalId = input.readInt();
-        int nbLocations = input.readInt();
-        for (int i = 0; i < nbLocations; i++) locations.add(new AttributeLocation(input));
+    fun putGroup(group: Group) {
+        this.group.setAndPutTarget(group)
     }
 
-    public long getId() {
-        return (0 == externalId) ? this.id : this.externalId;
+    private fun computeLocation(site: Site, url: String): Attribute {
+        locations.add(AttributeLocation(site, url))
+        return this
     }
 
-    public Attribute setId(long id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(@NonNull String name) {
-        this.name = name;
-    }
-
-    public String getDisplayName() {
-        return displayName.isEmpty() ? name : displayName;
-    }
-
-    public void setDisplayName(@NonNull String displayname) {
-        this.displayName = displayname;
-    }
-
-    public AttributeType getType() {
-        return type;
-    }
-
-    public Attribute setExcluded(boolean toExclude) {
-        excluded = toExclude;
-        return this;
-    }
-
-    public boolean isExcluded() {
-        return excluded;
-    }
-
-    public boolean isNew() {
-        return isNew;
-    }
-
-    public void setNew(boolean aNew) {
-        isNew = aNew;
-    }
-
-    public void setType(@NonNull AttributeType type) {
-        this.type = type;
-    }
-
-    public ToMany<AttributeLocation> getLocations() {
-        return locations;
-    }
-
-    public void setLocations(ToMany<AttributeLocation> locations) {
-        this.locations = locations;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public Attribute setCount(int count) {
-        this.count = count;
-        return this;
-    }
-
-    public ToOne<Group> getGroup() {
-        return group;
-    }
-
-    @Nullable
-    public Group getLinkedGroup() {
-        return DBHelper.reach(this, group);
-    }
-
-    public void putGroup(@NonNull Group group) {
-        this.group.setAndPutTarget(group);
-    }
-
-    public Attribute setExternalId(int id) {
-        this.externalId = id;
-        return this;
-    }
-
-    Attribute computeLocation(Site site, String url) {
-        locations.add(new AttributeLocation(site, url));
-        return this;
-    }
-
-    public void addLocationsFrom(Attribute sourceAttribute) {
-        for (AttributeLocation sourceLocation : sourceAttribute.getLocations()) {
-            boolean foundSite = false;
-            for (AttributeLocation loc : this.locations) {
-                if (sourceLocation.site.equals(loc.site)) {
-                    foundSite = true;
-                    if (!sourceLocation.url.equals(loc.url))
-                        Timber.w("'%s' Attribute location mismatch : current '%s' vs. add's target '%s'", this.name, loc.url, sourceLocation.url);
-                    break;
+    fun addLocationsFrom(sourceAttribute: Attribute) {
+        for (sourceLocation in sourceAttribute.locations) {
+            var foundSite = false
+            for (loc in this.locations) {
+                if (sourceLocation.site == loc.site) {
+                    foundSite = true
+                    if (sourceLocation.url != loc.url) Timber.w(
+                        "'%s' Attribute location mismatch : current '%s' vs. add's target '%s'",
+                        this.name, loc.url, sourceLocation.url
+                    )
+                    break
                 }
             }
-            if (!foundSite) this.locations.add(sourceLocation);
+            if (!foundSite) locations.add(sourceLocation)
         }
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return getType().name().toLowerCase(Locale.ROOT) + ":" + getName();
+    override fun toString(): String {
+        return type.name.lowercase() + ":" + name
     }
 
     // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI
     // If not done, FastAdapter's PagedItemListImpl cache won't detect changes to the object
     // and items won't be visually updated on screen
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
 
-        Attribute attribute = (Attribute) o;
+        val attribute = other as Attribute
 
-        if ((externalId != 0 && attribute.externalId != 0) && externalId != attribute.externalId)
-            return false;
-        if ((id != 0 && attribute.id != 0) && id != attribute.id) return false;
-        if (!name.equals(attribute.name)) return false;
-        return type == attribute.type;
+        if ((externalId != 0 && attribute.externalId != 0) && externalId != attribute.externalId) return false
+        if ((id != 0L && attribute.id != 0L) && id != attribute.id) return false
+        if (name != attribute.name) return false
+        return type == attribute.type
     }
 
-    @Override
-    public int hashCode() {
+    override fun hashCode(): Int {
         // Must be an int32, so we're bound to use Objects.hash
-        long idComp = id;
-        if (externalId != 0) idComp = externalId;
-        return Objects.hash(getName(), getType(), idComp);
+        var idComp = id
+        if (externalId != 0) idComp = externalId.toLong()
+        return Objects.hash(name, type, idComp)
     }
 
-    public long uniqueHash() {
-        if (0 == uniqueHash) {
-            long idComp = id;
-            if (externalId != 0) idComp = externalId;
-            uniqueHash = hash64((idComp + "." + name + "." + type.getCode()).getBytes());
+    fun uniqueHash(): Long {
+        if (0L == uniqueHash) {
+            var idComp = id
+            if (externalId != 0) idComp = externalId.toLong()
+            uniqueHash = hash64((idComp.toString() + "." + name + "." + type.code).toByteArray())
         }
-        return uniqueHash;
+        return uniqueHash
     }
 }

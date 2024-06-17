@@ -355,7 +355,7 @@ class MetadataEditViewModel(
         contentAttributes.postValue(newAttrs)
 
         // Update corresponding group if needed
-        val group = attr.linkedGroup
+        val group = attr.getLinkedGroup()
         if (group != null) {
             group.name = newName
             dao.insertGroup(group)
@@ -364,10 +364,10 @@ class MetadataEditViewModel(
 
         // Mark all related books for update
         val contents = attr.contents
-        if (contents != null && !contents.isEmpty()) {
+        if (!contents.isEmpty()) {
             contents.forEach {
                 // Update the 'author' pre-calculated field for all related books if needed
-                if (attr.type.equals(AttributeType.ARTIST) || attr.type.equals(AttributeType.CIRCLE)) {
+                if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
                     it.computeAuthor()
                     persistJson(getApplication(), it)
                 }

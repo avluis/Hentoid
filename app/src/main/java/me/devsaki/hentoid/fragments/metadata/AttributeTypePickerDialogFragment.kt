@@ -80,8 +80,8 @@ class AttributeTypePickerDialogFragment :
                 .map {
                     AttributeItem(
                         Attribute(
-                            it,
-                            rootView.resources.getString(it.displayName)
+                            type = it,
+                            name = rootView.resources.getString(it.displayName)
                         ), false
                     )
                 }

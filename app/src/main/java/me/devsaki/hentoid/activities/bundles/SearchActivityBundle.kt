@@ -97,11 +97,13 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
                     for (attrStr in uri.getQueryParameters(typeStr)) {
                         val attrParams = attrStr.split(";").toTypedArray()
                         if (3 == attrParams.size) {
-                            attrs.add(
-                                Attribute(type, attrParams[1])
-                                    .setId(attrParams[0].toLong())
-                                    .setExcluded(attrParams[2].toBoolean())
+                            val attr = Attribute(
+                                type = type,
+                                name = attrParams[1],
+                                dbId = attrParams[0].toLong()
                             )
+                            attr.isExcluded = attrParams[2].toBoolean()
+                            attrs.add(attr)
                         }
                     }
                 } else {

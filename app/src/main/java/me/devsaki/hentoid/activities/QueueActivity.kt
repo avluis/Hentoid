@@ -482,7 +482,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
     }
 
     fun buildSearchQuery(): String {
-        val attrs = if (sourceFilter != null) setOf(Attribute(sourceFilter)) else emptySet()
+        val attrs = sourceFilter?.let { setOf(Attribute(it)) } ?: emptySet()
         return SearchActivityBundle.buildSearchUri(attrs, query).toString()
     }
 

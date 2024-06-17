@@ -742,9 +742,9 @@ fun addAttribute(
     var artistGroup: Group? = null
     if (type == AttributeType.ARTIST || type == AttributeType.CIRCLE) artistGroup =
         addArtistToAttributesGroup(name, dao)
-    val attr = Attribute(type, name)
+    val attr = Attribute(type = type, name = name)
     val newId = dao.insertAttribute(attr)
-    attr.setId(newId)
+    attr.id = newId
     if (artistGroup != null) attr.putGroup(artistGroup)
     return attr
 }
@@ -1324,7 +1324,7 @@ fun getBlockedTags(content: Content): List<String> {
         for (blocked in Preferences.getBlockedTags()) for (tag in tags) if (blocked.equals(
                 tag,
                 ignoreCase = true
-            ) || isPresentAsWord(blocked, tag!!)
+            ) || isPresentAsWord(blocked, tag)
         ) {
             if (result.isEmpty()) result = ArrayList()
             result.add(tag)

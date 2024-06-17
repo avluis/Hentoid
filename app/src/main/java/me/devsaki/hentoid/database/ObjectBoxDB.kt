@@ -1171,7 +1171,10 @@ object ObjectBoxDB {
         val result: MutableList<Attribute> = ArrayList()
         map.forEach {
             val size = it.value.size
-            result.add(Attribute(it.key).setExternalId(it.key.code).setCount(size))
+            val attr = Attribute(it.key)
+            attr.externalId = it.key.code
+            attr.count = size
+            result.add(attr)
         }
         // Order by count desc
         return result.sortedBy { a -> -a.count }
@@ -1322,7 +1325,7 @@ object ObjectBoxDB {
                 }.count { c ->
                     filteredContentAsSet.isEmpty() || filteredContentAsSet.contains(c.id)
                 }
-                a.setCount(count)
+                a.count = count
             }
         }
 

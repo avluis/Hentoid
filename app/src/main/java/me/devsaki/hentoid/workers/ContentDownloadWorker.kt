@@ -1577,7 +1577,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             if (attr.type == rule.attributeType) {
                 val newName = processNewName(attr.name, rule)
                 if (newName != null) {
-                    result = Attribute(attr.type, newName)
+                    result = Attribute(type = attr.type, name = newName)
                     break
                 }
             }
