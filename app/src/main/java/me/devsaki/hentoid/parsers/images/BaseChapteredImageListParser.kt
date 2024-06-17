@@ -103,7 +103,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         var storedOrderOffset = getMaxChapterOrder(storedChapters)
         extraChapters.forEach { chp ->
             if (processHalted.get()) return@forEach
-            chp.setOrder(++storedOrderOffset)
+            chp.order = ++storedOrderOffset
             if (chp.uploadDate > 0) minEpoch = minEpoch.coerceAtMost(chp.uploadDate)
             result.addAll(
                 parseChapterImageFiles(
@@ -138,7 +138,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         EventBus.getDefault().register(this)
         val result: List<ImageFile>
         try {
-            val ch = Chapter().setUrl(url) // Forge a chapter
+            val ch = Chapter(url = url) // Forge a chapter
             result = parseChapterImageFiles(content, ch, 1)
             if (result.isNotEmpty() && content.coverImageUrl.isNullOrEmpty())
                 content.coverImageUrl = result[0].url

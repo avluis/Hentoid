@@ -58,11 +58,10 @@ public class PixivSeriesIllustMetadata {
         int order = 0;
         for (SeriesContent sc : body.series_contents) {
             String forgedUrl = Site.PIXIV.getUrl() + "artworks/" + sc.getId();
-            result.add(
-                    new Chapter(order++, forgedUrl, cleanup(sc.getTitle()))
-                            .setUniqueId(sc.getId())
-                            .setContentId(contentId)
-            );
+            Chapter chp = new Chapter(order++, forgedUrl, cleanup(sc.getTitle()));
+            chp.setUniqueId(sc.getId());
+            chp.setContentId(contentId);
+            result.add(chp);
         }
         return result;
     }

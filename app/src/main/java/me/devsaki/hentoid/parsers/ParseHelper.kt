@@ -401,7 +401,7 @@ fun getChaptersFromLinks(
     // Build the final list
     for ((order, chapter) in chapterData.withIndex()) {
         val chp = Chapter(order, chapter.first, chapter.second)
-        chp.setUploadDate(chapter.third)
+        chp.uploadDate = chapter.third
         chp.setContentId(contentId)
         result.add(chp)
     }

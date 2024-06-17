@@ -310,10 +310,12 @@ class PixivParser : BaseImageListParser() {
             val chapterAttrs = illustMetadata.getAttributes()
             attrs.addAll(chapterAttrs)
             val chp = Chapter(
-                chpOffset++,
-                illustMetadata.getUrl(),
-                illustMetadata.getTitle()
-            ).setUniqueId(illustMetadata.getId()).setContentId(onlineContent.id)
+                order = chpOffset++,
+                url = illustMetadata.getUrl(),
+                name = illustMetadata.getTitle(),
+                uniqueId = illustMetadata.getId()
+            )
+            chp.setContentId(onlineContent.id)
             val chapterImages = illustMetadata.getImageFiles()
             for (img in chapterImages) {
                 img.order = imgOffset++

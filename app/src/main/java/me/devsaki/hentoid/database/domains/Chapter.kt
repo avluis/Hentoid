@@ -1,188 +1,96 @@
-package me.devsaki.hentoid.database.domains;
+package me.devsaki.hentoid.database.domains
 
-import static me.devsaki.hentoid.util.HelperKt.hash64;
-
-import androidx.annotation.Nullable;
-
-import com.annimon.stream.Stream;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
-import io.objectbox.annotation.Backlink;
-import io.objectbox.annotation.Entity;
-import io.objectbox.annotation.Id;
-import io.objectbox.relation.ToMany;
-import io.objectbox.relation.ToOne;
-import me.devsaki.hentoid.database.DBHelper;
-import timber.log.Timber;
+import io.objectbox.annotation.Backlink
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.relation.ToMany
+import io.objectbox.relation.ToOne
+import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.util.hash64
+import java.util.Objects
 
 @Entity
-public class Chapter {
-
+data class Chapter(
     @Id
-    private long id;
-    private Integer order = -1;
-    private String url = "";
-    private String name = "";
-    private ToOne<Content> content;
+    var id: Long = 0,
+    var order: Int = -1,
+    var url: String = "",
+    var name: String = "",
+    var uniqueId: String = "",
+    var uploadDate: Long = 0
+) {
+    lateinit var content: ToOne<Content>
+
     @Backlink(to = "chapter")
-    private ToMany<ImageFile> imageFiles;
-    private String uniqueId = "";
-    private long uploadDate = 0;
+    lateinit var imageFiles: ToMany<ImageFile>
 
+    constructor(order: Int, url: String, name: String) : this(
+        id = 0, order = order, url = url, name = name
+    )
 
-    public Chapter() { // Required by ObjectBox when an alternate constructor exists
-    }
-
-    public Chapter(int order, String url, String name) {
-        this.order = order;
-        this.url = url;
-        this.name = name;
-    }
-
-    public static Chapter fromChapter(Chapter chap) {
-        return new Chapter(chap.order, chap.url, chap.name).setUniqueId(chap.uniqueId).setUploadDate(chap.uploadDate);
-    }
-
-
-    public long getId() {
-        return this.id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public Integer getOrder() {
-        return order;
-    }
-
-    public Chapter setOrder(Integer order) {
-        this.order = order;
-        return this;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public Chapter setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Chapter setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public String getUniqueId() {
-        return (null == uniqueId) ? "" : uniqueId;
-    }
-
-    public Chapter setUniqueId(String uniqueId) {
-        this.uniqueId = uniqueId;
-        return this;
-    }
+    constructor(chapter: Chapter) : this(
+        id = chapter.id,
+        order = chapter.order,
+        url = chapter.url,
+        name = chapter.name,
+        uniqueId = chapter.uniqueId,
+        uploadDate = chapter.uploadDate
+    )
 
     // NB : Doesn't work when Content is not linked
-    public void populateUniqueId() {
-        Content c = DBHelper.reach(this, content);
+    fun populateUniqueId() {
+        val c = content.reach(this)
         if (c != null) {
-            this.uniqueId = c.getUniqueSiteId() + "-" + order;
+            this.uniqueId = c.uniqueSiteId + "-" + order
         } else {
-            this.uniqueId = order.toString();
+            this.uniqueId = order.toString()
         }
     }
 
-    public long getContentId() {
-        return this.content.getTargetId();
+    fun setContentId(contentId: Long): Chapter {
+        content.targetId = contentId
+        return this
     }
 
-    public Chapter setContentId(long contentId) {
-        this.content.setTargetId(contentId);
-        return this;
+    fun setContent(content: Content) {
+        this.content.target = content
     }
 
-    public ToOne<Content> getContent() {
-        return content;
-    }
+    val imageList: List<ImageFile>
+        get() = imageFiles.reach(this)
 
-    public void setContent(ToOne<Content> content) {
-        this.content = content;
-    }
+    val readableImageFiles: List<ImageFile>
+        get() = imageList.filter(ImageFile::isReadable)
 
-    public void setContent(Content content) {
-        if (null == this.content) {
-            Timber.d(">> INIT ToONE");
-            this.content = new ToOne<>(this, Chapter_.content);
-        }
-        this.content.setTarget(content);
-    }
-
-    @Nullable
-    public ToMany<ImageFile> getImageFiles() {
-        return imageFiles;
-    }
-
-    public List<ImageFile> getImageList() {
-        return DBHelper.reach(this, imageFiles);
-    }
-
-    public List<ImageFile> getReadableImageFiles() {
-        if (null == imageFiles) return Collections.emptyList();
-        return Stream.of(imageFiles).filter(ImageFile::isReadable).toList();
-    }
-
-    public void setImageFiles(List<ImageFile> imageFiles) {
+    fun setImageFiles(imageFiles: List<ImageFile>?) {
         // We do want to compare array references, not content
-        if (imageFiles != null && imageFiles != this.imageFiles) {
-            this.imageFiles.clear();
-            this.imageFiles.addAll(imageFiles);
+        if (imageFiles != null && imageFiles !== this.imageFiles) {
+            this.imageFiles.clear()
+            this.imageFiles.addAll(imageFiles)
         }
     }
 
-    public void removeImageFile(ImageFile img) {
-        if (imageFiles != null) imageFiles.remove(img);
+    fun removeImageFile(img: ImageFile) {
+        imageFiles.remove(img)
     }
 
-    public void addImageFile(ImageFile img) {
-        if (imageFiles != null) imageFiles.add(img);
+    fun addImageFile(img: ImageFile) {
+        imageFiles.add(img)
     }
 
-    public long getUploadDate() {
-        return uploadDate;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val chapter = other as Chapter
+        return id == chapter.id && order == chapter.order && url == chapter.url && name == chapter.name
     }
 
-    public Chapter setUploadDate(long uploadDate) {
-        this.uploadDate = uploadDate;
-        return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Chapter chapter = (Chapter) o;
-        return getId() == chapter.getId() &&
-                Objects.equals(getOrder(), chapter.getOrder())
-                && Objects.equals(getUrl(), chapter.getUrl())
-                && Objects.equals(getName(), chapter.getName());
-    }
-
-    @Override
-    public int hashCode() {
+    override fun hashCode(): Int {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getOrder(), getUrl(), getName());
+        return Objects.hash(id, order, url, name)
     }
 
-    public long uniqueHash() {
-        return hash64((id + "." + order + "." + url + "." + name).getBytes());
+    fun uniqueHash(): Long {
+        return hash64("$id.$order.$url.$name".toByteArray())
     }
 }

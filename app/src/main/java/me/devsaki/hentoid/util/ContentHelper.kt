@@ -2136,7 +2136,7 @@ fun mergeContents(
             newChapter = null
             // Create a default "content chapter" that represents the original book before merging
             val contentChapter = Chapter(chapterOrder++, c.galleryUrl, c.title)
-            contentChapter.setUniqueId(c.uniqueSiteId + "-" + contentChapter.order)
+            contentChapter.uniqueId = c.uniqueSiteId + "-" + contentChapter.order
 
             val imgs = c.imageList
             firstImageIsCover = !imgs.any { it.isCover }
@@ -2160,10 +2160,11 @@ fun mergeContents(
                     } else {
                         if (chapLink.uniqueId.isEmpty()) chapLink.populateUniqueId()
                         if (null == newChapter || chapLink.uniqueId != newChapter.uniqueId) {
-                            newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++)
+                            newChapter = Chapter(chapLink)
+                            newChapter.order = chapterOrder++
                         }
                     }
-                    if (newChapter != null && !mergedChapters.contains(newChapter))
+                    if (!mergedChapters.contains(newChapter))
                         mergedChapters.add(newChapter)
                     newImg.setChapter(newChapter)
                 }

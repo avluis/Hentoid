@@ -433,8 +433,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             chapterSelector.setOnIndexChangeListener { index ->
                 val chap = chapters.firstOrNull { ch -> ch.order == index + 1 }
                 if (chap != null) {
-                    val imgs: List<ImageFile>? = chap.imageFiles
-                    if (!imgs.isNullOrEmpty()) {
+                    val imgs = chap.imageList
+                    if (imgs.isNotEmpty()) {
                         viewModel.setViewerStartingIndex(imgs[0].order - 1)
                         moveToIndex(imgs[0].order - 1, true)
                     }
@@ -464,16 +464,14 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 expandableItem.identifier = c.id
                 expandableItem.isSelectable = true
                 val imgs: MutableList<ImageFileItem> = ArrayList()
-                val chpImgs: List<ImageFile>? = c.imageFiles
-                if (chpImgs != null) {
-                    for (img in chpImgs) {
-                        // Reconstitute display order that has been lost because of @Transient property
-                        img.displayOrder = displayOrder++
-                        if (img.isReadable) {
-                            val holder = ImageFileItem(img, false)
-                            holder.isSelectable = false
-                            imgs.add(holder)
-                        }
+                val chpImgs = c.imageList
+                for (img in chpImgs) {
+                    // Reconstitute display order that has been lost because of @Transient property
+                    img.displayOrder = displayOrder++
+                    if (img.isReadable) {
+                        val holder = ImageFileItem(img, false)
+                        holder.isSelectable = false
+                        imgs.add(holder)
                     }
                 }
                 expandableItem.subItems.addAll(imgs)

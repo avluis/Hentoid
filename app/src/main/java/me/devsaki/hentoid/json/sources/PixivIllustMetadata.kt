@@ -222,12 +222,12 @@ data class PixivIllustMetadata(
         return if (error || null == body) "" else body.canonicalUrl
     }
 
-    fun getTitle(): String? {
-        return if (error || null == body) "" else body.title
+    fun getTitle(): String {
+        return if (error || null == body) "" else body.title ?: ""
     }
 
-    fun getId(): String? {
-        return if (error || null == body) "" else body.illustId
+    fun getId(): String {
+        return if (error || null == body) "" else body.illustId ?: ""
     }
 
     fun getAttributes(): List<Attribute> {

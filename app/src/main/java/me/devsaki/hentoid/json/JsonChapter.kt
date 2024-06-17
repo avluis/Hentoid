@@ -13,6 +13,6 @@ data class JsonChapter(
     constructor(c: Chapter) : this(c.order, c.url, c.name, c.uniqueId)
 
     fun toEntity(): Chapter {
-        return Chapter(order, url, name).setUniqueId(uniqueId)
+        return Chapter(order = order, url = url, name = name, uniqueId = uniqueId)
     }
 }
