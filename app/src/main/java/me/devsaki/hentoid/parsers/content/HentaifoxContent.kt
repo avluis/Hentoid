@@ -32,14 +32,17 @@ class HentaifoxContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.HENTAIFOX)
-        if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED)
+        content.site = Site.HENTAIFOX
+        if (url.isEmpty()) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         content.setRawUrl(url)
         content.populateUniqueSiteId()
         cover?.let {
-            content.setCoverImageUrl(getImgSrc(it))
+            content.coverImageUrl = getImgSrc(it)
         }
-        content.setTitle(cleanup(title))
+        content.title = cleanup(title)
 
         information?.let { info ->
             if (info.children().isEmpty()) return content
@@ -118,7 +121,7 @@ class HentaifoxContent : BaseContentParser() {
             content.putAttributes(attributes)
 
             if (updateImages) {
-                content.setQtyPages(qtyPages)
+                content.qtyPages = qtyPages
                 thumbs?.let { th ->
                     scripts?.let { scr ->
                         content.setImageFiles(

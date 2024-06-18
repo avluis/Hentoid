@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.enums.ErrorType
@@ -374,7 +375,7 @@ class QueueViewModel(
         contentHashToShowFirst.value = hash
     }
 
-    fun setDownloadMode(contentIds: List<Long>, downloadMode: Int) {
+    fun setDownloadMode(contentIds: List<Long>, downloadMode: DownloadMode) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 contentIds.forEach {

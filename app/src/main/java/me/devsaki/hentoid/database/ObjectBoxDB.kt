@@ -20,6 +20,7 @@ import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Chapter_
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Content_
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ErrorRecord_
 import me.devsaki.hentoid.database.domains.Group
@@ -170,14 +171,14 @@ object ObjectBoxDB {
 
     fun updateContentStatus(updateFrom: StatusContent, updateTo: StatusContent) {
         val contentList = selectContentByStatus(updateFrom)
-        for (c in contentList) c.setStatus(updateTo)
+        for (c in contentList) c.status = updateTo
         store.boxFor(Content::class.java).put(contentList)
     }
 
     fun updateContentProcessedFlag(contentId: Long, flag: Boolean) {
         store.runInTx {
             store.boxFor(Content::class.java)[contentId]?.let { c ->
-                c.setIsBeingProcessed(flag)
+                c.isBeingProcessed = flag
                 store.boxFor(Content::class.java).put(c)
             }
         }
@@ -286,7 +287,7 @@ object ObjectBoxDB {
     }
 
     fun markContentsAsBeingProcessed(contentList: List<Content>, flag: Boolean) {
-        for (c in contentList) c.setIsBeingProcessed(flag)
+        for (c in contentList) c.isBeingProcessed = flag
         store.boxFor(Content::class.java).put(contentList)
     }
 
@@ -487,8 +488,8 @@ object ObjectBoxDB {
         coverUrlStart: String
     ): Content? {
         val contentUrlCondition =
-            Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-                .and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+            Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .and(Content_.dbUrl.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
                 .and(Content_.site.equal(site.code))
         val chapterUrlCondition: QueryCondition<Content> =
             Content_.id.oneOf(selectContentIdsByChapterUrl(contentUrl))
@@ -514,8 +515,8 @@ object ObjectBoxDB {
     // Find all books that have the given content URL
     fun selectContentByUrl(site: Site, contentUrl: String): Set<Content> {
         val contentUrlCondition =
-            Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-                .and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+            Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .and(Content_.dbUrl.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
                 .and(Content_.site.equal(site.code))
 
         return store.boxFor(Content::class.java).query(contentUrlCondition)
@@ -533,10 +534,10 @@ object ObjectBoxDB {
 
     fun selectAllContentUrls(siteCode: Int): Set<String> {
         store.boxFor(Content::class.java).query().equal(Content_.site, siteCode.toLong())
-            .`in`(Content_.status, libraryStatus).notNull(Content_.url)
-            .notEqual(Content_.url, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build()
+            .`in`(Content_.status, libraryStatus).notNull(Content_.dbUrl)
+            .notEqual(Content_.dbUrl, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build()
             .use { allContentQ ->
-                return allContentQ.property(Content_.url).findStrings().toHashSet()
+                return allContentQ.property(Content_.dbUrl).findStrings().toHashSet()
             }
     }
 
@@ -614,7 +615,7 @@ object ObjectBoxDB {
     private fun getPropertyFromField(prefsFieldCode: Int): Property<Content>? {
         return when (prefsFieldCode) {
             Preferences.Constant.ORDER_FIELD_TITLE -> Content_.title
-            Preferences.Constant.ORDER_FIELD_ARTIST -> Content_.author
+            Preferences.Constant.ORDER_FIELD_ARTIST -> Content_.dbAuthor
             Preferences.Constant.ORDER_FIELD_NB_PAGES -> Content_.qtyPages
             Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> Content_.downloadDate
             Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> Content_.downloadCompletionDate
@@ -1439,7 +1440,7 @@ object ObjectBoxDB {
         var qc = inQc
         return when (contentType) {
             Type.STREAMED -> qc.and(
-                Content_.downloadMode.equal(Content.DownloadMode.STREAM)
+                Content_.downloadMode.equal(DownloadMode.STREAM.value)
             )
 
             Type.ARCHIVE -> {
@@ -1462,7 +1463,7 @@ object ObjectBoxDB {
             Type.PLACEHOLDER -> qc.and(Content_.status.equal(StatusContent.PLACEHOLDER.code))
             Type.FOLDER -> {
                 // TODO : Should also not be an archive, but that would require Content_.storageUri.doesNotEndWith (see ObjectBox issue #1129)
-                qc = qc.and(Content_.downloadMode.equal(Content.DownloadMode.DOWNLOAD))
+                qc = qc.and(Content_.downloadMode.equal(DownloadMode.DOWNLOAD.value))
                 qc.and(Content_.status.notEqual(StatusContent.PLACEHOLDER.code))
             }
 

@@ -14,6 +14,7 @@ import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -230,24 +231,22 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             when (emptyBooksOption) {
                 MetaImportDialogFragment.IMPORT_AS_STREAMED -> {
                     // Greenlighted if images exist and are available online
-                    if (c.imageList.size > 0
+                    if (c.imageList.isNotEmpty()
                         && isDownloadable(c)
                     ) {
-                        c.downloadMode = Content.DownloadMode.STREAM
+                        c.downloadMode = DownloadMode.STREAM
                         c.status = StatusContent.DOWNLOADED
-                        val imgs: List<ImageFile>? = c.imageFiles
-                        if (imgs != null) {
-                            val newImages = imgs.map { i: ImageFile ->
-                                ImageFile.fromImageUrl(
-                                    i.order,
-                                    i.url,
-                                    StatusContent.ONLINE,
-                                    imgs.size
-                                )
-                            }
-                            c.setImageFiles(newImages)
+                        val imgs = c.imageFiles
+                        val newImages = imgs.map { i: ImageFile ->
+                            ImageFile.fromImageUrl(
+                                i.order,
+                                i.url,
+                                StatusContent.ONLINE,
+                                imgs.size
+                            )
                         }
-                        c.forceSize(0)
+                        c.setImageFiles(newImages)
+                        c.size = 0
                     } else { // import as empty if content unavailable online
                         c.setImageFiles(emptyList())
                         c.clearChapters()

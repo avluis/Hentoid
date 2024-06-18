@@ -40,8 +40,8 @@ class Manhwa18Content : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.MANHWA18)
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        content.site = Site.MANHWA18
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
         return if (GALLERY_PATTERN.matcher(url).find()) updateGallery(
             content,
@@ -54,7 +54,7 @@ class Manhwa18Content : BaseContentParser() {
         url: String,
         updateImages: Boolean
     ): Content {
-        content.setTitle(cleanup(chapterTitle))
+        content.title = cleanup(chapterTitle)
         val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 2]
         else content.uniqueSiteId = urlParts[0]
@@ -66,7 +66,7 @@ class Manhwa18Content : BaseContentParser() {
                 content.setImageFiles(
                     urlsToImageFiles(imgUrls, coverUrl, StatusContent.SAVED)
                 )
-                content.setQtyPages(imgUrls.size)
+                content.qtyPages = imgUrls.size
             }
         }
         return content
@@ -78,16 +78,16 @@ class Manhwa18Content : BaseContentParser() {
             .replace("')", "")
             .replace(";", "")
             .trim()
-        content.setCoverImageUrl(cover)
-        var titleStr: String? = NO_TITLE
+        content.coverImageUrl = cover
+        var titleStr = NO_TITLE
         title?.let {
             titleStr = cleanup(it.text())
             titleStr = removeTextualTags(titleStr)
         }
-        content.setTitle(titleStr)
+        content.title = titleStr
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.MANHWA18)

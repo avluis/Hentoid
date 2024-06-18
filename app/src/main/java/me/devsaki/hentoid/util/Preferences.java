@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.database.domains.DownloadMode;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StorageLocation;
@@ -357,8 +358,8 @@ public final class Preferences {
         return getBoolPref(Key.BROWSER_MARK_BLOCKED, Default.BROWSER_MARK_BLOCKED);
     }
 
-    public static int getBrowserDlAction() {
-        return getIntPref(Key.BROWSER_DL_ACTION, Default.BROWSER_DL_ACTION);
+    public static DownloadMode getBrowserDlAction() {
+        return DownloadMode.Companion.fromValue(getIntPref(Key.BROWSER_DL_ACTION, Default.BROWSER_DL_ACTION));
     }
 
     public static boolean isBrowserQuickDl() {

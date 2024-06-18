@@ -62,11 +62,14 @@ class MusesContent : BaseContentParser() {
                     nbImages++
                 }
             }
-            if (nbImages < it.size / 3) return Content().setStatus(StatusContent.IGNORED)
+            if (nbImages < it.size / 3) return Content(status = StatusContent.IGNORED)
         }
-        content.setSite(Site.MUSES)
+        content.site = Site.MUSES
         val theUrl = canonicalUrl.ifEmpty { url }
-        if (theUrl.isEmpty() || 0 == nbImages) return content.setStatus(StatusContent.IGNORED)
+        if (theUrl.isEmpty() || 0 == nbImages) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         content.setRawUrl(theUrl)
 
         // == Circle (publisher), Artist and Series
@@ -112,11 +115,12 @@ class MusesContent : BaseContentParser() {
                         }
                     }
                 }
-                content.setTitle(cleanup(bookTitle))
+                content.title = cleanup(bookTitle)
             }
         }
         if (updateImages) {
-            content.setQtyPages(nbImages) // Cover is duplicated in the code below; no need to decrease nbImages here
+            content.qtyPages =
+                nbImages // Cover is duplicated in the code below; no need to decrease nbImages here
             var thumbParts: MutableList<String>
             var index = 0
             val images: MutableList<ImageFile> = ArrayList()
@@ -127,7 +131,7 @@ class MusesContent : BaseContentParser() {
                 StatusContent.SAVED,
                 nbImages
             )
-            content.setCoverImageUrl(cover.url)
+            content.coverImageUrl = cover.url
             cover.isCover = true
             images.add(cover)
             // Images

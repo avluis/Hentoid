@@ -12,6 +12,7 @@ import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Grouping
@@ -227,7 +228,7 @@ abstract class BaseDeleteWorker(
             dao.selectContent(res.id)?.let {
                 purgeFiles(applicationContext, it, removeJson = false, removeCover = false)
                 // Update content folder and JSON Uri's after purging
-                it.downloadMode = Content.DownloadMode.STREAM
+                it.downloadMode = DownloadMode.STREAM
                 dao.insertContentCore(it)
                 val imgs: List<ImageFile> = it.imageList
                 for (img in imgs) {
@@ -236,8 +237,8 @@ abstract class BaseDeleteWorker(
                     img.status = StatusContent.ONLINE
                 }
                 dao.insertImageFiles(imgs)
-                it.forceSize(0)
-                it.setIsBeingProcessed(false)
+                it.size = 0
+                it.isBeingProcessed = false
                 dao.insertContent(it)
                 updateJson(applicationContext, it)
             }

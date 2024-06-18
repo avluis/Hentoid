@@ -39,7 +39,10 @@ class AnchiraContent : BaseContentParser() {
         // Hitomi now uses an empty template that is populated by Javascript -> parsing is entirely done by HitomiParser
         content.site = Site.ANCHIRA
         content.setRawUrl(url)
-        if (null == imgs) return content.setStatus(StatusContent.IGNORED)
+        if (null == imgs) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         content.title = cleanup(title)
         imgs?.let {
             if (it.isNotEmpty()) content.coverImageUrl = getImgSrc(it[0])

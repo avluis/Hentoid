@@ -120,7 +120,7 @@ class HitomiParser : BaseImageListParser() {
         jsResult = jsResult.replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"")
         val imageUrls = jsonToObject<List<String>>(jsResult, LIST_STRINGS)
         if (!imageUrls.isNullOrEmpty()) {
-            onlineContent.setCoverImageUrl(imageUrls[0])
+            onlineContent.coverImageUrl = imageUrls[0]
             result.add(ImageFile.newCover(imageUrls[0], StatusContent.SAVED))
             var order = 1
             for (s in imageUrls) {

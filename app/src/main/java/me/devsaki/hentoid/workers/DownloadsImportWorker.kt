@@ -13,6 +13,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.readFile
@@ -147,7 +148,7 @@ class DownloadsImportWorker(
             } else {
                 trace(Log.INFO, "Added content @ %s", url)
                 content.downloadMode =
-                    if (importAsStreamed) Content.DownloadMode.STREAM else Content.DownloadMode.DOWNLOAD
+                    if (importAsStreamed) DownloadMode.STREAM else DownloadMode.DOWNLOAD
                 dao!!.addContentToQueue(
                     content,
                     null,

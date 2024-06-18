@@ -20,13 +20,13 @@ class LusciousContent : BaseContentParser() {
                 val vars = Uri.parse(url).getQueryParameter("variables")
                 if (vars.isNullOrEmpty()) {
                     Timber.w("No variable field found in %s", url)
-                    return Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED)
+                    return Content(site = Site.LUSCIOUS, status = StatusContent.IGNORED)
                 }
                 try {
                     jsonToObject(vars, LusciousQueryParam::class.java)!!.id
                 } catch (e: Exception) {
                     Timber.w(e)
-                    return Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED)
+                    return Content(site = Site.LUSCIOUS, status = StatusContent.IGNORED)
                 }
             } else if (isNumeric(url)) { // Book ID is directly provided
                 url
@@ -48,6 +48,6 @@ class LusciousContent : BaseContentParser() {
         } catch (e: IOException) {
             Timber.e(e, "Error parsing content.")
         }
-        return Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED)
+        return Content(site = Site.LUSCIOUS, status = StatusContent.IGNORED)
     }
 }

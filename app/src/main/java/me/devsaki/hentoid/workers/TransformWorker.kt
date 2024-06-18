@@ -135,7 +135,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             dao.insertImageFiles(images)
             content.computeSize()
             content.lastEditDate = Instant.now().toEpochMilli()
-            content.setIsBeingProcessed(false)
+            content.isBeingProcessed = false
             dao.insertContentCore(content)
 
             // Achievements

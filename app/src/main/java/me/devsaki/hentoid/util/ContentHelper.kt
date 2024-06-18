@@ -29,6 +29,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
@@ -198,7 +199,7 @@ private fun isInQueueTab(status: StatusContent): Boolean {
 }
 
 fun canBeArchived(content: Content): Boolean {
-    return !(content.isArchive || content.downloadMode == Content.DownloadMode.STREAM || content.status == StatusContent.PLACEHOLDER)
+    return !(content.isArchive || content.downloadMode == DownloadMode.STREAM || content.status == StatusContent.PLACEHOLDER)
 }
 
 /**
@@ -421,8 +422,8 @@ fun updateContentReadStats(
     markAsCompleted: Boolean
 ) {
     content.lastReadPageIndex = targetLastReadPageIndex
-    if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli())
-    if (markAsCompleted) content.setCompleted(true)
+    if (updateReads) content.increaseReads().lastReadDate = Instant.now().toEpochMilli()
+    if (markAsCompleted) content.completed = true
     dao.replaceImageList(content.id, images.filterNotNull())
     dao.insertContentCore(content)
     persistJson(context, content)
@@ -607,7 +608,7 @@ fun getPathRoot(locationUriStr: String): String {
 fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
     assertNonUiThread()
     val newContentId = dao.insertContent(content)
-    content.setId(newContentId)
+    content.id = newContentId
 
     // Perform group operations only if
     //   - the book is in the library (i.e. not queued)
@@ -825,7 +826,7 @@ fun setContentCover(content: Content, images: MutableList<ImageFile>, newCover: 
     images.add(0, cover)
 
     // Update cover URL to "ping" the content to be updated too (useful for library screen that only detects "direct" content updates)
-    content.setCoverImageUrl(newCover.url)
+    content.coverImageUrl = newCover.url
 }
 
 /**
@@ -1426,7 +1427,7 @@ private fun reparseFromScratch(
         val cookieStr = fetchResponse.second
         if (cookieStr.isNotEmpty()) params[HEADER_COOKIE_KEY] = cookieStr
 
-        newContent.setDownloadParams(serializeToJson<Map<String, String>>(params, MAP_STRINGS))
+        newContent.downloadParams = serializeToJson<Map<String, String>>(params, MAP_STRINGS)
         return newContent
     }
 }
@@ -1454,9 +1455,8 @@ fun fetchImageURLs(
         if (cookieStr.isNotEmpty()) {
             val downloadParams: MutableMap<String, String> = HashMap()
             downloadParams[HEADER_COOKIE_KEY] = cookieStr
-            content.setDownloadParams(
+            content.downloadParams =
                 serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
-            )
         }
     }
 
@@ -2058,22 +2058,22 @@ fun mergeContents(
     val firstContent = contentList[0]
 
     // Initiate a new Content
-    val mergedContent = Content()
-    mergedContent.setSite(firstContent.site)
-    mergedContent.setUrl(firstContent.url)
-    mergedContent.uniqueSiteId =
-        firstContent.uniqueSiteId + "_" // Not to create a copy of firstContent
-    mergedContent.setDownloadMode(firstContent.downloadMode)
-    mergedContent.setTitle(newTitle)
-    mergedContent.setCoverImageUrl(firstContent.coverImageUrl)
-    mergedContent.setUploadDate(firstContent.uploadDate)
-    mergedContent.setDownloadDate(Instant.now().toEpochMilli())
-    mergedContent.setDownloadCompletionDate(Instant.now().toEpochMilli())
-    mergedContent.setStatus(firstContent.status)
-    mergedContent.setFavourite(firstContent.isFavourite)
-    mergedContent.rating = firstContent.rating
-    mergedContent.bookPreferences = firstContent.bookPreferences
-    mergedContent.isManuallyMerged = true
+    val mergedContent = Content(
+        site = firstContent.site,
+        dbUrl = firstContent.url,
+        uniqueSiteId = firstContent.uniqueSiteId + "_", // Not to create a copy of firstContent
+        downloadMode = firstContent.downloadMode,
+        title = newTitle,
+        coverImageUrl = firstContent.coverImageUrl,
+        uploadDate = firstContent.uploadDate,
+        downloadDate = Instant.now().toEpochMilli(),
+        downloadCompletionDate = Instant.now().toEpochMilli(),
+        status = firstContent.status,
+        favourite = firstContent.favourite,
+        rating = firstContent.rating,
+        bookPreferences = firstContent.bookPreferences,
+        manuallyMerged = true
+    )
 
     // Merge attributes
     val mergedAttributes = contentList.flatMap { it.attributes }
@@ -2203,7 +2203,7 @@ fun mergeContents(
     if (!isError) {
         mergedContent.setImageFiles(mergedImages)
         mergedContent.setChapters(mergedChapters) // Chapters have to be attached to Content too
-        mergedContent.setQtyPages(mergedImages.size - 1)
+        mergedContent.qtyPages = mergedImages.size - 1
         mergedContent.computeSize()
 
         val jsonFile = createJson(context, mergedContent)

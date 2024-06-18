@@ -65,7 +65,7 @@ class MrmParser : BaseChapteredImageListParser() {
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
 
-        if (result.isNotEmpty()) content.setCoverImageUrl(result[0])
+        if (result.isNotEmpty()) content.coverImageUrl = result[0]
 
         progressComplete()
         return result

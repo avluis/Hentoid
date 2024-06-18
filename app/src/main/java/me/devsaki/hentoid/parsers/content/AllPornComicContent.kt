@@ -50,7 +50,7 @@ class AllPornComicContent : BaseContentParser() {
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         content.site = Site.ALLPORNCOMIC
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
         content.coverImageUrl = coverUrl
 

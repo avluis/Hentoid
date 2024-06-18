@@ -114,7 +114,10 @@ public class PixivPreloadMetadata {
 
         content.setSite(Site.PIXIV);
 
-        if (illust.isEmpty()) return content.setStatus(StatusContent.IGNORED);
+        if (illust.isEmpty()) {
+            content.setStatus(StatusContent.IGNORED);
+            return content;
+        }
         IllustData illustData = Stream.of(illust.values()).toList().get(0);
 
         content.setUrl(url.replace(Site.PIXIV.getUrl(), ""));

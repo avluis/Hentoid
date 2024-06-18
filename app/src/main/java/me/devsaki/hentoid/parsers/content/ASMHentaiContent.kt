@@ -45,8 +45,7 @@ class ASMHentaiContent : BaseContentParser() {
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         val theUrl = canonicalUrl.ifEmpty { url }
-        if (theUrl.isEmpty()) return Content().setSite(Site.ASMHENTAI)
-            .setStatus(StatusContent.IGNORED)
+        if (theUrl.isEmpty()) return Content(site = Site.ASMHENTAI, status = StatusContent.IGNORED)
 
         content.site = if (theUrl.lowercase(Locale.getDefault())
                 .contains("comics")

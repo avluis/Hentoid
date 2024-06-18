@@ -8,6 +8,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -259,7 +260,7 @@ object DatabaseMaintenance {
             var max = contents.size
             var pos = 1f
             for (c in contents) {
-                c.isCompleted = false
+                c.completed = false
                 db.insertContentCore(c)
                 emitter(pos++ / max)
             }
@@ -271,7 +272,7 @@ object DatabaseMaintenance {
             max = contents.size
             pos = 1f
             for (c in contents) {
-                c.downloadMode = Content.DownloadMode.DOWNLOAD
+                c.downloadMode = DownloadMode.DOWNLOAD
                 db.insertContentCore(c)
                 emitter(pos++ / max)
             }
@@ -283,7 +284,7 @@ object DatabaseMaintenance {
             max = contents.size
             pos = 1f
             for (c in contents) {
-                c.isManuallyMerged = false
+                c.manuallyMerged = false
                 db.insertContentCore(c)
                 emitter(pos++ / max)
             }

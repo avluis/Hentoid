@@ -49,7 +49,7 @@ class EdoujinContent : BaseContentParser() {
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         content.site = Site.EDOUJIN
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
         return if (GALLERY_PATTERN.matcher(url).find())
             updateGallery(content, url, updateImages)

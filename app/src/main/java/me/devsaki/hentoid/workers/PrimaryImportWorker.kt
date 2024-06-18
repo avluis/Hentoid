@@ -21,6 +21,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.QueueRecord
@@ -469,7 +470,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 try {
                     content = importJson(context, bookFolder, bookFiles, dao)
                     // Don't delete books that are _not supposed to_ have downloaded images
-                    if (content != null && content.downloadMode == Content.DownloadMode.STREAM)
+                    if (content != null && content.downloadMode == DownloadMode.STREAM)
                         doRemove = false
                 } catch (e: ParseException) {
                     trace(
@@ -570,7 +571,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     if (contentImages!!.isEmpty()) {
                         contentImages = createImageListFromFiles(imageFiles)
                         content.setImageFiles(contentImages)
-                        content.getCover().url = content.coverImageUrl
+                        content.cover.url = content.coverImageUrl
                     } else { // Existing images described in the JSON
                         // CLEANUPS
                         var cleaned = false
@@ -604,7 +605,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                             contentImages = coverImgs
                             val nbCovers =
                                 contentImages.count { obj: ImageFile -> obj.isCover }
-                            content.setQtyPages(contentImages.size - nbCovers)
+                            content.qtyPages = contentImages.size - nbCovers
                             cleaned = true
                         }
 
@@ -615,9 +616,9 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     }
                     if (renumberPages) renumberPages(context, content, contentImages, log)
                 } else if (Preferences.isImportQueueEmptyBooks()
-                    && !content.isManuallyMerged && content.downloadMode == Content.DownloadMode.DOWNLOAD
+                    && !content.manuallyMerged && content.downloadMode == DownloadMode.DOWNLOAD
                 ) { // If no image file found, it goes in the errors queue
-                    if (!isInQueue(content.status)) content.setStatus(StatusContent.ERROR)
+                    if (!isInQueue(content.status)) content.status = StatusContent.ERROR
                     val errors: MutableList<ErrorRecord> = ArrayList()
                     errors.add(
                         ErrorRecord(

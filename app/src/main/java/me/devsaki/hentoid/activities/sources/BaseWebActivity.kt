@@ -50,7 +50,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.database.domains.Content.DownloadMode
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SiteBookmark
@@ -1075,7 +1075,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
         val replacementTitleFinal = replacementTitle
         // No reason to block or ignore -> actually add to the queue
-        if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Preferences.getBrowserDlAction() == Constant.DL_ACTION_ASK) {
+        if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Preferences.getBrowserDlAction() == DownloadMode.ASK) {
             show(
                 this, webView, this
             ) { position1, _ ->
@@ -1103,7 +1103,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     replacementTitleFinal
                 )
             }
-        } else if (Preferences.getBrowserDlAction() == Constant.DL_ACTION_ASK) {
+        } else if (Preferences.getBrowserDlAction() == DownloadMode.ASK) {
             show(
                 this,
                 webView, this,
@@ -1135,7 +1135,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      */
     private fun addToQueue(
         position: QueuePosition,
-        @DownloadMode downloadMode: Int,
+        downloadMode: DownloadMode,
         isReplaceDuplicate: Boolean,
         replacementTitle: String?
     ) {
@@ -1422,7 +1422,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
 
         // Attach chapters to stored images if they don't have any (old downloads made with versions of the app that didn't detect chapters)
-        val storedChapters: List<Chapter>? = storedContent.chapters
+        val storedChapters: List<Chapter> = storedContent.chapters
         if (positionMap.isNotEmpty() && minOnlineImageOrder < maxStoredImageOrder && storedChapters.isNullOrEmpty()) {
             val storedImages = storedContent.imageList
             for (img in storedImages) {

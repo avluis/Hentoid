@@ -48,9 +48,9 @@ class TsuminoContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.TSUMINO)
+        content.site = Site.TSUMINO
         val theUrl = galleryUrl.ifEmpty { url }
-        if (theUrl.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        if (theUrl.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(theUrl)
 
         var coverUrl = ""
@@ -58,11 +58,10 @@ class TsuminoContent : BaseContentParser() {
             coverUrl = getImgSrc(it)
         }
         if (!coverUrl.startsWith("http")) coverUrl = Site.TSUMINO.url + coverUrl
-        content.setCoverImageUrl(coverUrl)
-        content.setTitle(cleanup(title))
-        content.setUploadDate(
-            parseDateToEpoch(uploadDate, "yyyy MMMM dd")
-        ) // e.g. 2021 December 13
+        content.coverImageUrl = coverUrl
+        content.title = cleanup(title)
+        content.uploadDate = parseDateToEpoch(uploadDate, "yyyy MMMM dd") // e.g. 2021 December 13
+
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.TSUMINO)
         parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.TSUMINO)
@@ -85,7 +84,7 @@ class TsuminoContent : BaseContentParser() {
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(if (pages.isNotEmpty()) pages.toInt() else 0)
+            content.qtyPages = if (pages.isNotEmpty()) pages.toInt() else 0
         }
         return content
     }

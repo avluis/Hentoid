@@ -63,6 +63,7 @@ import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.pars
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.databinding.FragmentLibraryContentBinding
 import me.devsaki.hentoid.enums.Grouping
@@ -171,14 +172,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     val newContent = newItem.content
                     if (null == oldContent || null == newContent) return false
                     val diffBundleBuilder = ContentItemBundle()
-                    if (oldContent.isFavourite != newContent.isFavourite) {
-                        diffBundleBuilder.isFavourite = newContent.isFavourite
+                    if (oldContent.favourite != newContent.favourite) {
+                        diffBundleBuilder.isFavourite = newContent.favourite
                     }
                     if (oldContent.rating != newContent.rating) {
                         diffBundleBuilder.rating = newContent.rating
                     }
-                    if (oldContent.isCompleted != newContent.isCompleted) {
-                        diffBundleBuilder.isCompleted = newContent.isCompleted
+                    if (oldContent.completed != newContent.completed) {
+                        diffBundleBuilder.isCompleted = newContent.completed
                     }
                     if (oldContent.reads != newContent.reads) {
                         diffBundleBuilder.reads = newContent.reads
@@ -193,7 +194,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                         diffBundleBuilder.title = newContent.title
                     }
                     if (oldContent.downloadMode != newContent.downloadMode) {
-                        diffBundleBuilder.downloadMode = newContent.downloadMode
+                        diffBundleBuilder.downloadMode = newContent.downloadMode.value
                     }
                     if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord.frozen != newItem.queueRecord.frozen) {
                         diffBundleBuilder.frozen = newItem.queueRecord.frozen
@@ -291,9 +292,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
 
             override fun areContentsTheSame(oldItem: Content, newItem: Content): Boolean {
-                if (oldItem.isFavourite != newItem.isFavourite) return false
+                if (oldItem.favourite != newItem.favourite) return false
                 if (oldItem.rating != newItem.rating) return false
-                if (oldItem.isCompleted != newItem.isCompleted) return false
+                if (oldItem.completed != newItem.completed) return false
                 if (oldItem.reads != newItem.reads) return false
                 if (oldItem.readPagesCount != newItem.readPagesCount) return false
                 if (oldItem.coverImageUrl != newItem.coverImageUrl) return false
@@ -304,14 +305,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             override fun getChangePayload(oldItem: Content, newItem: Content): Any? {
                 val diffBundleBuilder = ContentItemBundle()
-                if (oldItem.isFavourite != newItem.isFavourite) {
-                    diffBundleBuilder.isFavourite = newItem.isFavourite
+                if (oldItem.favourite != newItem.favourite) {
+                    diffBundleBuilder.isFavourite = newItem.favourite
                 }
                 if (oldItem.rating != newItem.rating) {
                     diffBundleBuilder.rating = newItem.rating
                 }
-                if (oldItem.isCompleted != newItem.isCompleted) {
-                    diffBundleBuilder.isCompleted = newItem.isCompleted
+                if (oldItem.completed != newItem.completed) {
+                    diffBundleBuilder.isCompleted = newItem.completed
                 }
                 if (oldItem.reads != newItem.reads) {
                     diffBundleBuilder.reads = newItem.reads
@@ -829,7 +830,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val contents: MutableList<Content> = java.util.ArrayList()
         for (ci in selectedItems) {
             val c = ci.content ?: continue
-            if (Content.DownloadMode.STREAM != c.downloadMode) {
+            if (DownloadMode.STREAM != c.downloadMode) {
                 nonOnlineContent++
             } else {
                 contents.add(c)
@@ -875,7 +876,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val contents: MutableList<Content> = java.util.ArrayList()
         for (ci in selectedItems) {
             val c = ci.content ?: continue
-            if (c.downloadMode == Content.DownloadMode.STREAM || c.status == StatusContent.EXTERNAL) {
+            if (c.downloadMode == DownloadMode.STREAM || c.status == StatusContent.EXTERNAL) {
                 streamedOrExternalContent++
             } else {
                 contents.add(c)
@@ -1714,10 +1715,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val selectedProcessedCount = contentList.count { c -> c.isBeingProcessed }
             val selectedLocalCount = contentList
                 .filterNot { c -> c.status == StatusContent.EXTERNAL }
-                .filterNot { c -> c.downloadMode == Content.DownloadMode.STREAM }
+                .filterNot { c -> c.downloadMode == DownloadMode.STREAM }
                 .count()
             val selectedStreamedCount = contentList.map { c -> c.downloadMode }
-                .count { m: Int -> m == Content.DownloadMode.STREAM }
+                .count { it == DownloadMode.STREAM }
             val selectedNonArchiveExternalCount =
                 contentList.count { c -> c.status == StatusContent.EXTERNAL && !c.isArchive }
             val selectedArchiveExternalCount =

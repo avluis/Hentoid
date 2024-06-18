@@ -145,7 +145,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
             contentTitle.text = content.title
             contentArtist.text = formatArtistForDisplay(requireContext(), content)
-            updateFavouriteDisplay(content.isFavourite)
+            updateFavouriteDisplay(content.favourite)
             updateRatingDisplay(content.rating)
             val tagTxt = formatTagsForDisplay(content)
             if (tagTxt.isEmpty()) {

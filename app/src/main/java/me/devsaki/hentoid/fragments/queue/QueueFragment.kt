@@ -43,6 +43,7 @@ import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.databinding.FragmentQueueBinding
@@ -681,8 +682,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 // Update book progress bar
                 // NB : use the instance _inside the adapter_ to pass values
                 fastAdapter.getItemById(content.uniqueHash())?.first?.content?.let { c ->
-                    c.setProgress(pagesOKDisplay.toLong() + pagesKO)
-                    c.setDownloadedBytes(downloadedSizeB)
+                    c.progress = pagesOKDisplay.toLong() + pagesKO
+                    c.downloadedBytes = downloadedSizeB
                     c.qtyPages = totalPagesDisplay
                     updateProgress(content, false)
                 }
@@ -1095,7 +1096,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     show(menu,
                         it.queueList,
                         { position: Int, _: PowerMenuItem? ->
-                            onNewModeSelected(position)
+                            onNewModeSelected(DownloadMode.fromValue(position))
                             menu.dismiss()
                         },
                         { leaveSelectionMode() }
@@ -1139,7 +1140,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         updateSelectionToolbarVis(false)
     }
 
-    private fun onNewModeSelected(downloadMode: Int) {
+    private fun onNewModeSelected(downloadMode: DownloadMode) {
         val selection = selectExtension.selections
         val selectedContentIds = selection
             .map { pos -> itemAdapter.getAdapterItem(pos).content }

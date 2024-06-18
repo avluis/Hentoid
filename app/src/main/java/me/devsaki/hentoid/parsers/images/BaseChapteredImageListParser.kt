@@ -119,7 +119,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         if (processHalted.get()) throw PreparationInterruptedException()
         progressComplete()
 
-        if (minEpoch > 0 && minEpoch < Long.MAX_VALUE) onlineContent.setUploadDate(minEpoch)
+        if (minEpoch > 0 && minEpoch < Long.MAX_VALUE) onlineContent.uploadDate = minEpoch
 
         // Add cover if it's a first download
         if (storedChapters.isEmpty()) result.add(
@@ -139,7 +139,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         try {
             val ch = Chapter(url = url) // Forge a chapter
             result = parseChapterImageFiles(content, ch, 1)
-            if (result.isNotEmpty() && content.coverImageUrl.isNullOrEmpty())
+            if (result.isNotEmpty() && content.coverImageUrl.isEmpty())
                 content.coverImageUrl = result[0].url
             setDownloadParams(result, content.site.url)
         } finally {

@@ -1,1130 +1,705 @@
-package me.devsaki.hentoid.database.domains;
+package me.devsaki.hentoid.database.domains
 
-import static me.devsaki.hentoid.util.ContentHelperKt.formatBookAuthor;
-import static me.devsaki.hentoid.util.HelperKt.hash64;
-import static me.devsaki.hentoid.util.JsonHelperKt.jsonToObject;
-import static me.devsaki.hentoid.util.JsonHelperKt.serializeToJson;
-import static me.devsaki.hentoid.util.StringHelperKt.isNumeric;
+import android.text.TextUtils
+import androidx.appcompat.app.AppCompatActivity
+import androidx.documentfile.provider.DocumentFile
+import io.objectbox.annotation.Backlink
+import io.objectbox.annotation.Convert
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.Transient
+import io.objectbox.annotation.Uid
+import io.objectbox.converter.PropertyConverter
+import io.objectbox.relation.ToMany
+import io.objectbox.relation.ToOne
+import me.devsaki.hentoid.activities.sources.ASMHentaiActivity
+import me.devsaki.hentoid.activities.sources.AllPornComicActivity
+import me.devsaki.hentoid.activities.sources.AnchiraActivity
+import me.devsaki.hentoid.activities.sources.BaseWebActivity
+import me.devsaki.hentoid.activities.sources.DeviantArtActivity
+import me.devsaki.hentoid.activities.sources.DoujinsActivity
+import me.devsaki.hentoid.activities.sources.EHentaiActivity
+import me.devsaki.hentoid.activities.sources.EdoujinActivity
+import me.devsaki.hentoid.activities.sources.ExHentaiActivity
+import me.devsaki.hentoid.activities.sources.HdPornComicsActivity
+import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity
+import me.devsaki.hentoid.activities.sources.HentaifoxActivity
+import me.devsaki.hentoid.activities.sources.HitomiActivity
+import me.devsaki.hentoid.activities.sources.ImhentaiActivity
+import me.devsaki.hentoid.activities.sources.LusciousActivity
+import me.devsaki.hentoid.activities.sources.MangagoActivity
+import me.devsaki.hentoid.activities.sources.Manhwa18Activity
+import me.devsaki.hentoid.activities.sources.ManhwaActivity
+import me.devsaki.hentoid.activities.sources.MrmActivity
+import me.devsaki.hentoid.activities.sources.MultpornActivity
+import me.devsaki.hentoid.activities.sources.MusesActivity
+import me.devsaki.hentoid.activities.sources.NhentaiActivity
+import me.devsaki.hentoid.activities.sources.PixivActivity
+import me.devsaki.hentoid.activities.sources.PorncomixActivity
+import me.devsaki.hentoid.activities.sources.PururinActivity
+import me.devsaki.hentoid.activities.sources.SimplyActivity
+import me.devsaki.hentoid.activities.sources.ToonilyActivity
+import me.devsaki.hentoid.activities.sources.TsuminoActivity
+import me.devsaki.hentoid.database.domains.ImageFile.Companion.fromImageUrl
+import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.enums.Grouping
+import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.enums.Site.SiteConverter
+import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.util.MAP_STRINGS
+import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.formatBookAuthor
+import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.isNumeric
+import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.network.UriParts
+import me.devsaki.hentoid.util.network.getHttpProtocol
+import me.devsaki.hentoid.util.serializeToJson
+import timber.log.Timber
+import java.io.IOException
+import java.util.Objects
 
-import android.text.TextUtils;
+enum class DownloadMode(val value: Int) {
+    DOWNLOAD(Preferences.Constant.DL_ACTION_DL_PAGES), // Download images
+    STREAM(Preferences.Constant.DL_ACTION_STREAM), // Saves the book for on-demande viewing
+    ASK(Preferences.Constant.DL_ACTION_ASK); // Saves the book for on-demande viewing)
 
-import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.documentfile.provider.DocumentFile;
-
-import com.annimon.stream.Collectors;
-import com.annimon.stream.Optional;
-import com.annimon.stream.Stream;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import io.objectbox.annotation.Backlink;
-import io.objectbox.annotation.Convert;
-import io.objectbox.annotation.Entity;
-import io.objectbox.annotation.Id;
-import io.objectbox.annotation.Index;
-import io.objectbox.annotation.Transient;
-import io.objectbox.converter.PropertyConverter;
-import io.objectbox.relation.ToMany;
-import io.objectbox.relation.ToOne;
-import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
-import me.devsaki.hentoid.activities.sources.AllPornComicActivity;
-import me.devsaki.hentoid.activities.sources.AnchiraActivity;
-import me.devsaki.hentoid.activities.sources.BaseWebActivity;
-import me.devsaki.hentoid.activities.sources.DeviantArtActivity;
-import me.devsaki.hentoid.activities.sources.DoujinsActivity;
-import me.devsaki.hentoid.activities.sources.EHentaiActivity;
-import me.devsaki.hentoid.activities.sources.EdoujinActivity;
-import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
-import me.devsaki.hentoid.activities.sources.HdPornComicsActivity;
-import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
-import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
-import me.devsaki.hentoid.activities.sources.HitomiActivity;
-import me.devsaki.hentoid.activities.sources.ImhentaiActivity;
-import me.devsaki.hentoid.activities.sources.LusciousActivity;
-import me.devsaki.hentoid.activities.sources.MangagoActivity;
-import me.devsaki.hentoid.activities.sources.Manhwa18Activity;
-import me.devsaki.hentoid.activities.sources.ManhwaActivity;
-import me.devsaki.hentoid.activities.sources.MrmActivity;
-import me.devsaki.hentoid.activities.sources.MultpornActivity;
-import me.devsaki.hentoid.activities.sources.MusesActivity;
-import me.devsaki.hentoid.activities.sources.NhentaiActivity;
-import me.devsaki.hentoid.activities.sources.PixivActivity;
-import me.devsaki.hentoid.activities.sources.PorncomixActivity;
-import me.devsaki.hentoid.activities.sources.PururinActivity;
-import me.devsaki.hentoid.activities.sources.SimplyActivity;
-import me.devsaki.hentoid.activities.sources.ToonilyActivity;
-import me.devsaki.hentoid.activities.sources.TsuminoActivity;
-import me.devsaki.hentoid.database.DBHelper;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Grouping;
-import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.JsonHelperKt;
-import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.file.ArchiveHelperKt;
-import me.devsaki.hentoid.util.network.HttpHelperKt;
-import me.devsaki.hentoid.util.network.UriParts;
-import timber.log.Timber;
-
-/**
- * Content builder
- */
-@SuppressWarnings("UnusedReturnValue")
-@Entity
-public class Content implements Serializable {
-
-    // == Used with the downloadMode attribute
-
-    @IntDef({DownloadMode.DOWNLOAD, DownloadMode.STREAM, DownloadMode.ASK})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface DownloadMode {
-        int DOWNLOAD = Preferences.Constant.DL_ACTION_DL_PAGES; // Download images
-        int STREAM = Preferences.Constant.DL_ACTION_STREAM; // Saves the book for on-demande viewing
-        int ASK = Preferences.Constant.DL_ACTION_ASK; // Saves the book for on-demande viewing
+    companion object {
+        fun fromValue(v: Int): DownloadMode {
+            return entries.firstOrNull { it.value == v } ?: DOWNLOAD
+        }
     }
+}
 
-
-    // == Attributes
-
+@Entity
+data class Content(
     @Id
-    private long id;
+    var id: Long = 0,
     @Index
-    private String url;
-    private String uniqueSiteId; // Has to be queryable in DB, hence has to be a field
-    private String title;
-    private String author;
-    private ToMany<Attribute> attributes;
-    private String coverImageUrl;
-    private Integer qtyPages; // Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
-    private long uploadDate;
-    private long downloadDate = 0;
-    private long downloadCompletionDate = 0;
+    @Uid(5800889076602216395L)
+    var dbUrl: String = "",
+    var uniqueSiteId: String = "", // Has to be queryable in DB, hence has to be a field
+    var title: String = "",
+    @Uid(2417271458982667075L)
+    var dbAuthor: String = "",
+    var coverImageUrl: String = "",
+    var qtyPages: Int = 0,// Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
+    var uploadDate: Long = 0,
+    var downloadDate: Long = 0,
+    var downloadCompletionDate: Long = 0,
     @Index
-    @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
-    private StatusContent status;
-    @Backlink(to = "content")
-    private ToMany<ImageFile> imageFiles;
-    @Backlink(to = "content")
-    public ToMany<GroupItem> groupItems;
-    @Backlink(to = "content")
-    private ToMany<Chapter> chapters;
-    @Backlink(to = "content")
-    private ToMany<QueueRecord> queueRecords;
+    @Convert(converter = StatusContent.StatusContentConverter::class, dbType = Int::class)
+    var status: StatusContent = StatusContent.UNHANDLED_ERROR,
     @Index
-    @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
-    private Site site;
-    private String storageUri; // Not exposed because it will vary according to book location -> valued at import
-    private boolean favourite = false;
-    private int rating = 0;
-    private boolean completed = false;
-    private long reads = 0;
-    private long lastReadDate;
-    private int lastReadPageIndex = 0;
-    private boolean manuallyMerged = false;
-    @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
-    private Map<String, String> bookPreferences = new HashMap<>();
-
-    private @DownloadMode
-    int downloadMode;
-    private ToOne<Content> contentToReplace;
-    private String replacementTitle;
-
+    @Convert(converter = SiteConverter::class, dbType = Long::class)
+    var site: Site = Site.NONE,
+    var storageUri: String = "",
+    var favourite: Boolean = false,
+    var rating: Int = 0,
+    var completed: Boolean = false,
+    var reads: Long = 0,
+    var lastReadDate: Long = 0,
+    var lastReadPageIndex: Int = 0,
+    var manuallyMerged: Boolean = false,
+    @Convert(converter = StringMapConverter::class, dbType = String::class)
+    var bookPreferences: Map<String, String> = HashMap(),
+    @Convert(converter = DownloadModeConverter::class, dbType = Int::class)
+    var downloadMode: DownloadMode = DownloadMode.DOWNLOAD,
+    var replacementTitle: String = "",
     // Aggregated data redundant with the sum of individual data contained in ImageFile
     // ObjectBox can't do the sum in a single Query, so here it is !
-    private long size = 0;
-    private float readProgress = 0f;
-
+    var size: Long = 0,
+    var readProgress: Float = 0f,
     // Temporary during SAVED state only
-    private String downloadParams;
-    // Temporary during ERROR state only
-    @Backlink(to = "content")
-    private ToMany<ErrorRecord> errorLog;
+    var downloadParams: String = "",
     // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON
-    private boolean isBeingProcessed = false;
+    var isBeingProcessed: Boolean = false,
     // Needs to be in the DB to optimize I/O
     // No need to save that into the JSON file itself, obviously
-    private String jsonUri;
+    var jsonUri: String = "",
     // Useful only during cleanup operations; no need to get it into the JSON
-    private boolean isFlaggedForDeletion = false;
-    private long lastEditDate = 0;
+    var isFlaggedForDeletion: Boolean = false,
+    var lastEditDate: Long = 0
+) {
+    lateinit var attributes: ToMany<Attribute>
+
+    @Backlink(to = "content")
+    lateinit var imageFiles: ToMany<ImageFile>
+
+    @Backlink(to = "content")
+    lateinit var groupItems: ToMany<GroupItem>
+
+    @Backlink(to = "content")
+    lateinit var chapters: ToMany<Chapter>
+
+    @Backlink(to = "content")
+    lateinit var queueRecords: ToMany<QueueRecord>
+
+    lateinit var contentToReplace: ToOne<Content>
+
+    // Temporary during ERROR state only
+    @Backlink(to = "content")
+    lateinit var errorLog: ToMany<ErrorRecord>
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
-    private long uniqueHash = 0;    // cached value of uniqueHash
-    @Transient
-    private long progress;          // number of downloaded pages; used to display the progress bar on the queue screen
-    @Transient
-    private long downloadedBytes = 0;// Number of downloaded bytes; used to display the size estimate on the queue screen
-    @Transient
-    private boolean isFirst;        // True if current content is the first of its set in the DB query
-    @Transient
-    private boolean isLast;         // True if current content is the last of its set in the DB query
-    @Transient
-    private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
-    @Transient
-    private int readPagesCount = -1;  // Read pages count fed by payload; only useful to update list display
-    @Transient
-    private String parentStorageUri;  // Only used when importing
-    @Transient
-    private DocumentFile storageDoc;  // Only used when importing
-    @Transient
-    private boolean isFrozen;  // Only used when importing queued items (temp location to simplify JSON structure; definite storage in QueueRecord)
-    @Transient
-    private boolean folderExists = true;  // Only used when loading the Content into the reader
-    @Transient
-    private boolean isDynamic = false;  // Only used when loading the Content into the reader
+    var uniqueHash: Long = 0 // cached value of uniqueHash
 
-    public Content() { // Required by ObjectBox when an alternate constructor exists
-    }
+    // number of downloaded pages; used to display the progress bar on the queue screen
+    @Transient
+    var progress: Long = 0
 
+    // Number of downloaded bytes; used to display the size estimate on the queue screen
+    @Transient
+    var downloadedBytes: Long = 0
 
-    public ToMany<Attribute> getAttributes() {
-        return this.attributes;
-    }
+    @Transient
+    var isFirst = false // True if current content is the first of its set in the DB query
 
-    public void setAttributes(ToMany<Attribute> attributes) {
-        this.attributes = attributes;
-    }
+    @Transient
+    var isLast = false // True if current content is the last of its set in the DB query
 
-    public void clearAttributes() {
-        this.attributes.clear();
-    }
+    // Current number of download retries current content has gone through
+    @Transient
+    var numberDownloadRetries = 0
 
-    public void putAttributes(Collection<Attribute> attributes) {
-        // We do want to compare array references, not content
-        if (attributes != null && attributes != this.attributes) {
-            this.attributes.clear();
-            this.attributes.addAll(attributes);
-        }
-    }
+    // Read pages count fed by payload; only useful to update list display
+    @Transient
+    var dbReadPagesCount = -1
 
-    public AttributeMap getAttributeMap() {
-        AttributeMap result = new AttributeMap();
-        List<Attribute> list = DBHelper.reach(this, attributes);
-        for (Attribute a : list) result.add(a);
-        return result;
-    }
+    @Transient
+    var parentStorageUri: String? = null // Only used when importing
 
-    public void putAttributes(@NonNull AttributeMap attrs) {
-        if (attributes != null) {
-            attributes.clear();
-            addAttributes(attrs);
-        }
-    }
+    @Transient
+    var storageDoc: DocumentFile? = null // Only used when importing
 
-    public Content addAttributes(@NonNull AttributeMap attrs) {
-        if (attributes != null) {
-            for (Map.Entry<AttributeType, Set<Attribute>> entry : attrs.entrySet()) {
-                Set<Attribute> attrList = entry.getValue();
-                if (attrList != null)
-                    addAttributes(attrList);
+    // Only used when importing queued items (temp location to simplify JSON structure; definite storage in QueueRecord)
+    @Transient
+    var isFrozen = false
+
+    @Transient
+    var folderExists = true // Only used when loading the Content into the reader
+
+    @Transient
+    var isDynamic = false // Only used when loading the Content into the reader
+
+    companion object {
+        fun getWebActivityClass(site: Site): Class<out AppCompatActivity?> {
+            return when (site) {
+                Site.HITOMI -> HitomiActivity::class.java
+                Site.NHENTAI -> NhentaiActivity::class.java
+                Site.ASMHENTAI, Site.ASMHENTAI_COMICS -> ASMHentaiActivity::class.java
+                Site.TSUMINO -> TsuminoActivity::class.java
+                Site.PURURIN -> PururinActivity::class.java
+                Site.EHENTAI -> EHentaiActivity::class.java
+                Site.EXHENTAI -> ExHentaiActivity::class.java
+                Site.MUSES -> MusesActivity::class.java
+                Site.DOUJINS -> DoujinsActivity::class.java
+                Site.LUSCIOUS -> LusciousActivity::class.java
+                Site.PORNCOMIX -> PorncomixActivity::class.java
+                Site.HENTAI2READ -> Hentai2ReadActivity::class.java
+                Site.HENTAIFOX -> HentaifoxActivity::class.java
+                Site.MRM -> MrmActivity::class.java
+                Site.MANHWA -> ManhwaActivity::class.java
+                Site.IMHENTAI -> ImhentaiActivity::class.java
+                Site.TOONILY -> ToonilyActivity::class.java
+                Site.ALLPORNCOMIC -> AllPornComicActivity::class.java
+                Site.PIXIV -> PixivActivity::class.java
+                Site.MANHWA18 -> Manhwa18Activity::class.java
+                Site.MULTPORN -> MultpornActivity::class.java
+                Site.SIMPLY -> SimplyActivity::class.java
+                Site.HDPORNCOMICS -> HdPornComicsActivity::class.java
+                Site.EDOUJIN -> EdoujinActivity::class.java
+                Site.ANCHIRA -> AnchiraActivity::class.java
+                Site.DEVIANTART -> DeviantArtActivity::class.java
+                Site.MANGAGO -> MangagoActivity::class.java
+                else -> BaseWebActivity::class.java
             }
         }
-        return this;
-    }
 
-    public Content addAttributes(@NonNull Collection<Attribute> attrs) {
-        if (attributes != null) attributes.addAll(attrs);
-        return this;
-    }
+        fun getGalleryUrlFromId(site: Site, id: String, altCode: Int = 0): String {
+            return when (site) {
+                Site.HITOMI -> site.url + "/galleries/" + id + ".html"
+                Site.NHENTAI, Site.ASMHENTAI, Site.ASMHENTAI_COMICS -> site.url + "/g/" + id + "/"
+                Site.IMHENTAI, Site.HENTAIFOX -> site.url + "/gallery/" + id + "/"
+                Site.HENTAICAFE -> site.url + "/hc.fyi/" + id
+                Site.TSUMINO -> site.url + "/entry/" + id
+                Site.NEXUS -> site.url + "/view/" + id
+                Site.LUSCIOUS -> site.url.replace("manga", "albums") + id + "/"
+                Site.HBROWSE -> site.url + id + "/c00001"
+                Site.PIXIV -> if (1 == altCode) site.url + "users/" + id
+                else site.url + "artworks/" + id
 
-    public long getId() {
-        return this.id;
-    }
+                Site.MULTPORN -> site.url + "node/" + id
+                Site.HDPORNCOMICS -> site.url + "?p=" + id
+                else -> site.url
+            }
+        }
 
-    public Content setId(long id) {
-        this.id = id;
-        return this;
-    }
+        /**
+         * Neutralizes the given cover URL to detect duplicate books
+         *
+         * @param url  Cover URL to neutralize
+         * @param site Site the URL is taken from
+         * @return Neutralized cover URL
+         */
+        fun getNeutralCoverUrlRoot(url: String, site: Site): String {
+            if (url.isEmpty()) return url
 
-    public String getUniqueSiteId() {
-        return uniqueSiteId;
-    }
+            if (site == Site.MANHWA) {
+                val parts = UriParts(url, true)
+                // Remove the last part of the filename if it is formatted as "numberxnumber"
+                var nameParts = parts.fileNameNoExt.split("-")
+                val lastPartParts = nameParts[nameParts.size - 1].split("x")
+                for (s in lastPartParts) if (!isNumeric(s)) return url
 
-    public void populateUniqueSiteId() {
-        if (null == uniqueSiteId || uniqueSiteId.isEmpty()) uniqueSiteId = computeUniqueSiteId();
-    }
+                nameParts = nameParts.subList(0, nameParts.size - 1)
+                return parts.path + TextUtils.join("-", nameParts)
+            } else {
+                return url
+            }
+        }
 
-    public void setUniqueSiteId(@NonNull String uniqueSiteId) {
-        this.uniqueSiteId = uniqueSiteId;
-    }
+        fun transformRawUrl(site: Site, url: String): String {
+            when (site) {
+                Site.TSUMINO -> return url.replace("/Read/Index", "")
+                Site.PURURIN -> {
+                    if (url.contains("/collection/")) return url
+                    return url.replace(getHttpProtocol(url) + "://pururin.to/gallery", "")
+                }
 
-    public static String transformRawUrl(@NonNull final Site site, @NonNull final String url) {
-        switch (site) {
-            case TSUMINO:
-                return url.replace("/Read/Index", "");
-            case PURURIN:
-                if (url.contains("/collection/")) return url;
-                return url.replace(HttpHelperKt.getHttpProtocol(url) + "://pururin.to/gallery", "");
-            case NHENTAI:
-                return url.replace(site.getUrl(), "").replace("/g/", "/").replaceFirst("/1/$", "/");
-            case MUSES:
-                return url.replace(site.getUrl(), "").replace("https://comics.8muses.com", "");
-            case MRM:
-                return url.replace(site.getUrl(), "").split("/")[0];
-            case HITOMI:
-                return url.replace(site.getUrl(), "").replace("/reader", "").replace("/galleries", "");
-            case MANHWA18:
-            case IMHENTAI:
-            case HENTAIFOX:
-                return url.replace(site.getUrl(), "").replace("/gallery", "").replace("/g/", "/");
-            case PIXIV:
-                return url.replace(site.getUrl(), "").replaceAll("^[a-z]{2}/", "");
-            case ALLPORNCOMIC:
-            case DOUJINS:
-            case HENTAI2READ:
-            case HBROWSE:
-            case MANHWA:
-            case MULTPORN:
-            case TOONILY:
-            case SIMPLY:
-            case HDPORNCOMICS:
-            case DEVIANTART:
-                return url.replace(site.getUrl(), "");
-            case EHENTAI:
-            case EXHENTAI:
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-            case ANCHIRA:
-                return url.replace(site.getUrl() + "/g", "").replace(site.getUrl() + "/api/v1/library", "");
-            case EDOUJIN:
-            case LUSCIOUS:
-                return url.replace(site.getUrl().replace("/manga/", ""), "");
-            case MANGAGO:
-                return url.replace(site.getUrl() + "read-manga/", "");
-            case PORNCOMIX:
-            default:
-                return url;
+                Site.NHENTAI -> return url.replace(site.url, "").replace("/g/", "/")
+                    .replaceFirst("/1/$".toRegex(), "/")
+
+                Site.MUSES -> return url.replace(site.url, "")
+                    .replace("https://comics.8muses.com", "")
+
+                Site.MRM -> return url.replace(site.url, "").split("/")[0]
+
+                Site.HITOMI -> return url.replace(site.url, "").replace("/reader", "")
+                    .replace("/galleries", "")
+
+                Site.MANHWA18, Site.IMHENTAI, Site.HENTAIFOX -> return url.replace(site.url, "")
+                    .replace("/gallery", "").replace("/g/", "/")
+
+                Site.PIXIV -> return url.replace(site.url, "").replace("^[a-z]{2}/".toRegex(), "")
+                Site.ALLPORNCOMIC, Site.DOUJINS, Site.HENTAI2READ, Site.HBROWSE, Site.MANHWA, Site.MULTPORN, Site.TOONILY, Site.SIMPLY, Site.HDPORNCOMICS, Site.DEVIANTART -> return url.replace(
+                    site.url,
+                    ""
+                )
+
+                Site.EHENTAI, Site.EXHENTAI, Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.ANCHIRA -> return url.replace(
+                    site.url + "/g",
+                    ""
+                ).replace(site.url + "/api/v1/library", "")
+
+                Site.EDOUJIN, Site.LUSCIOUS -> return url.replace(
+                    site.url.replace("/manga/", ""),
+                    ""
+                )
+
+                Site.MANGAGO -> return url.replace(site.url + "read-manga/", "")
+                Site.PORNCOMIX -> return url
+                else -> return url
+            }
         }
     }
 
-    private String computeUniqueSiteId() {
-        String[] paths;
 
-        if (null == url) return "";
+    fun clearAttributes() {
+        attributes.clear()
+    }
 
-        switch (site) {
-            case FAKKU:
-                return url.substring(url.lastIndexOf('/') + 1);
-            case EHENTAI:
-            case EXHENTAI:
-            case PURURIN:
-                if (url.contains("/collection/")) return "";
-                paths = url.split("/");
-                return (paths.length > 1) ? paths[1] : paths[0];
-            case MRM:
-            case HBROWSE:
-                return url.split("/")[0];
-            case HITOMI:
-                paths = url.split("/");
-                String expression = (paths.length > 1) ? paths[1] : paths[0];
-                return expression.replace(".html", "");
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-            case NHENTAI:
-            case PANDA:
-            case TSUMINO:
-                return url.replace("/", "");
-            case MUSES:
-                return url.replace("/comics/album/", "").replace("/", ".");
-            case FAKKU2:
-            case HENTAIFOX:
-            case PORNCOMIX:
-            case MANHWA:
-            case TOONILY:
-            case IMHENTAI:
-            case ALLPORNCOMIC:
-            case MULTPORN:
-            case EDOUJIN:
-            case SIMPLY:
-            case DEVIANTART:
+    fun putAttributes(attributes: Collection<Attribute?>?) {
+        // We do want to compare array references, not content
+        if (attributes != null && attributes !== this.attributes) {
+            this.attributes.clear()
+            this.attributes.addAll(attributes)
+        }
+    }
+
+    val attributeMap: AttributeMap
+        get() {
+            val result = AttributeMap()
+            val list = attributes.reach(this)
+            for (a in list) result.add(a)
+            return result
+        }
+
+    fun putAttributes(attrs: AttributeMap) {
+        attributes.clear()
+        addAttributes(attrs)
+    }
+
+    fun addAttributes(attrs: AttributeMap): Content {
+        for ((_, attrList) in attrs) {
+            addAttributes(attrList)
+        }
+        return this
+    }
+
+    fun addAttributes(attrs: Collection<Attribute>): Content {
+        attributes.addAll(attrs)
+        return this
+    }
+
+    fun populateUniqueSiteId() {
+        if (uniqueSiteId.isEmpty()) uniqueSiteId = computeUniqueSiteId()
+    }
+
+
+    private fun computeUniqueSiteId(): String {
+        val paths: List<String>
+
+        when (site) {
+            Site.FAKKU -> return url.substring(url.lastIndexOf('/') + 1)
+            Site.EHENTAI, Site.EXHENTAI, Site.PURURIN -> {
+                if (url.contains("/collection/")) return ""
+                paths = url.split("/")
+                return if ((paths.size > 1)) paths[1] else paths[0]
+            }
+
+            Site.MRM, Site.HBROWSE -> return url.split("/")[0]
+
+            Site.HITOMI -> {
+                paths = url.split("/")
+                val expression = if ((paths.size > 1)) paths[1] else paths[0]
+                return expression.replace(".html", "")
+            }
+
+            Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.NHENTAI, Site.PANDA, Site.TSUMINO -> return url.replace(
+                "/",
+                ""
+            )
+
+            Site.MUSES -> return url.replace("/comics/album/", "").replace("/", ".")
+            Site.FAKKU2, Site.HENTAIFOX, Site.PORNCOMIX, Site.MANHWA, Site.TOONILY, Site.IMHENTAI, Site.ALLPORNCOMIC, Site.MULTPORN, Site.EDOUJIN, Site.SIMPLY, Site.DEVIANTART -> {
                 // Last part of the URL
-                paths = url.split("/");
-                return paths[paths.length - 1];
-            case DOUJINS:
+                paths = url.split("/")
+                return paths[paths.size - 1]
+            }
+
+            Site.DOUJINS -> {
                 // ID is the last numeric part of the URL
                 // e.g. lewd-title-ch-1-3-42116 -> 42116 is the ID
-                int lastIndex = url.lastIndexOf('-');
-                return url.substring(lastIndex + 1);
-            case LUSCIOUS:
+                val lastIndex = url.lastIndexOf('-')
+                return url.substring(lastIndex + 1)
+            }
+
+            Site.LUSCIOUS -> {
                 // ID is the last numeric part of the URL
                 // e.g. /albums/lewd_title_ch_1_3_42116/ -> 42116 is the ID
-                lastIndex = url.lastIndexOf('_');
-                return url.substring(lastIndex + 1, url.length() - 1);
-            case PIXIV:
-                // - If artworks, ID is the artwork ID
+                val lastIndex = url.lastIndexOf('_')
+                return url.substring(lastIndex + 1, url.length - 1)
+            }
+
+            Site.PIXIV ->                 // - If artworks, ID is the artwork ID
                 // - If not, ID is the whole URL
-                if (url.contains("artworks")) return url.substring(url.lastIndexOf('/') + 1);
-                else return url;
-            default:
-                return "";
+                return if (url.contains("artworks")) url.substring(url.lastIndexOf('/') + 1)
+                else url
+
+            else -> return ""
         }
     }
 
-    public static Class<? extends AppCompatActivity> getWebActivityClass(Site site) {
-        switch (site) {
-            case HITOMI:
-                return HitomiActivity.class;
-            case NHENTAI:
-                return NhentaiActivity.class;
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                return ASMHentaiActivity.class;
-            case TSUMINO:
-                return TsuminoActivity.class;
-            case PURURIN:
-                return PururinActivity.class;
-            case EHENTAI:
-                return EHentaiActivity.class;
-            case EXHENTAI:
-                return ExHentaiActivity.class;
-            case MUSES:
-                return MusesActivity.class;
-            case DOUJINS:
-                return DoujinsActivity.class;
-            case LUSCIOUS:
-                return LusciousActivity.class;
-            case PORNCOMIX:
-                return PorncomixActivity.class;
-            case HENTAI2READ:
-                return Hentai2ReadActivity.class;
-            case HENTAIFOX:
-                return HentaifoxActivity.class;
-            case MRM:
-                return MrmActivity.class;
-            case MANHWA:
-                return ManhwaActivity.class;
-            case IMHENTAI:
-                return ImhentaiActivity.class;
-            case TOONILY:
-                return ToonilyActivity.class;
-            case ALLPORNCOMIC:
-                return AllPornComicActivity.class;
-            case PIXIV:
-                return PixivActivity.class;
-            case MANHWA18:
-                return Manhwa18Activity.class;
-            case MULTPORN:
-                return MultpornActivity.class;
-            case SIMPLY:
-                return SimplyActivity.class;
-            case HDPORNCOMICS:
-                return HdPornComicsActivity.class;
-            case EDOUJIN:
-                return EdoujinActivity.class;
-            case ANCHIRA:
-                return AnchiraActivity.class;
-            case DEVIANTART:
-                return DeviantArtActivity.class;
-            case MANGAGO:
-                return MangagoActivity.class;
-            default:
-                return BaseWebActivity.class;
-        }
-    }
+    val galleryUrl: String
+        get() {
+            val galleryConst: String
+            when (site) {
+                Site.PURURIN, Site.IMHENTAI -> if (url.contains("/collection/")) return url
+                else galleryConst = "/gallery"
 
-    public String getGalleryUrl() {
-        String galleryConst;
-        switch (site) {
-            case PURURIN:
-            case IMHENTAI:
-                if (url.contains("/collection/")) return url;
-                else galleryConst = "/gallery";
-                break;
-            case HITOMI:
-                galleryConst = "/galleries";
-                break;
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-            case EHENTAI:           // Won't work because of the temporary key
-            case EXHENTAI:          // Won't work because of the temporary key
-            case NHENTAI:
-            case ANCHIRA:
-                galleryConst = "/g";
-                break;
-            case TSUMINO:
-                galleryConst = "/entry";
-                break;
-            case FAKKU2:
-                galleryConst = "/hentai/";
-                break;
-            case EDOUJIN:
-            case LUSCIOUS:
-                return site.getUrl().replace("/manga/", "") + url;
-            case PORNCOMIX:
-                return url;
-            case HENTAIFOX:
-                String result = site.getUrl() + ("/gallery" + url).replace("//", "/");
-                if (result.endsWith("/1/")) result = result.substring(0, result.length() - 3);
-                if (result.endsWith("/1")) result = result.substring(0, result.length() - 2);
-                return result;
-            case MANGAGO:
-                galleryConst = "read-manga/";
-                break;
-            default:
-                galleryConst = "";
-        }
+                Site.HITOMI -> galleryConst = "/galleries"
+                Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.EHENTAI, Site.EXHENTAI, Site.NHENTAI, Site.ANCHIRA -> galleryConst =
+                    "/g"
 
-        return site.getUrl() + (galleryConst + url).replace("//", "/");
-    }
-
-    public String getReaderUrl() {
-        switch (site) {
-            case HITOMI:
-                return site.getUrl() + "/reader" + url;
-            case TSUMINO:
-                return site.getUrl() + "/Read/Index" + url;
-            case ASMHENTAI:
-                return site.getUrl() + "/gallery" + url + "1/";
-            case ASMHENTAI_COMICS:
-                return site.getUrl() + "/gallery" + url;
-            case PURURIN:
-                if (url.contains("/collection/")) return getGalleryUrl();
-                return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
-            case FAKKU2:
-                return getGalleryUrl() + "/read/page/1";
-            case MUSES:
-                return site.getUrl().replace("album", "picture") + "/1";
-            case LUSCIOUS:
-                return getGalleryUrl() + "read/";
-            case PORNCOMIX:
-                if (getGalleryUrl().contains("/manga")) return getGalleryUrl() + "/p/1/";
-                else return getGalleryUrl() + "#&gid=1&pid=1";
-            case HENTAIFOX:
-                return (getGalleryUrl().replace("/gallery/", "/g/") + "/1/").replace("//1/", "/1/");
-            default:
-                return getGalleryUrl();
-        }
-    }
-
-    public static String getGalleryUrlFromId(@NonNull Site site, @NonNull String id) {
-        return getGalleryUrlFromId(site, id, 0);
-    }
-
-    public static String getGalleryUrlFromId(@NonNull Site site, @NonNull String id, int altCode) {
-        switch (site) {
-            case HITOMI:
-                return site.getUrl() + "/galleries/" + id + ".html";
-            case NHENTAI:
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                return site.getUrl() + "/g/" + id + "/";
-            case IMHENTAI:
-            case HENTAIFOX:
-                return site.getUrl() + "/gallery/" + id + "/";
-            case HENTAICAFE:
-                return site.getUrl() + "/hc.fyi/" + id;
-            case TSUMINO:
-                return site.getUrl() + "/entry/" + id;
-            case NEXUS:
-                return site.getUrl() + "/view/" + id;
-            case LUSCIOUS:
-                return site.getUrl().replace("manga", "albums") + id + "/";
-            case HBROWSE:
-                return site.getUrl() + id + "/c00001";
-            case PIXIV:
-                if (1 == altCode) return site.getUrl() + "users/" + id;
-                else return site.getUrl() + "artworks/" + id;
-            case MULTPORN:
-                return site.getUrl() + "node/" + id;
-            case HDPORNCOMICS:
-                return site.getUrl() + "?p=" + id;
-            default:
-                return site.getUrl();
-        }
-    }
-
-    /**
-     * Neutralizes the given cover URL to detect duplicate books
-     *
-     * @param url  Cover URL to neutralize
-     * @param site Site the URL is taken from
-     * @return Neutralized cover URL
-     */
-    public static String getNeutralCoverUrlRoot(@NonNull final String url, @NonNull final Site site) {
-        if (url.isEmpty()) return url;
-
-        if (site == Site.MANHWA) {
-            UriParts parts = new UriParts(url, true);
-            // Remove the last part of the filename if it is formatted as "numberxnumber"
-            String[] nameParts = parts.getFileNameNoExt().split("-");
-            String[] lastPartParts = nameParts[nameParts.length - 1].split("x");
-            for (String s : lastPartParts)
-                if (!isNumeric(s)) return url;
-
-            nameParts = Arrays.copyOf(nameParts, nameParts.length - 1);
-            return parts.getPath() + TextUtils.join("-", nameParts);
-        } else {
-            return url;
-        }
-    }
-
-    public String getCategory() {
-        if (site == Site.FAKKU) {
-            return url.substring(1, url.lastIndexOf('/'));
-        } else {
-            if (attributes != null) {
-                Set<Attribute> attrs = getAttributeMap().get(AttributeType.CATEGORY);
-                if (attrs != null && !attrs.isEmpty()) {
-                    Optional<Attribute> attr = Stream.of(attrs).findFirst();
-                    if (attr.isPresent()) return attr.get().getName();
+                Site.TSUMINO -> galleryConst = "/entry"
+                Site.FAKKU2 -> galleryConst = "/hentai/"
+                Site.EDOUJIN, Site.LUSCIOUS -> return site.url.replace("/manga/", "") + url
+                Site.PORNCOMIX -> return url
+                Site.HENTAIFOX -> {
+                    var result = site.url + "/gallery$url".replace("//", "/")
+                    if (result.endsWith("/1/")) result = result.substring(0, result.length - 3)
+                    if (result.endsWith("/1")) result = result.substring(0, result.length - 2)
+                    return result
                 }
+
+                Site.MANGAGO -> galleryConst = "read-manga/"
+                else -> galleryConst = ""
+            }
+            return site.url + (galleryConst + url).replace("//", "/")
+        }
+
+    val readerUrl: String
+        get() {
+            when (site) {
+                Site.HITOMI -> return site.url + "/reader" + url
+                Site.TSUMINO -> return site.url + "/Read/Index" + url
+                Site.ASMHENTAI -> return site.url + "/gallery" + url + "1/"
+                Site.ASMHENTAI_COMICS -> return site.url + "/gallery" + url
+                Site.PURURIN -> {
+                    if (url.contains("/collection/")) return galleryUrl
+                    return site.url + "/read/" + url.substring(1).replace("/", "/01/")
+                }
+
+                Site.FAKKU2 -> return "$galleryUrl/read/page/1"
+                Site.MUSES -> return site.url.replace("album", "picture") + "/1"
+                Site.LUSCIOUS -> return galleryUrl + "read/"
+                Site.PORNCOMIX -> return if (galleryUrl.contains("/manga")) "$galleryUrl/p/1/"
+                else "$galleryUrl#&gid=1&pid=1"
+
+                Site.HENTAIFOX -> return (galleryUrl.replace(
+                    "/gallery/",
+                    "/g/"
+                ) + "/1/").replace("//1/", "/1/")
+
+                else -> return galleryUrl
             }
         }
-        return null;
+
+    fun setRawUrl(value: String) {
+        url = transformRawUrl(site, value)
     }
 
-    public String getUrl() {
-        return (null == url) ? "" : url;
+    var url: String
+        get() = dbUrl
+        set(value) {
+            dbUrl = if (value.startsWith("http")) transformRawUrl(site, value)
+            else value
+            populateUniqueSiteId()
+        }
+
+    fun computeAuthor() {
+        dbAuthor = formatBookAuthor(this)
     }
 
-    public Content setRawUrl(@NonNull String url) {
-        return setUrl(transformRawUrl(site, url));
-    }
+    var author: String
+        get() {
+            if (dbAuthor.isEmpty()) computeAuthor()
+            return dbAuthor
+        }
+        set(value) {
+            dbAuthor = value
+        }
 
-    public Content setUrl(String url) {
-        if (url != null && site != null && url.startsWith("http"))
-            this.url = transformRawUrl(site, url);
-        else this.url = url;
-        populateUniqueSiteId();
-        return this;
-    }
+    val imageList: List<ImageFile>
+        get() = imageFiles.reach(this)
 
-    public String getTitle() {
-        return (null == title) ? "" : title;
-    }
-
-    public Content setTitle(String title) {
-        this.title = title;
-        return this;
-    }
-
-    public void computeAuthor() {
-        author = formatBookAuthor(this);
-    }
-
-    public String getAuthor() {
-        if (null == author) computeAuthor();
-        return author;
-    }
-
-    public Content setAuthor(String author) {
-        this.author = author;
-        return this;
-    }
-
-    public int getQtyPages() {
-        return (null == qtyPages) ? 0 : qtyPages;
-    }
-
-    public Content setQtyPages(int qtyPages) {
-        this.qtyPages = qtyPages;
-        return this;
-    }
-
-    public long getUploadDate() {
-        return uploadDate;
-    }
-
-    public Content setUploadDate(long uploadDate) {
-        this.uploadDate = uploadDate;
-        return this;
-    }
-
-    public long getDownloadDate() {
-        return downloadDate;
-    }
-
-    public Content setDownloadDate(long downloadDate) {
-        this.downloadDate = downloadDate;
-        return this;
-    }
-
-    public long getDownloadCompletionDate() {
-        return downloadCompletionDate;
-    }
-
-    public Content setDownloadCompletionDate(long value) {
-        downloadCompletionDate = value;
-        return this;
-    }
-
-    public StatusContent getStatus() {
-        return status;
-    }
-
-    public Content setStatus(StatusContent status) {
-        this.status = status;
-        return this;
-    }
-
-    @Nullable
-    public ToMany<ImageFile> getImageFiles() {
-        return imageFiles;
-    }
-
-    public List<ImageFile> getImageList() {
-        return DBHelper.reach(this, imageFiles);
-    }
-
-    public Content setImageFiles(List<ImageFile> imageFiles) {
+    fun setImageFiles(imageFiles: List<ImageFile>?): Content {
         // We do want to compare array references, not content
-        if (imageFiles != null && imageFiles != this.imageFiles) {
-            this.imageFiles.clear();
-            this.imageFiles.addAll(imageFiles);
+        if (imageFiles != null && imageFiles !== this.imageFiles) {
+            this.imageFiles.clear()
+            this.imageFiles.addAll(imageFiles)
         }
-        return this;
+        return this
     }
 
-    public ImageFile getCover() {
-        List<ImageFile> images = getImageList();
-        for (ImageFile img : images) if (img.isCover()) return img;
-        ImageFile makeupCover = ImageFile.Companion.fromImageUrl(0, getCoverImageUrl(), StatusContent.ONLINE, 1);
-        makeupCover.setImageHash(Long.MIN_VALUE); // Makeup cover is unhashable
-        return makeupCover;
-    }
+    val cover: ImageFile
+        get() {
+            val images = imageList
+            for (img in images) if (img.isCover) return img
+            val makeupCover = fromImageUrl(0, coverImageUrl, StatusContent.ONLINE, 1)
+            makeupCover.imageHash = Long.MIN_VALUE // Makeup cover is unhashable
+            return makeupCover
+        }
 
-    public String getCoverImageUrl() {
-        return (null == coverImageUrl) ? "" : coverImageUrl;
-    }
+    val errorList: List<ErrorRecord>
+        get() {
+            return errorLog.reach(this)
+        }
 
-    public Content setCoverImageUrl(String coverImageUrl) {
-        this.coverImageUrl = coverImageUrl;
-        return this;
-    }
-
-    @Nullable
-    public ToMany<ErrorRecord> getErrorLog() {
-        return errorLog;
-    }
-
-    public List<ErrorRecord> getErrorList() {
-        return DBHelper.reach(this, errorLog);
-    }
-
-    public void setErrorLog(List<ErrorRecord> errorLog) {
-        if (errorLog != null && !errorLog.equals(this.errorLog)) {
-            this.errorLog.clear();
-            this.errorLog.addAll(errorLog);
+    fun setErrorLog(errorLog: List<ErrorRecord>?) {
+        if (errorLog != null && errorLog != this.errorLog) {
+            this.errorLog.clear()
+            this.errorLog.addAll(errorLog)
         }
     }
 
-    public double getPercent() {
-        if (getQtyPages() > 0)
-            return progress * 1.0 / getQtyPages();
-        else
-            return 0;
+    fun getPercent(): Double {
+        return if (qtyPages > 0) progress * 1.0 / qtyPages
+        else 0.0
     }
 
-    public void setProgress(long progress) {
-        this.progress = progress;
+    fun computeProgress() {
+        if (0L == progress) progress =
+            imageList.count { it.status == StatusContent.DOWNLOADED || it.status == StatusContent.ERROR } * 1L
     }
 
-    public void computeProgress() {
-        if (0 == progress && imageFiles != null)
-            progress = Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.ERROR).count();
-    }
-
-    public double getBookSizeEstimate() {
+    fun getBookSizeEstimate(): Double {
         if (downloadedBytes > 0) {
-            computeProgress();
-            if (progress > 3) return (long) (downloadedBytes / getPercent());
+            computeProgress()
+            if (progress > 3) return (downloadedBytes / getPercent()).toLong().toDouble()
         }
-        return 0;
+        return 0.0
     }
 
-    public void setDownloadedBytes(long downloadedBytes) {
-        this.downloadedBytes = downloadedBytes;
+    fun computeDownloadedBytes() {
+        if (0L == downloadedBytes) downloadedBytes = imageFiles.sumOf { it.size }
     }
 
-    public void computeDownloadedBytes() {
-        if (0 == downloadedBytes)
-            downloadedBytes = Stream.of(imageFiles).mapToLong(ImageFile::getSize).sum();
+    fun getNbDownloadedPages(): Long {
+        return imageList.count { (it.status == StatusContent.DOWNLOADED || it.status == StatusContent.EXTERNAL || it.status == StatusContent.ONLINE) && it.isReadable } * 1L
     }
 
-    public long getNbDownloadedPages() {
-        if (imageFiles != null)
-            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL || i.getStatus() == StatusContent.ONLINE) && i.isReadable()).count();
-        else return 0;
+    private fun getDownloadedPagesSize(): Long {
+        return imageList
+            .filter { it.status == StatusContent.DOWNLOADED || it.status == StatusContent.EXTERNAL }
+            .sumOf { it.size }
     }
 
-    private long getDownloadedPagesSize() {
-        if (imageFiles != null) {
-            Long result = Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
-            if (result != null) return result;
+    fun computeSize() {
+        size = getDownloadedPagesSize()
+    }
+
+    fun setStorageDoc(storageDoc: DocumentFile): Content {
+        this.storageUri = storageDoc.uri.toString()
+        this.storageDoc = storageDoc
+        return this
+    }
+
+    fun clearStorageDoc() {
+        storageUri = ""
+        storageDoc = null
+    }
+
+    fun increaseReads(): Content {
+        reads++
+        return this
+    }
+
+    val isArchive: Boolean
+        get() = isSupportedArchive(storageUri) // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed (not in any spec) !
+
+    val groupItemList: List<GroupItem>
+        get() = groupItems.reach(this)
+
+    fun getGroupItems(grouping: Grouping): List<GroupItem> {
+        return groupItemList.filter { it.group.target.grouping == grouping }
+    }
+
+    private fun computeReadPagesCount(): Int {
+        val countReadPages =
+            imageFiles.filter(ImageFile::read).count(ImageFile::isReadable)
+        return if (0 == countReadPages && lastReadPageIndex > 0) lastReadPageIndex // pre-v1.13 content
+        else countReadPages // post v1.13 content
+    }
+
+    var readPagesCount: Int
+        get() = if (dbReadPagesCount > -1) dbReadPagesCount else computeReadPagesCount()
+        set(value) {
+            dbReadPagesCount = value
         }
-        return 0;
-    }
 
-    public long getSize() {
-        return size;
-    }
-
-    public void forceSize(long size) {
-        this.size = size;
-    }
-
-    public void computeSize() {
-        size = getDownloadedPagesSize();
-    }
-
-    public Site getSite() {
-        return site;
-    }
-
-    public Content setSite(Site site) {
-        this.site = site;
-        return this;
-    }
-
-    public Content setStorageDoc(DocumentFile storageDoc) {
-        this.storageUri = storageDoc.getUri().toString();
-        this.storageDoc = storageDoc;
-        return this;
-    }
-
-    public void clearStorageDoc() {
-        storageUri = "";
-        storageDoc = null;
-    }
-
-    public String getStorageUri() {
-        return storageUri == null ? "" : storageUri;
-    }
-
-    @Nullable
-    public DocumentFile getStorageDoc() {
-        return storageDoc;
-    }
-
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public Content setCompleted(boolean completed) {
-        this.completed = completed;
-        return this;
-    }
-
-    public boolean isFavourite() {
-        return favourite;
-    }
-
-    public Content setFavourite(boolean favourite) {
-        this.favourite = favourite;
-        return this;
-    }
-
-    public int getRating() {
-        return rating;
-    }
-
-    public void setRating(int rating) {
-        this.rating = rating;
-    }
-
-    public boolean isLast() {
-        return isLast;
-    }
-
-    public void setLast(boolean last) {
-        this.isLast = last;
-    }
-
-    public boolean isFirst() {
-        return isFirst;
-    }
-
-    public void setFirst(boolean first) {
-        this.isFirst = first;
-    }
-
-    public long getReads() {
-        return reads;
-    }
-
-    public Content increaseReads() {
-        this.reads++;
-        return this;
-    }
-
-    public Content setReads(long reads) {
-        this.reads = reads;
-        return this;
-    }
-
-    public long getLastReadDate() {
-        return lastReadDate;
-    }
-
-    public Content setLastReadDate(long lastReadDate) {
-        this.lastReadDate = lastReadDate;
-        return this;
-    }
-
-    public String getDownloadParams() {
-        return (null == downloadParams) ? "" : downloadParams;
-    }
-
-    public Content setDownloadParams(String params) {
-        downloadParams = params;
-        return this;
-    }
-
-    public Map<String, String> getBookPreferences() {
-        return bookPreferences;
-    }
-
-    public void setBookPreferences(Map<String, String> bookPreferences) {
-        this.bookPreferences = bookPreferences;
-    }
-
-    public int getLastReadPageIndex() {
-        return lastReadPageIndex;
-    }
-
-    public void setLastReadPageIndex(int index) {
-        this.lastReadPageIndex = index;
-    }
-
-    public boolean isBeingProcessed() {
-        return isBeingProcessed;
-    }
-
-    public void setIsBeingProcessed(boolean data) {
-        this.isBeingProcessed = data;
-    }
-
-    public String getJsonUri() {
-        return (null == jsonUri) ? "" : jsonUri;
-    }
-
-    public void setJsonUri(String jsonUri) {
-        this.jsonUri = jsonUri;
-    }
-
-    public boolean isFlaggedForDeletion() {
-        return isFlaggedForDeletion;
-    }
-
-    public void setFlaggedForDeletion(boolean flaggedForDeletion) {
-        isFlaggedForDeletion = flaggedForDeletion;
-    }
-
-    public int getNumberDownloadRetries() {
-        return numberDownloadRetries;
-    }
-
-    public void increaseNumberDownloadRetries() {
-        this.numberDownloadRetries++;
-    }
-
-    public boolean isArchive() {
-        return ArchiveHelperKt.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed (not in any spec) !
-    }
-
-    public String getParentStorageUri() {
-        return parentStorageUri;
-    }
-
-    public void setParentStorageUri(String data) {
-        this.parentStorageUri = data;
-    }
-
-    public List<GroupItem> getGroupItemList() {
-        return DBHelper.reach(this, groupItems);
-    }
-
-    public List<GroupItem> getGroupItems(@NonNull Grouping grouping) {
-        return Stream.of(getGroupItemList()).filter(gi -> gi.group.getTarget().getGrouping().equals(grouping)).toList();
-    }
-
-    public int computeReadPagesCount() {
-        if (null == imageFiles) return 0;
-        int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::getRead).filter(ImageFile::isReadable).count();
-        if (0 == countReadPages && lastReadPageIndex > 0)
-            return lastReadPageIndex; // pre-v1.13 content
-        else return countReadPages; // post v1.13 content
-    }
-
-    public int getReadPagesCount() {
-        return (readPagesCount > -1) ? readPagesCount : computeReadPagesCount();
-    }
-
-    public void setReadPagesCount(int count) {
-        readPagesCount = count;
-    }
-
-    public void computeReadProgress() {
-        if (null == getImageFiles()) {
-            readProgress = 0;
-            return;
-        }
-        long denominator = Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
+    fun computeReadProgress() {
+        val denominator = imageList.count { it.isReadable }
         if (0 == denominator) {
-            readProgress = 0;
-            return;
+            readProgress = 0f
+            return
         }
-        readProgress = computeReadPagesCount() * 1f / denominator;
+        readProgress = computeReadPagesCount() * 1f / denominator
     }
 
-    public float getReadProgress() {
-        return readProgress;
-    }
+    val chaptersList: List<Chapter>
+        get() = chapters.reach(this)
 
-    @Nullable
-    public ToMany<Chapter> getChapters() {
-        return chapters;
-    }
-
-    public List<Chapter> getChaptersList() {
-        return DBHelper.reach(this, chapters);
-    }
-
-    public void setChapters(List<Chapter> chapters) {
+    fun setChapters(chapters: List<Chapter?>?) {
         // We do want to compare array references, not content
-        if (chapters != null && chapters != this.chapters) {
-            this.chapters.clear();
-            this.chapters.addAll(chapters);
+        if (chapters != null && chapters !== this.chapters) {
+            this.chapters.clear()
+            this.chapters.addAll(chapters)
         }
     }
 
-    public void clearChapters() {
-        this.chapters.clear();
+    fun clearChapters() {
+        chapters.clear()
     }
 
-    @Nullable
-    public ToMany<QueueRecord> getQueueRecords() {
-        return queueRecords;
+    fun setContentIdToReplace(contentIdToReplace: Long) {
+        contentToReplace.targetId = contentIdToReplace
     }
 
-    public int getDownloadMode() {
-        return downloadMode;
+    fun increaseNumberDownloadRetries() {
+        numberDownloadRetries++
     }
 
-    public Content setDownloadMode(int downloadMode) {
-        this.downloadMode = downloadMode;
-        return this;
-    }
-
-    public boolean isManuallyMerged() {
-        return manuallyMerged;
-    }
-
-    public void setManuallyMerged(boolean manuallyMerged) {
-        this.manuallyMerged = manuallyMerged;
-    }
-
-    public long getLastEditDate() {
-        return lastEditDate;
-    }
-
-    public void setLastEditDate(long lastEditDate) {
-        this.lastEditDate = lastEditDate;
-    }
-
-    public ToOne<Content> getContentToReplace() {
-        return contentToReplace;
-    }
-
-    public void setContentIdToReplace(long contentIdToReplace) {
-        this.contentToReplace.setTargetId(contentIdToReplace);
-    }
-
-    public String getReplacementTitle() {
-        return (null == replacementTitle) ? "" : replacementTitle;
-    }
-
-    public void setReplacementTitle(String replacementTitle) {
-        this.replacementTitle = replacementTitle;
-    }
-
-    public boolean isFrozen() {
-        return isFrozen;
-    }
-
-    public void setFrozen(boolean frozen) {
-        isFrozen = frozen;
-    }
-
-    public boolean isFolderExists() {
-        return folderExists;
-    }
-
-    public void setFolderExists(boolean folderExists) {
-        this.folderExists = folderExists;
-    }
-
-    public boolean isDynamic() {
-        return isDynamic;
-    }
-
-    public void setDynamic(boolean dynamic) {
-        isDynamic = dynamic;
-    }
-
-    public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {
-        @Override
-        public Map<String, String> convertToEntityProperty(String databaseValue) {
-            if (null == databaseValue) return new HashMap<>();
+    class StringMapConverter : PropertyConverter<Map<String, String>, String> {
+        override fun convertToEntityProperty(databaseValue: String?): Map<String, String> {
+            if (null == databaseValue) return java.util.HashMap()
 
             try {
-                return jsonToObject(databaseValue, JsonHelperKt.getMAP_STRINGS());
-            } catch (IOException e) {
-                Timber.w(e);
-                return new HashMap<>();
+                return jsonToObject<Map<String, String>>(databaseValue, MAP_STRINGS)!!
+            } catch (e: IOException) {
+                Timber.w(e)
+                return java.util.HashMap()
             }
         }
 
-        @Override
-        public String convertToDatabaseValue(Map<String, String> entityProperty) {
-            return serializeToJson(entityProperty, JsonHelperKt.getMAP_STRINGS());
+        override fun convertToDatabaseValue(entityProperty: Map<String, String>): String {
+            return serializeToJson(entityProperty, MAP_STRINGS)
+        }
+    }
+
+    class DownloadModeConverter : PropertyConverter<DownloadMode, Int> {
+        override fun convertToEntityProperty(databaseValue: Int?): DownloadMode {
+            if (databaseValue == null) {
+                return DownloadMode.DOWNLOAD
+            }
+            for (entry in DownloadMode.entries) {
+                if (entry.value == databaseValue) {
+                    return entry
+                }
+            }
+            return DownloadMode.DOWNLOAD
+        }
+
+        override fun convertToDatabaseValue(entityProperty: DownloadMode): Int {
+            return entityProperty.value
         }
     }
 
     // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI
     // If not done, FastAdapter's PagedItemListImpl cache won't detect changes to the object
     // and items won't be visually updated on screen
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Content content = (Content) o;
-        return isFavourite() == content.isFavourite() &&
-                getRating() == content.getRating() &&
-                isCompleted() == content.isCompleted() &&
-                getDownloadDate() == content.getDownloadDate() && // To differentiate external books that have no URL
-                getSize() == content.getSize() && // To differentiate external books that have no URL
-                getLastReadDate() == content.getLastReadDate() &&
-                isBeingProcessed() == content.isBeingProcessed() &&
-                Objects.equals(getUrl(), content.getUrl()) &&
-                Objects.equals(getCoverImageUrl(), content.getCoverImageUrl()) &&
-                getSite() == content.getSite() &&
-                getDownloadMode() == content.getDownloadMode() &&
-                getLastEditDate() == content.getLastEditDate();
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val content = other as Content
+        return favourite == content.favourite
+                && rating == content.rating
+                && completed == content.completed
+                && downloadDate == content.downloadDate  // To differentiate external books that have no URL
+                && size == content.size // To differentiate external books that have no URL
+                && lastReadDate == content.lastReadDate
+                && isBeingProcessed == content.isBeingProcessed
+                && url == content.url
+                && coverImageUrl == content.coverImageUrl
+                && site == content.site
+                && downloadMode == content.downloadMode
+                && lastEditDate == content.lastEditDate
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(isFavourite(), getRating(), isCompleted(), getDownloadDate(), getSize(), getLastReadDate(), isBeingProcessed(), getUrl(), getCoverImageUrl(), getSite(), getDownloadMode(), getLastEditDate());
+    override fun hashCode(): Int {
+        return Objects.hash(
+            favourite,
+            rating,
+            completed,
+            downloadDate,
+            size,
+            lastReadDate,
+            isBeingProcessed,
+            url,
+            coverImageUrl,
+            site,
+            downloadMode,
+            lastEditDate
+        )
     }
 
-    public long uniqueHash() {
-        if (0 == uniqueHash) uniqueHash = hash64((id + "." + uniqueSiteId).getBytes());
-        return uniqueHash;
+    fun uniqueHash(): Long {
+        if (0L == uniqueHash) uniqueHash = hash64("$id.$uniqueSiteId".toByteArray())
+        return uniqueHash
     }
 }

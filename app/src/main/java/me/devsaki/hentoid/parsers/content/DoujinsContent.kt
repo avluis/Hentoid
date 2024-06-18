@@ -33,7 +33,10 @@ class DoujinsContent : BaseContentParser() {
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         content.site = Site.DOUJINS
-        if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED)
+        if (url.isEmpty()) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         content.setRawUrl(url)
         breadcrumbs?.let {
             if (it.isNotEmpty()) {

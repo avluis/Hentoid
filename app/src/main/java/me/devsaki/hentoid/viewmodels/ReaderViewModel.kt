@@ -245,7 +245,7 @@ class ReaderViewModel(
         currentContentIndex = 0
         c.isFirst = true
         c.isLast = true
-        c.isFolderExists = false
+        c.folderExists = false
         c.isDynamic = true
         content.postValue(c)
 
@@ -594,7 +594,7 @@ class ReaderViewModel(
                 for (img in theImages) if (readPageNumbers.contains(img.order)) img.read = true
                 savedContent.computeReadProgress()
             }
-            if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.isCompleted != markAsCompleted)
+            if (indexToSet != savedContent.lastReadPageIndex || updateReads || readPageNumbers.size > reReadPagesNumbers.size || savedContent.completed != markAsCompleted)
                 updateContentReadStats(
                     getApplication(),
                     dao,
@@ -687,7 +687,7 @@ class ReaderViewModel(
      */
     fun toggleContentFavourite(viewerIndex: Int, successCallback: (Boolean) -> Unit) {
         val theContent = getContent().value ?: return
-        val newState = !theContent.isFavourite
+        val newState = !theContent.favourite
 
         viewModelScope.launch {
             try {
@@ -709,7 +709,7 @@ class ReaderViewModel(
      */
     private fun doToggleContentFavourite(content: Content) {
         assertNonUiThread()
-        content.isFavourite = !content.isFavourite
+        content.favourite = !content.favourite
 
         // Persist in DB
         dao.insertContent(content)
@@ -901,7 +901,7 @@ class ReaderViewModel(
                 getApplication(),
                 c.storageUri
             )
-        ) c.isFolderExists = false
+        ) c.folderExists = false
         content.postValue(c)
         loadDatabaseImages(c, pageNumber, forceImageUIReload)
     }
@@ -1230,7 +1230,7 @@ class ReaderViewModel(
     ) {
 
         getContent().value?.let {
-            if (it.isFolderExists) cacheJson(getApplication<Application>().applicationContext, it)
+            if (it.folderExists) cacheJson(getApplication<Application>().applicationContext, it)
         }
 
         nbProcessed.getAndIncrement()

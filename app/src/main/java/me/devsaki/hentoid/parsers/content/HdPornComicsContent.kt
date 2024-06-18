@@ -42,21 +42,26 @@ class HdPornComicsContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.HDPORNCOMICS)
-        if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED)
+        content.site = Site.HDPORNCOMICS
+        if (url.isEmpty()) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         content.setRawUrl(url)
-        content.setTitle(cleanup(title))
+        content.title = cleanup(title)
         if (shortlink.isNotEmpty()) {
             val equalIndex = shortlink.lastIndexOf('=')
             if (equalIndex > -1) content.uniqueSiteId = shortlink.substring(equalIndex + 1)
         }
-        if (uploadDate.isNotEmpty()) content.setUploadDate(
-            parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
+        if (uploadDate.isNotEmpty()) content.uploadDate = parseDatetimeToEpoch(
+            uploadDate,
+            "yyyy-MM-dd'T'HH:mm:ssXXX"
         ) // e.g. 2021-08-08T20:53:49+00:00
+
         var coverUrl = ""
         cover?.let {
             coverUrl = getImgSrc(it)
-            content.setCoverImageUrl(coverUrl)
+            content.coverImageUrl = coverUrl
         }
         val attributes = AttributeMap()
         parseAttributes(
@@ -74,7 +79,7 @@ class HdPornComicsContent : BaseContentParser() {
                 content.setImageFiles(
                     urlsToImageFiles(imgs, coverUrl, StatusContent.SAVED)
                 )
-                content.setQtyPages(imgs.size - 1) // Don't count the cover
+                content.qtyPages = imgs.size - 1 // Don't count the cover
             }
         }
         return content

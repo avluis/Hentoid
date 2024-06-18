@@ -47,7 +47,7 @@ class MangagoContent : BaseContentParser() {
 
         if (coverUrl.isNotEmpty()) {
             if (!coverUrl.startsWith("http")) coverUrl += getHttpProtocol(url) + ":" + coverUrl
-            content.setCoverImageUrl(coverUrl)
+            content.coverImageUrl = coverUrl
         }
 
         val attributes = AttributeMap()
@@ -57,7 +57,7 @@ class MangagoContent : BaseContentParser() {
 
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
 
         return content

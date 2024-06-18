@@ -197,8 +197,8 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
             val context = tvPages.context
             val template = context.resources.getQuantityString(
                 R.plurals.work_pages_library,
-                content.nbDownloadedPages.toInt(),
-                content.nbDownloadedPages,
+                content.getNbDownloadedPages().toInt(),
+                content.getNbDownloadedPages(),
                 content.size * 1.0 / (1024 * 1024)
             )
             tvPages.text = template
@@ -249,7 +249,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
             } else ivExternal.visibility = View.GONE
 
             // Favourite icon
-            if (content.isFavourite) {
+            if (content.favourite) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ivFavourite.tooltipText =
                     context.getText(R.string.book_favourite_success)

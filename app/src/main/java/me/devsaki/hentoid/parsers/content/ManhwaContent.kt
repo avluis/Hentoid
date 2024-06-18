@@ -48,8 +48,8 @@ class ManhwaContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.MANHWA)
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        content.site = Site.MANHWA
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
         return if (GALLERY_PATTERN.matcher(url).find())
             updateGallery(content, updateImages)
@@ -61,7 +61,7 @@ class ManhwaContent : BaseContentParser() {
         url: String,
         updateImages: Boolean
     ): Content {
-        content.setTitle(cleanup(chapterTitle?.text()))
+        content.title = cleanup(chapterTitle?.text())
         val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 2]
         else content.uniqueSiteId = urlParts[0]
@@ -73,20 +73,20 @@ class ManhwaContent : BaseContentParser() {
                 content.setImageFiles(
                     urlsToImageFiles(imgUrls, coverUrl, StatusContent.SAVED)
                 )
-                content.setQtyPages(imgUrls.size)
+                content.qtyPages = imgUrls.size
             }
         }
         return content
     }
 
     private fun updateGallery(content: Content, updateImages: Boolean): Content {
-        content.setCoverImageUrl(coverUrl)
-        var title: String? = NO_TITLE
+        content.coverImageUrl = coverUrl
+        var title = NO_TITLE
         breadcrumbs?.let {
             if (it.isNotEmpty())
                 title = cleanup(it[it.size - 1].text())
         }
-        content.setTitle(title)
+        content.title = title
         content.populateUniqueSiteId()
         metadata?.let {
             if (it.childNodeSize() > 0) {
@@ -97,9 +97,8 @@ class ManhwaContent : BaseContentParser() {
                     )?.let { galleryMeta ->
                         val publishDate =
                             galleryMeta.datePublished // e.g. 2021-01-27T15:20:38+00:00
-                        if (publishDate.isNotEmpty()) content.setUploadDate(
+                        if (publishDate.isNotEmpty()) content.uploadDate =
                             parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
-                        )
                     }
                 } catch (e: IOException) {
                     Timber.i(e)
@@ -112,7 +111,7 @@ class ManhwaContent : BaseContentParser() {
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }

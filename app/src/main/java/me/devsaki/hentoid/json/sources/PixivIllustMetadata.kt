@@ -250,21 +250,23 @@ data class PixivIllustMetadata(
 
     fun update(content: Content, url: String, updateImages: Boolean): Content {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
-        content.setSite(Site.PIXIV)
-        if (error || null == body || null == body.illustDetails)
-            return content.setStatus(StatusContent.IGNORED)
+        content.site = Site.PIXIV
+        if (error || null == body || null == body.illustDetails) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         val illustData: IllustBody = body
-        content.setTitle(cleanup(illustData.title))
+        content.title = cleanup(illustData.title)
         content.uniqueSiteId = illustData.illustId!!
         var urlValue = illustData.canonicalUrl
         if (urlValue.isEmpty()) urlValue = url
         content.setRawUrl(urlValue)
-        content.setCoverImageUrl(illustData.thumbUrl)
-        content.setUploadDate(illustData.uploadTimestamp!! * 1000)
+        content.coverImageUrl = illustData.thumbUrl
+        content.uploadDate = illustData.uploadTimestamp!! * 1000
         content.putAttributes(getAttributes())
         if (updateImages) {
             content.setImageFiles(illustData.imageFiles)
-            content.setQtyPages(illustData.pageCount)
+            content.qtyPages = illustData.pageCount
         }
         return content
     }

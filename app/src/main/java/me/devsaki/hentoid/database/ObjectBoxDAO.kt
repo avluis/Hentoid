@@ -412,9 +412,9 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun clearDownloadParams(contentId: Long) {
         val c = ObjectBoxDB.selectContentById(contentId) ?: return
-        c.setDownloadParams("")
+        c.downloadParams = ""
         ObjectBoxDB.insertContentCore(c)
-        val imgs = c.imageFiles ?: return
+        val imgs = c.imageFiles
         for (img in imgs) img.downloadParams = ""
         ObjectBoxDB.insertImageFiles(imgs)
     }
@@ -885,8 +885,8 @@ class ObjectBoxDAO : CollectionDAO {
             sourceImageStatus,
             targetImageStatus
         )
-        content.setStatus(StatusContent.PAUSED)
-        content.setIsBeingProcessed(false) // Remove any UI animation
+        content.status = StatusContent.PAUSED
+        content.isBeingProcessed = false // Remove any UI animation
         if (replacedContentId > -1) content.setContentIdToReplace(replacedContentId)
         if (replacementTitle != null) content.replacementTitle = replacementTitle
         insertContent(content)

@@ -67,6 +67,6 @@ class PixivContent : BaseContentParser() {
         } catch (e: IOException) {
             Timber.e(e, "Error parsing content.")
         }
-        return Content().setSite(Site.PIXIV).setStatus(StatusContent.IGNORED)
+        return Content(site = Site.PIXIV, status = StatusContent.IGNORED)
     }
 }

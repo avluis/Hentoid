@@ -72,8 +72,10 @@ public class SimplyContentMetadata {
     public Content update(@NonNull Content content, boolean updateImages) {
         content.setSite(Site.SIMPLY);
 
-        if (null == data || null == data.title || null == data.slug)
-            return content.setStatus(StatusContent.IGNORED);
+        if (null == data || null == data.title || null == data.slug) {
+            content.setStatus(StatusContent.IGNORED);
+            return content;
+        }
 
         String url = Site.SIMPLY.getUrl() + "manga/" + data.slug;
 

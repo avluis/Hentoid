@@ -38,23 +38,22 @@ class ImhentaiContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.IMHENTAI)
+        content.site = Site.IMHENTAI
         content.setRawUrl(url)
         cover?.let {
-            content.setCoverImageUrl(getImgSrc(it))
+            content.coverImageUrl = getImgSrc(it)
         }
         var str = cleanup(title)
         str = removeTextualTags(str)
-        content.setTitle(str)
+        content.title = str
         if (updateImages) {
             var qtyPages = 0
             if (pages.isNotEmpty()) {
-                str = pages.replace("Pages", "").replace("pages", "").replace(":", "")
-                    .trim { it <= ' ' }
+                str = pages.replace("Pages", "").replace("pages", "").replace(":", "").trim()
                 qtyPages = str.toInt()
             }
             content.setImageFiles(emptyList())
-            content.setQtyPages(qtyPages)
+            content.qtyPages = qtyPages
         }
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.IMHENTAI)

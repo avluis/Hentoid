@@ -41,8 +41,8 @@ class Hentai2ReadContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.HENTAI2READ)
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        content.site = Site.HENTAI2READ
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
         return if (GALLERY_PATTERN.matcher(url).find()) updateGallery(
             content,
@@ -61,7 +61,7 @@ class Hentai2ReadContent : BaseContentParser() {
         try {
             val info = Hentai2ReadParser.getDataFromScripts(scripts)
             if (info != null) {
-                content.setTitle(cleanup(info.title))
+                content.title = cleanup(info.title)
                 val chapterImgs =
                     info.images.map { s -> IMAGE_PATH + s }
                 if (updateImages && chapterImgs.isNotEmpty()) {
@@ -73,7 +73,7 @@ class Hentai2ReadContent : BaseContentParser() {
                             StatusContent.SAVED
                         )
                     )
-                    content.setQtyPages(chapterImgs.size)
+                    content.qtyPages = chapterImgs.size
                 }
             }
         } catch (ioe: IOException) {
@@ -84,14 +84,14 @@ class Hentai2ReadContent : BaseContentParser() {
 
     private fun updateGallery(content: Content, updateImages: Boolean): Content {
         cover?.let {
-            content.setCoverImageUrl(getImgSrc(it))
+            content.coverImageUrl = getImgSrc(it)
         }
         title?.let {
             if (it.isNotEmpty()) {
                 val titleStr = it[it.size - 1].text() // Last span is the title
-                content.setTitle(cleanup(titleStr))
+                content.title = cleanup(titleStr)
             }
-        } ?: { content.setTitle(NO_TITLE) }
+        } ?: { content.title = NO_TITLE }
         content.uniqueSiteId = uniqueId
         val attributes = AttributeMap()
         properties?.let { props ->
@@ -151,7 +151,7 @@ class Hentai2ReadContent : BaseContentParser() {
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }

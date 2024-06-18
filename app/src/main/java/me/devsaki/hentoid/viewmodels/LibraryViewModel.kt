@@ -25,6 +25,7 @@ import me.devsaki.hentoid.core.SEED_CONTENT
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SearchRecord
@@ -401,7 +402,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val theContent = dao.selectContent(contentId)
         if (theContent != null) {
             if (theContent.isBeingProcessed) return
-            theContent.isCompleted = !theContent.isCompleted
+            theContent.completed = !theContent.completed
             persistJson(getApplication(), theContent)
             dao.insertContentCore(theContent)
             return
@@ -480,7 +481,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         // Check if given content still exists in DB
         val theContent = dao.selectContent(contentId)
         if (theContent != null) {
-            theContent.isFavourite = !theContent.isFavourite
+            theContent.favourite = !theContent.favourite
             persistJson(getApplication(), theContent)
             dao.insertContent(theContent)
             return theContent
@@ -569,7 +570,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
                         // Merged books
                         val chaps = c.chaptersList.toMutableList() // Safe copy
-                        if (c.isManuallyMerged && chaps.isNotEmpty()) {
+                        if (c.manuallyMerged && chaps.isNotEmpty()) {
                             // Reparse main book from scratch if images are KO
                             if (reparseContent || !isDownloadable(c)) {
                                 if (!reparseContent) Timber.d("Pages unreachable; reparsing content")
@@ -605,7 +606,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         }
 
                         if (res != null) {
-                            res!!.downloadMode = Content.DownloadMode.DOWNLOAD
+                            res!!.downloadMode = DownloadMode.DOWNLOAD
                             if (areModifiedImages) {
                                 dao.insertChapters(res!!.chaptersList)
                                 dao.insertImageFiles(res!!.imageList)
@@ -626,7 +627,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             dao.updateContentProcessedFlag(c.id, false)
                             nbErrors.incrementAndGet()
                             onError.invoke(
-                                if (c.isManuallyMerged && chaps.isNotEmpty()) EmptyResultException(
+                                if (c.manuallyMerged && chaps.isNotEmpty()) EmptyResultException(
                                     getApplication<Application>().getString(R.string.download_canceled_merged)
                                 )
                                 else EmptyResultException(
@@ -699,7 +700,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                     keepCover = true,
                                     isDownloadPrepurge = true
                                 )
-                                it.downloadMode = Content.DownloadMode.STREAM
+                                it.downloadMode = DownloadMode.STREAM
                                 val imgs: List<ImageFile> = it.imageList
                                 for (img in imgs) {
                                     img.fileUri = ""
@@ -707,8 +708,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                     img.status = StatusContent.ONLINE
                                 }
                                 dao.insertImageFiles(imgs)
-                                it.forceSize(0)
-                                it.setIsBeingProcessed(false)
+                                it.size = 0
+                                it.isBeingProcessed = false
                                 dao.insertContent(it)
                                 updateJson(getApplication(), it)
                             }

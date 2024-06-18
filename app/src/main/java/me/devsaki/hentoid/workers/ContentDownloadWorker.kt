@@ -21,7 +21,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.database.domains.Content.DownloadMode
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.RenamingRule
@@ -294,7 +294,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         downloadSkipped.set(false)
         downloadInterrupted.set(false)
         isCloudFlareBlocked = false
-        @DownloadMode val downloadMode = content.downloadMode
+        val downloadMode = content.downloadMode
         dao.deleteErrorRecords(content.id)
 
         // == PREPARATION PHASE ==
@@ -318,7 +318,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val isCase2 = nbErrors > 0 && nbErrors == images.size
         val isCase3 = nbErrors > 0 && content.site.hasBackupURLs()
         val isCase4 =
-            content.isManuallyMerged && content.chaptersList.any { c -> c.imageList.all { img -> img.status == StatusContent.ERROR } }
+            content.manuallyMerged && content.chaptersList.any { c -> c.imageList.all { img -> img.status == StatusContent.ERROR } }
 
         if (isCase1 || isCase2 || isCase3 || isCase4) {
             EventBus.getDefault()
@@ -613,7 +613,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
                     // We should parse a Content but all we have is a Chapter (merged book)
                     // Forge a bogus Content from the given chapter to retrieve images
-                    val forgedContent = Content().setSite(chapterSite)
+                    val forgedContent = Content(site = chapterSite)
                     forgedContent.qtyPages = ch.imageList.size
                     forgedContent.setRawUrl(ch.url)
                     val onlineImages = fetchImageURLs(forgedContent, ch.url, targetImageStatus)
@@ -885,7 +885,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
             // Set error state if there are non-downloaded pages
             // NB : this should not happen theoretically
-            val nbDownloadedPages = content.nbDownloadedPages
+            val nbDownloadedPages = content.getNbDownloadedPages()
             if (nbDownloadedPages < content.qtyPages) {
                 val errorMsg = String.format(
                     "The number of downloaded images (%s) does not match the book's number of pages (%s)",

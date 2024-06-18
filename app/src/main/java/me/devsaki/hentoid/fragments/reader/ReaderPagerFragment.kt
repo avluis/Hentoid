@@ -838,7 +838,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         bookPreferences = content.bookPreferences
         isContentArchive = content.isArchive
         isContentDynamic = content.isDynamic
-        isContentFavourite = content.isFavourite
+        isContentFavourite = content.favourite
         // Wait for starting index only if content actually changes
         if (content.id != contentId) startingIndexLoaded = false
         contentId = content.id
@@ -857,7 +857,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         // Display "redownload images" button if folder no longer exists and is not external nor dynamic
         binding?.apply {
             viewerRedownloadBtn.isVisible =
-                (!content.isFolderExists && !content.isDynamic && content.status != StatusContent.EXTERNAL)
+                (!content.folderExists && !content.isDynamic && content.status != StatusContent.EXTERNAL)
         }
     }
 

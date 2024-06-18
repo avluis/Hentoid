@@ -37,19 +37,18 @@ class MrmContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.MRM)
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        content.site = Site.MRM
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
-        content.setTitle(cleanup(title))
+        content.title = cleanup(title)
 
         if (uploadDate.isNotEmpty())
-            content.setUploadDate(
-                parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
-            ) // e.g. 2022-03-20T00:09:43+07:00
+            content.uploadDate = parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
+        // e.g. 2022-03-20T00:09:43+07:00
 
         images?.let {
             if (it.isNotEmpty())
-                content.setCoverImageUrl(getImgSrc(it[0]))
+                content.coverImageUrl = getImgSrc(it[0])
         }
 
         val attributes = AttributeMap()
@@ -73,7 +72,7 @@ class MrmContent : BaseContentParser() {
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }

@@ -4,6 +4,7 @@ import com.squareup.moshi.JsonClass
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.enums.AttributeType
@@ -51,14 +52,14 @@ data class JsonContent(
         c.downloadCompletionDate,
         c.status,
         c.site,
-        c.isFavourite,
+        c.favourite,
         c.rating,
-        c.isCompleted,
+        c.completed,
         c.reads,
         c.lastReadDate,
         c.lastReadPageIndex,
-        c.downloadMode,
-        c.isManuallyMerged,
+        c.downloadMode.value,
+        c.manuallyMerged,
         c.bookPreferences,
         c.attributes.groupingBy { it.type }.fold(
             initialValueSelector = { _, _ -> mutableListOf<JsonAttribute>() },
@@ -74,30 +75,27 @@ data class JsonContent(
     )
 
     fun toEntity(dao: CollectionDAO? = null): Content {
-        val result = Content()
-
-        result.setSite(site)
-        result.setUrl(url)
-        result.setTitle(cleanup(title))
-        result.setCoverImageUrl(coverImageUrl)
-        result.setQtyPages(qtyPages)
-        result.setUploadDate(uploadDate)
-        result.setDownloadDate(downloadDate)
-        if (downloadCompletionDate > 0) result.setDownloadCompletionDate(downloadCompletionDate)
-        else result.setDownloadCompletionDate(downloadDate) // When the field is absent from the JSON
-
-        result.setStatus(status)
-        result.setFavourite(favourite)
-        result.rating = rating
-        result.setCompleted(completed)
-        result.setReads(reads)
-        result.setLastReadDate(lastReadDate)
-        result.lastReadPageIndex = lastReadPageIndex
-        result.bookPreferences = bookPreferences
-        result.setDownloadMode(downloadMode)
-        result.isManuallyMerged = manuallyMerged
+        val result = Content(
+            site = site,
+            dbUrl = url ?: "",
+            title = cleanup(title),
+            coverImageUrl = coverImageUrl,
+            qtyPages = qtyPages,
+            uploadDate = uploadDate,
+            downloadDate = downloadDate,
+            downloadCompletionDate = if (downloadCompletionDate > 0) downloadCompletionDate else downloadDate, // When the field is absent from the JSON
+            status = status,
+            favourite = favourite,
+            rating = rating,
+            completed = completed,
+            reads = reads,
+            lastReadDate = lastReadDate,
+            lastReadPageIndex = lastReadPageIndex,
+            bookPreferences = bookPreferences,
+            downloadMode = DownloadMode.fromValue(downloadMode),
+            manuallyMerged = manuallyMerged
+        )
         result.isFrozen = isFrozen
-
 
         // ATTRIBUTES
         attributes?.let { attrs ->
@@ -125,7 +123,7 @@ data class JsonContent(
         result.setImageFiles(imgs)
 
         // Fix books with incorrect QtyPages that may exist in old JSONs
-        if (qtyPages <= 0) result.setQtyPages(imageFiles.size)
+        if (qtyPages <= 0) result.qtyPages = imageFiles.size
 
 
         // ERROR RECORDS

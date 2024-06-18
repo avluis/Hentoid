@@ -33,7 +33,7 @@ data class DeviantArtDeviation(
             updateImages: Boolean,
             updateCoreProperties: Boolean = true
         ): Content {
-            content.setSite(Site.DEVIANTART)
+            content.site = Site.DEVIANTART
 
             if (updateCoreProperties) {
                 content.setRawUrl(url.replace("\\/", "/"))
@@ -46,8 +46,8 @@ data class DeviantArtDeviation(
                 } catch (t: Throwable) {
                     Timber.w(t)
                 }
-                content.setTitle(cleanup(title))
-                content.setCoverImageUrl(media.getThumbUrl())
+                content.title = cleanup(title)
+                content.coverImageUrl = media.getThumbUrl()
             }
 
             val attributes = if (updateCoreProperties) AttributeMap() else content.attributeMap
@@ -75,7 +75,7 @@ data class DeviantArtDeviation(
             if (updateImages) {
                 val imgs = getImages()
                 content.setImageFiles(imgs)
-                content.setQtyPages(imgs.count { it.isReadable })
+                content.qtyPages = imgs.count { it.isReadable }
             }
 
             return content
