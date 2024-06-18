@@ -91,8 +91,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         val storedChapters = storedContent?.chaptersList?.toMutableList() ?: emptyList()
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
-        val lastPartIndex = getLastPartIndex(chapters)
-        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters, lastPartIndex)
+        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters, this::getLastPartIndex)
         progressStart(onlineContent, storedContent, extraChapters.size)
 
         // Start numbering extra images right after the last position of stored and chaptered images
@@ -166,7 +165,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         return result
     }
 
-    protected open fun getLastPartIndex(chapters: List<Chapter>): Int {
+    protected open fun getLastPartIndex(url: String): Int {
         return 0
     }
 

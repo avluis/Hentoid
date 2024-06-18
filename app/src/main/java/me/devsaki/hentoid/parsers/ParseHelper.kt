@@ -436,10 +436,10 @@ private fun getLastPathPart(url: String, index: Int = 0): String {
 fun getExtraChaptersbyUrl(
     storedChapters: List<Chapter>,
     detectedChapters: List<Chapter>,
-    lastPartIndex: Int = 0
+    lastPartIndex: (String) -> Int = { _ -> 0 }
 ): List<Chapter> {
-    val storedChps = storedChapters.groupBy { c -> getLastPathPart(c.url, lastPartIndex) }
-    val detectedChps = detectedChapters.groupBy { c -> getLastPathPart(c.url, lastPartIndex) }
+    val storedChps = storedChapters.groupBy { getLastPathPart(it.url, lastPartIndex(it.url)) }
+    val detectedChps = detectedChapters.groupBy { getLastPathPart(it.url, lastPartIndex(it.url)) }
 
     var tmpList: MutableList<Chapter> = ArrayList()
     val storedUrlParts = storedChps.keys

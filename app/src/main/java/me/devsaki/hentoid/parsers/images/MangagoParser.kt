@@ -45,9 +45,8 @@ class MangagoParser : BaseChapteredImageListParser(), WebResultConsumer {
         )
     }
 
-    // Interesting part depends on where the chapter is hosted; assuming all chapters are stored in the same place for now....
-    override fun getLastPartIndex(chapters: List<Chapter>): Int {
-        return if (chapters.any { it.url.contains("mangago.me/") }) 1 else 0
+    override fun getLastPartIndex(url: String): Int {
+        return if (url.endsWith("/pg-1/") || url.endsWith("/page-1/")) 1 else 0
     }
 
 
