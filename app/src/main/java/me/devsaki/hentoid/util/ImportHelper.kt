@@ -782,7 +782,7 @@ fun scanBookFolder(
     }
     if (targetStatus == StatusContent.EXTERNAL) result.addAttributes(newExternalAttribute())
     result.status = targetStatus
-    result.storageDoc = bookFolder
+    result.setStorageDoc(bookFolder)
     if (null != parentFolder) result.parentStorageUri = parentFolder.uri.toString()
     if (0L == result.downloadDate) result.downloadDate = Instant.now().toEpochMilli()
     result.lastEditDate = Instant.now().toEpochMilli()
@@ -869,7 +869,7 @@ fun scanChapterFolders(
     }
     result.addAttributes(newExternalAttribute())
     result.status = StatusContent.EXTERNAL
-    result.storageDoc = parent
+    result.setStorageDoc(parent)
     if (0L == result.downloadDate) result.downloadDate = Instant.now().toEpochMilli()
     result.lastEditDate = Instant.now().toEpochMilli()
     val images: MutableList<ImageFile> = ArrayList()
@@ -1050,7 +1050,7 @@ fun scanForArchives(
 
         content.addAttributes(newExternalAttribute())
         content.status = StatusContent.EXTERNAL
-        content.storageDoc = parent
+        content.setStorageDoc(parent)
         if (0L == content.downloadDate) content.downloadDate = Instant.now().toEpochMilli()
         content.lastEditDate = Instant.now().toEpochMilli()
 

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.notification.update;
+package me.devsaki.hentoid.notification.jsonUpdate;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,31 +11,25 @@ import java.util.Objects;
 
 import me.devsaki.hentoid.R;
 
-public class UpdateNotificationChannel {
+public class UpdateJsonNotificationChannel {
 
-    private UpdateNotificationChannel() {
+    private UpdateJsonNotificationChannel() {
         throw new IllegalStateException("Utility class");
     }
 
-    private static final String ID_OLD = "update";
-    private static final String ID_OLD2 = "update2";
-    static final String ID = "update3";
+    static final String ID = "update json";
 
     // IMPORTANT : ALWAYS INIT THE CHANNEL BEFORE FIRING NOTIFICATIONS !
-    public static void init(@NonNull Context context) {
+    public static void init(@NonNull final Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String name = context.getString(R.string.updates_title);
+            String name = context.getString(R.string.notif_json_title);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(ID, name, importance);
             channel.setSound(null, null);
             channel.setVibrationPattern(null);
 
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-
-            // Mandatory; it is not possible to change the sound of an existing channel after its initial creation
             Objects.requireNonNull(notificationManager, "notificationManager must not be null");
-            notificationManager.deleteNotificationChannel(ID_OLD);
-            notificationManager.deleteNotificationChannel(ID_OLD2);
             notificationManager.createNotificationChannel(channel);
         }
     }

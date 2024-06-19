@@ -149,6 +149,10 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectChapters(contentId)
     }
 
+    override fun selectChapters(chapterIds: List<Long>): List<Chapter> {
+        return ObjectBoxDB.selectChapters(chapterIds)
+    }
+
     override fun selectChapter(chapterId: Long): Chapter? {
         return ObjectBoxDB.selectChapter(chapterId)
     }

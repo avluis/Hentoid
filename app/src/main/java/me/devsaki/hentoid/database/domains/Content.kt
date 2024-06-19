@@ -174,7 +174,7 @@ data class Content(
     var parentStorageUri: String? = null // Only used when importing
 
     @Transient
-    var storageDoc: DocumentFile? = null // Only used when importing
+    private var storageDoc: DocumentFile? = null // Only used when importing
 
     // Only used when importing queued items (temp location to simplify JSON structure; definite storage in QueueRecord)
     @Transient
@@ -563,6 +563,10 @@ data class Content(
     fun clearStorageDoc() {
         storageUri = ""
         storageDoc = null
+    }
+
+    fun getStorageDoc(): DocumentFile? {
+        return storageDoc
     }
 
     fun increaseReads(): Content {

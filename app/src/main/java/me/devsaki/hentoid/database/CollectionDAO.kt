@@ -288,6 +288,8 @@ interface CollectionDAO {
     // CHAPTERS
     fun selectChapters(contentId: Long): List<Chapter>
 
+    fun selectChapters(chapterIds: List<Long>): List<Chapter>
+
     fun selectChapter(chapterId: Long): Chapter?
 
     fun insertChapters(chapters: List<Chapter>)

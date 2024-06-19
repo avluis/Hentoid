@@ -12,9 +12,9 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.notification.updateJson.UpdateJsonCompleteNotification
-import me.devsaki.hentoid.notification.updateJson.UpdateJsonProgressNotification
-import me.devsaki.hentoid.notification.updateJson.UpdateJsonStartNotification
+import me.devsaki.hentoid.notification.jsonUpdate.UpdateJsonCompleteNotification
+import me.devsaki.hentoid.notification.jsonUpdate.UpdateJsonProgressNotification
+import me.devsaki.hentoid.notification.jsonUpdate.UpdateJsonStartNotification
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.updateGroupsJson

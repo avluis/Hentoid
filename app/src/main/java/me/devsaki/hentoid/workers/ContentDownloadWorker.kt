@@ -461,7 +461,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Folder creation succeeds -> memorize its path
         val targetFolder: DocumentFile = dir
-        content.storageDoc = targetFolder
+        content.setStorageDoc(targetFolder)
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
         if (0 == content.qtyPages) content.qtyPages = images.count { i -> i.isReadable }

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.notification.update
+package me.devsaki.hentoid.notification.appUpdate
 
 import android.content.Context
 import androidx.core.app.NotificationCompat

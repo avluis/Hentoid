@@ -30,31 +30,21 @@ import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SearchRecord
 import me.devsaki.hentoid.enums.Grouping
-import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Type
-import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.assertNonUiThread
-import me.devsaki.hentoid.util.createJson
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
-import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.fetchImageURLs
-import me.devsaki.hentoid.util.file.copyFile
-import me.devsaki.hentoid.util.getLocation
-import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.isDownloadable
-import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
-import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.parseFromScratch
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.purgeContent
@@ -64,17 +54,16 @@ import me.devsaki.hentoid.util.updateJson
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
+import me.devsaki.hentoid.workers.MergeWorker
+import me.devsaki.hentoid.workers.SplitWorker
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.DeleteData
+import me.devsaki.hentoid.workers.data.SplitMergeData
 import me.devsaki.hentoid.workers.data.UpdateJsonData
-import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.security.InvalidParameterException
-import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.math.floor
-import kotlin.math.log10
 
 class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     AndroidViewModel(application) {
@@ -740,8 +729,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         onSuccess: Runnable?
     ) {
         val builder = DeleteData.Builder()
-        if (contents.isNotEmpty()) builder.setContentIds(contents.map { c -> c.id })
-        if (groups.isNotEmpty()) builder.setGroupIds(groups.map { g -> g.id })
+        if (contents.isNotEmpty()) builder.setContentIds(contents.map { it.id })
+        if (groups.isNotEmpty()) builder.setGroupIds(groups.map { it.id })
         builder.setDeleteGroupsOnly(deleteGroupsOnly)
         val workManager = WorkManager.getInstance(getApplication())
         val request: WorkRequest =
@@ -1019,188 +1008,39 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
-        appendBookTitle: Boolean,
-        deleteAfterMerging: Boolean,
-        onSuccess: Runnable
+        useBookAsChapter: Boolean,
+        deleteAfterMerging: Boolean
     ) {
         if (contentList.isEmpty()) return
-
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    // Flag the content as "being deleted" (triggers blink animation)
-                    if (deleteAfterMerging)
-                        contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
-                    mergeContents(
-                        getApplication(),
-                        contentList,
-                        newTitle,
-                        appendBookTitle,
-                        dao
-                    )
-                }
-                if (deleteAfterMerging) deleteItems(contentList, emptyList(), false, null)
-                onSuccess.run()
-            } catch (t: Throwable) {
-                Timber.e(t)
-                if (deleteAfterMerging)
-                    contentList.forEach { dao.updateContentProcessedFlag(it.id, false) }
-            }
-        }
+        val builder = SplitMergeData.Builder()
+        builder.setOperation(1)
+        builder.setContentIds(contentList.map { it.id })
+        builder.setNewTitle(newTitle)
+        builder.setUseBooksAsChapters(useBookAsChapter)
+        builder.setDeleteAfterOps(deleteAfterMerging)
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            R.id.merge_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequest.Builder(MergeWorker::class.java).setInputData(builder.data).build()
+        )
     }
 
     fun splitContent(
         content: Content,
-        chapters: List<Chapter>,
-        onSuccess: Runnable
+        chapters: List<Chapter>
     ) {
-        var result = false
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    doSplitContent(content, chapters)
-                    result = true
-                } catch (t: ContentNotProcessedException) {
-                    Timber.e(t)
-                }
-            }
-            if (result) onSuccess.run()
-        }
-    }
-
-    @Throws(Exception::class)
-    private fun doSplitContent(content: Content, chapters: List<Chapter>) {
-        assertNonUiThread()
-        val images: List<ImageFile>? = content.imageFiles
-        if (chapters.isEmpty()) throw ContentNotProcessedException(content, "No chapters detected")
-        if (images.isNullOrEmpty()) throw ContentNotProcessedException(
-            content,
-            "No images detected"
+        val builder = SplitMergeData.Builder()
+        builder.setOperation(0)
+        builder.setContentIds(listOf(content.id))
+        builder.setChapterIdsForSplit(chapters.map { it.id })
+        //builder.setDeleteAfterOps(deleteAfterMerging)
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            R.id.split_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequest.Builder(SplitWorker::class.java).setInputData(builder.data).build()
         )
-        var nbProcessedPics = 0
-        val nbImages =
-            chapters.flatMap { c -> c.imageList }.count { imf -> imf.isReadable }
-        for (chap in chapters) {
-            val splitContent = createContentFromChapter(content, chap)
-
-            // Create a new folder for the split content
-            val location = getLocation(content)
-            val targetFolder = getOrCreateContentDownloadDir(
-                getApplication(),
-                splitContent,
-                location,
-                true
-            )
-            if (null == targetFolder || !targetFolder.exists()) throw ContentNotProcessedException(
-                splitContent,
-                "Could not create target directory"
-            )
-            splitContent.storageDoc = targetFolder
-
-            // Copy the corresponding images to that folder
-            val splitContentImages = splitContent.imageFiles
-                ?: throw ContentNotProcessedException(
-                    splitContent,
-                    "No images detected in generated book"
-                )
-            for (img in splitContentImages) {
-                if (img.status == StatusContent.DOWNLOADED) {
-                    val extension = getExtensionFromUri(img.fileUri)
-                    val newUri = copyFile(
-                        getApplication(),
-                        Uri.parse(img.fileUri),
-                        targetFolder.uri,
-                        img.mimeType,
-                        img.name + "." + extension
-                    )
-                    if (newUri != null) img.fileUri =
-                        newUri.toString() else Timber.w("Could not move file %s", img.fileUri)
-                    EventBus.getDefault().post(
-                        ProcessEvent(
-                            ProcessEvent.Type.PROGRESS,
-                            R.id.generic_progress,
-                            0,
-                            nbProcessedPics++,
-                            0,
-                            nbImages
-                        )
-                    )
-                }
-            }
-
-            // Save the JSON for the new book
-            val jsonFile = createJson(getApplication(), splitContent)
-            if (jsonFile != null) splitContent.jsonUri = jsonFile.uri.toString()
-
-            // Save new content (incl. onn-custom group operations)
-            addContent(getApplication(), dao, splitContent)
-
-            // Set custom group, if any
-            val customGroups = content.getGroupItems(Grouping.CUSTOM)
-            if (customGroups.isNotEmpty())
-                moveContentToCustomGroup(splitContent, customGroups[0].getGroup(), dao)
-        }
-        EventBus.getDefault().postSticky(
-            ProcessEvent(
-                ProcessEvent.Type.COMPLETE,
-                R.id.generic_progress,
-                0,
-                nbImages,
-                0,
-                nbImages
-            )
-        )
-    }
-
-    private fun createContentFromChapter(content: Content, chapter: Chapter): Content {
-        val splitContent = Content()
-        var url = chapter.url ?: ""
-        if (url.isEmpty()) { // Default (e.g. manually created chapters)
-            url = content.url
-            splitContent.site = content.site
-        } else { // Detect site and cleanup full URL (e.g. previously merged books)
-            val site = Site.searchByUrl(url)
-            if (site != null && site != Site.NONE) {
-                splitContent.site = site
-                url = Content.transformRawUrl(site, url)
-            }
-        }
-        splitContent.url = url
-        splitContent.populateUniqueSiteId()
-        var id = chapter.uniqueId
-        if (id.isEmpty()) id = content.uniqueSiteId + "_" // Don't create a copy of content
-        splitContent.uniqueSiteId = id
-        splitContent.downloadMode = content.downloadMode
-        var newTitle = content.title
-        if (!newTitle.contains(chapter.name)) newTitle += " - " + chapter.name // Avoid swelling the title after multiple merges and splits
-        splitContent.title = newTitle
-        splitContent.uploadDate = content.uploadDate
-        splitContent.downloadDate = Instant.now().toEpochMilli()
-        splitContent.status = content.status
-        splitContent.bookPreferences = content.bookPreferences
-        var images: List<ImageFile>? = chapter.imageFiles
-        if (images != null) {
-            images = chapter.imageList.sortedBy { imf -> imf.order }
-            val nbMaxDigits = floor(log10(images.size.toDouble()) + 1).toInt()
-            for ((position, img) in images.withIndex()) {
-                img.id = 0 // Force working on a new picture
-                img.setChapter(null)
-                img.content.target = null // Clear content
-                img.isCover = (0 == position)
-                img.order = position
-                img.computeName(nbMaxDigits)
-            }
-            splitContent.setImageFiles(images)
-            splitContent.setChapters(null)
-            splitContent.qtyPages = images.count { imf -> imf.isReadable }
-            splitContent.computeSize()
-            var coverImageUrl = images[0].url
-            if (coverImageUrl.isEmpty()) coverImageUrl = content.coverImageUrl
-            splitContent.coverImageUrl = coverImageUrl
-        }
-        val splitAttributes = listOf(content).flatMap { c -> c.attributes }
-        splitContent.addAttributes(splitAttributes)
-        return splitContent
     }
 
     fun clearSearchHistory() {

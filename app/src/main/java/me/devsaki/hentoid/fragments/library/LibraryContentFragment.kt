@@ -72,7 +72,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.ProgressDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryTransformDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment.Companion.invoke
@@ -1758,32 +1757,22 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         deleteAfterMerging: Boolean
     ) {
         leaveSelectionMode()
-        invoke(this, resources.getString(R.string.merge_progress), R.plurals.page)
+        //invoke(this, resources.getString(R.string.merge_progress), R.plurals.page)
         viewModel.mergeContents(
             contentList, newTitle, appendBookTitle, deleteAfterMerging
-        ) { onMergeSuccess() }
-    }
-
-    private fun onMergeSuccess() {
-        toast(R.string.merge_success)
-        refreshIfNeeded()
+        )
     }
 
     override fun splitContent(content: Content, chapters: List<Chapter>) {
         leaveSelectionMode()
-        viewModel.splitContent(content, chapters) { onSplitSuccess() }
-        invoke(this, resources.getString(R.string.split_progress), R.plurals.page)
-    }
-
-    private fun onSplitSuccess() {
-        toast(R.string.split_success)
-        refreshIfNeeded()
+        viewModel.splitContent(content, chapters)
+        //invoke(this, resources.getString(R.string.split_progress), R.plurals.page)
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onProcessStickyEvent(event: ProcessEvent) {
-        // Filter on delete complete event
-        if (R.id.delete_service_delete != event.processId) return
+        // Filter on delete, merge & split complete events
+        if (R.id.delete_service_delete != event.processId && R.id.split_service != event.processId && R.id.merge_service != event.processId) return
         if (ProcessEvent.Type.COMPLETE != event.eventType) return
         refreshIfNeeded()
     }

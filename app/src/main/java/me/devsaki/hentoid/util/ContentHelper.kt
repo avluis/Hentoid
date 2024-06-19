@@ -41,7 +41,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.DownloadCommandEvent
-import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.parsers.ContentParserFactory.getContentParserClass
@@ -2049,7 +2048,9 @@ fun mergeContents(
     contentList: List<Content>,
     newTitle: String,
     useBookAsChapter: Boolean,
-    dao: CollectionDAO
+    dao: CollectionDAO,
+    onProgress: (Int, Int, String) -> Unit,
+    onComplete: () -> Unit
 ) {
     assertNonUiThread()
 
@@ -2181,16 +2182,7 @@ fun mergeContents(
                     )
                     if (newUri != null) newImg.fileUri = newUri.toString()
                     else Timber.w("Could not move file %s", img.fileUri)
-                    EventBus.getDefault().post(
-                        ProcessEvent(
-                            ProcessEvent.Type.PROGRESS,
-                            R.id.generic_progress,
-                            0,
-                            nbProcessedPics++,
-                            0,
-                            nbImages
-                        )
-                    )
+                    onProgress.invoke(nbProcessedPics++, nbImages, c.title)
                 }
                 mergedImages.add(newImg)
             }
@@ -2220,24 +2212,15 @@ fun mergeContents(
         if (customGroup != null) moveContentToCustomGroup(mergedContent, customGroup, dao)
 
         // If merged book is external, register it to the Beholder
-        if (StatusContent.EXTERNAL == mergedContent.status && parentFolder != null) registerContent(
-            context,
-            parentFolder.uri.toString(),
-            targetFolder,
-            mergedContent.id
-        )
+        if (StatusContent.EXTERNAL == mergedContent.status && parentFolder != null)
+            registerContent(
+                context,
+                parentFolder.uri.toString(),
+                targetFolder,
+                mergedContent.id
+            )
     }
-
-    EventBus.getDefault().postSticky(
-        ProcessEvent(
-            ProcessEvent.Type.COMPLETE,
-            R.id.generic_progress,
-            0,
-            nbImages,
-            0,
-            nbImages
-        )
-    )
+    onComplete.invoke()
 }
 
 fun getLocation(content: Content): StorageLocation {

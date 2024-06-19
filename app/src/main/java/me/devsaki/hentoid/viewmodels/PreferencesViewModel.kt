@@ -118,7 +118,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                             }
                         }
                         // Update Content Uris
-                        c.storageDoc = targetFolder
+                        c.setStorageDoc(targetFolder)
                         dao.insertContentCore(c)
                         c.imageFiles?.let {
                             dao.insertImageFiles(it)

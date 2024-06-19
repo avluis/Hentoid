@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.notification.updateJson
+package me.devsaki.hentoid.notification.jsonUpdate
 
 import android.content.Context
 import androidx.core.app.NotificationCompat

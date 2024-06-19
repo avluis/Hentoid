@@ -1916,6 +1916,10 @@ object ObjectBoxDB {
             .order(Chapter_.order).safeFind()
     }
 
+    fun selectChapters(chapterIds: List<Long>): List<Chapter> {
+        return store.boxFor(Chapter::class.java).get(chapterIds.toLongArray())
+    }
+
     fun selectChapter(chapterId: Long): Chapter? {
         return store.boxFor(Chapter::class.java).get(chapterId)
     }

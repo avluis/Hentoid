@@ -175,7 +175,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                         content.parentStorageUri?.let { parentUri ->
                             val entry = addedContent[parentUri] ?: ArrayList()
                             addedContent[parentUri] = entry
-                            content.storageDoc?.let { doc ->
+                            content.getStorageDoc()?.let { doc ->
                                 entry.add(Pair(doc, content.id))
                             }
                         }

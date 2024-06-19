@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.notification.update
+package me.devsaki.hentoid.notification.appUpdate
 
 import android.app.PendingIntent
 import android.content.Context

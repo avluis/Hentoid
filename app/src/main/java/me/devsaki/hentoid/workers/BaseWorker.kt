@@ -59,7 +59,7 @@ abstract class BaseWorker(
         // Change locale if set manually
         context.convertLocaleToEnglish()
         initNotifications(context)
-        Timber.w("%s worker created", this.javaClass.simpleName)
+        Timber.w("%s worker created; logName = %s", this.javaClass.simpleName, logName ?: "")
         if (!logName.isNullOrEmpty()) {
             this.logName = logName
             logs = ArrayList()
