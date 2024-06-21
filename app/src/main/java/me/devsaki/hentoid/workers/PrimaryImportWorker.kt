@@ -521,8 +521,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     )
                     return
                 }
-                var contentImages: List<ImageFile>?
-                contentImages = if (content.imageFiles != null) content.imageFiles else ArrayList()
+                var contentImages = content.imageList
                 if (rename) {
                     val canonicalBookFolderName = formatBookFolderName(content)
                     val currentPathParts = bookFolder.uri.pathSegments
@@ -563,12 +562,10 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 }
 
                 // Attach image file Uri's to the book's images
-                val imageFiles = bookFiles.filter { f ->
-                    isSupportedImage(f.name ?: "")
-                }
+                val imageFiles = bookFiles.filter { isSupportedImage(it.name ?: "") }
                 if (imageFiles.isNotEmpty()) {
                     // No images described in the JSON -> recreate them
-                    if (contentImages!!.isEmpty()) {
+                    if (contentImages.isEmpty()) {
                         contentImages = createImageListFromFiles(imageFiles)
                         content.setImageFiles(contentImages)
                         content.cover.url = content.coverImageUrl
@@ -603,8 +600,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         }
                         if (coverImgs.size < contentImages.size) {
                             contentImages = coverImgs
-                            val nbCovers =
-                                contentImages.count { obj: ImageFile -> obj.isCover }
+                            val nbCovers = contentImages.count { it.isCover }
                             content.qtyPages = contentImages.size - nbCovers
                             cleaned = true
                         }

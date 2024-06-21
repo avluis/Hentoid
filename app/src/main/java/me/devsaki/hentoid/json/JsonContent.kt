@@ -12,7 +12,6 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
-import me.devsaki.hentoid.util.createCover
 
 @JsonClass(generateAdapter = true)
 data class JsonContent(
@@ -107,18 +106,16 @@ data class JsonContent(
         }
         result.computeAuthor()
 
-
         // CHAPTERS
         val chps: MutableList<Chapter> = ArrayList()
         for (chp in chapters) chps.add(chp.toEntity())
         result.setChapters(chps)
 
-
         // IMAGES
         val imgs = imageFiles.map { it.toEntity(chps) }.toMutableList()
-        // Fix empty covers
+        // If no cover, set the first page as cover
         val cover = imgs.firstOrNull { it.isCover }
-        if (null == cover || cover.url.isEmpty()) createCover(imgs)
+        if (null == cover || cover.url.isEmpty() && imgs.size > 0) imgs[0].isCover = true
 
         result.setImageFiles(imgs)
 
