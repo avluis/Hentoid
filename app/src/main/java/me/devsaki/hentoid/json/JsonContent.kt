@@ -119,7 +119,7 @@ data class JsonContent(
         val imgs = imageFiles.map { it.toEntity(chps) }.toMutableList()
         // If no cover, set the first page as cover
         val cover = imgs.firstOrNull { it.isCover }
-        if (null == cover || cover.url.isEmpty() && imgs.size > 0) imgs[0].isCover = true
+        if ((null == cover || cover.url.isEmpty()) && imgs.size > 0) imgs[0].isCover = true
 
         result.setImageFiles(imgs)
 

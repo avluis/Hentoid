@@ -392,8 +392,10 @@ data class Content(
             Site.LUSCIOUS -> {
                 // ID is the last numeric part of the URL
                 // e.g. /albums/lewd_title_ch_1_3_42116/ -> 42116 is the ID
-                val lastIndex = url.lastIndexOf('_')
-                return url.substring(lastIndex + 1, url.length - 1)
+                if (url.isNotEmpty()) {
+                    val lastIndex = url.lastIndexOf('_')
+                    return url.substring(lastIndex + 1, url.length - 1)
+                } else return ""
             }
 
             Site.PIXIV ->                 // - If artworks, ID is the artwork ID
