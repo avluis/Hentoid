@@ -217,8 +217,7 @@ fun urlsToImageFiles(
     val result: MutableList<ImageFile> = ArrayList()
     var order = initialOrder
     // Remove duplicates and MACOSX indexes (yes, it does happen!) before creating the ImageFiles
-    val imgUrlsUnique = imgUrls.distinct()
-        .filterNot { s -> s.contains("__MACOSX") }
+    val imgUrlsUnique = imgUrls.distinct().filterNot { it.contains("__MACOSX") }
     for (s in imgUrlsUnique) result.add(
         urlToImageFile(
             s.trim(),

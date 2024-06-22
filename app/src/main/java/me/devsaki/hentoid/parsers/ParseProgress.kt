@@ -8,7 +8,7 @@ class ParseProgress {
     private var storedId: Long = 0
     private var hasStarted = false
     private var currentStep = 0
-    private lateinit var progressMgr: ProgressManager
+    private var progressMgr: ProgressManager? = null
     private val processHalted = AtomicBoolean(false)
 
     fun start(contentId: Long, storedId: Long = -1, maxSteps: Int = 1) {
@@ -32,16 +32,17 @@ class ParseProgress {
     }
 
     fun nextStep() {
-        progressMgr.setProgress(currentStep.toString(), 1f)
+        progressMgr?.setProgress(currentStep.toString(), 1f)
         currentStep++
     }
 
     fun advance(progress: Float) {
-        progressMgr.setProgress(currentStep.toString(), progress)
-        signalProgress(contentId, storedId, progressMgr.getGlobalProgress())
+        progressMgr?.setProgress(currentStep.toString(), progress)
+        signalProgress(contentId, storedId, progressMgr?.getGlobalProgress() ?: 1f)
     }
 
     fun complete() {
         signalProgress(contentId, storedId, 1f)
+        progressMgr = null
     }
 }
