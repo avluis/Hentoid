@@ -2142,16 +2142,20 @@ fun mergeContents(
             val imgs = c.imageList
             firstImageIsCover = !imgs.any { it.isCover }
             for (img in imgs) {
-                if (!img.isReadable && coverFound) continue // Skip secondary covers if one exists
+                if (!img.isReadable && coverFound) continue // Skip thumbs from 2+ rank merged books
                 val newImg = ImageFile(img, populateContent = false, populateChapter = false)
                 newImg.id = 0 // Force working on a new picture
                 newImg.fileUri = "" // Clear initial URI
-                newImg.order = pictureOrder++
-                newImg.computeName(nbMaxDigits)
-                if (firstImageIsCover && !coverFound) {
+                if (newImg.isReadable) {
+                    newImg.order = pictureOrder++
+                    newImg.computeName(nbMaxDigits)
+                } else {
                     newImg.isCover = true
-                    coverFound = true
+                    newImg.order = 0
                 }
+                if (firstImageIsCover && !coverFound) newImg.isCover = true
+
+                if (newImg.isCover) coverFound = true
 
                 if (newImg.isReadable) {
                     val chapLink = img.linkedChapter
