@@ -8,11 +8,11 @@ import me.devsaki.hentoid.enums.Grouping
 data class JsonCustomGroup(
     val name: String,
     val order: Int,
-    val subtype: Int,
-    val favourite: Boolean,
-    val rating: Int,
-    val hasCustomBookOrder: Boolean,
-    val searchUri: String
+    val subtype: Int?,
+    val favourite: Boolean?,
+    val rating: Int?,
+    val hasCustomBookOrder: Boolean?,
+    val searchUri: String?
 ) {
     constructor(g: Group) : this(
         g.name,
@@ -29,11 +29,11 @@ data class JsonCustomGroup(
             grouping = grouping,
             name = name,
             order = order,
-            subtype = subtype,
-            favourite = favourite,
-            rating = rating,
-            hasCustomBookOrder = hasCustomBookOrder,
-            searchUri = searchUri
+            subtype = subtype ?: 0,
+            favourite = favourite ?: false,
+            rating = rating ?: 0,
+            hasCustomBookOrder = hasCustomBookOrder ?: false,
+            searchUri = searchUri ?: ""
         )
     }
 }

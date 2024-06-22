@@ -12,6 +12,7 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.util.Preferences
 
 @JsonClass(generateAdapter = true)
 data class JsonContent(
@@ -21,25 +22,25 @@ data class JsonContent(
     val qtyPages: Int,
     val uploadDate: Long,
     val downloadDate: Long,
-    val downloadCompletionDate: Long,
+    val downloadCompletionDate: Long?,
     val status: StatusContent,
     val site: Site,
-    val favourite: Boolean,
-    val rating: Int,
-    val completed: Boolean,
-    val reads: Long,
-    val lastReadDate: Long,
-    val lastReadPageIndex: Int,
-    val downloadMode: Int,
-    val manuallyMerged: Boolean,
-    val bookPreferences: Map<String, String>,
+    val favourite: Boolean?,
+    val rating: Int?,
+    val completed: Boolean?,
+    val reads: Long?,
+    val lastReadDate: Long?,
+    val lastReadPageIndex: Int?,
+    val downloadMode: Int?,
+    val manuallyMerged: Boolean?,
+    val bookPreferences: Map<String, String>?,
     var attributes: Map<AttributeType, List<JsonAttribute>>?,
     val imageFiles: List<JsonImageFile>,
-    val chapters: List<JsonChapter>,
-    val errorRecords: List<JsonErrorRecord>,
-    val groups: List<JsonGroupItem>,
+    val chapters: List<JsonChapter>?,
+    val errorRecords: List<JsonErrorRecord>?,
+    val groups: List<JsonGroupItem>?,
     // Specific data for queued items
-    val isFrozen: Boolean
+    val isFrozen: Boolean?
 ) {
     constructor(c: Content, keepImages: Boolean = true) : this(
         c.url,
@@ -82,19 +83,22 @@ data class JsonContent(
             qtyPages = qtyPages,
             uploadDate = uploadDate,
             downloadDate = downloadDate,
-            downloadCompletionDate = if (downloadCompletionDate > 0) downloadCompletionDate else downloadDate, // When the field is absent from the JSON
+            downloadCompletionDate = if ((downloadCompletionDate ?: 0) > 0) downloadCompletionDate
+                ?: 0 else downloadDate,
             status = status,
-            favourite = favourite,
-            rating = rating,
-            completed = completed,
-            reads = reads,
-            lastReadDate = lastReadDate,
-            lastReadPageIndex = lastReadPageIndex,
-            bookPreferences = bookPreferences,
-            downloadMode = DownloadMode.fromValue(downloadMode),
-            manuallyMerged = manuallyMerged
+            favourite = favourite ?: false,
+            rating = rating ?: 0,
+            completed = completed ?: false,
+            reads = reads ?: 0,
+            lastReadDate = lastReadDate ?: 0,
+            lastReadPageIndex = lastReadPageIndex ?: 0,
+            bookPreferences = bookPreferences ?: HashMap(),
+            downloadMode = DownloadMode.fromValue(
+                downloadMode ?: Preferences.Constant.DL_ACTION_DL_PAGES
+            ),
+            manuallyMerged = manuallyMerged ?: false
         )
-        result.isFrozen = isFrozen
+        result.isFrozen = isFrozen ?: false
 
         // ATTRIBUTES
         attributes?.let { attrs ->
@@ -108,7 +112,7 @@ data class JsonContent(
 
         // CHAPTERS
         val chps: MutableList<Chapter> = ArrayList()
-        for (chp in chapters) chps.add(chp.toEntity())
+        chapters?.forEach { chps.add(it.toEntity()) }
         result.setChapters(chps)
 
         // IMAGES
@@ -125,20 +129,20 @@ data class JsonContent(
 
         // ERROR RECORDS
         val errs: MutableList<ErrorRecord> = ArrayList()
-        for (err in errorRecords) errs.add(err.toEntity())
+        errorRecords?.forEach { errs.add(it.toEntity()) }
         result.setErrorLog(errs)
 
 
         // GROUPS
         if (dao != null) {
-            for (gi in groups) {
-                val group = dao.selectGroupByName(gi.groupingId, gi.groupName)
+            groups?.forEach {
+                val group = dao.selectGroupByName(it.groupingId, it.groupName)
                 if (group != null) // Group already exists
-                    result.groupItems.add(gi.toEntity(result, group))
-                else if (gi.groupingId == Grouping.CUSTOM.id) { // Create group from scratch
-                    val newGroup = Group(Grouping.CUSTOM, gi.groupName, -1)
+                    result.groupItems.add(it.toEntity(result, group))
+                else if (it.groupingId == Grouping.CUSTOM.id) { // Create group from scratch
+                    val newGroup = Group(Grouping.CUSTOM, it.groupName, -1)
                     newGroup.id = dao.insertGroup(newGroup)
-                    result.groupItems.add(gi.toEntity(result, newGroup))
+                    result.groupItems.add(it.toEntity(result, newGroup))
                 }
             }
         }
