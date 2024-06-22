@@ -1539,8 +1539,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         contentPart: String,
         description: String?
     ) {
-        val downloadRecord =
-            ErrorRecord(contentId, type, url, contentPart, description ?: "", Instant.now())
+        val downloadRecord = ErrorRecord(contentId, type, url, contentPart, description ?: "")
         if (contentId > 0) dao.insertErrorRecord(downloadRecord)
     }
 

@@ -25,6 +25,22 @@ data class ErrorRecord(
 ) {
     lateinit var content: ToOne<Content>
 
+    constructor(
+        contentId: Long,
+        errorType: ErrorType,
+        url: String,
+        contentPart: String,
+        description: String
+    ) : this(
+        type = errorType,
+        url = url,
+        contentPart = contentPart,
+        description = description,
+        timestamp = Instant.now()
+    ) {
+        content.targetId = contentId
+    }
+
     override fun toString(): String {
         var timeStr = ""
         if (timestamp != Instant.EPOCH) {

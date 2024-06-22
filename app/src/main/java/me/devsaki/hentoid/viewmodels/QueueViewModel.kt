@@ -331,8 +331,7 @@ class QueueViewModel(
                                     ErrorType.PARSING,
                                     c.galleryUrl,
                                     "Book",
-                                    "Redownload from scratch -> Content unreachable",
-                                    Instant.now()
+                                    "Redownload from scratch -> Content unreachable"
                                 )
                             )
                             c.setErrorLog(errors)
