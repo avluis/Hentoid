@@ -102,13 +102,13 @@ class PixivParser : BaseImageListParser() {
         val galleryMetadata =
             PixivServer.api.getIllustPages(content.uniqueSiteId, cookieStr, acceptAll, userAgent)
                 .execute().body()
-        if (null == galleryMetadata || galleryMetadata.isError) {
+        if (null == galleryMetadata || galleryMetadata.error == true) {
             var message: String? = ""
             if (galleryMetadata != null) message = galleryMetadata.message
             throw EmptyResultException(message!!)
         }
         return urlsToImageFiles(
-            galleryMetadata.pageUrls,
+            galleryMetadata.getPageUrls(),
             content.coverImageUrl,
             StatusContent.SAVED
         )
