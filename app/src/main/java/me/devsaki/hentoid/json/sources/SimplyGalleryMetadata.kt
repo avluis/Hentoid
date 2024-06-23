@@ -1,40 +1,36 @@
-package me.devsaki.hentoid.json.sources;
+package me.devsaki.hentoid.json.sources
 
-import com.annimon.stream.Stream;
+import com.squareup.moshi.JsonClass
 
-import java.util.ArrayList;
-import java.util.List;
+@JsonClass(generateAdapter = true)
+data class SimplyGalleryMetadata(
+    val props: Props? = null
+) {
+    fun getPageUrls(): List<String> {
+        val result: MutableList<String> = ArrayList()
+        if (props?.pageProps?.data?.pages == null) return result
+        val pages = props.pageProps.data.pages.sortedBy { it.pageNum }
 
-@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
-public class SimplyGalleryMetadata {
-    Props props;
-
-    private static class Props {
-        PageProps pageProps;
-    }
-
-    private static class PageProps {
-        PagesData data;
-    }
-
-    private static class PagesData {
-        List<SimplyContentMetadata.PageData> pages;
-    }
-
-    public List<String> getPageUrls() {
-        List<String> result = new ArrayList<>();
-        if (null == props
-                || null == props.pageProps
-                || null == props.pageProps.data
-                || null == props.pageProps.data.pages) return result;
-
-        List<SimplyContentMetadata.PageData> pages = Stream.of(props.pageProps.data.pages).sortBy(p -> p.pageNum).toList();
-
-        for (SimplyContentMetadata.PageData page : pages) {
-            String url = page.getFullUrl();
-            if (!url.isEmpty()) result.add(url);
+        for (page in pages) {
+            val url = page.fullUrl
+            if (url.isNotEmpty()) result.add(url)
         }
 
-        return result;
+        return result
     }
 }
+
+@JsonClass(generateAdapter = true)
+data class Props(
+    val pageProps: PageProps? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class PageProps(
+    val data: PagesData? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class PagesData(
+    val pages: List<SimplyContentMetadata.PageData>? = null
+)
