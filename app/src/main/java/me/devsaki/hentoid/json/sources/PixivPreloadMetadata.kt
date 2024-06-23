@@ -1,148 +1,123 @@
-package me.devsaki.hentoid.json.sources;
+package me.devsaki.hentoid.json.sources
 
-import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
-
-import androidx.annotation.NonNull;
-
-import com.annimon.stream.Stream;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import kotlin.Pair;
-import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.domains.Attribute
+import me.devsaki.hentoid.database.domains.AttributeMap
+import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
+import java.util.Date
 
 /**
  * Data structure for Pixiv's "illust details" desktop website header data
  */
-@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
-public class PixivPreloadMetadata {
+@JsonClass(generateAdapter = true)
+data class PixivPreloadMetadata(
+    val illust: Map<String, IllustData>? = null,
+    val user: Map<String, UserData>? = null
+) {
+    fun update(content: Content, url: String, updateImages: Boolean): Content {
+        content.site = Site.PIXIV
 
-    private Map<String, IllustData> illust;
-    private Map<String, UserData> user;
-
-    private static class IllustData {
-        private String illustId;
-        private String illustTitle;
-        private Date uploadDate;
-        private Integer pageCount;
-        private Map<String, String> urls;
-        private TagsData tags;
-        private String userId;
-        private String userName;
-
-        List<Pair<String, String>> getTags() {
-            if (tags != null) return tags.getTags();
-            else return Collections.emptyList();
+        if (illust.isNullOrEmpty()) {
+            content.status = StatusContent.IGNORED
+            return content
         }
+        val illustData = illust.values.toList()[0]
 
-        String getThumbUrl() {
-            if (null == urls) return "";
-            String result = urls.get("thumb");
-            if (null == result) result = urls.get("small");
-            return (null == result) ? "" : result;
-        }
+        content.url = url.replace(Site.PIXIV.url, "")
+        content.title = cleanup(illustData.title)
+        content.uniqueSiteId = illustData.illustId ?: ""
 
-        public String getIllustId() {
-            return illustId;
-        }
+        content.qtyPages = illustData.pageCount ?: 0
+        content.coverImageUrl = illustData.thumbUrl
+        content.uploadDate = illustData.uploadDate?.time ?: 0
 
-        public String getTitle() {
-            return illustTitle;
-        }
-
-        public Date getUploadDate() {
-            return uploadDate;
-        }
-
-        public Integer getPageCount() {
-            return pageCount;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public String getUserName() {
-            return userName;
-        }
-    }
-
-    private static class TagsData {
-        private List<TagData> tags;
-
-        List<Pair<String, String>> getTags() {
-            return Stream.of(tags).map(TagData::getTag).toList();
-        }
-    }
-
-    private static class TagData {
-        private String tag;
-        private String romaji;
-        private Map<String, String> translation;
-
-        Pair<String, String> getTag() {
-            String label = translation.get("en");
-            if (null == label) label = romaji;
-            if (null == label) label = tag;
-            return new Pair<>(tag, label);
-        }
-    }
-
-    private static class UserData {
-        private String userId;
-        private String name;
-    }
-
-    @Nullable
-    public Content update(@NonNull final Content content, @NonNull String url, boolean updateImages) {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
-        String pixivPrefix = Site.PIXIV.getUrl();
-        String[] urlParts = url.replace(Site.PIXIV.getUrl(), "").split("/");
-        String secondPath = urlParts[0];
-        if (!secondPath.equals("user") && !secondPath.equals("artworks"))
-            pixivPrefix += secondPath + "/";
+        var pixivPrefix = Site.PIXIV.url
+        val urlParts = url.replace(Site.PIXIV.url, "").split("/")
+        val secondPath = urlParts[0]
+        if (secondPath != "user" && secondPath != "artworks") pixivPrefix += "$secondPath/"
 
-        content.setSite(Site.PIXIV);
+        val attributes = AttributeMap()
 
-        if (illust.isEmpty()) {
-            content.setStatus(StatusContent.IGNORED);
-            return content;
+        var attribute = Attribute(
+            AttributeType.ARTIST,
+            illustData.userName ?: "",
+            pixivPrefix + "user/" + illustData.userId,
+            Site.PIXIV
+        )
+        attributes.add(attribute)
+
+        for ((first, second) in illustData.getTags()) {
+            val name = cleanup(second)
+            val type = AttributeType.TAG
+            attribute = Attribute(type, name, pixivPrefix + "tags/" + first, Site.PIXIV)
+            attributes.add(attribute)
         }
-        IllustData illustData = Stream.of(illust.values()).toList().get(0);
+        content.putAttributes(attributes)
 
-        content.setUrl(url.replace(Site.PIXIV.getUrl(), ""));
-        content.setTitle(cleanup(illustData.getTitle()));
-        content.setUniqueSiteId(illustData.illustId);
+        if (updateImages) content.setImageFiles(emptyList())
 
-        content.setQtyPages(illustData.getPageCount());
-        content.setCoverImageUrl(illustData.getThumbUrl());
-        content.setUploadDate(illustData.getUploadDate().getTime()); // to test
-
-        AttributeMap attributes = new AttributeMap();
-
-        Attribute attribute = new Attribute(AttributeType.ARTIST, illustData.userName, pixivPrefix + "user/" + illustData.userId, Site.LUSCIOUS);
-        attributes.add(attribute);
-
-        for (Pair<String, String> tag : illustData.getTags()) {
-            String name = cleanup(tag.getSecond());
-            AttributeType type = AttributeType.TAG;
-            attribute = new Attribute(type, name, pixivPrefix + "tags/" + tag.getFirst(), Site.LUSCIOUS);
-            attributes.add(attribute);
-        }
-        content.putAttributes(attributes);
-
-        if (updateImages) content.setImageFiles(Collections.emptyList());
-
-        return content;
+        return content
     }
 }
+
+@JsonClass(generateAdapter = true)
+data class IllustData(
+    val illustId: String? = null,
+    val title: String? = null,
+    val uploadDate: Date? = null,
+    val pageCount: Int? = null,
+    val urls: Map<String, String>? = null,
+    @Json(name = "tags")
+    val theTags: TagsData? = null,
+    val userId: String? = null,
+    val userName: String? = null
+) {
+    fun getTags(): List<Pair<String, String>> {
+        return theTags?.getTags() ?: emptyList()
+    }
+
+    val thumbUrl: String
+        get() {
+            if (null == urls) return ""
+            var result = urls["thumb"]
+            if (null == result) result = urls["small"]
+            return result ?: ""
+        }
+}
+
+@JsonClass(generateAdapter = true)
+data class TagsData(
+    @Json(name = "tags")
+    val theTags: List<TagData>? = null
+) {
+    fun getTags(): List<Pair<String, String>> {
+        return theTags?.map { it.getTag() } ?: emptyList()
+    }
+}
+
+@JsonClass(generateAdapter = true)
+data class TagData(
+    @Json(name = "tag")
+    val theTag: String,
+    val romaji: String? = null,
+    val translation: Map<String, String>? = null
+) {
+    fun getTag(): Pair<String, String> {
+        var label = translation?.get("en")
+        if (null == label) label = romaji
+        if (null == label) label = theTag
+        return Pair(theTag, label)
+    }
+}
+
+@JsonClass(generateAdapter = true)
+data class UserData(
+    val userId: String? = null,
+    val name: String? = null
+)
