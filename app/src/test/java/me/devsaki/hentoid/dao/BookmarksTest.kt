@@ -33,8 +33,8 @@ class BookmarksTest : AbstractObjectBoxTest() {
         fun prepareDB() {
             println(">> Preparing DB...")
             dao = ObjectBoxDAO(/*store*/)
-            dao.insertBookmark(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff1"))
-            dao.insertBookmark(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff2/"))
+            dao.insertBookmark(SiteBookmark(site = Site.ASMHENTAI, title = "aaa", url = Site.ASMHENTAI.url + "/stuff1"))
+            dao.insertBookmark(SiteBookmark(site = Site.ASMHENTAI, title = "aaa", url = Site.ASMHENTAI.url + "/stuff2/"))
             println(">> DB prepared")
         }
     }
@@ -85,14 +85,13 @@ class BookmarksTest : AbstractObjectBoxTest() {
         println(">> test import START")
 
         val bookmarksToImport = ArrayList<SiteBookmark>()
-        bookmarksToImport.add(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff1"))
-        bookmarksToImport.add(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff1/"))
-        bookmarksToImport.add(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff2"))
-        bookmarksToImport.add(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff2/"))
-
+        bookmarksToImport.add(SiteBookmark(site = Site.ASMHENTAI, title = "aaa", url = Site.ASMHENTAI.url + "/stuff1"))
+        bookmarksToImport.add(SiteBookmark(site = Site.ASMHENTAI, title = "aaa", url = Site.ASMHENTAI.url + "/stuff1/"))
+        bookmarksToImport.add(SiteBookmark(site = Site.ASMHENTAI, title = "aaa", url = Site.ASMHENTAI.url + "/stuff2"))
+        bookmarksToImport.add(SiteBookmark(site = Site.ASMHENTAI, title = "aaa", url = Site.ASMHENTAI.url + "/stuff2/"))
         Assert.assertEquals(0, importBookmarks(dao, bookmarksToImport))
 
-        bookmarksToImport.add(SiteBookmark(Site.ASMHENTAI, "aaa", Site.ASMHENTAI.url + "/stuff3/"))
+        bookmarksToImport.add(SiteBookmark(site = Site.ASMHENTAI, title = "aaa", url = Site.ASMHENTAI.url + "/stuff3/"))
         Assert.assertEquals(1, importBookmarks(dao, bookmarksToImport))
 
         val bookmarksToImportSet = HashSet<SiteBookmark>(bookmarksToImport)
