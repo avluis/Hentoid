@@ -14,7 +14,7 @@ import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.ActivityDrawerEditBinding
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.SiteItem
@@ -56,12 +56,12 @@ class DrawerEditActivity : BaseActivity(), ItemTouchCallback {
 
         // Recycler
         val items: MutableList<SiteItem> = ArrayList()
-        val activeSites = Preferences.getActiveSites()
+        val activeSites = Settings.activeSites
 
         // First add active sites
         for (s in activeSites) if (s.isVisible) items.add(SiteItem(s, true, touchHelper))
         // Then add the others
-        for (s in Site.values())  // We don't want to show these
+        for (s in Site.entries)  // We don't want to show these
             if (s.isVisible && !activeSites.contains(s)) items.add(SiteItem(s, false, touchHelper))
         itemAdapter.add(items)
         recyclerView = findViewById(R.id.drawer_edit_list)
@@ -92,7 +92,7 @@ class DrawerEditActivity : BaseActivity(), ItemTouchCallback {
     private fun onValidateClick() {
         val newSites: MutableList<Site> = ArrayList()
         for (s in itemAdapter.adapterItems) if (s.isSelected) newSites.add(s.site)
-        Preferences.setActiveSites(newSites)
+        Settings.activeSites = newSites
         onBackPressedDispatcher.onBackPressed()
     }
 

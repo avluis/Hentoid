@@ -1317,19 +1317,17 @@ fun launchBrowserFor(
  */
 fun getBlockedTags(content: Content): List<String> {
     var result: MutableList<String> = ArrayList()
-    if (Preferences.getBlockedTags().isNotEmpty()) {
+    if (Settings.blockedTags.isNotEmpty()) {
         val tags = content.attributes
-            .filter { a: Attribute -> a.type == AttributeType.TAG || a.type == AttributeType.LANGUAGE }
-            .map { obj: Attribute -> obj.name }
-        for (blocked in Preferences.getBlockedTags()) for (tag in tags) if (blocked.equals(
-                tag,
-                ignoreCase = true
-            ) || isPresentAsWord(blocked, tag)
-        ) {
-            if (result.isEmpty()) result = ArrayList()
-            result.add(tag)
-            break
-        }
+            .filter { it.type == AttributeType.TAG || it.type == AttributeType.LANGUAGE }
+            .map { it.name }
+        for (blocked in Settings.blockedTags)
+            for (tag in tags)
+                if (blocked.equals(tag, ignoreCase = true) || isPresentAsWord(blocked, tag)) {
+                    if (result.isEmpty()) result = ArrayList()
+                    result.add(tag)
+                    break
+                }
         if (tags.isNotEmpty() && tags.size == result.size) trigger(2)
     }
     return result.toList()

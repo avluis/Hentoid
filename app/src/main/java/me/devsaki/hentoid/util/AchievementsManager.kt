@@ -77,7 +77,7 @@ object AchievementsManager {
 
     fun checkPrefs() {
         if (!isRegistered(1)) {
-            if (1 == Preferences.getActiveSites().size) registerAndSignal(1)
+            if (1 == Settings.activeSites.size) registerAndSignal(1)
         }
     }
 

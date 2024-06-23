@@ -11,7 +11,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogSelectSiteBinding
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.viewholders.DrawerItem
 
 /**
@@ -73,7 +73,7 @@ class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Par
 
         val includedSites =
             requireArguments().getIntegerArrayList(INCLUDED_SITES)?.toSet() ?: return
-        val sites = Preferences.getActiveSites()
+        val sites = Settings.activeSites
             .filter { !showUniqueIdsOnly || it.hasUniqueBookId() }
             .filter { includedSites.contains(it.code) }
             .sortedBy { it.name }

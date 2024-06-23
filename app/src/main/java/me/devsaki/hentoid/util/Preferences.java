@@ -2,22 +2,16 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
-import com.annimon.stream.Stream;
-
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.DownloadMode;
 import me.devsaki.hentoid.enums.Grouping;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.enums.Theme;
 import me.devsaki.hentoid.util.network.Source;
@@ -610,24 +604,8 @@ public final class Preferences {
         return getIntPref(Key.DL_SPEED_CAP, Default.DL_SPEED_CAP);
     }
 
-    public static List<String> getBlockedTags() {
-        return Stream.of(sharedPreferences.getString(Key.DL_BLOCKED_TAGS, "").split(",")).map(String::trim).filterNot(String::isEmpty).toList();
-    }
-
     public static int getTagBlockingBehaviour() {
         return getIntPref(Key.DL_BLOCKED_TAG_BEHAVIOUR, Default.DL_BLOCKED_TAGS_BEHAVIOUR);
-    }
-
-    public static List<Site> getActiveSites() {
-        String siteCodesStr = sharedPreferences.getString(Key.ACTIVE_SITES, Default.ACTIVE_SITES);
-        if (siteCodesStr.isEmpty()) return Collections.emptyList();
-
-        return Stream.of(siteCodesStr.split(",")).distinct().map(s -> Site.searchByCode(Long.parseLong(s))).toList();
-    }
-
-    public static void setActiveSites(List<Site> activeSites) {
-        List<Integer> siteCodes = Stream.of(activeSites).map(Site::getCode).distinct().toList();
-        sharedPreferences.edit().putString(Key.ACTIVE_SITES, android.text.TextUtils.join(",", siteCodes)).apply();
     }
 
     public static int getColorTheme() {
@@ -902,7 +880,6 @@ public final class Preferences {
         static final String DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
         public static final String DL_SPEED_CAP = "dl_speed_cap";
-        public static final String DL_BLOCKED_TAGS = "pref_dl_blocked_tags";
         static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
         static final String DL_EH_HIRES = "pref_dl_eh_hires";
         public static final String DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
@@ -1022,8 +999,6 @@ public final class Preferences {
         static final int DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
         static final boolean CHECK_UPDATES = true;
         // Default menu in v1.9.x
-        static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, Site.FAKKU2, Site.NEXUS, Site.MUSES, Site.DOUJINS};
-        static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
         static final boolean LOCK_ON_APP_RESTORE = false;
         static final int LOCK_TIMER = Constant.LOCK_TIMER_30S;
         static final long DB_MAX_SIZE_KB = 2L * 1024 * 1024; // 2GB

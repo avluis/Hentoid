@@ -1522,7 +1522,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     private fun updatePrefBlockedTags() {
-        m_prefBlockedTags = Preferences.getBlockedTags()
+        m_prefBlockedTags.clear()
+        m_prefBlockedTags.addAll(Settings.blockedTags)
     }
 
     private fun clearPrefBlockedTags() {
@@ -1687,7 +1688,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             webClient.setMarkBlockedTags(Preferences.isBrowserMarkBlockedTags())
             if (webClient.isMarkBlockedTags()) updatePrefBlockedTags() else clearPrefBlockedTags()
             reload = true
-        } else if (Preferences.Key.DL_BLOCKED_TAGS == key) {
+        } else if (Settings.Key.DL_BLOCKED_TAGS == key) {
             updatePrefBlockedTags()
             reload = true
         } else if (Preferences.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST == key) {
