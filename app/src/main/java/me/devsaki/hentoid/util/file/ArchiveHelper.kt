@@ -27,7 +27,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.io.OutputStream
+import java.util.OptionalInt
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.stream.IntStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -207,14 +210,32 @@ fun Context.extractArchiveEntries(
     )
 }
 
+/**
+ * Extract the given archive entries; blocking call
+ *
+ * @param uri               Uri of the archive file to extract from
+ * @param targetFolder      Folder to extract files to
+ * @param entriesToExtract  List of entries to extract; null to extract everything
+ *      left = relative paths to the archive root
+ *      right = internal identifier of the resource to extract (for remapping purposes)
+ * @returns Uris of extracted files
+ * @throws IOException If something horrible happens during I/O
+ */
 @Throws(IOException::class)
-fun Context.extractArchiveEntriesSimple(
+fun Context.extractArchiveEntriesBlocking(
     uri: Uri,
     targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
     entriesToExtract: List<Pair<String, String>>
 ): List<Uri> {
-    val result = ArrayList<Uri>()
-    val callback: (String, Uri) -> Unit = { _, fileUri -> result.add(fileUri) }
+    val result = ConcurrentHashMap<Int, Uri>()
+    val callback: (String, Uri) -> Unit =
+        { id, fileUri ->
+            // Use the ID to detect the order of the file that was just extracted
+            val indexOpt: OptionalInt = IntStream.range(0, entriesToExtract.size)
+                .filter { i -> id == entriesToExtract[i].second }
+                .findFirst()
+            if (indexOpt.isPresent) result[indexOpt.asInt] = fileUri
+        }
     extractArchiveEntries(
         uri,
         fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
@@ -222,13 +243,24 @@ fun Context.extractArchiveEntriesSimple(
         entriesToExtract, null,
         callback, null
     )
-    // Hard cap to 4 seconds
+
+    // Wait until all entries are processed
     val delay = 250
     var nbPauses = 0
-    while (result.size < entriesToExtract.size && nbPauses++ < 4000 / delay) {
+    var lastSize = 0
+    while (result.size < entriesToExtract.size) {
+        result.apply {
+            if (lastSize == size) {
+                // Hard cap to 3 seconds when no progression
+                if (nbPauses++ > 3 * 1000 / delay) throw IOException("Extraction timed out")
+            } else {
+                nbPauses = 0
+            }
+            lastSize = size
+        }
         pause(delay)
     }
-    return result
+    return result.entries.sortedBy { it.key }.map { it.value }
 }
 
 /**

@@ -190,7 +190,7 @@ abstract class BaseSplitMergeWorker(
                 { _, _, s -> progressPlus(s) },
                 { progressDone(contentList.size) }
             )
-            // If we're here, no exception has been triggered -> cleanup if needed
+            // If we're here, no exception has been triggered -> cleanup if asked
             if (deleteAfterOperation) {
                 contentList.forEach { c ->
                     try {

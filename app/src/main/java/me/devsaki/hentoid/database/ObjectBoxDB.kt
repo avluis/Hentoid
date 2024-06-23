@@ -1876,7 +1876,7 @@ object ObjectBoxDB {
         store.boxFor(Group::class.java).remove(groupId)
     }
 
-    fun deleteOrphanArtistGroups() {
+    fun deleteEmptyArtistGroups() {
         return store.boxFor(Group::class.java).query()
             .equal(Group_.grouping, 1)
             .relationCount(Group_.items, 0).safeRemove()

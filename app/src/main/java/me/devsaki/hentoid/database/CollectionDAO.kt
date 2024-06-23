@@ -137,7 +137,7 @@ interface CollectionDAO {
 
     fun deleteAllFlaggedGroups()
 
-    fun deleteOrphanArtistGroups()
+    fun deleteEmptyArtistGroups()
 
     fun insertGroupItem(item: GroupItem): Long
 

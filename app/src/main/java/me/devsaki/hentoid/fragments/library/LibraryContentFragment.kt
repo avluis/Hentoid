@@ -1707,22 +1707,22 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
         val selectedCount = selectedItems.size
         if (0 == selectedCount) {
-            activity.get()!!.getSelectionToolbar()!!.visibility = View.GONE
-            selectExtension!!.selectOnLongClick = true
+            activity.get()?.getSelectionToolbar()?.visibility = View.GONE
+            selectExtension?.selectOnLongClick = true
         } else {
-            val contentList = selectedItems.mapNotNull { ci -> ci.content }
-            val selectedProcessedCount = contentList.count { c -> c.isBeingProcessed }
+            val contentList = selectedItems.mapNotNull { it.content }
+            val selectedProcessedCount = contentList.count { it.isBeingProcessed }
             val selectedLocalCount = contentList
-                .filterNot { c -> c.status == StatusContent.EXTERNAL }
-                .filterNot { c -> c.downloadMode == DownloadMode.STREAM }
+                .filterNot { it.status == StatusContent.EXTERNAL }
+                .filterNot { it.downloadMode == DownloadMode.STREAM }
                 .count()
-            val selectedStreamedCount = contentList.map { c -> c.downloadMode }
+            val selectedStreamedCount = contentList.map { it.downloadMode }
                 .count { it == DownloadMode.STREAM }
             val selectedNonArchiveExternalCount =
-                contentList.count { c -> c.status == StatusContent.EXTERNAL && !c.isArchive }
+                contentList.count { it.status == StatusContent.EXTERNAL && !it.isArchive }
             val selectedArchiveExternalCount =
-                contentList.count { c -> c.status == StatusContent.EXTERNAL && c.isArchive }
-            activity.get()!!.updateSelectionToolbar(
+                contentList.count { it.status == StatusContent.EXTERNAL && it.isArchive }
+            activity.get()?.updateSelectionToolbar(
                 selectedCount.toLong(),
                 selectedProcessedCount.toLong(),
                 selectedLocalCount.toLong(),
@@ -1730,7 +1730,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 selectedNonArchiveExternalCount.toLong(),
                 selectedArchiveExternalCount.toLong()
             )
-            activity.get()!!.getSelectionToolbar()!!.visibility = View.VISIBLE
+            activity.get()?.getSelectionToolbar()?.visibility = View.VISIBLE
         }
     }
 

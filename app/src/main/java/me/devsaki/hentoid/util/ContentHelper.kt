@@ -60,7 +60,7 @@ import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.URI_ELEMENTS_SEPARATOR
 import me.devsaki.hentoid.util.file.cleanFileName
 import me.devsaki.hentoid.util.file.copyFile
-import me.devsaki.hentoid.util.file.extractArchiveEntriesSimple
+import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
 import me.devsaki.hentoid.util.file.findFolder
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
@@ -494,7 +494,7 @@ fun removeContent(context: Context, dao: CollectionDAO, content: Content) {
             getFileNameWithoutExtension(name) == content.id.toString()
         }
         if (images != null) for (f in images) removeFile(f!!)
-    } else if ( /*isInLibrary(content.getStatus()) &&*/content.storageUri.isNotEmpty()) { // Remove a folder and its content
+    } else if (content.storageUri.isNotEmpty()) { // Remove a folder and its content
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         val folder = getDocumentFromTreeUriString(context, content.storageUri)
             ?: throw FileNotProcessedException(
@@ -659,7 +659,7 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                         ), newContentId.toString() + ""
                     )
                 )
-                val results = context.extractArchiveEntriesSimple(
+                val results = context.extractArchiveEntriesBlocking(
                     archive.uri,
                     targetFolder,
                     extractInstructions
@@ -1531,9 +1531,8 @@ fun purgeFiles(
         // Identify files to keep
         val namesToKeep = NameFilter { displayName: String ->
             val name = displayName.lowercase(Locale.getDefault())
-            (!removeJson && name.endsWith("json")) || (!removeCover && name.startsWith(
-                THUMB_FILE_NAME
-            ))
+            (!removeJson && name.endsWith("json"))
+                    || (!removeCover && name.startsWith(THUMB_FILE_NAME))
         }
         val filesToKeep = listFiles(context, bookFolder, namesToKeep)
 
@@ -2083,6 +2082,8 @@ fun mergeContents(
     // Create destination folder for new content
     val parentFolder: DocumentFile?
     var targetFolder: DocumentFile?
+    // TODO destination is an archive when all source contents are archives
+
     // External library root for external content
     if (mergedContent.status == StatusContent.EXTERNAL) {
         val externalRootFolder =
@@ -2114,7 +2115,6 @@ fun mergeContents(
         mergedContent,
         "Could not create target directory"
     )
-
     mergedContent.setStorageDoc(targetFolder)
 
     // Renumber all picture files and dispatch chapters
@@ -2125,23 +2125,72 @@ fun mergeContents(
     val mergedChapters: MutableList<Chapter> = ArrayList()
 
     var isError = false
+    var tempFolder: File? = null
+
     try {
         // Merge images and chapters
         var chapterOrder = 0
         var pictureOrder = 1
         var nbProcessedPics = 1
         var coverFound = false
-        var newChapter: Chapter?
-        var firstImageIsCover: Boolean
+
         for (c in contentList) {
-            newChapter = null
+            var newChapter: Chapter? = null
             // Create a default "content chapter" that represents the original book before merging
             val contentChapter = Chapter(chapterOrder++, c.galleryUrl, c.title)
             contentChapter.uniqueId = c.uniqueSiteId + "-" + contentChapter.order
 
             val imgs = c.imageList
-            firstImageIsCover = !imgs.any { it.isCover }
+            val firstImageIsCover = !imgs.any { it.isCover }
+            var imgIndex = -1
             for (img in imgs) {
+                imgIndex++
+                // Unarchive images by chunks of 80MB max
+                if (c.isArchive) {
+                    tempFolder?.delete()
+                    tempFolder = getOrCreateCacheFolder(context, "tmp-merge-archive")
+                    if (null == tempFolder) throw ContentNotProcessedException(
+                        mergedContent,
+                        "Could not create temp unarchive folder"
+                    )
+                    var unarchivedBytes = 0L
+                    val picsToUnarchive: MutableList<ImageFile> = ArrayList()
+                    var idx = -1
+                    while (unarchivedBytes < 80.0 * 1024 * 1024) { // 80MB
+                        idx++
+                        if (idx + imgIndex >= imgs.size) break
+                        val picToUnarchive = imgs[imgIndex + idx]
+                        if (!picToUnarchive.fileUri.startsWith(c.storageUri)) continue // thumb
+                        picsToUnarchive.add(picToUnarchive)
+                        unarchivedBytes += picToUnarchive.size
+                    }
+                    val toExtract = picsToUnarchive.map {
+                        Pair(
+                            it.fileUri.replace(c.storageUri + File.separator, ""),
+                            it.id.toString()
+                        )
+                    }
+                    val unarchivedFiles = context.extractArchiveEntriesBlocking(
+                        Uri.parse(c.storageUri),
+                        tempFolder,
+                        toExtract
+                    )
+                    if (unarchivedFiles.size < picsToUnarchive.size) throw ContentNotProcessedException(
+                        mergedContent,
+                        "Issue when unarchiving " + unarchivedFiles.size + " " + picsToUnarchive.size
+                    )
+
+                    // Replace intial file URIs with unarchived files URIs
+                    picsToUnarchive.forEachIndexed { index, imageFile ->
+                        Timber.d(
+                            "Replacing %s with %s",
+                            imageFile.fileUri,
+                            unarchivedFiles[index].toString()
+                        )
+                        imageFile.fileUri = unarchivedFiles[index].toString()
+                    }
+                }
+
                 if (!img.isReadable && coverFound) continue // Skip thumbs from 2+ rank merged books
                 val newImg = ImageFile(img, populateContent = false, populateChapter = false)
                 newImg.id = 0 // Force working on a new picture
@@ -2174,15 +2223,14 @@ fun mergeContents(
                     newImg.setChapter(newChapter)
                 }
 
-                // If exists, move the picture to the merged books' folder
+                // If exists, move the picture file to the merged books' folder
                 if (isInLibrary(newImg.status)) {
-                    val extension = getExtensionFromUri(img.fileUri)
                     val newUri = copyFile(
                         context,
                         Uri.parse(img.fileUri),
                         targetFolder.uri,
                         newImg.mimeType,
-                        newImg.name + "." + extension
+                        newImg.name + "." + getExtensionFromUri(img.fileUri)
                     )
                     if (newUri != null) newImg.fileUri = newUri.toString()
                     else Timber.w("Could not move file %s", img.fileUri)
@@ -2194,6 +2242,9 @@ fun mergeContents(
     } catch (e: IOException) {
         Timber.w(e)
         isError = true
+    } finally {
+        // Delete temp files
+        tempFolder?.delete()
     }
 
     if (!isError) {

@@ -292,7 +292,7 @@ class MetadataEditViewModel(
                 val item = GroupItem(it, group, -1)
                 dao.insertGroupItem(item)
             }
-            dao.deleteOrphanArtistGroups()
+            dao.deleteEmptyArtistGroups()
         }
 
         contentList.value?.let {
