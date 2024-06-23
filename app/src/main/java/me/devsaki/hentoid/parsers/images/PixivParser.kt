@@ -150,7 +150,7 @@ class PixivParser : BaseImageListParser() {
                 acceptAll,
                 userAgent
             ).execute().body()
-            if (null == seriesContentMetadata || seriesContentMetadata.isError) {
+            if (null == seriesContentMetadata || true == seriesContentMetadata.error) {
                 var message: String? = "Unreachable series illust"
                 if (seriesContentMetadata != null) message = seriesContentMetadata.message
                 throw IllegalArgumentException(message)
