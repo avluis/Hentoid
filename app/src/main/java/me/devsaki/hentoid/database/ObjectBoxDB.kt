@@ -900,7 +900,7 @@ object ObjectBoxDB {
             false
         ).safeFindIds().toMutableList()
         allBooksIds.shuffle(Random(getSeed(SEED_CONTENT)))
-        shuffleStore.put(allBooksIds.map { contentId -> ShuffleRecord(contentId) })
+        shuffleStore.put(allBooksIds.map { ShuffleRecord(contentId = it) })
     }
 
     private fun shuffleRandomSortId(query: Query<Content>): LongArray {
