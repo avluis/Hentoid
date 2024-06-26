@@ -244,14 +244,14 @@ fun Context.extractArchiveEntriesBlocking(
         callback, null
     )
 
-    // Wait until all entries are processed
+    // Block calling thread until all entries are processed
     val delay = 250
     var nbPauses = 0
     var lastSize = 0
     while (result.size < entriesToExtract.size) {
         result.apply {
             if (lastSize == size) {
-                // Hard cap to 3 seconds when no progression
+                // 3 seconds timeout when no progression
                 if (nbPauses++ > 3 * 1000 / delay) throw IOException("Extraction timed out")
             } else {
                 nbPauses = 0

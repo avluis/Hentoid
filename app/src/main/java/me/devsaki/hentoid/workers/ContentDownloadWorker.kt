@@ -31,7 +31,6 @@ import me.devsaki.hentoid.enums.ErrorType
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadReviveEvent
@@ -59,7 +58,7 @@ import me.devsaki.hentoid.util.download.RequestOrder.NetworkError
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.download.RequestQueueManager.Companion.getInstance
 import me.devsaki.hentoid.util.download.downloadToFile
-import me.devsaki.hentoid.util.download.selectDownloadLocation
+import me.devsaki.hentoid.util.download.getDownloadLocation
 import me.devsaki.hentoid.util.exception.AccountException
 import me.devsaki.hentoid.util.exception.CaptchaException
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
@@ -77,7 +76,6 @@ import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
-import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
@@ -268,28 +266,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null))
 
-        // Check for download folder existence, available free space and credentials
-        var dir: DocumentFile? = null
-        var location: StorageLocation = StorageLocation.NONE
-        // Folder already set (e.g. resume paused download)
-        if (content.storageUri.isNotEmpty()) {
-            // Reset storage URI if unreachable (will be re-created later in the method)
-            val rootFolder = getDocumentFromTreeUriString(context, content.storageUri)
-            if (null == rootFolder) content.clearStorageDoc() else {
-                val result = testFolder(context, content.storageUri)
-                if (result != null) return result
-                dir = getDocumentFromTreeUriString(
-                    context,
-                    content.storageUri
-                ) // Will come out null if invalid
-            }
-        }
-        // Auto-select location according to storage management strategy
-        if (content.storageUri.isEmpty()) {
-            location = selectDownloadLocation(context)
-            val result = testFolder(context, Preferences.getStorageUri(location))
-            if (result != null) return result
-        }
+        val locationResult =
+            getDownloadLocation(context, content) ?: return Pair(QueuingResult.QUEUE_END, null)
+        var dir = locationResult.first
+        val location = locationResult.second
+
         downloadCanceled.set(false)
         downloadSkipped.set(false)
         downloadInterrupted.set(false)
@@ -312,13 +293,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             if (downloadMode == DownloadMode.DOWNLOAD) StatusContent.SAVED else StatusContent.ONLINE
 
         var hasError = false
-        val nbErrors = images.count { i -> i.status == StatusContent.ERROR }
+        val nbErrors = images.count { it.status == StatusContent.ERROR }
 
         val isCase1 = images.isEmpty()
         val isCase2 = nbErrors > 0 && nbErrors == images.size
         val isCase3 = nbErrors > 0 && content.site.hasBackupURLs()
         val isCase4 =
-            content.manuallyMerged && content.chaptersList.any { c -> c.imageList.all { img -> img.status == StatusContent.ERROR } }
+            content.manuallyMerged && content.chaptersList.any { it.imageList.all { img -> img.status == StatusContent.ERROR } }
 
         if (isCase1 || isCase2 || isCase3 || isCase4) {
             EventBus.getDefault()
@@ -464,11 +445,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         content.setStorageDoc(targetFolder)
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
-        if (0 == content.qtyPages) content.qtyPages = images.count { i -> i.isReadable }
+        if (0 == content.qtyPages) content.qtyPages = images.count { it.isReadable }
         content.status = StatusContent.DOWNLOADING
         // Mark the cover for downloading when saving a streamed book
-        if (downloadMode == DownloadMode.STREAM) content.cover.status =
-            StatusContent.SAVED
+        if (downloadMode == DownloadMode.STREAM)
+            content.cover.status = StatusContent.SAVED
         dao.insertContent(content)
         trackDownloadEvent("Added")
         Timber.i("Downloading '%s' [%s]", content.title, content.id)
@@ -1586,42 +1567,5 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     private fun processNewName(attrName: String, rule: RenamingRule): String? {
         return if (rule.doesMatchSourceName(attrName)) rule.getTargetName(attrName) else null
-    }
-
-    private fun testFolder(
-        context: Context,
-        uriString: String
-    ): Pair<QueuingResult, Content?>? {
-        if (uriString.isEmpty()) {
-            Timber.i("No download folder set") // May happen if user has skipped it during the intro
-            EventBus.getDefault()
-                .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER))
-            return Pair(QueuingResult.QUEUE_END, null)
-        }
-        val rootFolder = getDocumentFromTreeUriString(context, uriString)
-        if (null == rootFolder) {
-            Timber.i("Download folder has not been found. Please select it again.") // May happen if the folder has been moved or deleted after it has been selected
-            EventBus.getDefault()
-                .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND))
-            return Pair(QueuingResult.QUEUE_END, null)
-        }
-        if (!isUriPermissionPersisted(context.contentResolver, rootFolder.uri)) {
-            Timber.i("Insufficient credentials on download folder. Please select it again.")
-            EventBus.getDefault()
-                .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS))
-            return Pair(QueuingResult.QUEUE_END, null)
-        }
-        val spaceLeftBytes = MemoryUsageFigures(context, rootFolder).getfreeUsageBytes()
-        if (spaceLeftBytes < 2L * 1024 * 1024) {
-            Timber.i("Device very low on storage space (<2 MB). Queue paused.")
-            EventBus.getDefault().post(
-                DownloadEvent.fromPauseMotive(
-                    DownloadEvent.Motive.NO_STORAGE,
-                    spaceLeftBytes
-                )
-            )
-            return Pair(QueuingResult.QUEUE_END, null)
-        }
-        return null
     }
 }

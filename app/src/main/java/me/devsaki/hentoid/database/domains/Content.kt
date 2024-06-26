@@ -15,7 +15,6 @@ import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import me.devsaki.hentoid.activities.sources.ASMHentaiActivity
 import me.devsaki.hentoid.activities.sources.AllPornComicActivity
-import me.devsaki.hentoid.activities.sources.AnchiraActivity
 import me.devsaki.hentoid.activities.sources.BaseWebActivity
 import me.devsaki.hentoid.activities.sources.DeviantArtActivity
 import me.devsaki.hentoid.activities.sources.DoujinsActivity
@@ -213,7 +212,6 @@ data class Content(
                 Site.SIMPLY -> SimplyActivity::class.java
                 Site.HDPORNCOMICS -> HdPornComicsActivity::class.java
                 Site.EDOUJIN -> EdoujinActivity::class.java
-                Site.ANCHIRA -> AnchiraActivity::class.java
                 Site.DEVIANTART -> DeviantArtActivity::class.java
                 Site.MANGAGO -> MangagoActivity::class.java
                 else -> BaseWebActivity::class.java

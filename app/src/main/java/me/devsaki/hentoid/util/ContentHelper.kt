@@ -1493,7 +1493,8 @@ fun fetchImageURLs(
     // Cleanup and enrich generated objects
     for (img in imgs) {
         img.id = 0
-        img.status = targetImageStatus
+        // Don't change the status if the picture has been downloaded during parsing (Mangago)
+        if (img.status != StatusContent.DOWNLOADED) img.status = targetImageStatus
         img.contentId = content.id
     }
 

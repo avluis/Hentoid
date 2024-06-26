@@ -1329,6 +1329,12 @@ fun getOrCreateCacheFolder(context: Context, folderName: String): File? {
     return root
 }
 
+fun getAssetAsString(mgr: AssetManager, assetName: String): String {
+    val sb = StringBuilder()
+    getAssetAsString(mgr, assetName, sb)
+    return sb.toString()
+}
+
 fun getAssetAsString(mgr: AssetManager, assetName: String, sb: StringBuilder) {
     try {
         mgr.open(assetName).use { `is` ->

@@ -96,7 +96,7 @@ open class CustomWebViewClient : WebViewClient {
     private val scope: CoroutineScope
 
     // Listener to the results of the page parser
-    protected val resConsumer: WebResultConsumer
+    protected val resConsumer: WebResultConsumer? // TODO remove if unused in v1.21.x
 
     // List of the URL patterns identifying a parsable book gallery page
     // TODO differentiate API call URLs and HTML gallery URLs
@@ -144,7 +144,7 @@ open class CustomWebViewClient : WebViewClient {
 
     // List of JS scripts to load from app resources every time a webpage is started
     private val jsStartupScripts: MutableList<String> by lazy { ArrayList() }
-    private val jsReplacements: MutableList<Pair<String, String>> by lazy { ArrayList() }
+    private val jsReplacements: MutableMap<String, String> by lazy { HashMap() }
 
 
     companion object {
@@ -183,13 +183,12 @@ open class CustomWebViewClient : WebViewClient {
 
     constructor(
         site: Site,
-        galleryUrl: Array<String>,
-        resConsumer: WebResultConsumer
+        galleryUrl: Array<String>
     ) {
         this.site = site
         activity = null
         scope = CoroutineScope(Dispatchers.Default)
-        this.resConsumer = resConsumer
+        this.resConsumer = null
         for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
         htmlAdapter = initJspoon(site)
         adBlocker = AdBlocker(site)
@@ -272,7 +271,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     fun addJsReplacement(source: String, target: String) {
-        jsReplacements.add(Pair(source, target))
+        jsReplacements[source] = target
     }
 
     /**
@@ -721,17 +720,17 @@ open class CustomWebViewClient : WebViewClient {
                             withContext(Dispatchers.IO) {
                                 content = processContent(content, url, quickDownload)
                             }
-                            resConsumer.onContentReady(content, quickDownload)
+                            resConsumer?.onContentReady(content, quickDownload)
                         }
                     } catch (t: Throwable) {
                         Timber.e(t, "Error parsing content.")
                         parserStream?.close()
                         isHtmlLoaded.set(true)
-                        resConsumer.onResultFailed()
+                        resConsumer?.onResultFailed()
                     }
                 } else {
                     isHtmlLoaded.set(true)
-                    resConsumer.onNoResult()
+                    resConsumer?.onNoResult()
                 }
                 return result
             } catch (e: IOException) {
@@ -986,15 +985,18 @@ open class CustomWebViewClient : WebViewClient {
         return classNames.any { o -> forbiddenElements.contains(o) }
     }
 
+    // TODO cache assets (not replacements)
     fun getJsScript(
-        context: Context, assetName: String, replacements: List<Pair<String, String>>?
+        context: Context,
+        assetName: String,
+        replacements: Map<String, String>?
     ): String {
         val sb = StringBuilder()
         sb.append("javascript:")
         getAssetAsString(context.assets, assetName, sb)
         var result = sb.toString()
-        if (replacements != null) {
-            for (p in replacements) result = result.replace(p.first, p.second)
+        replacements?.forEach {
+            result = result.replace(it.key, it.value)
         }
         return result
     }

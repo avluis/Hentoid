@@ -79,7 +79,7 @@ class EHentaiActivity : BaseWebActivity() {
                             contentParser.toContent(url)
                         }
                         content = super.processContent(content, url, quickDownload)
-                        resConsumer.onContentReady(content, quickDownload)
+                        resConsumer?.onContentReady(content, quickDownload)
                     } catch (t: Throwable) {
                         Timber.w(t)
                     }

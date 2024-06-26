@@ -32,10 +32,15 @@ function eval() {
   return new Promise((resolve) => {
     setTimeout(() => {
         if (document.querySelector("$selector") != null) {
-            console.info("resolve OK");
+            console.info("resolve OK IMG");
             $interface.$fun(document.URL, document.querySelector("html").innerHTML);
             resolve(true);
-        } else {
+        } else if (document.querySelector("#pic_container canvas") != null) {
+            console.info("resolve OK CANVAS");
+            var element = document.querySelector("#pic_container canvas");
+            screencap.onLoaded(element.width, element.height);
+            resolve(true);
+       } else {
             console.info("resolve KO");
             resolve(false);
         }

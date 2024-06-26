@@ -231,24 +231,6 @@ fun urlsToImageFiles(
 }
 
 /**
- * Build an ImageFile using the given properties
- *
- * @param imgUrl         URL of the image
- * @param order          Order of the image
- * @param totalBookPages Total number of pages of the corresponding book
- * @param status         Status of the resulting ImageFile
- * @return ImageFile built using all given arguments
- */
-fun urlToImageFile(
-    imgUrl: String,
-    order: Int,
-    totalBookPages: Int,
-    status: StatusContent
-): ImageFile {
-    return urlToImageFile(imgUrl, order, totalBookPages, status, null)
-}
-
-/**
  * Build an ImageFile using the given given properties
  *
  * @param imgUrl         URL of the image
@@ -263,7 +245,7 @@ fun urlToImageFile(
     order: Int,
     totalBookPages: Int,
     status: StatusContent,
-    chapter: Chapter?
+    chapter: Chapter? = null
 ): ImageFile {
     val result = ImageFile(dbOrder = order, dbUrl = imgUrl, status = status)
     val nbMaxDigits = (floor(log10(totalBookPages.toDouble())) + 1).toInt()

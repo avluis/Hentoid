@@ -28,22 +28,16 @@ class MangagoActivity : BaseWebActivity() {
 
     class MangagoWebClient : CustomWebViewClient {
 
-        constructor(
-            resultConsumer: WebResultConsumer
-        ) : super(Site.MANGAGO, arrayOf(MGG_GALLERY, MGG_CHAPTER), resultConsumer) {
-            setJsStartupScripts("wysiwyg_parser.js")
+        constructor() : super(Site.MANGAGO, arrayOf(MGG_GALLERY, MGG_CHAPTER)) {
+            setJsStartupScripts("mangago_parser.js")
             addJsReplacement("\$interface", WysiwygBackgroundWebView.interfaceName)
             addJsReplacement("\$fun", WysiwygBackgroundWebView.functionName)
             addJsReplacement("\$selector", PIC_SELECTOR)
+            addJsReplacement("\$force_page", "false")
         }
 
         internal constructor(
             activity: CustomWebActivity
-        ) : super(Site.MANGAGO, arrayOf(MGG_GALLERY, MGG_CHAPTER), activity) {
-            setJsStartupScripts("wysiwyg_parser.js")
-            addJsReplacement("\$interface", WysiwygBackgroundWebView.interfaceName)
-            addJsReplacement("\$fun", WysiwygBackgroundWebView.functionName)
-            addJsReplacement("\$selector", PIC_SELECTOR)
-        }
+        ) : super(Site.MANGAGO, arrayOf(MGG_GALLERY, MGG_CHAPTER), activity)
     }
 }
