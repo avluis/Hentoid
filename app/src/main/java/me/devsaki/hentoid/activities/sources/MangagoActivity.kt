@@ -9,7 +9,7 @@ import java.util.regex.Pattern
 private val DOMAIN_FILTER = arrayOf("mangago.me", "mangago.zone", "youhim.me")
 
 const val MGG_GALLERY = "//www.mangago.me/read-manga/[%\\w\\-_]+/$"
-val MGG_CHAPTER = MGG_GALLERY.replace("$", "") + "[%\\w\\-_]+/[%\\w\\-_]+/pg-[%\\w\\-_]+/$"
+val MGG_CHAPTER = MGG_GALLERY.replace("$", "") + "[%\\w\\-._]+/[%\\w\\-._]+(/pg-[%\\w\\-_]+)?/$"
 val MGG_CHAPTER_PATTERN: Pattern = Pattern.compile(MGG_CHAPTER)
 
 class MangagoActivity : BaseWebActivity() {
