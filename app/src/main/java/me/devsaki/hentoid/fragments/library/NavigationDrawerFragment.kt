@@ -32,6 +32,7 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -134,7 +135,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     private fun updateItems() {
         val drawerItems: MutableList<DrawerItem> = ArrayList()
-        val activeSites = Preferences.getActiveSites()
+        val activeSites = Settings.activeSites
         for (s in activeSites) if (s.isVisible) drawerItems.add(DrawerItem.fromSite(s))
         itemAdapter.clear()
         itemAdapter.add(0, drawerItems)

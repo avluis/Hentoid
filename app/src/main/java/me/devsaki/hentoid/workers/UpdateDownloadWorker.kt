@@ -5,9 +5,9 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.notification.update.UpdateFailedNotification
-import me.devsaki.hentoid.notification.update.UpdateInstallNotification
-import me.devsaki.hentoid.notification.update.UpdateProgressNotification
+import me.devsaki.hentoid.notification.appUpdate.UpdateFailedNotification
+import me.devsaki.hentoid.notification.appUpdate.UpdateInstallNotification
+import me.devsaki.hentoid.notification.appUpdate.UpdateProgressNotification
 import me.devsaki.hentoid.util.file.FILE_IO_BUFFER_SIZE
 import me.devsaki.hentoid.util.file.getFileUriCompat
 import me.devsaki.hentoid.util.file.getOutputStream

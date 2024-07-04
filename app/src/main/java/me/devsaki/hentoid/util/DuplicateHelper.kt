@@ -299,7 +299,7 @@ fun sanitizeTitle(title: String): Triple<String, Int, Int> {
     //  - Separated by at most 4 characters
     var minChapter: Triple<Int, Int, Int>? = null
     var maxChapter: Triple<Int, Int, Int>? = null
-    val digitsMap = StringHelper.locateDigits(title).reversed()
+    val digitsMap = locateDigits(title).reversed()
     digitsMap.forEach {
         if (it.second >= title.length * 0.8 && null == maxChapter) maxChapter = it
         else maxChapter?.let { max ->
@@ -311,7 +311,7 @@ fun sanitizeTitle(title: String): Triple<String, Int, Int> {
     val maxChapterValue = if (maxChapter != null) maxChapter!!.third else -1
 
     // Sanitize the title
-    var result = StringHelper.removeDigits(title)
+    var result = removeDigits(title)
     for (s in TITLE_CHAPTER_WORDS) result = result.replace(s, "")
     return Triple(result, minChapterValue, maxChapterValue)
 }
@@ -324,7 +324,7 @@ private fun computeArtistScore(
         for (candidateArtist in candidateArtistsCleanup) {
             for (refArtist in referenceArtistsCleanup) {
                 if (refArtist == candidateArtist) return 1f
-                if (StringHelper.isTransposition(refArtist, candidateArtist)) return 1f
+                if (isTransposition(refArtist, candidateArtist)) return 1f
             }
         }
         return 0f // No match
@@ -381,10 +381,10 @@ class DuplicateCandidate(
     val coverHash =
         if (!useCover) Long.MIN_VALUE else if (Long.MIN_VALUE == forceCoverHash) content.cover.imageHash else forceCoverHash
     val size = content.size
-    val titleCleanup: String = if (useTitle) StringHelper.simplify(content.title) else ""
+    val titleCleanup: String = if (useTitle) simplify(content.title) else ""
     val artistsCleanup: List<String>? =
         if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map {
-            StringHelper.simplify(it.name)
+            simplify(it.name)
         } else Collections.emptyList()
     val countryCodes = if (useLanguage) content.attributeMap[AttributeType.LANGUAGE]?.map {
         LanguageHelper.getCountryCodeFromLanguage(it.name)

@@ -137,7 +137,7 @@ interface CollectionDAO {
 
     fun deleteAllFlaggedGroups()
 
-    fun deleteOrphanArtistGroups()
+    fun deleteEmptyArtistGroups()
 
     fun insertGroupItem(item: GroupItem): Long
 
@@ -287,6 +287,8 @@ interface CollectionDAO {
 
     // CHAPTERS
     fun selectChapters(contentId: Long): List<Chapter>
+
+    fun selectChapters(chapterIds: List<Long>): List<Chapter>
 
     fun selectChapter(chapterId: Long): Chapter?
 

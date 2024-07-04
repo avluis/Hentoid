@@ -34,6 +34,6 @@ class SimplyApiContent : BaseContentParser() {
                 Timber.e(e, "Error parsing content from API.")
             }
         }
-        return Content().setSite(Site.SIMPLY).setStatus(StatusContent.IGNORED)
+        return Content(site = Site.SIMPLY, status = StatusContent.IGNORED)
     }
 }

@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import me.devsaki.hentoid.core.AppStartup
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.launchBrowserFor
 import timber.log.Timber
 
@@ -32,7 +32,7 @@ class ProcessTextActivity : AppCompatActivity() {
     private fun onInitComplete() {
         val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT).toString()
         // process the text
-        if (StringHelper.isNumeric(text)) {
+        if (isNumeric(text)) {
             launchBrowserFor(
                 this, Content.getGalleryUrlFromId(Site.NHENTAI, text, -1)
             )

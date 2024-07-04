@@ -23,7 +23,6 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.notification.transform.TransformCompleteNotification
 import me.devsaki.hentoid.notification.transform.TransformProgressNotification
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
@@ -36,6 +35,7 @@ import me.devsaki.hentoid.util.image.determineEncoder
 import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.pause
 import timber.log.Timber
 import java.io.File
 import java.nio.ByteBuffer
@@ -135,7 +135,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             dao.insertImageFiles(images)
             content.computeSize()
             content.lastEditDate = Instant.now().toEpochMilli()
-            content.setIsBeingProcessed(false)
+            content.isBeingProcessed = false
             dao.insertContentCore(content)
 
             // Achievements
@@ -259,7 +259,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 val intervalSeconds = 3
                 var iterations = 0
                 while (iterations < 180 / intervalSeconds) { // max 3 minutes
-                    Helper.pause(intervalSeconds * 1000)
+                    pause(intervalSeconds * 1000)
 
                     if (isStopped) {
                         Timber.d("Kill order sent")

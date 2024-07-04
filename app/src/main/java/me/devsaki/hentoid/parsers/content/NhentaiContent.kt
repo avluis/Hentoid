@@ -10,7 +10,7 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.NhentaiParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -57,7 +57,7 @@ class NhentaiContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.NHENTAI)
+        content.site = Site.NHENTAI
         val theUrl = galleryUrl.ifEmpty { url }
 
         var isError = false
@@ -68,19 +68,19 @@ class NhentaiContent : BaseContentParser() {
             isError = true
         }
         isError = isError || theUrl.endsWith("favorite") // Fav button
-        if (isError) return Content().setStatus(StatusContent.IGNORED)
+        if (isError) return Content(status = StatusContent.IGNORED)
 
 
         content.setRawUrl(theUrl)
         cover?.let {
-            content.setCoverImageUrl(getImgSrc(it))
+            content.coverImageUrl = getImgSrc(it)
         }
         var titleDef = title.trim()
         if (titleDef.isEmpty()) titleDef = titleAlt.trim()
-        content.setTitle(cleanup(titleDef))
-        content.setUploadDate(
-            Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")
-        ) // e.g. 2022-03-20T00:09:43.309901+00:00
+        content.title = cleanup(titleDef)
+        // e.g. 2022-03-20T00:09:43.309901+00:00
+        content.uploadDate = parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")
+
         val attributes = AttributeMap()
         parseAttributes(
             attributes,
@@ -147,7 +147,7 @@ class NhentaiContent : BaseContentParser() {
                     StatusContent.SAVED
                 )
                 content.setImageFiles(images)
-                content.setQtyPages(images.size - 1) // Don't count the cover
+                content.qtyPages = images.size - 1 // Don't count the cover
             }
         }
         return content

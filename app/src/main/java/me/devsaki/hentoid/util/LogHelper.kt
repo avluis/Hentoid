@@ -198,7 +198,7 @@ class LogInfo(// Log file name, without the extension
             val durationMs = end.toEpochMilli() - beginning.toEpochMilli()
             logStr.append("Start : ").append(beginning).append(LINE_SEPARATOR)
             logStr.append("End : ").append(end).append(" (")
-                .append(Helper.formatDuration(durationMs)).append(")").append(LINE_SEPARATOR)
+                .append(formatDuration(durationMs)).append(")").append(LINE_SEPARATOR)
             logStr.append("-----").append(LINE_SEPARATOR)
 
             // Log header
@@ -264,7 +264,7 @@ fun Context.writeLog(logInfo: LogInfo): DocumentFile? {
                 "text/plain"
             )?.use { newDownload ->
                 ByteArrayInputStream(log.toByteArray()).use { input ->
-                    Helper.copy(input, newDownload)
+                    copy(input, newDownload)
                 }
             }
         }

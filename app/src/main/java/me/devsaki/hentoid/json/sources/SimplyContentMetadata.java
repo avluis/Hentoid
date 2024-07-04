@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
 import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
+import static me.devsaki.hentoid.util.HelperKt.parseDatetimeToEpoch;
 
 import androidx.annotation.NonNull;
 
@@ -16,7 +17,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.Helper;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class SimplyContentMetadata {
@@ -72,14 +72,16 @@ public class SimplyContentMetadata {
     public Content update(@NonNull Content content, boolean updateImages) {
         content.setSite(Site.SIMPLY);
 
-        if (null == data || null == data.title || null == data.slug)
-            return content.setStatus(StatusContent.IGNORED);
+        if (null == data || null == data.title || null == data.slug) {
+            content.setStatus(StatusContent.IGNORED);
+            return content;
+        }
 
         String url = Site.SIMPLY.getUrl() + "manga/" + data.slug;
 
         content.setUrl(url);
         if (!data.createdAt.isEmpty())
-            content.setUploadDate(Helper.parseDatetimeToEpoch(data.createdAt, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")); // e.g. 2022-10-23T19:47:08.717+02:00
+            content.setUploadDate(parseDatetimeToEpoch(data.createdAt, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")); // e.g. 2022-10-23T19:47:08.717+02:00
 
         content.setTitle(cleanup(data.title));
 

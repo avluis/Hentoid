@@ -63,6 +63,7 @@ import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.pars
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.databinding.FragmentLibraryContentBinding
 import me.devsaki.hentoid.enums.Grouping
@@ -71,7 +72,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.ProgressDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryTransformDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment.Companion.invoke
@@ -80,16 +80,18 @@ import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.dimensAsDp
+import me.devsaki.hentoid.util.dimensAsPx
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.util.getIdForCurrentTheme
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.shareContent
@@ -154,7 +156,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     var result = oldItem.content == newItem.content
                     if (oldItem.queueRecord != null && newItem.queueRecord != null) {
                         result =
-                            result and (oldItem.queueRecord.isFrozen == newItem.queueRecord.isFrozen)
+                            result and (oldItem.queueRecord.frozen == newItem.queueRecord.frozen)
                     }
                     return result
                 }
@@ -169,14 +171,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     val newContent = newItem.content
                     if (null == oldContent || null == newContent) return false
                     val diffBundleBuilder = ContentItemBundle()
-                    if (oldContent.isFavourite != newContent.isFavourite) {
-                        diffBundleBuilder.isFavourite = newContent.isFavourite
+                    if (oldContent.favourite != newContent.favourite) {
+                        diffBundleBuilder.isFavourite = newContent.favourite
                     }
                     if (oldContent.rating != newContent.rating) {
                         diffBundleBuilder.rating = newContent.rating
                     }
-                    if (oldContent.isCompleted != newContent.isCompleted) {
-                        diffBundleBuilder.isCompleted = newContent.isCompleted
+                    if (oldContent.completed != newContent.completed) {
+                        diffBundleBuilder.isCompleted = newContent.completed
                     }
                     if (oldContent.reads != newContent.reads) {
                         diffBundleBuilder.reads = newContent.reads
@@ -191,10 +193,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                         diffBundleBuilder.title = newContent.title
                     }
                     if (oldContent.downloadMode != newContent.downloadMode) {
-                        diffBundleBuilder.downloadMode = newContent.downloadMode
+                        diffBundleBuilder.downloadMode = newContent.downloadMode.value
                     }
-                    if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord.isFrozen != newItem.queueRecord.isFrozen) {
-                        diffBundleBuilder.frozen = newItem.queueRecord.isFrozen
+                    if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord.frozen != newItem.queueRecord.frozen) {
+                        diffBundleBuilder.frozen = newItem.queueRecord.frozen
                     }
                     return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
                 }
@@ -289,9 +291,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
 
             override fun areContentsTheSame(oldItem: Content, newItem: Content): Boolean {
-                if (oldItem.isFavourite != newItem.isFavourite) return false
+                if (oldItem.favourite != newItem.favourite) return false
                 if (oldItem.rating != newItem.rating) return false
-                if (oldItem.isCompleted != newItem.isCompleted) return false
+                if (oldItem.completed != newItem.completed) return false
                 if (oldItem.reads != newItem.reads) return false
                 if (oldItem.readPagesCount != newItem.readPagesCount) return false
                 if (oldItem.coverImageUrl != newItem.coverImageUrl) return false
@@ -302,14 +304,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             override fun getChangePayload(oldItem: Content, newItem: Content): Any? {
                 val diffBundleBuilder = ContentItemBundle()
-                if (oldItem.isFavourite != newItem.isFavourite) {
-                    diffBundleBuilder.isFavourite = newItem.isFavourite
+                if (oldItem.favourite != newItem.favourite) {
+                    diffBundleBuilder.isFavourite = newItem.favourite
                 }
                 if (oldItem.rating != newItem.rating) {
                     diffBundleBuilder.rating = newItem.rating
                 }
-                if (oldItem.isCompleted != newItem.isCompleted) {
-                    diffBundleBuilder.isCompleted = newItem.isCompleted
+                if (oldItem.completed != newItem.completed) {
+                    diffBundleBuilder.isCompleted = newItem.completed
                 }
                 if (oldItem.reads != newItem.reads) {
                     diffBundleBuilder.reads = newItem.reads
@@ -408,7 +410,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 false
             ) else AutofitGridLayoutManager(
                 requireContext(),
-                Helper.dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
+                dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
             )
         binding?.recyclerView?.apply {
             layoutManager = llm
@@ -827,7 +829,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val contents: MutableList<Content> = java.util.ArrayList()
         for (ci in selectedItems) {
             val c = ci.content ?: continue
-            if (Content.DownloadMode.STREAM != c.downloadMode) {
+            if (DownloadMode.STREAM != c.downloadMode) {
                 nonOnlineContent++
             } else {
                 contents.add(c)
@@ -873,7 +875,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val contents: MutableList<Content> = java.util.ArrayList()
         for (ci in selectedItems) {
             val c = ci.content ?: continue
-            if (c.downloadMode == Content.DownloadMode.STREAM || c.status == StatusContent.EXTERNAL) {
+            if (c.downloadMode == DownloadMode.STREAM || c.status == StatusContent.EXTERNAL) {
                 streamedOrExternalContent++
             } else {
                 contents.add(c)
@@ -1318,7 +1320,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         @DimenRes val dimen: Int =
             if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) R.dimen.delete_drawer_width_list else R.dimen.delete_drawer_width_grid
         val dragSwipeCallback = SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
-            .withSwipeLeft(Helper.dimensAsDp(requireContext(), dimen))
+            .withSwipeLeft(dimensAsDp(requireContext(), dimen))
             .withSensitivity(1.5f)
             .withSurfaceThreshold(0.3f)
             .withNotifyAllDrops(true)
@@ -1469,7 +1471,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
-        if (newSearch && StringHelper.isNumeric(query)) {
+        if (newSearch && isNumeric(query)) {
             val dialogTitle = getString(R.string.search_bookid_label, query)
             val excludedSiteCodes = result.toList().filterNotNull()
                 .filter { content -> query == content.uniqueSiteId }
@@ -1705,22 +1707,22 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
         val selectedCount = selectedItems.size
         if (0 == selectedCount) {
-            activity.get()!!.getSelectionToolbar()!!.visibility = View.GONE
-            selectExtension!!.selectOnLongClick = true
+            activity.get()?.getSelectionToolbar()?.visibility = View.GONE
+            selectExtension?.selectOnLongClick = true
         } else {
-            val contentList = selectedItems.mapNotNull { ci -> ci.content }
-            val selectedProcessedCount = contentList.count { c -> c.isBeingProcessed }
+            val contentList = selectedItems.mapNotNull { it.content }
+            val selectedProcessedCount = contentList.count { it.isBeingProcessed }
             val selectedLocalCount = contentList
-                .filterNot { c -> c.status == StatusContent.EXTERNAL }
-                .filterNot { c -> c.downloadMode == Content.DownloadMode.STREAM }
+                .filterNot { it.status == StatusContent.EXTERNAL }
+                .filterNot { it.downloadMode == DownloadMode.STREAM }
                 .count()
-            val selectedStreamedCount = contentList.map { c -> c.downloadMode }
-                .count { m: Int -> m == Content.DownloadMode.STREAM }
+            val selectedStreamedCount = contentList.map { it.downloadMode }
+                .count { it == DownloadMode.STREAM }
             val selectedNonArchiveExternalCount =
-                contentList.count { c -> c.status == StatusContent.EXTERNAL && !c.isArchive }
+                contentList.count { it.status == StatusContent.EXTERNAL && !it.isArchive }
             val selectedArchiveExternalCount =
-                contentList.count { c -> c.status == StatusContent.EXTERNAL && c.isArchive }
-            activity.get()!!.updateSelectionToolbar(
+                contentList.count { it.status == StatusContent.EXTERNAL && it.isArchive }
+            activity.get()?.updateSelectionToolbar(
                 selectedCount.toLong(),
                 selectedProcessedCount.toLong(),
                 selectedLocalCount.toLong(),
@@ -1728,7 +1730,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 selectedNonArchiveExternalCount.toLong(),
                 selectedArchiveExternalCount.toLong()
             )
-            activity.get()!!.getSelectionToolbar()!!.visibility = View.VISIBLE
+            activity.get()?.getSelectionToolbar()?.visibility = View.VISIBLE
         }
     }
 
@@ -1755,32 +1757,22 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         deleteAfterMerging: Boolean
     ) {
         leaveSelectionMode()
-        invoke(this, resources.getString(R.string.merge_progress), R.plurals.page)
+        //invoke(this, resources.getString(R.string.merge_progress), R.plurals.page)
         viewModel.mergeContents(
             contentList, newTitle, appendBookTitle, deleteAfterMerging
-        ) { onMergeSuccess() }
-    }
-
-    private fun onMergeSuccess() {
-        toast(R.string.merge_success)
-        refreshIfNeeded()
+        )
     }
 
     override fun splitContent(content: Content, chapters: List<Chapter>) {
         leaveSelectionMode()
-        viewModel.splitContent(content, chapters) { onSplitSuccess() }
-        invoke(this, resources.getString(R.string.split_progress), R.plurals.page)
-    }
-
-    private fun onSplitSuccess() {
-        toast(R.string.split_success)
-        refreshIfNeeded()
+        viewModel.splitContent(content, chapters)
+        //invoke(this, resources.getString(R.string.split_progress), R.plurals.page)
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onProcessStickyEvent(event: ProcessEvent) {
-        // Filter on delete complete event
-        if (R.id.delete_service_delete != event.processId) return
+        // Filter on delete, merge & split complete events
+        if (R.id.delete_service_delete != event.processId && R.id.split_service != event.processId && R.id.merge_service != event.processId) return
         if (ProcessEvent.Type.COMPLETE != event.eventType) return
         refreshIfNeeded()
     }
@@ -1938,22 +1930,22 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 (c.readProgress * 100).roundToInt()
             )
 
-            Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> Helper.formatEpochToDate(
+            Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> formatEpochToDate(
                 c.downloadDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_UPLOAD_DATE -> Helper.formatEpochToDate(
+            Preferences.Constant.ORDER_FIELD_UPLOAD_DATE -> formatEpochToDate(
                 c.uploadDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_READ_DATE -> Helper.formatEpochToDate(
+            Preferences.Constant.ORDER_FIELD_READ_DATE -> formatEpochToDate(
                 c.lastReadDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> Helper.formatEpochToDate(
+            Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> formatEpochToDate(
                 c.downloadCompletionDate,
                 formatter
             )

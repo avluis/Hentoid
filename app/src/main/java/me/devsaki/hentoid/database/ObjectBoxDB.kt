@@ -20,6 +20,7 @@ import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Chapter_
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Content_
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ErrorRecord_
 import me.devsaki.hentoid.database.domains.Group
@@ -48,7 +49,6 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.RandomSeed.getSeed
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.file.getSupportedExtensions
 import me.devsaki.hentoid.util.getLibraryStatuses
@@ -171,14 +171,14 @@ object ObjectBoxDB {
 
     fun updateContentStatus(updateFrom: StatusContent, updateTo: StatusContent) {
         val contentList = selectContentByStatus(updateFrom)
-        for (c in contentList) c.setStatus(updateTo)
+        for (c in contentList) c.status = updateTo
         store.boxFor(Content::class.java).put(contentList)
     }
 
     fun updateContentProcessedFlag(contentId: Long, flag: Boolean) {
         store.runInTx {
             store.boxFor(Content::class.java)[contentId]?.let { c ->
-                c.setIsBeingProcessed(flag)
+                c.isBeingProcessed = flag
                 store.boxFor(Content::class.java).put(c)
             }
         }
@@ -287,7 +287,7 @@ object ObjectBoxDB {
     }
 
     fun markContentsAsBeingProcessed(contentList: List<Content>, flag: Boolean) {
-        for (c in contentList) c.setIsBeingProcessed(flag)
+        for (c in contentList) c.isBeingProcessed = flag
         store.boxFor(Content::class.java).put(contentList)
     }
 
@@ -341,7 +341,7 @@ object ObjectBoxDB {
                     for (groupItem in groupItems) {
                         // If we're not in the Custom grouping and it's the only item of its group, delete the group
                         val g = groupItem.group.target
-                        if (g != null && g.grouping != Grouping.CUSTOM && g.items.size < 2)
+                        if (g != null && g.grouping != Grouping.CUSTOM && g.getItems().size < 2)
                             groupBox.remove(g)
                         // Delete the item
                         groupItemBox.remove(groupItem)
@@ -390,7 +390,7 @@ object ObjectBoxDB {
         val qb = store.boxFor(QueueRecord::class.java).query()
         if (!query.isNullOrEmpty() || source != null && source != Site.NONE) {
             val bundle = ContentSearchBundle()
-            bundle.query = StringHelper.protect(query)
+            bundle.query = query ?: ""
             if (source != null && source != Site.NONE) {
                 val sourceAttr: MutableSet<Attribute> = HashSet()
                 sourceAttr.add(Attribute(source))
@@ -488,8 +488,8 @@ object ObjectBoxDB {
         coverUrlStart: String
     ): Content? {
         val contentUrlCondition =
-            Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-                .and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+            Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .and(Content_.dbUrl.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
                 .and(Content_.site.equal(site.code))
         val chapterUrlCondition: QueryCondition<Content> =
             Content_.id.oneOf(selectContentIdsByChapterUrl(contentUrl))
@@ -515,8 +515,8 @@ object ObjectBoxDB {
     // Find all books that have the given content URL
     fun selectContentByUrl(site: Site, contentUrl: String): Set<Content> {
         val contentUrlCondition =
-            Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-                .and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+            Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .and(Content_.dbUrl.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
                 .and(Content_.site.equal(site.code))
 
         return store.boxFor(Content::class.java).query(contentUrlCondition)
@@ -534,10 +534,10 @@ object ObjectBoxDB {
 
     fun selectAllContentUrls(siteCode: Int): Set<String> {
         store.boxFor(Content::class.java).query().equal(Content_.site, siteCode.toLong())
-            .`in`(Content_.status, libraryStatus).notNull(Content_.url)
-            .notEqual(Content_.url, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build()
+            .`in`(Content_.status, libraryStatus).notNull(Content_.dbUrl)
+            .notEqual(Content_.dbUrl, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build()
             .use { allContentQ ->
-                return allContentQ.property(Content_.url).findStrings().toHashSet()
+                return allContentQ.property(Content_.dbUrl).findStrings().toHashSet()
             }
     }
 
@@ -615,7 +615,7 @@ object ObjectBoxDB {
     private fun getPropertyFromField(prefsFieldCode: Int): Property<Content>? {
         return when (prefsFieldCode) {
             Preferences.Constant.ORDER_FIELD_TITLE -> Content_.title
-            Preferences.Constant.ORDER_FIELD_ARTIST -> Content_.author
+            Preferences.Constant.ORDER_FIELD_ARTIST -> Content_.dbAuthor
             Preferences.Constant.ORDER_FIELD_NB_PAGES -> Content_.qtyPages
             Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> Content_.downloadDate
             Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> Content_.downloadCompletionDate
@@ -900,7 +900,7 @@ object ObjectBoxDB {
             false
         ).safeFindIds().toMutableList()
         allBooksIds.shuffle(Random(getSeed(SEED_CONTENT)))
-        shuffleStore.put(allBooksIds.map { contentId -> ShuffleRecord(contentId) })
+        shuffleStore.put(allBooksIds.map { ShuffleRecord(contentId = it) })
     }
 
     private fun shuffleRandomSortId(query: Query<Content>): LongArray {
@@ -1172,7 +1172,10 @@ object ObjectBoxDB {
         val result: MutableList<Attribute> = ArrayList()
         map.forEach {
             val size = it.value.size
-            result.add(Attribute(it.key).setExternalId(it.key.code).setCount(size))
+            val attr = Attribute(it.key)
+            attr.externalId = it.key.code
+            attr.count = size
+            result.add(attr)
         }
         // Order by count desc
         return result.sortedBy { a -> -a.count }
@@ -1323,7 +1326,7 @@ object ObjectBoxDB {
                 }.count { c ->
                     filteredContentAsSet.isEmpty() || filteredContentAsSet.contains(c.id)
                 }
-                a.setCount(count)
+                a.count = count
             }
         }
 
@@ -1437,7 +1440,7 @@ object ObjectBoxDB {
         var qc = inQc
         return when (contentType) {
             Type.STREAMED -> qc.and(
-                Content_.downloadMode.equal(Content.DownloadMode.STREAM)
+                Content_.downloadMode.equal(DownloadMode.STREAM.value)
             )
 
             Type.ARCHIVE -> {
@@ -1460,7 +1463,7 @@ object ObjectBoxDB {
             Type.PLACEHOLDER -> qc.and(Content_.status.equal(StatusContent.PLACEHOLDER.code))
             Type.FOLDER -> {
                 // TODO : Should also not be an archive, but that would require Content_.storageUri.doesNotEndWith (see ObjectBox issue #1129)
-                qc = qc.and(Content_.downloadMode.equal(Content.DownloadMode.DOWNLOAD))
+                qc = qc.and(Content_.downloadMode.equal(DownloadMode.DOWNLOAD.value))
                 qc.and(Content_.status.notEqual(StatusContent.PLACEHOLDER.code))
             }
 
@@ -1472,11 +1475,11 @@ object ObjectBoxDB {
         val imgBox = store.boxFor(ImageFile::class.java)
         val img = imgBox[image.id]
         if (img != null) {
-            img.setStatus(image.status)
-            img.setDownloadParams(image.downloadParams)
-            img.setMimeType(image.mimeType)
-            img.setFileUri(image.fileUri)
-            img.setSize(image.size)
+            img.status = image.status
+            img.downloadParams = image.downloadParams
+            img.mimeType = image.mimeType
+            img.fileUri = image.fileUri
+            img.size = image.size
             imgBox.put(img)
         }
     }
@@ -1490,7 +1493,7 @@ object ObjectBoxDB {
         if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.code.toLong())
         val imgs = query.equal(ImageFile_.contentId, contentId).safeFind()
         if (imgs.isEmpty()) return
-        for (img in imgs) img.setStatus(updateTo)
+        for (img in imgs) img.status = updateTo
         store.boxFor(ImageFile::class.java).put(imgs)
     }
 
@@ -1498,7 +1501,7 @@ object ObjectBoxDB {
         val imgBox = store.boxFor(ImageFile::class.java)
         val img = imgBox[image.id]
         if (img != null) {
-            img.setUrl(image.url)
+            img.url = image.url
             imgBox.put(img)
         }
     }
@@ -1609,7 +1612,7 @@ object ObjectBoxDB {
     fun replaceImageFiles(contentId: Long, newList: List<ImageFile>) {
         store.runInTx {
             deleteImageFiles(contentId)
-            for (img in newList) img.setContentId(contentId)
+            for (img in newList) img.contentId = contentId
             insertImageFiles(newList)
         }
     }
@@ -1634,7 +1637,7 @@ object ObjectBoxDB {
                 StatusContent.PLACEHOLDER.code
             )
         )
-        builder.order(ImageFile_.order)
+        builder.order(ImageFile_.dbOrder)
         return builder.build()
     }
 
@@ -1644,7 +1647,7 @@ object ObjectBoxDB {
             siteHistory.url = url
             store.boxFor(SiteHistory::class.java).put(siteHistory)
         } else {
-            store.boxFor(SiteHistory::class.java).put(SiteHistory(site, url))
+            store.boxFor(SiteHistory::class.java).put(SiteHistory(site = site, url = url))
         }
     }
 
@@ -1873,7 +1876,7 @@ object ObjectBoxDB {
         store.boxFor(Group::class.java).remove(groupId)
     }
 
-    fun deleteOrphanArtistGroups() {
+    fun deleteEmptyArtistGroups() {
         return store.boxFor(Group::class.java).query()
             .equal(Group_.grouping, 1)
             .relationCount(Group_.items, 0).safeRemove()
@@ -1911,6 +1914,10 @@ object ObjectBoxDB {
     fun selectChapters(contentId: Long): List<Chapter> {
         return store.boxFor(Chapter::class.java).query().equal(Chapter_.contentId, contentId)
             .order(Chapter_.order).safeFind()
+    }
+
+    fun selectChapters(chapterIds: List<Long>): List<Chapter> {
+        return store.boxFor(Chapter::class.java).get(chapterIds.toLongArray())
     }
 
     fun selectChapter(chapterId: Long): Chapter? {
@@ -1986,7 +1993,7 @@ object ObjectBoxDB {
         ).notNull(Content_.storageUri)
             .notEqual(Content_.storageUri, "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
         val imageQuery = query.backlink(ImageFile_.content)
-        imageQuery.equal(ImageFile_.isCover, true).isNull(ImageFile_.imageHash).or()
+        imageQuery.equal(ImageFile_.dbIsCover, true).isNull(ImageFile_.imageHash).or()
             .`in`(ImageFile_.imageHash, longArrayOf(0, -1))
             .notEqual(ImageFile_.status, StatusContent.ONLINE.code.toLong())
         return query.build()

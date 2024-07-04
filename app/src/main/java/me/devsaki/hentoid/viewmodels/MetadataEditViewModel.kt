@@ -19,7 +19,6 @@ import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.AttributeQueryResult
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Type
@@ -30,6 +29,7 @@ import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeContentFromGrouping
 import me.devsaki.hentoid.util.setContentCover
 import me.devsaki.hentoid.util.updateGroupsJson
+import me.devsaki.hentoid.util.updateRenamingRulesJson
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
@@ -292,7 +292,7 @@ class MetadataEditViewModel(
                 val item = GroupItem(it, group, -1)
                 dao.insertGroupItem(item)
             }
-            dao.deleteOrphanArtistGroups()
+            dao.deleteEmptyArtistGroups()
         }
 
         contentList.value?.let {
@@ -334,11 +334,15 @@ class MetadataEditViewModel(
 
         // Persist rule
         if (createRule) {
-            val newRule = RenamingRule(attr.type, attr.name, newName)
+            val newRule = RenamingRule(
+                attributeType = attr.type,
+                sourceName = attr.name,
+                targetName = newName
+            )
             val existingRules = HashSet(dao.selectRenamingRules(AttributeType.UNDEFINED, null))
             if (!existingRules.contains(newRule)) {
                 dao.insertRenamingRule(newRule)
-                Helper.updateRenamingRulesJson(getApplication(), dao)
+                updateRenamingRulesJson(getApplication(), dao)
             }
         }
 
@@ -351,7 +355,7 @@ class MetadataEditViewModel(
         contentAttributes.postValue(newAttrs)
 
         // Update corresponding group if needed
-        val group = attr.linkedGroup
+        val group = attr.getLinkedGroup()
         if (group != null) {
             group.name = newName
             dao.insertGroup(group)
@@ -360,10 +364,10 @@ class MetadataEditViewModel(
 
         // Mark all related books for update
         val contents = attr.contents
-        if (contents != null && !contents.isEmpty()) {
+        if (!contents.isEmpty()) {
             contents.forEach {
                 // Update the 'author' pre-calculated field for all related books if needed
-                if (attr.type.equals(AttributeType.ARTIST) || attr.type.equals(AttributeType.CIRCLE)) {
+                if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
                     it.computeAuthor()
                     persistJson(getApplication(), it)
                 }

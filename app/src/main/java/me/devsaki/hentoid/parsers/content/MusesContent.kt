@@ -10,7 +10,8 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttribute
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.capitalizeString
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -53,7 +54,7 @@ class MusesContent : BaseContentParser() {
             for (thumbLink in it) {
                 val href = thumbLink.attr("href")
                 val numSeparator = href.lastIndexOf('/')
-                if (StringHelper.isNumeric(href.substring(numSeparator + 1))) {
+                if (isNumeric(href.substring(numSeparator + 1))) {
                     val img = thumbLink.select("img").first() ?: continue
                     val src = getImgSrc(img)
                     if (src.isEmpty()) continue
@@ -61,11 +62,14 @@ class MusesContent : BaseContentParser() {
                     nbImages++
                 }
             }
-            if (nbImages < it.size / 3) return Content().setStatus(StatusContent.IGNORED)
+            if (nbImages < it.size / 3) return Content(status = StatusContent.IGNORED)
         }
-        content.setSite(Site.MUSES)
+        content.site = Site.MUSES
         val theUrl = canonicalUrl.ifEmpty { url }
-        if (theUrl.isEmpty() || 0 == nbImages) return content.setStatus(StatusContent.IGNORED)
+        if (theUrl.isEmpty() || 0 == nbImages) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         content.setRawUrl(theUrl)
 
         // == Circle (publisher), Artist and Series
@@ -73,8 +77,7 @@ class MusesContent : BaseContentParser() {
         breadcrumbs?.let {
             if (it.size > 1) {
                 // Default : book title is the last breadcrumb
-                var bookTitle =
-                    StringHelper.capitalizeString(it[it.size - 1].text())
+                var bookTitle = capitalizeString(it[it.size - 1].text())
                 if (it.size > 2) {
                     // Element 1 is always the publisher (using CIRCLE as publisher never appears on the Hentoid UI)
                     val publisher = it[1].text().lowercase(Locale.getDefault())
@@ -112,11 +115,12 @@ class MusesContent : BaseContentParser() {
                         }
                     }
                 }
-                content.setTitle(cleanup(bookTitle))
+                content.title = cleanup(bookTitle)
             }
         }
         if (updateImages) {
-            content.setQtyPages(nbImages) // Cover is duplicated in the code below; no need to decrease nbImages here
+            content.qtyPages =
+                nbImages // Cover is duplicated in the code below; no need to decrease nbImages here
             var thumbParts: MutableList<String>
             var index = 0
             val images: MutableList<ImageFile> = ArrayList()
@@ -127,8 +131,8 @@ class MusesContent : BaseContentParser() {
                 StatusContent.SAVED,
                 nbImages
             )
-            content.setCoverImageUrl(cover.url)
-            cover.setIsCover(true)
+            content.coverImageUrl = cover.url
+            cover.isCover = true
             images.add(cover)
             // Images
             for (u in imagesUrls) {

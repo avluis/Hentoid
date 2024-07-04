@@ -15,11 +15,11 @@ import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_NB_CHAPTERS
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.download.DownloadRateLimiter.setRateLimit
 import me.devsaki.hentoid.util.download.DownloadRateLimiter.take
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.waitBlocking429
 import me.devsaki.hentoid.util.parseDownloadParams
@@ -85,7 +85,7 @@ class PixivParser : BaseImageListParser() {
             )
         } catch (e: Exception) {
             Timber.d(e)
-            throw EmptyResultException(StringHelper.protect(e.message))
+            throw EmptyResultException(e.message ?: "")
         }
         take() // One last delay before download phase
         return emptyList()
@@ -102,13 +102,13 @@ class PixivParser : BaseImageListParser() {
         val galleryMetadata =
             PixivServer.api.getIllustPages(content.uniqueSiteId, cookieStr, acceptAll, userAgent)
                 .execute().body()
-        if (null == galleryMetadata || galleryMetadata.isError) {
+        if (null == galleryMetadata || galleryMetadata.error == true) {
             var message: String? = ""
             if (galleryMetadata != null) message = galleryMetadata.message
             throw EmptyResultException(message!!)
         }
         return urlsToImageFiles(
-            galleryMetadata.pageUrls,
+            galleryMetadata.getPageUrls(),
             content.coverImageUrl,
             StatusContent.SAVED
         )
@@ -133,7 +133,7 @@ class PixivParser : BaseImageListParser() {
         val nbChaptersStr =
             parseDownloadParams(onlineContent.downloadParams)[KEY_DL_PARAMS_NB_CHAPTERS]
         require(nbChaptersStr != null) { "Chapter count not saved" }
-        require(StringHelper.isNumeric(nbChaptersStr)) { "Chapter count not saved" }
+        require(isNumeric(nbChaptersStr)) { "Chapter count not saved" }
         val nbChapters = nbChaptersStr.toInt()
 
         // List all Illust IDs (API is paged, hence the loop)
@@ -150,7 +150,7 @@ class PixivParser : BaseImageListParser() {
                 acceptAll,
                 userAgent
             ).execute().body()
-            if (null == seriesContentMetadata || seriesContentMetadata.isError) {
+            if (null == seriesContentMetadata || true == seriesContentMetadata.error) {
                 var message: String? = "Unreachable series illust"
                 if (seriesContentMetadata != null) message = seriesContentMetadata.message
                 throw IllegalArgumentException(message)
@@ -195,7 +195,11 @@ class PixivParser : BaseImageListParser() {
             val chapterAttrs = illustMetadata.getAttributes()
             attrs.addAll(chapterAttrs)
             val chapterImages = illustMetadata.getImageFiles()
-            for (img in chapterImages) img.setOrder(imgOffset++).computeName(4).setChapter(ch)
+            for (img in chapterImages) {
+                img.order = imgOffset++
+                img.setChapter(ch)
+                img.computeName(4)
+            }
             result.addAll(chapterImages)
             progressPlus((index + 1f) / extraChapters.size)
         }
@@ -306,12 +310,18 @@ class PixivParser : BaseImageListParser() {
             val chapterAttrs = illustMetadata.getAttributes()
             attrs.addAll(chapterAttrs)
             val chp = Chapter(
-                chpOffset++,
-                illustMetadata.getUrl(),
-                illustMetadata.getTitle()
-            ).setUniqueId(illustMetadata.getId()).setContentId(onlineContent.id)
+                order = chpOffset++,
+                url = illustMetadata.getUrl(),
+                name = illustMetadata.getTitle(),
+                uniqueId = illustMetadata.getId()
+            )
+            chp.setContentId(onlineContent.id)
             val chapterImages = illustMetadata.getImageFiles()
-            for (img in chapterImages) img.setOrder(imgOffset++).computeName(4).setChapter(chp)
+            for (img in chapterImages) {
+                img.order = imgOffset++
+                img.setChapter(chp)
+                img.computeName(4)
+            }
             result.addAll(chapterImages)
             progressPlus((index + 1f) / illustIds.size)
         }

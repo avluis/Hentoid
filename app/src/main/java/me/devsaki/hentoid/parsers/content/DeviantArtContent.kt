@@ -14,9 +14,9 @@ import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.parsers.images.DeviantArtParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.retrofit.DeviantArtServer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.getCookies
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -36,14 +36,14 @@ class DeviantArtContent : BaseContentParser() {
     private var tags: List<Element>? = null
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.DEVIANTART)
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        content.site = Site.DEVIANTART
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
 
         return if (url.contains("/_puppy/")) {
             if (url.contains("dadeviation/init")) parseXhrDeviation(content, url, updateImages)
             else if (url.contains("/dashared/gallection/")) parseXhrGallection(content, url)
             else if (url.contains("/dauserprofile/init/gallery")) parseXhrUserProfile(content, url)
-            else Content().setStatus(StatusContent.IGNORED)
+            else Content(status = StatusContent.IGNORED)
         } else {
             if (url.contains("/art/")) parseHtmlDeviation(content, url, updateImages)
             else parseHtmlGallection()
@@ -56,8 +56,9 @@ class DeviantArtContent : BaseContentParser() {
         title = cleanup(title)
 
         if (uploadDate.isNotEmpty())
-            content.setUploadDate(
-                Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss.SSSX")
+            content.uploadDate = parseDatetimeToEpoch(
+                uploadDate,
+                "yyyy-MM-dd'T'HH:mm:ss.SSSX"
             ) // e.g. 2022-03-20T00:09:43.000Z
 
         val attributes = AttributeMap()
@@ -66,7 +67,7 @@ class DeviantArtContent : BaseContentParser() {
         if (-1 == index2) index2 = title.lastIndex
         var index1 = title.lastIndexOf(" by ", index2, true)
         if (-1 == index1) index1 = index2
-        content.setTitle(title.substring(0, index1))
+        content.title = cleanup(title.substring(0, index1))
 
         if (index1 < index2) {
             val attribute = Attribute(
@@ -82,12 +83,12 @@ class DeviantArtContent : BaseContentParser() {
         content.putAttributes(attributes)
 
         val imgs = DeviantArtParser.parseDeviation(body)
-        if (imgs.first.isNotEmpty()) content.setCoverImageUrl(imgs.first)
+        if (imgs.first.isNotEmpty()) content.coverImageUrl = imgs.first
 
         if (updateImages) {
             val img = ImageFile.fromPageUrl(1, url, StatusContent.SAVED, 1)
             content.setImageFiles(listOf(img))
-            content.setQtyPages(1)
+            content.qtyPages = 1
         }
         return content
     }
@@ -104,7 +105,7 @@ class DeviantArtContent : BaseContentParser() {
                 }
             }
         }
-        return Content().setStatus(StatusContent.IGNORED)
+        return Content(status = StatusContent.IGNORED)
     }
 
     private fun parseXhrDeviation(content: Content, url: String, updateImages: Boolean): Content {
@@ -203,6 +204,6 @@ class DeviantArtContent : BaseContentParser() {
         } else {
             throw ParseException("Call to getUserProfile failed $userName")
         }
-        return Content().setStatus(StatusContent.IGNORED)
+        return Content(status = StatusContent.IGNORED)
     }
 }

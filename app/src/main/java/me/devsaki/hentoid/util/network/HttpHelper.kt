@@ -8,9 +8,9 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.file.DEFAULT_MIME_TYPE
+import me.devsaki.hentoid.util.isNumeric
+import me.devsaki.hentoid.util.pause
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -568,7 +568,7 @@ fun fixUrl(url: String?, baseUrl: String): String {
 fun parseParameters(uri: Uri): Map<String, String> {
     val result: MutableMap<String, String> = HashMap()
     val keys = uri.queryParameterNames
-    for (k in keys) result[k] = StringHelper.protect(uri.getQueryParameter(k))
+    for (k in keys) result[k] = uri.getQueryParameter(k) ?: ""
     return result
 }
 
@@ -784,10 +784,10 @@ fun waitBlocking429(response: retrofit2.Response<*>, defaultDelayMs: Int): Boole
         var delay = defaultDelayMs
         var retryDelay = response.headers()["Retry-After"]
         if (null == retryDelay) retryDelay = response.headers()["retry-after"]
-        if (retryDelay != null && StringHelper.isNumeric(retryDelay)) {
+        if (retryDelay != null && isNumeric(retryDelay)) {
             delay = retryDelay.toInt() + 1000 // 1s extra margin
         }
-        Helper.pause(delay)
+        pause(delay)
         return true
     }
     return false
@@ -833,7 +833,7 @@ fun fetchBodyFast(
     // Scram if the response content-type is something else than the target type
     if (targetContentType != null) {
         val contentType =
-            cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")))
+            cleanContentType(response.header(HEADER_CONTENT_TYPE, "") ?: "")
         if (contentType.first.isNotEmpty() && !contentType.first.equals(
                 targetContentType,
                 ignoreCase = true

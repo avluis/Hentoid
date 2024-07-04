@@ -6,6 +6,8 @@ import me.devsaki.hentoid.enums.StatusContent
 
 class DummyContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        return content.setSite(Site.NONE).setStatus(StatusContent.IGNORED)
+        content.site = Site.NONE
+        content.status = StatusContent.IGNORED
+        return content
     }
 }

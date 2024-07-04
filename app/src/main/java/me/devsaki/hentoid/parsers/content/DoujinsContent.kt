@@ -9,8 +9,7 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.images.DoujinsParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.parseDateToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.Locale
@@ -34,7 +33,10 @@ class DoujinsContent : BaseContentParser() {
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         content.site = Site.DOUJINS
-        if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED)
+        if (url.isEmpty()) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         content.setRawUrl(url)
         breadcrumbs?.let {
             if (it.isNotEmpty()) {
@@ -48,7 +50,7 @@ class DoujinsContent : BaseContentParser() {
                     val txt = e.text().lowercase(Locale.getDefault())
                     if (txt.contains("•") && !txt.contains("translated")) { // e.g. March 16th, 2022 • 25 images
                         val parts = e.text().split("•")
-                        content.uploadDate = Helper.parseDateToEpoch(parts[0], "MMMM d',' yyyy")
+                        content.uploadDate = parseDateToEpoch(parts[0], "MMMM d',' yyyy")
                         break
                     }
                 }

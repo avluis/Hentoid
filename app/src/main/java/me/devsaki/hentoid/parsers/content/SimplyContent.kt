@@ -7,7 +7,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.parseDateToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -41,18 +41,17 @@ class SimplyContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.SIMPLY)
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
-        content.setCoverImageUrl(coverUrl)
+        content.site = Site.SIMPLY
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
+        content.coverImageUrl = coverUrl
         content.setRawUrl(url)
         if (title.isNotEmpty()) {
-            content.setTitle(cleanup(title))
-        } else content.setTitle(NO_TITLE)
+            content.title = cleanup(title)
+        } else content.title = NO_TITLE
 
         ulDateContainer?.let {
-            content.setUploadDate(
-                Helper.parseDateToEpoch(it.ownText(), "M/d/yyyy")
-            ) // e.g. 10/23/2022, 12/8/2022
+            content.uploadDate = parseDateToEpoch(it.ownText(), "M/d/yyyy")
+            // e.g. 10/23/2022, 12/8/2022
         }
 
         val attributes = AttributeMap()
@@ -82,7 +81,7 @@ class SimplyContent : BaseContentParser() {
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }

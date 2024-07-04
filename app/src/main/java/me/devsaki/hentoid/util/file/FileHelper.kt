@@ -25,11 +25,11 @@ import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.copy
+import me.devsaki.hentoid.util.formatEpochToDate
+import me.devsaki.hentoid.util.hash64
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.toastLong
-import org.apache.commons.io.FileUtils
 import timber.log.Timber
 import java.io.BufferedOutputStream
 import java.io.BufferedReader
@@ -160,7 +160,7 @@ private fun getVolumePath(context: Context, volumeId: String): String? {
         }
 
         for (volume in result) {
-            val uuid = StringHelper.protect(getUuid.invoke(volume) as String?)
+            val uuid = (getUuid.invoke(volume) as String?) ?: ""
             val primary = isPrimary.invoke(volume) as Boolean
 
             if (volumeIdMatch(uuid, primary, volumeId)) return getVolumePath(volume)
@@ -263,14 +263,25 @@ fun syncStream(stream: FileOutputStream): Boolean {
 
 /**
  * Create an OutputStream opened the given file
- * NB : File length will be truncated to the length of the written data
+ * NB1 : File length will be truncated to the length of the written data
+ * NB2 : Code initially from org.apache.commons.io.FileUtils
  *
- * @param target File to open the OutputStream on
+ * @param file File to open the OutputStream on
  * @return New OutputStream opened on the given file
  */
 @Throws(IOException::class)
-fun getOutputStream(target: File): OutputStream {
-    return FileUtils.openOutputStream(target)
+fun getOutputStream(file: File): OutputStream {
+    if (file.exists()) {
+        if (!file.isFile) throw IOException(file.path + " is not a File")
+        if (!file.canWrite()) throw IOException(file.path + " can't be written to")
+    } else {
+        file.parentFile?.let { dir ->
+            if ((!dir.mkdirs() && !dir.isDirectory())) {
+                throw IOException("Cannot create directory '$dir'.")
+            }
+        }
+    }
+    return FileOutputStream(file, false)
 }
 
 /**
@@ -570,7 +581,7 @@ fun openFile(context: Context, aFile: DocumentFile) {
  * @param uri     Uri of the resource to be opened
  */
 fun openUri(context: Context, uri: Uri) {
-    tryOpenFile(context, uri, StringHelper.protect(uri.lastPathSegment), false)
+    tryOpenFile(context, uri, uri.lastPathSegment ?: "", false)
 }
 
 /**
@@ -810,7 +821,7 @@ fun copyFile(
 
     getOutputStream(context, targetFileUri)?.use { output ->
         getInputStream(context, sourceFileUri)
-            .use { input -> Helper.copy(input, output) }
+            .use { input -> copy(input, output) }
     }
     return targetFileUri
 }
@@ -889,7 +900,7 @@ private fun openNewDownloadOutputStreamQ(
     // Make filename unique to avoid failures on certain devices when creating a file with the same name multiple times
     val fileExt = getExtension(fileName)
     val fileNoExt =
-        getFileNameWithoutExtension(fileName) + "_" + Helper.formatEpochToDate(
+        getFileNameWithoutExtension(fileName) + "_" + formatEpochToDate(
             Instant.now().toEpochMilli(), "yyyyMMdd-hhmm"
         )
     values.put(MediaStore.MediaColumns.DISPLAY_NAME, "$fileNoExt.$fileExt")
@@ -983,7 +994,7 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
             for (v in volumes) {
                 if (v.isPrimary) primaryVolume = v
 
-                if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
+                if (volumeIdMatch(v, volumeId)) {
                     targetVolume = v
                     break
                 }
@@ -1062,7 +1073,7 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
  */
 @TargetApi(26)
 private fun volumeIdMatch(volume: StorageVolume, treeVolumeId: String): Boolean {
-    return volumeIdMatch(StringHelper.protect(volume.uuid), volume.isPrimary, treeVolumeId)
+    return volumeIdMatch(volume.uuid ?: "", volume.isPrimary, treeVolumeId)
 }
 
 /**
@@ -1318,6 +1329,12 @@ fun getOrCreateCacheFolder(context: Context, folderName: String): File? {
     return root
 }
 
+fun getAssetAsString(mgr: AssetManager, assetName: String): String {
+    val sb = StringBuilder()
+    getAssetAsString(mgr, assetName, sb)
+    return sb.toString()
+}
+
 fun getAssetAsString(mgr: AssetManager, assetName: String, sb: StringBuilder) {
     try {
         mgr.open(assetName).use { `is` ->
@@ -1420,23 +1437,23 @@ fun byteCountToDisplayRoundedSize(
     val sizeInLong = size.toLong()
     val formatPattern = "%." + places + "f"
     val displaySize =
-        if (size.divide(FileUtils.ONE_GB_BI) > BigInteger.ZERO) {
+        if (size.divide(ONE_GB_BI) > BigInteger.ZERO) {
             String.format(
                 locale,
                 formatPattern,
-                sizeInLong / FileUtils.ONE_GB_BI.toDouble()
+                sizeInLong / ONE_GB_BI.toDouble()
             ) + " " + res.getString(R.string.u_gigabyte)
-        } else if (size.divide(FileUtils.ONE_MB_BI) > BigInteger.ZERO) {
+        } else if (size.divide(ONE_MB_BI) > BigInteger.ZERO) {
             String.format(
                 locale,
                 formatPattern,
-                sizeInLong / FileUtils.ONE_MB_BI.toDouble()
+                sizeInLong / ONE_MB_BI.toDouble()
             ) + " " + res.getString(R.string.u_megabyte)
-        } else if (size.divide(FileUtils.ONE_KB_BI) > BigInteger.ZERO) {
+        } else if (size.divide(ONE_KB_BI) > BigInteger.ZERO) {
             String.format(
                 locale,
                 formatPattern,
-                sizeInLong / FileUtils.ONE_KB_BI.toDouble()
+                sizeInLong / ONE_KB_BI.toDouble()
             ) + " " + res.getString(R.string.u_kilobyte)
         } else {
             size.toString() + " " + res.getString(R.string.u_byte)
@@ -1469,7 +1486,7 @@ fun byteCountToDisplayRoundedSize(size: Long, places: Int, res: Resources): Stri
 }
 
 fun DocumentFile.uniqueHash(): Long {
-    return Helper.hash64((this.name + "." + this.length()).toByteArray())
+    return hash64((this.name + "." + this.length()).toByteArray())
 }
 
 fun interface NameFilter {

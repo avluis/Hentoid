@@ -34,8 +34,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.lifecycle:lifecycle-common-java8:2.7.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.lifecycle:lifecycle-common-java8:2.8.2'
     // Don't update exifinterface > 1.2.0 without testing library screen thumbs with large PNGs
     // v1.3.2 is bugged when loading large PNGs through Glide
     implementation 'androidx.exifinterface:exifinterface:1.2.0'
@@ -49,7 +49,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation 'org.apache.commons:commons-lang3:3.14.0'
-    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
 
     implementation project(path: ':app:gles-renderer')
 }

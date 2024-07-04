@@ -28,17 +28,17 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.json.core.JsonSiteSettings
+import me.devsaki.hentoid.notification.appUpdate.UpdateNotificationChannel
 import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel
 import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel
+import me.devsaki.hentoid.notification.jsonUpdate.UpdateJsonNotificationChannel
+import me.devsaki.hentoid.notification.splitMerge.initChannelSplitMerge
 import me.devsaki.hentoid.notification.startup.StartupNotificationChannel
 import me.devsaki.hentoid.notification.transform.TransformNotificationChannel
-import me.devsaki.hentoid.notification.update.UpdateNotificationChannel
-import me.devsaki.hentoid.notification.updateJson.UpdateJsonNotificationChannel
 import me.devsaki.hentoid.notification.userAction.UserActionNotificationChannel
 import me.devsaki.hentoid.receiver.PlugEventsReceiver
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.DiskCache
@@ -46,6 +46,7 @@ import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.readStreamAsString
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.updateBookmarksJson
 import me.devsaki.hentoid.workers.StartupWorker
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import org.conscrypt.Conscrypt
@@ -182,6 +183,7 @@ object AppStartup {
         UpdateJsonNotificationChannel.init(context)
         TransformNotificationChannel.init(context)
         ArchiveNotificationChannel.init(context)
+        initChannelSplitMerge(context)
         // Clears all previous notifications
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancelAll()
@@ -252,7 +254,7 @@ object AppStartup {
                 Timber.i("Create bookmarks JSON : creating JSON")
                 val dao: CollectionDAO = ObjectBoxDAO()
                 try {
-                    Helper.updateBookmarksJson(context, dao)
+                    updateBookmarksJson(context, dao)
                 } finally {
                     dao.cleanup()
                 }

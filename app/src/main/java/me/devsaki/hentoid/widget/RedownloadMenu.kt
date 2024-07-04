@@ -10,7 +10,7 @@ import com.skydoves.powermenu.OnMenuItemClickListener
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.dimensAsDp
 
 class RedownloadMenu {
 
@@ -43,7 +43,7 @@ class RedownloadMenu {
                 .setTextColor(ContextCompat.getColor(context, R.color.white_opacity_87))
                 .setTextTypeface(Typeface.DEFAULT)
                 .setMenuColor(ContextCompat.getColor(context, R.color.dark_gray))
-                .setTextSize(Helper.dimensAsDp(context, R.dimen.text_subtitle_1))
+                .setTextSize(dimensAsDp(context, R.dimen.text_subtitle_1))
                 .setWidth(res.getDimension(R.dimen.popup_menu_width).toInt())
                 .setAutoDismiss(true)
                 .build()

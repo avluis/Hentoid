@@ -14,7 +14,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsCookiesBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.network.Cookie
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.getCookies
@@ -54,7 +54,7 @@ class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        sites = Preferences.getActiveSites().filter { s -> s.isVisible }.sortedBy { s -> s.name }
+        sites = Settings.activeSites.filter { it.isVisible }.sortedBy { it.name }
 
         binding?.apply {
             val siteLbls: MutableList<String> = sites.map { s -> s.description }.toMutableList()

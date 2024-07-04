@@ -10,8 +10,8 @@ import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsDlStrategyBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.coerceIn
 
 class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialogFragment.Parent>() {
     companion object {
@@ -22,10 +22,6 @@ class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialog
 
     private var binding: DialogPrefsDlStrategyBinding? = null
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,7 +80,7 @@ class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialog
         binding?.threshold?.editText?.apply {
             if (text.isEmpty()) return
             Preferences.setStorageSwitchThresholdPc(
-                Helper.coerceIn(text.toString().toFloat(), 0f, 100f).toInt()
+                coerceIn(text.toString().toFloat(), 0f, 100f).toInt()
             )
         }
 

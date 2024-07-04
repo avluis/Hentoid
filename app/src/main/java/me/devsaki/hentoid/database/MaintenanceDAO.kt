@@ -136,6 +136,6 @@ class MaintenanceDAO {
     }
 
     fun deleteOrphanArtistGroups() {
-        ObjectBoxDB.deleteOrphanArtistGroups()
+        ObjectBoxDB.deleteEmptyArtistGroups()
     }
 }

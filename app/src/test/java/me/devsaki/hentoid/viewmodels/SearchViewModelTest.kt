@@ -46,32 +46,32 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
             println(">> Preparing DB...")
 
             val attrs1 = ArrayList<Attribute>()
-            attrs1.add(Attribute(AttributeType.ARTIST, "artist1"))
-            attrs1.add(Attribute(AttributeType.LANGUAGE, "english"))
+            attrs1.add(Attribute(type = AttributeType.ARTIST, name = "artist1"))
+            attrs1.add(Attribute(type = AttributeType.LANGUAGE, name = "english"))
 
             val attrs2 = ArrayList<Attribute>()
-            attrs2.add(Attribute(AttributeType.ARTIST, "artist2"))
-            attrs2.add(Attribute(AttributeType.LANGUAGE, "english"))
+            attrs2.add(Attribute(type = AttributeType.ARTIST, name = "artist2"))
+            attrs2.add(Attribute(type = AttributeType.LANGUAGE, name = "english"))
 
             val attrs3 = ArrayList<Attribute>()
-            attrs3.add(Attribute(AttributeType.ARTIST, "artist3"))
-            attrs3.add(Attribute(AttributeType.LANGUAGE, "english"))
+            attrs3.add(Attribute(type = AttributeType.ARTIST, name = "artist3"))
+            attrs3.add(Attribute(type = AttributeType.LANGUAGE, name = "english"))
 
             mockObjectBoxDAO = ObjectBoxDAO(/*store*/)
             mockObjectBoxDAO.insertContent(
-                Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.ASMHENTAI)
+                Content(title = "", status = StatusContent.DOWNLOADED, site = Site.ASMHENTAI)
                     .addAttributes(attrs1)
             )
             mockObjectBoxDAO.insertContent(
-                Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.HITOMI)
+                Content(title = "", status = StatusContent.DOWNLOADED, site = Site.HITOMI)
                     .addAttributes(attrs1)
             )
             mockObjectBoxDAO.insertContent(
-                Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.ASMHENTAI)
+                Content(title = "", status = StatusContent.DOWNLOADED, site = Site.ASMHENTAI)
                     .addAttributes(attrs2)
             )
             mockObjectBoxDAO.insertContent(
-                Content().setTitle("").setStatus(StatusContent.ONLINE).setSite(Site.HITOMI)
+                Content(title = "", status = StatusContent.ONLINE, site = Site.HITOMI)
                     .addAttributes(attrs3)
             )
             println(">> DB prepared")

@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.enums.ErrorType
@@ -330,8 +331,7 @@ class QueueViewModel(
                                     ErrorType.PARSING,
                                     c.galleryUrl,
                                     "Book",
-                                    "Redownload from scratch -> Content unreachable",
-                                    Instant.now()
+                                    "Redownload from scratch -> Content unreachable"
                                 )
                             )
                             c.setErrorLog(errors)
@@ -374,7 +374,7 @@ class QueueViewModel(
         contentHashToShowFirst.value = hash
     }
 
-    fun setDownloadMode(contentIds: List<Long>, downloadMode: Int) {
+    fun setDownloadMode(contentIds: List<Long>, downloadMode: DownloadMode) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 contentIds.forEach {
@@ -396,7 +396,7 @@ class QueueViewModel(
             launch(Dispatchers.IO) {
                 val queue = dao.selectQueue()
                 queue.forEach {
-                    if (recordId.contains(it.id)) it.isFrozen = !it.isFrozen
+                    if (recordId.contains(it.id)) it.frozen = !it.frozen
                 }
                 dao.updateQueue(queue)
                 // Update queue JSON

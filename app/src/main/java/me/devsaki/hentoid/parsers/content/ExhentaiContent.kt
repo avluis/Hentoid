@@ -29,6 +29,6 @@ class ExhentaiContent : BaseContentParser() {
                 Timber.e(e, "Error parsing content.")
             }
         }
-        return Content().setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED)
+        return Content(site = Site.EXHENTAI, status = StatusContent.IGNORED)
     }
 }

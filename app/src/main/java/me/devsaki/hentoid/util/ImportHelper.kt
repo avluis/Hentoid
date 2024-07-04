@@ -30,6 +30,7 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.database.domains.SiteBookmark
@@ -614,7 +615,7 @@ fun scanFolderRecursive(
     progressFeedback: Consumer<String>? = null,
     log: MutableList<LogEntry>? = null
 ) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     if (parentNames.size > 4) return  // We've descended too far
     val rootName = toScan.name ?: ""
     progressFeedback?.invoke(rootName)
@@ -764,8 +765,8 @@ fun scanBookFolder(
                     cleanTitle(parentNames[parentNames.size - 1]) else  // Multiple chapters
                     cleanTitle(parentNames[parentNames.size - 1]) + " " + title
         }
-        result = Content().setTitle(title)
-        var site: Site? = Site.NONE
+        result = Content(title = title)
+        var site = Site.NONE
         if (parentNames.isNotEmpty()) {
             for (parent in parentNames)
                 for (s in Site.entries)
@@ -775,14 +776,15 @@ fun scanBookFolder(
                         break
                     }
         }
-        result.setSite(site)
-        result.setDownloadDate(bookFolder.lastModified())
+        result.site = site
+        result.downloadDate = bookFolder.lastModified()
         result.addAttributes(parentNamesAsTags(parentNames))
     }
-    if (targetStatus == StatusContent.EXTERNAL) result!!.addAttributes(newExternalAttribute())
-    result!!.setStatus(targetStatus).setStorageDoc(bookFolder)
+    if (targetStatus == StatusContent.EXTERNAL) result.addAttributes(newExternalAttribute())
+    result.status = targetStatus
+    result.setStorageDoc(bookFolder)
     if (null != parentFolder) result.parentStorageUri = parentFolder.uri.toString()
-    if (0L == result.downloadDate) result.setDownloadDate(Instant.now().toEpochMilli())
+    if (0L == result.downloadDate) result.downloadDate = Instant.now().toEpochMilli()
     result.lastEditDate = Instant.now().toEpochMilli()
     val images: MutableList<ImageFile> = ArrayList()
     scanFolderImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles)
@@ -792,27 +794,29 @@ fun scanBookFolder(
     if (!coverExists) createCover(images)
 
     // If streamed, keep everything and update cover URI
-    if (result.downloadMode == Content.DownloadMode.STREAM) {
+    if (result.downloadMode == DownloadMode.STREAM) {
         val coverFile = images.firstOrNull { obj: ImageFile -> obj.isCover }
-        if (coverFile != null) result.getCover().setFileUri(coverFile.fileUri)
-            .setSize(coverFile.size)
+        if (coverFile != null) {
+            result.cover.fileUri = coverFile.fileUri
+            result.cover.size = coverFile.size
+        }
     } else { // Set all detected images
         result.setImageFiles(images)
     }
     if (0 == result.qtyPages) {
-        val countUnreadable = images.filterNot { obj: ImageFile -> obj.isReadable }.count()
-        result.setQtyPages(images.size - countUnreadable) // Minus unreadable pages (cover thumb)
+        val countUnreadable = images.filterNot { it.isReadable }.count()
+        result.qtyPages = images.size - countUnreadable // Minus unreadable pages (cover thumb)
     }
     result.computeSize()
     return result
 }
 
 private fun cleanTitle(s: String?): String {
-    var result = StringHelper.protect(s)
+    var result = s ?: ""
     result = result.replace("_", " ")
     // Remove expressions between []'s
     result = result.replace("\\[[^(\\[\\])]*\\]".toRegex(), "")
-    return result.trim { it <= ' ' }
+    return result.trim()
 }
 
 /**
@@ -855,16 +859,18 @@ fun scanChapterFolders(
         }
     }
     if (null == result) {
-        result =
-            Content().setSite(Site.NONE)
-                .setTitle(if (null == parent.name) "" else parent.name)
-                .setUrl("")
-        result.setDownloadDate(parent.lastModified())
+        result = Content(
+            site = Site.NONE,
+            title = parent.name ?: "",
+            dbUrl = "",
+            downloadDate = parent.lastModified()
+        )
         result.addAttributes(parentNamesAsTags(parentNames))
     }
-    result!!.addAttributes(newExternalAttribute())
-    result.setStatus(StatusContent.EXTERNAL).setStorageDoc(parent)
-    if (0L == result.downloadDate) result.setDownloadDate(Instant.now().toEpochMilli())
+    result.addAttributes(newExternalAttribute())
+    result.status = StatusContent.EXTERNAL
+    result.setStorageDoc(parent)
+    if (0L == result.downloadDate) result.downloadDate = Instant.now().toEpochMilli()
     result.lastEditDate = Instant.now().toEpochMilli()
     val images: MutableList<ImageFile> = ArrayList()
     // Scan pages across all subfolders
@@ -877,12 +883,12 @@ fun scanChapterFolders(
         images,
         null
     )
-    val coverExists = images.any { obj: ImageFile -> obj.isCover }
+    val coverExists = images.any { it.isCover }
     if (!coverExists) createCover(images)
     result.setImageFiles(images)
     if (0 == result.qtyPages) {
-        val countUnreadable = images.filterNot { obj: ImageFile -> obj.isReadable }.count()
-        result.setQtyPages(images.size - countUnreadable) // Minus unreadable pages (cover thumb)
+        val countUnreadable = images.filterNot { it.isReadable }.count()
+        result.qtyPages = images.size - countUnreadable // Minus unreadable pages (cover thumb)
     }
     result.computeSize()
     return result
@@ -927,8 +933,10 @@ private fun scanFolderImages(
  */
 fun createCover(images: MutableList<ImageFile>) {
     if (images.isNotEmpty()) {
+        val img = ImageFile(images[0], populateContent = true, populateChapter = true)
+        img.isCover = true
         // Create a new cover entry from the 1st element
-        images.add(0, ImageFile(images[0], true, true).setIsCover(true))
+        images.add(0, img)
     }
 }
 
@@ -957,7 +965,7 @@ fun removeExternalAttributes(content: Content) {
     content.putAttributes(content.attributes.filterNot { a ->
         a.name.equals(EXTERNAL_LIB_TAG, ignoreCase = true)
     }.toList())
-    if (content.status == StatusContent.EXTERNAL) content.setStatus(StatusContent.DOWNLOADED)
+    if (content.status == StatusContent.EXTERNAL) content.status = StatusContent.DOWNLOADED
 }
 
 /**
@@ -1031,17 +1039,19 @@ fun scanForArchives(
     }
     if (chaptered) { // Return one single book with all results as chapters
         val content =
-            Content().setSite(Site.NONE)
-                .setTitle(parentNames.lastOrNull() ?: "")
-                .setUrl("")
-        content.setDownloadDate(
-            subFolders.lastOrNull()?.lastModified() ?: Instant.now().toEpochMilli()
-        )
+            Content(
+                site = Site.NONE,
+                title = parentNames.lastOrNull() ?: "",
+                dbUrl = "",
+                downloadDate = subFolders.lastOrNull()?.lastModified() ?: Instant.now()
+                    .toEpochMilli()
+            )
         content.addAttributes(parentNamesAsTags(parentNames))
 
         content.addAttributes(newExternalAttribute())
-        content.setStatus(StatusContent.EXTERNAL).setStorageDoc(parent)
-        if (0L == content.downloadDate) content.setDownloadDate(Instant.now().toEpochMilli())
+        content.status = StatusContent.EXTERNAL
+        content.setStorageDoc(parent)
+        if (0L == content.downloadDate) content.downloadDate = Instant.now().toEpochMilli()
         content.lastEditDate = Instant.now().toEpochMilli()
 
         val chapterStr = context.getString(R.string.gallery_chapter_prefix)
@@ -1049,16 +1059,16 @@ fun scanForArchives(
         val chapters: MutableList<Chapter> = ArrayList()
         val images: MutableList<ImageFile> = ArrayList()
         result.forEachIndexed { cidx, c ->
-            val chapter = Chapter(cidx + 1, c.parentStorageUri, chapterStr + " " + (cidx + 1))
+            val chapter = Chapter(cidx + 1, c.parentStorageUri ?: "", chapterStr + " " + (cidx + 1))
             chapter.setContent(content)
             chapter.setImageFiles(c.imageList.filter { i -> i.isReadable })
-            chapter.imageFiles?.forEachIndexed { iidx, img ->
-                img.setOrder(chapterOffset + iidx + 1)
+            chapter.imageList.forEachIndexed { iidx, img ->
+                img.order = chapterOffset + iidx + 1
                 img.computeName(5)
                 img.setChapter(chapter)
             }
             chapters.add(chapter)
-            chapter.imageFiles?.let {
+            chapter.imageList.let {
                 images.addAll(it)
                 chapterOffset += it.size
             }
@@ -1067,8 +1077,8 @@ fun scanForArchives(
         if (!coverExists) createCover(images)
         content.setImageFiles(images)
         if (0 == content.qtyPages) {
-            val countUnreadable = images.filterNot { obj: ImageFile -> obj.isReadable }.count()
-            content.setQtyPages(images.size - countUnreadable) // Minus unreadable pages (cover thumb)
+            val countUnreadable = images.filterNot { it.isReadable }.count()
+            content.qtyPages = images.size - countUnreadable // Minus unreadable pages (cover thumb)
         }
         content.setChapters(chapters)
         content.computeSize()
@@ -1151,28 +1161,30 @@ fun scanArchive(
 
     // Create content envelope
     if (null == result) {
-        result = Content().setSite(Site.NONE).setTitle(
-            if (null == archive.name) ""
-            else getFileNameWithoutExtension(archive.name!!)
-        ).setUrl("")
-        result.setDownloadDate(archive.lastModified())
+        result = Content(
+            site = Site.NONE,
+            title = if (null == archive.name) ""
+            else getFileNameWithoutExtension(archive.name!!),
+            dbUrl = "",
+            downloadDate = archive.lastModified()
+        )
         result.addAttributes(parentNamesAsTags(parentNames))
         result.addAttributes(newExternalAttribute())
     }
-    result?.apply {
-        setStatus(targetStatus)
+    result.apply {
+        status = targetStatus
         setStorageDoc(archive) // Here storage URI is a file URI, not a folder
         parentStorageUri = parentFolder.uri.toString()
-        if (0L == downloadDate) setDownloadDate(Instant.now().toEpochMilli())
+        if (0L == downloadDate) downloadDate = Instant.now().toEpochMilli()
         lastEditDate = Instant.now().toEpochMilli()
         setImageFiles(images)
         if (0 == qtyPages) {
-            val countUnreadable = images.filterNot { obj: ImageFile -> obj.isReadable }.count()
-            setQtyPages(images.size - countUnreadable) // Minus unreadable pages (cover thumb)
+            val countUnreadable = images.filterNot { it.isReadable }.count()
+            qtyPages = images.size - countUnreadable // Minus unreadable pages (cover thumb)
         }
         computeSize()
         // e.g. when the ZIP table doesn't contain any size entry
-        if (size <= 0) forceSize(archive.length())
+        if (size <= 0) size = archive.length()
     }
     return Pair(0, result)
 }
@@ -1259,11 +1271,11 @@ private fun createJsonFileFor(
     content: Content,
     explorer: FileExplorer
 ): Uri? {
-    if (null == content.storageUri || content.storageUri.isEmpty()) return null
+    if (content.storageUri.isEmpty()) return null
 
     // Check if the storage URI is valid
     val contentFolder: DocumentFile? = if (content.isArchive) {
-        getDocumentFromTreeUriString(context, content.parentStorageUri)
+        getDocumentFromTreeUriString(context, content.parentStorageUri ?: "")
     } else {
         getDocumentFromTreeUriString(context, content.storageUri)
     }
@@ -1272,9 +1284,7 @@ private fun createJsonFileFor(
     // If a JSON file already exists at that location, use it as is, don't overwrite it
     val jsonName = if (content.isArchive) {
         val archiveFile = getFileFromSingleUriString(context, content.storageUri)
-        getFileNameWithoutExtension(
-            StringHelper.protect(archiveFile!!.name)
-        ) + ".json"
+        getFileNameWithoutExtension(archiveFile?.name ?: "") + ".json"
     } else {
         JSON_FILE_NAME_V2
     }
@@ -1283,7 +1293,7 @@ private fun createJsonFileFor(
     return if (jsonFile != null && jsonFile.exists()) jsonFile.uri
     else jsonToFile(
         context,
-        JsonContent.fromEntity(content),
+        JsonContent(content),
         JsonContent::class.java,
         contentFolder,
         jsonName

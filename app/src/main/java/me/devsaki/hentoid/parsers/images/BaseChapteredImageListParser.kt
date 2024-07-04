@@ -91,8 +91,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         val storedChapters = storedContent?.chaptersList?.toMutableList() ?: emptyList()
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
-        val lastPartIndex = getLastPartIndex(chapters)
-        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters, lastPartIndex)
+        val extraChapters = getExtraChaptersbyUrl(storedChapters, chapters, this::getLastPartIndex)
         progressStart(onlineContent, storedContent, extraChapters.size)
 
         // Start numbering extra images right after the last position of stored and chaptered images
@@ -103,7 +102,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         var storedOrderOffset = getMaxChapterOrder(storedChapters)
         extraChapters.forEach { chp ->
             if (processHalted.get()) return@forEach
-            chp.setOrder(++storedOrderOffset)
+            chp.order = ++storedOrderOffset
             if (chp.uploadDate > 0) minEpoch = minEpoch.coerceAtMost(chp.uploadDate)
             result.addAll(
                 parseChapterImageFiles(
@@ -120,7 +119,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         if (processHalted.get()) throw PreparationInterruptedException()
         progressComplete()
 
-        if (minEpoch > 0 && minEpoch < Long.MAX_VALUE) onlineContent.setUploadDate(minEpoch)
+        if (minEpoch > 0 && minEpoch < Long.MAX_VALUE) onlineContent.uploadDate = minEpoch
 
         // Add cover if it's a first download
         if (storedChapters.isEmpty()) result.add(
@@ -138,9 +137,9 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         EventBus.getDefault().register(this)
         val result: List<ImageFile>
         try {
-            val ch = Chapter().setUrl(url) // Forge a chapter
+            val ch = Chapter(url = url) // Forge a chapter
             result = parseChapterImageFiles(content, ch, 1)
-            if (result.isNotEmpty() && content.coverImageUrl.isNullOrEmpty())
+            if (result.isNotEmpty() && content.coverImageUrl.isEmpty())
                 content.coverImageUrl = result[0].url
             setDownloadParams(result, content.site.url)
         } finally {
@@ -166,7 +165,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         return result
     }
 
-    protected open fun getLastPartIndex(chapters: List<Chapter>): Int {
+    protected open fun getLastPartIndex(url: String): Int {
         return 0
     }
 

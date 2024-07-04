@@ -15,15 +15,15 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.HitomiGalleryInfo
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlToImageFile
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.LIST_STRINGS
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.views.HitomiBackgroundWebView
 import org.greenrobot.eventbus.EventBus
@@ -57,7 +57,7 @@ class HitomiParser : BaseImageListParser() {
             result = parseImageListWithWebview(onlineContent, null)
             setDownloadParams(result, onlineContent.site.url)
         } catch (e: Exception) {
-            Helper.logException(e)
+            logException(e)
             result = ArrayList()
         } finally {
             EventBus.getDefault().unregister(this)
@@ -111,7 +111,7 @@ class HitomiParser : BaseImageListParser() {
         }
         var remainingIterations = 15 // Timeout
         do {
-            Helper.pause(1000)
+            pause(1000)
         } while (!done.get() && !processHalted.get() && remainingIterations-- > 0)
         if (processHalted.get()) throw EmptyResultException("Unable to detect pages (empty result)")
         var jsResult = imagesStr.get()
@@ -120,12 +120,12 @@ class HitomiParser : BaseImageListParser() {
         jsResult = jsResult.replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"")
         val imageUrls = jsonToObject<List<String>>(jsResult, LIST_STRINGS)
         if (!imageUrls.isNullOrEmpty()) {
-            onlineContent.setCoverImageUrl(imageUrls[0])
+            onlineContent.coverImageUrl = imageUrls[0]
             result.add(ImageFile.newCover(imageUrls[0], StatusContent.SAVED))
             var order = 1
             for (s in imageUrls) {
                 val img = urlToImageFile(s, order++, imageUrls.size, StatusContent.SAVED)
-                img.setDownloadParams(downloadParamsStr)
+                img.downloadParams = downloadParamsStr
                 result.add(img)
             }
         }
@@ -142,7 +142,7 @@ class HitomiParser : BaseImageListParser() {
         Timber.d(">> evaluating JS")
         webview.evaluateJavascript(getJsPagesScript(galleryInfo)) { s: String? ->
             Timber.d(">> JS evaluated")
-            imagesStr.set(StringHelper.protect(s))
+            imagesStr.set(s ?: "")
             done.set(true)
         }
     }

@@ -3,12 +3,14 @@ package me.devsaki.hentoid.util.download
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.core.Consumer
+import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.take
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
@@ -21,13 +23,16 @@ import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.isMimeTypeSupported
+import me.devsaki.hentoid.util.keepDigits
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getOnlineResourceDownloader
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Document
 import timber.log.Timber
 import java.io.File
@@ -127,7 +132,7 @@ private fun downloadToFile(
     resourceId: Int,
     notifyProgress: Consumer<Float>? = null
 ): Pair<Uri?, String> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val url = fixUrl(rawUrl, site.url)
     if (interruptDownload.get()) throw DownloadInterruptedException("Download interrupted")
     Timber.d("DOWNLOADING %d %s", resourceId, url)
@@ -245,7 +250,7 @@ private fun getMimeTypeFromStream(
 }
 
 @Throws(IOException::class)
-private fun createFile(
+fun createFile(
     context: Context,
     targetFolderUri: Uri,
     targetFileName: String,
@@ -276,9 +281,7 @@ private fun createFile(
             throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri has no path")
         }
     } else {
-        val targetFolder =
-            getDocumentFromTreeUriString(context, targetFolderUri.toString())
-        if (targetFolder != null) {
+        getDocumentFromTreeUriString(context, targetFolderUri.toString())?.let { targetFolder ->
             val file = findOrCreateDocumentFile(
                 context,
                 targetFolder,
@@ -287,9 +290,8 @@ private fun createFile(
             )
             file?.uri
                 ?: throw IOException("Could not create file $targetFileNameFinal : creation failed")
-        } else {
-            throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri does not exist")
         }
+            ?: throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri does not exist")
     }
 }
 
@@ -312,10 +314,10 @@ fun getCanonicalUrl(doc: Document): String {
     if (ogUrlElt != null) ogUrl = ogUrlElt.attr("content").trim { it <= ' ' }
     val finalUrl: String =
         if (canonicalUrl.isNotEmpty() && ogUrl.isNotEmpty() && ogUrl != canonicalUrl) {
-            val canonicalDigitsStr = StringHelper.keepDigits(canonicalUrl)
+            val canonicalDigitsStr = keepDigits(canonicalUrl)
             val canonicalDigits =
                 if (canonicalDigitsStr.isEmpty()) 0 else canonicalDigitsStr.toInt()
-            val ogDigitsStr = StringHelper.keepDigits(ogUrl)
+            val ogDigitsStr = keepDigits(ogUrl)
             val ogDigits = if (ogDigitsStr.isEmpty()) 0 else ogDigitsStr.toInt()
             if (canonicalDigits > ogDigits) canonicalUrl else ogUrl
         } else {
@@ -349,4 +351,67 @@ fun selectDownloadLocation(context: Context): StorageLocation {
     } else {
         if (memUsage1.getfreeUsageBytes() > memUsage2.getfreeUsageBytes()) StorageLocation.PRIMARY_1 else StorageLocation.PRIMARY_2
     }
+}
+
+fun getDownloadLocation(context: Context, content: Content): Pair<DocumentFile?, StorageLocation>? {
+    // Check for download folder existence, available free space and credentials
+    var dir: DocumentFile? = null
+    var location: StorageLocation = StorageLocation.NONE
+    // Folder already set (e.g. resume paused download)
+    if (content.storageUri.isNotEmpty()) {
+        // Reset storage URI if unreachable (will be re-created later in the method)
+        val rootFolder = getDocumentFromTreeUriString(context, content.storageUri)
+        if (null == rootFolder) content.clearStorageDoc() else {
+            val result = testDownloadFolder(context, content.storageUri)
+            if (!result) return null
+            dir = getDocumentFromTreeUriString(
+                context,
+                content.storageUri
+            ) // Will come out null if invalid
+        }
+    }
+    // Auto-select location according to storage management strategy
+    if (content.storageUri.isEmpty()) {
+        location = selectDownloadLocation(context)
+        val result = testDownloadFolder(context, Preferences.getStorageUri(location))
+        if (!result) return null
+    }
+    return Pair(dir, location)
+}
+
+private fun testDownloadFolder(
+    context: Context,
+    uriString: String
+): Boolean {
+    if (uriString.isEmpty()) {
+        Timber.i("No download folder set") // May happen if user has skipped it during the intro
+        EventBus.getDefault()
+            .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER))
+        return false
+    }
+    val rootFolder = getDocumentFromTreeUriString(context, uriString)
+    if (null == rootFolder) {
+        Timber.i("Download folder has not been found. Please select it again.") // May happen if the folder has been moved or deleted after it has been selected
+        EventBus.getDefault()
+            .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND))
+        return false
+    }
+    if (!isUriPermissionPersisted(context.contentResolver, rootFolder.uri)) {
+        Timber.i("Insufficient credentials on download folder. Please select it again.")
+        EventBus.getDefault()
+            .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS))
+        return false
+    }
+    val spaceLeftBytes = MemoryUsageFigures(context, rootFolder).getfreeUsageBytes()
+    if (spaceLeftBytes < 2L * 1024 * 1024) {
+        Timber.i("Device very low on storage space (<2 MB). Queue paused.")
+        EventBus.getDefault().post(
+            DownloadEvent.fromPauseMotive(
+                DownloadEvent.Motive.NO_STORAGE,
+                spaceLeftBytes
+            )
+        )
+        return false
+    }
+    return true
 }

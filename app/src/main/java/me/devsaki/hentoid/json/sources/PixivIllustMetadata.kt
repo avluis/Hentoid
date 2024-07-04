@@ -12,7 +12,7 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.serializeToJson
 import java.lang.reflect.Type
 
@@ -91,7 +91,7 @@ data class PixivIllustMetadata(
     ) {
 
         fun getThumbUrl(): String {
-            return StringHelper.protect(urlS)
+            return urlS ?: ""
         }
 
         fun getTags(): List<Pair<String, String>> {
@@ -100,7 +100,7 @@ data class PixivIllustMetadata(
 
         fun getImageFiles(): List<ImageFile> {
             var pageCount = 0
-            if (this.pageCount != null && StringHelper.isNumeric(this.pageCount)) pageCount =
+            if (this.pageCount != null && isNumeric(this.pageCount)) pageCount =
                 this.pageCount.toInt()
 
             // TODO include cover in the page list (getThumbUrl) ?
@@ -113,9 +113,8 @@ data class PixivIllustMetadata(
                     val downloadParams: MutableMap<String, String> = HashMap()
                     val framesJson = serializeToJson(ugoiraMeta.getFrameList(), UGOIRA_FRAMES_TYPE)
                     downloadParams[KEY_DL_PARAMS_UGOIRA_FRAMES] = framesJson
-                    img.setDownloadParams(
+                    img.downloadParams =
                         serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
-                    )
                 }
                 listOf(img)
             } else { // Classic page list
@@ -161,7 +160,7 @@ data class PixivIllustMetadata(
         fun getUrl(): String {
             var result = urlBig
             if (null == result) result = url
-            return StringHelper.protect(result)
+            return result ?: ""
         }
     }
 
@@ -185,7 +184,7 @@ data class PixivIllustMetadata(
         private val canonical: String?
     ) {
         fun getCanonicalUrl(): String {
-            return StringHelper.protect(canonical)
+            return canonical ?: ""
         }
     }
 
@@ -223,12 +222,12 @@ data class PixivIllustMetadata(
         return if (error || null == body) "" else body.canonicalUrl
     }
 
-    fun getTitle(): String? {
-        return if (error || null == body) "" else body.title
+    fun getTitle(): String {
+        return if (error || null == body) "" else body.title ?: ""
     }
 
-    fun getId(): String? {
-        return if (error || null == body) "" else body.illustId
+    fun getId(): String {
+        return if (error || null == body) "" else body.illustId ?: ""
     }
 
     fun getAttributes(): List<Attribute> {
@@ -251,21 +250,23 @@ data class PixivIllustMetadata(
 
     fun update(content: Content, url: String, updateImages: Boolean): Content {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
-        content.setSite(Site.PIXIV)
-        if (error || null == body || null == body.illustDetails)
-            return content.setStatus(StatusContent.IGNORED)
+        content.site = Site.PIXIV
+        if (error || null == body || null == body.illustDetails) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         val illustData: IllustBody = body
-        content.setTitle(cleanup(illustData.title))
+        content.title = cleanup(illustData.title)
         content.uniqueSiteId = illustData.illustId!!
         var urlValue = illustData.canonicalUrl
         if (urlValue.isEmpty()) urlValue = url
         content.setRawUrl(urlValue)
-        content.setCoverImageUrl(illustData.thumbUrl)
-        content.setUploadDate(illustData.uploadTimestamp!! * 1000)
+        content.coverImageUrl = illustData.thumbUrl
+        content.uploadDate = illustData.uploadTimestamp!! * 1000
         content.putAttributes(getAttributes())
         if (updateImages) {
             content.setImageFiles(illustData.imageFiles)
-            content.setQtyPages(illustData.pageCount)
+            content.qtyPages = illustData.pageCount
         }
         return content
     }

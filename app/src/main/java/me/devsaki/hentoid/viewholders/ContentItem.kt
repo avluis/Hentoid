@@ -36,11 +36,11 @@ import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.core.setMiddleEllipsis
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.bindOnlineCover
@@ -49,6 +49,7 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.formatArtistForDisplay
 import me.devsaki.hentoid.util.formatSeriesForDisplay
 import me.devsaki.hentoid.util.formatTagsForDisplay
+import me.devsaki.hentoid.util.generateIdForPlaceholder
 import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getRatingResourceId
@@ -90,7 +91,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         touchHelper = null
         isEmpty = true
         isSwipeable = true
-        identifier = Helper.generateIdForPlaceholder()
+        identifier = generateIdForPlaceholder()
     }
 
     // Constructor for library and error item
@@ -132,7 +133,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         this.isFirst = isFirst
         isEmpty = null == content
         isSwipeable = true
-        identifier = content?.uniqueHash() ?: Helper.generateIdForPlaceholder()
+        identifier = content?.uniqueHash() ?: generateIdForPlaceholder()
     }
 
     // Constructor for split
@@ -197,12 +198,12 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         val isQueueReady = isQueueActive(vh.itemView.context) && !isQueuePaused && !isPausedEvent
         content.computeProgress()
         content.computeDownloadedBytes()
-        if (isQueueReady || content.percent > 0) {
+        if (isQueueReady || content.getPercent() > 0) {
             val tvPages = vh.itemView.findViewById<TextView>(R.id.tvPages)
-            if (content.percent > 0) {
+            if (content.getPercent() > 0) {
                 pb.isIndeterminate = false
                 pb.max = 100
-                pb.progress = (content.percent * 100).toInt()
+                pb.progress = (content.getPercent() * 100).toInt()
                 pb.visibility = View.VISIBLE
 
                 val color: Int = if (isQueueReady && isIndividual) pb.context.getThemedColor(
@@ -218,13 +219,13 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     )
                 }
 
-                if (content.bookSizeEstimate > 0 && tvPages != null && View.VISIBLE == tvPages.visibility) {
+                if (content.getBookSizeEstimate() > 0 && tvPages != null && View.VISIBLE == tvPages.visibility) {
                     var pagesText = tvPages.text.toString()
                     val separator = pagesText.indexOf(";")
                     if (separator > -1) pagesText = pagesText.substring(0, separator)
                     pagesText = "$pagesText; " + pb.context.resources.getString(
                         R.string.queue_content_size_estimate,
-                        content.bookSizeEstimate / (1024 * 1024)
+                        content.getBookSizeEstimate() / (1024 * 1024)
                     )
                     tvPages.text = pagesText
                 }
@@ -301,13 +302,13 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 val bundle = payloads[0] as Bundle
                 val bundleParser = ContentItemBundle(bundle)
                 var boolValue = bundleParser.isBeingDeleted
-                if (boolValue != null) item.content?.setIsBeingProcessed(boolValue)
+                if (boolValue != null) item.content?.isBeingProcessed = boolValue
                 boolValue = bundleParser.isFavourite
-                if (boolValue != null) item.content?.isFavourite = boolValue
+                if (boolValue != null) item.content?.favourite = boolValue
                 var intValue = bundleParser.rating
                 if (intValue != null) item.content?.rating = intValue
                 boolValue = bundleParser.isCompleted
-                if (boolValue != null) item.content?.isCompleted = boolValue
+                if (boolValue != null) item.content?.completed = boolValue
                 val longValue = bundleParser.reads
                 if (longValue != null) item.content?.reads = longValue
                 intValue = bundleParser.readPagesCount
@@ -317,11 +318,11 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 stringValue = bundleParser.title
                 if (stringValue != null) item.content?.title = stringValue
                 intValue = bundleParser.downloadMode
-                if (intValue != null) item.content?.downloadMode = intValue
+                if (intValue != null) item.content?.downloadMode = DownloadMode.fromValue(intValue)
                 boolValue = bundleParser.frozen
-                if (boolValue != null) item.queueRecord?.isFrozen = boolValue
+                if (boolValue != null) item.queueRecord?.frozen = boolValue
                 boolValue = bundleParser.processed
-                if (boolValue != null) item.content?.setIsBeingProcessed(boolValue)
+                if (boolValue != null) item.content?.isBeingProcessed = boolValue
             }
 
             if (BuildConfig.DEBUG) item.content?.apply {
@@ -456,19 +457,19 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
 
             var colorId: Int = R.color.card_title_light
-            if (queueRecord != null && queueRecord.isFrozen) colorId = R.color.frozen_blue
+            if (queueRecord != null && queueRecord.frozen) colorId = R.color.frozen_blue
             if (isGrid) colorId = R.color.white_opacity_87
             tvTitle.setTextColor(tvTitle.context.getThemedColor(colorId))
         }
 
         private fun attachCompleted(content: Content) {
-            ivCompleted?.isVisible = content.isCompleted
+            ivCompleted?.isVisible = content.completed
         }
 
         private fun attachReadingProgress(content: Content) {
             readingProgress?.apply {
                 val imgs = content.imageList
-                if (!content.isCompleted) {
+                if (!content.completed) {
                     visibility = View.VISIBLE
                     max = imgs.count { imf -> imf.isReadable }
                     progress = content.readPagesCount
@@ -512,7 +513,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS || viewType == ViewType.LIBRARY_EDIT || viewType == ViewType.MERGE || viewType == ViewType.SPLIT) {
                 val nbPages = "$qtyPages"
                 template = if (viewType == ViewType.ERRORS) {
-                    val nbMissingPages = qtyPages - content!!.nbDownloadedPages
+                    val nbMissingPages = qtyPages - content!!.getNbDownloadedPages()
                     if (nbMissingPages > 0) {
                         val missingStr = " " + context.resources.getQuantityString(
                             R.plurals.work_pages_missing, nbMissingPages.toInt(), nbMissingPages
@@ -528,7 +529,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 tvPages.let { tv ->
                     ivPages?.visibility = phVisibility
                     tv.visibility = phVisibility
-                    tv.text = String.format(Locale.ENGLISH, "%d", content.nbDownloadedPages)
+                    tv.text = String.format(Locale.ENGLISH, "%d", content.getNbDownloadedPages())
                 }
                 tvChapters?.let { tv ->
                     val chapters = content.chaptersList
@@ -538,7 +539,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                         iv.visibility = chapterVisibility
                         tv.visibility = chapterVisibility
                         if (chapterVisibility == View.VISIBLE) {
-                            if (content.isManuallyMerged) iv.setImageResource(R.drawable.ic_action_merge)
+                            if (content.manuallyMerged) iv.setImageResource(R.drawable.ic_action_merge)
                             else iv.setImageResource(R.drawable.ic_chapter)
                             tv.text = String.format(Locale.ENGLISH, "%d", chapters.size)
                         }
@@ -546,7 +547,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 }
                 tvStorage?.let { tv ->
                     val storageVisibility =
-                        if (isPlaceholder || content.downloadMode == Content.DownloadMode.STREAM) View.GONE else View.VISIBLE
+                        if (isPlaceholder || content.downloadMode == DownloadMode.STREAM) View.GONE else View.VISIBLE
                     ivStorage?.visibility = storageVisibility
                     tv.visibility = storageVisibility
                     if (storageVisibility == View.VISIBLE) {
@@ -602,7 +603,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 }
             }
 
-            val isStreamed = content.downloadMode == Content.DownloadMode.STREAM
+            val isStreamed = content.downloadMode == DownloadMode.STREAM
             ivOnline?.isVisible = isStreamed && (!isGrid || Settings.libraryDisplayGridStorageInfo)
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 topButton?.visibility = View.VISIBLE
@@ -628,7 +629,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
                 ivFavourite?.apply {
                     isVisible = (!isGrid || Settings.libraryDisplayGridFav)
-                    if (content.isFavourite) setImageResource(R.drawable.ic_fav_full)
+                    if (content.favourite) setImageResource(R.drawable.ic_fav_full)
                     else setImageResource(R.drawable.ic_fav_empty)
                 }
 

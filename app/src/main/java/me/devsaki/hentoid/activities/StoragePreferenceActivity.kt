@@ -30,15 +30,16 @@ import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.preferences.DownloadStrategyDialogFragment
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
 import me.devsaki.hentoid.fragments.preferences.StorageUsageDialogFragment
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.applyTheme
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.getPathRoot
+import me.devsaki.hentoid.util.getPrefsIndex
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -124,7 +125,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     .setTitle(R.string.pref_memory_alert_title)
                     .setSingleChoiceItems(
                         R.array.pref_memory_alert_entries,
-                        Helper.getPrefsIndex(
+                        getPrefsIndex(
                             resources,
                             R.array.pref_memory_alert_values,
                             Preferences.getMemoryAlertThreshold().toString()
@@ -182,7 +183,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
             alertLowPanel.isVisible = (primaryVolume1.isVisible || primaryVolume2.isVisible)
             var textArray = resources.getStringArray(R.array.pref_memory_alert_entries)
-            alertDesc.text = textArray[Helper.getPrefsIndex(
+            alertDesc.text = textArray[getPrefsIndex(
                 resources,
                 R.array.pref_memory_alert_values,
                 Preferences.getMemoryAlertThreshold().toString()
@@ -305,7 +306,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             .setTextTypeface(Typeface.DEFAULT)
             .setMenuColor(ContextCompat.getColor(this, R.color.dark_gray))
             .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
-            .setTextSize(Helper.dimensAsDp(this, R.dimen.text_subtitle_1))
+            .setTextSize(dimensAsDp(this, R.dimen.text_subtitle_1))
             .setAutoDismiss(true)
 
         if (location == StorageLocation.PRIMARY_2)

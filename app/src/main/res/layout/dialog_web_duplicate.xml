@@ -152,23 +152,21 @@
         android:layout_marginEnd="8dp"
         android:src="@drawable/ic_storage"
         android:tooltipText="@string/external_help"
-        android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/ivFavourite"
         app:layout_constraintTop_toTopOf="@id/ivSite"
         app:layout_constraintVertical_bias="1.0"
         app:tint="@color/medium_gray"
         tools:ignore="ContentDescription"
-        tools:targetApi="o"
-        tools:visibility="visible" />
+        tools:targetApi="o" />
 
     <TextView
         android:id="@+id/tvScore"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/text_body_1"
-        app:layout_constraintEnd_toStartOf="@id/ivExternal"
+        app:layout_constraintEnd_toStartOf="@id/ivStorage"
         app:layout_constraintStart_toEndOf="@id/ivCover"
-        app:layout_constraintTop_toBottomOf="@id/ivExternal"
+        app:layout_constraintTop_toBottomOf="@id/ivStorage"
         tools:text="@string/duplicate_alert_similarity" />
 
     <androidx.constraintlayout.widget.Barrier
@@ -192,9 +190,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:textStyle="italic"
         android:textColor="@color/card_tags_light"
         android:textSize="@dimen/caption"
+        android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="@id/ivCover"
         app:layout_constraintStart_toStartOf="@id/ivCover"
         app:layout_constraintTop_toBottomOf="@id/ivCover"

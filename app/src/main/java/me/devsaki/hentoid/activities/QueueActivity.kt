@@ -40,7 +40,6 @@ import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.queue.ErrorsFragment
 import me.devsaki.hentoid.fragments.queue.QueueFragment
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.applyTheme
@@ -48,6 +47,7 @@ import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.notification.NotificationManager
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.viewmodels.QueueViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
@@ -102,7 +102,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
         }
 
         binding?.let {
-            Helper.tryShowMenuIcons(this, it.toolbar.menu)
+            tryShowMenuIcons(this, it.toolbar.menu)
             it.toolbar.setNavigationOnClickListener { finish() }
             it.downloadReviveCancel.setOnClickListener { clearReviveDownload() }
 
@@ -289,7 +289,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
             menu.clear()
             if (0 == position) inflateMenu(R.menu.queue_queue_selection_menu)
             else inflateMenu(R.menu.queue_error_selection_menu)
-            Helper.tryShowMenuIcons(this@QueueActivity, menu)
+            tryShowMenuIcons(this@QueueActivity, menu)
         }
 
         enableCurrentFragment()
@@ -482,7 +482,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
     }
 
     fun buildSearchQuery(): String {
-        val attrs = if (sourceFilter != null) setOf(Attribute(sourceFilter)) else emptySet()
+        val attrs = sourceFilter?.let { setOf(Attribute(it)) } ?: emptySet()
         return SearchActivityBundle.buildSearchUri(attrs, query).toString()
     }
 

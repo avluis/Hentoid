@@ -3,18 +3,19 @@ package me.devsaki.hentoid.json;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 
 /**
  * Content builder (legacy: kept to support older library)
  *
  * @deprecated Replaced by {@link Content}; class is kept for retrocompatibilty
  */
-@SuppressWarnings("DeprecatedIsStillUsed") // Shouldn't be used for new devs but still used to ensure retrocompatiblity with old files
+@SuppressWarnings("DeprecatedIsStillUsed")
+// Shouldn't be used for new devs but still used to ensure retrocompatiblity with old files
 @Deprecated
 public class ContentV1 {
 
@@ -111,17 +112,18 @@ public class ContentV1 {
         if (language != null) attributes.add(language);
         if (user != null) attributes.add(user);
 
-        return new Content()
-                .setSite(getSite())
-                .setUrl(url)
-                .setUploadDate(uploadDate)
-                .addAttributes(attributes)
-                .setImageFiles(imageFiles)
-                .setCoverImageUrl(coverImageUrl)
-                .setTitle(title)
-                .setQtyPages(qtyPages)
-                .setDownloadDate(downloadDate)
-                .setStatus(status);
+        Content result = new Content();
+        result.setSite(getSite());
+        result.setUrl(url);
+        result.setUploadDate(uploadDate);
+        result.addAttributes(attributes);
+        result.setImageFiles(imageFiles);
+        result.setCoverImageUrl(coverImageUrl);
+        result.setTitle(title);
+        result.setQtyPages(qtyPages);
+        result.setDownloadDate(downloadDate);
+        result.setStatus(status);
+        return result;
     }
 
     public String getHtmlDescription() {

@@ -10,7 +10,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
@@ -33,21 +33,21 @@ data class DeviantArtDeviation(
             updateImages: Boolean,
             updateCoreProperties: Boolean = true
         ): Content {
-            content.setSite(Site.DEVIANTART)
+            content.site = Site.DEVIANTART
 
             if (updateCoreProperties) {
                 content.setRawUrl(url.replace("\\/", "/"))
                 try {
                     if (publishedTime.isNotEmpty())
-                        content.uploadDate = Helper.parseDatetimeToEpoch(
+                        content.uploadDate = parseDatetimeToEpoch(
                             publishedTime,
                             "yyyy-MM-dd'T'HH:mm:ssZ"
                         ) // e.g. 2024-01-22T08:27:45-0800
                 } catch (t: Throwable) {
                     Timber.w(t)
                 }
-                content.setTitle(cleanup(title))
-                content.setCoverImageUrl(media.getThumbUrl())
+                content.title = cleanup(title)
+                content.coverImageUrl = media.getThumbUrl()
             }
 
             val attributes = if (updateCoreProperties) AttributeMap() else content.attributeMap
@@ -75,7 +75,7 @@ data class DeviantArtDeviation(
             if (updateImages) {
                 val imgs = getImages()
                 content.setImageFiles(imgs)
-                content.setQtyPages(imgs.count { it.isReadable })
+                content.qtyPages = imgs.count { it.isReadable }
             }
 
             return content

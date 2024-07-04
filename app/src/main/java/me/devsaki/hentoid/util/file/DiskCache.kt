@@ -7,7 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.assertNonUiThread
+import me.devsaki.hentoid.util.hash64
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
@@ -38,7 +39,7 @@ object DiskCache {
 
 
     fun init(context: Context) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         folder = getOrCreateCacheFolder(context, FOLDER_NAME)
             ?: throw IOException("Couldn't initialize cache folder $FOLDER_NAME")
         if (!folder.deleteRecursively()) Timber.w("Couldn't empty cache folder $FOLDER_NAME")
@@ -77,7 +78,7 @@ object DiskCache {
     }
 
     private fun getUsedStorage(): Long {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         var result = 0L
         folder.listFiles()?.forEach {
             result += it.length()
@@ -86,8 +87,8 @@ object DiskCache {
     }
 
     fun createFile(key: String): Uri {
-        Helper.assertNonUiThread()
-        val targetFile = File(folder, Helper.hash64(key.encodeToByteArray()).toString())
+        assertNonUiThread()
+        val targetFile = File(folder, hash64(key.encodeToByteArray()).toString())
         if (!targetFile.exists() && !targetFile.createNewFile()) throw IOException("Couldn't create file for key $key in cache folder $FOLDER_NAME")
         val result = Uri.fromFile(targetFile)
         synchronized(entries) {

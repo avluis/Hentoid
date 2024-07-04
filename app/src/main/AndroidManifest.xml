@@ -129,9 +129,6 @@
             android:name=".activities.sources.EdoujinActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".activities.sources.AnchiraActivity"
-            android:configChanges="orientation|screenSize" />
-        <activity
             android:name=".activities.sources.DeviantArtActivity"
             android:configChanges="orientation|screenSize" />
         <activity
@@ -223,8 +220,8 @@
         <activity
             android:name=".activities.ProcessTextActivity"
             android:exported="true"
-            android:label="@string/launch"
             android:icon="@drawable/ic_hentoid"
+            android:label="@string/launch"
             android:theme="@style/Theme.Invisible">
             <intent-filter>
                 <action android:name="android.intent.action.PROCESS_TEXT" />

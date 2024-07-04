@@ -94,6 +94,11 @@
       "requestsCapPerSecond": 2,
       "parallelDownloadCap": 2,
       "hasBackupURLs": true
+    },
+    "MANGAGO": {
+      "useHentoidAgent": false,
+      "useWebviewAgent": false,
+      "requestsCapPerSecond": 2
     }
   }
 }

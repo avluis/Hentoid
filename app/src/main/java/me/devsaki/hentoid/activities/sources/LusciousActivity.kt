@@ -77,7 +77,7 @@ class LusciousActivity : BaseWebActivity() {
                         contentParser.toContent(url)
                     }
                     content = super.processContent(content, content.galleryUrl, quickDownload)
-                    resConsumer.onContentReady(content, quickDownload)
+                    resConsumer?.onContentReady(content, quickDownload)
                 } catch (t: Throwable) {
                     Timber.w(t)
                 }

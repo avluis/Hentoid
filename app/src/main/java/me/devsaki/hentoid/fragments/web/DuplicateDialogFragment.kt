@@ -13,6 +13,7 @@ import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.databinding.DialogWebDuplicateBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
@@ -152,7 +153,7 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
                 ivSite.visibility = View.GONE
             }
 
-            val isStreamed = libraryContent.downloadMode == Content.DownloadMode.STREAM
+            val isStreamed = libraryContent.downloadMode == DownloadMode.STREAM
             if (libraryContent.status == StatusContent.EXTERNAL) {
                 var resourceId =
                     if (libraryContent.isArchive) R.drawable.ic_archive else R.drawable.ic_folder_full
@@ -163,7 +164,7 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
                 ivStorage.setImageResource(if (isStreamed) R.drawable.ic_action_download_stream else R.drawable.ic_storage)
             }
 
-            if (libraryContent.isFavourite) {
+            if (libraryContent.favourite) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full)
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_empty)

@@ -69,7 +69,7 @@ class DeviantArtActivity : BaseWebActivity() {
                             contentParser.toContent(url)
                         }
                         content = super.processContent(content, content.galleryUrl, false)
-                        resConsumer.onContentReady(content, false)
+                        resConsumer?.onContentReady(content, false)
                     } catch (t: Throwable) {
                         Timber.w(t)
                     }

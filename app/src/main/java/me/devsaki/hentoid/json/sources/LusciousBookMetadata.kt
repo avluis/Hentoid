@@ -58,18 +58,20 @@ data class LusciousBookMetadata(
 
 
     fun update(content: Content, updateImages: Boolean): Content {
-        content.setSite(Site.LUSCIOUS)
+        content.site = Site.LUSCIOUS
 
         val info = data.album.get
-        if (info?.url == null || null == info.title)
-            return content.setStatus(StatusContent.IGNORED)
+        if (info?.url == null || null == info.title) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
 
-        content.setUrl(info.url)
-        if (info.created.isNotEmpty()) content.setUploadDate(info.created.toLong() * 1000)
-        content.setTitle(cleanup(info.title))
+        content.url = info.url
+        if (info.created.isNotEmpty()) content.uploadDate = info.created.toLong() * 1000
+        content.title = cleanup(info.title)
 
 //        result.setQtyPages(info.number_of_pictures);  <-- does not reflect the actual number of pictures reachable via the Luscious API / website
-        info.cover?.apply { content.setCoverImageUrl(url) }
+        info.cover?.apply { content.coverImageUrl = url }
 
         val attributes = AttributeMap()
         info.language?.let {
@@ -106,7 +108,7 @@ data class LusciousBookMetadata(
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }

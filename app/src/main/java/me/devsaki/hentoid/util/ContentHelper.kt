@@ -29,6 +29,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
@@ -40,7 +41,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.DownloadCommandEvent
-import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.parsers.ContentParserFactory.getContentParserClass
@@ -60,7 +60,7 @@ import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.URI_ELEMENTS_SEPARATOR
 import me.devsaki.hentoid.util.file.cleanFileName
 import me.devsaki.hentoid.util.file.copyFile
-import me.devsaki.hentoid.util.file.extractArchiveEntriesSimple
+import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
 import me.devsaki.hentoid.util.file.findFolder
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
@@ -198,7 +198,7 @@ private fun isInQueueTab(status: StatusContent): Boolean {
 }
 
 fun canBeArchived(content: Content): Boolean {
-    return !(content.isArchive || content.downloadMode == Content.DownloadMode.STREAM || content.status == StatusContent.PLACEHOLDER)
+    return !(content.isArchive || content.downloadMode == DownloadMode.STREAM || content.status == StatusContent.PLACEHOLDER)
 }
 
 /**
@@ -244,7 +244,7 @@ fun viewContentGalleryPage(context: Context, content: Content, wrapPin: Boolean)
  * @param content Content whose JSON file to update
  */
 fun updateJson(context: Context, content: Content): Boolean {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     val file = getFileFromSingleUriString(context, content.jsonUri)
     if (file != null) {
@@ -252,7 +252,7 @@ fun updateJson(context: Context, content: Content): Boolean {
             getOutputStream(context, file).use { output ->
                 if (output != null) {
                     updateJson(
-                        JsonContent.fromEntity(content),
+                        JsonContent(content),
                         JsonContent::class.java, output
                     )
                     return true
@@ -275,14 +275,14 @@ fun updateJson(context: Context, content: Content): Boolean {
  * @return Created JSON file, or null if it couldn't be created
  */
 fun createJson(context: Context, content: Content): DocumentFile? {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     if (content.isArchive) return null // Keep that as is, we can't find the parent folder anyway
 
 
     val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return null
     try {
-        val newJson = jsonToFile<JsonContent>(
-            context, JsonContent.fromEntity(content),
+        val newJson = jsonToFile(
+            context, JsonContent(content),
             JsonContent::class.java, folder, JSON_FILE_NAME_V2
         )
         content.jsonUri = newJson.uri.toString()
@@ -313,14 +313,14 @@ fun persistJson(context: Context, content: Content) {
  * @return True if the queue JSON file has been updated properly; false instead
  */
 fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val queue = dao.selectQueue()
     val errors = dao.selectErrorContent()
 
     // Save current queue (to be able to restore it in case the app gets uninstalled)
     val queuedContent = queue.mapNotNull { qr ->
         val c = qr.content.target
-        if (c != null) c.isFrozen = qr.isFrozen
+        if (c != null) c.isFrozen = qr.frozen
         c
     }.toMutableList()
     queuedContent.addAll(errors)
@@ -331,7 +331,7 @@ fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
 
     try {
         val contentCollection = JsonContentCollection()
-        contentCollection.queue = queuedContent
+        contentCollection.replaceQueue(queuedContent)
 
         jsonToFile(
             context,
@@ -421,8 +421,8 @@ fun updateContentReadStats(
     markAsCompleted: Boolean
 ) {
     content.lastReadPageIndex = targetLastReadPageIndex
-    if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli())
-    if (markAsCompleted) content.setCompleted(true)
+    if (updateReads) content.increaseReads().lastReadDate = Instant.now().toEpochMilli()
+    if (markAsCompleted) content.completed = true
     dao.replaceImageList(content.id, images.filterNotNull())
     dao.insertContentCore(content)
     persistJson(context, content)
@@ -438,7 +438,7 @@ fun updateContentReadStats(
  * @return List of picture files
  */
 fun getPictureFilesFromContent(context: Context, content: Content): List<DocumentFile> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val storageUri = content.storageUri
 
     Timber.d("Opening: %s from: %s", content.title, storageUri)
@@ -467,7 +467,7 @@ fun getPictureFilesFromContent(context: Context, content: Content): List<Documen
  */
 @Throws(ContentNotProcessedException::class)
 fun removeContent(context: Context, dao: CollectionDAO, content: Content) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     // Remove from DB
     // NB : start with DB to have a LiveData feedback, because file removal can take much time
     dao.deleteContent(content)
@@ -494,7 +494,7 @@ fun removeContent(context: Context, dao: CollectionDAO, content: Content) {
             getFileNameWithoutExtension(name) == content.id.toString()
         }
         if (images != null) for (f in images) removeFile(f!!)
-    } else if ( /*isInLibrary(content.getStatus()) &&*/content.storageUri.isNotEmpty()) { // Remove a folder and its content
+    } else if (content.storageUri.isNotEmpty()) { // Remove a folder and its content
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         val folder = getDocumentFromTreeUriString(context, content.storageUri)
             ?: throw FileNotProcessedException(
@@ -531,7 +531,7 @@ fun removeQueuedContent(
     content: Content,
     deleteContent: Boolean
 ) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     // Check if the content is on top of the queue; if so, send a CANCEL event
     if (isInQueueTab(content.status)) {
@@ -605,9 +605,9 @@ fun getPathRoot(locationUriStr: String): String {
  * @return ID of the newly added Content
  */
 fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val newContentId = dao.insertContent(content)
-    content.setId(newContentId)
+    content.id = newContentId
 
     // Perform group operations only if
     //   - the book is in the library (i.e. not queued)
@@ -633,7 +633,8 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                         var group = a.group.target
                         if (null == group) {
                             group = Group(Grouping.ARTIST, a.name, ++nbGroups)
-                            group.setSubtype(if (a.type == AttributeType.ARTIST) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS else Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS)
+                            group.subtype =
+                                if (a.type == AttributeType.ARTIST) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS else Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS
                             if (!a.contents.isEmpty()) group.coverContent.target = a.contents[0]
                         }
                         addContentToAttributeGroup(group, a, content, dao)
@@ -658,7 +659,7 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                         ), newContentId.toString() + ""
                     )
                 )
-                val results = context.extractArchiveEntriesSimple(
+                val results = context.extractArchiveEntriesBlocking(
                     archive.uri,
                     targetFolder,
                     extractInstructions
@@ -689,7 +690,7 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                                         val resizedBitmap =
                                             getScaledDownBitmap(
                                                 b,
-                                                Helper.dimensAsPx(
+                                                dimensAsPx(
                                                     context,
                                                     libraryGridCardWidthDP
                                                 ),
@@ -712,9 +713,9 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                             )
                         }
                         Timber.i(">> Set cover for %s", content.title)
-                        content.cover.setFileUri(uri.toString())
-                        content.cover.setName(uri.lastPathSegment)
-                        dao.replaceImageList(newContentId, content.imageFiles!!)
+                        content.cover.fileUri = uri.toString()
+                        content.cover.name = uri.lastPathSegment ?: ""
+                        dao.replaceImageList(newContentId, content.imageList)
                     }
                 }
             } catch (e: IOException) {
@@ -741,9 +742,9 @@ fun addAttribute(
     var artistGroup: Group? = null
     if (type == AttributeType.ARTIST || type == AttributeType.CIRCLE) artistGroup =
         addArtistToAttributesGroup(name, dao)
-    val attr = Attribute(type, name)
+    val attr = Attribute(type = type, name = name)
     val newId = dao.insertAttribute(attr)
-    attr.setId(newId)
+    attr.id = newId
     if (artistGroup != null) attr.putGroup(artistGroup)
     return attr
 }
@@ -756,7 +757,7 @@ fun addAttribute(
  * @param context Context to be used
  */
 fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     // Remove from DB
     // NB : start with DB to have a LiveData feedback, because file removal can take much time
     dao.deleteImageFiles(images)
@@ -765,7 +766,7 @@ fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) {
     for (image in images) removeFile(context, Uri.parse(image.fileUri))
 
     // Lists all relevant content
-    val contents = images.mapNotNull { it.content?.targetId }.distinct()
+    val contents = images.map { it.content.targetId }.distinct()
 
     // Update content JSON if it exists (i.e. if book is not queued)
     for (contentId in contents) {
@@ -782,7 +783,7 @@ fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) {
  * @param context  Context to be used
  */
 fun setAndSaveContentCover(newCover: ImageFile, dao: CollectionDAO, context: Context) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     // Get all images from the DB
     val content = dao.selectContent(newCover.content.targetId) ?: return
@@ -812,18 +813,19 @@ fun setAndSaveContentCover(newCover: ImageFile, dao: CollectionDAO, context: Con
 fun setContentCover(content: Content, images: MutableList<ImageFile>, newCover: ImageFile) {
     // Remove current cover from the set
     for (i in images.indices) if (images[i].isCover) {
-        if (images[i].isReadable) images[i].setIsCover(false)
+        if (images[i].isReadable) images[i].isCover = false
         else images.removeAt(i)
         break
     }
 
     // Duplicate given picture and set it as a cover
-    val cover = ImageFile.newCover(newCover.url, newCover.status).setFileUri(newCover.fileUri)
-        .setMimeType(newCover.mimeType)
+    val cover = ImageFile.newCover(newCover.url, newCover.status)
+    cover.fileUri = newCover.fileUri
+    cover.mimeType = newCover.mimeType
     images.add(0, cover)
 
     // Update cover URL to "ping" the content to be updated too (useful for library screen that only detects "direct" content updates)
-    content.setCoverImageUrl(newCover.url)
+    content.coverImageUrl = newCover.url
 }
 
 /**
@@ -928,7 +930,7 @@ fun formatBookId(content: Content): String {
     var id = content.uniqueSiteId
     // For certain sources (8muses, fakku), unique IDs are strings that may be very long
     // => shorten them by using their hashCode
-    if (id.length > 10) id = StringHelper.formatIntAsStr(abs(id.hashCode().toDouble()).toInt(), 10)
+    if (id.length > 10) id = formatIntAsStr(abs(id.hashCode().toDouble()).toInt(), 10)
     return "[$id]"
 }
 
@@ -957,7 +959,7 @@ fun formatBookAuthor(content: Content): String {
         }
     }
 
-    return StringHelper.protect(result)
+    return result
 }
 
 /**
@@ -1014,10 +1016,8 @@ fun getOrCreateSiteDownloadDir(
 
                 // Create new one with the next number (taken from the name of the last folder itself, to handle cases where numbering is not contiguous)
                 var newDigits = siteFolders.size
-                val lastDigits = StringHelper.keepDigits(
-                    StringHelper.protect(
-                        siteFolders[siteFolders.size - 1].name
-                    ).lowercase(Locale.getDefault())
+                val lastDigits = keepDigits(
+                    (siteFolders[siteFolders.size - 1].name ?: "").lowercase(Locale.getDefault())
                         .replace(site.folder.lowercase(Locale.getDefault()), "")
                 )
                 if (lastDigits.isNotEmpty()) newDigits = lastDigits.toInt() + 1
@@ -1045,7 +1045,7 @@ fun shareContent(
     val subject = if ((1 == items.size)) items[0].title else ""
     val text = StringUtils.join(items.map { it.galleryUrl }, System.lineSeparator())
 
-    Helper.shareText(context, subject, text)
+    shareText(context, subject, text)
 }
 
 /**
@@ -1128,7 +1128,7 @@ fun matchFilesToImageList(
         val img = orderedImages[i]
         val imgName = removeLeadingZeroesAndExtensionCached(img.name)
 
-        var property: Pair<String?, Long?>?
+        var property: Pair<String, Long>?
         val isOnline = img.status == StatusContent.ONLINE
         if (isOnline) {
             property = Pair("", 0L)
@@ -1148,7 +1148,8 @@ fun matchFilesToImageList(
                             StatusContent.DOWNLOADED,
                             orderedImages.size
                         )
-                        newImage.setFileUri(localProperty.first).setSize(localProperty.second)
+                        newImage.fileUri = localProperty.first
+                        newImage.size = localProperty.second
                         result.add(max(0.0, (result.size - 1).toDouble()).toInt(), newImage)
                     }
                 }
@@ -1160,17 +1161,17 @@ fun matchFilesToImageList(
         if (property != null) {
             if (imgName.startsWith(THUMB_FILE_NAME)) {
                 coverFound = true
-                img.setIsCover(true)
+                img.isCover = true
             }
-            result.add(
-                img.setFileUri(property.first).setSize(property.second!!)
-                    .setStatus(if (isOnline) StatusContent.ONLINE else StatusContent.DOWNLOADED)
-            )
+            img.fileUri = property.first
+            img.size = property.second
+            img.status = if (isOnline) StatusContent.ONLINE else StatusContent.DOWNLOADED
+            result.add(img)
         } else Timber.i(">> image not found among files : %s", imgName)
     }
 
     // If no thumb found, set the 1st image as cover
-    if (!coverFound && result.isNotEmpty()) result[0].setIsCover(true)
+    if (!coverFound && result.isNotEmpty()) result[0].isCover = true
     return result
 }
 
@@ -1215,7 +1216,7 @@ fun createImageListFromFiles(
     files: List<DocumentFile>, targetStatus: StatusContent,
     startingOrder: Int, namePrefix: String
 ): List<ImageFile> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val result: MutableList<ImageFile> = ArrayList()
     var order = startingOrder
     var coverFound = false
@@ -1226,15 +1227,19 @@ fun createImageListFromFiles(
         val img = ImageFile()
         if (name.startsWith(THUMB_FILE_NAME)) {
             coverFound = true
-            img.setIsCover(true)
+            img.isCover = true
         } else order++
-        img.setName(getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.uri.toString())
-            .setStatus(targetStatus).setFileUri(f.uri.toString()).setSize(f.length())
-        img.setMimeType(getMimeTypeFromFileName(name))
+        img.name = getFileNameWithoutExtension(name)
+        img.order = order
+        img.url = f.uri.toString()
+        img.status = targetStatus
+        img.fileUri = f.uri.toString()
+        img.size = f.length()
+        img.mimeType = getMimeTypeFromFileName(name)
         result.add(img)
     }
     // If no thumb found, set the 1st image as cover
-    if (!coverFound && result.isNotEmpty()) result[0].setIsCover(true)
+    if (!coverFound && result.isNotEmpty()) result[0].isCover = true
     return result
 }
 
@@ -1253,7 +1258,7 @@ fun createImageListFromArchiveEntries(
     targetStatus: StatusContent, startingOrder: Int,
     namePrefix: String
 ): List<ImageFile> {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
     val result: MutableList<ImageFile> = ArrayList()
     var order = startingOrder
     // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
@@ -1262,11 +1267,15 @@ fun createImageListFromArchiveEntries(
         val name = namePrefix + path1
         val path = archiveFileUri.toString() + File.separator + path1
         val img = ImageFile()
-        if (name.startsWith(THUMB_FILE_NAME)) img.setIsCover(true)
+        if (name.startsWith(THUMB_FILE_NAME)) img.isCover = true
         else order++
-        img.setName(getFileNameWithoutExtension(name)).setOrder(order).setUrl(path)
-            .setStatus(targetStatus).setFileUri(path).setSize(size)
-        img.setMimeType(getMimeTypeFromFileName(name))
+        img.name = getFileNameWithoutExtension(name)
+        img.order = order
+        img.url = path
+        img.status = targetStatus
+        img.fileUri = path
+        img.size = size
+        img.mimeType = getMimeTypeFromFileName(name)
         result.add(img)
     }
     return result
@@ -1308,19 +1317,17 @@ fun launchBrowserFor(
  */
 fun getBlockedTags(content: Content): List<String> {
     var result: MutableList<String> = ArrayList()
-    if (Preferences.getBlockedTags().isNotEmpty()) {
+    if (Settings.blockedTags.isNotEmpty()) {
         val tags = content.attributes
-            .filter { a: Attribute -> a.type == AttributeType.TAG || a.type == AttributeType.LANGUAGE }
-            .map { obj: Attribute -> obj.name }
-        for (blocked in Preferences.getBlockedTags()) for (tag in tags) if (blocked.equals(
-                tag,
-                ignoreCase = true
-            ) || StringHelper.isPresentAsWord(blocked, tag!!)
-        ) {
-            if (result.isEmpty()) result = ArrayList()
-            result.add(tag)
-            break
-        }
+            .filter { it.type == AttributeType.TAG || it.type == AttributeType.LANGUAGE }
+            .map { it.name }
+        for (blocked in Settings.blockedTags)
+            for (tag in tags)
+                if (blocked.equals(tag, ignoreCase = true) || isPresentAsWord(blocked, tag)) {
+                    if (result.isEmpty()) result = ArrayList()
+                    result.add(tag)
+                    break
+                }
         if (tags.isNotEmpty() && tags.size == result.size) trigger(2)
     }
     return result.toList()
@@ -1369,7 +1376,7 @@ private fun reparseFromScratch(
     url: String,
     content: Content?
 ): Content? {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     val urlToLoad: String
     val site: Site?
@@ -1417,7 +1424,7 @@ private fun reparseFromScratch(
         val cookieStr = fetchResponse.second
         if (cookieStr.isNotEmpty()) params[HEADER_COOKIE_KEY] = cookieStr
 
-        newContent.setDownloadParams(serializeToJson<Map<String, String>>(params, MAP_STRINGS))
+        newContent.downloadParams = serializeToJson<Map<String, String>>(params, MAP_STRINGS)
         return newContent
     }
 }
@@ -1445,9 +1452,8 @@ fun fetchImageURLs(
         if (cookieStr.isNotEmpty()) {
             val downloadParams: MutableMap<String, String> = HashMap()
             downloadParams[HEADER_COOKIE_KEY] = cookieStr
-            content.setDownloadParams(
+            content.downloadParams =
                 serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
-            )
         }
     }
 
@@ -1467,7 +1473,7 @@ fun fetchImageURLs(
     if (contentDownloadParamsStr != null && contentDownloadParamsStr.length > 2) {
         val contentDownloadParams = parseDownloadParams(contentDownloadParamsStr)
         for (i in imgs) {
-            if (i.downloadParams != null && i.downloadParams.length > 2) {
+            if (i.downloadParams.length > 2) {
                 val imageDownloadParams = parseDownloadParams(i.downloadParams).toMutableMap()
                 // Content's params
                 contentDownloadParams.forEach {
@@ -1477,9 +1483,9 @@ fun fetchImageURLs(
                 // Referer, just in case
                 if (!imageDownloadParams.containsKey(HEADER_REFERER_KEY)) imageDownloadParams[HEADER_REFERER_KEY] =
                     content.site.url
-                i.setDownloadParams(serializeToJson(imageDownloadParams, MAP_STRINGS))
+                i.downloadParams = serializeToJson(imageDownloadParams, MAP_STRINGS)
             } else {
-                i.setDownloadParams(contentDownloadParamsStr)
+                i.downloadParams = contentDownloadParamsStr
             }
         }
     }
@@ -1487,8 +1493,9 @@ fun fetchImageURLs(
     // Cleanup and enrich generated objects
     for (img in imgs) {
         img.id = 0
-        img.setStatus(targetImageStatus)
-        img.setContentId(content.id)
+        // Don't change the status if the picture has been downloaded during parsing (Mangago)
+        if (img.status != StatusContent.DOWNLOADED) img.status = targetImageStatus
+        img.contentId = content.id
     }
 
     return imgs
@@ -1523,9 +1530,8 @@ fun purgeFiles(
         // Identify files to keep
         val namesToKeep = NameFilter { displayName: String ->
             val name = displayName.lowercase(Locale.getDefault())
-            (!removeJson && name.endsWith("json")) || (!removeCover && name.startsWith(
-                THUMB_FILE_NAME
-            ))
+            (!removeJson && name.endsWith("json"))
+                    || (!removeCover && name.startsWith(THUMB_FILE_NAME))
         }
         val filesToKeep = listFiles(context, bookFolder, namesToKeep)
 
@@ -1540,8 +1546,8 @@ fun purgeFiles(
                         context,
                         file.uri,
                         Uri.fromFile(tempFolder),
-                        StringHelper.protect(file.type),
-                        StringHelper.protect(file.name)
+                        file.type ?: "",
+                        file.name ?: ""
                     )
                     if (uri != null) {
                         val tmpFile = legacyFileFromUri(uri)
@@ -1769,7 +1775,7 @@ fun findDuplicate(
     // First find good rough candidates by searching for the longest word in the title
     var pHash = pHashIn
     val words =
-        StringHelper.cleanMultipleSpaces(StringHelper.simplify(content.title)).split(" ")
+        cleanMultipleSpaces(simplify(content.title)).split(" ")
     val longestWord = words.sortedWith(Comparator.comparingInt { it.length }).lastOrNull()
     // Too many resources consumed if the longest word is 1 character long
     if (null == longestWord || longestWord.length < 2) return null
@@ -1849,7 +1855,7 @@ fun isDownloadable(content: Content): Boolean {
     if (images.isNullOrEmpty()) return false
 
     // Pick a random picture
-    val img = images[Helper.getRandomInt(images.size)]
+    val img = images[getRandomInt(images.size)]
 
     // Peek it to see if downloads work
     val headers: MutableList<Pair<String, String>> = ArrayList()
@@ -1861,7 +1867,7 @@ fun isDownloadable(content: Content): Boolean {
     ) // Useful for Hitomi and Toonily
 
     try {
-        if (img.needsPageParsing()) {
+        if (img.needsPageParsing) {
             // Get cookies from the app jar
             var cookieStr = getCookies(img.pageUrl)
             // If nothing found, peek from the site
@@ -1906,7 +1912,7 @@ fun isDownloadable(chapter: Chapter): Boolean {
     val content = chapter.content.reach(chapter) ?: return false
 
     // Pick a random picture
-    val img = images[Helper.getRandomInt(images.size)]
+    val img = images[getRandomInt(images.size)]
 
     // Peek it to see if downloads work
     val headers: MutableList<Pair<String, String>> = ArrayList()
@@ -1914,7 +1920,7 @@ fun isDownloadable(chapter: Chapter): Boolean {
     headers.add(Pair(HEADER_REFERER_KEY, content.readerUrl))
 
     try {
-        if (img.needsPageParsing()) {
+        if (img.needsPageParsing) {
             // Get cookies from the app jar
             var cookieStr = getCookies(img.pageUrl)
             // If nothing found, peek from the site
@@ -1971,7 +1977,7 @@ private fun testDownloadPictureFromPage(
     } finally {
         parser.clear()
     }
-    img.setUrl(pages.first)
+    img.url = pages.first
     // Download the picture
     try {
         return testDownloadPicture(site, img, requestHeaders)
@@ -1983,7 +1989,7 @@ private fun testDownloadPictureFromPage(
         else throw e
     }
     // Trying with backup URL
-    img.setUrl(pages.second)
+    img.url = pages.second ?: ""
     return testDownloadPicture(site, img, requestHeaders)
 }
 
@@ -2040,31 +2046,33 @@ fun mergeContents(
     contentList: List<Content>,
     newTitle: String,
     useBookAsChapter: Boolean,
-    dao: CollectionDAO
+    dao: CollectionDAO,
+    onProgress: (Int, Int, String) -> Unit,
+    onComplete: () -> Unit
 ) {
-    Helper.assertNonUiThread()
+    assertNonUiThread()
 
     // New book inherits properties of the first content of the list
     // which takes "precedence" as the 1st chapter
     val firstContent = contentList[0]
 
     // Initiate a new Content
-    val mergedContent = Content()
-    mergedContent.setSite(firstContent.site)
-    mergedContent.setUrl(firstContent.url)
-    mergedContent.uniqueSiteId =
-        firstContent.uniqueSiteId + "_" // Not to create a copy of firstContent
-    mergedContent.setDownloadMode(firstContent.downloadMode)
-    mergedContent.setTitle(newTitle)
-    mergedContent.setCoverImageUrl(firstContent.coverImageUrl)
-    mergedContent.setUploadDate(firstContent.uploadDate)
-    mergedContent.setDownloadDate(Instant.now().toEpochMilli())
-    mergedContent.setDownloadCompletionDate(Instant.now().toEpochMilli())
-    mergedContent.setStatus(firstContent.status)
-    mergedContent.setFavourite(firstContent.isFavourite)
-    mergedContent.rating = firstContent.rating
-    mergedContent.bookPreferences = firstContent.bookPreferences
-    mergedContent.isManuallyMerged = true
+    val mergedContent = Content(
+        site = firstContent.site,
+        dbUrl = firstContent.url,
+        uniqueSiteId = firstContent.uniqueSiteId + "_", // Not to create a copy of firstContent
+        downloadMode = firstContent.downloadMode,
+        title = newTitle,
+        coverImageUrl = firstContent.coverImageUrl,
+        uploadDate = firstContent.uploadDate,
+        downloadDate = Instant.now().toEpochMilli(),
+        downloadCompletionDate = Instant.now().toEpochMilli(),
+        status = firstContent.status,
+        favourite = firstContent.favourite,
+        rating = firstContent.rating,
+        bookPreferences = firstContent.bookPreferences,
+        manuallyMerged = true
+    )
 
     // Merge attributes
     val mergedAttributes = contentList.flatMap { it.attributes }
@@ -2073,6 +2081,8 @@ fun mergeContents(
     // Create destination folder for new content
     val parentFolder: DocumentFile?
     var targetFolder: DocumentFile?
+    // TODO destination is an archive when all source contents are archives
+
     // External library root for external content
     if (mergedContent.status == StatusContent.EXTERNAL) {
         val externalRootFolder =
@@ -2104,7 +2114,6 @@ fun mergeContents(
         mergedContent,
         "Could not create target directory"
     )
-
     mergedContent.setStorageDoc(targetFolder)
 
     // Renumber all picture files and dispatch chapters
@@ -2115,33 +2124,86 @@ fun mergeContents(
     val mergedChapters: MutableList<Chapter> = ArrayList()
 
     var isError = false
+    var tempFolder: File? = null
+
     try {
         // Merge images and chapters
         var chapterOrder = 0
         var pictureOrder = 1
         var nbProcessedPics = 1
         var coverFound = false
-        var newChapter: Chapter?
-        var firstImageIsCover: Boolean
+
         for (c in contentList) {
-            newChapter = null
+            var newChapter: Chapter? = null
             // Create a default "content chapter" that represents the original book before merging
             val contentChapter = Chapter(chapterOrder++, c.galleryUrl, c.title)
-            contentChapter.setUniqueId(c.uniqueSiteId + "-" + contentChapter.order)
+            contentChapter.uniqueId = c.uniqueSiteId + "-" + contentChapter.order
 
             val imgs = c.imageList
-            firstImageIsCover = !imgs.any { it.isCover }
+            val firstImageIsCover = !imgs.any { it.isCover }
+            var imgIndex = -1
             for (img in imgs) {
-                if (!img.isReadable && coverFound) continue // Skip secondary covers if one exists
-                val newImg = ImageFile(img, false, false)
-                newImg.id = 0 // Force working on a new picture
-                newImg.setFileUri("") // Clear initial URI
-                newImg.setOrder(pictureOrder++)
-                newImg.computeName(nbMaxDigits)
-                if (firstImageIsCover && !coverFound) {
-                    newImg.setIsCover(true)
-                    coverFound = true
+                imgIndex++
+                // Unarchive images by chunks of 80MB max
+                if (c.isArchive) {
+                    tempFolder?.delete()
+                    tempFolder = getOrCreateCacheFolder(context, "tmp-merge-archive")
+                    if (null == tempFolder) throw ContentNotProcessedException(
+                        mergedContent,
+                        "Could not create temp unarchive folder"
+                    )
+                    var unarchivedBytes = 0L
+                    val picsToUnarchive: MutableList<ImageFile> = ArrayList()
+                    var idx = -1
+                    while (unarchivedBytes < 80.0 * 1024 * 1024) { // 80MB
+                        idx++
+                        if (idx + imgIndex >= imgs.size) break
+                        val picToUnarchive = imgs[imgIndex + idx]
+                        if (!picToUnarchive.fileUri.startsWith(c.storageUri)) continue // thumb
+                        picsToUnarchive.add(picToUnarchive)
+                        unarchivedBytes += picToUnarchive.size
+                    }
+                    val toExtract = picsToUnarchive.map {
+                        Pair(
+                            it.fileUri.replace(c.storageUri + File.separator, ""),
+                            it.id.toString()
+                        )
+                    }
+                    val unarchivedFiles = context.extractArchiveEntriesBlocking(
+                        Uri.parse(c.storageUri),
+                        tempFolder,
+                        toExtract
+                    )
+                    if (unarchivedFiles.size < picsToUnarchive.size) throw ContentNotProcessedException(
+                        mergedContent,
+                        "Issue when unarchiving " + unarchivedFiles.size + " " + picsToUnarchive.size
+                    )
+
+                    // Replace intial file URIs with unarchived files URIs
+                    picsToUnarchive.forEachIndexed { index, imageFile ->
+                        Timber.d(
+                            "Replacing %s with %s",
+                            imageFile.fileUri,
+                            unarchivedFiles[index].toString()
+                        )
+                        imageFile.fileUri = unarchivedFiles[index].toString()
+                    }
                 }
+
+                if (!img.isReadable && coverFound) continue // Skip thumbs from 2+ rank merged books
+                val newImg = ImageFile(img, populateContent = false, populateChapter = false)
+                newImg.id = 0 // Force working on a new picture
+                newImg.fileUri = "" // Clear initial URI
+                if (newImg.isReadable) {
+                    newImg.order = pictureOrder++
+                    newImg.computeName(nbMaxDigits)
+                } else {
+                    newImg.isCover = true
+                    newImg.order = 0
+                }
+                if (firstImageIsCover && !coverFound) newImg.isCover = true
+
+                if (newImg.isCover) coverFound = true
 
                 if (newImg.isReadable) {
                     val chapLink = img.linkedChapter
@@ -2151,36 +2213,27 @@ fun mergeContents(
                     } else {
                         if (chapLink.uniqueId.isEmpty()) chapLink.populateUniqueId()
                         if (null == newChapter || chapLink.uniqueId != newChapter.uniqueId) {
-                            newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++)
+                            newChapter = Chapter(chapLink)
+                            newChapter.order = chapterOrder++
                         }
                     }
-                    if (newChapter != null && !mergedChapters.contains(newChapter))
+                    if (!mergedChapters.contains(newChapter))
                         mergedChapters.add(newChapter)
                     newImg.setChapter(newChapter)
                 }
 
-                // If exists, move the picture to the merged books' folder
+                // If exists, move the picture file to the merged books' folder
                 if (isInLibrary(newImg.status)) {
-                    val extension = getExtensionFromUri(img.fileUri)
                     val newUri = copyFile(
                         context,
                         Uri.parse(img.fileUri),
                         targetFolder.uri,
                         newImg.mimeType,
-                        newImg.name + "." + extension
+                        newImg.name + "." + getExtensionFromUri(img.fileUri)
                     )
-                    if (newUri != null) newImg.setFileUri(newUri.toString())
+                    if (newUri != null) newImg.fileUri = newUri.toString()
                     else Timber.w("Could not move file %s", img.fileUri)
-                    EventBus.getDefault().post(
-                        ProcessEvent(
-                            ProcessEvent.Type.PROGRESS,
-                            R.id.generic_progress,
-                            0,
-                            nbProcessedPics++,
-                            0,
-                            nbImages
-                        )
-                    )
+                    onProgress.invoke(nbProcessedPics++, nbImages, c.title)
                 }
                 mergedImages.add(newImg)
             }
@@ -2188,12 +2241,15 @@ fun mergeContents(
     } catch (e: IOException) {
         Timber.w(e)
         isError = true
+    } finally {
+        // Delete temp files
+        tempFolder?.delete()
     }
 
     if (!isError) {
         mergedContent.setImageFiles(mergedImages)
         mergedContent.setChapters(mergedChapters) // Chapters have to be attached to Content too
-        mergedContent.setQtyPages(mergedImages.size - 1)
+        mergedContent.qtyPages = mergedImages.size - 1
         mergedContent.computeSize()
 
         val jsonFile = createJson(context, mergedContent)
@@ -2210,24 +2266,15 @@ fun mergeContents(
         if (customGroup != null) moveContentToCustomGroup(mergedContent, customGroup, dao)
 
         // If merged book is external, register it to the Beholder
-        if (StatusContent.EXTERNAL == mergedContent.status && parentFolder != null) registerContent(
-            context,
-            parentFolder.uri.toString(),
-            targetFolder,
-            mergedContent.id
-        )
+        if (StatusContent.EXTERNAL == mergedContent.status && parentFolder != null)
+            registerContent(
+                context,
+                parentFolder.uri.toString(),
+                targetFolder,
+                mergedContent.id
+            )
     }
-
-    EventBus.getDefault().postSticky(
-        ProcessEvent(
-            ProcessEvent.Type.COMPLETE,
-            R.id.generic_progress,
-            0,
-            nbImages,
-            0,
-            nbImages
-        )
-    )
+    onComplete.invoke()
 }
 
 fun getLocation(content: Content): StorageLocation {

@@ -22,39 +22,30 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.SEED_CONTENT
+import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SearchRecord
 import me.devsaki.hentoid.enums.Grouping
-import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.SearchCriteria
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.Type
-import me.devsaki.hentoid.util.addContent
-import me.devsaki.hentoid.util.createJson
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
-import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.fetchImageURLs
-import me.devsaki.hentoid.util.file.copyFile
-import me.devsaki.hentoid.util.getLocation
-import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.isDownloadable
-import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
-import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.parseFromScratch
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.purgeContent
@@ -64,17 +55,16 @@ import me.devsaki.hentoid.util.updateJson
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
+import me.devsaki.hentoid.workers.MergeWorker
+import me.devsaki.hentoid.workers.SplitWorker
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.DeleteData
+import me.devsaki.hentoid.workers.data.SplitMergeData
 import me.devsaki.hentoid.workers.data.UpdateJsonData
-import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.security.InvalidParameterException
-import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.math.floor
-import kotlin.math.log10
 
 class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     AndroidViewModel(application) {
@@ -186,7 +176,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (query.isNotEmpty()) {
             val searchUri =
                 buildSearchUri(null, query, Location.ANY.value, Type.ANY.value)
-            dao.insertSearchRecord(SearchRecord.fromContentUniversalSearch(searchUri), 10)
+            dao.insertSearchRecord(SearchRecord(searchUri), 10)
         }
         doSearchContent()
     }
@@ -204,7 +194,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         contentSearchManager.setContentType(metadata.contentType.value)
         newContentSearch.value = true
         if (!metadata.isEmpty()) dao.insertSearchRecord(
-            SearchRecord.fromContentAdvancedSearch(
+            SearchRecord(
                 searchUri,
                 metadata.toString(getApplication())
             ), 10
@@ -396,13 +386,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param contentId ID of the content whose completed state to toggle
      */
     private fun doToggleContentCompleted(contentId: Long) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theContent = dao.selectContent(contentId)
         if (theContent != null) {
             if (theContent.isBeingProcessed) return
-            theContent.isCompleted = !theContent.isCompleted
+            theContent.completed = !theContent.completed
             persistJson(getApplication(), theContent)
             dao.insertContentCore(theContent)
             return
@@ -429,7 +419,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param contentId ID of the content whose read stats to reset
      */
     private fun doResetReadStats(contentId: Long) {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theContent = dao.selectContent(contentId)
@@ -441,7 +431,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             theContent.lastReadDate = 0
             val imgs: List<ImageFile>? = theContent.imageFiles
             if (imgs != null) {
-                for (img in imgs) img.isRead = false
+                for (img in imgs) img.read = false
                 dao.insertImageFiles(imgs)
             }
             persistJson(getApplication(), theContent)
@@ -476,12 +466,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @return Resulting content
      */
     private fun doToggleContentFavourite(contentId: Long): Content {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theContent = dao.selectContent(contentId)
         if (theContent != null) {
-            theContent.isFavourite = !theContent.isFavourite
+            theContent.favourite = !theContent.favourite
             persistJson(getApplication(), theContent)
             dao.insertContent(theContent)
             return theContent
@@ -518,7 +508,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param targetRating Rating to set
      */
     private fun doRateContent(contentId: Long, targetRating: Int): Content {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theContent = dao.selectContent(contentId)
@@ -570,7 +560,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
                         // Merged books
                         val chaps = c.chaptersList.toMutableList() // Safe copy
-                        if (c.isManuallyMerged && chaps.isNotEmpty()) {
+                        if (c.manuallyMerged && chaps.isNotEmpty()) {
                             // Reparse main book from scratch if images are KO
                             if (reparseContent || !isDownloadable(c)) {
                                 if (!reparseContent) Timber.d("Pages unreachable; reparsing content")
@@ -606,7 +596,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         }
 
                         if (res != null) {
-                            res!!.downloadMode = Content.DownloadMode.DOWNLOAD
+                            res!!.downloadMode = DownloadMode.DOWNLOAD
                             if (areModifiedImages) {
                                 dao.insertChapters(res!!.chaptersList)
                                 dao.insertImageFiles(res!!.imageList)
@@ -627,7 +617,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             dao.updateContentProcessedFlag(c.id, false)
                             nbErrors.incrementAndGet()
                             onError.invoke(
-                                if (c.isManuallyMerged && chaps.isNotEmpty()) EmptyResultException(
+                                if (c.manuallyMerged && chaps.isNotEmpty()) EmptyResultException(
                                     getApplication<Application>().getString(R.string.download_canceled_merged)
                                 )
                                 else EmptyResultException(
@@ -683,8 +673,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                     )
                                 newContent.setImageFiles(newImages)
                                 // Associate new pages' cover with current cover file (that won't be deleted)
-                                newContent.cover.setStatus(StatusContent.DOWNLOADED).fileUri =
-                                    c.cover.fileUri
+                                newContent.cover.status = StatusContent.DOWNLOADED
+                                newContent.cover.fileUri = c.cover.fileUri
                                 // Save everything
                                 dao.replaceImageList(newContent.id, newImages)
                                 newContent
@@ -700,7 +690,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                     keepCover = true,
                                     isDownloadPrepurge = true
                                 )
-                                it.downloadMode = Content.DownloadMode.STREAM
+                                it.downloadMode = DownloadMode.STREAM
                                 val imgs: List<ImageFile> = it.imageList
                                 for (img in imgs) {
                                     img.fileUri = ""
@@ -708,8 +698,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                     img.status = StatusContent.ONLINE
                                 }
                                 dao.insertImageFiles(imgs)
-                                it.forceSize(0)
-                                it.setIsBeingProcessed(false)
+                                it.size = 0
+                                it.isBeingProcessed = false
                                 dao.insertContent(it)
                                 updateJson(getApplication(), it)
                             }
@@ -740,8 +730,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         onSuccess: Runnable?
     ) {
         val builder = DeleteData.Builder()
-        if (contents.isNotEmpty()) builder.setContentIds(contents.map { c -> c.id })
-        if (groups.isNotEmpty()) builder.setGroupIds(groups.map { g -> g.getId() })
+        if (contents.isNotEmpty()) builder.setContentIds(contents.map { it.id })
+        if (groups.isNotEmpty()) builder.setGroupIds(groups.map { it.id })
         builder.setDeleteGroupsOnly(deleteGroupsOnly)
         val workManager = WorkManager.getInstance(getApplication())
         val request: WorkRequest =
@@ -786,7 +776,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         // Update the "has custom book order" group flag
         localGroup.hasCustomBookOrder = true
         var order = 0
-        for (c in orderedContent) for (gi in localGroup.items) if (gi.content.targetId == c.id) {
+        for (c in orderedContent) for (gi in localGroup.getItems()) if (gi.content.targetId == c.id) {
             gi.order = order++
             dao.insertGroupItem(gi)
             break
@@ -918,13 +908,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @return Resulting group
      */
     private fun doToggleGroupFavourite(groupId: Long): Group {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given group still exists in DB
         val theGroup = dao.selectGroup(groupId)
             ?: throw InvalidParameterException("Invalid GroupId : $groupId")
 
-        theGroup.isFavourite = !theGroup.isFavourite
+        theGroup.favourite = !theGroup.favourite
 
         // Persist in it DB
         dao.insertGroup(theGroup)
@@ -961,7 +951,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param targetRating Rating to set
      */
     private fun doRateGroup(groupId: Long, targetRating: Int): Group {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theGroup = dao.selectGroup(groupId)
@@ -1019,188 +1009,43 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
-        appendBookTitle: Boolean,
-        deleteAfterMerging: Boolean,
-        onSuccess: Runnable
+        useBookAsChapter: Boolean,
+        deleteAfterMerging: Boolean
     ) {
         if (contentList.isEmpty()) return
-
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    // Flag the content as "being deleted" (triggers blink animation)
-                    if (deleteAfterMerging)
-                        contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
-                    mergeContents(
-                        getApplication(),
-                        contentList,
-                        newTitle,
-                        appendBookTitle,
-                        dao
-                    )
-                }
-                if (deleteAfterMerging) deleteItems(contentList, emptyList(), false, null)
-                onSuccess.run()
-            } catch (t: Throwable) {
-                Timber.e(t)
-                if (deleteAfterMerging)
-                    contentList.forEach { dao.updateContentProcessedFlag(it.id, false) }
-            }
-        }
+        val builder = SplitMergeData.Builder()
+        builder.setOperation(1)
+        builder.setContentIds(contentList.map { it.id })
+        builder.setNewTitle(newTitle)
+        builder.setUseBooksAsChapters(useBookAsChapter)
+        builder.setDeleteAfterOps(deleteAfterMerging)
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            R.id.merge_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequest.Builder(MergeWorker::class.java)
+                .setInputData(builder.data)
+                .addTag(WORK_CLOSEABLE).build()
+        )
     }
 
     fun splitContent(
         content: Content,
-        chapters: List<Chapter>,
-        onSuccess: Runnable
+        chapters: List<Chapter>
     ) {
-        var result = false
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    doSplitContent(content, chapters)
-                    result = true
-                } catch (t: ContentNotProcessedException) {
-                    Timber.e(t)
-                }
-            }
-            if (result) onSuccess.run()
-        }
-    }
-
-    @Throws(Exception::class)
-    private fun doSplitContent(content: Content, chapters: List<Chapter>) {
-        Helper.assertNonUiThread()
-        val images: List<ImageFile>? = content.imageFiles
-        if (chapters.isEmpty()) throw ContentNotProcessedException(content, "No chapters detected")
-        if (images.isNullOrEmpty()) throw ContentNotProcessedException(
-            content,
-            "No images detected"
+        val builder = SplitMergeData.Builder()
+        builder.setOperation(0)
+        builder.setContentIds(listOf(content.id))
+        builder.setChapterIdsForSplit(chapters.map { it.id })
+        //builder.setDeleteAfterOps(deleteAfterMerging)
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            R.id.split_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequest.Builder(SplitWorker::class.java)
+                .setInputData(builder.data)
+                .addTag(WORK_CLOSEABLE).build()
         )
-        var nbProcessedPics = 0
-        val nbImages =
-            chapters.flatMap { c -> c.imageList }.count { imf -> imf.isReadable }
-        for (chap in chapters) {
-            val splitContent = createContentFromChapter(content, chap)
-
-            // Create a new folder for the split content
-            val location = getLocation(content)
-            val targetFolder = getOrCreateContentDownloadDir(
-                getApplication(),
-                splitContent,
-                location,
-                true
-            )
-            if (null == targetFolder || !targetFolder.exists()) throw ContentNotProcessedException(
-                splitContent,
-                "Could not create target directory"
-            )
-            splitContent.storageDoc = targetFolder
-
-            // Copy the corresponding images to that folder
-            val splitContentImages = splitContent.imageFiles
-                ?: throw ContentNotProcessedException(
-                    splitContent,
-                    "No images detected in generated book"
-                )
-            for (img in splitContentImages) {
-                if (img.status == StatusContent.DOWNLOADED) {
-                    val extension = getExtensionFromUri(img.fileUri)
-                    val newUri = copyFile(
-                        getApplication(),
-                        Uri.parse(img.fileUri),
-                        targetFolder.uri,
-                        img.mimeType,
-                        img.name + "." + extension
-                    )
-                    if (newUri != null) img.fileUri =
-                        newUri.toString() else Timber.w("Could not move file %s", img.fileUri)
-                    EventBus.getDefault().post(
-                        ProcessEvent(
-                            ProcessEvent.Type.PROGRESS,
-                            R.id.generic_progress,
-                            0,
-                            nbProcessedPics++,
-                            0,
-                            nbImages
-                        )
-                    )
-                }
-            }
-
-            // Save the JSON for the new book
-            val jsonFile = createJson(getApplication(), splitContent)
-            if (jsonFile != null) splitContent.jsonUri = jsonFile.uri.toString()
-
-            // Save new content (incl. onn-custom group operations)
-            addContent(getApplication(), dao, splitContent)
-
-            // Set custom group, if any
-            val customGroups = content.getGroupItems(Grouping.CUSTOM)
-            if (customGroups.isNotEmpty())
-                moveContentToCustomGroup(splitContent, customGroups[0].getGroup(), dao)
-        }
-        EventBus.getDefault().postSticky(
-            ProcessEvent(
-                ProcessEvent.Type.COMPLETE,
-                R.id.generic_progress,
-                0,
-                nbImages,
-                0,
-                nbImages
-            )
-        )
-    }
-
-    private fun createContentFromChapter(content: Content, chapter: Chapter): Content {
-        val splitContent = Content()
-        var url = StringHelper.protect(chapter.url)
-        if (url.isEmpty()) { // Default (e.g. manually created chapters)
-            url = content.url
-            splitContent.site = content.site
-        } else { // Detect site and cleanup full URL (e.g. previously merged books)
-            val site = Site.searchByUrl(url)
-            if (site != null && site != Site.NONE) {
-                splitContent.site = site
-                url = Content.transformRawUrl(site, url)
-            }
-        }
-        splitContent.url = url
-        splitContent.populateUniqueSiteId()
-        var id = chapter.uniqueId
-        if (id.isEmpty()) id = content.uniqueSiteId + "_" // Don't create a copy of content
-        splitContent.uniqueSiteId = id
-        splitContent.downloadMode = content.downloadMode
-        var newTitle = content.title
-        if (!newTitle.contains(chapter.name)) newTitle += " - " + chapter.name // Avoid swelling the title after multiple merges and splits
-        splitContent.title = newTitle
-        splitContent.uploadDate = content.uploadDate
-        splitContent.downloadDate = Instant.now().toEpochMilli()
-        splitContent.status = content.status
-        splitContent.bookPreferences = content.bookPreferences
-        var images: List<ImageFile>? = chapter.imageFiles
-        if (images != null) {
-            images = chapter.imageList.sortedBy { imf -> imf.order }
-            val nbMaxDigits = floor(log10(images.size.toDouble()) + 1).toInt()
-            for ((position, img) in images.withIndex()) {
-                img.id = 0 // Force working on a new picture
-                img.setChapter(null)
-                img.content.target = null // Clear content
-                img.setIsCover(0 == position)
-                img.order = position
-                img.computeName(nbMaxDigits)
-            }
-            splitContent.setImageFiles(images)
-            splitContent.setChapters(null)
-            splitContent.qtyPages = images.count { imf -> imf.isReadable }
-            splitContent.computeSize()
-            var coverImageUrl = StringHelper.protect(images[0].url)
-            if (coverImageUrl.isEmpty()) coverImageUrl = content.coverImageUrl
-            splitContent.coverImageUrl = coverImageUrl
-        }
-        val splitAttributes = listOf(content).flatMap { c -> c.attributes }
-        splitContent.addAttributes(splitAttributes)
-        return splitContent
     }
 
     fun clearSearchHistory() {

@@ -3,8 +3,10 @@ package me.devsaki.hentoid.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.text.TextUtils
 import androidx.preference.PreferenceManager
 import me.devsaki.hentoid.enums.PictureEncoder
+import me.devsaki.hentoid.enums.Site
 import kotlin.reflect.KProperty
 
 object Settings {
@@ -29,6 +31,7 @@ object Settings {
     var libraryDisplayGridTitle: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_TITLE, true)
     var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
     var libraryGridCardWidthDP: Int by IntSetting(Key.LIBRARY_GRID_CARD_WIDTH, 150)
+    var activeSites: List<Site> by ListSiteSetting("active_sites", Value.ACTIVE_SITES)
 
     // DOWNLOADER
 
@@ -77,6 +80,7 @@ object Settings {
     var isBrowserForceLightMode: Boolean by BoolSetting(Key.WEB_FORCE_LIGHTMODE, false)
     var isBrowserLanguageFilter: Boolean by BoolSetting("pref_browser_language_filter", false)
     var browserLanguageFilterValue: String by StringSetting("pref_language_filter_value", "english")
+    var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
 
     // READER
     var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)
@@ -142,6 +146,35 @@ object Settings {
         }
     }
 
+    private class ListStringSetting(val key: String) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): List<String> {
+            return sharedPreferences.getString(key, "")
+                ?.split(",")
+                ?.map { it.trim() }
+                ?.filterNot { it.isEmpty() }
+                ?: emptyList()
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: List<String>) {
+            sharedPreferences.edit().putString(key, TextUtils.join(",", value)).apply()
+        }
+    }
+
+    private class ListSiteSetting(val key: String, val default: String) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): List<Site> {
+            return sharedPreferences.getString(key, default)
+                ?.split(",")
+                ?.distinct()
+                ?.map { Site.searchByCode(it.toLong()) }
+                ?: emptyList()
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: List<Site>) {
+            val codes = value.map { it.code }.distinct()
+            sharedPreferences.edit().putString(key, TextUtils.join(",", codes)).apply()
+        }
+    }
+
 
     // Consts
     object Key {
@@ -160,10 +193,25 @@ object Settings {
         const val WEB_AUGMENTED_BROWSER = "pref_browser_augmented"
         const val WEB_ADBLOCKER = "WEB_ADBLOCKER"
         const val WEB_FORCE_LIGHTMODE = "WEB_FORCE_LIGHTMODE"
+        const val DL_BLOCKED_TAGS = "pref_dl_blocked_tags"
         const val TEXT_SELECT_MENU = "TEXT_SELECT_MENU"
     }
 
     object Value {
+        private val DEFAULT_SITES = arrayOf(
+            Site.NHENTAI,
+            Site.HITOMI,
+            Site.ASMHENTAI,
+            Site.TSUMINO,
+            Site.PURURIN,
+            Site.EHENTAI,
+            Site.FAKKU2,
+            Site.NEXUS,
+            Site.MUSES,
+            Site.DOUJINS
+        )
+        val ACTIVE_SITES: String = TextUtils.join(",", DEFAULT_SITES.map { it.code })
+
         const val ARCHIVE_TARGET_FOLDER_DOWNLOADS = "downloads"
 
         const val LIBRARY_DISPLAY_LIST = 0

@@ -22,12 +22,13 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogToolsAppLogsBinding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.shareFile
+import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.viewholders.TextItem
 import timber.log.Timber
 import java.time.format.DateTimeFormatter
@@ -84,7 +85,7 @@ class LogsDialogFragment : BaseDialogFragment<Nothing>() {
         for (file in files) {
             var fileName = file.name
             fileName = fileName?.lowercase(Locale.getDefault()) ?: ""
-            val timeStr = Helper.formatEpochToDate(file.lastModified(), formatter)
+            val timeStr = formatEpochToDate(file.lastModified(), formatter)
             val label = "$fileName ($timeStr)"
             itemAdapter.add(TextItem(label, file, false))
         }
@@ -134,7 +135,7 @@ class LogsDialogFragment : BaseDialogFragment<Nothing>() {
             .setTextColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
             .setMenuColor(ContextCompat.getColor(requireContext(), R.color.dark_gray))
-            .setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
+            .setTextSize(dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
             .setAutoDismiss(true)
             .build()
         powerMenu.onMenuItemClickListener =

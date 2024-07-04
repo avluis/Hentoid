@@ -37,10 +37,10 @@ public class EHentaiGalleriesMetadata {
         public Content update(@NonNull Content content, @NonNull String url, @NonNull Site site, boolean updatePages) {
             content.setSite(site);
 
-            content.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
-                    .setCoverImageUrl(thumb)
-                    .setTitle(cleanup(title))
-                    .setStatus(StatusContent.SAVED);
+            content.setUrl("/" + gid + "/" + token); // The rest will not be useful anyway because of temporary keys
+            content.setCoverImageUrl(thumb);
+            content.setTitle(cleanup(title));
+            content.setStatus(StatusContent.SAVED);
 
             if (posted != null && !posted.isEmpty())
                 content.setUploadDate(Long.parseLong(posted) * 1000);

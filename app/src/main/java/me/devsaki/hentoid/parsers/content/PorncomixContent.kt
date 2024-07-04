@@ -11,8 +11,8 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.YoastGalleryMetadata
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -58,12 +58,12 @@ class PorncomixContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.PORNCOMIX)
+        content.site = Site.PORNCOMIX
         title = cleanup(title)
-        if (title.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
-        content.setTitle(title)
-        content.setUrl(url)
-        content.setCoverImageUrl(coverUrl)
+        if (title.isEmpty()) return Content(status = StatusContent.IGNORED)
+        content.title = title
+        content.url = url
+        content.coverImageUrl = coverUrl
 
         metadata?.let {
             if (it.childNodeSize() > 0) {
@@ -74,9 +74,8 @@ class PorncomixContent : BaseContentParser() {
                     )?.let { galleryMeta ->
                         val publishDate =
                             galleryMeta.datePublished // e.g. 2021-01-27T15:20:38+00:00
-                        if (publishDate.isNotEmpty()) content.setUploadDate(
-                            Helper.parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
-                        )
+                        if (publishDate.isNotEmpty()) content.uploadDate =
+                            parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
                     }
                 } catch (e: IOException) {
                     Timber.i(e)
@@ -112,7 +111,7 @@ class PorncomixContent : BaseContentParser() {
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }

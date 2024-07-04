@@ -63,10 +63,10 @@ class PururinContent : BaseContentParser() {
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         var theUrl = url
-        content.setSite(Site.PURURIN)
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        content.site = Site.PURURIN
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         if (url.endsWith("/")) theUrl = url.substring(0, url.length - 1)
-        content.setUrl(theUrl)
+        content.url = theUrl
 
         return if (GALLERY_PATTERN.matcher(url).find())
             updateGallery(content, updateImages)
@@ -75,12 +75,12 @@ class PururinContent : BaseContentParser() {
 
     private fun updateSingleChapter(url: String, content: Content, updateImages: Boolean): Content {
         if (!coverUrl.startsWith("http")) coverUrl += getHttpProtocol(url) + ":" + coverUrl
-        content.setCoverImageUrl(coverUrl)
+        content.coverImageUrl = coverUrl
 
         title?.let {
-            content.setTitle(if (it.isNotEmpty()) cleanup(it[0]) else NO_TITLE)
+            content.title = if (it.isNotEmpty()) cleanup(it[0]) else NO_TITLE
         } ?: {
-            content.setTitle(NO_TITLE)
+            content.title = NO_TITLE
         }
 
         if (updateImages) {
@@ -95,7 +95,7 @@ class PururinContent : BaseContentParser() {
                     if (s.trim().equals("pages", ignoreCase = true)) pagesFound = true
                 }
             }
-            content.setQtyPages(qtyPages)
+            content.qtyPages = qtyPages
             content.setImageFiles(emptyList())
         }
         val attributes = AttributeMap()
@@ -130,18 +130,18 @@ class PururinContent : BaseContentParser() {
 
     private fun updateGallery(content: Content, updateImages: Boolean): Content {
         collectionImgs?.let {
-            if (it.isNotEmpty()) content.setCoverImageUrl(getImgSrc(it[0]))
+            if (it.isNotEmpty()) content.coverImageUrl = getImgSrc(it[0])
         }
 
         collectionTitle?.let {
-            content.setTitle(if (it.isNotEmpty()) cleanup(it) else NO_TITLE)
+            content.title = if (it.isNotEmpty()) cleanup(it) else NO_TITLE
         } ?: {
-            content.setTitle(NO_TITLE)
+            content.title = NO_TITLE
         }
 
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }

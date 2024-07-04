@@ -43,6 +43,7 @@ import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.databinding.FragmentQueueBinding
@@ -61,13 +62,13 @@ import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.formatIntAsStr
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.util.openReader
@@ -243,7 +244,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 this@QueueFragment
             )
                 .withSwipeLeft(
-                    Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list)
+                    dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list)
                 )
                 .withSensitivity(1.5f)
                 .withSurfaceThreshold(0.3f)
@@ -681,8 +682,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 // Update book progress bar
                 // NB : use the instance _inside the adapter_ to pass values
                 fastAdapter.getItemById(content.uniqueHash())?.first?.content?.let { c ->
-                    c.setProgress(pagesOKDisplay.toLong() + pagesKO)
-                    c.setDownloadedBytes(downloadedSizeB)
+                    c.progress = pagesOKDisplay.toLong() + pagesKO
+                    c.downloadedBytes = downloadedSizeB
                     c.qtyPages = totalPagesDisplay
                     updateProgress(content, false)
                 }
@@ -693,7 +694,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
                 val message = StringBuilder()
                 val processedPagesFmt =
-                    StringHelper.formatIntAsStr(pagesOKDisplay, totalPagesDisplay.toString().length)
+                    formatIntAsStr(pagesOKDisplay, totalPagesDisplay.toString().length)
                 message.append(
                     resources.getString(
                         R.string.queue_bottom_bar_processed, processedPagesFmt, totalPagesDisplay
@@ -1095,7 +1096,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     show(menu,
                         it.queueList,
                         { position: Int, _: PowerMenuItem? ->
-                            onNewModeSelected(position)
+                            onNewModeSelected(DownloadMode.fromValue(position))
                             menu.dismiss()
                         },
                         { leaveSelectionMode() }
@@ -1139,7 +1140,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         updateSelectionToolbarVis(false)
     }
 
-    private fun onNewModeSelected(downloadMode: Int) {
+    private fun onNewModeSelected(downloadMode: DownloadMode) {
         val selection = selectExtension.selections
         val selectedContentIds = selection
             .map { pos -> itemAdapter.getAdapterItem(pos).content }

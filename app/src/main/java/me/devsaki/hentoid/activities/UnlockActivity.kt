@@ -21,10 +21,10 @@ import me.devsaki.hentoid.core.startBiometric
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.pin.UnlockPinDialogFragment
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
+import me.devsaki.hentoid.util.pause
 
 /**
  * This activity asks for a 4 digit pin if it is set and then transitions to another activity
@@ -71,7 +71,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
             // Close the app on another thread as this one is still used by the biometrics UI
             lifecycleScope.launch {
                 withContext(Dispatchers.Default) {
-                    Helper.pause(500)
+                    pause(500)
                     finishAndRemoveTask()
                 }
             }

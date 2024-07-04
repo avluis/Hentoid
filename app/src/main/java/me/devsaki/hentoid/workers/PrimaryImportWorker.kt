@@ -21,6 +21,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.QueueRecord
@@ -43,7 +44,6 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.exception.ParseException
@@ -226,7 +226,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         siteFolders.size,
                         foldersProcessed,
                         0,
-                        StringHelper.protect(f.name)
+                        f.name ?: ""
                     )
                     bookFolders.addAll(explorer.listFolders(context, f))
                 }
@@ -463,14 +463,14 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         if (cleanNoImages) {
             bookFiles = explorer.listFiles(context, bookFolder, null)
             val nbImages = bookFiles.count { f ->
-                isSupportedImage(StringHelper.protect(f.name))
+                isSupportedImage(f.name ?: "")
             }
             if (0 == nbImages && !explorer.hasFolders(bookFolder)) { // No supported images nor subfolders
                 var doRemove = true
                 try {
                     content = importJson(context, bookFolder, bookFiles, dao)
                     // Don't delete books that are _not supposed to_ have downloaded images
-                    if (content != null && content.downloadMode == Content.DownloadMode.STREAM)
+                    if (content != null && content.downloadMode == DownloadMode.STREAM)
                         doRemove = false
                 } catch (e: ParseException) {
                     trace(
@@ -521,8 +521,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     )
                     return
                 }
-                var contentImages: List<ImageFile>?
-                contentImages = if (content.imageFiles != null) content.imageFiles else ArrayList()
+                var contentImages = content.imageList
                 if (rename) {
                     val canonicalBookFolderName = formatBookFolderName(content)
                     val currentPathParts = bookFolder.uri.pathSegments
@@ -563,15 +562,13 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 }
 
                 // Attach image file Uri's to the book's images
-                val imageFiles = bookFiles.filter { f ->
-                    isSupportedImage(StringHelper.protect(f.name))
-                }
+                val imageFiles = bookFiles.filter { isSupportedImage(it.name ?: "") }
                 if (imageFiles.isNotEmpty()) {
                     // No images described in the JSON -> recreate them
-                    if (contentImages!!.isEmpty()) {
+                    if (contentImages.isEmpty()) {
                         contentImages = createImageListFromFiles(imageFiles)
                         content.setImageFiles(contentImages)
-                        content.getCover().setUrl(content.coverImageUrl)
+                        content.cover.url = content.coverImageUrl
                     } else { // Existing images described in the JSON
                         // CLEANUPS
                         var cleaned = false
@@ -603,9 +600,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         }
                         if (coverImgs.size < contentImages.size) {
                             contentImages = coverImgs
-                            val nbCovers =
-                                contentImages.count { obj: ImageFile -> obj.isCover }
-                            content.setQtyPages(contentImages.size - nbCovers)
+                            val nbCovers = contentImages.count { it.isCover }
+                            content.qtyPages = contentImages.size - nbCovers
                             cleaned = true
                         }
 
@@ -616,17 +612,19 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     }
                     if (renumberPages) renumberPages(context, content, contentImages, log)
                 } else if (Preferences.isImportQueueEmptyBooks()
-                    && !content.isManuallyMerged && content.downloadMode == Content.DownloadMode.DOWNLOAD
+                    && !content.manuallyMerged && content.downloadMode == DownloadMode.DOWNLOAD
                 ) { // If no image file found, it goes in the errors queue
-                    if (!isInQueue(content.status)) content.setStatus(StatusContent.ERROR)
+                    if (!isInQueue(content.status)) content.status = StatusContent.ERROR
                     val errors: MutableList<ErrorRecord> = ArrayList()
                     errors.add(
                         ErrorRecord(
-                            ErrorType.IMPORT,
-                            "",
-                            applicationContext.resources.getQuantityString(R.plurals.book, 1),
-                            "No local images found when importing - Please redownload",
-                            Instant.now()
+                            type = ErrorType.IMPORT,
+                            contentPart = applicationContext.resources.getQuantityString(
+                                R.plurals.book,
+                                1
+                            ),
+                            description = "No local images found when importing - Please redownload",
+                            timestamp = Instant.now()
                         )
                     )
                     content.setErrorLog(errors)
@@ -684,7 +682,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             if (existingFlaggedContent != null) {
                 try {
                     val newJson = jsonToFile(
-                        context, JsonContent.fromEntity(existingFlaggedContent),
+                        context, JsonContent(existingFlaggedContent),
                         JsonContent::class.java, bookFolder, JSON_FILE_NAME_V2
                     )
                     existingFlaggedContent.jsonUri = newJson.uri.toString()
@@ -750,7 +748,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         null
                     )
                     val newJson = jsonToFile(
-                        context, JsonContent.fromEntity(storedContent),
+                        context, JsonContent(storedContent),
                         JsonContent::class.java, bookFolder, JSON_FILE_NAME_V2
                     )
                     storedContent.jsonUri = newJson.uri.toString()
@@ -799,7 +797,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 bookFolder.uri.toString()
             )
         }
-        val bookName = StringHelper.protect(bookFolder.name)
+        val bookName = bookFolder.name ?: ""
         notificationManager.notify(
             ImportProgressNotification(
                 bookName,
@@ -869,13 +867,13 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             naturalOrder++
             if (img.order != naturalOrder) {
                 nbRenumbered++
-                img.setOrder(naturalOrder)
+                img.order = naturalOrder
                 img.computeName(nbMaxDigits)
                 val file = getDocumentFromTreeUriString(context, img.fileUri)
                 if (file != null) {
-                    val extension = getExtension(StringHelper.protect(file.name))
+                    val extension = getExtension(file.name ?: "")
                     file.renameTo(img.name + "." + extension)
-                    img.setFileUri(file.uri.toString())
+                    img.fileUri = file.uri.toString()
                 }
             }
             if (nbRenumbered > 0) EventBus.getDefault().post(
@@ -924,7 +922,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         val contentCollection = deserialiseCollectionJson(context, queueFile)
         if (null != contentCollection) {
             var queueSize = dao.countAllQueueBooks().toInt()
-            val queuedContent = contentCollection.queue
+            val queuedContent = contentCollection.getEntityQueue()
             eventProgress(STEP_4_QUEUE_FINAL, queuedContent.size, 0, 0)
             trace(
                 Log.INFO,
@@ -996,7 +994,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         dao: CollectionDAO,
         log: MutableList<LogEntry>
     ) {
-        val groups = contentCollection.getGroups(Grouping.CUSTOM)
+        val groups = contentCollection.getEntityGroups(Grouping.CUSTOM)
         eventProgress(STEP_GROUPS, groups.size, 0, 0)
         trace(
             Log.INFO,
@@ -1034,7 +1032,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         dao: CollectionDAO,
         log: MutableList<LogEntry>
     ) {
-        val editedArtistGroups = contentCollection.getGroups(grouping)
+        val editedArtistGroups = contentCollection.getEntityGroups(grouping)
         trace(
             Log.INFO,
             STEP_GROUPS,
@@ -1047,8 +1045,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             // Only add if it isn't a duplicate
             val duplicate = dao.selectGroupByName(grouping.id, g.name)
             if (null == duplicate) dao.insertGroup(g) else { // If it is, copy attributes
-                duplicate.setFavourite(g.isFavourite)
-                duplicate.setRating(g.rating)
+                duplicate.favourite = g.favourite
+                duplicate.rating = g.rating
                 dao.insertGroup(duplicate)
             }
         }
@@ -1071,7 +1069,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0)
         val contentCollection = deserialiseCollectionJson(context, bookmarksFile)
         if (null != contentCollection) {
-            val bookmarks = contentCollection.bookmarks
+            val bookmarks = contentCollection.getEntityBookmarks()
             eventProgress(STEP_4_QUEUE_FINAL, bookmarks.size, 0, 0)
             trace(
                 Log.INFO,
@@ -1107,7 +1105,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0)
         val contentCollection = deserialiseCollectionJson(context, rulesFile)
         if (null != contentCollection) {
-            val rules = contentCollection.renamingRules
+            val rules = contentCollection.getEntityRenamingRules()
             eventProgress(STEP_4_QUEUE_FINAL, rules.size, 0, 0)
             trace(
                 Log.INFO,
@@ -1155,12 +1153,12 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         dao: CollectionDAO
     ): Content? {
         var file = bookFiles.firstOrNull { f ->
-            StringHelper.protect(f.name) == JSON_FILE_NAME_V2
+            (f.name ?: "") == JSON_FILE_NAME_V2
         }
         if (file != null) return importJsonV2(context, file, folder, dao)
-        file = bookFiles.firstOrNull { f -> StringHelper.protect(f.name) == JSON_FILE_NAME }
+        file = bookFiles.firstOrNull { f -> (f.name ?: "") == JSON_FILE_NAME }
         if (file != null) return importJsonV1(context, file, folder)
-        file = bookFiles.firstOrNull { f -> StringHelper.protect(f.name) == JSON_FILE_NAME_OLD }
+        file = bookFiles.firstOrNull { f -> (f.name ?: "") == JSON_FILE_NAME_OLD }
         return if (file != null) importJsonLegacy(context, file, folder) else null
     }
 
@@ -1252,7 +1250,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 val contentV2 = content.toV2Content()
                 contentV2.setStorageDoc(parentFolder)
                 val newJson = jsonToFile(
-                    context, JsonContent.fromEntity(contentV2),
+                    context, JsonContent(contentV2),
                     JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
                 )
                 contentV2.jsonUri = newJson.uri.toString()
@@ -1285,7 +1283,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 val contentV2 = content.toV2Content()
                 contentV2.setStorageDoc(parentFolder)
                 val newJson = jsonToFile(
-                    context, JsonContent.fromEntity(contentV2),
+                    context, JsonContent(contentV2),
                     JsonContent::class.java, parentFolder, JSON_FILE_NAME_V2
                 )
                 contentV2.jsonUri = newJson.uri.toString()

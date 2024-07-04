@@ -14,6 +14,7 @@ import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -30,9 +31,7 @@ import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createImageListFromFolder
 import me.devsaki.hentoid.util.file.findFile
@@ -92,7 +91,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
 
         startImport(
             applicationContext,
-            StringHelper.protect(data.jsonUri),
+            data.jsonUri ?: "",
             data.isAdd,
             data.isImportLibrary,
             data.emptyBooksOption,
@@ -135,18 +134,18 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
 
         // Done in one shot
         if (importBookmarks) {
-            val bookmarks = collection.bookmarks
+            val bookmarks = collection.getEntityBookmarks()
             totalItems += bookmarks.size
             importBookmarks(dao, bookmarks)
             nbOK += bookmarks.size
         }
         val contentToImport: MutableList<JsonContent> = ArrayList()
-        if (importLibrary) contentToImport.addAll(collection.jsonLibrary)
-        if (importQueue) contentToImport.addAll(collection.jsonQueue)
+        if (importLibrary) contentToImport.addAll(collection.library)
+        if (importQueue) contentToImport.addAll(collection.queue)
         queueSize = dao.countAllQueueBooks().toInt()
         totalItems += contentToImport.size
         if (importCustomGroups) {
-            val customGroups = collection.getGroups(Grouping.CUSTOM)
+            val customGroups = collection.getEntityGroups(Grouping.CUSTOM)
             totalItems += customGroups.size
             // Chain group import followed by content import
             runImportItems(
@@ -224,7 +223,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                 val newContentId = addContent(context, dao, c)
                 val lst: MutableList<QueueRecord> = ArrayList()
                 val qr = QueueRecord(newContentId, queueSize++)
-                qr.isFrozen = c.isFrozen
+                qr.frozen = c.isFrozen
                 lst.add(qr)
                 dao.updateQueue(lst)
                 return
@@ -232,24 +231,22 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             when (emptyBooksOption) {
                 MetaImportDialogFragment.IMPORT_AS_STREAMED -> {
                     // Greenlighted if images exist and are available online
-                    if (c.imageList.size > 0
+                    if (c.imageList.isNotEmpty()
                         && isDownloadable(c)
                     ) {
-                        c.downloadMode = Content.DownloadMode.STREAM
+                        c.downloadMode = DownloadMode.STREAM
                         c.status = StatusContent.DOWNLOADED
-                        val imgs: List<ImageFile>? = c.imageFiles
-                        if (imgs != null) {
-                            val newImages = imgs.map { i: ImageFile ->
-                                ImageFile.fromImageUrl(
-                                    i.order,
-                                    i.url,
-                                    StatusContent.ONLINE,
-                                    imgs.size
-                                )
-                            }
-                            c.setImageFiles(newImages)
+                        val imgs = c.imageFiles
+                        val newImages = imgs.map { i: ImageFile ->
+                            ImageFile.fromImageUrl(
+                                i.order,
+                                i.url,
+                                StatusContent.ONLINE,
+                                imgs.size
+                            )
                         }
-                        c.forceSize(0)
+                        c.setImageFiles(newImages)
+                        c.size = 0
                     } else { // import as empty if content unavailable online
                         c.setImageFiles(emptyList())
                         c.clearChapters()
@@ -268,11 +265,10 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                     val errors: MutableList<ErrorRecord> = ArrayList()
                     errors.add(
                         ErrorRecord(
-                            ErrorType.IMPORT,
-                            "",
-                            context.resources.getQuantityString(R.plurals.book, 1),
-                            "No local images found when importing - Please redownload",
-                            Instant.now()
+                            type = ErrorType.IMPORT,
+                            contentPart = context.resources.getQuantityString(R.plurals.book, 1),
+                            description = "No local images found when importing - Please redownload",
+                            timestamp = Instant.now()
                         )
                     )
                     c.setErrorLog(errors)
@@ -302,7 +298,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                 )
             ) {
                 // Cache folder Uri
-                c.storageDoc = f
+                c.setStorageDoc(f)
                 // Cache JSON Uri
                 val json = findFile(context, f, JSON_FILE_NAME_V2)
                 if (json != null) c.jsonUri = json.uri.toString()
@@ -316,7 +312,6 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
     }
 
     private fun getSiteFolders(context: Context): Map<Site, List<DocumentFile>> {
-        Helper.assertNonUiThread()
         val result: MutableMap<Site, MutableList<DocumentFile>> = EnumMap(
             Site::class.java
         )

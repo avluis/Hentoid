@@ -40,7 +40,7 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.toast
@@ -167,12 +167,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
 
             // Swiping
             val swipeCallback = SimpleSwipeDrawerCallback(ItemTouchHelper.LEFT, this)
-                .withSwipeLeft(
-                    Helper.dimensAsDp(
-                        requireContext(),
-                        R.dimen.delete_drawer_width_list
-                    )
-                )
+                .withSwipeLeft(dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list))
                 .withSensitivity(1.5f)
                 .withSurfaceThreshold(0.3f)
 

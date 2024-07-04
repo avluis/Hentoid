@@ -10,9 +10,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.images.HitomiParser
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.network.parseParameters
+import me.devsaki.hentoid.util.pause
 import org.jsoup.nodes.Document
 import timber.log.Timber
 import java.util.Locale
@@ -193,9 +194,9 @@ class HitomiActivity : BaseWebActivity() {
             // Wait until the page's resources are all loaded
             if (!quickDownload) {
                 Timber.v(">> Hitomi : not loading ! %s", url)
-                while (!isLoading()) Helper.pause(20)
+                while (!isLoading()) pause(20)
                 Timber.v(">> Hitomi : loading %s", url)
-                while (isLoading()) Helper.pause(100)
+                while (isLoading()) pause(100)
                 Timber.v(">> Hitomi : done")
             }
             val parser = HitomiParser()
@@ -204,7 +205,7 @@ class HitomiActivity : BaseWebActivity() {
                 parser.parseImageListWithWebview(content, webView)
                 content.status = StatusContent.SAVED
             } catch (e: Exception) {
-                Helper.logException(e)
+                logException(e)
                 Timber.i(e)
                 content.status = StatusContent.IGNORED
             }

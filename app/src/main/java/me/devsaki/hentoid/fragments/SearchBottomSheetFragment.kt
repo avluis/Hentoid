@@ -32,7 +32,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.LanguageHelper
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.capitalizeString
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.SearchViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -139,7 +139,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
 
             // Image that displays current metadata type title (e.g. "Character search")
             tagWaitTitle.text = getString(
-                R.string.search_category, StringHelper.capitalizeString(
+                R.string.search_category, capitalizeString(
                     getString(mainAttr.accusativeName)
                 )
             )

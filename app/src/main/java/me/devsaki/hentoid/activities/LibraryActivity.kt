@@ -62,12 +62,12 @@ import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companio
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.file.RQST_NOTIFICATION_PERMISSION
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.checkExternalStorageReadWritePermission
@@ -80,6 +80,7 @@ import me.devsaki.hentoid.util.runExternalImport
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -745,7 +746,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 ).setTextTypeface(Typeface.DEFAULT).setShowBackground(false).setWidth(
                     resources.getDimension(R.dimen.dialog_width).toInt()
                 ).setMenuColor(ContextCompat.getColor(this, R.color.medium_gray)).setTextSize(
-                    Helper.dimensAsDp(this, R.dimen.text_subtitle_2)
+                    dimensAsDp(this, R.dimen.text_subtitle_2)
                 ).setAutoDismiss(true)
             for (i in searchRecords.indices.reversed()) powerMenuBuilder.addItem(
                 PowerMenuItem(
@@ -846,7 +847,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         binding?.selectionToolbar?.apply {
             menu.clear()
             inflateMenu(R.menu.library_selection_menu)
-            Helper.tryShowMenuIcons(this@LibraryActivity, menu)
+            tryShowMenuIcons(this@LibraryActivity, menu)
             menu.apply {
                 editMenu = findItem(R.id.action_edit)
                 deleteMenu = findItem(R.id.action_delete)
@@ -1070,7 +1071,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             reorderMenu?.isVisible = currentGrouping.canReorderGroups
         } else {
             reorderMenu?.isVisible =
-                currentGrouping.canReorderBooks && group != null && group!!.getSubtype() != 1
+                currentGrouping.canReorderBooks && group != null && group!!.subtype != 1
         }
         signalCurrentFragment(CommunicationEvent.Type.UPDATE_TOOLBAR)
     }
@@ -1093,46 +1094,49 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             selectedTotalCount.toInt()
         )
         if (isGroupDisplayed()) {
-            editMenu!!.isVisible =
+            editMenu?.isVisible =
                 !hasProcessed && !isMultipleSelection && Preferences.getGroupingDisplay()
                     .canReorderGroups
-            deleteMenu!!.isVisible = !hasProcessed
-            shareMenu!!.isVisible = false
-            completedMenu!!.isVisible = false
-            resetReadStatsMenu!!.isVisible = false
-            rateMenu!!.isVisible = isMultipleSelection
-            archiveMenu!!.isVisible = !hasProcessed
-            changeGroupMenu!!.isVisible = false
-            folderMenu!!.isVisible = false
-            redownloadMenu!!.isVisible = false
-            downloadStreamedMenu!!.isVisible = false
-            streamMenu!!.isVisible = false
-            groupCoverMenu!!.isVisible = false
-            mergeMenu!!.isVisible = false
-            splitMenu!!.isVisible = false
-            transformMenu!!.isVisible = false
+            deleteMenu?.isVisible = !hasProcessed
+            shareMenu?.isVisible = false
+            completedMenu?.isVisible = false
+            resetReadStatsMenu?.isVisible = false
+            rateMenu?.isVisible = isMultipleSelection
+            archiveMenu?.isVisible = !hasProcessed
+            changeGroupMenu?.isVisible = false
+            folderMenu?.isVisible = false
+            redownloadMenu?.isVisible = false
+            downloadStreamedMenu?.isVisible = false
+            streamMenu?.isVisible = false
+            groupCoverMenu?.isVisible = false
+            mergeMenu?.isVisible = false
+            splitMenu?.isVisible = false
+            transformMenu?.isVisible = false
         } else { // Flat view
-            editMenu!!.isVisible = !hasProcessed
-            deleteMenu!!.isVisible =
+            editMenu?.isVisible = !hasProcessed
+            deleteMenu?.isVisible =
                 !hasProcessed && ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0L == selectedExternalCount || selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary())
-            completedMenu!!.isVisible = true
-            resetReadStatsMenu!!.isVisible = true
-            rateMenu!!.isVisible = isMultipleSelection
-            shareMenu!!.isVisible = 0L == selectedArchiveExternalCount
-            archiveMenu!!.isVisible = !hasProcessed
-            changeGroupMenu!!.isVisible = !hasProcessed
-            folderMenu!!.isVisible = !isMultipleSelection
-            redownloadMenu!!.isVisible = !hasProcessed && selectedDownloadedCount > 0
-            downloadStreamedMenu!!.isVisible = !hasProcessed && selectedStreamedCount > 0
-            streamMenu!!.isVisible = !hasProcessed && selectedDownloadedCount > 0
-            groupCoverMenu!!.isVisible =
+            completedMenu?.isVisible = true
+            resetReadStatsMenu?.isVisible = true
+            rateMenu?.isVisible = isMultipleSelection
+            shareMenu?.isVisible = 0L == selectedArchiveExternalCount
+            archiveMenu?.isVisible = !hasProcessed
+            changeGroupMenu?.isVisible = !hasProcessed
+            folderMenu?.isVisible = !isMultipleSelection
+            redownloadMenu?.isVisible = !hasProcessed && selectedDownloadedCount > 0
+            downloadStreamedMenu?.isVisible = !hasProcessed && selectedStreamedCount > 0
+            streamMenu?.isVisible = !hasProcessed && selectedDownloadedCount > 0
+            groupCoverMenu?.isVisible =
                 !isMultipleSelection && Preferences.getGroupingDisplay() != Grouping.FLAT
             // Can only merge downloaded, streamed or non-archive external content together
-            mergeMenu!!.isVisible =
-                !hasProcessed && (selectedLocalCount > 1 && 0L == selectedStreamedCount && 0L == selectedExternalCount || selectedStreamedCount > 1 && 0L == selectedLocalCount && 0L == selectedExternalCount || selectedNonArchiveExternalCount > 1 && 0L == selectedArchiveExternalCount && 0L == selectedLocalCount && 0L == selectedStreamedCount)
-            splitMenu!!.isVisible =
+            mergeMenu?.isVisible = !hasProcessed && (
+                    selectedLocalCount > 1 && 0L == selectedStreamedCount && 0L == selectedExternalCount
+                            || selectedStreamedCount > 1 && 0L == selectedLocalCount && 0L == selectedExternalCount
+                            || selectedExternalCount > 1 && 0L == selectedLocalCount && 0L == selectedStreamedCount
+                    )
+            splitMenu?.isVisible =
                 !hasProcessed && !isMultipleSelection && 1L == selectedLocalCount
-            transformMenu!!.isVisible =
+            transformMenu?.isVisible =
                 !hasProcessed && 0L == selectedStreamedCount && 0L == selectedArchiveExternalCount
         }
     }

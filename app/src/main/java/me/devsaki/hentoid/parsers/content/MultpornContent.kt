@@ -9,7 +9,7 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.images.MultpornParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -45,16 +45,15 @@ class MultpornContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.MULTPORN)
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        content.site = Site.MULTPORN
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
-        content.setTitle(cleanup(title))
+        content.title = cleanup(title)
         val shortlinkParts = shortlink.split("/")
         content.uniqueSiteId = shortlinkParts[shortlinkParts.size - 1]
         if (publishingDate.isNotEmpty()) // e.g. 2018-11-12T20:04-05:00
-            content.setUploadDate(
-                Helper.parseDatetimeToEpoch(publishingDate, "yyyy-MM-dd'T'HH:mmXXX")
-            )
+            content.uploadDate = parseDatetimeToEpoch(publishingDate, "yyyy-MM-dd'T'HH:mmXXX")
+
         val attributes = AttributeMap()
         parseAttributes(
             attributes,
@@ -90,17 +89,17 @@ class MultpornContent : BaseContentParser() {
         try {
             val imagesUrls = MultpornParser.getImagesUrls(juiceboxRequestUrl, url)
             if (imagesUrls.isNotEmpty()) {
-                content.setCoverImageUrl(imagesUrls[0])
+                content.coverImageUrl = imagesUrls[0]
                 if (updateImages) {
                     content.setImageFiles(
                         urlsToImageFiles(imagesUrls, imagesUrls[0], StatusContent.SAVED)
                     )
-                    content.setQtyPages(imagesUrls.size)
+                    content.qtyPages = imagesUrls.size
                 }
             }
         } catch (e: IOException) {
             Timber.w(e)
-            return Content().setStatus(StatusContent.IGNORED)
+            return Content(status = StatusContent.IGNORED)
         }
         return content
     }

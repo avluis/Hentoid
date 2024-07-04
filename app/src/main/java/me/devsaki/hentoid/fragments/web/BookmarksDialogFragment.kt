@@ -34,9 +34,10 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.copyPlainTextToClipboard
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.toastShort
+import me.devsaki.hentoid.util.updateBookmarksJson
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
@@ -105,7 +106,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             withContext(Dispatchers.IO) {
                 val dao: CollectionDAO = ObjectBoxDAO()
                 try {
-                    Helper.updateBookmarksJson(HentoidApp.getInstance(), dao)
+                    updateBookmarksJson(HentoidApp.getInstance(), dao)
                 } finally {
                     dao.cleanup()
                 }
@@ -210,7 +211,10 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     private fun reloadBookmarks(dao: CollectionDAO): List<SiteBookmark> {
         val bookmarks = dao.selectBookmarks(site).toMutableList()
         // Add site home as 1st bookmark
-        bookmarks.add(0, SiteBookmark(site, getString(R.string.bookmark_homepage), site.url))
+        bookmarks.add(
+            0,
+            SiteBookmark(site = site, title = getString(R.string.bookmark_homepage), url = site.url)
+        )
         itemAdapter.set(bookmarks.mapIndexed { index, b ->
             TextItem(
                 b.title,
@@ -284,7 +288,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         invokeInputDialog(requireContext(), R.string.bookmark_edit_title, {
             val dao: CollectionDAO = ObjectBoxDAO()
             try {
-                bookmarkId = dao.insertBookmark(SiteBookmark(site, it, url))
+                bookmarkId = dao.insertBookmark(SiteBookmark(site = site, title = it, url = url))
                 reloadBookmarks(dao)
                 fastAdapter.notifyAdapterDataSetChanged()
             } finally {
@@ -360,7 +364,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         val context: Context? = activity
         if (1 == selectedItems.size && context != null) {
             val b = selectedItems.first().getObject()
-            if (b != null && Helper.copyPlainTextToClipboard(context, b.url)) {
+            if (b != null && copyPlainTextToClipboard(context, b.url)) {
                 toastShort(R.string.web_url_clipboard)
                 binding?.selectionToolbar?.visibility = View.INVISIBLE
             }
@@ -496,7 +500,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             if (oldPosition < 0 || oldPosition >= bookmarks.size) return
 
             // Add a bogus item on Position 0 to simulate the "Homepage" UI item
-            bookmarks.add(0, SiteBookmark(Site.NONE, "", ""))
+            bookmarks.add(0, SiteBookmark(site = Site.NONE))
 
             // Move the item
             val fromValue = bookmarks[oldPosition]

@@ -9,14 +9,15 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.parsers.content.BaseContentParser
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
+import me.devsaki.hentoid.util.parseDateToEpoch
 import me.devsaki.hentoid.util.parseDownloadParams
+import me.devsaki.hentoid.util.removeNonPrintableChars
 import me.devsaki.hentoid.util.serializeToJson
 import org.apache.commons.text.StringEscapeUtils
 import org.greenrobot.eventbus.EventBus
@@ -66,7 +67,7 @@ fun removeTextualTags(s: String?): String {
 private fun removeTrailingNumbers(s: String?): String {
     if (s.isNullOrEmpty()) return ""
     val parts = s.split(" ")
-    if (parts.size > 1 && StringHelper.isNumeric(parts[parts.size - 1])) {
+    if (parts.size > 1 && isNumeric(parts[parts.size - 1])) {
         val sb = StringBuilder()
         for (i in 0 until parts.size - 1) sb.append(parts[i]).append(" ")
         return sb.toString().trim()
@@ -216,8 +217,7 @@ fun urlsToImageFiles(
     val result: MutableList<ImageFile> = ArrayList()
     var order = initialOrder
     // Remove duplicates and MACOSX indexes (yes, it does happen!) before creating the ImageFiles
-    val imgUrlsUnique = imgUrls.distinct()
-        .filterNot { s -> s.contains("__MACOSX") }
+    val imgUrlsUnique = imgUrls.distinct().filterNot { it.contains("__MACOSX") }
     for (s in imgUrlsUnique) result.add(
         urlToImageFile(
             s.trim(),
@@ -228,24 +228,6 @@ fun urlsToImageFiles(
         )
     )
     return result
-}
-
-/**
- * Build an ImageFile using the given properties
- *
- * @param imgUrl         URL of the image
- * @param order          Order of the image
- * @param totalBookPages Total number of pages of the corresponding book
- * @param status         Status of the resulting ImageFile
- * @return ImageFile built using all given arguments
- */
-fun urlToImageFile(
-    imgUrl: String,
-    order: Int,
-    totalBookPages: Int,
-    status: StatusContent
-): ImageFile {
-    return urlToImageFile(imgUrl, order, totalBookPages, status, null)
 }
 
 /**
@@ -263,11 +245,11 @@ fun urlToImageFile(
     order: Int,
     totalBookPages: Int,
     status: StatusContent,
-    chapter: Chapter?
+    chapter: Chapter? = null
 ): ImageFile {
-    val result = ImageFile()
+    val result = ImageFile(dbOrder = order, dbUrl = imgUrl, status = status)
     val nbMaxDigits = (floor(log10(totalBookPages.toDouble())) + 1).toInt()
-    result.setOrder(order).setUrl(imgUrl).setStatus(status).computeName(nbMaxDigits)
+    result.computeName(nbMaxDigits)
     if (chapter != null) result.setChapter(chapter)
     return result
 }
@@ -292,9 +274,9 @@ fun signalProgress(contentId: Long, storedId: Long, progress: Float) {
  */
 fun getSavedCookieStr(downloadParams: String?): String {
     val downloadParamsMap = parseDownloadParams(downloadParams)
-    return if (downloadParamsMap.containsKey(HEADER_COOKIE_KEY)) StringHelper.protect(
-        downloadParamsMap[HEADER_COOKIE_KEY]
-    ) else ""
+    return if (downloadParamsMap.containsKey(HEADER_COOKIE_KEY))
+        downloadParamsMap[HEADER_COOKIE_KEY] ?: ""
+    else ""
 }
 
 /**
@@ -325,7 +307,7 @@ fun setDownloadParams(imgs: List<ImageFile>, referrer: String) {
         val cookieStr = getCookies(img.url)
         if (cookieStr.isNotEmpty()) params[HEADER_COOKIE_KEY] = cookieStr
         params[HEADER_REFERER_KEY] = referrer
-        img.setDownloadParams(serializeToJson<Map<String, String>>(params, MAP_STRINGS))
+        img.downloadParams = serializeToJson<Map<String, String>>(params, MAP_STRINGS)
     }
 }
 
@@ -387,7 +369,7 @@ fun getChaptersFromLinks(
         if (!dateCssQuery.isNullOrEmpty() && !datePattern.isNullOrEmpty()) {
             e.selectFirst(dateCssQuery)?.let { dateElement ->
                 val dateStr = dateElement.text().split("-")
-                if (dateStr.size > 1) epoch = Helper.parseDateToEpoch(dateStr[1], datePattern)
+                if (dateStr.size > 1) epoch = parseDateToEpoch(dateStr[1], datePattern)
             }
         }
         // Make sure we're not adding duplicates
@@ -400,7 +382,7 @@ fun getChaptersFromLinks(
     // Build the final list
     for ((order, chapter) in chapterData.withIndex()) {
         val chp = Chapter(order, chapter.first, chapter.second)
-        chp.setUploadDate(chapter.third)
+        chp.uploadDate = chapter.third
         chp.setContentId(contentId)
         result.add(chp)
     }
@@ -435,10 +417,10 @@ private fun getLastPathPart(url: String, index: Int = 0): String {
 fun getExtraChaptersbyUrl(
     storedChapters: List<Chapter>,
     detectedChapters: List<Chapter>,
-    lastPartIndex: Int = 0
+    lastPartIndex: (String) -> Int = { _ -> 0 }
 ): List<Chapter> {
-    val storedChps = storedChapters.groupBy { c -> getLastPathPart(c.url, lastPartIndex) }
-    val detectedChps = detectedChapters.groupBy { c -> getLastPathPart(c.url, lastPartIndex) }
+    val storedChps = storedChapters.groupBy { getLastPathPart(it.url, lastPartIndex(it.url)) }
+    val detectedChps = detectedChapters.groupBy { getLastPathPart(it.url, lastPartIndex(it.url)) }
 
     var tmpList: MutableList<Chapter> = ArrayList()
     val storedUrlParts = storedChps.keys
@@ -544,6 +526,6 @@ fun getUserAgent(site: Site): String {
 fun cleanup(data: String?): String {
     if (null == data) return BaseContentParser.NO_TITLE
     return StringEscapeUtils.unescapeHtml4(
-        StringHelper.removeNonPrintableChars(data.trim()).replace('’', '\'')
+        removeNonPrintableChars(data.trim()).replace('’', '\'')
     )
 }

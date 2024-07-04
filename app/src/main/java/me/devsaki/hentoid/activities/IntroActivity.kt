@@ -101,7 +101,7 @@ class IntroActivity : AppIntro2() {
     }
 
     private fun setSourcePrefs(sources: List<Site>) {
-        Preferences.setActiveSites(sources)
+        Settings.activeSites = sources
     }
 
     // Validation of the final step of the wizard

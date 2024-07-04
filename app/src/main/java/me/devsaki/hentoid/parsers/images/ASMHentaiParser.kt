@@ -2,8 +2,8 @@ package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.parsers.getImgSrc
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.ParseException
+import me.devsaki.hentoid.util.locateDigits
 import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class ASMHentaiParser : BaseImageListParser() {
@@ -16,7 +16,7 @@ class ASMHentaiParser : BaseImageListParser() {
             var nbPages = -1
             val nbPagesE = doc.select(".pages_btn").first()
             if (nbPagesE != null) {
-                val digits = StringHelper.locateDigits(nbPagesE.text())
+                val digits = locateDigits(nbPagesE.text())
                 if (digits.isNotEmpty()) nbPages = digits[digits.size - 1].third
             }
             if (-1 == nbPages) throw ParseException("Couldn't find the number of pages")

@@ -20,7 +20,6 @@ import me.devsaki.hentoid.activities.bundles.GroupItemBundle
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
-import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.isReachable
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Settings
@@ -89,7 +88,7 @@ class GroupDisplayItem(
                 val stringValue = bundleParser.coverUri
                 if (stringValue != null) coverUri = stringValue
                 val boolValue = bundleParser.isFavourite
-                if (boolValue != null) item.group.isFavourite = boolValue
+                if (boolValue != null) item.group.favourite = boolValue
                 val intValue = bundleParser.rating
                 if (intValue != null) item.group.rating = intValue
             }
@@ -118,8 +117,8 @@ class GroupDisplayItem(
             if (ivCover != null) {
                 var coverContent: Content? = null
                 if (!item.group.coverContent.isNull) coverContent = item.group.coverContent.target
-                else if (!item.group.items.isEmpty()) {
-                    item.group.items[0].let {
+                else if (item.group.getItems().isNotEmpty()) {
+                    item.group.getItems()[0].let {
                         if (it.content.isReachable(it)) {
                             val c = it.content.target
                             if (c != null) coverContent = c
@@ -131,13 +130,13 @@ class GroupDisplayItem(
                 attachCover(uri)
             }
 
-            val items: List<GroupItem>? = item.group.items
+            val items = item.group.getItems()
             val numberStr =
-                if (items.isNullOrEmpty()) ivFavourite.context.getString(R.string.empty) else items.size.toString() + ""
+                if (items.isEmpty()) ivFavourite.context.getString(R.string.empty) else items.size.toString() + ""
             title.text = String.format("%s (%s)", item.group.name, numberStr)
 
             ivFavourite.isVisible = (!isGrid || Settings.libraryDisplayGridFav)
-            if (item.group.isFavourite) {
+            if (item.group.favourite) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full)
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_empty)

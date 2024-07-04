@@ -6,7 +6,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.retrofit.sources.PixivServer
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.getCookies
 import timber.log.Timber
 import java.io.IOException
@@ -21,11 +21,10 @@ class PixivContent : BaseContentParser() {
         val entity = urlParts[urlParts.size - 2]
         val uri = Uri.parse(url)
         when (entity) {
-            "artworks", "illust" -> if (!StringHelper.isNumeric(id)) id =
-                StringHelper.protect(uri.getQueryParameter("illust_id"))
+            "artworks", "illust" -> if (!isNumeric(id)) id =
+                uri.getQueryParameter("illust_id") ?: ""
 
-            "user", "users" -> if (!StringHelper.isNumeric(id)) id =
-                StringHelper.protect(uri.getQueryParameter("id"))
+            "user", "users" -> if (!isNumeric(id)) id = uri.getQueryParameter("id") ?: ""
 
             else -> {}
         }
@@ -68,6 +67,6 @@ class PixivContent : BaseContentParser() {
         } catch (e: IOException) {
             Timber.e(e, "Error parsing content.")
         }
-        return Content().setSite(Site.PIXIV).setStatus(StatusContent.IGNORED)
+        return Content(site = Site.PIXIV, status = StatusContent.IGNORED)
     }
 }

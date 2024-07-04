@@ -12,7 +12,7 @@ class HitomiContent : BaseContentParser() {
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         // Hitomi now uses an empty template that is populated by Javascript -> parsing is entirely done by HitomiParser
-        content.setSite(Site.HITOMI)
+        content.site = Site.HITOMI
 
         // If given URL is canonical, set it as is
         if (CANONICAL_URL.matcher(url).find()) {
@@ -28,12 +28,12 @@ class HitomiContent : BaseContentParser() {
             content.uniqueSiteId = uniqueId
 
             // ...and forge canonical URL
-            content.setUrl("/$uniqueId.html")
+            content.url = "/$uniqueId.html"
         }
         content.putAttributes(AttributeMap())
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }

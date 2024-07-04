@@ -50,7 +50,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.database.domains.Content.DownloadMode
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SiteBookmark
@@ -69,14 +69,14 @@ import me.devsaki.hentoid.fragments.web.UrlDialogFragment
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.ui.invokeNumberInputDialog
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Preferences.Constant
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.calcPhash
+import me.devsaki.hentoid.util.copyPlainTextToClipboard
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
@@ -84,7 +84,9 @@ import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.findDuplicate
 import me.devsaki.hentoid.util.getBlockedTags
+import me.devsaki.hentoid.util.getCenter
 import me.devsaki.hentoid.util.getCoverBitmapFromStream
+import me.devsaki.hentoid.util.getFixedContext
 import me.devsaki.hentoid.util.getHashEngine
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.isInLibrary
@@ -98,8 +100,10 @@ import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import me.devsaki.hentoid.util.network.simplifyUrl
 import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.parseDownloadParams
+import me.devsaki.hentoid.util.setMargins
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.views.NestedScrollWebView
 import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
@@ -243,7 +247,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Toolbar
         // Top toolbar
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        Helper.tryShowMenuIcons(this, toolbar.menu)
+        tryShowMenuIcons(this, toolbar.menu)
         toolbar.setOnMenuItemClickListener { item ->
             this.onMenuItemSelected(item)
         }
@@ -317,7 +321,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
         if (intent.extras != null) {
             val bundle = BaseWebActivityBundle(intent.extras!!)
-            val intentUrl = StringHelper.protect(bundle.url)
+            val intentUrl = bundle.url
             if (intentUrl.isNotEmpty()) return intentUrl
         }
 
@@ -473,7 +477,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         } catch (e: NotFoundException) {
             // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
             // Creating with the application Context fixes this, but is not generally recommended for view creation
-            NestedScrollWebView(Helper.getFixedContext(this))
+            NestedScrollWebView(getFixedContext(this))
         }
         webView.isHapticFeedbackEnabled = false
         webView.webChromeClient = object : WebChromeClient() {
@@ -566,7 +570,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
         if (!url.isNullOrEmpty() && webClient.isGalleryPage(url)) {
             binding?.apply {
-                Helper.setMargins(
+                setMargins(
                     quickDlFeedback,
                     x - quickDlFeedback.width / 2,
                     y - quickDlFeedback.height / 2 + topBar.bottom,
@@ -780,8 +784,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         BookmarksDialogFragment.invoke(
             this,
             getStartSite(),
-            StringHelper.protect(webView.title),
-            StringHelper.protect(webView.url)
+            webView.title ?: "",
+            webView.url ?: ""
         )
     }
 
@@ -803,9 +807,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * Handler for the "Manage link" button
      */
     private fun onManageLinkClick() {
-        val url = StringHelper.protect(webView.url)
-        if (Helper.copyPlainTextToClipboard(this, url))
-            toast(R.string.web_url_clipboard)
+        val url = webView.url ?: ""
+        if (copyPlainTextToClipboard(this, url)) toast(R.string.web_url_clipboard)
         UrlDialogFragment.invoke(this, url)
     }
 
@@ -1027,13 +1030,13 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 updatedImgs.addAll(additionalNonExistingImages)
                 currentContent!!.setImageFiles(updatedImgs)
                 // Update content title if extra pages are found and title has changed
-                if (StringHelper.protect(onlineContentTitle).isNotEmpty()
+                if (onlineContentTitle.isNotEmpty()
                     && !onlineContentTitle.equals(currentContent!!.title, ignoreCase = true)
                 ) replacementTitle = onlineContentTitle
             }
             // Save additional chapters to stored book
             val additionalNonExistingChapters =
-                additionalNonExistingImages.mapNotNull { img -> img.linkedChapter }
+                additionalNonExistingImages.mapNotNull { it.linkedChapter }
                     .filterNot { ch -> existingChapterOrders.contains(ch.order) }
             if (additionalNonExistingChapters.isNotEmpty()) {
                 val updatedChapters = currentContent!!.chaptersList.toMutableList()
@@ -1053,11 +1056,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 val errors: MutableList<ErrorRecord> = ArrayList()
                 errors.add(
                     ErrorRecord(
-                        ErrorType.BLOCKED,
-                        currentContent!!.url,
-                        "tags",
-                        "blocked tags : " + TextUtils.join(", ", blockedTagsLocal),
-                        Instant.now()
+                        type = ErrorType.BLOCKED,
+                        url = currentContent!!.url,
+                        contentPart = "tags",
+                        description = "blocked tags : " + TextUtils.join(", ", blockedTagsLocal),
+                        timestamp = Instant.now()
                     )
                 )
                 currentContent!!.setErrorLog(errors)
@@ -1072,7 +1075,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
         val replacementTitleFinal = replacementTitle
         // No reason to block or ignore -> actually add to the queue
-        if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Preferences.getBrowserDlAction() == Constant.DL_ACTION_ASK) {
+        if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Preferences.getBrowserDlAction() == DownloadMode.ASK) {
             show(
                 this, webView, this
             ) { position1, _ ->
@@ -1100,7 +1103,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     replacementTitleFinal
                 )
             }
-        } else if (Preferences.getBrowserDlAction() == Constant.DL_ACTION_ASK) {
+        } else if (Preferences.getBrowserDlAction() == DownloadMode.ASK) {
             show(
                 this,
                 webView, this,
@@ -1132,15 +1135,15 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      */
     private fun addToQueue(
         position: QueuePosition,
-        @DownloadMode downloadMode: Int,
+        downloadMode: DownloadMode,
         isReplaceDuplicate: Boolean,
         replacementTitle: String?
     ) {
         if (null == currentContent) return
         binding?.apply {
-            val coords = Helper.getCenter(quickDlFeedback)
+            val coords = getCenter(quickDlFeedback)
             if (coords != null && View.VISIBLE == quickDlFeedback.visibility) {
-                Helper.setMargins(
+                setMargins(
                     animatedCheck,
                     coords.x - animatedCheck.width / 2,
                     coords.y - animatedCheck.height / 2,
@@ -1148,7 +1151,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     0
                 )
             } else {
-                Helper.setMargins(
+                setMargins(
                     animatedCheck,
                     webView.width / 2 - animatedCheck.width / 2,
                     webView.height / 2 - animatedCheck.height / 2, 0, 0
@@ -1197,7 +1200,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
             val webBFL = webView.copyBackForwardList()
-            val originalUrl = StringHelper.protect(webView.originalUrl)
+            val originalUrl = webView.originalUrl ?: ""
             var i = webBFL.currentIndex
             do {
                 i--
@@ -1219,7 +1222,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * @return The status of the Content after being processed
      */
     private fun processContent(onlineContent: Content, quickDownload: Boolean): ContentStatus {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         if (onlineContent.url.isEmpty()) return ContentStatus.UNDOWNLOADABLE
         if (onlineContent.status != null && onlineContent.status == StatusContent.IGNORED) return ContentStatus.UNDOWNLOADABLE
         currentContent = null
@@ -1419,7 +1422,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
 
         // Attach chapters to stored images if they don't have any (old downloads made with versions of the app that didn't detect chapters)
-        val storedChapters: List<Chapter>? = storedContent.chapters
+        val storedChapters: List<Chapter> = storedContent.chapters
         if (positionMap.isNotEmpty() && minOnlineImageOrder < maxStoredImageOrder && storedChapters.isNullOrEmpty()) {
             val storedImages = storedContent.imageList
             for (img in storedImages) {
@@ -1519,7 +1522,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     private fun updatePrefBlockedTags() {
-        m_prefBlockedTags = Preferences.getBlockedTags()
+        m_prefBlockedTags.clear()
+        m_prefBlockedTags.addAll(Settings.blockedTags)
     }
 
     private fun clearPrefBlockedTags() {
@@ -1684,7 +1688,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             webClient.setMarkBlockedTags(Preferences.isBrowserMarkBlockedTags())
             if (webClient.isMarkBlockedTags()) updatePrefBlockedTags() else clearPrefBlockedTags()
             reload = true
-        } else if (Preferences.Key.DL_BLOCKED_TAGS == key) {
+        } else if (Settings.Key.DL_BLOCKED_TAGS == key) {
             updatePrefBlockedTags()
             reload = true
         } else if (Preferences.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST == key) {

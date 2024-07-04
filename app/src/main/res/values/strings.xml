@@ -603,6 +603,7 @@
     <string name="fav_pages">Favourite pages</string>
 
     <!-- Merge & split -->
+    <string name="notif_split_merge">Split / merge</string>
     <string name="merge_merge">Merge</string>
     <string name="merge_progress">Merging books…</string>
     <string name="split_progress">Splitting book…</string>
@@ -613,8 +614,10 @@
     <string name="split_select_help">Hold and drag to select\nEach selected chapter creates one new book</string>
     <string name="split_no_chapters">No chapters created yet :-(</string>
     <string name="split_create_chapters">Create chapters</string>
-    <string name="merge_success">Content merged</string>
-    <string name="split_success">Content split</string>
+    <string name="merge_success">Content merged successfuly</string>
+    <string name="split_success">Content split successfuly</string>
+    <string name="merge_fail">Content failed to be merged</string>
+    <string name="split_fail">Content failed to be split</string>
 
     <!-- Groupings -->
     <string name="groups_flat">All books</string>

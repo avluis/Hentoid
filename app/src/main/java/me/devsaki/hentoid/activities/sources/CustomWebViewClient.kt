@@ -31,18 +31,20 @@ import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.selectX
 import me.devsaki.hentoid.util.AdBlocker
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.util.assertNonUiThread
+import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.saveBinary
+import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.image.MIME_IMAGE_WEBP
 import me.devsaki.hentoid.util.image.bitmapToWebp
 import me.devsaki.hentoid.util.image.getBitmapFromVectorDrawable
 import me.devsaki.hentoid.util.image.tintBitmap
+import me.devsaki.hentoid.util.isPresentAsWord
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
@@ -94,7 +96,7 @@ open class CustomWebViewClient : WebViewClient {
     private val scope: CoroutineScope
 
     // Listener to the results of the page parser
-    protected val resConsumer: WebResultConsumer
+    protected val resConsumer: WebResultConsumer? // TODO remove if unused in v1.21.x
 
     // List of the URL patterns identifying a parsable book gallery page
     // TODO differentiate API call URLs and HTML gallery URLs
@@ -142,7 +144,7 @@ open class CustomWebViewClient : WebViewClient {
 
     // List of JS scripts to load from app resources every time a webpage is started
     private val jsStartupScripts: MutableList<String> by lazy { ArrayList() }
-    private val jsReplacements: MutableList<Pair<String, String>> by lazy { ArrayList() }
+    private val jsReplacements: MutableMap<String, String> by lazy { HashMap() }
 
 
     companion object {
@@ -181,13 +183,12 @@ open class CustomWebViewClient : WebViewClient {
 
     constructor(
         site: Site,
-        galleryUrl: Array<String>,
-        resConsumer: WebResultConsumer
+        galleryUrl: Array<String>
     ) {
         this.site = site
         activity = null
         scope = CoroutineScope(Dispatchers.Default)
-        this.resConsumer = resConsumer
+        this.resConsumer = null
         for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
         htmlAdapter = initJspoon(site)
         adBlocker = AdBlocker(site)
@@ -270,7 +271,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     fun addJsReplacement(source: String, target: String) {
-        jsReplacements.add(Pair(source, target))
+        jsReplacements[source] = target
     }
 
     /**
@@ -383,7 +384,7 @@ open class CustomWebViewClient : WebViewClient {
                     }
                     openFile(view.context, uri)
                 } catch (t: Throwable) {
-                    view.context.toast(R.string.torrent_dl_fail, StringHelper.protect(t.message))
+                    view.context.toast(R.string.torrent_dl_fail, t.message ?: "")
                     Timber.w(t)
                 }
             }
@@ -417,7 +418,7 @@ open class CustomWebViewClient : WebViewClient {
             val cacheDir = context.cacheDir
             // Using a random file name rather than the original name to avoid errors caused by path length
             val file = File(
-                cacheDir.absolutePath + File.separator + Helper.getRandomInt(
+                cacheDir.absolutePath + File.separator + getRandomInt(
                     10000
                 ) + "." + getExtensionFromUri(url)
             )
@@ -448,7 +449,7 @@ open class CustomWebViewClient : WebViewClient {
         if (BuildConfig.DEBUG) Timber.v("WebView : page finished %s", url)
         isPageLoading.set(false)
         isHtmlLoaded.set(false) // Reset for the next page
-        activity?.onPageFinished(url, isResultsPage(StringHelper.protect(url)), isGalleryPage(url))
+        activity?.onPageFinished(url, isResultsPage(url), isGalleryPage(url))
     }
 
     /**
@@ -586,7 +587,7 @@ open class CustomWebViewClient : WebViewClient {
         analyzeForDownload: Boolean,
         quickDownload: Boolean
     ): WebResourceResponse? {
-        Helper.assertNonUiThread()
+        assertNonUiThread()
         if (BuildConfig.DEBUG) Timber.v(
             "WebView : parseResponse %s %s", if (analyzeForDownload) "DL" else "", url
         )
@@ -638,9 +639,9 @@ open class CustomWebViewClient : WebViewClient {
                 // NB1 : shouldInterceptRequest doesn't trigger on redirects
                 // NB2 : parsing alone won't cut it because the adblocker needs the new content on the new URL
                 if (response.code >= 300) {
-                    var targetUrl = StringHelper.protect(response.header("location"))
+                    var targetUrl = response.header("location") ?: ""
                     if (targetUrl.isEmpty())
-                        targetUrl = StringHelper.protect(response.header("Location"))
+                        targetUrl = response.header("Location") ?: ""
                     if (BuildConfig.DEBUG)
                         Timber.v("WebView : redirection from %s to %s", url, targetUrl)
                     if (targetUrl.isNotEmpty())
@@ -663,7 +664,7 @@ open class CustomWebViewClient : WebViewClient {
                     if (analyzeForDownload) {
                         // Response body bytestream needs to be duplicated
                         // because Jsoup closes it, which makes it unavailable for the WebView to use
-                        val `is` = Helper.duplicateInputStream(body.byteStream(), 2)
+                        val `is` = duplicateInputStream(body.byteStream(), 2)
                         parserStream = `is`[0]
                         browserStream = `is`[1]
                     } else {
@@ -719,17 +720,17 @@ open class CustomWebViewClient : WebViewClient {
                             withContext(Dispatchers.IO) {
                                 content = processContent(content, url, quickDownload)
                             }
-                            resConsumer.onContentReady(content, quickDownload)
+                            resConsumer?.onContentReady(content, quickDownload)
                         }
                     } catch (t: Throwable) {
                         Timber.e(t, "Error parsing content.")
                         parserStream?.close()
                         isHtmlLoaded.set(true)
-                        resConsumer.onResultFailed()
+                        resConsumer?.onResultFailed()
                     }
                 } else {
                     isHtmlLoaded.set(true)
-                    resConsumer.onNoResult()
+                    resConsumer?.onNoResult()
                 }
                 return result
             } catch (e: IOException) {
@@ -956,7 +957,7 @@ open class CustomWebViewClient : WebViewClient {
                             if (tag == null) break
                             if (blockedTag.equals(
                                     tag, ignoreCase = true
-                                ) || StringHelper.isPresentAsWord(blockedTag, tag)
+                                ) || isPresentAsWord(blockedTag, tag)
                             ) {
                                 var imgParent = entry.key
                                 for (i in 0..site.galleryHeight) {
@@ -984,15 +985,18 @@ open class CustomWebViewClient : WebViewClient {
         return classNames.any { o -> forbiddenElements.contains(o) }
     }
 
+    // TODO cache assets (not replacements)
     fun getJsScript(
-        context: Context, assetName: String, replacements: List<Pair<String, String>>?
+        context: Context,
+        assetName: String,
+        replacements: Map<String, String>?
     ): String {
         val sb = StringBuilder()
         sb.append("javascript:")
         getAssetAsString(context.assets, assetName, sb)
         var result = sb.toString()
-        if (replacements != null) {
-            for (p in replacements) result = result.replace(p.first, p.second)
+        replacements?.forEach {
+            result = result.replace(it.key, it.value)
         }
         return result
     }

@@ -23,6 +23,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
 import me.devsaki.hentoid.activities.bundles.DuplicateItemBundle
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateDetailsBinding
 import me.devsaki.hentoid.enums.StatusContent
@@ -239,11 +240,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             duplicates.asSequence().map(DuplicateEntry::duplicateContent)
                 .filterNotNull()
                 .map { c -> c.status }
-                .filter { s -> s.equals(StatusContent.EXTERNAL) }.count()
+                .filter { s -> s == StatusContent.EXTERNAL }.count()
         val streamedCount = duplicates.asSequence().map(DuplicateEntry::duplicateContent)
             .filterNotNull()
             .map { c -> c.downloadMode }
-            .filter { mode -> mode == Content.DownloadMode.STREAM }.count()
+            .filter { mode -> mode == DownloadMode.STREAM }.count()
         val localCount = duplicates.size - externalCount - streamedCount
 
         // streamed, external

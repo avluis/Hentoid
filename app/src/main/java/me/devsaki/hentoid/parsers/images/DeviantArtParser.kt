@@ -41,7 +41,7 @@ class DeviantArtParser : BaseImageListParser() {
                     }
                 }
             }
-            return Content().setStatus(StatusContent.IGNORED)
+            return Content(status = StatusContent.IGNORED)
         }
 
         fun parseGalleryLine(line: String): Content {
@@ -72,10 +72,10 @@ class DeviantArtParser : BaseImageListParser() {
                 content.status = StatusContent.SAVED
                 content.setImageFiles(imgs)
                 content.qtyPages = imgs.count { it.isReadable }
-                content.coverImageUrl = imgs.find { it.isCover }?.url
+                content.coverImageUrl = imgs.find { it.isCover }?.url ?: ""
             } catch (e: Exception) {
                 Timber.w(e)
-                return Content().setStatus(StatusContent.IGNORED)
+                return Content(status = StatusContent.IGNORED)
             }
             return content
         }

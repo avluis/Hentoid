@@ -11,8 +11,8 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
 import me.devsaki.hentoid.databinding.IncludeReaderControlsOverlayBinding
 import me.devsaki.hentoid.ui.invokeNumberInputDialog
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.toast
 import java.util.Locale
 
@@ -189,14 +189,14 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
             if (!it.imagePreviewCenter.isVisible) {
                 val sliderMaxPos = 1.coerceAtLeast(maxPageNum - 1)
                 // Next line to avoid setting a max position inferior to current position
-                it.pageSlider.value = Helper.coerceIn(
+                it.pageSlider.value = coerceIn(
                     it.pageSlider.value,
                     0f,
                     sliderMaxPos.toFloat()
                 )
                 it.pageSlider.valueTo = sliderMaxPos.toFloat()
                 val imageIndex = getCurrentImageIndex()
-                if (imageIndex > -1) it.pageSlider.value = Helper.coerceIn(
+                if (imageIndex > -1) it.pageSlider.value = coerceIn(
                     imageIndex.toFloat(),
                     0f,
                     sliderMaxPos.toFloat()

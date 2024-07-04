@@ -28,12 +28,14 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JSON_MIME_TYPE
+import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.file.getDownloadsFolder
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.getPathRoot
+import me.devsaki.hentoid.util.getRandomInt
+import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.serializeToJson
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -226,7 +228,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
                         )
                     } catch (e: Exception) {
                         Timber.w(e)
-                        Helper.logException(e)
+                        logException(e)
                         Snackbar.make(
                             it.root,
                             R.string.export_failed,
@@ -273,26 +275,27 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
         if (exportQueue) {
             val regularQueue = dao.selectQueue()
             val errorsQueue = dao.selectErrorContent()
-            val exportedQueue = regularQueue.filter { qr -> qr.contentId > 0 }
+            val exportedQueue = regularQueue.filter { qr -> qr.content.targetId > 0 }
                 .map { qr ->
                     val c = qr.content.target
-                    c.isFrozen = qr.isFrozen
+                    c.isFrozen = qr.frozen
                     return@map c
                 }.toMutableList()
             exportedQueue.addAll(errorsQueue)
-            jsonContentCollection.queue = exportedQueue
+            jsonContentCollection.replaceQueue(exportedQueue)
         }
-        jsonContentCollection.setGroups(
+        jsonContentCollection.replaceGroups(
             Grouping.DYNAMIC,
             dao.selectGroups(Grouping.DYNAMIC.id)
         )
-        if (exportCustomgroups) jsonContentCollection.setGroups(
+        if (exportCustomgroups) jsonContentCollection.replaceGroups(
             Grouping.CUSTOM,
             dao.selectGroups(Grouping.CUSTOM.id)
         )
-        if (exportBookmarks) jsonContentCollection.bookmarks = dao.selectAllBookmarks()
-        jsonContentCollection.renamingRules =
+        if (exportBookmarks) jsonContentCollection.replaceBookmarks(dao.selectAllBookmarks())
+        jsonContentCollection.replaceRenamingRules(
             dao.selectRenamingRules(AttributeType.UNDEFINED, null)
+        )
         return jsonContentCollection
     }
 
@@ -304,7 +307,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
         exportBookmarks: Boolean
     ) {
         // Use a random number to avoid erasing older exports by mistake
-        var targetFileName = Helper.getRandomInt(9999).toString() + ".json"
+        var targetFileName = getRandomInt(9999).toString() + ".json"
         if (exportBookmarks) targetFileName = "bkmks-$targetFileName"
         if (exportQueue) targetFileName = "queue-$targetFileName"
         if (exportLibrary && !exportFavsOnly) targetFileName =
@@ -318,7 +321,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
                 JSON_MIME_TYPE
             )?.use { newDownload ->
                 ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
-                    .use { input -> Helper.copy(input, newDownload) }
+                    .use { input -> copy(input, newDownload) }
             }
             binding?.let {
                 Snackbar.make(

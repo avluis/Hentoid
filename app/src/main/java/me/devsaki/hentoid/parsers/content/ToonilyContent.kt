@@ -11,8 +11,8 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -47,8 +47,8 @@ class ToonilyContent : BaseContentParser() {
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        content.setSite(Site.TOONILY)
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        content.site = Site.TOONILY
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
         return if (GALLERY_PATTERN.matcher(url).find()) updateGallery(
             content,
@@ -61,7 +61,7 @@ class ToonilyContent : BaseContentParser() {
         chapterTitle?.let {
             title = cleanup(it.text())
         }
-        content.setTitle(title)
+        content.title = title
         val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId =
             urlParts[urlParts.size - 2] else content.uniqueSiteId =
@@ -75,20 +75,20 @@ class ToonilyContent : BaseContentParser() {
                 content.setImageFiles(
                     urlsToImageFiles(imgUrls, coverUrl, StatusContent.SAVED)
                 )
-                content.setQtyPages(imgUrls.size)
+                content.qtyPages = imgUrls.size
             }
         }
         return content
     }
 
     private fun updateGallery(content: Content, updateImages: Boolean): Content {
-        content.setCoverImageUrl(coverUrl)
+        content.coverImageUrl = coverUrl
         var title = NO_TITLE
         breadcrumbs?.let {
             if (it.isNotEmpty())
                 title = cleanup(it[it.size - 1].text())
         }
-        content.setTitle(title)
+        content.title = title
         content.populateUniqueSiteId()
         metadata?.let {
             if (it.childNodeSize() > 0) {
@@ -99,9 +99,8 @@ class ToonilyContent : BaseContentParser() {
                     )?.let { galleryMeta ->
                         val publishDate =
                             galleryMeta.datePublished // e.g. 2021-01-27T15:20:38+00:00
-                        if (publishDate.isNotEmpty()) content.setUploadDate(
-                            Helper.parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
-                        )
+                        if (publishDate.isNotEmpty()) content.uploadDate =
+                            parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
                     }
                 } catch (e: IOException) {
                     Timber.i(e)
@@ -114,7 +113,7 @@ class ToonilyContent : BaseContentParser() {
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }

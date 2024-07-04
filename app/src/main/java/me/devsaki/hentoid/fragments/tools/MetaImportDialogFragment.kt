@@ -29,7 +29,6 @@ import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.workers.MetadataImportWorker
 import me.devsaki.hentoid.workers.data.MetadataImportData
@@ -137,7 +136,7 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
                 onFileDeserialized(result, jsonFile)
             } catch (e: Exception) {
                 binding?.apply {
-                    val fileName = StringHelper.protect(jsonFile.name)
+                    val fileName = jsonFile.name ?: ""
                     binding?.apply {
                         importProgressText.text = resources.getString(
                             R.string.import_file_invalid,
@@ -158,7 +157,7 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
         binding?.apply {
             importProgressText.visibility = View.GONE
             importProgressBar.visibility = View.GONE
-            if (null == collection || collection.isEmpty) {
+            if (null == collection || collection.isEmpty()) {
                 importFileInvalidText.text = resources.getString(
                     R.string.import_file_invalid,
                     jsonFile.name
@@ -168,7 +167,7 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
                 importSelectFileBtn.visibility = View.GONE
                 importFileInvalidText.visibility = View.GONE
                 // Don't link the groups, just count the books
-                val librarySize = collection.jsonLibrary.size
+                val librarySize = collection.library.size
                 if (librarySize > 0) {
                     importFileLibraryChk.text = resources.getQuantityString(
                         R.plurals.import_file_library,
@@ -178,7 +177,7 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
                     importFileLibraryChk.setOnCheckedChangeListener { _, _ -> refreshDisplay() }
                     importFileLibraryChk.visibility = View.VISIBLE
                 }
-                val mQueueSize = collection.jsonQueue.size
+                val mQueueSize = collection.queue.size
                 if (mQueueSize > 0) {
                     importFileQueueChk.text = resources.getQuantityString(
                         R.plurals.import_file_queue,
@@ -188,7 +187,7 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
                     importFileQueueChk.setOnCheckedChangeListener { _, _ -> refreshDisplay() }
                     importFileQueueChk.visibility = View.VISIBLE
                 }
-                val mGroupsSize = collection.getGroups(Grouping.CUSTOM).size
+                val mGroupsSize = collection.getEntityGroups(Grouping.CUSTOM).size
                 if (mGroupsSize > 0) {
                     importFileGroupsChk.text = resources.getQuantityString(
                         R.plurals.import_file_groups,
@@ -198,7 +197,7 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
                     importFileGroupsChk.setOnCheckedChangeListener { _, _ -> refreshDisplay() }
                     importFileGroupsChk.visibility = View.VISIBLE
                 }
-                val bookmarksSize = collection.bookmarks.size
+                val bookmarksSize = collection.getEntityBookmarks().size
                 if (bookmarksSize > 0) {
                     importFileBookmarksChk.text = resources.getQuantityString(
                         R.plurals.import_file_bookmarks,

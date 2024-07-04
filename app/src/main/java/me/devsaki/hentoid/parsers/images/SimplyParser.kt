@@ -51,7 +51,7 @@ class SimplyParser : BaseImageListParser() {
                 data,
                 SimplyGalleryMetadata::class.java
             )?.let {
-                result = it.pageUrls
+                result = it.getPageUrls()
             }
         }
 

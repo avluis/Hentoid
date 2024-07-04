@@ -138,7 +138,7 @@ fun determineEncoder(isLossless: Boolean, dims: Point, params: TransformParams):
 }
 
 @Suppress("DEPRECATION")
-private fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArray {
+fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArray {
     val output = ByteArrayOutputStream()
     when (encoder) {
         PictureEncoder.WEBP_LOSSY -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) bitmap.compress(

@@ -3,7 +3,6 @@ package me.devsaki.hentoid.workers.data
 import android.net.Uri
 import androidx.work.Data
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 
 /**
  * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.workers.DownloadsImportWorker}
@@ -39,7 +38,7 @@ class DownloadsImportData {
     class Parser(private val data: Data) {
 
         val fileUri: String
-            get() = StringHelper.protect(data.getString(KEY_FILE_URI))
+            get() = data.getString(KEY_FILE_URI) ?: ""
         val queuePosition: Int
             get() = data.getInt(
                 KEY_QUEUE_POSITION,

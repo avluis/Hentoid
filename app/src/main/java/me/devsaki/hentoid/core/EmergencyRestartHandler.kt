@@ -3,7 +3,7 @@ package me.devsaki.hentoid.core
 import android.content.Context
 import android.content.Intent
 import android.os.Process
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.logException
 import timber.log.Timber
 import kotlin.system.exitProcess
 
@@ -16,7 +16,7 @@ class EmergencyRestartHandler(val context: Context, private val myActivityClass:
         // Log the exception
         Timber.i("Logging crash exception")
         try {
-            Helper.logException(e)
+            logException(e)
         } finally {
             // Restart the Activity
             Timber.i("Restart %s", myActivityClass.simpleName)

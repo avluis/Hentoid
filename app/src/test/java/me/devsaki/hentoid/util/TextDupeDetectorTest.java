@@ -60,7 +60,8 @@ public class TextDupeDetectorTest {
 
         Cosine c = new Cosine();
         for (String s1 : vals1) {
-            Content c1 = new Content().setTitle(s1);
+            Content c1 = new Content();
+            c1.setTitle(s1);
             DuplicateCandidate dc1 = new DuplicateCandidate(c1, true, false, false, false, ignoreChapters, Long.MIN_VALUE);
             //String s1c = StringHelper.cleanup(s1);
             //Triple<String, Integer, Integer> s1cp = DuplicateHelper.Companion.sanitizeTitle(s1c);
@@ -69,7 +70,8 @@ public class TextDupeDetectorTest {
                 //noinspection StringEquality
                 if (s1 == s2) continue; // Test _both_ combinations
 
-                Content c2 = new Content().setTitle(s2);
+                Content c2 = new Content();
+                c2.setTitle(s2);
                 DuplicateCandidate dc2 = new DuplicateCandidate(c2, true, false, false, false, ignoreChapters, Long.MIN_VALUE);
                 //String s2c = StringHelper.cleanup(s2);
                 //Triple<String, Integer, Integer> s2cp = DuplicateHelper.Companion.sanitizeTitle(s2c);

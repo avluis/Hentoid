@@ -35,7 +35,6 @@ import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.widget.ContentSearchManager.Companion.searchContentIds
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -148,6 +147,10 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun selectChapters(contentId: Long): List<Chapter> {
         return ObjectBoxDB.selectChapters(contentId)
+    }
+
+    override fun selectChapters(chapterIds: List<Long>): List<Chapter> {
+        return ObjectBoxDB.selectChapters(chapterIds)
     }
 
     override fun selectChapter(chapterId: Long): Chapter? {
@@ -413,10 +416,10 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun clearDownloadParams(contentId: Long) {
         val c = ObjectBoxDB.selectContentById(contentId) ?: return
-        c.setDownloadParams("")
+        c.downloadParams = ""
         ObjectBoxDB.insertContentCore(c)
-        val imgs = c.imageFiles ?: return
-        for (img in imgs) img.setDownloadParams("")
+        val imgs = c.imageFiles
+        for (img in imgs) img.downloadParams = ""
         ObjectBoxDB.insertImageFiles(imgs)
     }
 
@@ -686,8 +689,8 @@ class ObjectBoxDAO : CollectionDAO {
         }
     }
 
-    override fun deleteOrphanArtistGroups() {
-        ObjectBoxDB.deleteOrphanArtistGroups()
+    override fun deleteEmptyArtistGroups() {
+        ObjectBoxDB.deleteEmptyArtistGroups()
     }
 
     override fun insertGroupItem(item: GroupItem): Long {
@@ -814,8 +817,7 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.deleteImageFiles(imgs)
 
         // Lists all relevant content
-        val contents = imgs.filter { i -> i.content != null }
-            .map { i: ImageFile -> i.content.targetId }.distinct()
+        val contents = imgs.map { it.content.targetId }.distinct()
 
         // Update the content with its new size
         for (contentId in contents) {
@@ -887,8 +889,8 @@ class ObjectBoxDAO : CollectionDAO {
             sourceImageStatus,
             targetImageStatus
         )
-        content.setStatus(StatusContent.PAUSED)
-        content.setIsBeingProcessed(false) // Remove any UI animation
+        content.status = StatusContent.PAUSED
+        content.isBeingProcessed = false // Remove any UI animation
         if (replacedContentId > -1) content.setContentIdToReplace(replacedContentId)
         if (replacementTitle != null) content.replacementTitle = replacementTitle
         insertContent(content)
@@ -1163,13 +1165,13 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxLiveData(
             ObjectBoxDB.selectRenamingRulesQ(
                 type,
-                StringHelper.protect(nameFilter)
+                nameFilter ?: ""
             )
         )
     }
 
     override fun selectRenamingRules(type: AttributeType, nameFilter: String?): List<RenamingRule> {
-        return ObjectBoxDB.selectRenamingRulesQ(type, StringHelper.protect(nameFilter)).safeFind()
+        return ObjectBoxDB.selectRenamingRulesQ(type, nameFilter ?: "").safeFind()
     }
 
     override fun insertRenamingRule(rule: RenamingRule): Long {

@@ -62,7 +62,6 @@ import me.devsaki.hentoid.fragments.reader.ReaderImageBottomSheetFragment.Compan
 import me.devsaki.hentoid.fragments.reader.ReaderNavigation.Pager
 import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_BROWSE_NONE
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_BROWSE_RTL
@@ -79,10 +78,14 @@ import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_16
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_4
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.coerceIn
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.glideOptionCenterInside
+import me.devsaki.hentoid.util.removeLabels
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.views.ZoomableRecyclerView
@@ -228,7 +231,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
         // Top bar controls
         binding?.let {
-            Helper.tryShowMenuIcons(
+            tryShowMenuIcons(
                 requireActivity(), it.controlsOverlay.viewerPagerToolbar.menu
             )
             it.controlsOverlay.viewerPagerToolbar.setNavigationOnClickListener { onBackClick() }
@@ -487,7 +490,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             nbEntries = 1.coerceAtLeast(nbEntries - 1)
 
             // TODO at some point we'd need to better synch images and book loading to avoid that
-            slider.value = Helper.coerceIn(sliderValue.toFloat(), 0f, nbEntries.toFloat())
+            slider.value = coerceIn(sliderValue.toFloat(), 0f, nbEntries.toFloat())
             slider.valueTo = nbEntries.toFloat()
             slider.setLabelFormatter { value: Float ->
                 val entries: Array<String> =
@@ -772,7 +775,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 viewerNoImgTxt.visibility = View.GONE
                 viewerLoadingTxt.visibility = View.GONE
                 if (absImageIndex > -1 && absImageIndex < images.size) {
-                    isPageFavourite = images[absImageIndex].isFavourite
+                    isPageFavourite = images[absImageIndex].favourite
                     updateFavouriteButtonIcon()
                 }
             }
@@ -835,7 +838,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         bookPreferences = content.bookPreferences
         isContentArchive = content.isArchive
         isContentDynamic = content.isDynamic
-        isContentFavourite = content.isFavourite
+        isContentFavourite = content.favourite
         // Wait for starting index only if content actually changes
         if (content.id != contentId) startingIndexLoaded = false
         contentId = content.id
@@ -854,7 +857,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         // Display "redownload images" button if folder no longer exists and is not external nor dynamic
         binding?.apply {
             viewerRedownloadBtn.isVisible =
-                (!content.isFolderExists && !content.isDynamic && content.status != StatusContent.EXTERNAL)
+                (!content.folderExists && !content.isDynamic && content.status != StatusContent.EXTERNAL)
         }
     }
 
@@ -939,7 +942,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
             adapter.getImageAt(absImageIndex)?.let {
                 viewModel.markPageAsRead(it.order)
-                isPageFavourite = it.isFavourite
+                isPageFavourite = it.favourite
                 updateFavouriteButtonIcon()
                 Preferences.setReaderCurrentPageNum(it.order)
             }
@@ -1145,7 +1148,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             .setTextTypeface(Typeface.DEFAULT)
             .setMenuColor(requireContext().getThemedColor(R.color.window_background_light))
             .setTextSize(
-                Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1)
+                dimensAsDp(requireContext(), R.dimen.text_subtitle_1)
             ).setAutoDismiss(true)
         powerMenuBuilder.addItem(
             PowerMenuItem(
@@ -1486,7 +1489,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         else Preferences.setReaderSlideshowDelay(prefsDelay)
 
         binding?.apply {
-            Helper.removeLabels(controlsOverlay.slideshowDelaySlider)
+            removeLabels(controlsOverlay.slideshowDelaySlider)
             controlsOverlay.slideshowDelaySlider.visibility = View.GONE
         }
         startSlideshow(true, -1)

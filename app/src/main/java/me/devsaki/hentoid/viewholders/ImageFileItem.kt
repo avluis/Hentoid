@@ -35,12 +35,12 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
     AbstractItem<ImageFileItem.ViewHolder>(),
     IExpandable<ImageFileItem.ViewHolder>,
     INestedItem<ImageFileItem.ViewHolder> {
-    private val chapter: Chapter
+    private val chapter: Chapter =
+        image.linkedChapter ?: Chapter(1, "", "") // Default display when nothing is set
     private var isCurrent = false
     private val expanded = false
 
     init {
-        chapter = image.linkedChapter ?: Chapter(1, "", "") // Default display when nothing is set
         identifier = image.uniqueHash()
     }
 
@@ -54,7 +54,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
     }
 
     fun isFavourite(): Boolean {
-        return image.isFavourite
+        return image.favourite
     }
 
     fun getChapterOrder(): Int {
@@ -94,19 +94,14 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
 
     class ViewHolder internal constructor(view: View) :
         FastAdapter.ViewHolder<ImageFileItem>(view) {
-        private val pageNumberTxt: TextView
-        private val image: ImageView
-        private val checkedIndicator: ImageView
-        private val chapterOverlay: TextView
-
-        init {
-            pageNumberTxt = ViewCompat.requireViewById(view, R.id.viewer_gallery_pagenumber_text)
-            image = ViewCompat.requireViewById(view, R.id.viewer_gallery_image)
-            checkedIndicator = ViewCompat.requireViewById(
-                view, R.id.checked_indicator
-            )
-            chapterOverlay = ViewCompat.requireViewById(view, R.id.chapter_overlay)
-        }
+        private val pageNumberTxt: TextView =
+            ViewCompat.requireViewById(view, R.id.viewer_gallery_pagenumber_text)
+        private val image: ImageView = ViewCompat.requireViewById(view, R.id.viewer_gallery_image)
+        private val checkedIndicator: ImageView = ViewCompat.requireViewById(
+            view, R.id.checked_indicator
+        )
+        private val chapterOverlay: TextView =
+            ViewCompat.requireViewById(view, R.id.chapter_overlay)
 
         override fun bindView(item: ImageFileItem, payloads: List<Any>) {
 
@@ -115,7 +110,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
                 val bundle = payloads[0] as Bundle
                 val bundleParser = ImageItemBundle(bundle)
                 val boolValue = bundleParser.isFavourite
-                if (boolValue != null) item.image.isFavourite = boolValue
+                if (boolValue != null) item.image.favourite = boolValue
                 val intValue = bundleParser.chapterOrder
                 if (intValue != null) item.chapter.order = intValue
             }

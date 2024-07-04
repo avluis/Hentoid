@@ -8,6 +8,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -137,15 +138,12 @@ object DatabaseMaintenance {
                     "api.pururin.to/images/",
                     "cdn.pururin.to/assets/images/data/"
                 )
-                if (c.imageFiles != null) for (i in c.imageFiles!!) {
-                    db.updateImageFileUrl(
-                        i.setUrl(
-                            i.url.replace(
-                                "api.pururin.to/images/",
-                                "cdn.pururin.to/assets/images/data/"
-                            )
-                        )
+                c.imageList.forEach {
+                    it.url = it.url.replace(
+                        "api.pururin.to/images/",
+                        "cdn.pururin.to/assets/images/data/"
                     )
+                    db.updateImageFileUrl(it)
                 }
                 db.insertContentCore(c)
                 emitter(pos++ / max)
@@ -195,9 +193,10 @@ object DatabaseMaintenance {
             for (c in contents) {
                 val images: MutableList<ImageFile> = c.imageList.toMutableList()
                 val newCover =
-                    ImageFile.newCover(c.coverImageUrl, StatusContent.ONLINE).setContentId(c.id)
+                    ImageFile.newCover(c.coverImageUrl, StatusContent.ONLINE)
+                newCover.contentId = c.id
                 images.add(0, newCover)
-                images[1].setIsCover(false)
+                images[1].isCover = false
                 db.insertImageFiles(images)
                 emitter(pos++ / max)
             }
@@ -261,7 +260,7 @@ object DatabaseMaintenance {
             var max = contents.size
             var pos = 1f
             for (c in contents) {
-                c.isCompleted = false
+                c.completed = false
                 db.insertContentCore(c)
                 emitter(pos++ / max)
             }
@@ -273,7 +272,7 @@ object DatabaseMaintenance {
             max = contents.size
             pos = 1f
             for (c in contents) {
-                c.downloadMode = Content.DownloadMode.DOWNLOAD
+                c.downloadMode = DownloadMode.DOWNLOAD
                 db.insertContentCore(c)
                 emitter(pos++ / max)
             }
@@ -285,7 +284,7 @@ object DatabaseMaintenance {
             max = contents.size
             pos = 1f
             for (c in contents) {
-                c.isManuallyMerged = false
+                c.manuallyMerged = false
                 db.insertContentCore(c)
                 emitter(pos++ / max)
             }
@@ -415,7 +414,8 @@ object DatabaseMaintenance {
                         var order = 1
                         for (a in artists) {
                             val group = Group(Grouping.ARTIST, a.name, order++)
-                            group.setSubtype(if (a.type == AttributeType.ARTIST) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS else Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS)
+                            group.subtype =
+                                if (a.type == AttributeType.ARTIST) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS else Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS
                             if (!a.contents.isEmpty()) group.coverContent.target = a.contents[0]
                             bookInsertCount += a.contents.size
                             toInsert.add(
@@ -452,11 +452,9 @@ object DatabaseMaintenance {
                     }
 
                     Grouping.CUSTOM -> {
-                        val group = Group(
-                            Grouping.CUSTOM,
-                            res.getString(R.string.group_no_group),
-                            1
-                        ).setSubtype(1)
+                        val group =
+                            Group(Grouping.CUSTOM, res.getString(R.string.group_no_group), 1)
+                        group.subtype = 1
                         toInsert.add(Triple(group, null, emptyList()))
                     }
 

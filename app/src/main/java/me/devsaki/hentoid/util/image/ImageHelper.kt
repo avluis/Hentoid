@@ -13,7 +13,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.waynejo.androidndkgif.GifEncoder
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.findSequencePosition
 import me.devsaki.hentoid.util.file.getExtension
@@ -200,8 +200,8 @@ fun isImageLossless(data: ByteArray): Boolean {
  * @param uri     URI of the picture file to detect the mime-type for
  * @return Mime-type of the picture file at the given URI; MIME_IMAGE_GENERIC if no Mime-type detected
  */
-fun getMimeTypeFromUri(context: Context, uri: Uri): String? {
-    var result: String? = MIME_IMAGE_GENERIC
+fun getMimeTypeFromUri(context: Context, uri: Uri): String {
+    var result = MIME_IMAGE_GENERIC
     val buffer = ByteArray(12)
     try {
         getInputStream(context, uri).use { input ->
@@ -307,7 +307,7 @@ fun decodeSampledBitmapFromStream(
     targetWidth: Int,
     targetHeight: Int
 ): Bitmap? {
-    val streams = Helper.duplicateInputStream(stream, 2)
+    val streams = duplicateInputStream(stream, 2)
     val workStream1 = streams[0]
     var workStream2 = streams[1]
 

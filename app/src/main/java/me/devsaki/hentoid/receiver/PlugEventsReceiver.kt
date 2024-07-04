@@ -9,7 +9,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp.Companion.isInForeground
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.util.AchievementsManager.trigger
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.getRandomInt
 import org.greenrobot.eventbus.EventBus
 
 class PlugEventsReceiver : BroadcastReceiver() {
@@ -43,7 +43,7 @@ class PlugEventsReceiver : BroadcastReceiver() {
 
     private fun getRandomQuoteFrom(context: Context, @ArrayRes res: Int): String {
         val quotes = context.resources.getStringArray(res)
-        val random = Helper.getRandomInt(quotes.size)
+        val random = getRandomInt(quotes.size)
         if (3 == random && R.array.power_reactions == res) trigger(62)
         return quotes[random]
     }

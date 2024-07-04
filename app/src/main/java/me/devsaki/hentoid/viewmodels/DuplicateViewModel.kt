@@ -19,6 +19,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
+import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.duplicates.DuplicateNotificationChannel
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.mergeContents
@@ -26,6 +27,7 @@ import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import me.devsaki.hentoid.workers.data.DuplicateData
+import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -174,7 +176,15 @@ class DuplicateViewModel(
             val result = withContext(Dispatchers.IO) {
                 try {
                     // Create merged book
-                    mergeContents(context, contentList, newTitle, appendBookTitle, dao)
+                    mergeContents(
+                        context,
+                        contentList,
+                        newTitle,
+                        appendBookTitle,
+                        dao,
+                        this@DuplicateViewModel::onMergeProgress,
+                        this@DuplicateViewModel::onMergeComplete
+                    )
 
                     // Mark as "is being deleted" to trigger blink animation
                     if (deleteAfterMerging) {
@@ -203,5 +213,31 @@ class DuplicateViewModel(
             }
             if (result) onSuccess.run()
         }
+    }
+
+    private fun onMergeProgress(nb: Int, max: Int, name: String) {
+        EventBus.getDefault().post(
+            ProcessEvent(
+                ProcessEvent.Type.PROGRESS,
+                R.id.generic_progress,
+                0,
+                nb,
+                0,
+                max
+            )
+        )
+    }
+
+    private fun onMergeComplete() {
+        EventBus.getDefault().postSticky(
+            ProcessEvent(
+                ProcessEvent.Type.COMPLETE,
+                R.id.generic_progress,
+                0,
+                100,
+                0,
+                100
+            )
+        )
     }
 }

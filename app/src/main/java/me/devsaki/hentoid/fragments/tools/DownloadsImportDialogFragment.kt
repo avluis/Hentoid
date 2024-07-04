@@ -31,8 +31,8 @@ import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.widget.AddQueueMenu
 import me.devsaki.hentoid.workers.DownloadsImportWorker
 import me.devsaki.hentoid.workers.data.DownloadsImportData
@@ -63,7 +63,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
                 .map { s -> s.trim().lowercase() }
                 .filterNot { s -> s.isEmpty() }
                 .filter { s ->
-                    StringHelper.isNumeric(s) ||
+                    isNumeric(s) ||
                             (s.startsWith("http")
                                     && Site.searchByUrl(s) != Site.NONE
                                     )
@@ -148,7 +148,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
                         return@withContext readFile(requireContext(), file)
                     } catch (e: Exception) {
                         Timber.w(e)
-                        errorFileName = StringHelper.protect(file.name)
+                        errorFileName = file.name ?: ""
                     }
                     return@withContext emptyList<String>()
                 }

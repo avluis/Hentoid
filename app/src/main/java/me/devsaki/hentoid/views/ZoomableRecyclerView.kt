@@ -14,8 +14,8 @@ import android.view.animation.DecelerateInterpolator
 import androidx.core.util.Consumer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.widget.OnZoneTapListener
 import me.devsaki.hentoid.widget.ViewZoomGestureListener
 import timber.log.Timber
@@ -140,12 +140,12 @@ class ZoomableRecyclerView : RecyclerView {
 
     private fun getPositionX(positionX: Float): Float {
         val maxPositionX = halfWidth * (scale - 1)
-        return Helper.coerceIn(positionX, -maxPositionX, maxPositionX)
+        return coerceIn(positionX, -maxPositionX, maxPositionX)
     }
 
     private fun getPositionY(positionY: Float): Float {
         val maxPositionY = halfHeight * (scale - 1)
-        return Helper.coerceIn(positionY, -maxPositionY, maxPositionY)
+        return coerceIn(positionY, -maxPositionY, maxPositionY)
     }
 
     fun resetScale() {
@@ -238,7 +238,7 @@ class ZoomableRecyclerView : RecyclerView {
 
     fun onScale(scaleFactor: Float) {
         scale *= scaleFactor
-        scale = Helper.coerceIn(scale, DEFAULT_SCALE, MAX_SCALE)
+        scale = coerceIn(scale, DEFAULT_SCALE, MAX_SCALE)
         Timber.d(">> scale %s -> %s", scaleFactor, scale)
         setViewScaleRate(scale)
         if (scale != DEFAULT_SCALE) {

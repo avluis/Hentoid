@@ -12,7 +12,7 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.EdoujinParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import timber.log.Timber
@@ -49,7 +49,7 @@ class EdoujinContent : BaseContentParser() {
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         content.site = Site.EDOUJIN
-        if (url.isEmpty()) return Content().setStatus(StatusContent.IGNORED)
+        if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
         return if (GALLERY_PATTERN.matcher(url).find())
             updateGallery(content, url, updateImages)
@@ -100,7 +100,7 @@ class EdoujinContent : BaseContentParser() {
         content.uploadDate = -1
         dateModified?.let {
             if (it.isNotEmpty())
-                content.uploadDate = Helper.parseDatetimeToEpoch(
+                content.uploadDate = parseDatetimeToEpoch(
                     it,
                     "yyyy-MM-dd'T'HH:mm:ssXXX"
                 ) // e.g. 2022-02-02T02:44:17+07:00
@@ -108,7 +108,7 @@ class EdoujinContent : BaseContentParser() {
 
         if (-1L == content.uploadDate) {
             datePosted?.let {
-                if (it.isNotEmpty()) content.uploadDate = Helper.parseDatetimeToEpoch(
+                if (it.isNotEmpty()) content.uploadDate = parseDatetimeToEpoch(
                     it, "yyyy-MM-dd'T'HH:mm:ssXXX"
                 ) // e.g. 2022-02-02T02:44:17+07:00
             }

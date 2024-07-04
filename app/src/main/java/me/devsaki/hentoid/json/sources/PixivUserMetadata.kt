@@ -8,7 +8,6 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
-import me.devsaki.hentoid.util.StringHelper
 
 /**
  * Data structure for Pixiv's "user details" mobile endpoint
@@ -34,11 +33,11 @@ data class PixivUserMetadata(
         private val profileImg: ProfileImgData?
     ) {
         val id: String
-            get() = StringHelper.protect(userId)
+            get() = userId
         val name: String
-            get() = StringHelper.protect(userName)
+            get() = userName
         val coverUrl: String
-            get() = if (null == profileImg) "" else StringHelper.protect(profileImg.main)
+            get() = profileImg?.main ?: ""
 
     }
 
@@ -48,14 +47,16 @@ data class PixivUserMetadata(
 
     fun update(content: Content, updateImages: Boolean): Content {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
-        content.setSite(Site.PIXIV)
-        if (error || null == body || null == body.userDetails)
-            return content.setStatus(StatusContent.IGNORED)
+        content.site = Site.PIXIV
+        if (error || null == body || null == body.userDetails) {
+            content.status = StatusContent.IGNORED
+            return content
+        }
         val data: UserData = body.userDetails
-        content.setTitle(cleanup(data.name))
+        content.title = cleanup(data.name)
         content.uniqueSiteId = data.id
-        content.setUrl("users/" + data.id)
-        content.setCoverImageUrl(data.coverUrl)
+        content.url = "users/" + data.id
+        content.coverImageUrl = data.coverUrl
         //        content.setUploadDate(
         val attributes = AttributeMap()
         val attribute = Attribute(
@@ -68,7 +69,7 @@ data class PixivUserMetadata(
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
-            content.setQtyPages(0)
+            content.qtyPages = 0
         }
         return content
     }
