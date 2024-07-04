@@ -97,7 +97,8 @@
     },
     "MANGAGO": {
       "useHentoidAgent": false,
-      "useWebviewAgent": false
+      "useWebviewAgent": false,
+      "requestsCapPerSecond": 2
     }
   }
 }
