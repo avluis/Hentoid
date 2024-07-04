@@ -98,7 +98,6 @@ class MangagoParser : BaseChapteredImageListParser() {
                     // The prefix of the URL is not necessarily the Site's, as Mangago can link chapters from its sister websites (e.g. mangago.zone, youhim.me)
                     val domain = UriParts(chp.url).host
                     pageUrls.addAll(pageNav.map { fixUrl(it.attr("href"), domain) })
-                    processPageResult(doc, targetOrder, chp, results)
                 } ?: throw EmptyResultException("Unable to detect chapter pages")
             }
 
