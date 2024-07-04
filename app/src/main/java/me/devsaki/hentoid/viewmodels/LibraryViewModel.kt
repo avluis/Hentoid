@@ -22,6 +22,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.SEED_CONTENT
+import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
@@ -1022,7 +1023,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         workManager.enqueueUniqueWork(
             R.id.merge_service.toString(),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(MergeWorker::class.java).setInputData(builder.data).build()
+            OneTimeWorkRequest.Builder(MergeWorker::class.java)
+                .setInputData(builder.data)
+                .addTag(WORK_CLOSEABLE).build()
         )
     }
 
@@ -1039,7 +1042,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         workManager.enqueueUniqueWork(
             R.id.split_service.toString(),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(SplitWorker::class.java).setInputData(builder.data).build()
+            OneTimeWorkRequest.Builder(SplitWorker::class.java)
+                .setInputData(builder.data)
+                .addTag(WORK_CLOSEABLE).build()
         )
     }
 
