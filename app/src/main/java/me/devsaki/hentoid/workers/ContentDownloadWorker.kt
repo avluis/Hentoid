@@ -241,13 +241,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Look for the next unfrozen record
         var content: Content? = null
-        var index = 0
+        var queueIdx = 0
         for (rec in queue) {
             if (!rec.frozen) {
                 content = rec.content.reach(rec)
                 if (content != null) break // Don't take broken links
             }
-            index++
+            queueIdx++
         }
         if (null == content) {
             Timber.i("No available downloads remaining. Queue paused.")
@@ -257,7 +257,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
         if (StatusContent.DOWNLOADED == content.status) {
             Timber.i("Content is already downloaded. Download aborted.")
-            dao.deleteQueue(index)
+            dao.deleteQueue(queueIdx)
             EventBus.getDefault()
                 .post(DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0))
             notificationManager.notify(DownloadErrorNotification(content))
@@ -499,8 +499,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Streamed download => just get the cover
         if (downloadMode == DownloadMode.STREAM) {
-            val coverOptional = images.firstOrNull { img -> img.isCover }
-            if (coverOptional != null) {
+            images.firstOrNull { it.isCover }?.let { coverOptional ->
                 enrichImageDownloadParams(coverOptional, content)
                 requestQueueManager.queueRequest(
                     buildImageDownloadRequest(coverOptional, targetFolder, content)
@@ -516,7 +515,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     // Set the next image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
                     // NB : Per convention, cover is always the 1st picture of a given set
                     if (img.isCover) {
-                        if (images.size > idx + 1) img.backupUrl = images[index + 1].url
+                        if (images.size > idx + 1) img.backupUrl = images[idx + 1].url
                         covers.add(img)
                     }
                     if (img.needsPageParsing) pagesToParse.add(img)
