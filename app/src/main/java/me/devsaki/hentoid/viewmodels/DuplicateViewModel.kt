@@ -182,6 +182,7 @@ class DuplicateViewModel(
                         newTitle,
                         appendBookTitle,
                         dao,
+                        { false },
                         this@DuplicateViewModel::onMergeProgress,
                         this@DuplicateViewModel::onMergeComplete
                     )

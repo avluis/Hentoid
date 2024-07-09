@@ -2047,6 +2047,7 @@ fun mergeContents(
     newTitle: String,
     useBookAsChapter: Boolean,
     dao: CollectionDAO,
+    isCanceled : () -> Boolean,
     onProgress: (Int, Int, String) -> Unit,
     onComplete: () -> Unit
 ) {
@@ -2134,6 +2135,7 @@ fun mergeContents(
         var coverFound = false
 
         for (c in contentList) {
+            if (isCanceled.invoke()) break
             var newChapter: Chapter? = null
             // Create a default "content chapter" that represents the original book before merging
             val contentChapter = Chapter(chapterOrder++, c.galleryUrl, c.title)
@@ -2246,7 +2248,12 @@ fun mergeContents(
         tempFolder?.delete()
     }
 
-    if (!isError) {
+    // Remove target folder and merged images if manually canceled
+    if (isCanceled.invoke()) {
+        targetFolder.delete()
+    }
+
+    if (!isError && !isCanceled.invoke()) {
         mergedContent.setImageFiles(mergedImages)
         mergedContent.setChapters(mergedChapters) // Chapters have to be attached to Content too
         mergedContent.qtyPages = mergedImages.size - 1

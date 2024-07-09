@@ -109,17 +109,19 @@ abstract class BaseSplitMergeWorker(
     private fun split(contentId: Long) {
         val content = dao.selectContent(contentId) ?: return
         val chapters = dao.selectChapters(chapterSplitIds.toList())
+        var targetFolder : DocumentFile? = null
 
         val images = content.imageList
         if (chapters.isEmpty()) throw ContentNotProcessedException(content, "No chapters detected")
         if (images.isEmpty()) throw ContentNotProcessedException(content, "No images detected")
         nbMax = chapters.flatMap { it.imageList }.count { it.isReadable }
         for (chap in chapters) {
+            if (isStopped) break
             val splitContent = createContentFromChapter(content, chap)
 
             // Create a new folder for the split content
             val location = getLocation(content)
-            val targetFolder = getOrCreateContentDownloadDir(
+            targetFolder = getOrCreateContentDownloadDir(
                 applicationContext,
                 splitContent,
                 location,
@@ -135,6 +137,7 @@ abstract class BaseSplitMergeWorker(
             // Copy the corresponding images to that folder
             val splitContentImages = splitContent.imageList
             for (img in splitContentImages) {
+                if (isStopped) break
                 if (img.status == StatusContent.DOWNLOADED) {
                     val extension = getExtensionFromUri(img.fileUri)
                     val newUri = copyFile(
@@ -150,6 +153,7 @@ abstract class BaseSplitMergeWorker(
                     progressPlus(chap.name)
                 }
             }
+            if (isStopped) break
 
             // Save the JSON for the new book
             val jsonFile = createJson(applicationContext, splitContent)
@@ -165,14 +169,20 @@ abstract class BaseSplitMergeWorker(
         }
         progressDone(chapterSplitIds.size)
 
+        // Remove latest target folder and split images if manually canceled
+        if (isStopped) {
+            targetFolder?.delete()
+        }
+
         // If we're here, no exception has been triggered -> cleanup if needed
-        if (deleteAfterOperation) {
+        if (deleteAfterOperation && !isStopped) {
             // TODO delete selected chapters and associated files
         }
     }
 
     private fun merge() {
         val contentList = dao.selectContent(contentIds)
+        val removedContents: MutableSet<Long> = HashSet()
         if (contentList.isEmpty()) return
 
         // Flag the content as "being deleted" (triggers blink animation)
@@ -187,14 +197,16 @@ abstract class BaseSplitMergeWorker(
                 newTitle,
                 useBookAsChapter,
                 dao,
+                this::isStopped,
                 { _, _, s -> progressPlus(s) },
                 { progressDone(contentList.size) }
             )
             // If we're here, no exception has been triggered -> cleanup if asked
-            if (deleteAfterOperation) {
+            if (deleteAfterOperation && !isStopped) {
                 contentList.forEach { c ->
                     try {
                         removeContent(applicationContext, dao, c)
+                        removedContents.add(c.id)
                         trace(
                             Log.INFO,
                             "Removed item: %s from database and file system.",
@@ -209,9 +221,12 @@ abstract class BaseSplitMergeWorker(
             }
         } catch (e: Exception) {
             Timber.w(e)
-            if (deleteAfterOperation)
-                contentList.forEach { dao.updateContentProcessedFlag(it.id, false) }
         }
+        // Reset the "marked as being processed" flag for un-deleted content
+        if (deleteAfterOperation)
+            contentList.forEach {
+                if (!removedContents.contains(it.id)) dao.updateContentProcessedFlag(it.id, false)
+            }
     }
 
 

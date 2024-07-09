@@ -1,8 +1,11 @@
 package me.devsaki.hentoid.notification.splitMerge
 
+import android.app.PendingIntent
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.receiver.MergeNotificationCancelReceiver
+import me.devsaki.hentoid.receiver.SplitNotificationCancelReceiver
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.workers.SplitMergeType
@@ -32,9 +35,20 @@ class SplitMergeProgressNotification(
             .setContentInfo(progressString)
             .setProgress(max, progress, false)
             .setColor(context.getThemedColor(R.color.secondary_light))
+            .addAction(
+                R.drawable.ic_cancel,
+                context.getString(R.string.cancel),
+                getCancelIntent(context)
+            )
             .setLocalOnly(true)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .build()
+    }
+
+    private fun getCancelIntent(context: Context): PendingIntent {
+        return if (type == SplitMergeType.SPLIT)
+            getPendingIntentForAction(context, SplitNotificationCancelReceiver::class.java)
+        else getPendingIntentForAction(context, MergeNotificationCancelReceiver::class.java)
     }
 }
