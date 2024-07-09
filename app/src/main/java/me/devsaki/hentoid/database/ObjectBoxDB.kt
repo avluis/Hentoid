@@ -378,7 +378,9 @@ object ObjectBoxDB {
     fun selectQueueContents(): List<Content> {
         val result: MutableList<Content> = ArrayList()
         val queueRecords = selectQueueRecordsQ().safeFind()
-        for (q in queueRecords) result.add(q.content.target)
+        for (q in queueRecords) {
+            q.content.reach(q)?.let { result.add(it) }
+        }
         return result
     }
 

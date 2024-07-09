@@ -165,6 +165,8 @@ object Settings {
             return sharedPreferences.getString(key, default)
                 ?.split(",")
                 ?.distinct()
+                ?.map { it.trim() }
+                ?.filterNot { it.isEmpty() }
                 ?.map { Site.searchByCode(it.toLong()) }
                 ?: emptyList()
         }
