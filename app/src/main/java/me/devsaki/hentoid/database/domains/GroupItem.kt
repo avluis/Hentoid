@@ -3,6 +3,7 @@ package me.devsaki.hentoid.database.domains
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToOne
+import me.devsaki.hentoid.database.reach
 
 @Entity
 data class GroupItem(
@@ -25,11 +26,11 @@ data class GroupItem(
 
 
     fun getContent(): Content? {
-        return if (content.isResolved) content.target else null
+        return content.reach(this)
     }
 
-    fun getGroup(): Group {
-        return group.target
+    fun getGroup(): Group? {
+        return group.reach(this)
     }
 
     val contentId: Long

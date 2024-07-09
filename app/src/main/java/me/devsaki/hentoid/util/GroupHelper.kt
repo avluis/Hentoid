@@ -247,9 +247,11 @@ fun removeContentFromGrouping(grouping: Grouping, content: Content, dao: Collect
     val toRemove = HashSet<GroupItem>()
     val needCoverUpdate: MutableList<Group> = ArrayList()
     for (gi in content.groupItems) {
-        if (gi.group.target.grouping == grouping) {
-            toRemove.add(gi)
-            if (gi.getGroup().coverContent.targetId == content.id) needCoverUpdate.add(gi.getGroup())
+        gi.getGroup()?.let { g ->
+            if (g.grouping == grouping) {
+                toRemove.add(gi)
+                if (g.coverContent.targetId == content.id) needCoverUpdate.add(g)
+            }
         }
     }
 
