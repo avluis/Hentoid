@@ -67,6 +67,7 @@ abstract class BaseSplitMergeWorker(
     private var nbMax = 0
     private var nbProgress = 0
     private var nbError = 0
+    private lateinit var progressNotification: SplitMergeProgressNotification
 
     private val dao: CollectionDAO
 
@@ -109,7 +110,7 @@ abstract class BaseSplitMergeWorker(
     private fun split(contentId: Long) {
         val content = dao.selectContent(contentId) ?: return
         val chapters = dao.selectChapters(chapterSplitIds.toList())
-        var targetFolder : DocumentFile? = null
+        var targetFolder: DocumentFile? = null
 
         val images = content.imageList
         if (chapters.isEmpty()) throw ContentNotProcessedException(content, "No chapters detected")
@@ -167,11 +168,12 @@ abstract class BaseSplitMergeWorker(
             if (customGroups.isNotEmpty())
                 moveContentToCustomGroup(splitContent, customGroups[0].getGroup(), dao)
         }
-        progressDone(chapterSplitIds.size)
 
         // Remove latest target folder and split images if manually canceled
         if (isStopped) {
             targetFolder?.delete()
+        } else {
+            progressDone(chapterSplitIds.size)
         }
 
         // If we're here, no exception has been triggered -> cleanup if needed
@@ -258,7 +260,7 @@ abstract class BaseSplitMergeWorker(
         splitContent.bookPreferences = content.bookPreferences
         var images: List<ImageFile>? = chapter.imageFiles
         if (images != null) {
-            images = chapter.imageList.sortedBy { imf -> imf.order }
+            images = chapter.imageList.sortedBy { it.order }
             val nbMaxDigits = floor(log10(images.size.toDouble()) + 1).toInt()
             for ((position, img) in images.withIndex()) {
                 img.id = 0 // Force working on a new picture
@@ -270,27 +272,31 @@ abstract class BaseSplitMergeWorker(
             }
             splitContent.setImageFiles(images)
             splitContent.setChapters(null)
-            splitContent.qtyPages = images.count { imf -> imf.isReadable }
+            splitContent.qtyPages = images.count { it.isReadable }
             splitContent.computeSize()
             var coverImageUrl = images[0].url
             if (coverImageUrl.isEmpty()) coverImageUrl = content.coverImageUrl
             splitContent.coverImageUrl = coverImageUrl
         }
-        val splitAttributes = listOf(content).flatMap { c -> c.attributes }
+        val splitAttributes = listOf(content).flatMap { it.attributes }
         splitContent.addAttributes(splitAttributes)
         return splitContent
     }
 
     private fun progressPlus(bookTitle: String) {
         nbProgress++
-        notificationManager.notify(
-            SplitMergeProgressNotification(
+        if (!this::progressNotification.isInitialized) {
+            progressNotification = SplitMergeProgressNotification(
                 bookTitle,
                 nbProgress + nbError,
                 nbMax,
                 operationType
             )
-        )
+        } else {
+            progressNotification.progress = nbProgress + nbError
+        }
+        if (isStopped) return
+        notificationManager.notify(progressNotification)
         EventBus.getDefault().post(
             ProcessEvent(
                 ProcessEvent.Type.PROGRESS,
@@ -304,6 +310,7 @@ abstract class BaseSplitMergeWorker(
     }
 
     private fun progressDone(nbBooksDone: Int) {
+        if (isStopped) return
         notificationManager.notifyLast(
             SplitMergeCompleteNotification(
                 nbBooksDone,

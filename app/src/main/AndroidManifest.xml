@@ -685,6 +685,10 @@
 
         <receiver android:name=".receiver.TransformNotificationStopReceiver" />
 
+        <receiver android:name=".receiver.SplitNotificationCancelReceiver" />
+
+        <receiver android:name=".receiver.MergeNotificationCancelReceiver" />
+
         <receiver android:name=".receiver.AppUpdateDownloadReceiver" />
 
         <!-- Providers -->

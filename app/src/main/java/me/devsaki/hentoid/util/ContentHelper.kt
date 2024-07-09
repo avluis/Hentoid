@@ -2047,7 +2047,7 @@ fun mergeContents(
     newTitle: String,
     useBookAsChapter: Boolean,
     dao: CollectionDAO,
-    isCanceled : () -> Boolean,
+    isCanceled: () -> Boolean,
     onProgress: (Int, Int, String) -> Unit,
     onComplete: () -> Unit
 ) {
@@ -2145,6 +2145,7 @@ fun mergeContents(
             val firstImageIsCover = !imgs.any { it.isCover }
             var imgIndex = -1
             for (img in imgs) {
+                if (isCanceled.invoke()) break
                 imgIndex++
                 // Unarchive images by chunks of 80MB max
                 if (c.isArchive) {
@@ -2281,7 +2282,8 @@ fun mergeContents(
                 mergedContent.id
             )
     }
-    onComplete.invoke()
+
+    if (!isCanceled.invoke()) onComplete.invoke()
 }
 
 fun getLocation(content: Content): StorageLocation {

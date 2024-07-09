@@ -14,6 +14,8 @@ import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
+import me.devsaki.hentoid.util.getStackTraceString
+import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
 import me.devsaki.hentoid.util.writeLog
@@ -107,7 +109,7 @@ abstract class BaseWorker(
         } catch (e: Exception) {
             onInterrupt()
             logs?.apply {
-                add(LogEntry("Exception caught ! %s : %s", e.message, e.stackTrace))
+                add(LogEntry("Exception caught ! %s : %s", e.message, getStackTraceString(e)))
             }
             Timber.e(e)
         } finally {

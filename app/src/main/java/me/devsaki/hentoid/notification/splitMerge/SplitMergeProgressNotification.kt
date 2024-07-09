@@ -13,37 +13,44 @@ import java.util.Locale
 
 class SplitMergeProgressNotification(
     private val title: String,
-    private val progress: Int,
+    var progress: Int,
     private val max: Int,
     private val type: SplitMergeType
 ) : BaseNotification() {
 
-    private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
+    lateinit var builder: NotificationCompat.Builder
 
     override fun onCreateNotification(context: Context): android.app.Notification {
-        return NotificationCompat.Builder(context, ID)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
-            .setContentTitle(
-                context.getString(
-                    when (type) {
-                        SplitMergeType.SPLIT -> R.string.split_progress
-                        SplitMergeType.MERGE -> R.string.merge_progress
-                    }
+        val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
+
+        if (!this::builder.isInitialized) {
+            builder = NotificationCompat.Builder(context, ID)
+                .setSmallIcon(R.drawable.ic_hentoid_shape)
+                .setContentTitle(
+                    context.getString(
+                        when (type) {
+                            SplitMergeType.SPLIT -> R.string.split_progress
+                            SplitMergeType.MERGE -> R.string.merge_progress
+                        }
+                    )
                 )
-            )
-            .setContentText(title)
-            .setContentInfo(progressString)
-            .setProgress(max, progress, false)
-            .setColor(context.getThemedColor(R.color.secondary_light))
-            .addAction(
-                R.drawable.ic_cancel,
-                context.getString(R.string.cancel),
-                getCancelIntent(context)
-            )
-            .setLocalOnly(true)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .build()
+                .setContentText(title)
+                .setColor(context.getThemedColor(R.color.secondary_light))
+                .setLocalOnly(true)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .addAction(
+                    R.drawable.ic_cancel,
+                    context.getString(R.string.cancel),
+                    getCancelIntent(context)
+                )
+        }
+
+        builder.apply {
+            setContentInfo(progressString)
+            setProgress(max, progress, false)
+        }
+        return builder.build()
     }
 
     private fun getCancelIntent(context: Context): PendingIntent {
