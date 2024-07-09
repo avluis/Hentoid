@@ -26,7 +26,7 @@ data class LusciousBookMetadata(
 
     @JsonClass(generateAdapter = true)
     data class AlbumInfo(
-        val id: String,
+        val id: String?,
         val title: String?,
         val url: String?,
         val created: String,
