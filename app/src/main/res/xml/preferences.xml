@@ -314,6 +314,13 @@
                 android:title="@string/pref_browser_mark_merged_title"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_mark_queued_default"
+                android:key="browser_mark_queued"
+                android:summaryOff="@string/pref_browser_mark_queued_off"
+                android:summaryOn="@string/pref_browser_mark_queued_on"
+                android:title="@string/pref_browser_mark_queued_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_mark_blocked_default"
                 android:key="browser_mark_blocked"
                 android:summaryOff="@string/pref_browser_mark_blocked_off"
