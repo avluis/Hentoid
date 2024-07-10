@@ -203,6 +203,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     // List of URLs of merged books for the current site
     private val mergedBooksUrls: MutableList<String> = ArrayList()
 
+    // List of URLs of queued books for the current site
+    private val queuedBooksUrls: MutableList<String> = ArrayList()
+
     // List of tags of Preference-browser-blocked tags
     private var m_prefBlockedTags: MutableList<String> = ArrayList()
 
@@ -241,6 +244,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         Preferences.registerPrefsChangedListener(listener)
         if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls()
         if (Preferences.isBrowserMarkMerged()) updateMergedBooksUrls()
+        if (Preferences.isBrowserMarkQueued()) updateQueuedBooksUrls()
         if (Preferences.isBrowserMarkBlockedTags()) updatePrefBlockedTags()
         Timber.d("Loading site: %s", getStartSite())
 
@@ -1175,6 +1179,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         )
         if (Preferences.isQueueAutostart()) resumeQueue(this)
         setActionMode(ActionMode.VIEW_QUEUE)
+        if (webClient.isMarkQueued()) updateQueuedBooksUrls()
     }
 
     /**
@@ -1502,6 +1507,10 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
     }
 
+    private fun clearDownloadedBooksUrls() {
+        downloadedBooksUrls.clear()
+    }
+
     private fun updateMergedBooksUrls() {
         synchronized(mergedBooksUrls) {
             mergedBooksUrls.clear()
@@ -1519,6 +1528,25 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     .filterNot { obj: String -> obj.isEmpty() }
             )
         }
+    }
+
+    private fun clearMergedBooksUrls() {
+        mergedBooksUrls.clear()
+    }
+
+    private fun updateQueuedBooksUrls() {
+        synchronized(queuedBooksUrls) {
+            queuedBooksUrls.clear()
+            queuedBooksUrls.addAll(
+                dao.selectQueueUrls(getStartSite())
+                    .map { url -> simplifyUrl(url) }
+                    .filterNot { obj: String -> obj.isEmpty() }
+            )
+        }
+    }
+
+    private fun clearQueueBooksUrls() {
+        queuedBooksUrls.clear()
     }
 
     private fun updatePrefBlockedTags() {
@@ -1540,6 +1568,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     fun onDownloadEvent(event: DownloadEvent) {
         if (event.eventType === DownloadEvent.Type.EV_COMPLETE) {
             if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls()
+            if (webClient.isMarkQueued()) updateQueuedBooksUrls()
             if (event.content != null && event.content == currentContent && event.content!!.status == StatusContent.DOWNLOADED) {
                 setActionMode(ActionMode.READ)
             }
@@ -1629,6 +1658,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         get() = downloadedBooksUrls.toMutableList() // Work on a copy to avoid any thread-synch issue
     override val allMergedBooksUrls: List<String>
         get() = mergedBooksUrls.toMutableList()
+    override val allQueuedBooksUrls: List<String>
+        get() = queuedBooksUrls.toMutableList()
     override val prefBlockedTags: List<String>
         get() = m_prefBlockedTags.toMutableList()
     override val customCss: String
@@ -1641,7 +1672,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun computeCustomCss(): String {
         if (null == m_customCss) {
             val sb = StringBuilder()
-            if (Preferences.isBrowserMarkDownloaded() || Preferences.isBrowserMarkMerged() || Preferences.isBrowserMarkBlockedTags()) getAssetAsString(
+            if (Preferences.isBrowserMarkDownloaded() || Preferences.isBrowserMarkMerged() || Preferences.isBrowserMarkQueued() || Preferences.isBrowserMarkBlockedTags()) getAssetAsString(
                 assets, "downloaded.css", sb
             )
             if (getStartSite() == Site.NHENTAI && Preferences.isBrowserNhentaiInvisibleBlacklist()) getAssetAsString(
@@ -1676,12 +1707,17 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         } else if (Preferences.Key.BROWSER_MARK_DOWNLOADED == key) {
             m_customCss = null
             webClient.setMarkDownloaded(Preferences.isBrowserMarkDownloaded())
-            if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls()
+            if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls() else clearDownloadedBooksUrls()
             reload = true
         } else if (Preferences.Key.BROWSER_MARK_MERGED == key) {
             m_customCss = null
             webClient.setMarkMerged(Preferences.isBrowserMarkMerged())
-            if (webClient.isMarkMerged()) updateMergedBooksUrls()
+            if (webClient.isMarkMerged()) updateMergedBooksUrls() else clearMergedBooksUrls()
+            reload = true
+        } else if (Preferences.Key.BROWSER_MARK_QUEUED == key) {
+            m_customCss = null
+            webClient.setMarkQueued(Preferences.isBrowserMarkQueued())
+            if (webClient.isMarkQueued()) updateQueuedBooksUrls() else clearQueueBooksUrls()
             reload = true
         } else if (Preferences.Key.BROWSER_MARK_BLOCKED == key) {
             m_customCss = null
