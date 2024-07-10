@@ -270,6 +270,19 @@ object ObjectBoxDB {
             }.build()
     }
 
+    fun selectQueueUrls(site: Site): HashSet<String> {
+        store.boxFor(Content::class.java).query()
+            .`in`(Content_.status, getQueueStatuses())
+            .equal(Content_.site, site.code.toLong())
+            .filter { c: Content ->
+                StatusContent.ERROR == c.status || c.queueRecords != null && !c.queueRecords!!
+                    .isEmpty()
+            }
+            .build().use { qb ->
+                return qb.property(Content_.dbUrl).findStrings().toHashSet()
+            }
+    }
+
     fun selectAllFlaggedBooksQ(): Query<Content> {
         return store.boxFor(Content::class.java).query()
             .equal(Content_.isFlaggedForDeletion, true).build()

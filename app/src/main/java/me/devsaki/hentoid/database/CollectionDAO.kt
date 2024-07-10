@@ -240,6 +240,8 @@ interface CollectionDAO {
 
     fun selectQueueLive(query: String?, source: Site?): LiveData<List<QueueRecord>>
 
+    fun selectQueueUrls(site: Site): Set<String>
+
     fun addContentToQueue(
         content: Content,
         sourceImageStatus: StatusContent?,
