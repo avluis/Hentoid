@@ -72,3 +72,28 @@
   z-index:auto;
   pointer-events: none;
 }
+
+/* Custom styles to mark queued books*/
+.watermarked-queued {
+
+}
+
+.watermarked-queued img {
+  filter: grayscale(100%) opacity(25%);
+}
+
+.watermarked-queued:after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-image: url("https://bogus.com/hentoid-queuedmark.webp");
+  background-size: 75px 75px;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  z-index:auto;
+  pointer-events: none;
+}
