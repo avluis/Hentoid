@@ -53,6 +53,18 @@ object DatabaseMaintenance {
     }
 
     private fun cleanContent(context: Context, emitter: (Float) -> Unit) {
+        val mdb = MaintenanceDAO()
+        try {
+            // Remove empty QueueRecords from the queue (still not sure how they appear in the first place)
+            Timber.i("Removing orphan Queue records : start")
+            val orphanIds = mdb.selectOrphanQueueRecordIds()
+            Timber.i("Removing orphan Queue records : %s items detected", orphanIds.size)
+            mdb.deleteQueueRecords(orphanIds)
+            Timber.i("Removing orphan Queue records : done")
+        } finally {
+            mdb.cleanup()
+        }
+
         try {
             // Set items that were being downloaded in previous session as paused
             Timber.i("Updating queue status : start")
@@ -91,18 +103,6 @@ object DatabaseMaintenance {
             Timber.i("Moving back isolated items to queue : done")
         } finally {
             ObjectBoxDB.cleanup()
-        }
-
-        val mdb = MaintenanceDAO()
-        try {
-            // Remove empty QueueRecords from the queue (still not sure how they appear in the first place)
-            Timber.i("Removing orphan Queue records : start")
-            val orphanIds = mdb.selectOrphanQueueRecordIds()
-            Timber.i("Removing orphan Queue records : %s items detected", orphanIds.size)
-            mdb.deleteQueueRecords(orphanIds)
-            Timber.i("Removing orphan Queue records : done")
-        } finally {
-            mdb.cleanup()
         }
     }
 

@@ -128,6 +128,7 @@ open class CustomWebViewClient : WebViewClient {
     // Faster access to Preferences settings
     private val markDownloaded = AtomicBoolean(Preferences.isBrowserMarkDownloaded())
     private val markMerged = AtomicBoolean(Preferences.isBrowserMarkMerged())
+    private val markQueued = AtomicBoolean(Preferences.isBrowserMarkQueued())
     private val markBlockedTags = AtomicBoolean(Preferences.isBrowserMarkBlockedTags())
     private val dnsOverHttpsEnabled = AtomicBoolean(Preferences.getDnsOverHttps() > -1)
 
@@ -163,6 +164,15 @@ open class CustomWebViewClient : WebViewClient {
             tintBitmap(
                 getBitmapFromVectorDrawable(
                     HentoidApp.getInstance(), R.drawable.ic_action_merge
+                ), ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
+            )
+        )
+
+        // this is for queued books
+        val QUEUED_MARK = bitmapToWebp(
+            tintBitmap(
+                getBitmapFromVectorDrawable(
+                    HentoidApp.getInstance(), R.drawable.ic_action_queue
                 ), ContextCompat.getColor(HentoidApp.getInstance(), R.color.secondary_light)
             )
         )
@@ -495,6 +505,10 @@ open class CustomWebViewClient : WebViewClient {
             WebResourceResponse(
                 MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(MERGED_MARK)
             )
+        } else if (isMarkQueued() && url.contains("hentoid-queuedmark")) {
+            WebResourceResponse(
+                MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(QUEUED_MARK)
+            )
         } else if (url.contains("hentoid-blockedmark")) {
             WebResourceResponse(
                 MIME_IMAGE_WEBP, "utf-8", ByteArrayInputStream(BLOCKED_MARK)
@@ -511,7 +525,7 @@ open class CustomWebViewClient : WebViewClient {
             // If we're here to remove removable elements or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
             if ((removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty()
-                        || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags()
+                        || isMarkDownloaded() || isMarkMerged() || isMarkQueued() || isMarkBlockedTags()
                         || activity != null && activity.customCss.isNotEmpty())
                 && (getExtensionFromUri(url).isEmpty()
                         || getExtensionFromUri(url).equals("html", ignoreCase = true))
@@ -675,7 +689,7 @@ open class CustomWebViewClient : WebViewClient {
                     // Remove removable elements from HTML resources
                     activity?.let {
                         val customCss = it.customCss
-                        if (removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty() || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || customCss.isNotEmpty()) {
+                        if (removableElements.isNotEmpty() || jsContentBlacklist.isNotEmpty() || isMarkDownloaded() || isMarkMerged() || isMarkQueued() || isMarkBlockedTags() || customCss.isNotEmpty()) {
                             browserStream = processHtml(
                                 browserStream,
                                 url,
@@ -684,6 +698,7 @@ open class CustomWebViewClient : WebViewClient {
                                 jsContentBlacklist,
                                 it.allSiteUrls,
                                 it.allMergedBooksUrls,
+                                it.allQueuedBooksUrls,
                                 it.prefBlockedTags
                             )
                         }
@@ -789,6 +804,14 @@ open class CustomWebViewClient : WebViewClient {
         markMerged.set(value)
     }
 
+    fun isMarkQueued(): Boolean {
+        return markQueued.get()
+    }
+
+    fun setMarkQueued(value: Boolean) {
+        markQueued.set(value)
+    }
+
     fun isMarkBlockedTags(): Boolean {
         return markBlockedTags.get()
     }
@@ -812,6 +835,7 @@ open class CustomWebViewClient : WebViewClient {
      * @param jsContentBlacklist Blacklisted elements to detect script tags to remove
      * @param siteUrls           Urls of the covers or links to visually mark as downloaded
      * @param mergedSiteUrls     Urls of the covers or links to visually mark as merged
+     * @param queuedSiteUrls     Urls of the covers or links to visually mark as queued
      * @param blockedTags        Tags of the preference-browser-blocked tag option to visually mark as blocked
      * @return Stream containing the HTML document stripped from the elements to remove
      */
@@ -824,6 +848,7 @@ open class CustomWebViewClient : WebViewClient {
         jsContentBlacklist: List<String>?,
         siteUrls: List<String>?,
         mergedSiteUrls: List<String>?,
+        queuedSiteUrls: List<String>?,
         blockedTags: List<String>?
     ): InputStream {
         val doc = Jsoup.parse(stream, null, baseUri)
@@ -858,8 +883,8 @@ open class CustomWebViewClient : WebViewClient {
             }
         }
 
-        // Mark downloaded books and merged books
-        if (siteUrls != null && mergedSiteUrls != null && (siteUrls.isNotEmpty() || mergedSiteUrls.isNotEmpty())) {
+        // Mark downloaded books, merged books and queued books
+        if (siteUrls != null && mergedSiteUrls != null && queuedSiteUrls != null && (siteUrls.isNotEmpty() || mergedSiteUrls.isNotEmpty() || queuedSiteUrls.isNotEmpty())) {
             // Format elements
             val plainLinks = doc.select("a")
             val linkedImages = doc.select("a img")
@@ -924,6 +949,22 @@ open class CustomWebViewClient : WebViewClient {
                             markedElement = value.first
                         }
                         markedElement!!.addClass("watermarked-merged")
+                        break
+                    }
+                }
+                for (url in queuedSiteUrls) {
+                    if (key.endsWith(url)) {
+                        // Linked images have priority over plain links
+                        var markedElement = value.second
+                        if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
+                            var imgParent = markedElement.parent()
+                            for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
+                                imgParent!!.parent()
+                            if (imgParent != null) markedElement = imgParent
+                        } else { // Mark plain link
+                            markedElement = value.first
+                        }
+                        markedElement!!.addClass("watermarked-queued")
                         break
                     }
                 }
@@ -1026,6 +1067,7 @@ open class CustomWebViewClient : WebViewClient {
         val allSiteUrls: List<String>
 
         val allMergedBooksUrls: List<String>
+        val allQueuedBooksUrls: List<String>
         val prefBlockedTags: List<String>
         val customCss: String
         val scope: CoroutineScope

@@ -1060,6 +1060,10 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectQueueRecordsQ().safeFind()
     }
 
+    override fun selectQueueUrls(site: Site): Set<String> {
+        return ObjectBoxDB.selectQueueUrls(site)
+    }
+
     override fun updateQueue(queue: List<QueueRecord>) {
         ObjectBoxDB.updateQueue(queue)
     }

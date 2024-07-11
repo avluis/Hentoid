@@ -348,6 +348,10 @@ public final class Preferences {
         return getBoolPref(Key.BROWSER_MARK_MERGED, Default.BROWSER_MARK_MERGED);
     }
 
+    public static boolean isBrowserMarkQueued() {
+        return getBoolPref(Key.BROWSER_MARK_QUEUED, Default.BROWSER_MARK_QUEUED);
+    }
+
     public static boolean isBrowserMarkBlockedTags() {
         return getBoolPref(Key.BROWSER_MARK_BLOCKED, Default.BROWSER_MARK_BLOCKED);
     }
@@ -830,6 +834,7 @@ public final class Preferences {
         static final String BROWSER_RESUME_LAST = "pref_browser_resume_last";
         public static final String BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded";
         public static final String BROWSER_MARK_MERGED = "browser_mark_merged";
+        public static final String BROWSER_MARK_QUEUED = "browser_mark_queued";
         public static final String BROWSER_MARK_BLOCKED = "browser_mark_blocked";
         public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
         public static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
@@ -946,6 +951,7 @@ public final class Preferences {
         static final boolean BROWSER_RESUME_LAST = false;
         static final boolean BROWSER_MARK_DOWNLOADED = false;
         static final boolean BROWSER_MARK_MERGED = false;
+        static final boolean BROWSER_MARK_QUEUED = false;
         static final boolean BROWSER_MARK_BLOCKED = false;
         static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
         static final boolean BROWSER_QUICK_DL = true;

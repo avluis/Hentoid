@@ -106,6 +106,9 @@
     <string name="pref_browser_mark_merged_title">Mark merged books</string>
     <string name="pref_browser_mark_merged_off">Merged books have no special display</string>
     <string name="pref_browser_mark_merged_on">Merged books are marked\nNB: does not work on all sites</string>
+    <string name="pref_browser_mark_queued_title">Mark queued books</string>
+    <string name="pref_browser_mark_queued_off">Queued books have no special display</string>
+    <string name="pref_browser_mark_queued_on">Queued books are marked\nNB: does not work on all sites</string>
     <string name="pref_browser_mark_blocked_title">Mark books with blocked tags</string>
     <string name="pref_browser_mark_blocked_off">Books with blocked tags have no special display</string>
     <string name="pref_browser_mark_blocked_on">Books with blocked tags are marked\nNB: does not work on all sites</string>

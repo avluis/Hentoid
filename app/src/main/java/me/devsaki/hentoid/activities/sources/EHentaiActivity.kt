@@ -85,7 +85,7 @@ class EHentaiActivity : BaseWebActivity() {
                     }
                 }
             }
-            return if (isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags())
+            return if (isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || isMarkQueued())
                 super.parseResponse(
                     url,
                     requestHeaders,
