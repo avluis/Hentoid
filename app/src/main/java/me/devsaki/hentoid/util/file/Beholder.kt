@@ -183,7 +183,7 @@ object Beholder {
                 if (it.isNotEmpty()) it[0]
                 else null
             }
-        if (null == inFile) return result
+        if (null == inFile || 0L == inFile.length()) return result
 
         inFile.inputStream().use {
             DataInputStream(it).use { dis ->
