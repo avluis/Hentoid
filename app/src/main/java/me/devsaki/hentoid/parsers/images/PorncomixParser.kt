@@ -7,9 +7,13 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.urlsToImageFiles
+import me.devsaki.hentoid.util.download.getCanonicalUrl
+import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
+import me.devsaki.hentoid.util.network.POST_MIME_TYPE
 import me.devsaki.hentoid.util.network.getOnlineDocument
+import me.devsaki.hentoid.util.network.postOnlineDocument
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
@@ -19,7 +23,25 @@ class PorncomixParser : BaseChapteredImageListParser() {
     }
 
     override fun getChapterSelector(): ChapterSelector {
-        return ChapterSelector(listOf(".wp-manga-chapter a[href^=\$galleryUrl]"))
+        return ChapterSelector(listOf("[class^=wp-manga-chapter] a"))
+    }
+
+    override fun getChapterLinks(
+        doc: Document,
+        onlineContent: Content,
+        selector: ChapterSelector
+    ): List<Element> {
+        val canonicalUrl = getCanonicalUrl(doc)
+        val headers = fetchHeaders(onlineContent)
+        // Retrieve the chapters page chunk
+        postOnlineDocument(
+            canonicalUrl + "ajax/chapters/",
+            headers,
+            Site.PORNCOMIX.useHentoidAgent(), Site.PORNCOMIX.useWebviewAgent(),
+            "",
+            POST_MIME_TYPE
+        )?.let { return it.select(selector.selectors[0]) }
+        throw EmptyResultException("Chapters page couldn't be downloaded @ $canonicalUrl")
     }
 
     @Throws(Exception::class)
