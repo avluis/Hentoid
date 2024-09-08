@@ -79,7 +79,7 @@ class PururinContent : BaseContentParser() {
 
         title?.let {
             content.title = if (it.isNotEmpty()) cleanup(it[0]) else NO_TITLE
-        } ?: {
+        } ?: run {
             content.title = NO_TITLE
         }
 
@@ -135,7 +135,7 @@ class PururinContent : BaseContentParser() {
 
         collectionTitle?.let {
             content.title = if (it.isNotEmpty()) cleanup(it) else NO_TITLE
-        } ?: {
+        } ?: run {
             content.title = NO_TITLE
         }
 

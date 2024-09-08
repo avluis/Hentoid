@@ -148,7 +148,7 @@ object ObjectBoxDB {
                             attributes[i] = attr
                             attr.addLocationsFrom(inputAttr)
                             attrBox.put(attr)
-                        } ?: { // New attribute -> normalize name
+                        } ?: run { // New attribute -> normalize name
                             inputAttr.name =
                                 inputAttr.name.lowercase(Locale.getDefault()).trim()
                             if (inputAttr.type == AttributeType.ARTIST || inputAttr.type == AttributeType.CIRCLE)

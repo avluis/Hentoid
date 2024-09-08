@@ -64,7 +64,7 @@ class NhentaiContent : BaseContentParser() {
         isError = isError || theUrl.isEmpty()
         thumbs?.let {
             isError = isError || it.isEmpty()
-        } ?: {
+        } ?: run {
             isError = true
         }
         isError = isError || theUrl.endsWith("favorite") // Fav button

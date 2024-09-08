@@ -75,7 +75,7 @@ class ManhwaParser : BaseChapteredImageListParser() {
                     chp
                 )
             } else Timber.w("Chapter parsing failed for %s : no pictures found", chp.url)
-        } ?: {
+        } ?: run {
             Timber.w("Chapter parsing failed for %s : no response", chp.url)
         }
         return emptyList()
