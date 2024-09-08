@@ -23,6 +23,7 @@ import me.devsaki.hentoid.notification.splitMerge.SplitMergeStartNotification
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createJson
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
+import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.getLocation
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
@@ -134,6 +135,8 @@ abstract class BaseSplitMergeWorker(
                     "Could not create target directory"
                 )
             splitContent.setStorageDoc(targetFolder)
+            // Ignore the new folder as it is being splitted
+            Beholder.ignoreFolder(targetFolder)
 
             // Copy the corresponding images to that folder
             val splitContentImages = splitContent.imageList
