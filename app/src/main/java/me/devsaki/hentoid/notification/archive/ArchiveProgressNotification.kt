@@ -16,7 +16,7 @@ class ArchiveProgressNotification(
     private val progress: Float,
 ) : BaseNotification() {
 
-    private val progressPc: String = " %.2f%%".format(Locale.US, progress)
+    private val progressPc: String = " %.2f%%".format(Locale.US, progress * 100)
     private val progressStr = if (0 == maxItems) "" else " ($processedItems / $maxItems)"
 
     override fun onCreateNotification(context: Context): android.app.Notification {
