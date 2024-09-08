@@ -736,6 +736,7 @@ fun scanBookFolder(
     jsonFile: DocumentFile?
 ): Content {
     Timber.d(">>>> scan book folder %s", bookFolder.uri)
+    val now = Instant.now().toEpochMilli()
     var result: Content? = null
     if (jsonFile != null) {
         try {
@@ -753,7 +754,7 @@ fun scanBookFolder(
             Timber.w(e)
         }
     }
-    if (null == result) {
+    if (null == result) { // JSON can't be used
         var title = cleanTitle(bookFolder.name)
         // Tachiyomi downloads - include parent folder name as title
         if (title.lowercase(Locale.getDefault())
@@ -778,14 +779,16 @@ fun scanBookFolder(
         }
         result.site = site
         result.downloadDate = bookFolder.lastModified()
+        result.downloadCompletionDate = now
         result.addAttributes(parentNamesAsTags(parentNames))
     }
     if (targetStatus == StatusContent.EXTERNAL) result.addAttributes(newExternalAttribute())
     result.status = targetStatus
     result.setStorageDoc(bookFolder)
     if (null != parentFolder) result.parentStorageUri = parentFolder.uri.toString()
-    if (0L == result.downloadDate) result.downloadDate = Instant.now().toEpochMilli()
-    result.lastEditDate = Instant.now().toEpochMilli()
+    if (0L == result.downloadDate) result.downloadDate = now
+    if (StatusContent.EXTERNAL == targetStatus) result.downloadCompletionDate = now
+    result.lastEditDate = now
     val images: MutableList<ImageFile> = ArrayList()
     scanFolderImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles)
 
@@ -870,7 +873,9 @@ fun scanChapterFolders(
     result.addAttributes(newExternalAttribute())
     result.status = StatusContent.EXTERNAL
     result.setStorageDoc(parent)
-    if (0L == result.downloadDate) result.downloadDate = Instant.now().toEpochMilli()
+    val now = Instant.now().toEpochMilli()
+    if (0L == result.downloadDate) result.downloadDate = now
+    result.downloadCompletionDate = now
     result.lastEditDate = Instant.now().toEpochMilli()
     val images: MutableList<ImageFile> = ArrayList()
     // Scan pages across all subfolders
@@ -1051,7 +1056,9 @@ fun scanForArchives(
         content.addAttributes(newExternalAttribute())
         content.status = StatusContent.EXTERNAL
         content.setStorageDoc(parent)
-        if (0L == content.downloadDate) content.downloadDate = Instant.now().toEpochMilli()
+        val now = Instant.now().toEpochMilli()
+        if (0L == content.downloadDate) content.downloadDate = now
+        content.downloadCompletionDate = now
         content.lastEditDate = Instant.now().toEpochMilli()
 
         val chapterStr = context.getString(R.string.gallery_chapter_prefix)
@@ -1175,8 +1182,10 @@ fun scanArchive(
         status = targetStatus
         setStorageDoc(archive) // Here storage URI is a file URI, not a folder
         parentStorageUri = parentFolder.uri.toString()
-        if (0L == downloadDate) downloadDate = Instant.now().toEpochMilli()
-        lastEditDate = Instant.now().toEpochMilli()
+        val now = Instant.now().toEpochMilli()
+        if (0L == downloadDate) downloadDate = now
+        downloadCompletionDate = now
+        lastEditDate = now
         setImageFiles(images)
         if (0 == qtyPages) {
             val countUnreadable = images.filterNot { it.isReadable }.count()
