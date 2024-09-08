@@ -377,14 +377,17 @@ private fun Context.addFile(
 fun Context.zipFiles(
     files: List<DocumentFile>,
     out: OutputStream,
+    isCanceled: () -> Boolean,
     progress: ((Float) -> Unit)? = null
 ) {
     assertNonUiThread()
     ZipOutputStream(BufferedOutputStream(out)).use { zipOutputStream ->
         val data = ByteArray(BUFFER)
         files.forEachIndexed { index, file ->
+            if (isCanceled()) return@forEachIndexed
             addFile(file, zipOutputStream, data)
-            progress?.invoke(index * 1f / files.size)
+            // Signal progress every 10 pages
+            if (0 == index % 10) progress?.invoke(index * 1f / files.size)
         }
         out.flush()
     }
