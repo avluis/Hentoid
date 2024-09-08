@@ -160,7 +160,7 @@ abstract class BaseSplitMergeWorker(
             val jsonFile = createJson(applicationContext, splitContent)
             if (jsonFile != null) splitContent.jsonUri = jsonFile.uri.toString()
 
-            // Save new content (incl. onn-custom group operations)
+            // Save new content (incl. non-custom group operations)
             addContent(applicationContext, dao, splitContent)
 
             // Set custom group, if any
@@ -178,7 +178,7 @@ abstract class BaseSplitMergeWorker(
 
         // If we're here, no exception has been triggered -> cleanup if needed
         if (deleteAfterOperation && !isStopped) {
-            // TODO delete selected chapters and associated files
+            // TODO delete selected chapters and associated files when the "delete after operation" feature is implemented in the UI
         }
     }
 

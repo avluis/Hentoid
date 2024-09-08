@@ -14,9 +14,13 @@ private const val SNAPSHOT_LOCATION = "beholder.snapshot"
 object Beholder {
 
     // Key : Root document Uri
+    // Value
     //      Key : hash64(name, size)
     //      Value : Content ID if any; -1 if none
     private val snapshot: MutableMap<String, Map<Long, Long>> = HashMap()
+
+    // Key : Root document Uri
+    private val ignoreList = HashSet<String>()
 
 
     fun init(ctx: Context) {
@@ -57,12 +61,14 @@ object Beholder {
                             listFiles = true,
                             stopFirst = false
                         ).associateBy({ it.uniqueHash() }, { it })
-                        if (BuildConfig.DEBUG) Timber.d("  Files found : " + files.size)
+                        val validFiles =
+                            files.filterNot { ignoreList.contains(it.value.uri.toString()) }
+                        if (BuildConfig.DEBUG) Timber.d("  Files found : " + files.size + " (" + (files.size - validFiles.size) + ") ignored")
 
                         // Select new docs
                         docs.let { id ->
-                            val newKeys = files.keys.asSequence().minus(id.keys)
-                            newDocs.addAll(files.filterKeys { it in newKeys }.values)
+                            val newKeys = validFiles.keys.asSequence().minus(id.keys)
+                            newDocs.addAll(validFiles.filterKeys { it in newKeys }.values)
                             if (BuildConfig.DEBUG) Timber.d("  New : " + newKeys.count() + " - " + newDocs.size)
                         } ?: {
                             // Root Uri absent from initial snapshot -> all is new
@@ -97,6 +103,13 @@ object Beholder {
         return Pair(allNewDocs, allDeletedDocs)
     }
 
+    /**
+     * Ignore given for all subsequent scanForDelta's until said folder is registered using registerContent
+     */
+    fun ignoreFolder(folder: DocumentFile) {
+        ignoreList.add(folder.uri.toString())
+    }
+
     fun registerContent(
         ctx: Context,
         parentUri: String,
@@ -117,6 +130,7 @@ object Beholder {
             val contentDocsMap = HashMap<String, Pair<DocumentFile, Long>>()
             docs.forEach {
                 contentDocsMap[it.first.uri.toString()] = Pair(it.first, it.second)
+                ignoreList.remove(it.first.uri.toString())
             }
             getDocumentFromTreeUriString(ctx, uri)?.let { doc ->
                 try {
