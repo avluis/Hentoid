@@ -34,15 +34,19 @@ class ManhwaParser : BaseChapteredImageListParser() {
         selector: ChapterSelector
     ): List<Element> {
         val canonicalUrl = getCanonicalUrl(doc)
-        val headers = fetchHeaders(onlineContent)
-        // Retrieve the chapters page chunk
-        postOnlineDocument(
-            canonicalUrl + "ajax/chapters/",
-            headers,
-            Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent(),
-            "",
-            POST_MIME_TYPE
-        )?.let { return it.select(selector.selectors[0]) }
+        val postId = doc.select("#manga-chapters-holder").attr("data-id")
+        if (!postId.isNullOrEmpty()) {
+            val postUrl = onlineContent.site.url + "wp-admin/admin-ajax.php"
+            val headers = fetchHeaders(onlineContent)
+            // Retrieve the chapters page chunk
+            postOnlineDocument(
+                postUrl,
+                headers,
+                Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent(),
+                "action=ajax_chap&post_id=$postId",
+                POST_MIME_TYPE
+            )?.let { return it.select(selector.selectors[0]) }
+        }
         throw EmptyResultException("Chapters page couldn't be downloaded @ $canonicalUrl")
     }
 
