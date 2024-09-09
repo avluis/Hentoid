@@ -54,6 +54,7 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
 import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.file.ArchiveEntry
+import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.Beholder.registerContent
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.NameFilter
@@ -2111,11 +2112,11 @@ fun mergeContents(
         targetFolder = getOrCreateContentDownloadDir(context, mergedContent, location, true)
         parentFolder = getDocumentFromTreeUriString(context, Preferences.getStorageUri(location))
     }
-    if (null == targetFolder || !targetFolder.exists()) throw ContentNotProcessedException(
-        mergedContent,
-        "Could not create target directory"
-    )
+    if (null == targetFolder || !targetFolder.exists())
+        throw ContentNotProcessedException(mergedContent, "Could not create target directory")
     mergedContent.setStorageDoc(targetFolder)
+    // Ignore the new folder as it is being merged
+    Beholder.ignoreFolder(targetFolder)
 
     // Renumber all picture files and dispatch chapters
     val nbImages = contentList.flatMap { it.imageList }.count { it.isReadable }

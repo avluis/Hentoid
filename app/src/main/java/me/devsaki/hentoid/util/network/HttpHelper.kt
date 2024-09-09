@@ -152,24 +152,6 @@ fun getOnlineResourceFast(
 }
 
 @Throws(IOException::class)
-fun optOnlineResourceFast(
-    url: String,
-    headers: List<Pair<String, String>>?,
-    useMobileAgent: Boolean,
-    useHentoidAgent: Boolean,
-    useWebviewAgent: Boolean
-): Response {
-    return optOnlineResourceFast(
-        url,
-        headers,
-        useMobileAgent,
-        useHentoidAgent,
-        useWebviewAgent,
-        true
-    )
-}
-
-@Throws(IOException::class)
 fun getOnlineResourceFast(
     url: String,
     headers: List<Pair<String, String>>?,

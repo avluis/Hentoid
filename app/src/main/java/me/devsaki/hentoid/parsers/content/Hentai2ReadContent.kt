@@ -91,7 +91,7 @@ class Hentai2ReadContent : BaseContentParser() {
                 val titleStr = it[it.size - 1].text() // Last span is the title
                 content.title = cleanup(titleStr)
             }
-        } ?: { content.title = NO_TITLE }
+        } ?: run { content.title = NO_TITLE }
         content.uniqueSiteId = uniqueId
         val attributes = AttributeMap()
         properties?.let { props ->

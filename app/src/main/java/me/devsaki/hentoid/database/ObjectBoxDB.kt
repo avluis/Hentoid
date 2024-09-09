@@ -135,30 +135,27 @@ object ObjectBoxDB {
             // Watch https://github.com/objectbox/objectbox-java/issues/1023 for a lighter solution based on @Unique annotation
             var dbAttr: Attribute?
             var inputAttr: Attribute
-            if (attributes != null) {
-                // This transaction may consume a lot of DB readers depending on the number of attributes involved
-                attrBox.query().equal(Attribute_.type, 0)
-                    .equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build()
-                    .use { attrByUniqueKey ->
-                        for (i in attributes.indices) {
-                            inputAttr = attributes[i]
-                            dbAttr = attrByUniqueKey.setParameter(Attribute_.name, inputAttr.name)
-                                .setParameter(Attribute_.type, inputAttr.type.code.toLong())
-                                .findFirst()
-                            // Existing attribute -> set the existing attribute
-                            dbAttr?.let { attr ->
-                                attributes[i] = attr
-                                attr.addLocationsFrom(inputAttr)
-                                attrBox.put(attr)
-                            } ?: { // New attribute -> normalize name
-                                inputAttr.name =
-                                    inputAttr.name.lowercase(Locale.getDefault()).trim()
-                                if (inputAttr.type == AttributeType.ARTIST || inputAttr.type == AttributeType.CIRCLE)
-                                    newAttrs.add(inputAttr)
-                            }
+            attrBox.query().equal(Attribute_.type, 0)
+                .equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build()
+                .use { attrByUniqueKey ->
+                    for (i in attributes.indices) {
+                        inputAttr = attributes[i]
+                        dbAttr = attrByUniqueKey.setParameter(Attribute_.name, inputAttr.name)
+                            .setParameter(Attribute_.type, inputAttr.type.code.toLong())
+                            .findFirst()
+                        // Existing attribute -> set the existing attribute
+                        dbAttr?.let { attr ->
+                            attributes[i] = attr
+                            attr.addLocationsFrom(inputAttr)
+                            attrBox.put(attr)
+                        } ?: run { // New attribute -> normalize name
+                            inputAttr.name =
+                                inputAttr.name.lowercase(Locale.getDefault()).trim()
+                            if (inputAttr.type == AttributeType.ARTIST || inputAttr.type == AttributeType.CIRCLE)
+                                newAttrs.add(inputAttr)
                         }
                     }
-            }
+                }
             store.boxFor(Content::class.java).put(content)
         }
         return Pair<Long, Set<Attribute>>(result, newAttrs)
@@ -268,6 +265,19 @@ object ObjectBoxDB {
                 StatusContent.ERROR == c.status || c.queueRecords != null && !c.queueRecords!!
                     .isEmpty()
             }.build()
+    }
+
+    fun selectQueueUrls(site: Site): HashSet<String> {
+        store.boxFor(Content::class.java).query()
+            .`in`(Content_.status, getQueueStatuses())
+            .equal(Content_.site, site.code.toLong())
+            .filter { c: Content ->
+                StatusContent.ERROR == c.status || c.queueRecords != null && !c.queueRecords!!
+                    .isEmpty()
+            }
+            .build().use { qb ->
+                return qb.property(Content_.dbUrl).findStrings().toHashSet()
+            }
     }
 
     fun selectAllFlaggedBooksQ(): Query<Content> {

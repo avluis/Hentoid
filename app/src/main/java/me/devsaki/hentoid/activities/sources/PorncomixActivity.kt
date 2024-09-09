@@ -2,9 +2,10 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-const val PCX_GALLERY_PATTERN = "//www.porncomixonline.(com|net)/[\\w\\-]+/[%\\w\\-]+/$"
+const val PCX_GALLERY_PATTERN = "//porncomix.online/[\\w\\-]+/[%\\w\\-]+/$"
 
 private val DOMAIN_FILTER = arrayOf(
+    "porncomix.online",
     "www.porncomixonline.net",
     "www.porncomixonline.com",
     "porncomicszone.net",
@@ -16,12 +17,12 @@ private val DOMAIN_FILTER = arrayOf(
 )
 private val GALLERY_FILTER = arrayOf(
     PCX_GALLERY_PATTERN,
-    "//www.porncomixonline.(com|net)/(?!m-comic)([\\w\\-]+)/[\\w\\-]+/$",
-    "//www.porncomixonline.(com|net)/m-comic/[\\w\\-]+/[\\w\\-]+$",
-    "//www.porncomixonline.(com|net)/m-comic/[\\w\\-]+/[\\w\\-]+/$",
-    "//www.porncomixonline.(com|net)/xxxtoons/(?!page)[\\w\\-]+/[\\w\\-]+$",
-    "//www.porncomixonline.com/(?!m-comic)([\\w\\-]+)/[\\w\\-]+/$",
-    "//www.porncomixonline.com/m-comic/[\\w\\-]+/[\\w\\-]+$",
+    "//porncomix.online/(?!comic)([\\w\\-]+)/[\\w\\-]+/$",
+    "//porncomix.online/comic/[\\w\\-]+/[\\w\\-]+$",
+    "//porncomix.online/comic/[\\w\\-]+/[\\w\\-]+/$",
+    "//porncomix.online/xxxtoons/(?!page)[\\w\\-]+/[\\w\\-]+$",
+    "//porncomix.online/(?!comic)([\\w\\-]+)/[\\w\\-]+/$",
+    "//porncomix.online/comic/[\\w\\-]+/[\\w\\-]+$",
     "//porncomicszone.net/[0-9]+/[\\w\\-]+/[0-9]+/$",
     "//porncomixinfo.(com|net)/manga-comics/[\\w\\-]+/[\\w\\-]+/$",
     "//porncomixinfo.(com|net)/chapter/[\\w\\-]+/[\\w\\-]+/$",

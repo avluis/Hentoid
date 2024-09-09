@@ -1,10 +1,12 @@
 package me.devsaki.hentoid.database
 
+import io.objectbox.exception.DbDetachedException
 import io.objectbox.internal.ReflectionCache
 import io.objectbox.query.Query
 import io.objectbox.query.QueryBuilder
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
+import timber.log.Timber
 
 fun <T> QueryBuilder<T>.safeFind(): List<T> {
     return this.build().safeFind()
@@ -68,7 +70,12 @@ fun <T> ToMany<T>.isReachable(entity: Any): Boolean {
 }
 
 fun <T> ToMany<T>.reach(entity: Any): List<T> {
-    return if (!this.isEmpty() || this.isReachable(entity)) this
+    try {
+        if (!this.isEmpty()) return this
+    } catch (e: DbDetachedException) {
+        Timber.d(e)
+    }
+    return if (this.isReachable(entity)) this
     else emptyList()
 }
 

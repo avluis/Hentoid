@@ -23,6 +23,7 @@ import me.devsaki.hentoid.notification.splitMerge.SplitMergeStartNotification
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createJson
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
+import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.getLocation
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
@@ -134,6 +135,8 @@ abstract class BaseSplitMergeWorker(
                     "Could not create target directory"
                 )
             splitContent.setStorageDoc(targetFolder)
+            // Ignore the new folder as it is being splitted
+            Beholder.ignoreFolder(targetFolder)
 
             // Copy the corresponding images to that folder
             val splitContentImages = splitContent.imageList
@@ -160,7 +163,7 @@ abstract class BaseSplitMergeWorker(
             val jsonFile = createJson(applicationContext, splitContent)
             if (jsonFile != null) splitContent.jsonUri = jsonFile.uri.toString()
 
-            // Save new content (incl. onn-custom group operations)
+            // Save new content (incl. non-custom group operations)
             addContent(applicationContext, dao, splitContent)
 
             // Set custom group, if any
@@ -178,7 +181,7 @@ abstract class BaseSplitMergeWorker(
 
         // If we're here, no exception has been triggered -> cleanup if needed
         if (deleteAfterOperation && !isStopped) {
-            // TODO delete selected chapters and associated files
+            // TODO delete selected chapters and associated files when the "delete after operation" feature is implemented in the UI
         }
     }
 

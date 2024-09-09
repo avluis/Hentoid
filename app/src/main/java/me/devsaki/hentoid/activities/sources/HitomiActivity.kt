@@ -175,7 +175,7 @@ class HitomiActivity : BaseWebActivity() {
             request: WebResourceRequest
         ): WebResourceResponse? {
             val url = request.url.toString()
-            if ((isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags()) && url.contains("galleryblock")) { // Process book blocks to mark existing ones
+            if ((isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || isMarkQueued()) && url.contains("galleryblock")) { // Process book blocks to mark existing ones
                 val result = parseResponse(
                     url, request.requestHeaders,
                     analyzeForDownload = false,

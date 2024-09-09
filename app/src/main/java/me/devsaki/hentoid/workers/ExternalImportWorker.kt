@@ -11,6 +11,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
@@ -111,6 +112,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             return
         }
         try {
+            Beholder.clearSnapshot(context)
             FileExplorer(context, Uri.parse(Preferences.getExternalLibraryUri())).use { explorer ->
                 val detectedContent: MutableList<Content> = ArrayList()
                 // Deep recursive search starting from the place the user has selected
@@ -296,6 +298,15 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             createJsonFileFor(context, it, explorer, logs)
                             addContent(context, dao, it)
                         }
+                        // Update the beholder
+                        it.getStorageDoc()?.let { storageDoc ->
+                            Beholder.registerContent(
+                                context,
+                                it.parentStorageUri ?: deltaPlusRoot.uri.toString(),
+                                storageDoc,
+                                it.id
+                            )
+                        }
                     }
                 } // explorer
             } // deltaPlus roots
@@ -305,9 +316,14 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             toRemove.forEach { idToRemove ->
                 if (isStopped) return
                 Timber.d("delta- => $idToRemove")
-                Content().apply {
-                    id = idToRemove
-                    removeContent(context, dao, this)
+                try {
+                    Content().apply {
+                        id = idToRemove
+                        site = Site.NONE
+                        removeContent(context, dao, this)
+                    }
+                } catch (e: Exception) {
+                    Timber.w(e)
                 }
             }
         } catch (e: Exception) {

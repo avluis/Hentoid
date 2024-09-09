@@ -33,7 +33,7 @@ public enum Site {
     DOUJINS(12, "doujins.com", "https://doujins.com/", R.drawable.ic_site_doujins),
     LUSCIOUS(13, "luscious.net", "https://members.luscious.net/manga/", R.drawable.ic_site_luscious),
     EXHENTAI(14, "exhentai", "https://exhentai.org", R.drawable.ic_site_exhentai),
-    PORNCOMIX(15, "porncomixonline", "https://www.porncomixonline.net/", R.drawable.ic_site_porncomix),
+    PORNCOMIX(15, "porncomixonline", "https://porncomix.online/", R.drawable.ic_site_porncomix),
     HBROWSE(16, "Hbrowse", "https://www.hbrowse.com/", R.drawable.ic_site_hbrowse),
     HENTAI2READ(17, "Hentai2Read", "https://hentai2read.com/", R.drawable.ic_site_hentai2read),
     HENTAIFOX(18, "Hentaifox", "https://hentaifox.com", R.drawable.ic_site_hentaifox),

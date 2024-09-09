@@ -86,8 +86,8 @@ data class Content(
     var coverImageUrl: String = "",
     var qtyPages: Int = 0,// Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
     var uploadDate: Long = 0,
-    var downloadDate: Long = 0,
-    var downloadCompletionDate: Long = 0,
+    var downloadDate: Long = 0, // aka "Download date (processed)"
+    var downloadCompletionDate: Long = 0, // aka "Download date (completed)"
     @Index
     @Convert(converter = StatusContent.StatusContentConverter::class, dbType = Int::class)
     var status: StatusContent = StatusContent.UNHANDLED_ERROR,

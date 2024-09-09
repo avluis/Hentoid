@@ -66,7 +66,7 @@ class AllPornComicContent : BaseContentParser() {
                         YoastGalleryMetadata::class.java
                     )?.let { galleryMeta ->
                         val publishDate =
-                            galleryMeta.datePublished // e.g. 2021-01-27T15:20:38+00:00
+                            galleryMeta.getDatePublished() // e.g. 2021-01-27T15:20:38+00:00
                         if (publishDate.isNotEmpty()) content.uploadDate =
                             parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
                     }

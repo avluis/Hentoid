@@ -291,6 +291,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
 
             override fun areContentsTheSame(oldItem: Content, newItem: Content): Boolean {
+                if (oldItem.lastEditDate != newItem.lastEditDate) return false
                 if (oldItem.favourite != newItem.favourite) return false
                 if (oldItem.rating != newItem.rating) return false
                 if (oldItem.completed != newItem.completed) return false

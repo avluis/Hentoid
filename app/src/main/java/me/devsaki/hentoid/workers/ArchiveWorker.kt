@@ -13,6 +13,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification
+import me.devsaki.hentoid.notification.archive.ArchiveStartNotification
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.canBeArchived
@@ -45,14 +46,15 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
     private val dao: CollectionDAO = ObjectBoxDAO()
 
-    private var totalItems = 0
     private var nbOK = 0
     private var nbKO = 0
     private lateinit var globalProgress: ProgressManager
 
+    private lateinit var progressNotification: ArchiveProgressNotification
+
 
     override fun getStartNotification(): BaseNotification {
-        return ArchiveProgressNotification("", 0, 0, 0f)
+        return ArchiveStartNotification()
     }
 
     override fun onInterrupt() {
@@ -82,6 +84,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         globalProgress = ProgressManager(contentIds.size)
 
         for (contentId in contentIds) {
+            if (isStopped) break
             val content = dao.selectContent(contentId)
             content?.let {
                 if (canBeArchived(content)) archiveContent(content, params)
@@ -91,6 +94,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
         }
+        if (isStopped) notificationManager.cancel()
         notifyProcessEnd()
     }
 
@@ -109,22 +113,18 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
             val outputStream: OutputStream? = destFileResult.first
             if (outputStream != null) {
                 outputStream.use { os ->
-                    applicationContext.zipFiles(files, os) { f ->
+                    applicationContext.zipFiles(files, os, this::isStopped) { f ->
                         globalProgress.setProgress(content.id.toString(), f)
                         notifyProcessProgress()
                     }
-                    success = true
+                    success = !isStopped
                 }
             } else {
                 success = destFileResult.second
             }
-            if (success && params.deleteOnSuccess) {
+            if (success && params.deleteOnSuccess && !isStopped) {
                 removeContent(applicationContext, dao, content)
             }
-            if (!success) {
-                globalProgress.setProgress(content.id.toString(), 1f)
-                nextKO()
-            } else nextOK()
         }
     }
 
@@ -185,22 +185,19 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         return Pair(null, false)
     }
 
-    private fun nextOK() {
-        nbOK++
-        notifyProcessProgress()
-    }
-
     private fun nextKO() {
         nbKO++
         notifyProcessProgress()
     }
 
     private fun notifyProcessProgress() {
-        notificationManager.notify(
-            ArchiveProgressNotification(
-                "", nbOK + nbKO, totalItems, globalProgress.getGlobalProgress()
-            )
-        )
+        if (!this::progressNotification.isInitialized) {
+            progressNotification =
+                ArchiveProgressNotification("", globalProgress.getGlobalProgress())
+        } else {
+            progressNotification.progress = globalProgress.getGlobalProgress()
+        }
+        notificationManager.notify(progressNotification)
     }
 
     private fun notifyProcessEnd() {

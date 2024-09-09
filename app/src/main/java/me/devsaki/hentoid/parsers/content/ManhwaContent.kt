@@ -86,8 +86,6 @@ class ManhwaContent : BaseContentParser() {
             if (it.isNotEmpty())
                 title = cleanup(it[it.size - 1].text())
         }
-        content.title = title
-        content.populateUniqueSiteId()
         metadata?.let {
             if (it.childNodeSize() > 0) {
                 try {
@@ -95,8 +93,11 @@ class ManhwaContent : BaseContentParser() {
                         it.childNode(0).toString(),
                         YoastGalleryMetadata::class.java
                     )?.let { galleryMeta ->
+                        if (NO_TITLE == title) {
+                            title = galleryMeta.getBreadcrumbs().last().first
+                        }
                         val publishDate =
-                            galleryMeta.datePublished // e.g. 2021-01-27T15:20:38+00:00
+                            galleryMeta.getDatePublished() // e.g. 2021-01-27T15:20:38+00:00
                         if (publishDate.isNotEmpty()) content.uploadDate =
                             parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX")
                     }
@@ -105,6 +106,9 @@ class ManhwaContent : BaseContentParser() {
                 }
             }
         }
+        content.title = title
+        content.populateUniqueSiteId()
+
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.MANHWA)
         parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.MANHWA)

@@ -272,9 +272,7 @@ class MetadataEditViewModel(
             it.computeAuthor()
 
             // Save Content itself
-            it.imageFiles?.let { imgs ->
-                dao.insertImageFiles(imgs)
-            }
+            it.imageFiles.let { imgs -> dao.insertImageFiles(imgs) }
             dao.insertContent(it)
 
             // Assign Content to each artist/circle group

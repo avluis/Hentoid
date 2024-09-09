@@ -14,9 +14,13 @@ private const val SNAPSHOT_LOCATION = "beholder.snapshot"
 object Beholder {
 
     // Key : Root document Uri
+    // Value
     //      Key : hash64(name, size)
     //      Value : Content ID if any; -1 if none
     private val snapshot: MutableMap<String, Map<Long, Long>> = HashMap()
+
+    // Key : Root document Uri
+    private val ignoreList = HashSet<String>()
 
 
     fun init(ctx: Context) {
@@ -42,14 +46,16 @@ object Beholder {
     fun scanForDelta(ctx: Context): Pair<List<Pair<DocumentFile, List<DocumentFile>>>, Set<Long>> {
         val allNewDocs = ArrayList<Pair<DocumentFile, List<DocumentFile>>>()
         val allDeletedDocs = HashSet<Long>()
+        val allDeletedRoots = HashSet<String>()
 
         snapshot.forEach { (rootUriStr, docs) ->
+            if (BuildConfig.DEBUG) Timber.d("Root : $rootUriStr (${docs.size} docs)")
             getDocumentFromTreeUriString(ctx, rootUriStr)?.let { root ->
                 try {
                     val newDocs = ArrayList<DocumentFile>()
                     val deletedDocs = HashSet<Long>()
 
-                    if (BuildConfig.DEBUG) Timber.d("Root : $rootUriStr")
+                    if (BuildConfig.DEBUG) Timber.d("  Folder found in storage")
                     FileExplorer(ctx, root).use { fe ->
                         val files = fe.listDocumentFiles(
                             ctx, root, null,
@@ -57,28 +63,23 @@ object Beholder {
                             listFiles = true,
                             stopFirst = false
                         ).associateBy({ it.uniqueHash() }, { it })
-                        if (BuildConfig.DEBUG) Timber.d("  Files found : " + files.size)
+                        val validFiles =
+                            files.filterNot { ignoreList.contains(it.value.uri.toString()) }
+                        if (BuildConfig.DEBUG) Timber.d("  Files found : " + files.size + " (" + (files.size - validFiles.size) + " ignored)")
 
                         // Select new docs
-                        docs.let { id ->
-                            val newKeys = files.keys.asSequence().minus(id.keys)
-                            newDocs.addAll(files.filterKeys { it in newKeys }.values)
-                            if (BuildConfig.DEBUG) Timber.d("  New : " + newKeys.count() + " - " + newDocs.size)
-                        } ?: {
-                            // Root Uri absent from initial snapshot -> all is new
-                            newDocs.addAll(files.values)
-                        }
+                        val newKeys = validFiles.keys.asSequence().minus(docs.keys)
+                        newDocs.addAll(validFiles.filterKeys { it in newKeys }.values)
+                        if (BuildConfig.DEBUG) Timber.d("  New : " + newKeys.count() + " - " + newDocs.size)
 
                         // Select deleted docs
-                        docs.let { id ->
-                            val deletedKeys = id.keys.asSequence().minus(files.keys)
-                            deletedDocs.addAll(docs.filterKeys { it in deletedKeys }.values)
-                            if (BuildConfig.DEBUG) Timber.d("  Deleted : " + deletedKeys.count() + " - " + deletedDocs.size)
-                        }
+                        val deletedKeys = docs.keys.asSequence().minus(files.keys).toSet()
+                        deletedDocs.addAll(docs.filterKeys { it in deletedKeys }.values)
+                        if (BuildConfig.DEBUG) Timber.d("  Deleted : " + deletedKeys.count() + " - " + deletedDocs.size)
 
                         // Update snapshot in memory
                         snapshot[rootUriStr] = docs
-                            .minus(deletedDocs)
+                            .minus(deletedKeys)
                             .plus(newDocs.associateBy({ it.uniqueHash() }, { -1 }))
 
                         // Update global result
@@ -88,13 +89,32 @@ object Beholder {
                 } catch (e: IOException) {
                     Timber.w(e)
                 }
+            } ?: run { // Snapshot root not found in storage
+                if (BuildConfig.DEBUG) {
+                    Timber.d("  Folder not found in storage")
+                    Timber.d("  Deleted : " + docs.count())
+                }
+
+                // Update global result
+                allDeletedRoots.add(rootUriStr)
+                allDeletedDocs.addAll(docs.values)
             } // Root Document
         } // Snapshot elements
+
+        // Update snapshot in memory
+        allDeletedRoots.forEach { snapshot.remove(it) }
 
         // Save snapshot file
         saveSnapshot(ctx)
 
         return Pair(allNewDocs, allDeletedDocs)
+    }
+
+    /**
+     * Ignore given for all subsequent scanForDelta's until said folder is registered using registerContent
+     */
+    fun ignoreFolder(folder: DocumentFile) {
+        ignoreList.add(folder.uri.toString())
     }
 
     fun registerContent(
@@ -115,8 +135,10 @@ object Beholder {
         val result: MutableList<FolderEntry> = ArrayList()
         contentDocs.forEach { (uri, docs) ->
             val contentDocsMap = HashMap<String, Pair<DocumentFile, Long>>()
+            // Add new values to register
             docs.forEach {
                 contentDocsMap[it.first.uri.toString()] = Pair(it.first, it.second)
+                ignoreList.remove(it.first.uri.toString())
             }
             getDocumentFromTreeUriString(ctx, uri)?.let { doc ->
                 try {
@@ -142,9 +164,19 @@ object Beholder {
                 }
             }
         }
+
+        // Store result
         result.forEach {
+            // Merge new values with known values
+            val target: MutableMap<Long, Long> = HashMap(it.documents)
+            if (snapshot.contains(it.uri)) {
+                snapshot[it.uri]?.forEach { snap ->
+                    if (snap.value > -1) target[snap.key] = snap.value
+                }
+            }
+
             snapshot.remove(it.uri)
-            snapshot[it.uri] = it.documents
+            snapshot[it.uri] = target
         }
         saveSnapshot(ctx)
     }
@@ -198,11 +230,14 @@ object Beholder {
 
     private fun logSnapshot() {
         if (BuildConfig.DEBUG) {
+            Timber.d("beholder dump start")
             snapshot.forEach { se ->
+                Timber.d("${se.key} : ${se.value.size} elements")
                 se.value.forEach { sev ->
-                    Timber.d("beholder[" + se.key + "] => " + sev.key + "=" + sev.value)
+                    Timber.d("${sev.key} => ${sev.value}")
                 }
             }
+            Timber.d("beholder dump end")
         }
     }
 }
