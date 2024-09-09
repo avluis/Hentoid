@@ -351,7 +351,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
                 3 -> onMergeToPrimaryOne()
 
-                4 -> {
+                4 -> { // Open folder
                     val folder =
                         getDocumentFromTreeUriString(
                             this,
