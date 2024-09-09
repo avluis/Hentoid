@@ -114,13 +114,13 @@ fun getFullPathFromUri(context: Context, uri: Uri): String {
 private fun getFullPathFromTreeUri(context: Context, uri: Uri): String {
     if (uri.toString().isEmpty()) return ""
 
-    var volumePath = getVolumePath(context, getVolumeIdFromUri(uri)) ?: return File.separator
-    if (volumePath.endsWith(File.separator)) volumePath =
-        volumePath.substring(0, volumePath.length - 1)
+    var volumePath = getVolumePath(context, getVolumeIdFromUri(uri)) ?: "UnknownVolume"
+    if (volumePath.endsWith(File.separator))
+        volumePath = volumePath.substring(0, volumePath.length - 1)
 
-    var documentPath = getDocumentPathFromUri(uri)
-    if (documentPath!!.endsWith(File.separator)) documentPath =
-        documentPath.substring(0, documentPath.length - 1)
+    var documentPath = getDocumentPathFromUri(uri) ?: ""
+    if (documentPath.endsWith(File.separator))
+        documentPath = documentPath.substring(0, documentPath.length - 1)
 
     return if (documentPath.isNotEmpty()) {
         if (documentPath.startsWith(File.separator)) volumePath + documentPath
@@ -241,7 +241,7 @@ private fun getDocumentPathFromUri(uri: Uri): String? {
 
     val split = docId.split(":")
     return if (split.size >= 2) split[1]
-    else File.separator
+    else docId
 }
 
 /**
