@@ -793,12 +793,12 @@ fun scanBookFolder(
     scanFolderImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles)
 
     // Detect cover
-    val coverExists = images.any { obj: ImageFile -> obj.isCover }
+    val coverExists = images.any { it.isCover }
     if (!coverExists) createCover(images)
 
     // If streamed, keep everything and update cover URI
     if (result.downloadMode == DownloadMode.STREAM) {
-        val coverFile = images.firstOrNull { obj: ImageFile -> obj.isCover }
+        val coverFile = images.firstOrNull { it.isCover }
         if (coverFile != null) {
             result.cover.fileUri = coverFile.fileUri
             result.cover.size = coverFile.size
@@ -920,8 +920,8 @@ private fun scanFolderImages(
     imgs: List<DocumentFile>?
 ) {
     var imageFiles = imgs
-    val order = images.maxOfOrNull { i -> i.order } ?: 0
-    val folderName = if (null == bookFolder.name) "" else bookFolder.name!!
+    val order = images.maxOfOrNull { it.order } ?: 0
+    val folderName = bookFolder.name ?: ""
     if (null == imageFiles) imageFiles =
         explorer.listFiles(context, bookFolder, imageNamesFilter)
     var namePrefix = ""

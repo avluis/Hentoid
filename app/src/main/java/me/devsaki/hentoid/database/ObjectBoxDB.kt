@@ -2001,7 +2001,11 @@ object ObjectBoxDB {
     fun selectNonHashedContentQ(): Query<Content> {
         val query = store.boxFor(Content::class.java).query().`in`(
             Content_.status,
-            intArrayOf(StatusContent.DOWNLOADED.code, StatusContent.MIGRATED.code)
+            intArrayOf(
+                StatusContent.DOWNLOADED.code,
+                StatusContent.MIGRATED.code,
+                StatusContent.EXTERNAL.code
+            )
         ).notNull(Content_.storageUri)
             .notEqual(Content_.storageUri, "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
         val imageQuery = query.backlink(ImageFile_.content)

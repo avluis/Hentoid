@@ -77,10 +77,9 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
             indexCovers(
                 applicationContext,
                 dao, stopped,
-                { c: Content ->
-                    indexContentInfo(c)
-                }, { progress: Int, max: Int -> notifyIndexProgress(progress, max) }
-            ) { t: Throwable -> indexError(t) }
+                { indexContentInfo(it) },
+                { progress: Int, max: Int -> notifyIndexProgress(progress, max) }
+            ) { indexError(it) }
             trace(Log.INFO, "Indexing done")
         }
 
