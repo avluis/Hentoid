@@ -74,7 +74,7 @@ data class JsonContent(
         c.isFrozen
     )
 
-    fun toEntity(dao: CollectionDAO? = null): Content {
+    fun toEntity(dao: CollectionDAO): Content {
         val result = Content(
             site = site,
             dbUrl = url ?: "",
@@ -134,16 +134,14 @@ data class JsonContent(
 
 
         // GROUPS
-        if (dao != null) {
-            groups?.forEach {
-                val group = dao.selectGroupByName(it.groupingId, it.groupName)
-                if (group != null) // Group already exists
-                    result.groupItems.add(it.toEntity(result, group))
-                else if (it.groupingId == Grouping.CUSTOM.id) { // Create group from scratch
-                    val newGroup = Group(Grouping.CUSTOM, it.groupName, -1)
-                    newGroup.id = dao.insertGroup(newGroup)
-                    result.groupItems.add(it.toEntity(result, newGroup))
-                }
+        groups?.forEach {
+            val group = dao.selectGroupByName(it.groupingId, it.groupName)
+            if (group != null) // Group already exists
+                result.groupItems.add(it.toEntity(result, group))
+            else if (it.groupingId == Grouping.CUSTOM.id) { // Create group from scratch
+                val newGroup = Group(Grouping.CUSTOM, it.groupName, -1)
+                newGroup.id = dao.insertGroup(newGroup)
+                result.groupItems.add(it.toEntity(result, newGroup))
             }
         }
 

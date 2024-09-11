@@ -16,6 +16,6 @@ class AppUpdateDownloadReceiver : BroadcastReceiver() {
             val data = UpdateDownloadData.Parser(extras)
             val apkUrl = data.url
             context.runUpdateDownloadWorker(apkUrl)
-        } ?: Timber.w("no data")
+        } ?: run { Timber.w("no data") }
     }
 }

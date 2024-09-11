@@ -72,7 +72,7 @@ class Hentai2ReadParser : BaseChapteredImageListParser() {
                     1000,
                     chp
                 )
-            } ?: Timber.i("Chapter parsing failed for %s : no pictures found", chp.url)
+            } ?: run { Timber.i("Chapter parsing failed for %s : no pictures found", chp.url) }
         } ?: run {
             Timber.i("Chapter parsing failed for %s : no response", chp.url)
         }

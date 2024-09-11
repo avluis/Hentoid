@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.json
 
 import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.RenamingRule
@@ -20,8 +21,8 @@ class JsonContentCollection {
         library.add(JsonContent(content, false))
     }
 
-    fun getEntityQueue(): List<Content> {
-        return queue.map { it.toEntity() }
+    fun getEntityQueue(dao : CollectionDAO): List<Content> {
+        return queue.map { it.toEntity(dao) }
     }
 
     fun replaceQueue(queue: List<Content>) {

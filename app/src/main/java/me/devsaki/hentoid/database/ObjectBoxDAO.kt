@@ -684,7 +684,7 @@ class ObjectBoxDAO : CollectionDAO {
             val groups = flaggedGroups.find()
             for (g in groups) ObjectBoxDB.deleteGroupItemsByGroup(g.id)
 
-            // Actually delete the Group
+            // Actually delete the Groups
             flaggedGroups.remove()
         }
     }

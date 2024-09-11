@@ -969,10 +969,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun moveContentsToNewCustomGroup(
-        contentIds: LongArray, newGroupName: String,
+        contentIds: LongArray,
+        newGroupName: String,
         onSuccess: Runnable
     ) {
-        val newGroup = Group(Grouping.CUSTOM, newGroupName.trim { it <= ' ' }, -1)
+        val newGroup = Group(Grouping.CUSTOM, newGroupName.trim(), -1)
         newGroup.id = dao.insertGroup(newGroup)
         moveContentsToCustomGroup(contentIds, newGroup, onSuccess)
     }

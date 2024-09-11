@@ -298,7 +298,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
                 try {
                     dao = ObjectBoxDAO()
-                    for (i in bookFolders.indices) {
+                    bookFolders.forEachIndexed { index, bookFolder ->
                         if (isStopped) throw InterruptedException()
                         importFolder(
                             context,
@@ -306,7 +306,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                             dao,
                             bookFolders,
                             rootFolder,
-                            bookFolders[i],
+                            bookFolder,
                             log,
                             rename,
                             renumberPages,
@@ -314,7 +314,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                             cleanNoImages
                         )
                         // Clear the DAO every 2500K iterations to optimize memory
-                        if (0 == i % 2500) {
+                        if (0 == index % 2500) {
                             dao.cleanup()
                             dao = ObjectBoxDAO()
                         }
@@ -447,7 +447,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         context: Context,
         explorer: FileExplorer,
         dao: CollectionDAO,
-        bookFolders: MutableList<DocumentFile>,
+        bookFolders: MutableList<DocumentFile>, // Passed here to add subfolders to it
         parent: DocumentFile,
         bookFolder: DocumentFile,
         log: MutableList<LogEntry>,
@@ -462,8 +462,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         // Detect the presence of images if the corresponding cleanup option has been enabled
         if (cleanNoImages) {
             bookFiles = explorer.listFiles(context, bookFolder, null)
-            val nbImages = bookFiles.count { f ->
-                isSupportedImage(f.name ?: "")
+            val nbImages = bookFiles.count {
+                isSupportedImage(it.name ?: "")
             }
             if (0 == nbImages && !explorer.hasFolders(bookFolder)) { // No supported images nor subfolders
                 var doRemove = true
@@ -634,11 +634,17 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 removeExternalAttributes(content)
                 content.computeSize()
                 addContent(context, dao, content)
+                val customGroups =
+                    content.getGroupItems(Grouping.CUSTOM)
+                        .mapNotNull { it.getGroup() }
+                        .map { it.name }
+                val groupStr =
+                    if (customGroups.isEmpty()) "" else " in " + customGroups.joinToString(", ")
                 trace(
                     Log.INFO,
                     STEP_2_BOOK_FOLDERS,
                     log,
-                    "Import book OK : %s",
+                    "Import book OK$groupStr : %s",
                     bookFolder.uri.toString()
                 )
             } else { // JSON not found
@@ -922,7 +928,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         val contentCollection = deserialiseCollectionJson(context, queueFile)
         if (null != contentCollection) {
             var queueSize = dao.countAllQueueBooks().toInt()
-            val queuedContent = contentCollection.getEntityQueue()
+            val queuedContent = contentCollection.getEntityQueue(dao)
             eventProgress(STEP_4_QUEUE_FINAL, queuedContent.size, 0, 0)
             trace(
                 Log.INFO,
@@ -1001,27 +1007,25 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             STEP_GROUPS,
             log,
             "%s custom groups detected",
-            groups.size.toString() + ""
+            groups.size.toString()
         )
-        var count = 1
-        for (g in groups) {
-            // Only add if it isn't a duplicate
-            val duplicate = dao.selectGroupByName(Grouping.CUSTOM.id, g.name)
-            if (null == duplicate) {
+        groups.forEachIndexed { index, g ->
+            val existing = dao.selectGroupByName(Grouping.CUSTOM.id, g.name)
+            if (null == existing) { // Create brand new
                 dao.insertGroup(g)
                 trace(Log.INFO, STEP_GROUPS, log, "Import OK : %s", g.name)
-            } else { // If it is, unflag existing group
-                duplicate.isFlaggedForDeletion = false
-                dao.insertGroup(duplicate)
+            } else { // Unflag existing
+                existing.isFlaggedForDeletion = false
+                dao.insertGroup(existing)
                 trace(
                     Log.INFO,
                     STEP_GROUPS,
                     log,
-                    "Import KO (duplicate) : %s",
-                    duplicate.name
+                    "Import KO (existing) : %s",
+                    existing.name
                 )
             }
-            eventProgress(STEP_GROUPS, groups.size, count++, 0)
+            eventProgress(STEP_GROUPS, groups.size, index + 1, 0)
         }
         trace(Log.INFO, STEP_GROUPS, log, "Import custom groups succeeded")
     }
@@ -1032,16 +1036,16 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         dao: CollectionDAO,
         log: MutableList<LogEntry>
     ) {
-        val editedArtistGroups = contentCollection.getEntityGroups(grouping)
+        val editedGroups = contentCollection.getEntityGroups(grouping)
         trace(
             Log.INFO,
             STEP_GROUPS,
             log,
             "%d edited %s groups detected",
-            editedArtistGroups.size,
+            editedGroups.size,
             grouping.displayName
         )
-        for (g in editedArtistGroups) {
+        for (g in editedGroups) {
             // Only add if it isn't a duplicate
             val duplicate = dao.selectGroupByName(grouping.id, g.name)
             if (null == duplicate) dao.insertGroup(g) else { // If it is, copy attributes

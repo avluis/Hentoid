@@ -150,7 +150,6 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                         parent?.onChangeGroupSuccess(bookIds.size)
                         dismissAllowingStateLoss()
                     }
-
                 } else {
                     toast(R.string.group_not_selected)
                 }

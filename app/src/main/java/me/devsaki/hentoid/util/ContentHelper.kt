@@ -247,22 +247,19 @@ fun viewContentGalleryPage(context: Context, content: Content, wrapPin: Boolean)
 fun updateJson(context: Context, content: Content): Boolean {
     assertNonUiThread()
 
-    val file = getFileFromSingleUriString(context, content.jsonUri)
-    if (file != null) {
+    getFileFromSingleUriString(context, content.jsonUri)?.let { file ->
         try {
-            getOutputStream(context, file).use { output ->
-                if (output != null) {
-                    updateJson(
-                        JsonContent(content),
-                        JsonContent::class.java, output
-                    )
-                    return true
-                } else Timber.w("JSON file creation failed for %s", file.uri)
-            }
+            getOutputStream(context, file)?.use { output ->
+                updateJson(
+                    JsonContent(content),
+                    JsonContent::class.java, output
+                )
+                return true
+            } ?: run { Timber.w("JSON file creation failed for %s", file.uri) }
         } catch (e: IOException) {
             Timber.e(e, "Error while writing to %s", content.jsonUri)
         }
-    } else {
+    } ?: run {
         Timber.w("%s does not refer to a valid file", content.jsonUri)
     }
     return false

@@ -137,16 +137,12 @@ fun updateGroupsJson(context: Context, dao: CollectionDAO): Boolean {
  * @param dao     DAO to use
  * @return Updated Content
  */
-fun moveContentToCustomGroup(content: Content, group: Group?, dao: CollectionDAO): Content {
-    return moveContentToCustomGroup(content, group, -1, dao)
-}
-
 fun moveContentToCustomGroup(
     content: Content,
     group: Group?,
-    order: Int,
-    dao: CollectionDAO
-): Content {
+    dao: CollectionDAO,
+    order: Int = -1,
+    ): Content {
     assertNonUiThread()
     // Get all groupItems of the given content for custom grouping
     val groupItems = dao.selectGroupItems(content.id, Grouping.CUSTOM)
