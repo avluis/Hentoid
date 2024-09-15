@@ -276,22 +276,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.apply {
-            getContent().observe(viewLifecycleOwner) { content: Content? ->
-                onContentChanged(content)
-            }
-            getViewerImages().observe(viewLifecycleOwner) { images: List<ImageFile> ->
-                onImagesChanged(images)
-            }
-            getStartingIndex().observe(viewLifecycleOwner) { startingIndex: Int ->
-                onStartingIndexChanged(startingIndex)
-            }
-            getShuffled().observe(viewLifecycleOwner) { isShuffled: Boolean ->
-                onShuffleChanged(isShuffled)
-            }
-            getShowFavouritesOnly()
-                .observe(viewLifecycleOwner) { showFavouritePages: Boolean ->
-                    updateShowFavouriteDisplay(showFavouritePages)
-                }
+            getContent().observe(viewLifecycleOwner) { onContentChanged(it) }
+            getViewerImages().observe(viewLifecycleOwner) { onImagesChanged(it) }
+            getStartingIndex().observe(viewLifecycleOwner) { onStartingIndexChanged(it) }
+            getShuffled().observe(viewLifecycleOwner) { onShuffleChanged(it) }
+            getShowFavouritesOnly().observe(viewLifecycleOwner) { updateShowFavouriteDisplay(it) }
         }
     }
 
@@ -790,6 +779,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         if (null == binding) return
         navigator.onImagesChanged(adapter.currentList)
         if (targetStartingIndex > -1) applyStartingIndex(targetStartingIndex) else navigator.updatePageControls()
+        viewModel.clearForceReload()
         isComputingImageList = false
     }
 

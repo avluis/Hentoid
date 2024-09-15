@@ -126,6 +126,9 @@ class ReaderViewModel(
 
     private val shuffled = MutableLiveData<Boolean>() // Shuffle state of the current book
 
+    // True during one loading where images need to be reloaded on screen
+    private var forceImageUIReload = false
+
     // True if viewer only shows favourite images; false if shows all pages
     private val showFavouritesOnly = MutableLiveData<Boolean>()
 
@@ -191,12 +194,12 @@ class ReaderViewModel(
      * @param contentId  ID of the Content to load
      * @param pageNumber Page number to start with
      */
-    fun loadContentFromId(contentId: Long, pageNumber: Int, forceImageUIReload: Boolean = false) {
+    fun loadContentFromId(contentId: Long, pageNumber: Int) {
         if (contentId > 0) {
             val loadedContent = dao.selectContent(contentId)
             if (loadedContent != null) {
                 if (contentIds.isEmpty()) contentIds.add(contentId)
-                loadContent(loadedContent, pageNumber, forceImageUIReload)
+                loadContent(loadedContent, pageNumber)
             }
             AchievementsManager.trigger(29)
         }
@@ -252,11 +255,7 @@ class ReaderViewModel(
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource!!)
         currentImageSource = dao.selectAllFavouritePagesLive()
         databaseImages.addSource(currentImageSource!!) { imgs ->
-            loadImages(
-                c,
-                -1,
-                imgs.toMutableList()
-            )
+            loadImages(c, -1, imgs.toMutableList())
         }
     }
 
@@ -275,7 +274,7 @@ class ReaderViewModel(
      * @param imageId ID of the page to set
      */
     fun setViewerStartingIndexById(imageId: Long) {
-        val pic = viewerImagesInternal.find { img -> img.id == imageId }
+        val pic = viewerImagesInternal.find { it.id == imageId }
         pic?.let {
             startingIndex.postValue(it.displayOrder)
         }
@@ -287,16 +286,17 @@ class ReaderViewModel(
      * @param theContent Content to use
      * @param pageNumber Page number to start with
      * @param newImages  Images to process
-     * @param forceImgUIReload  Force the reloading of all images
      */
     private fun loadImages(
         theContent: Content,
         pageNumber: Int,
-        newImages: MutableList<ImageFile>,
-        forceImgUIReload: Boolean = false
+        newImages: MutableList<ImageFile>
     ) {
         databaseImages.postValue(newImages)
-        if (forceImgUIReload) newImages.forEach { it.isForceRefresh = true }
+        if (forceImageUIReload) {
+            newImages.forEach { it.isForceRefresh = true }
+            forceImageUIReload = false
+        }
 
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
@@ -466,13 +466,13 @@ class ReaderViewModel(
             imgs.shuffled(Random(RandomSeed.getSeed(SEED_PAGES)))
         } else {
             // Sort images according to their Order; don't keep the cover thumb
-            imgs.sortedBy { obj -> obj.order }
+            imgs.sortedBy { it.order }
         }
         // Don't keep the cover thumb
-        imgs = imgs.filter { obj -> obj.isReadable }
+        imgs = imgs.filter { it.isReadable }
         val showFavouritesOnlyVal = getShowFavouritesOnly().value
         if (showFavouritesOnlyVal != null && showFavouritesOnlyVal) {
-            imgs = imgs.filter { obj -> obj.favourite }
+            imgs = imgs.filter { it.favourite }
         }
         for (i in imgs.indices) imgs[i].displayOrder = i
 
@@ -486,8 +486,8 @@ class ReaderViewModel(
         }
         // ...or chapters
         if (!hasDiff) {
-            val oldChapters = viewerImagesInternal.map { obj -> obj.linkedChapter }
-            val newChapters = imgs.map { obj -> obj.linkedChapter }.toList()
+            val oldChapters = viewerImagesInternal.map { it.linkedChapter }
+            val newChapters = imgs.map { it.linkedChapter }.toList()
             hasDiff = oldChapters.size != newChapters.size
             if (!hasDiff) {
                 for (i in oldChapters.indices) {
@@ -585,8 +585,8 @@ class ReaderViewModel(
 
             // Update image read status with the cached read statuses
             val previousReadPageNumbers =
-                theImages.filter { obj -> obj.read && obj.isReadable }
-                    .map { obj -> obj.order }
+                theImages.filter { it.read && it.isReadable }
+                    .map { it.order }
                     .toSet()
             val reReadPagesNumbers = readPageNumbers.toMutableSet()
             reReadPagesNumbers.retainAll(previousReadPageNumbers)
@@ -694,7 +694,7 @@ class ReaderViewModel(
                 withContext(Dispatchers.IO) {
                     doToggleContentFavourite(theContent)
                 }
-                reloadContent(false, viewerIndex) // Must run on the main thread
+                reloadContent(viewerIndex) // Must run on the main thread
                 successCallback.invoke(newState)
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -770,11 +770,7 @@ class ReaderViewModel(
             currentImageSource?.let { src ->
                 targetContent?.let {
                     databaseImages.addSource(src) { imgs ->
-                        loadImages(
-                            it,
-                            -1,
-                            imgs.toMutableList()
-                        )
+                        loadImages(it, -1, imgs.toMutableList())
                     }
                 }
             }
@@ -880,8 +876,8 @@ class ReaderViewModel(
         return false
     }
 
-    private fun reloadContent(forceImageUIReload: Boolean = false, viewerIndex: Int = -1) {
-        loadContentFromId(contentIds[currentContentIndex], -1, forceImageUIReload)
+    private fun reloadContent(viewerIndex: Int = -1) {
+        loadContentFromId(contentIds[currentContentIndex], -1)
         if (viewerIndex > -1) setViewerStartingIndex(viewerIndex)
     }
 
@@ -891,7 +887,7 @@ class ReaderViewModel(
      * @param c Content to load
      * @param pageNumber Page number to start with
      */
-    private fun loadContent(c: Content, pageNumber: Int, forceImageUIReload: Boolean = false) {
+    private fun loadContent(c: Content, pageNumber: Int) {
         Preferences.setReaderCurrentContent(c.id)
         currentContentIndex = contentIds.indexOf(c.id)
         if (-1 == currentContentIndex) currentContentIndex = 0
@@ -903,7 +899,7 @@ class ReaderViewModel(
             )
         ) c.folderExists = false
         content.postValue(c)
-        loadDatabaseImages(c, pageNumber, forceImageUIReload)
+        loadDatabaseImages(c, pageNumber)
     }
 
     /**
@@ -914,15 +910,14 @@ class ReaderViewModel(
      */
     private fun loadDatabaseImages(
         theContent: Content,
-        pageNumber: Int,
-        forceImageUIReload: Boolean = false
+        pageNumber: Int
     ) {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource!!)
         currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.id)
         databaseImages.addSource(currentImageSource!!) { imgs ->
-            loadImages(theContent, pageNumber, imgs.toMutableList(), forceImageUIReload)
+            loadImages(theContent, pageNumber, imgs.toMutableList())
         }
     }
 
@@ -942,7 +937,8 @@ class ReaderViewModel(
                         dao.insertContent(it)
                     }
                 }
-                reloadContent(true, viewerIndex) // Must run on the main thread
+                forceImageUIReload = true
+                reloadContent(viewerIndex) // Must run on the main thread
                 withContext(Dispatchers.IO) {
                     // Persist in JSON
                     theContent?.let {
@@ -983,6 +979,10 @@ class ReaderViewModel(
      */
     fun markPageAsRead(pageNumber: Int) {
         readPageNumbers.add(pageNumber)
+    }
+
+    fun clearForceReload() {
+        viewerImagesInternal.forEach { it.isForceRefresh = false }
     }
 
     /**
