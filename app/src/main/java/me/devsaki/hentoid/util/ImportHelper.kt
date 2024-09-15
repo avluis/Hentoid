@@ -642,7 +642,7 @@ fun scanFolderRecursive(
     // If at least 2 subfolders and all of them ends with a number, we've got a multi-chapter book
     if (subFolders.size >= 2) {
         val allSubfoldersEndWithNumber =
-            subFolders.mapNotNull { f -> f.name }.all { s -> ENDS_WITH_NUMBER.matcher(s).matches() }
+            subFolders.mapNotNull { it.name }.all { s -> ENDS_WITH_NUMBER.matcher(s).matches() }
         if (allSubfoldersEndWithNumber) {
             // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
             val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)

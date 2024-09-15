@@ -696,9 +696,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
         changeSeekMode(
             if (isResultsPage) SeekMode.PAGE else SeekMode.GALLERY,
-            isResultsPage || backListContainsGallery(
-                webView.copyBackForwardList()
-            ) > -1
+            isResultsPage || backListContainsGallery(webView.copyBackForwardList()) > -1
         )
     }
 
@@ -765,7 +763,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             val galleryIndex = backListContainsGallery(list)
             if (galleryIndex > -1) webView.goBackOrForward(galleryIndex - list.currentIndex)
         } else { // Seek to page
-            invokeNumberInputDialog(this, R.string.goto_page) { i -> goToPage(i) }
+            invokeNumberInputDialog(this, R.string.goto_page) { goToPage(it) }
         }
     }
 
@@ -1600,6 +1598,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * Indicate if the browser's back list contains a book gallery
      * Used to determine the display of the "back to latest gallery" button
      *
+     * NB : Internal implementation of WebBackForwardList seems to limit its size to 50 items,
+     * which causes deceptive behaviour when the previous gallery page is "far", navigation-wise
      * @param backForwardList Back list to examine
      * @return Index of the latest book gallery in the list; -1 if none has been detected
      */
