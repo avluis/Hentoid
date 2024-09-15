@@ -249,7 +249,7 @@ abstract class BaseDeleteWorker(
     }
 
     private fun purgeContentList(ids: LongArray, keepCovers: Boolean) {
-        // Flag the content as "being deleted" (triggers blink animation; lock operations)
+        // Flag the content as "being deleted" (triggers blink animation; locks operations)
         for (id in ids) dao.updateContentProcessedFlag(id, true)
 
         // Purge them
@@ -259,6 +259,9 @@ abstract class BaseDeleteWorker(
             dao.updateContentProcessedFlag(id, false)
             if (isStopped) break
         }
+
+        if (isStopped)
+            for (id in ids) dao.updateContentProcessedFlag(id, false)
     }
 
     /**

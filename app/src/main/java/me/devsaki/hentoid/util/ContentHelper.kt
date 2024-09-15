@@ -1334,12 +1334,13 @@ fun getBlockedTags(content: Content): List<String> {
 /**
  * Update the given content's properties by parsing its webpage
  *
- * @param content Content to parse again from its online source
- * @return Content updated from its online source, or Optional.empty if something went wrong
+ * @param content   Content to parse again from its online source
+ * @param keepUris  True to keep JSON and folder Uri values inside the result
+ * @return Content updated from its online source, or null if something went wrong
  */
-fun reparseFromScratch(content: Content): Content? {
+fun reparseFromScratch(content: Content, keepUris: Boolean = false): Content? {
     try {
-        return reparseFromScratch(content.galleryUrl, content)
+        return reparseFromScratch(content.galleryUrl, content, keepUris)
     } catch (e: IOException) {
         Timber.w(e)
         return null
@@ -1353,7 +1354,7 @@ fun reparseFromScratch(content: Content): Content? {
  * Create a new Content by parsing the webpage at the given URL
  *
  * @param url Webpage to parse to create the Content
- * @return Content created from the webpage at the given URL, or Optional.empty if something went wrong
+ * @return Content created from the webpage at the given URL, or null if something went wrong
  * @throws IOException If something horrible happens during parsing
  */
 @Throws(IOException::class, CloudflareProtectedException::class)
@@ -1366,13 +1367,15 @@ fun parseFromScratch(url: String): Content? {
  *
  * @param url     Webpage to parse to update the given Content's properties
  * @param content Content which properties to update (read-only). If this parameter is null, the call returns a completely new Content
- * @return Content with updated properties, or Optional.empty if something went wrong
+ * @param keepUris  True to keep JSON and folder Uri values inside the result
+ * @return Content with updated properties, or null if something went wrong
  * @throws IOException If something horrible happens during parsing
  */
 @Throws(IOException::class, CloudflareProtectedException::class)
 private fun reparseFromScratch(
     url: String,
-    content: Content?
+    content: Content?,
+    keepUris: Boolean = false
 ): Content? {
     assertNonUiThread()
 
@@ -1399,11 +1402,13 @@ private fun reparseFromScratch(
         val newContent = if (null == content) contentParser.toContent(urlToLoad)
         else contentParser.update(content, urlToLoad, true)
 
-        newContent.jsonUri = ""
-        newContent.clearStorageDoc()
-        newContent.parentStorageUri = ""
+        if (!keepUris) {
+            newContent.jsonUri = ""
+            newContent.clearStorageDoc()
+            newContent.parentStorageUri = ""
+        }
 
-        if (newContent.status != null && newContent.status == StatusContent.IGNORED) {
+        if (newContent.status == StatusContent.IGNORED) {
             val canonicalUrl = contentParser.canonicalUrl
             return if (canonicalUrl.isNotEmpty() && !canonicalUrl.equals(
                     urlToLoad,
@@ -1511,7 +1516,6 @@ fun fetchImageURLs(
  * 4/ copy back kept files into it
  * ...rather than to delete all image files one by one.
  *
- *
  * => code is way more complex but exec time is way faster
  *
  * @param context     Context to use
@@ -1587,8 +1591,8 @@ fun purgeFiles(
                             mimeType,
                             file.name
                         )
-                        if (newUri != null && name.endsWith("json")) content.jsonUri =
-                            newUri.toString()
+                        if (newUri != null && name.endsWith("json"))
+                            content.jsonUri = newUri.toString()
                     } catch (e: IOException) {
                         Timber.w(e)
                     }
@@ -1849,20 +1853,16 @@ fun computeAndSaveCoverHash(
  * @return True if pages are downloadable; false if they aren't
  */
 fun isDownloadable(content: Content): Boolean {
-    val images: List<ImageFile>? = content.imageFiles
-    if (images.isNullOrEmpty()) return false
+    val images: List<ImageFile> = content.imageFiles
+    if (images.isEmpty()) return false
 
     // Pick a random picture
     val img = images[getRandomInt(images.size)]
 
     // Peek it to see if downloads work
     val headers: MutableList<Pair<String, String>> = ArrayList()
-    headers.add(
-        Pair<String, String>(
-            HEADER_REFERER_KEY,
-            content.readerUrl
-        )
-    ) // Useful for Hitomi and Toonily
+    // Useful for Hitomi and Toonily
+    headers.add(Pair(HEADER_REFERER_KEY, content.readerUrl))
 
     try {
         if (img.needsPageParsing) {
@@ -1870,18 +1870,14 @@ fun isDownloadable(content: Content): Boolean {
             var cookieStr = getCookies(img.pageUrl)
             // If nothing found, peek from the site
             if (cookieStr.isEmpty()) cookieStr = peekCookies(img.pageUrl)
-            if (cookieStr.isNotEmpty()) headers.add(
-                Pair(HEADER_COOKIE_KEY, cookieStr)
-            )
+            if (cookieStr.isNotEmpty()) headers.add(Pair(HEADER_COOKIE_KEY, cookieStr))
             return testDownloadPictureFromPage(content.site, img, headers)
         } else {
             // Get cookies from the app jar
             var cookieStr = getCookies(img.url)
             // If nothing found, peek from the site
             if (cookieStr.isEmpty()) cookieStr = peekCookies(content.galleryUrl)
-            if (cookieStr.isNotEmpty()) headers.add(
-                Pair(HEADER_COOKIE_KEY, cookieStr)
-            )
+            if (cookieStr.isNotEmpty()) headers.add(Pair(HEADER_COOKIE_KEY, cookieStr))
             return testDownloadPicture(content.site, img, headers)
         }
     } catch (e: IOException) {

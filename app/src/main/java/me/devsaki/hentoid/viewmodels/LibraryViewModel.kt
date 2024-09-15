@@ -561,6 +561,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         // Merged books
                         val chaps = c.chaptersList.toMutableList() // Safe copy
                         if (c.manuallyMerged && chaps.isNotEmpty()) {
+                            // TODO do something smart when some images have been deleted
+
                             // Reparse main book from scratch if images are KO
                             if (reparseContent || !isDownloadable(c)) {
                                 if (!reparseContent) Timber.d("Pages unreachable; reparsing content")
@@ -575,9 +577,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                         if (!reparseContent) Timber.d("Pages unreachable; reparsing chapter $idx")
                                         if (parseFromScratch(ch.url) != null) {
                                             // Flagging all pics as ERROR; will be reparsed by the downloader
-                                            ch.imageList.forEach { img ->
-                                                img.status = StatusContent.ERROR
-                                            }
+                                            ch.imageList.forEach { it.status = StatusContent.ERROR }
                                             areModifiedImages = true
                                         } else res = null
                                     }
@@ -588,32 +588,35 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 it.setImageFiles(chaps.flatMap { ch -> ch.imageList })
                             }
                         } else { // Classic content
-                            if (reparseContent || !isDownloadable(c)) {
-                                Timber.d("Pages unreachable; reparsing content")
+                            val isDownloadable = isDownloadable(c)
+                            if (reparseContent || !isDownloadable) {
+                                var msg = "Reparsing content"
+                                if (!isDownloadable) msg += " (pages unreachable)"
+                                Timber.d(msg)
                                 // Reparse content itself
-                                res = reparseFromScratch(c)
+                                res = reparseFromScratch(c, reparseImages)
                             }
                         }
 
-                        if (res != null) {
-                            res!!.downloadMode = DownloadMode.DOWNLOAD
+                        res?.let {
+                            it.downloadMode = DownloadMode.DOWNLOAD
                             if (areModifiedImages) {
-                                dao.insertChapters(res!!.chaptersList)
-                                dao.insertImageFiles(res!!.imageList)
+                                dao.insertChapters(it.chaptersList)
+                                dao.insertImageFiles(it.imageList)
                             }
 
                             // Non-blocking performance bottleneck; run in a dedicated worker
                             if (reparseImages) purgeContent(
                                 getApplication(),
-                                res!!,
+                                it,
                                 keepCover = false,
                                 isDownloadPrepurge = true
                             )
                             dao.addContentToQueue(
-                                res!!, sourceImageStatus, targetImageStatus, position, -1, null,
+                                it, sourceImageStatus, targetImageStatus, position, -1, null,
                                 isQueueActive(getApplication())
                             )
-                        } else {
+                        } ?: run { // Undownloadable book => cancel operation
                             dao.updateContentProcessedFlag(c.id, false)
                             nbErrors.incrementAndGet()
                             onError.invoke(

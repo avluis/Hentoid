@@ -361,9 +361,9 @@ fun getDownloadLocation(context: Context, content: Content): Pair<DocumentFile?,
     if (content.storageUri.isNotEmpty()) {
         // Reset storage URI if unreachable (will be re-created later in the method)
         val rootFolder = getDocumentFromTreeUriString(context, content.storageUri)
-        if (null == rootFolder) content.clearStorageDoc() else {
-            val result = testDownloadFolder(context, content.storageUri)
-            if (!result) return null
+        if (null == rootFolder) content.clearStorageDoc()
+        else {
+            if (!testDownloadFolder(context, content.storageUri)) return null
             dir = getDocumentFromTreeUriString(
                 context,
                 content.storageUri
@@ -373,8 +373,7 @@ fun getDownloadLocation(context: Context, content: Content): Pair<DocumentFile?,
     // Auto-select location according to storage management strategy
     if (content.storageUri.isEmpty()) {
         location = selectDownloadLocation(context)
-        val result = testDownloadFolder(context, Preferences.getStorageUri(location))
-        if (!result) return null
+        if (!testDownloadFolder(context, Preferences.getStorageUri(location))) return null
     }
     return Pair(dir, location)
 }
@@ -384,19 +383,22 @@ private fun testDownloadFolder(
     uriString: String
 ): Boolean {
     if (uriString.isEmpty()) {
-        Timber.i("No download folder set") // May happen if user has skipped it during the intro
+        // May happen if user has skipped it during the intro
+        Timber.i("No download folder set")
         EventBus.getDefault()
             .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER))
         return false
     }
     val rootFolder = getDocumentFromTreeUriString(context, uriString)
     if (null == rootFolder) {
-        Timber.i("Download folder has not been found. Please select it again.") // May happen if the folder has been moved or deleted after it has been selected
+        // May happen if the folder has been moved or deleted after it has been selected
+        Timber.i("Download folder has not been found. Please select it again.")
         EventBus.getDefault()
             .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND))
         return false
     }
     if (!isUriPermissionPersisted(context.contentResolver, rootFolder.uri)) {
+        // May happen if user has manually removed credentials using his OS
         Timber.i("Insufficient credentials on download folder. Please select it again.")
         EventBus.getDefault()
             .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS))

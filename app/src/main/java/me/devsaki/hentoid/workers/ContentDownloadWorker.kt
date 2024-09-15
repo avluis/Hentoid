@@ -114,16 +114,16 @@ import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.log10
 
+// seconds; should be higher than the connect + I/O timeout defined in RequestQueueManager
+private const val IDLE_THRESHOLD = 20
+
+// KBps
+private const val LOW_NETWORK_THRESHOLD = 10
+
 class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.download_service, null) {
 
     companion object {
-        // seconds; should be higher than the connect + I/O timeout defined in RequestQueueManager
-        private const val IDLE_THRESHOLD = 20
-
-        // KBps
-        private const val LOW_NETWORK_THRESHOLD = 10
-
         fun isRunning(context: Context): Boolean {
             return isRunning(context, R.id.download_service)
         }
