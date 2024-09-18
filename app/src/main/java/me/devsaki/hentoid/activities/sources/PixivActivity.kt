@@ -53,6 +53,23 @@ class PixivActivity : BaseWebActivity() {
         return client
     }
 
+    override fun onPageStarted(
+        url: String,
+        isGalleryPage: Boolean,
+        isHtmlLoaded: Boolean,
+        isBookmarkable: Boolean
+    ) {
+        super.onPageStarted(url, isGalleryPage, isHtmlLoaded, isBookmarkable)
+        binding?.swipeContainer?.isEnabled = true
+    }
+
+    override fun onGalleryPageStarted() {
+        super.onGalleryPageStarted()
+        runOnUiThread {
+            binding?.swipeContainer?.isEnabled = false
+        }
+    }
+
     private inner class PixivWebClient(
         site: Site,
         filter: Array<String>,

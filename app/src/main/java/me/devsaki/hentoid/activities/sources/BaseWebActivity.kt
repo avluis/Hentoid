@@ -165,7 +165,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
 
     // === UI
-    private var binding: ActivityBaseWebBinding? = null
+    protected var binding: ActivityBaseWebBinding? = null
 
     // Dynamically generated webview
     protected lateinit var webView: NestedScrollWebView
