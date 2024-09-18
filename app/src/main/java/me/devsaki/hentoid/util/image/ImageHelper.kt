@@ -13,6 +13,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.waynejo.androidndkgif.GifEncoder
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.findSequencePosition
@@ -195,12 +196,14 @@ fun isImageLossless(data: ByteArray): Boolean {
 
 /**
  * Try to detect the mime-type of the picture file at the given URI
+ * NB : Opens the resource -> file I/O inside
  *
  * @param context Context to use
  * @param uri     URI of the picture file to detect the mime-type for
  * @return Mime-type of the picture file at the given URI; MIME_IMAGE_GENERIC if no Mime-type detected
  */
 fun getMimeTypeFromUri(context: Context, uri: Uri): String {
+    assertNonUiThread()
     var result = MIME_IMAGE_GENERIC
     val buffer = ByteArray(12)
     try {

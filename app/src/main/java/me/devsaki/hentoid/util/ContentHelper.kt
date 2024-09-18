@@ -1195,9 +1195,7 @@ fun createImageListFromFolder(
  * @param files Files to find images into
  * @return List of ImageFiles corresponding to all supported pictures among the given files, sorted numerically then alphabetically
  */
-fun createImageListFromFiles(
-    files: List<DocumentFile>
-): List<ImageFile> {
+fun createImageListFromFiles(files: List<DocumentFile>): List<ImageFile> {
     return createImageListFromFiles(files, StatusContent.DOWNLOADED, 0, "")
 }
 

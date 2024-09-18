@@ -327,7 +327,8 @@ class ReaderViewModel(
      * @param newImages  Images to process
      */
     private fun processStorageImages(
-        theContent: Content, newImages: MutableList<ImageFile>
+        theContent: Content,
+        newImages: MutableList<ImageFile>
     ) {
         require(!theContent.isArchive) { "Content must not be an archive" }
         val missingUris = newImages.any { it.fileUri.isEmpty() }
@@ -347,8 +348,7 @@ class ReaderViewModel(
                 }
             } else { // Try to get some from the cache
                 newImageFiles.forEach {
-                    val existingUri = DiskCache.getFile(formatCacheKey(it))
-                    if (existingUri != null) {
+                    DiskCache.getFile(formatCacheKey(it))?.let { existingUri ->
                         it.fileUri = existingUri.toString()
                         it.mimeType = getMimeTypeFromUri(
                             getApplication<Application>().applicationContext, existingUri
@@ -413,13 +413,15 @@ class ReaderViewModel(
      * @param imageFiles Pictures to process
      */
     private fun contentFirstLoad(
-        theContent: Content, pageNumber: Int, imageFiles: List<ImageFile>
+        theContent: Content,
+        pageNumber: Int,
+        imageFiles: List<ImageFile>
     ) {
         var startingIndex = 0
 
         // Auto-restart at last read position if asked to
-        if (Preferences.isReaderResumeLastLeft() && theContent.lastReadPageIndex > -1) startingIndex =
-            theContent.lastReadPageIndex
+        if (Preferences.isReaderResumeLastLeft() && theContent.lastReadPageIndex > -1)
+            startingIndex = theContent.lastReadPageIndex
 
         // Start at the given page number, if any
         if (pageNumber > -1) {
@@ -1002,10 +1004,10 @@ class ReaderViewModel(
     fun onPageChange(viewerIndex: Int, direction: Int) {
         if (viewerImagesInternal.size <= viewerIndex) return
         val theContent = getContent().value ?: return
+        // TODO what happens when isDynamic but page is from an archive ?
         val isArchive = theContent.isArchive
-        val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1).filter { i ->
-            isPictureNeedsProcessing(i, viewerImagesInternal)
-        }.toSet()
+        val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
+            .filter { isPictureNeedsProcessing(it, viewerImagesInternal) }.toSet()
         if (picturesLeftToProcess.isEmpty()) return
 
         // Identify pages to be loaded
@@ -1033,7 +1035,7 @@ class ReaderViewModel(
                 val from = if (increment > 0) initialIndex else 0
                 val to = if (increment > 0) viewerImagesInternal.size else initialIndex + 1
                 val leftToProcessDirection =
-                    IntRange(from, to - 1).count { o: Int -> picturesLeftToProcess.contains(o) }
+                    IntRange(from, to - 1).count { picturesLeftToProcess.contains(it) }
                 greenlight = indexesToLoad.size == leftToProcessDirection
             }
         }
@@ -1063,10 +1065,11 @@ class ReaderViewModel(
      */
     private fun isPictureNeedsProcessing(pageIndex: Int, images: List<ImageFile>): Boolean {
         if (pageIndex < 0 || images.size <= pageIndex) return false
-        val img = images[pageIndex]
-        return ((img.status == StatusContent.ONLINE || // Image has to be downloaded
-                img.isArchived) && // Image has to be extracted from an archive
-                !DiskCache.peekFile(formatCacheKey(img))) // It hasn't been cached
+        images[pageIndex].let {
+            return ((it.status == StatusContent.ONLINE || // Image has to be downloaded
+                    it.isArchived) && // Image has to be extracted from an archive
+                    !DiskCache.peekFile(formatCacheKey(it))) // It hasn't been cached
+        }
     }
 
     /**
@@ -1139,7 +1142,8 @@ class ReaderViewModel(
      * @param archiveFile   Archive file to extract from
      */
     private fun extractPics(
-        indexesToLoad: List<Int>, archiveFile: DocumentFile
+        indexesToLoad: List<Int>,
+        archiveFile: DocumentFile
     ) {
         viewModelScope.launch {
             try {
