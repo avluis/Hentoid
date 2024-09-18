@@ -1002,9 +1002,17 @@ class ReaderViewModel(
      */
     @Synchronized
     fun onPageChange(viewerIndex: Int, direction: Int) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                doPageChange(viewerIndex, direction)
+            }
+        }
+    }
+
+    private fun doPageChange(viewerIndex: Int, direction: Int) {
+        assertNonUiThread()
         if (viewerImagesInternal.size <= viewerIndex) return
         val theContent = getContent().value ?: return
-        // TODO what happens when isDynamic but page is from an archive ?
         val isArchive = theContent.isArchive
         val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
             .filter { isPictureNeedsProcessing(it, viewerImagesInternal) }.toSet()
@@ -1041,6 +1049,27 @@ class ReaderViewModel(
         }
         if (indexesToLoad.isEmpty() || !greenlight) return
 
+        // Populate what's already cached
+        val cachedIndexes = HashSet<Int>()
+        var nbProcessed = 0
+        indexesToLoad.forEach { idx ->
+            nbProcessed++
+            viewerImagesInternal[idx].let { img ->
+                val key = formatCacheKey(img)
+                if (DiskCache.peekFile(key)) {
+                    updateImgWithExtractedUri(
+                        img,
+                        idx,
+                        DiskCache.getFile(key)!!,
+                        0 == cachedIndexes.size % 4 || nbProcessed == indexesToLoad.size
+                    )
+                    cachedIndexes.add(idx)
+                }
+            }
+        }
+        indexesToLoad.removeAll(cachedIndexes)
+
+        // Unarchive
         // Group by archive for efficiency
         val indexesByArchive = indexesToLoad.filter { viewerImagesInternal[it].isArchived }
             .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
@@ -1050,6 +1079,7 @@ class ReaderViewModel(
             }
         }
 
+        // Download
         val onlineIndexes =
             indexesToLoad.filter { viewerImagesInternal[it].status == StatusContent.ONLINE }
         downloadPics(onlineIndexes)
@@ -1066,9 +1096,8 @@ class ReaderViewModel(
     private fun isPictureNeedsProcessing(pageIndex: Int, images: List<ImageFile>): Boolean {
         if (pageIndex < 0 || images.size <= pageIndex) return false
         images[pageIndex].let {
-            return ((it.status == StatusContent.ONLINE || // Image has to be downloaded
-                    it.isArchived) && // Image has to be extracted from an archive
-                    !DiskCache.peekFile(formatCacheKey(it))) // It hasn't been cached
+            return (it.status == StatusContent.ONLINE || // Image has to be downloaded
+                    it.isArchived) // Image has to be extracted from an archive
         }
     }
 
@@ -1232,7 +1261,6 @@ class ReaderViewModel(
         nbProcessed: AtomicInteger,
         maxElements: Int
     ) {
-
         getContent().value?.let {
             if (it.folderExists) cacheJson(getApplication<Application>().applicationContext, it)
         }
@@ -1862,8 +1890,7 @@ class ReaderViewModel(
 
         // Renumber all readable images
         val orderedImages =
-            chapters.mapNotNull { ch -> ch.imageFiles }.flatMap { imgLst -> imgLst.toList() }
-                .filter { img -> img.isReadable }
+            chapters.map { it.imageFiles }.flatMap { it.toList() }.filter { it.isReadable }
         require(orderedImages.isNotEmpty()) { "No images found" }
 
         // Keep existing formatting
