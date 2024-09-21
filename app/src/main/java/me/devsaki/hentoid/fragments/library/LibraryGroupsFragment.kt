@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -56,6 +57,7 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.invokeInputDialog
+import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.dimensAsDp
@@ -126,6 +128,11 @@ class LibraryGroupsFragment : Fragment(),
     // TODO doc
     private var enabled = false
 
+    // TODO doc
+    private var previousViewType = -1
+
+    private lateinit var pagingDebouncer: Debouncer<Unit>
+
     companion object {
 
         val GROUPITEM_DIFF_CALLBACK: DiffCallback<GroupDisplayItem> =
@@ -175,6 +182,7 @@ class LibraryGroupsFragment : Fragment(),
         activity = WeakReference(requireActivity() as LibraryActivity)
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
+        pagingDebouncer = Debouncer(lifecycleScope, 100) { setPagingMethod() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -190,12 +198,10 @@ class LibraryGroupsFragment : Fragment(),
     ): View? {
         binding = FragmentLibraryGroupsBinding.inflate(inflater, container, false)
         initUI()
-        activity.get()!!.initFragmentToolbars(
+        activity.get()?.initFragmentToolbars(
             selectExtension!!,
-            { menuItem: MenuItem -> onToolbarItemClicked(menuItem) }
-        ) { menuItem: MenuItem ->
-            onSelectionToolbarItemClicked(menuItem)
-        }
+            { onToolbarItemClicked(it) }
+        ) { onSelectionToolbarItemClicked(it) }
         return binding?.root
     }
 
@@ -207,14 +213,11 @@ class LibraryGroupsFragment : Fragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         firstLibraryLoad = true
-        viewModel.groups.observe(viewLifecycleOwner) { result: List<Group> -> onGroupsChanged(result) }
+        viewModel.groups.observe(viewLifecycleOwner) { onGroupsChanged(it) }
 
-        viewModel.getTotalGroup()
-            .observe(viewLifecycleOwner) { count: Int -> onTotalGroupsChanged(count) }
+        viewModel.getTotalGroup().observe(viewLifecycleOwner) { onTotalGroupsChanged(it) }
 
-        viewModel.libraryPaged.observe(viewLifecycleOwner) { result: PagedList<Content> ->
-            onLibraryChanged(result)
-        }
+        viewModel.libraryPaged.observe(viewLifecycleOwner) { onLibraryChanged(it) }
 
         // Trigger a blank search
         // TODO when group is reached from FLAT through the "group by" menu, this triggers a double-load and a screen blink
@@ -308,13 +311,12 @@ class LibraryGroupsFragment : Fragment(),
 
     private fun enterEditMode() {
         activity.get()?.setEditMode(true)
-        setPagingMethod()
         viewModel.searchGroup()
     }
 
     private fun cancelEdit() {
         activity.get()?.setEditMode(false)
-        setPagingMethod()
+        viewModel.searchGroup()
     }
 
     private fun confirmEdit() {
@@ -325,8 +327,7 @@ class LibraryGroupsFragment : Fragment(),
         Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM)
         // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
         Preferences.setGroupSortDesc(false)
-        viewModel.saveGroupPositions(itemAdapter.adapterItems.map { gi -> gi.group })
-        setPagingMethod()
+        viewModel.saveGroupPositions(itemAdapter.adapterItems.map { it.group })
         viewModel.searchGroup()
     }
 
@@ -662,7 +663,9 @@ class LibraryGroupsFragment : Fragment(),
     /**
      * Initialize the paging method of the screen
      */
-    private fun setPagingMethod() {
+    private fun setPagingMethod(recreate: Boolean = false) {
+        // Rebuild to be certain all layouts are recreated from scratch when switching to and from edit mode
+        if (recreate) fastAdapter = FastAdapter.with(itemAdapter)
         if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true)
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
@@ -728,7 +731,7 @@ class LibraryGroupsFragment : Fragment(),
             dragSwipeCallback.setIsDragEnabled(false) // Despite its name, that's actually to disable drag on long tap
             touchHelper = ItemTouchHelper(dragSwipeCallback)
             binding?.recyclerView?.let {
-                touchHelper!!.attachToRecyclerView(it)
+                touchHelper?.attachToRecyclerView(it)
             }
         }
 
@@ -770,6 +773,43 @@ class LibraryGroupsFragment : Fragment(),
                 } else super.onBind(viewHolder)
             }
         })
+
+        // "To top" button click listener (groups view only)
+        fastAdapter.addEventHook(object : ClickEventHook<GroupDisplayItem>() {
+            override fun onClick(
+                v: View,
+                position: Int,
+                fastAdapter: FastAdapter<GroupDisplayItem>,
+                item: GroupDisplayItem
+            ) {
+                itemTouchOnMove(position, 0)
+            }
+
+            override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+                return if (viewHolder is GroupDisplayItem.ViewHolder) {
+                    viewHolder.topButton
+                } else super.onBind(viewHolder)
+            }
+        })
+
+        // "To bottom" button click listener (groups view only)
+        fastAdapter.addEventHook(object : ClickEventHook<GroupDisplayItem>() {
+            override fun onClick(
+                v: View,
+                position: Int,
+                fastAdapter: FastAdapter<GroupDisplayItem>,
+                item: GroupDisplayItem
+            ) {
+                itemTouchOnMove(position, fastAdapter.itemCount - 1)
+            }
+
+            override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+                return if (viewHolder is GroupDisplayItem.ViewHolder) {
+                    viewHolder.bottomButton
+                } else super.onBind(viewHolder)
+            }
+        })
+
         fastAdapter.stateRestorationPolicy =
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
@@ -791,7 +831,15 @@ class LibraryGroupsFragment : Fragment(),
             else GroupDisplayItem.ViewType.LIBRARY_GRID
 
         val groups = result.map { GroupDisplayItem(it, touchHelper, viewType) }.distinct()
-        set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK)
+
+        if (viewType.ordinal != previousViewType) { // Display mode changed
+            Timber.d("display mode changed : $viewType")
+            itemAdapter.setNewList(groups, false)
+            setPagingMethod(true)
+            previousViewType = viewType.ordinal
+        } else {
+            set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK)
+        }
 
         // Update visibility and content of advanced search bar
         // - After getting results from a search

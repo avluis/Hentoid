@@ -43,7 +43,9 @@ class GroupDisplayItem(
     }
 
     override val layoutRes: Int
-        get() = if (ViewType.LIBRARY_GRID == viewType) R.layout.item_library_group_grid else R.layout.item_library_group
+        get() = if (ViewType.LIBRARY_EDIT == viewType) R.layout.item_queue
+        else if (ViewType.LIBRARY_GRID == viewType) R.layout.item_library_group_grid
+        else R.layout.item_library_group
 
     override val type: Int
         get() = R.id.group
@@ -71,11 +73,14 @@ class GroupDisplayItem(
         FastAdapter.ViewHolder<GroupDisplayItem>(view) {
         private val baseLayout: View = view.requireById(R.id.item)
         private val title: TextView = view.requireById(R.id.tvTitle)
-        private val ivFavourite: ImageView = view.requireById(R.id.ivFavourite)
-        private val ivRating: ImageView = view.requireById(R.id.iv_rating)
+        private val ivFavourite: ImageView? = view.findViewById(R.id.ivFavourite)
+        private val ivRating: ImageView? = view.findViewById(R.id.iv_rating)
         private var ivCover: ImageView? = view.findViewById(R.id.ivCover)
         var ivReorder: View? = view.findViewById(R.id.ivReorder)
         private var selectionBorder: View? = view.findViewById(R.id.selection_border)
+        var topButton: View? = view.findViewById(R.id.queueTopBtn)
+        var bottomButton: View? = view.findViewById(R.id.queueBottomBtn)
+
         private var coverUri = ""
 
         private var glideRequestOptions = getGlideOptionCenterImage(view.context)
@@ -132,18 +137,25 @@ class GroupDisplayItem(
 
             val items = item.group.getItems()
             val numberStr =
-                if (items.isEmpty()) ivFavourite.context.getString(R.string.empty) else items.size.toString() + ""
+                if (items.isEmpty()) title.context.getString(R.string.empty) else items.size.toString() + ""
             title.text = String.format("%s (%s)", item.group.name, numberStr)
 
-            ivFavourite.isVisible = (!isGrid || Settings.libraryDisplayGridFav)
-            if (item.group.favourite) {
-                ivFavourite.setImageResource(R.drawable.ic_fav_full)
-            } else {
-                ivFavourite.setImageResource(R.drawable.ic_fav_empty)
+            ivFavourite?.let {
+                it.isVisible = (!isGrid || Settings.libraryDisplayGridFav)
+                if (item.group.favourite) {
+                    it.setImageResource(R.drawable.ic_fav_full)
+                } else {
+                    it.setImageResource(R.drawable.ic_fav_empty)
+                }
             }
 
-            ivRating.isVisible = (!isGrid || Settings.libraryDisplayGridRating)
-            ivRating.setImageResource(getRatingResourceId(item.group.rating))
+            ivRating?.let {
+                it.isVisible = (!isGrid || Settings.libraryDisplayGridRating)
+                it.setImageResource(getRatingResourceId(item.group.rating))
+            }
+
+            topButton?.isVisible = true
+            bottomButton?.isVisible = true
         }
 
         private fun attachCover(uri: String) {
@@ -166,9 +178,9 @@ class GroupDisplayItem(
             }
         }
 
-        val favouriteButton: View
+        val favouriteButton: View?
             get() = ivFavourite
-        val ratingButton: View
+        val ratingButton: View?
             get() = ivRating
 
         override fun unbindView(item: GroupDisplayItem) {
