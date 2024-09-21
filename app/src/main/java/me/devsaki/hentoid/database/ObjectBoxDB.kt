@@ -129,7 +129,7 @@ object ObjectBoxDB {
         val attributes = content.attributes
         val attrBox = store.boxFor(Attribute::class.java)
         val newAttrs: MutableSet<Attribute> = HashSet()
-        val result = store.callInTxNoException {
+        try {
             // Master data management managed manually
             // Ensure all known attributes are replaced by their ID before being inserted
             // Watch https://github.com/objectbox/objectbox-java/issues/1023 for a lighter solution based on @Unique annotation
@@ -137,27 +137,30 @@ object ObjectBoxDB {
             var inputAttr: Attribute
             attrBox.query().equal(Attribute_.type, 0)
                 .equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build()
-                .use { attrByUniqueKey ->
+                .use { attrQuery ->
                     for (i in attributes.indices) {
                         inputAttr = attributes[i]
-                        dbAttr = attrByUniqueKey.setParameter(Attribute_.name, inputAttr.name)
+                        dbAttr = attrQuery.setParameter(Attribute_.name, inputAttr.name)
                             .setParameter(Attribute_.type, inputAttr.type.code.toLong())
-                            .findFirst()
+                            .findFirst() // Don't use the safe variant as it relies on attrQuery
                         // Existing attribute -> set the existing attribute
                         dbAttr?.let { attr ->
                             attributes[i] = attr
-                            attr.addLocationsFrom(inputAttr)
-                            attrBox.put(attr)
+                            attr.addLocationsFrom(inputAttr) // Enrich with new locations
+                            attrBox.put(attr) // Store it back
                         } ?: run { // New attribute -> normalize name
                             inputAttr.name =
                                 inputAttr.name.lowercase(Locale.getDefault()).trim()
                             if (inputAttr.type == AttributeType.ARTIST || inputAttr.type == AttributeType.CIRCLE)
                                 newAttrs.add(inputAttr)
+                            // New attr will be stored by insertContentCore
                         }
                     }
                 }
-            insertContentCore(content)
+        } catch (e: Exception) {
+            Timber.e(e)
         }
+        val result = insertContentCore(content)
         return Pair<Long, Set<Attribute>>(result, newAttrs)
     }
 
@@ -328,15 +331,15 @@ object ObjectBoxDB {
             val c = contentBox[id]
             if (c != null) {
                 store.runInTx {
-                    c.imageFiles?.apply {
+                    c.imageFiles.apply {
                         imageFileBox.remove(this)
                         clear() // Clear links to all imageFiles
                     }
-                    c.chapters?.apply {
+                    c.chapters.apply {
                         chapterBox.remove(this)
                         clear() // Clear links to all chapters
                     }
-                    c.errorLog?.apply {
+                    c.errorLog.apply {
                         errorBox.remove(this)
                         clear() // Clear links to all errorRecords
                     }
@@ -366,15 +369,10 @@ object ObjectBoxDB {
      * Cleanup all Attributes that don't have any backlink among content
      */
     fun cleanupOrphanAttributes() {
-        val attributeBox = store.boxFor(
-            Attribute::class.java
-        )
-        val locationBox = store.boxFor(
-            AttributeLocation::class.java
-        )
-        // Stream the collection to get the attributes to clean
-        val attrsToClean =
-            attributeBox.query().filter { attr: Attribute -> attr.contents.isEmpty() }.safeFind()
+        val attributeBox = store.boxFor(Attribute::class.java)
+        val locationBox = store.boxFor(AttributeLocation::class.java)
+        // Get the attributes to clean
+        val attrsToClean = attributeBox.query().filter { it.contents.isEmpty() }.safeFind()
 
         // Clean the attributes
         for (attr in attrsToClean) {
