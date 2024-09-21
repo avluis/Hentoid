@@ -156,7 +156,7 @@ object ObjectBoxDB {
                         }
                     }
                 }
-            store.boxFor(Content::class.java).put(content)
+            insertContentCore(content)
         }
         return Pair<Long, Set<Attribute>>(result, newAttrs)
     }
