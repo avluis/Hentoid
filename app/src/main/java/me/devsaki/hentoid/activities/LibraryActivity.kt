@@ -1058,20 +1058,20 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     private fun updateToolbar() {
         val currentGrouping = Preferences.getGroupingDisplay()
-        displayTypeMenu!!.isVisible = !editMode
-        searchMenu!!.isVisible = !editMode
+        displayTypeMenu?.isVisible = !editMode
+        searchMenu?.isVisible = !editMode
         actionSearchView?.queryHint =
             getString(if (isGroupDisplayed()) R.string.group_search_hint else R.string.library_search_hint)
-        newGroupMenu!!.isVisible =
+        newGroupMenu?.isVisible =
             !editMode && isGroupDisplayed() && currentGrouping.canReorderGroups // Custom groups only
-        reorderConfirmMenu!!.isVisible = editMode
-        reorderCancelMenu!!.isVisible = editMode
-        sortMenu!!.isVisible = !editMode
+        reorderConfirmMenu?.isVisible = editMode
+        reorderCancelMenu?.isVisible = editMode
+        sortMenu?.isVisible = !editMode
         if (isGroupDisplayed()) {
-            reorderMenu?.isVisible = currentGrouping.canReorderGroups
+            reorderMenu?.isVisible = !editMode && currentGrouping.canReorderGroups
         } else {
             reorderMenu?.isVisible =
-                currentGrouping.canReorderBooks && group != null && group!!.subtype != 1
+                !editMode && currentGrouping.canReorderBooks && group != null && group!!.subtype != 1
         }
         signalCurrentFragment(CommunicationEvent.Type.UPDATE_TOOLBAR)
     }
@@ -1094,9 +1094,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             selectedTotalCount.toInt()
         )
         if (isGroupDisplayed()) {
-            editMenu?.isVisible =
-                !hasProcessed && !isMultipleSelection && Preferences.getGroupingDisplay()
-                    .canReorderGroups
+            editMenu?.isVisible = !hasProcessed && !isMultipleSelection
+                    && Preferences.getGroupingDisplay().canReorderGroups
             deleteMenu?.isVisible = !hasProcessed
             shareMenu?.isVisible = false
             completedMenu?.isVisible = false
