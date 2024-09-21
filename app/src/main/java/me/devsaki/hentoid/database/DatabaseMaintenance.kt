@@ -61,6 +61,16 @@ object DatabaseMaintenance {
             Timber.i("Removing orphan Queue records : %s items detected", orphanIds.size)
             mdb.deleteQueueRecords(orphanIds)
             Timber.i("Removing orphan Queue records : done")
+
+            // Set an ERROR status for orphaned Content (Content with a queue status but no QueueRecord)
+            Timber.i("Process orphaned queue content : start")
+            val orphans = mdb.selectOrphanQueueContent()
+            Timber.i("found ${orphans.size} items")
+            orphans.forEach {
+                it.status = StatusContent.ERROR
+                mdb.insertContentCore(it)
+            }
+            Timber.i("Process orphaned queue content : done")
         } finally {
             mdb.cleanup()
         }

@@ -11,6 +11,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.database.domains.QueueRecord_
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.util.getQueueTabStatuses
 
 /**
  * DAO specialized in one-shot queries (migration & maintenance)
@@ -109,7 +110,13 @@ class MaintenanceDAO {
         return ObjectBoxDB.store.boxFor(QueueRecord::class.java).query(qrCondition).safeFindIds()
     }
 
-    // Proxies to the update functions of the base DB
+    // Select content that have a queue status but no corresponding QueueRecord
+    fun selectOrphanQueueContent(): List<Content> {
+        val qrCondition = Content_.status.oneOf(getQueueTabStatuses()).and(Content_.queueRecords.relationCount(0))
+        return ObjectBoxDB.store.boxFor(Content::class.java).query(qrCondition).safeFind()
+    }
+
+    // Proxies to the update functions of the regular DB
 
     fun insertContentCore(c: Content) {
         ObjectBoxDB.insertContentCore(c)
