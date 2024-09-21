@@ -1474,11 +1474,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         if (newSearch && isNumeric(query)) {
             val dialogTitle = getString(R.string.search_bookid_label, query)
             val excludedSiteCodes = result.toList().filterNotNull()
-                .filter { content -> query == content.uniqueSiteId }
-                .map { obj -> obj.site.code }
+                .filter { query == it.uniqueSiteId }
+                .map { it.site.code }
             val siteCodes = Site.entries
-                .map { s -> s.code }
-                .filterNot { c -> excludedSiteCodes.contains(c) }
+                .map { it.code }
+                .filterNot { excludedSiteCodes.contains(it) }
             if (!result.isEmpty()) {
                 binding?.recyclerView?.let {
                     val snackbar: Snackbar = Snackbar.make(
