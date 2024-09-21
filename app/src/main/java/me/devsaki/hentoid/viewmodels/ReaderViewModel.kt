@@ -1693,28 +1693,28 @@ class ReaderViewModel(
 
         val selectedPage =
             dao.selectImageFile(selectedPageId) ?: throw IllegalArgumentException("No page found")
-        var currentChapter = selectedPage.linkedChapter
+        var selectedChapter = selectedPage.linkedChapter
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
-        if (null == currentChapter) {
-            currentChapter = Chapter(1, "", "$chapterStr 1")
+        if (null == selectedChapter) {
+            selectedChapter = Chapter(1, "", "$chapterStr 1")
             theContent.imageFiles.let { workingList ->
-                currentChapter.setImageFiles(workingList)
+                selectedChapter.setImageFiles(workingList)
                 // Link images the other way around so that what follows works properly
-                for (img in workingList) img.setChapter(currentChapter)
+                for (img in workingList) img.setChapter(selectedChapter)
             }
-            currentChapter.setContent(theContent)
+            selectedChapter.setContent(theContent)
         }
-        val chapterImages = currentChapter.imageList
+        val chapterImages = selectedChapter.imageList
         require(chapterImages.isNotEmpty()) { "No images found for selection" }
         require(selectedPage.order >= 2) { "Can't create or remove chapter on first page" }
 
         // If we tap the 1st page of an existing chapter, it means we're removing it
-        val firstChapterPic = chapterImages.minByOrNull { it.order }
+        val firstChapterPic = chapterImages.filter { it.isReadable }.minByOrNull { it.order }
         val isRemoving =
             if (firstChapterPic != null) firstChapterPic.order == selectedPage.order else false
 
-        if (isRemoving) doRemoveChapter(theContent, currentChapter, chapterImages)
-        else doCreateChapter(theContent, selectedPage, currentChapter, chapterImages)
+        if (isRemoving) doRemoveChapter(theContent, selectedChapter, chapterImages)
+        else doCreateChapter(theContent, selectedPage, selectedChapter, chapterImages)
 
         // Rearrange all chapters
 
