@@ -35,6 +35,7 @@ import me.devsaki.hentoid.util.isValidContextForGlide
 
 class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
     AbstractItem<DuplicateItem.ViewHolder>() {
+
     enum class ViewType {
         MAIN, DETAILS
     }
@@ -76,7 +77,10 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
     }
 
     override val layoutRes: Int
-        get() = if (ViewType.MAIN == viewType) R.layout.item_duplicate_main else if (ViewType.DETAILS == viewType) R.layout.item_duplicate_detail else R.layout.item_queue
+        get() = if (ViewType.MAIN == viewType) R.layout.item_duplicate_main
+        else if (ViewType.DETAILS == viewType) R.layout.item_duplicate_detail
+        else R.layout.item_queue
+
     override val type: Int
         get() = R.id.duplicate
 

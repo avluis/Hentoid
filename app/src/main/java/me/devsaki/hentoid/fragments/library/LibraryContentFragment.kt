@@ -373,15 +373,15 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.newContentSearch.observe(viewLifecycleOwner) { value -> newSearch = value }
+        viewModel.newContentSearch.observe(viewLifecycleOwner) { newSearch = it }
 
-        viewModel.libraryPaged.observe(viewLifecycleOwner) { result -> onLibraryChanged(result) }
+        viewModel.libraryPaged.observe(viewLifecycleOwner) { onLibraryChanged(it) }
 
-        viewModel.totalContent.observe(viewLifecycleOwner) { count -> onTotalContentChanged(count) }
+        viewModel.totalContent.observe(viewLifecycleOwner) { onTotalContentChanged(it) }
 
-        viewModel.group.observe(viewLifecycleOwner) { value -> group = value }
+        viewModel.group.observe(viewLifecycleOwner) { group = it }
 
-        viewModel.contentSearchBundle.observe(viewLifecycleOwner) { b -> contentSearchBundle = b }
+        viewModel.contentSearchBundle.observe(viewLifecycleOwner) { contentSearchBundle = it }
 
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(viewLifecycleOwner)
@@ -507,7 +507,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 .create()
                 .show()
         }
-        activity.get()!!.setEditMode(true)
+        activity.get()?.setEditMode(true)
     }
 
     private fun cancelEdit() {
@@ -1009,7 +1009,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             CommunicationEvent.Type.SCROLL_TOP -> {
                 topItemPosition = 0
-                llm!!.scrollToPositionWithOffset(0, 0)
+                llm?.scrollToPositionWithOffset(0, 0)
             }
 
             else -> {}
@@ -1160,7 +1160,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
             fastAdapter = FastAdapter.with(pagedItemAdapter!!)
             val item = ContentItem(viewType)
-            fastAdapter!!.registerItemFactory(item.type, item)
+            fastAdapter?.registerItemFactory(item.type, item)
             itemAdapter = null
         } else { // Paged mode or edit mode
             itemAdapter = ItemAdapter()
@@ -1415,8 +1415,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay
                     || activity.get()!!.isEditMode()
                 )
-                    if (activity.get()!!.isEditMode())
-                        ContentItem.ViewType.LIBRARY_EDIT
+                    if (activity.get()!!.isEditMode()) ContentItem.ViewType.LIBRARY_EDIT
                     else ContentItem.ViewType.LIBRARY
                 else ContentItem.ViewType.LIBRARY_GRID
 
@@ -1467,7 +1466,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         // - After getting results from a search
         // - When switching between Group and Content view
         // Shouldn't trigger for a new download
-        if (newSearch) activity.get()!!.updateSearchBarOnResults(!result.isEmpty())
+        if (newSearch) activity.get()?.updateSearchBarOnResults(!result.isEmpty())
         val query = getQuery()
 
         // User searches a book ID
@@ -1520,7 +1519,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         if (Preferences.getEndlessScroll() && !activity.get()!!
                 .isEditMode() && pagedItemAdapter != null
         ) {
-            pagedItemAdapter!!.submitList(result) { differEndCallback() }
+            pagedItemAdapter?.submitList(result) { differEndCallback() }
         } else if (activity.get()!!.isEditMode()) {
             populateAllResults(result)
         } else { // Paged mode

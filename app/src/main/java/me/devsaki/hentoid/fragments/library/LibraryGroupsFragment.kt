@@ -187,7 +187,7 @@ class LibraryGroupsFragment : Fragment(),
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = FragmentLibraryGroupsBinding.inflate(inflater, container, false)
         initUI()
         activity.get()!!.initFragmentToolbars(
@@ -196,7 +196,7 @@ class LibraryGroupsFragment : Fragment(),
         ) { menuItem: MenuItem ->
             onSelectionToolbarItemClicked(menuItem)
         }
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -784,13 +784,13 @@ class LibraryGroupsFragment : Fragment(),
         if (!enabled) return
         val isEmpty = result.isEmpty()
         binding?.emptyTxt?.isVisible = isEmpty
-        activity.get()!!.updateTitle(result.size.toLong(), totalContentCount.toLong())
+        activity.get()?.updateTitle(result.size.toLong(), totalContentCount.toLong())
         val viewType =
             if (activity.get()!!.isEditMode()) GroupDisplayItem.ViewType.LIBRARY_EDIT
             else if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) GroupDisplayItem.ViewType.LIBRARY
             else GroupDisplayItem.ViewType.LIBRARY_GRID
 
-        val groups = result.map { g -> GroupDisplayItem(g, touchHelper, viewType) }.distinct()
+        val groups = result.map { GroupDisplayItem(it, touchHelper, viewType) }.distinct()
         set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK)
 
         // Update visibility and content of advanced search bar
