@@ -74,7 +74,7 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                     if (1 == bookIds.size) {
                         val gi = dao.selectGroupItems(bookIds[0], Grouping.CUSTOM)
                         if (gi.isNotEmpty()) for (i in customGroups.indices) {
-                            if (gi[0].group.targetId == customGroups[i].id) {
+                            if (gi[0].groupId == customGroups[i].id) {
                                 existingList.index = i
                                 break
                             }

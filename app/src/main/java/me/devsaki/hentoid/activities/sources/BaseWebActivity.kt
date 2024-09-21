@@ -332,7 +332,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Priority 2 : Last viewed position, if option enabled
         if (Preferences.isBrowserResumeLast()) {
             val siteHistory = dao.selectHistory(getStartSite())
-            if (!siteHistory.url.isNullOrEmpty()) return siteHistory.url
+            if (siteHistory.url.isNotEmpty()) return siteHistory.url
         }
 
         // Priority 3 : Homepage, if manually set through bookmarks
@@ -998,7 +998,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         if (isDownloadPlus) {
             // Copy the _current_ content's download params to the extra images
             val downloadParamsStr = currentContent!!.downloadParams
-            if (downloadParamsStr != null && downloadParamsStr.length > 2) {
+            if (downloadParamsStr.length > 2) {
                 for (i in extraImages) i.downloadParams = downloadParamsStr
             }
 
@@ -1016,9 +1016,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 existingImageUrls.addAll(it.map { img -> img.url })
                 existingChapterOrders.addAll(
                     it.map { img ->
-                        if (null == img.chapter) return@map -1
-                        if (null == img.chapter!!.target) return@map -1
-                        img.chapter!!.target.order
+                        if (null == img.chapter.target) return@map -1
+                        img.chapter.target.order
                     }
                 )
                 updatedImgs.addAll(it)
@@ -1227,7 +1226,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun processContent(onlineContent: Content, quickDownload: Boolean): ContentStatus {
         assertNonUiThread()
         if (onlineContent.url.isEmpty()) return ContentStatus.UNDOWNLOADABLE
-        if (onlineContent.status != null && onlineContent.status == StatusContent.IGNORED) return ContentStatus.UNDOWNLOADABLE
+        if (onlineContent.status == StatusContent.IGNORED) return ContentStatus.UNDOWNLOADABLE
         currentContent = null
         Timber.i("Content Site, URL : %s, %s", onlineContent.site.code, onlineContent.url)
         val searchUrl =
@@ -1405,13 +1404,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         if (onlineImgs.isNullOrEmpty()) return result
 
         var maxStoredImageOrder = 0
-        if (storedContent.imageFiles != null) {
-            val opt = storedContent.imageFiles!!
-                .filter { i: ImageFile -> isInLibrary(i.status) }
-                .maxOfOrNull { img -> img.order }
+        val opt = storedContent.imageFiles
+            .filter { i: ImageFile -> isInLibrary(i.status) }
+            .maxOfOrNull { img -> img.order }
 
-            if (opt != null) maxStoredImageOrder = opt
-        }
+        if (opt != null) maxStoredImageOrder = opt
         val maxStoredImageOrderFinal = maxStoredImageOrder
 
         // Attach chapters to books downloaded before chapters were implemented
@@ -1426,7 +1423,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
         // Attach chapters to stored images if they don't have any (old downloads made with versions of the app that didn't detect chapters)
         val storedChapters: List<Chapter> = storedContent.chapters
-        if (positionMap.isNotEmpty() && minOnlineImageOrder < maxStoredImageOrder && storedChapters.isNullOrEmpty()) {
+        if (positionMap.isNotEmpty() && minOnlineImageOrder < maxStoredImageOrder && storedChapters.isEmpty()) {
             val storedImages = storedContent.imageList
             for (img in storedImages) {
                 if (null == img.linkedChapter) {
@@ -1467,7 +1464,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         ) { // User hasn't left the book page since
             // Retrieve the URLs of stored pages
             val storedUrls: MutableSet<String> = HashSet()
-            storedContent.imageFiles?.let {
+            storedContent.imageFiles.let {
                 storedUrls.addAll(it
                     .filter { img -> isInLibrary(img.status) }
                     .map { obj: ImageFile -> obj.url }.toList()

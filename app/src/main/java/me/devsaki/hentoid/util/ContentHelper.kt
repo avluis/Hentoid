@@ -2261,7 +2261,7 @@ fun mergeContents(
         // Merge custom groups and update
         // Merged book can be a member of one custom group only
         val customGroup = contentList.flatMap { it.groupItems }
-            .mapNotNull { it.getGroup() }
+            .mapNotNull { it.reachGroup() }
             .distinct().firstOrNull { it.grouping == Grouping.CUSTOM }
         if (customGroup != null) moveContentToCustomGroup(mergedContent, customGroup, dao)
 

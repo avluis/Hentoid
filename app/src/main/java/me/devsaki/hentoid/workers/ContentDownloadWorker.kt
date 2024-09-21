@@ -991,7 +991,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     if (groupItems.isNotEmpty()) {
                         for (gi in groupItems) {
                             moveContentToCustomGroup(
-                                content, gi.group.target, dao, gi.order
+                                content, gi.reachGroup(), dao, gi.order
                             )
                         }
                     }

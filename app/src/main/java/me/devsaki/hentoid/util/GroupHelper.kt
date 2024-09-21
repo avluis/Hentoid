@@ -150,7 +150,7 @@ fun moveContentToCustomGroup(
     if (groupItems.isNotEmpty()) {
         // Update the cover of the old groups if they used a picture from the book that is being moved
         for (gi in groupItems) {
-            val g = gi.group.target
+            val g = gi.reachGroup()
             if (g != null && !g.coverContent.isNull) {
                 if (g.coverContent.targetId == content.id) {
                     updateGroupCover(g, content.id, dao)
@@ -227,7 +227,7 @@ fun addArtistToAttributesGroup(name: String, dao: CollectionDAO): Group {
  */
 private fun isContentLinkedToGroup(content: Content, group: Group): Boolean {
     for (item in content.getGroupItems(group.grouping)) {
-        if (item.group.target == group) return true
+        if (item.groupId == group.id) return true
     }
     return false
 }
@@ -243,7 +243,7 @@ fun removeContentFromGrouping(grouping: Grouping, content: Content, dao: Collect
     val toRemove = HashSet<GroupItem>()
     val needCoverUpdate: MutableList<Group> = ArrayList()
     for (gi in content.groupItems) {
-        gi.getGroup()?.let { g ->
+        gi.reachGroup()?.let { g ->
             if (g.grouping == grouping) {
                 toRemove.add(gi)
                 if (g.coverContent.targetId == content.id) needCoverUpdate.add(g)

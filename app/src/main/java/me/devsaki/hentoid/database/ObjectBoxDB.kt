@@ -353,7 +353,7 @@ object ObjectBoxDB {
                     val groupItems = groupItemBox.query().equal(GroupItem_.contentId, id).safeFind()
                     for (groupItem in groupItems) {
                         // If we're not in the Custom grouping and it's the only item of its group, delete the group
-                        val g = groupItem.group.target
+                        val g = groupItem.reachGroup()
                         if (g != null && g.grouping != Grouping.CUSTOM && g.getItems().size < 2)
                             groupBox.remove(g)
                         // Delete the item
@@ -740,13 +740,13 @@ object ObjectBoxDB {
         if (hasTagFilter) {
             for ((attrType, attrs) in metadataMap) {
                 if (attrType != AttributeType.SOURCE) { // Not a "real" attribute in database
-                    if (attrs != null && attrs.isNotEmpty()) {
+                    if (attrs.isNotEmpty()) {
                         contentQuery.`in`(Content_.id, selectFilteredContent(attrs))
                     }
                 }
             }
         }
-        return query.safeFind().map { gi -> gi.content.targetId }.toLongArray()
+        return query.safeFind().map { gi -> gi.contentId }.toLongArray()
     }
 
     private fun selectContentUniversalAttributesQ(
@@ -854,7 +854,7 @@ object ObjectBoxDB {
                 dynamicGroupContentIds
             ) // Dynamic group
         }
-        return query.safeFind().map { gi -> gi.content.targetId }.toLongArray()
+        return query.safeFind().map { gi -> gi.contentId }.toLongArray()
     }
 
     fun selectContentUniversalQ(

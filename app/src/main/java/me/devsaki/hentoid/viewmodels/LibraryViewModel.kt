@@ -779,7 +779,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         // Update the "has custom book order" group flag
         localGroup.hasCustomBookOrder = true
         var order = 0
-        for (c in orderedContent) for (gi in localGroup.getItems()) if (gi.content.targetId == c.id) {
+        for (c in orderedContent) for (gi in localGroup.getItems()) if (gi.contentId == c.id) {
             gi.order = order++
             dao.insertGroupItem(gi)
             break

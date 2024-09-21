@@ -47,7 +47,6 @@ import me.devsaki.hentoid.activities.bundles.GroupItemBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
-import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
@@ -390,8 +389,8 @@ class LibraryGroupsFragment : Fragment(),
                     selectedContent = contentToDelete.toMutableList()
                     // Rebuild the groups list from the remaining contents if needed
                     if (Preferences.getGroupingDisplay().canDeleteGroups) selectedGroups =
-                        selectedContent.flatMap { c -> c.groupItems }
-                            .map { gi: GroupItem -> gi.group.target }
+                        selectedContent.flatMap { it.groupItems }
+                            .mapNotNull { it.reachGroup() }
                             .toMutableList()
                 }
             }

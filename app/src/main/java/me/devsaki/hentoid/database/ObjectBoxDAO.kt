@@ -596,7 +596,7 @@ class ObjectBoxDAO : CollectionDAO {
     private fun enrichGroupWithItemsByDlDate(g: Group, minDays: Int, maxDays: Int): Group {
         val items = selectGroupItemsByDlDate(g, minDays, maxDays)
         g.setItems(items)
-        if (items.isNotEmpty()) g.coverContent.target = items[0].content.target
+        if (items.isNotEmpty()) g.coverContent.target = items[0].reachContent()
         return g
     }
 
@@ -698,15 +698,13 @@ class ObjectBoxDAO : CollectionDAO {
         if (-1 == item.order) item.order = ObjectBoxDB.getMaxGroupItemOrderFor(item.groupId) + 1
 
         // If target group doesn't have a cover, get the corresponding Content's
-        val groupCoverContent = item.group.target.coverContent
-        if (!groupCoverContent.isResolvedAndNotNull) {
-            val c: Content? = if (!item.content.isResolvedAndNotNull) {
-                selectContent(item.contentId)
-            } else {
-                item.content.target
+        item.reachGroup()?.coverContent?.let { groupCoverContent ->
+            if (!groupCoverContent.isResolvedAndNotNull) {
+                val c: Content? = item.reachContent() ?: selectContent(item.contentId)
+                groupCoverContent.setAndPutTarget(c)
             }
-            groupCoverContent.setAndPutTarget(c)
         }
+
         return ObjectBoxDB.insertGroupItem(item)
     }
 
@@ -734,10 +732,11 @@ class ObjectBoxDAO : CollectionDAO {
         // Check if one of the GroupItems to delete is linked to the content that contains the group's cover picture
         val groupItems = ObjectBoxDB.selectGroupItems(groupItemIds.toLongArray())
         for (gi in groupItems) {
-            val groupCoverContent = gi.group.target.coverContent
-            // If so, remove the cover picture
-            if (groupCoverContent.isResolvedAndNotNull && groupCoverContent.targetId == gi.content.targetId)
-                gi.group.target.coverContent.setAndPutTarget(null)
+            gi.reachGroup()?.coverContent?.let { groupCoverContent ->
+                // If so, remove the cover picture
+                if (groupCoverContent.isResolvedAndNotNull && groupCoverContent.targetId == gi.contentId)
+                    groupCoverContent.setAndPutTarget(null)
+            }
         }
         ObjectBoxDB.deleteGroupItems(groupItemIds.toLongArray())
     }

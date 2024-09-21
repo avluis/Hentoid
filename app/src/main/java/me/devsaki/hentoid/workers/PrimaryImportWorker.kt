@@ -636,7 +636,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 addContent(context, dao, content)
                 val customGroups =
                     content.getGroupItems(Grouping.CUSTOM)
-                        .mapNotNull { it.getGroup() }
+                        .mapNotNull { it.reachGroup() }
                         .map { it.name }
                 val groupStr =
                     if (customGroups.isEmpty()) "" else " in " + customGroups.joinToString(", ")

@@ -25,11 +25,11 @@ data class GroupItem(
     }
 
 
-    fun getContent(): Content? {
+    fun reachContent(): Content? {
         return content.reach(this)
     }
 
-    fun getGroup(): Group? {
+    fun reachGroup(): Group? {
         return group.reach(this)
     }
 

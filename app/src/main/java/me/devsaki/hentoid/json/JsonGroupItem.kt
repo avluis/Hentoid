@@ -12,8 +12,8 @@ data class JsonGroupItem(
     val order: Int
 ) {
     constructor(gi: GroupItem) : this(
-        gi.group.target.grouping.id,
-        gi.group.target.name,
+        gi.reachGroup()?.grouping?.id ?: 0,
+        gi.reachGroup()?.name ?: "",
         gi.order
     )
 
