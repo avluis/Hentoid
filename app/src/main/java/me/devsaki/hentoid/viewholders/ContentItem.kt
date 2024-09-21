@@ -178,10 +178,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
     }
 
     val title: String
-        get() = if (content != null) content.title
-        else if (queueRecord != null) queueRecord.content.target.title
-        else if (chapter != null) chapter.name
-        else ""
+        get() = content?.title ?: (queueRecord?.content?.target?.title ?: (chapter?.name ?: ""))
 
 
     /**
@@ -445,8 +442,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
             var title = tvTitle.context.getText(R.string.work_untitled)
             if (content != null) {
-                title = if (content.title.isNullOrEmpty()) content.replacementTitle
-                else content.title
+                title = content.title.ifEmpty { content.replacementTitle }
             } else if (chapter != null) {
                 title = chapter.name
             }
@@ -534,7 +530,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 tvChapters?.let { tv ->
                     val chapters = content.chaptersList
                     val chapterVisibility =
-                        if (isPlaceholder || chapters.isNullOrEmpty()) View.GONE else View.VISIBLE
+                        if (isPlaceholder || chapters.isEmpty()) View.GONE else View.VISIBLE
                     ivChapters?.let { iv ->
                         iv.visibility = chapterVisibility
                         tv.visibility = chapterVisibility
@@ -586,7 +582,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             ivSite?.apply {
                 val site = content.site
                 visibility =
-                    if (site != null && site != Site.NONE && (!isGrid || Settings.libraryDisplayGridSource)) {
+                    if (site != Site.NONE && (!isGrid || Settings.libraryDisplayGridSource)) {
                         val img = site.ico
                         setImageResource(img)
                         View.VISIBLE

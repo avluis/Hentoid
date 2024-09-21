@@ -8,7 +8,6 @@ import android.widget.FrameLayout
 import android.widget.PopupWindow
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.core.view.ViewCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
@@ -85,7 +84,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
 
     fun showAsDropDown(anchor: View) {
         if (!isShowing
-            && ViewCompat.isAttachedToWindow(anchor)
+            && anchor.isAttachedToWindow
             && !anchor.context.isFinishing()
         ) {
             updateUI(anchor.context)

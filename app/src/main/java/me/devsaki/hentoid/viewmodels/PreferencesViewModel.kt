@@ -111,7 +111,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                                 it1.type ?: "",
                                 it1.name ?: ""
                             )
-                            c.imageFiles?.forEach { it2 ->
+                            c.imageFiles.forEach { it2 ->
                                 if (it1.uri.toString() == it2.fileUri) {
                                     it2.fileUri = newUri.toString()
                                 }
@@ -120,7 +120,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                         // Update Content Uris
                         c.setStorageDoc(targetFolder)
                         dao.insertContentCore(c)
-                        c.imageFiles?.let {
+                        c.imageFiles.let {
                             dao.insertImageFiles(it)
                         }
                         success = true

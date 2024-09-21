@@ -145,7 +145,7 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
 
             // Buttons
             val site = libraryContent.site
-            if (site != null && site != Site.NONE) {
+            if (site != Site.NONE) {
                 val img = site.ico
                 ivSite.setImageResource(img)
                 ivSite.visibility = View.VISIBLE

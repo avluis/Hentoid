@@ -205,19 +205,11 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         super.onViewCreated(view, savedInstanceState)
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[ReaderViewModel::class.java]
-        viewModel.getStartingIndex().observe(viewLifecycleOwner) { startingIndex: Int ->
-            onStartingIndexChanged(startingIndex)
-        }
-        viewModel.getViewerImages().observe(viewLifecycleOwner) { images ->
-            onImagesChanged(images)
-        }
-        viewModel.getContent().observe(viewLifecycleOwner) { content -> onContentChanged(content) }
-        viewModel.getShowFavouritesOnly().observe(viewLifecycleOwner) { showFavouriteOnly ->
-            onShowFavouriteChanged(showFavouriteOnly)
-        }
-        viewModel.getShuffled().observe(viewLifecycleOwner) { shuffled: Boolean ->
-            onShuffledChanged(shuffled)
-        }
+        viewModel.getStartingIndex().observe(viewLifecycleOwner) { onStartingIndexChanged(it) }
+        viewModel.getViewerImages().observe(viewLifecycleOwner) { onImagesChanged(it) }
+        viewModel.getContent().observe(viewLifecycleOwner) { onContentChanged(it) }
+        viewModel.getShowFavouritesOnly().observe(viewLifecycleOwner) { onShowFavouriteChanged(it) }
+        viewModel.getShuffled().observe(viewLifecycleOwner) { onShuffledChanged(it) }
     }
 
     override fun onDestroy() {
@@ -420,18 +412,17 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         if (null == content) return
         val chapters = content.chaptersList
         isContentDynamic = content.isDynamic
-        if (chapters.isNullOrEmpty()) return
+        if (chapters.isEmpty()) return
         binding?.apply {
             chapterSelector.onFocusChangeListener =
                 OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                     Timber.i("hasFocus %s", hasFocus)
                 }
-            chapterSelector.entries = chapters.sortedBy { obj -> obj.order }
-                .filter { c: Chapter -> c.order > -1 }.map { obj: Chapter -> obj.name }
-                .toList()
+            chapterSelector.entries = chapters.sortedBy { it.order }
+                .filter { it.order > -1 }.map { it.name }.toList()
             chapterSelector.index = 0
             chapterSelector.setOnIndexChangeListener { index ->
-                val chap = chapters.firstOrNull { ch -> ch.order == index + 1 }
+                val chap = chapters.firstOrNull { it.order == index + 1 }
                 if (chap != null) {
                     val imgs = chap.imageList
                     if (imgs.isNotEmpty()) {
@@ -449,11 +440,10 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             val chapterItems: MutableList<INestedItem<SubExpandableItem.ViewHolder>> = ArrayList()
             var isArchive = false
             if (images.isNotEmpty()) isArchive = images[0].content.target.isArchive
-            val chapters = images
-                .asSequence()
-                .mapNotNull { obj -> obj.linkedChapter }
-                .filter { c -> c.order > -1 }
-                .sortedBy { obj -> obj.order }
+            val chapters = images.asSequence()
+                .mapNotNull { it.linkedChapter }
+                .filter { it.order > -1 }
+                .sortedBy { it.order }
                 .distinct()
             var displayOrder = 0
             for (c in chapters) {
@@ -939,8 +929,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private fun onConfirmChapterReordering() {
         // Save final position of items in DB
         viewModel.saveChapterPositions(
-            expandableItemAdapter.adapterItems.mapNotNull { c -> c.tag }
-                .map { ch -> ch as Chapter }
+            expandableItemAdapter.adapterItems.mapNotNull { it.tag }.map { it as Chapter }
         )
         ProgressDialogFragment.invoke(
             this,

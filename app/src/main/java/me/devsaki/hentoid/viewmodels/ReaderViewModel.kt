@@ -599,7 +599,7 @@ class ReaderViewModel(
             // Get a fresh version of current content in case it has been updated since the initial load
             // (that can be the case when viewing a book that is being downloaded)
             val savedContent = dao.selectContent(contentId) ?: return
-            val theImages = savedContent.imageFiles ?: return
+            val theImages = savedContent.imageFiles
 
             // Update image read status with the cached read statuses
             val previousReadPageNumbers =
@@ -684,7 +684,7 @@ class ReaderViewModel(
         val theContent: Content = dao.selectContent(images[0].content.targetId) ?: return
 
         // We can't work on the given objects as they are tied to the UI (part of ImageFileItem)
-        val dbImages = theContent.imageFiles ?: return
+        val dbImages = theContent.imageFiles
         for (img in images) for (dbImg in dbImages) if (img.id == dbImg.id) {
             dbImg.favourite = !dbImg.favourite
             break
@@ -1675,8 +1675,8 @@ class ReaderViewModel(
 
     /**
      * Create or remove a chapter at the given position
-     * * - If the given position is the first page of a chapter -> remove this chapter
-     * * - If not, create a new chapter at this position
+     *   - If the given position is the first page of a chapter -> remove this chapter
+     *   - If not, create a new chapter at this position
      *
      * @param contentId      ID of the corresponding content
      * @param selectedPageId ID of the page to remove or create a chapter at
@@ -1697,15 +1697,15 @@ class ReaderViewModel(
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
         if (null == currentChapter) {
             currentChapter = Chapter(1, "", "$chapterStr 1")
-            theContent.imageFiles?.let { workingList ->
+            theContent.imageFiles.let { workingList ->
                 currentChapter.setImageFiles(workingList)
                 // Link images the other way around so that what follows works properly
                 for (img in workingList) img.setChapter(currentChapter)
             }
             currentChapter.setContent(theContent)
         }
-        val chapterImages: List<ImageFile>? = currentChapter.imageFiles
-        require(!chapterImages.isNullOrEmpty()) { "No images found for selection" }
+        val chapterImages = currentChapter.imageList
+        require(chapterImages.isNotEmpty()) { "No images found for selection" }
         require(selectedPage.order >= 2) { "Can't create or remove chapter on first page" }
 
         // If we tap the 1st page of an existing chapter, it means we're removing it
@@ -1796,8 +1796,7 @@ class ReaderViewModel(
     private fun doRemoveChapter(
         content: Content, toRemove: Chapter, chapterImages: List<ImageFile>
     ) {
-        var contentChapters: List<Chapter> = content.chapters ?: return
-        contentChapters = contentChapters.sortedBy { it.order }
+        val contentChapters = content.chaptersList.sortedBy { it.order }
         val removeOrder = toRemove.order
 
         // Identify preceding chapter

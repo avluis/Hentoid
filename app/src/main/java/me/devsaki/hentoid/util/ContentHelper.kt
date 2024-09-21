@@ -643,7 +643,7 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
     }
 
     // Extract the cover to the app's persistent folder if the book is an archive
-    if (content.isArchive && content.imageFiles != null) {
+    if (content.isArchive) {
         val archive = getFileFromSingleUriString(context, content.storageUri)
         if (archive != null) {
             try {
@@ -785,7 +785,7 @@ fun setAndSaveContentCover(newCover: ImageFile, dao: CollectionDAO, context: Con
 
     // Get all images from the DB
     val content = dao.selectContent(newCover.content.targetId) ?: return
-    val images = content.imageFiles ?: return
+    val images = content.imageFiles
 
     // Remove current cover from the set
     setContentCover(content, images, newCover)
@@ -872,8 +872,7 @@ fun getOrCreateContentDownloadDir(
 fun formatBookFolderName(
     content: Content
 ): Pair<String, String> {
-    var title = content.title
-    title = if ((null == title)) "" else title
+    val title = content.title
     val author = formatBookAuthor(content).lowercase(Locale.getDefault())
 
     return Pair(
@@ -1448,7 +1447,7 @@ fun fetchImageURLs(
 
     // If content doesn't have any download parameters, get them from the cookie manager
     var contentDownloadParamsStr = content.downloadParams
-    if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
+    if (contentDownloadParamsStr.isEmpty()) {
         val cookieStr = getCookies(url)
         if (cookieStr.isNotEmpty()) {
             val downloadParams: MutableMap<String, String> = HashMap()
@@ -1471,7 +1470,7 @@ fun fetchImageURLs(
 
     // Add the content's download params to the images only if they have missing information
     contentDownloadParamsStr = content.downloadParams
-    if (contentDownloadParamsStr != null && contentDownloadParamsStr.length > 2) {
+    if (contentDownloadParamsStr.length > 2) {
         val contentDownloadParams = parseDownloadParams(contentDownloadParamsStr)
         for (i in imgs) {
             if (i.downloadParams.length > 2) {
@@ -1733,7 +1732,7 @@ fun bindOnlineCover(
         // Quickly skip JSON deserialization if there are no cookies in downloadParams
         if (content != null) {
             val downloadParamsStr = content.downloadParams
-            if (downloadParamsStr != null && downloadParamsStr.contains(HEADER_COOKIE_KEY)) {
+            if (downloadParamsStr.contains(HEADER_COOKIE_KEY)) {
                 val downloadParams = parseDownloadParams(downloadParamsStr)
                 cookieStr = downloadParams[HEADER_COOKIE_KEY]
                 referer = downloadParams[HEADER_REFERER_KEY]
@@ -1742,7 +1741,7 @@ fun bindOnlineCover(
             if (null == referer) referer = content.galleryUrl
             builder = builder.addHeader(HEADER_COOKIE_KEY, cookieStr).addHeader(
                 HEADER_REFERER_KEY,
-                referer!!
+                referer
             ).addHeader(HEADER_USER_AGENT, content.site.userAgent)
         }
 

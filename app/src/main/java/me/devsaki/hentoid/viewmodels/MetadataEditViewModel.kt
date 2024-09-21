@@ -108,7 +108,7 @@ class MetadataEditViewModel(
 
     fun setCover(order: Int) {
         val content = contentList.value?.get(0) ?: return
-        val imageFiles = content.imageFiles ?: return
+        val imageFiles = content.imageFiles
 
         val img = imageFiles.find { it.order == order }
         if (img != null) {

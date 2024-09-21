@@ -178,11 +178,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         }
 
         private fun attachTitle(content: Content) {
-            val title: CharSequence = if (content.title == null) {
-                tvTitle.context.getText(R.string.work_untitled)
-            } else {
-                content.title
-            }
+            val title: CharSequence = content.title
             tvTitle.text = title
             tvTitle.setTextColor(tvTitle.context.getThemedColor(R.color.card_title_light))
         }
@@ -236,7 +232,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
 
             // Source icon
             val site = content.site
-            if (site != null && site != Site.NONE) {
+            if (site != Site.NONE) {
                 val img = site.ico
                 ivSite.setImageResource(img)
                 ivSite.visibility = View.VISIBLE
