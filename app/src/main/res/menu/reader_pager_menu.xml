@@ -32,6 +32,13 @@
         android:tooltipText="@string/viewer_order_shuffle_help"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_reverse"
+        android:enabled="true"
+        android:icon="@drawable/ic_reverse"
+        android:title="@string/viewer_order_reverse"
+        android:tooltipText="@string/viewer_order_reverse"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_book_settings"
         android:enabled="true"
         android:icon="@drawable/ic_settings"

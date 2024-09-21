@@ -167,6 +167,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var deleteMenu: MenuItem
     private lateinit var showFavoritePagesMenu: MenuItem
     private lateinit var shuffleMenu: MenuItem
+    private lateinit var reverseMenu: MenuItem
 
     private lateinit var navigator: ReaderNavigation
 
@@ -240,6 +241,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     R.id.action_show_favorite_pages -> onShowFavouriteClick()
                     R.id.action_book_settings -> onBookSettingsClick()
                     R.id.action_shuffle -> onShuffleClick()
+                    R.id.action_reverse -> onReverseClick()
                     R.id.action_slideshow -> onSlideshowClick()
                     R.id.action_delete_book -> if (VIEWER_DELETE_ASK_AGAIN == Preferences.getReaderDeleteAskMode()) invoke(
                         this, !isContentArchive
@@ -256,6 +258,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             showFavoritePagesMenu =
                 it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_show_favorite_pages)
             shuffleMenu = it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_shuffle)
+            reverseMenu = it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_reverse)
         }
         return binding!!.root
     }
@@ -598,6 +601,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onShuffleClick() {
         goToPage(1)
         viewModel.toggleShuffle()
+    }
+
+    /**
+     * Handle click on "Reverse" action button
+     */
+    private fun onReverseClick() {
+        seekToIndex(adapter.itemCount - 1)
+        viewModel.reverse()
     }
 
     /**

@@ -811,6 +811,7 @@
     <string name="viewer_direction_ttb">Top to bottom</string>
     <string name="viewer_slideshow">Slideshow</string>
     <string name="viewer_slideshow_help">Slideshow mode</string>
+    <string name="viewer_order_reverse">Reverse order</string>
     <string name="viewer_order_shuffle">Shuffle pages</string>
     <string name="viewer_order_123">Reorder pages</string>
     <string name="viewer_order_shuffle_help">Toggle page shuffling</string>

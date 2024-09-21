@@ -126,6 +126,8 @@ class ReaderViewModel(
 
     private val shuffled = MutableLiveData<Boolean>() // Shuffle state of the current book
 
+    private val reversed = MutableLiveData<Boolean>() // Reverse state of the current book
+
     // True during one loading where images need to be reloaded on screen
     private var forceImageUIReload = false
 
@@ -154,6 +156,7 @@ class ReaderViewModel(
     init {
         showFavouritesOnly.postValue(false)
         shuffled.postValue(false)
+        reversed.postValue(false)
         DiskCache.addCleanupObserver(this.javaClass.name) { this.onCacheCleanup() }
     }
 
@@ -382,8 +385,7 @@ class ReaderViewModel(
      * @param imageFiles Pictures to process
      */
     private fun processImages(theContent: Content, pageNumber: Int, imageFiles: List<ImageFile>) {
-        val shuffledVal = getShuffled().value
-        sortAndSetViewerImages(imageFiles, null != shuffledVal && shuffledVal)
+        sortAndSetViewerImages(imageFiles, getShuffled().value ?: false, reversed.value ?: false)
         if (theContent.id != loadedContentId) contentFirstLoad(theContent, pageNumber, imageFiles)
         loadedContentId = theContent.id
     }
@@ -447,13 +449,23 @@ class ReaderViewModel(
      * Toggle the shuffle mode
      */
     fun toggleShuffle() {
-        val shuffledVal = getShuffled().value
-        var isShuffled = null != shuffledVal && shuffledVal
-        isShuffled = !isShuffled
+        val isShuffled = !(getShuffled().value ?: false)
         if (isShuffled) RandomSeed.renewSeed(SEED_PAGES)
         shuffled.postValue(isShuffled)
-        val imgs = databaseImages.value
-        imgs?.let { sortAndSetViewerImages(it, isShuffled) }
+        databaseImages.value?.let {
+            sortAndSetViewerImages(it, isShuffled, reversed.value ?: false)
+        }
+    }
+
+    /**
+     * Reverse page order
+     */
+    fun reverse() {
+        val isReversed = !(reversed.value ?: false)
+        reversed.postValue(isReversed)
+        databaseImages.value?.let {
+            sortAndSetViewerImages(it, shuffled.value ?: false, isReversed)
+        }
     }
 
     /**
@@ -462,13 +474,17 @@ class ReaderViewModel(
      * @param images    Images to process
      * @param shuffle Trye if shuffle mode is on; false if not
      */
-    private fun sortAndSetViewerImages(images: List<ImageFile>, shuffle: Boolean) {
+    private fun sortAndSetViewerImages(
+        images: List<ImageFile>,
+        shuffle: Boolean,
+        reverse: Boolean
+    ) {
         var imgs = images.toList()
         imgs = if (shuffle) {
             imgs.shuffled(Random(RandomSeed.getSeed(SEED_PAGES)))
         } else {
             // Sort images according to their Order; don't keep the cover thumb
-            imgs.sortedBy { it.order }
+            imgs.sortedBy { it.order * if (reverse) -1 else 1 }
         }
         // Don't keep the cover thumb
         imgs = imgs.filter { it.isReadable }
