@@ -29,7 +29,7 @@ data class LusciousBookMetadata(
         val id: String?,
         val title: String?,
         val url: String?,
-        val created: String,
+        val created: String?,
         @Json(name = "number_of_pictures")
         val nbPictures: Int,
         val cover: CoverInfo?,
@@ -67,7 +67,7 @@ data class LusciousBookMetadata(
         }
 
         content.url = info.url
-        if (info.created.isNotEmpty()) content.uploadDate = info.created.toLong() * 1000
+        info.created?.let { if (it.isNotEmpty()) content.uploadDate = it.toLong() * 1000 }
         content.title = cleanup(info.title)
 
 //        result.setQtyPages(info.number_of_pictures);  <-- does not reflect the actual number of pictures reachable via the Luscious API / website
