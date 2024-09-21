@@ -442,7 +442,7 @@ class ObjectBoxDAO : CollectionDAO {
         // See https://github.com/objectbox/objectbox-java/issues/776
         val livedata = ObjectBoxLiveData(ObjectBoxDB.selectAllQueueBooksQ())
         val result = MediatorLiveData<Int>()
-        result.addSource(livedata) { v -> result.setValue(v.size) }
+        result.addSource(livedata) { result.setValue(it.size) }
         return result
     }
 
@@ -452,7 +452,7 @@ class ObjectBoxDAO : CollectionDAO {
         consumer: Consumer<Content>
     ) {
         ObjectBoxDB.selectAllInternalBooksQ(rootPath, favsOnly, true).use { query ->
-            query.forEach { t -> consumer(t) }
+            query.forEach { consumer(it) }
         }
     }
 
