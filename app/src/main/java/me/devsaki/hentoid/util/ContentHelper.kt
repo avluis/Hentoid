@@ -2186,7 +2186,7 @@ fun mergeContents(
 
                 if (!img.isReadable && coverFound) continue // Skip thumbs from 2+ rank merged books
                 val newImg = ImageFile(img, populateContent = false, populateChapter = false)
-                newImg.id = 0 // Force working on a new picture
+                newImg.id = 0 // Force creating a new DB object
                 newImg.fileUri = "" // Clear initial URI
                 if (newImg.isReadable) {
                     newImg.order = pictureOrder++
@@ -2208,6 +2208,7 @@ fun mergeContents(
                         if (chapLink.uniqueId.isEmpty()) chapLink.populateUniqueId()
                         if (null == newChapter || chapLink.uniqueId != newChapter.uniqueId) {
                             newChapter = Chapter(chapLink)
+                            newChapter.id = 0 // Force creating a new DB object
                             newChapter.order = chapterOrder++
                         }
                     }
@@ -2230,8 +2231,8 @@ fun mergeContents(
                     onProgress.invoke(nbProcessedPics++, nbImages, c.title)
                 }
                 mergedImages.add(newImg)
-            }
-        }
+            } // ImageFile
+        } // Content
     } catch (e: IOException) {
         Timber.w(e)
         isError = true
