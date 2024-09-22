@@ -97,9 +97,9 @@ android {
 }
 
 dependencies {
-    implementation project(path: ':app:ai-upscale')
     implementation project(path: ':app:gles-renderer')
     implementation project(path: ':app:customssiv')
+    implementation files('../ai-upscale/ai-upscale.aar')
 
     def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
     def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
