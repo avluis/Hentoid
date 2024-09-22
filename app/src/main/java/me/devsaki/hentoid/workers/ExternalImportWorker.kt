@@ -27,6 +27,7 @@ import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
+import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.notification.BaseNotification
@@ -37,6 +38,7 @@ import me.devsaki.hentoid.util.trace
 import me.devsaki.hentoid.workers.data.ExternalImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
+import java.io.File
 import java.io.IOException
 
 class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
@@ -224,73 +226,14 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         val dao = ObjectBoxDAO()
         try {
             Timber.d("delta+ : " + delta.first.size + " roots")
+
+            // == Content to add
             delta.first.forEach { deltaPlus ->
                 val deltaPlusRoot = deltaPlus.first
                 FileExplorer(context, deltaPlusRoot).use { explorer ->
-                    val addedContent: MutableList<Content> = ArrayList()
+                    val addedContent =
+                        scanAddedContent(context, explorer, deltaPlusRoot, deltaPlus, dao)
                     if (isStopped) return
-
-                    // Pair siblings with the same name (e.g. archives and JSON files)
-                    val deltaPlusPairs =
-                        deltaPlus.second.groupBy { f -> getFileNameWithoutExtension(f.name ?: "") }
-
-                    deltaPlusPairs.values.forEach { docs ->
-                        if (isStopped) return
-                        if (BuildConfig.DEBUG) {
-                            docs.forEach { doc ->
-                                Timber.d("delta+ => " + doc.uri.toString())
-                            }
-                        }
-                        val archive =
-                            docs.firstOrNull { it.isFile && isSupportedArchive(it.name ?: "") }
-                        val folder = docs.firstOrNull { it.isDirectory }
-
-                        // Import new archive
-                        if (archive != null) {
-                            val json =
-                                docs.firstOrNull {
-                                    it.isFile && getExtension(it.name ?: "")
-                                        .equals("json", true)
-                                }
-                            val c = scanArchive(
-                                context,
-                                deltaPlusRoot,
-                                archive,
-                                emptyList(),
-                                StatusContent.EXTERNAL,
-                                dao,
-                                json
-                            )
-                            // Valid archive
-                            if (0 == c.first) addedContent.add(c.second!!)
-                            else {
-                                // Invalid archive
-                                val message = when (c.first) {
-                                    1 -> "Archive ignored (contains another archive) : %s"
-                                    else -> "Archive ignored (unsupported pictures or corrupted archive) : %s"
-                                }
-                                trace(
-                                    Log.INFO,
-                                    0,
-                                    logs,
-                                    message,
-                                    archive.name ?: "<name not found>"
-                                )
-                            }
-                        } else if (folder != null) { // Import new folder
-                            scanFolderRecursive(
-                                context,
-                                dao,
-                                deltaPlusRoot,
-                                folder,
-                                explorer,
-                                emptyList(),
-                                addedContent,
-                                null,
-                                logs
-                            )
-                        }
-                    } // deltaPlus docs
 
                     // Process added content
                     addedContent.forEach {
@@ -311,6 +254,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 } // explorer
             } // deltaPlus roots
 
+            // == Content to remove
             val toRemove = delta.second.filter { it > 0 }
             Timber.d("delta- : " + toRemove.size + " useful / " + delta.second.size + " total")
             toRemove.forEach { idToRemove ->
@@ -331,5 +275,98 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         } finally {
             dao.cleanup()
         }
+    }
+
+    private fun scanAddedContent(
+        context: Context,
+        explorer: FileExplorer,
+        deltaPlusRoot: DocumentFile,
+        deltaPlus: Pair<DocumentFile, List<DocumentFile>>,
+        dao: CollectionDAO
+    ): List<Content> {
+        val addedContent: MutableList<Content> = ArrayList()
+        if (isStopped) return addedContent
+        if (BuildConfig.DEBUG)
+            Timber.d("delta+ root has ${deltaPlus.second.size} documents : ${deltaPlusRoot.uri}")
+
+        // Pair siblings with the same name (e.g. archives and JSON files)
+        val deltaPlusPairs = deltaPlus.second.groupBy { getFileNameWithoutExtension(it.name ?: "") }
+
+        // Forge parent names using folder root path minus ext library root path
+        val extRootElts =
+            getFullPathFromUri(context, Uri.parse(Preferences.getExternalLibraryUri()))
+                .split(File.separator)
+        val parentNames = getFullPathFromUri(context, deltaPlusRoot.uri)
+            .split(File.separator).toMutableList()
+        for (i in extRootElts.indices - 1) parentNames.removeFirst()
+        Timber.d("  parents : $parentNames")
+
+        deltaPlusPairs.values.forEach { docs ->
+            if (isStopped) return addedContent
+            if (BuildConfig.DEBUG) docs.forEach { Timber.d("delta+ => ${it.uri}") }
+            val archive = docs.firstOrNull { it.isFile && isSupportedArchive(it.name ?: "") }
+            val folder = docs.firstOrNull { it.isDirectory }
+
+            // Import new archive
+            if (archive != null) {
+                importArchive(context, docs, deltaPlusRoot, archive, dao)
+                    ?.let { addedContent.add(it) }
+            } else if (folder != null) { // Import new folder
+                scanFolderRecursive(
+                    context,
+                    dao,
+                    deltaPlusRoot,
+                    folder,
+                    explorer,
+                    parentNames,
+                    addedContent,
+                    null,
+                    logs
+                )
+            }
+        }
+        Timber.d("  addedContent ${addedContent.size}")
+        return addedContent
+    }
+
+    // TODO factorize with the end of ImportHelper.scanFolderRecursive
+    private fun importArchive(
+        context: Context,
+        docs: List<DocumentFile>,
+        deltaPlusRoot: DocumentFile,
+        archive: DocumentFile,
+        dao: CollectionDAO
+    ): Content? {
+        val json =
+            docs.firstOrNull {
+                it.isFile && getExtension(it.name ?: "")
+                    .equals("json", true)
+            }
+        val c = scanArchive(
+            context,
+            deltaPlusRoot,
+            archive,
+            emptyList(),
+            StatusContent.EXTERNAL,
+            dao,
+            json
+        )
+        // Valid archive
+        if (0 == c.first) return c.second
+        else {
+            // Invalid archive
+            val message = when (c.first) {
+                1 -> "Archive ignored (contains another archive) : %s"
+                else -> "Archive ignored (unsupported pictures or corrupted archive) : %s"
+            }
+            trace(
+                Log.INFO,
+                0,
+                logs,
+                message,
+                archive.name ?: "<name not found>"
+            )
+        }
+        return null
     }
 }
