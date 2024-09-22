@@ -277,10 +277,8 @@ class ReaderViewModel(
      * @param imageId ID of the page to set
      */
     fun setViewerStartingIndexById(imageId: Long) {
-        val pic = viewerImagesInternal.find { it.id == imageId }
-        pic?.let {
-            startingIndex.postValue(it.displayOrder)
-        }
+        val index = viewerImagesInternal.indexOfFirst { it.id == imageId }
+        if (index > -1) startingIndex.postValue(index)
     }
 
     /**
