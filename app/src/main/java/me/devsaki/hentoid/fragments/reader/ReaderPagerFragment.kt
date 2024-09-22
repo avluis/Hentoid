@@ -818,11 +818,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         // -> activate scroll listener manually
         if (currentPosition == startingIndex) onScrollPositionChange(startingIndex)
         else {
-            if (LinearLayoutManager.HORIZONTAL == llm.orientation) {
-                binding?.apply {
-                    recyclerView.scrollToPosition(startingIndex)
-                }
-            } else llm.scrollToPositionWithOffset(startingIndex, 0)
+            if (LinearLayoutManager.HORIZONTAL == llm.orientation)
+                binding?.recyclerView?.scrollToPosition(startingIndex)
+            else llm.scrollToPositionWithOffset(startingIndex, 0)
         }
     }
 
