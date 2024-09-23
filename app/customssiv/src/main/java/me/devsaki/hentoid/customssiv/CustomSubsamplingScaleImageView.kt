@@ -246,10 +246,6 @@ open class CustomSubsamplingScaleImageView : View {
     // Used to prevent infinite zoom
     private var maxScale = 2f
 
-    // Min scale allowed (factor of source resolution)
-    // Used to prevent infinite zoom
-    private var minScale = minScale()
-
     // Density to reach before loading higher resolution tiles
     private var minimumTileDpi = -1
 
@@ -258,6 +254,10 @@ open class CustomSubsamplingScaleImageView : View {
 
     // Minimum scale type
     private var minimumScaleType = ScaleType.CENTER_INSIDE
+
+    // Min scale allowed (factor of source resolution)
+    // Used to prevent infinite zoom
+    private var minScale = minScale()
 
     // overrides for the dimensions of the generated tiles
     private var maxTileWidth = TILE_SIZE_AUTO
