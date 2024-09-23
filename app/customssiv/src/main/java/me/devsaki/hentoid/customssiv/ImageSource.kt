@@ -22,19 +22,19 @@ const val ASSET_SCHEME = "file:///android_asset/"
  * Create an instance from a resource. The correct resource for the device screen resolution will be used.
  *
  * @param resId resource ID.
- * @return an [ImageSourceK] instance.
+ * @return an [ImageSource] instance.
  */
-fun resource(resId: Int): ImageSourceK {
-    return ImageSourceK(resId)
+fun resource(resId: Int): ImageSource {
+    return ImageSource(resId)
 }
 
 /**
  * Create an instance from an asset name.
  *
  * @param assetName asset name.
- * @return an [ImageSourceK] instance.
+ * @return an [ImageSource] instance.
  */
-fun asset(assetName: String): ImageSourceK {
+fun asset(assetName: String): ImageSource {
     return uri(ASSET_SCHEME + assetName)
 }
 
@@ -43,37 +43,37 @@ fun asset(assetName: String): ImageSourceK {
  * of a file.
  *
  * @param uri image URI.
- * @return an [ImageSourceK] instance.
+ * @return an [ImageSource] instance.
  */
-fun uri(uri: String): ImageSourceK {
-    var uri = uri
-    if (!uri.contains("://")) {
-        if (uri.startsWith("/")) {
-            uri = uri.substring(1)
+fun uri(uri: String): ImageSource {
+    var theUri = uri
+    if (!theUri.contains("://")) {
+        if (theUri.startsWith("/")) {
+            theUri = theUri.substring(1)
         }
-        uri = FILE_SCHEME + uri
+        theUri = FILE_SCHEME + theUri
     }
-    return ImageSourceK(Uri.parse(uri))
+    return ImageSource(Uri.parse(theUri))
 }
 
 /**
  * Create an instance from a URI.
  *
  * @param uri image URI.
- * @return an [ImageSourceK] instance.
+ * @return an [ImageSource] instance.
  */
-fun uri(uri: Uri): ImageSourceK {
-    return ImageSourceK(uri)
+fun uri(uri: Uri): ImageSource {
+    return ImageSource(uri)
 }
 
 /**
  * Provide a loaded bitmap for display.
  *
  * @param bitmap bitmap to be displayed.
- * @return an [ImageSourceK] instance.
+ * @return an [ImageSource] instance.
  */
-fun bitmap(bitmap: Bitmap): ImageSourceK {
-    return ImageSourceK(bitmap, false)
+fun bitmap(bitmap: Bitmap): ImageSource {
+    return ImageSource(bitmap, false)
 }
 
 /**
@@ -84,12 +84,12 @@ fun bitmap(bitmap: Bitmap): ImageSourceK {
  * @param bitmap bitmap to be displayed.
  * @return an [ImageSource] instance.
  */
-fun cachedBitmap(bitmap: Bitmap): ImageSourceK {
-    return ImageSourceK(bitmap, true)
+fun cachedBitmap(bitmap: Bitmap): ImageSource {
+    return ImageSource(bitmap, true)
 }
 
 @SuppressWarnings("unused", "WeakerAccess")
-class ImageSourceK {
+class ImageSource {
     private var uri: Uri? = null
     private var bitmap: Bitmap? = null
     private var resource: Int? = null
@@ -111,20 +111,20 @@ class ImageSourceK {
 
     internal constructor(uri: Uri) {
         // #114 If file doesn't exist, attempt to url decode the URI and try again
-        var uri = uri
-        val uriString = uri.toString()
+        var theUri = uri
+        val uriString = theUri.toString()
         if (uriString.startsWith(FILE_SCHEME)) {
             val uriFile = File(uriString.substring(FILE_SCHEME.length - 1))
             if (!uriFile.exists()) {
                 try {
-                    uri = Uri.parse(URLDecoder.decode(uriString, "UTF-8"))
+                    theUri = Uri.parse(URLDecoder.decode(uriString, "UTF-8"))
                 } catch (e: UnsupportedEncodingException) {
                     // Fallback to encoded URI. This exception is not expected.
                 }
             }
         }
         this.bitmap = null
-        this.uri = uri
+        this.uri = theUri
         this.resource = null
         this.tile = true
     }
@@ -142,7 +142,7 @@ class ImageSourceK {
      *
      * @return this instance for chaining.
      */
-    fun tilingEnabled(): ImageSourceK {
+    fun tilingEnabled(): ImageSource {
         return tiling(true)
     }
 
@@ -152,7 +152,7 @@ class ImageSourceK {
      *
      * @return this instance for chaining.
      */
-    fun tilingDisabled(): ImageSourceK {
+    fun tilingDisabled(): ImageSource {
         return tiling(false)
     }
 
@@ -163,7 +163,7 @@ class ImageSourceK {
      * @param tile whether tiling should be enabled.
      * @return this instance for chaining.
      */
-    fun tiling(tile: Boolean): ImageSourceK {
+    fun tiling(tile: Boolean): ImageSource {
         this.tile = tile
         return this
     }
@@ -175,7 +175,7 @@ class ImageSourceK {
      * @param sRegion the region of the source image to be displayed.
      * @return this instance for chaining.
      */
-    fun region(sRegion: Rect?): ImageSourceK {
+    fun region(sRegion: Rect?): ImageSource {
         this.sRegion = sRegion
         setInvariants()
         return this
@@ -190,7 +190,7 @@ class ImageSourceK {
      * @param sHeight height of the source image.
      * @return this instance for chaining.
      */
-    fun dimensions(sWidth: Int, sHeight: Int): ImageSourceK {
+    fun dimensions(sWidth: Int, sHeight: Int): ImageSource {
         if (bitmap == null) {
             this.sWidth = sWidth
             this.sHeight = sHeight
@@ -207,35 +207,35 @@ class ImageSourceK {
         }
     }
 
-    protected fun getUri(): Uri? {
+    fun getUri(): Uri? {
         return uri
     }
 
-    protected fun getBitmap(): Bitmap? {
+    fun getBitmap(): Bitmap? {
         return bitmap
     }
 
-    protected fun getResource(): Int? {
+    fun getResource(): Int? {
         return resource
     }
 
-    protected fun getTile(): Boolean {
+    fun getTile(): Boolean {
         return tile
     }
 
-    protected fun getSWidth(): Int {
+    fun getSWidth(): Int {
         return sWidth
     }
 
-    protected fun getSHeight(): Int {
+    fun getSHeight(): Int {
         return sHeight
     }
 
-    protected fun getSRegion(): Rect? {
+    fun getSRegion(): Rect? {
         return sRegion
     }
 
-    protected fun isCached(): Boolean {
+    fun isCached(): Boolean {
         return cached
     }
 }

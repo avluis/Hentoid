@@ -185,7 +185,7 @@ class ImagePagerAdapter(val context: Context) :
             val ssiv = rootView.findViewById<CustomSubsamplingScaleImageView>(R.id.ssiv)
             ssiv.setIgnoreTouchEvents(false)
             ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.HORIZONTAL)
-            ssiv.preferredBitmapConfig = colorDepth
+            ssiv.setPreferredBitmapConfig(colorDepth)
             ssiv.setDoubleTapZoomDuration(500)
             ssiv.setOnTouchListener(null)
 
@@ -450,7 +450,7 @@ class ImagePagerAdapter(val context: Context) :
             }
         }
 
-        private val scaleType: Int
+        private val scaleType: CustomSubsamplingScaleImageView.ScaleType
             get() = if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) {
                 CustomSubsamplingScaleImageView.ScaleType.SMART_FILL
             } else {
@@ -462,7 +462,7 @@ class ImagePagerAdapter(val context: Context) :
         var absoluteScale: Float
             get() {
                 return if (!isImageView) {
-                    ssiv.virtualScale
+                    ssiv.getVirtualScale()
                 } else { // ImageView
                     imageView.scaleX
                 }
@@ -477,7 +477,7 @@ class ImagePagerAdapter(val context: Context) :
 
         fun resetScale() {
             if (!isImageView) {
-                if (ssiv.isImageLoaded && ssiv.isReady && ssiv.isLaidOut) {
+                if (ssiv.isImageLoaded() && ssiv.isReady() && ssiv.isLaidOut) {
                     scaleMultiplier = 0f
                     ssiv.resetScale()
                 }
@@ -486,9 +486,9 @@ class ImagePagerAdapter(val context: Context) :
 
         fun multiplyVirtualScale(multiplier: Float) {
             if (!isImageView) {
-                if (ssiv.isImageLoaded && ssiv.isReady && ssiv.isLaidOut) {
-                    val rawScale = ssiv.virtualScale / scaleMultiplier
-                    ssiv.virtualScale = rawScale * multiplier
+                if (ssiv.isImageLoaded() && ssiv.isReady() && ssiv.isLaidOut) {
+                    val rawScale = ssiv.getVirtualScale() / scaleMultiplier
+                    ssiv.setVirtualScale(rawScale * multiplier)
                     scaleMultiplier = multiplier
                 }
             }
@@ -565,7 +565,7 @@ class ImagePagerAdapter(val context: Context) :
         override fun onReady() {
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
                 val scaleView = imgView as CustomSubsamplingScaleImageView
-                adjustHeight(0, (scaleView.absoluteScale * scaleView.sHeight).toInt(), false)
+                adjustHeight(0, (scaleView.getAbsoluteScale() * scaleView.getSHeight()).toInt(), false)
             }
         }
 

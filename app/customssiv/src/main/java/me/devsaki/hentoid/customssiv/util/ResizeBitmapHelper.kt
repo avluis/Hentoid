@@ -5,7 +5,6 @@ import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilter
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageGaussianBlurFilter
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageResizeFilter
-import org.apache.commons.lang3.tuple.ImmutablePair
 import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
@@ -17,22 +16,22 @@ fun resizeBitmap(
     glEsRenderer: GPUImage?,
     src: Bitmap,
     targetScale: Float
-): ImmutablePair<Bitmap?, Float> {
+): Pair<Bitmap?, Float> {
     assertNonUiThread()
     if (null == glEsRenderer) {
         val resizeParams = computeResizeParams(targetScale)
-        Timber.d(">> resizing successively to scale %s", resizeParams.right)
-        return ImmutablePair(successiveResize(src, resizeParams.left), resizeParams.right)
+        Timber.d(">> resizing successively to scale %s", resizeParams.second)
+        return Pair(successiveResize(src, resizeParams.first), resizeParams.second)
     } else {
         if (targetScale < 0.75 || (targetScale > 1.0 && targetScale < 1.55)) {
             // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
-            return ImmutablePair(
+            return Pair(
                 resizeGLES(glEsRenderer, src, targetScale, targetScale),
                 targetScale
             )
         } else {
             Timber.d(">> No resize needed; keeping raw image")
-            return ImmutablePair(src, 1f)
+            return Pair(src, 1f)
         }
     }
 }
@@ -46,7 +45,7 @@ fun resizeBitmap(
  * - First : Number of half-resizes to perform (see [ResizeBitmapHelper])
  * - Second : Corresponding scale
  */
-private fun computeResizeParams(targetScale: Float): ImmutablePair<Int, Float> {
+private fun computeResizeParams(targetScale: Float): Pair<Int, Float> {
     var resultScale = 1f
     var nbResize = 0
 
@@ -55,7 +54,7 @@ private fun computeResizeParams(targetScale: Float): ImmutablePair<Int, Float> {
     for (i in 1..9) if (targetScale < 0.5.pow(i.toDouble()) * 1.33) nbResize++
     if (nbResize > 0) resultScale = 0.5.pow(nbResize.toDouble()).toFloat()
 
-    return ImmutablePair(nbResize, resultScale)
+    return Pair(nbResize, resultScale)
 }
 
 fun successiveResize(src: Bitmap, resizeNum: Int): Bitmap {
