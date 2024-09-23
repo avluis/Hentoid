@@ -26,7 +26,6 @@ aboutLibraries {
 android {
     compileSdk 34
     compileOptions {
-        coreLibraryDesugaringEnabled true
         targetCompatibility JavaVersion.VERSION_17
         sourceCompatibility JavaVersion.VERSION_17
     }
@@ -35,7 +34,7 @@ android {
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
-        minSdkVersion 23
+        minSdkVersion 26
         targetSdkVersion 34
         versionCode 130 // is updated automatically by BitRise; only used when building locally
         versionName '1.20.1-dev'
@@ -152,9 +151,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_version"
-
-    // Desugaring (java.time is required for bucket4j)
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
 
     /**
