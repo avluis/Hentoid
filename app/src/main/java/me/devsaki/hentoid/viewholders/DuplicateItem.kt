@@ -251,12 +251,10 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
             // Favourite icon
             if (content.favourite) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ivFavourite.tooltipText =
-                    context.getText(R.string.book_favourite_success)
+                ivFavourite.tooltipText = context.getText(R.string.book_favourite_success)
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_empty)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ivFavourite.tooltipText =
-                    context.getText(R.string.book_unfavourite_success)
+                ivFavourite.tooltipText = context.getText(R.string.book_unfavourite_success)
             }
 
             // View details icon

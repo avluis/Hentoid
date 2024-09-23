@@ -15,7 +15,6 @@ import android.graphics.ColorSpace;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.Keep;
@@ -223,8 +222,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
                         options.inPreferredConfig = bitmapConfig;
                         // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
                         // which makes resizing buggy (generates a black picture)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                            options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
+                        options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
 
                         Bitmap bitmap = decoder.decodeRegion(sRect, options);
                         if (bitmap == null) {
