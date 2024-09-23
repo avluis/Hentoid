@@ -195,7 +195,7 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
     // Tooltips
-    implementation 'com.github.skydoves:balloon:1.6.4'
+    implementation 'com.github.skydoves:balloon:1.6.7'
 
     // Popup menus with icons
     implementation 'com.github.skydoves:powermenu:2.2.4'
