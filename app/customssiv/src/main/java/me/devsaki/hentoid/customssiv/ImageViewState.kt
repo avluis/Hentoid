@@ -1,46 +1,38 @@
-package me.devsaki.hentoid.customssiv;
+package me.devsaki.hentoid.customssiv
 
-import android.graphics.PointF;
-
-import androidx.annotation.NonNull;
-
-import java.io.Serializable;
+import android.graphics.PointF
+import java.io.Serializable
 
 /**
  * Wraps the scale, center and orientation of a displayed image for easy restoration on screen rotate.
  */
-@SuppressWarnings("WeakerAccess")
-public class ImageViewState implements Serializable {
+class ImageViewState(
+    private var scale: Float,
+    private var virtualScale: Float,
+    center: PointF,
+    private var orientation: Int
+) : Serializable {
+    private var centerX = 0f
+    private var centerY = 0f
 
-    private final float scale;
-    private final float virtualScale;
-    private final float centerX;
-    private final float centerY;
-    private final int orientation;
-
-    public ImageViewState(float scale, float virtualScale, @NonNull PointF center, int orientation) {
-        this.scale = scale;
-        this.virtualScale = virtualScale;
-        this.centerX = center.x;
-        this.centerY = center.y;
-        this.orientation = orientation;
+    init {
+        this.centerX = center.x
+        this.centerY = center.y
     }
 
-    public float getScale() {
-        return scale;
+    fun getScale(): Float {
+        return scale
     }
 
-    public float getVirtualScale() {
-        return virtualScale;
+    fun getVirtualScale(): Float {
+        return virtualScale
     }
 
-    @NonNull
-    public PointF getCenter() {
-        return new PointF(centerX, centerY);
+    fun getCenter(): PointF {
+        return PointF(centerX, centerY)
     }
 
-    public int getOrientation() {
-        return orientation;
+    fun getOrientation(): Int {
+        return orientation
     }
-
 }

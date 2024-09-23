@@ -31,8 +31,8 @@ import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
-import me.devsaki.hentoid.customssiv.ImageSource
 import me.devsaki.hentoid.customssiv.exception.UnsupportedContentException
+import me.devsaki.hentoid.customssiv.uri
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.StatusContent
@@ -436,7 +436,7 @@ class ImagePagerAdapter(val context: Context) :
                 ssiv.setMinimumDpi(120)
                 ssiv.setDoubleTapZoomDpi(120)
                 if (maxBitmapWidth > 0) ssiv.setMaxTileSize(maxBitmapWidth, maxBitmapHeight)
-                ssiv.setImage(ImageSource.uri(uri))
+                ssiv.setImage(uri(uri))
             } else { // ImageView
                 val view = imgView as ImageView
                 Timber.d("Using Glide")

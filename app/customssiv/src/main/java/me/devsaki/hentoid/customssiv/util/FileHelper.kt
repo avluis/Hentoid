@@ -1,42 +1,33 @@
-package me.devsaki.hentoid.customssiv.util;
+package me.devsaki.hentoid.customssiv.util
+
+import kotlin.math.min
+
+const val FILE_IO_BUFFER_SIZE = 32 * 1024
 
 /**
- * Generic file-related utility class
+ * Return the position of the given sequence in the given data array
+ *
+ * @param data       Data where to find the sequence
+ * @param initialPos Initial position to start from
+ * @param sequence   Sequence to look for
+ * @param limit      Limit not to cross (in bytes counted from the initial position); 0 for unlimited
+ * @return Position of the sequence in the data array; -1 if not found within the given initial position and limit
  */
-public class FileHelper {
+fun findSequencePosition(data: ByteArray, initialPos: Int, sequence: ByteArray, limit: Int): Int {
+    var iSequence = 0
 
-    private FileHelper() {
-        throw new IllegalStateException("Utility class");
+    if (initialPos < 0 || initialPos > data.size) return -1
+
+    val remainingBytes = if ((limit > 0)) min((data.size - initialPos).toDouble(), limit.toDouble())
+        .toInt() else data.size
+
+    for (i in initialPos until remainingBytes) {
+        if (sequence[iSequence] == data[i]) iSequence++
+        else if (iSequence > 0) iSequence = 0
+
+        if (sequence.size == iSequence) return i - sequence.size
     }
 
-    public static final int FILE_IO_BUFFER_SIZE = 32 * 1024;
-
-
-    /**
-     * Return the position of the given sequence in the given data array
-     *
-     * @param data       Data where to find the sequence
-     * @param initialPos Initial position to start from
-     * @param sequence   Sequence to look for
-     * @param limit      Limit not to cross (in bytes counted from the initial position); 0 for unlimited
-     * @return Position of the sequence in the data array; -1 if not found within the given initial position and limit
-     */
-    static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
-        int remainingBytes;
-        int iSequence = 0;
-
-        if (initialPos < 0 || initialPos > data.length) return -1;
-
-        remainingBytes = (limit > 0) ? Math.min(data.length - initialPos, limit) : data.length;
-
-        for (int i = initialPos; i < remainingBytes; i++) {
-            if (sequence[iSequence] == data[i]) iSequence++;
-            else if (iSequence > 0) iSequence = 0;
-
-            if (sequence.length == iSequence) return i - sequence.length;
-        }
-
-        // Target sequence not found
-        return -1;
-    }
+    // Target sequence not found
+    return -1
 }

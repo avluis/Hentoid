@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.customssiv.decoder;
 
+import static me.devsaki.hentoid.customssiv.util.HelperKt.copy;
+import static me.devsaki.hentoid.customssiv.util.ImageHelperKt.isImageAnimated;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -7,7 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorSpace;
 import android.net.Uri;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -17,8 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import me.devsaki.hentoid.customssiv.exception.UnsupportedContentException;
-import me.devsaki.hentoid.customssiv.util.Helper;
-import me.devsaki.hentoid.customssiv.util.ImageHelper;
 
 /**
  * Default implementation of {@link ImageDecoder}
@@ -48,8 +48,7 @@ public class SkiaImageDecoder implements ImageDecoder {
         options.inPreferredConfig = bitmapConfig;
         // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
         // which makes resizing buggy (generates a black picture)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
+        options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
 
         if (uriString.startsWith(RESOURCE_PREFIX)) {
             int id = SkiaDecoderHelper.getResourceId(context, uri);
@@ -66,14 +65,14 @@ public class SkiaImageDecoder implements ImageDecoder {
                 // First examine header
                 byte[] header = new byte[400];
                 if (input.read(header) > 0) {
-                    if (ImageHelper.isImageAnimated(header))
+                    if (isImageAnimated(header))
                         throw new UnsupportedContentException("SSIV doesn't handle animated pictures");
 
                     // If it passes, load the whole picture
                     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                         baos.write(header, 0, 400);
 
-                        Helper.copy(input, baos);
+                        copy(input, baos);
 
                         fileStream = new ByteArrayInputStream(baos.toByteArray());
                     }

@@ -1,5 +1,13 @@
 package me.devsaki.hentoid.customssiv;
 
+import static me.devsaki.hentoid.customssiv.ImageSourceKt.ASSET_SCHEME;
+import static me.devsaki.hentoid.customssiv.ImageSourceKt.FILE_SCHEME;
+import static me.devsaki.hentoid.customssiv.ImageSourceKt.asset;
+import static me.devsaki.hentoid.customssiv.ImageSourceKt.resource;
+import static me.devsaki.hentoid.customssiv.util.HelperKt.assertNonUiThread;
+import static me.devsaki.hentoid.customssiv.util.HelperKt.getScreenDpi;
+import static me.devsaki.hentoid.customssiv.util.ResizeBitmapHelperKt.resizeBitmap;
+
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -61,8 +69,6 @@ import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder;
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder;
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder;
 import me.devsaki.hentoid.customssiv.util.Debouncer;
-import me.devsaki.hentoid.customssiv.util.Helper;
-import me.devsaki.hentoid.customssiv.util.ResizeBitmapHelper;
 import me.devsaki.hentoid.gles_renderer.GPUImage;
 import timber.log.Timber;
 
@@ -422,7 +428,7 @@ public class CustomSubsamplingScaleImageView extends View {
         density = getResources().getDisplayMetrics().density;
         screenWidth = context.getResources().getDisplayMetrics().widthPixels;
         screenHeight = context.getResources().getDisplayMetrics().heightPixels;
-        screenDpi = Helper.getScreenDpi(context);
+        screenDpi = getScreenDpi(context);
 
         setMinimumDpi(160);
         setDoubleTapZoomDpi(160);
@@ -446,13 +452,13 @@ public class CustomSubsamplingScaleImageView extends View {
             if (typedAttr.hasValue(styleable.CustomSubsamplingScaleImageView_assetName)) {
                 String assetName = typedAttr.getString(styleable.CustomSubsamplingScaleImageView_assetName);
                 if (assetName != null && assetName.length() > 0) {
-                    setImage(ImageSource.asset(assetName).tilingEnabled());
+                    setImage(asset(assetName).tilingEnabled());
                 }
             }
             if (typedAttr.hasValue(styleable.CustomSubsamplingScaleImageView_src)) {
                 int resId = typedAttr.getResourceId(styleable.CustomSubsamplingScaleImageView_src, 0);
                 if (resId > 0) {
-                    setImage(ImageSource.resource(resId).tilingEnabled());
+                    setImage(resource(resId).tilingEnabled());
                 }
             }
             if (typedAttr.hasValue(styleable.CustomSubsamplingScaleImageView_panEnabled)) {
@@ -528,10 +534,10 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Set the image source from a bitmap, resource, asset, file or other URI.
      *
-     * @param imageSource Image source.
+     * @param ImageSourceK Image source.
      */
-    public final void setImage(@NonNull ImageSource imageSource) {
-        setImage(imageSource, null, null);
+    public final void setImage(@NonNull ImageSourceK ImageSourceK) {
+        setImage(ImageSourceK, null, null);
     }
 
     /**
@@ -539,26 +545,26 @@ public class CustomSubsamplingScaleImageView extends View {
      * setting, scale and center. This is the best method to use when you want scale and center to be restored
      * after screen orientation change; it avoids any redundant loading of tiles in the wrong orientation.
      *
-     * @param imageSource Image source.
-     * @param state       State to be restored. Nullable.
+     * @param ImageSourceK Image source.
+     * @param state        State to be restored. Nullable.
      */
-    public final void setImage(@NonNull ImageSource imageSource, ImageViewState state) {
-        setImage(imageSource, null, state);
+    public final void setImage(@NonNull ImageSourceK ImageSourceK, ImageViewState state) {
+        setImage(ImageSourceK, null, state);
     }
 
     /**
      * Set the image source from a bitmap, resource, asset, file or other URI, providing a preview image to be
      * displayed until the full size image is loaded.
      * <p>
-     * You must declare the dimensions of the full size image by calling {@link ImageSource#dimensions(int, int)}
-     * on the imageSource object. The preview source will be ignored if you don't provide dimensions,
+     * You must declare the dimensions of the full size image by calling {@link ImageSourceK#dimensions(int, int)}
+     * on the ImageSourceK object. The preview source will be ignored if you don't provide dimensions,
      * and if you provide a bitmap for the full size image.
      *
-     * @param imageSource   Image source. Dimensions must be declared.
+     * @param ImageSourceK  Image source. Dimensions must be declared.
      * @param previewSource Optional source for a preview image to be displayed and allow interaction while the full size image loads.
      */
-    public final void setImage(@NonNull ImageSource imageSource, ImageSource previewSource) {
-        setImage(imageSource, previewSource, null);
+    public final void setImage(@NonNull ImageSourceK ImageSourceK, ImageSourceK previewSource) {
+        setImage(ImageSourceK, previewSource, null);
     }
 
     /**
@@ -567,28 +573,28 @@ public class CustomSubsamplingScaleImageView extends View {
      * This is the best method to use when you want scale and center to be restored after screen orientation change;
      * it avoids any redundant loading of tiles in the wrong orientation.
      * <p>
-     * You must declare the dimensions of the full size image by calling {@link ImageSource#dimensions(int, int)}
-     * on the imageSource object. The preview source will be ignored if you don't provide dimensions,
+     * You must declare the dimensions of the full size image by calling {@link ImageSourceK#dimensions(int, int)}
+     * on the ImageSourceK object. The preview source will be ignored if you don't provide dimensions,
      * and if you provide a bitmap for the full size image.
      *
-     * @param imageSource   Image source. Dimensions must be declared.
+     * @param ImageSourceK  Image source. Dimensions must be declared.
      * @param previewSource Optional source for a preview image to be displayed and allow interaction while the full size image loads.
      * @param state         State to be restored. Nullable.
      */
-    public final void setImage(@NonNull ImageSource imageSource, @Nullable ImageSource previewSource, @Nullable ImageViewState state) {
+    public final void setImage(@NonNull ImageSourceK ImageSourceK, @Nullable ImageSourceK previewSource, @Nullable ImageViewState state) {
         reset(true);
         if (state != null) restoreState(state);
         float targetScale = (null == state) ? 1 : getVirtualScale();
 
         if (previewSource != null) {
-            if (imageSource.getBitmap() != null) {
+            if (ImageSourceK.getBitmap() != null) {
                 throw new IllegalArgumentException("Preview image cannot be used when a bitmap is provided for the main image");
             }
-            if (imageSource.getSWidth() <= 0 || imageSource.getSHeight() <= 0) {
+            if (ImageSourceK.getSWidth() <= 0 || ImageSourceK.getSHeight() <= 0) {
                 throw new IllegalArgumentException("Preview image cannot be used unless dimensions are provided for the main image");
             }
-            this.sWidth = imageSource.getSWidth();
-            this.sHeight = imageSource.getSHeight();
+            this.sWidth = ImageSourceK.getSWidth();
+            this.sHeight = ImageSourceK.getSHeight();
             this.pRegion = previewSource.getSRegion();
             if (previewSource.getBitmap() != null) {
                 this.bitmapIsCached = previewSource.isCached();
@@ -616,17 +622,17 @@ public class CustomSubsamplingScaleImageView extends View {
             }
         }
 
-        if (imageSource.getBitmap() != null && imageSource.getSRegion() != null) {
-            onImageLoaded(Bitmap.createBitmap(imageSource.getBitmap(), imageSource.getSRegion().left, imageSource.getSRegion().top, imageSource.getSRegion().width(), imageSource.getSRegion().height()), ORIENTATION_0, false, 1f);
-        } else if (imageSource.getBitmap() != null) {
-            onImageLoaded(imageSource.getBitmap(), ORIENTATION_0, imageSource.isCached(), 1f);
+        if (ImageSourceK.getBitmap() != null && ImageSourceK.getSRegion() != null) {
+            onImageLoaded(Bitmap.createBitmap(ImageSourceK.getBitmap(), ImageSourceK.getSRegion().left, ImageSourceK.getSRegion().top, ImageSourceK.getSRegion().width(), ImageSourceK.getSRegion().height()), ORIENTATION_0, false, 1f);
+        } else if (ImageSourceK.getBitmap() != null) {
+            onImageLoaded(ImageSourceK.getBitmap(), ORIENTATION_0, ImageSourceK.isCached(), 1f);
         } else {
-            sRegion = imageSource.getSRegion();
-            uri = imageSource.getUri();
-            if (uri == null && imageSource.getResource() != null) {
-                uri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getContext().getPackageName() + "/" + imageSource.getResource());
+            sRegion = ImageSourceK.getSRegion();
+            uri = ImageSourceK.getUri();
+            if (uri == null && ImageSourceK.getResource() != null) {
+                uri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getContext().getPackageName() + "/" + ImageSourceK.getResource());
             }
-            if (imageSource.getTile() || sRegion != null) {
+            if (ImageSourceK.getTile() || sRegion != null) {
                 // Load the bitmap using tile decoding.
                 loadDisposable.add(
                         Single.fromCallable(() -> initTiles(this, getContext(), uri))
@@ -1922,7 +1928,7 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull Context context,
             @NonNull Uri source) throws Exception {
-        Helper.assertNonUiThread();
+        assertNonUiThread();
         String sourceUri = source.toString();
         Timber.d("Init tiles BEGIN %s", sourceUri);
         regionDecoder = new SkiaImageRegionDecoder(preferredBitmapConfig);
@@ -1977,7 +1983,7 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull ImageRegionDecoder decoder,
             @NonNull Tile tile) {
-        Helper.assertNonUiThread();
+        assertNonUiThread();
         if (decoder.isReady() && tile.visible) {
             view.decoderLock.readLock().lock();
             try {
@@ -2000,12 +2006,12 @@ public class CustomSubsamplingScaleImageView extends View {
     protected Tile processTile(
             @NonNull Tile loadedTile,
             final float targetScale) {
-        Helper.assertNonUiThread();
+        assertNonUiThread();
 
         // Take any prior subsampling into consideration _before_ processing the tile
         Timber.v("Processing tile");
         float resizeScale = targetScale * loadedTile.sampleSize;
-        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(glEsRenderer, loadedTile.bitmap, resizeScale);
+        ImmutablePair<Bitmap, Float> resizeResult = resizeBitmap(glEsRenderer, loadedTile.bitmap, resizeScale);
         loadedTile.bitmap = resizeResult.left;
 
         loadedTile.loading = false;
@@ -2033,7 +2039,7 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     private Bitmap loadBitmap(@NonNull Context context, @NonNull Uri uri) throws Exception {
-        Helper.assertNonUiThread();
+        assertNonUiThread();
         singleImage.loading = true;
         ImageDecoder decoder = new SkiaImageDecoder(preferredBitmapConfig);
         return decoder.decode(context, uri);
@@ -2045,13 +2051,13 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull Bitmap bitmap,
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
-        Helper.assertNonUiThread();
+        assertNonUiThread();
 
         singleImage.rawWidth = bitmap.getWidth();
         singleImage.rawHeight = bitmap.getHeight();
 
         // TODO sharp mode - don't ask to resize when the image in memory already has the correct target scale
-        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(glEsRenderer, bitmap, targetScale);
+        ImmutablePair<Bitmap, Float> resizeResult = resizeBitmap(glEsRenderer, bitmap, targetScale);
         bitmap = resizeResult.left;
 
         singleImage.loading = false;
@@ -2141,9 +2147,9 @@ public class CustomSubsamplingScaleImageView extends View {
                     cursor.close();
                 }
             }
-        } else if (sourceUri.startsWith(ImageSource.FILE_SCHEME) && !sourceUri.startsWith(ImageSource.ASSET_SCHEME)) {
+        } else if (sourceUri.startsWith(FILE_SCHEME) && !sourceUri.startsWith(ASSET_SCHEME)) {
             try {
-                ExifInterface exifInterface = new ExifInterface(sourceUri.substring(ImageSource.FILE_SCHEME.length() - 1));
+                ExifInterface exifInterface = new ExifInterface(sourceUri.substring(FILE_SCHEME.length() - 1));
                 int orientationAttr = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
                 if (orientationAttr == ExifInterface.ORIENTATION_NORMAL || orientationAttr == ExifInterface.ORIENTATION_UNDEFINED) {
                     exifOrientation = ORIENTATION_0;
@@ -3593,7 +3599,7 @@ public class CustomSubsamplingScaleImageView extends View {
         void onTileLoadError(Throwable e);
 
         /**
-         * Called when a bitmap set using ImageSource.cachedBitmap is no longer being used by the View.
+         * Called when a bitmap set using ImageSourceK.cachedBitmap is no longer being used by the View.
          * This is useful if you wish to manage the bitmap after the preview is shown
          */
         void onPreviewReleased();
