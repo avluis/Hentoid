@@ -767,7 +767,7 @@ open class CustomWebViewClient : WebViewClient {
         url: String,
         quickDownload: Boolean // Useless here; useful in some overrides
     ): Content {
-        if (content.status != null && content.status == StatusContent.IGNORED) return content
+        if (content.status == StatusContent.IGNORED) return content
 
         // Save useful download params for future use during download
         val params = if (content.downloadParams.length > 2) // Params already contain values

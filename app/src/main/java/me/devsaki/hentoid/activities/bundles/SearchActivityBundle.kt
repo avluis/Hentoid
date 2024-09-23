@@ -73,7 +73,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
             metadataMap.addAll(attributes)
 
             for ((attrType, attrs) in metadataMap) {
-                if (attrs != null) for (attr in attrs) uri.appendQueryParameter(
+                for (attr in attrs) uri.appendQueryParameter(
                     attrType.name,
                     attr.id.toString() + ";" + attr.name + ";" + attr.isExcluded
                 )

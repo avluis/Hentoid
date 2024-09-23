@@ -254,7 +254,7 @@ object ObjectBoxDB {
         // NB : Can't use QueryCondition here because there's no way to query the existence of a relation (see https://github.com/objectbox/objectbox-java/issues/1110)
         return store.boxFor(Content::class.java).query()
             .`in`(Content_.status, getQueueStatuses()).filter { c: Content ->
-                StatusContent.ERROR == c.status || c.queueRecords != null && !c.queueRecords!!.isEmpty()
+                StatusContent.ERROR == c.status || !c.queueRecords.isEmpty()
             }.build()
     }
 
@@ -265,8 +265,7 @@ object ObjectBoxDB {
             .`in`(Content_.status, getQueueStatuses())
             .startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE)
             .filter { c: Content ->
-                StatusContent.ERROR == c.status || c.queueRecords != null && !c.queueRecords!!
-                    .isEmpty()
+                StatusContent.ERROR == c.status || !c.queueRecords.isEmpty()
             }.build()
     }
 
@@ -275,8 +274,7 @@ object ObjectBoxDB {
             .`in`(Content_.status, getQueueStatuses())
             .equal(Content_.site, site.code.toLong())
             .filter { c: Content ->
-                StatusContent.ERROR == c.status || c.queueRecords != null && !c.queueRecords!!
-                    .isEmpty()
+                StatusContent.ERROR == c.status || !c.queueRecords.isEmpty()
             }
             .build().use { qb ->
                 return qb.property(Content_.dbUrl).findStrings().toHashSet()
@@ -669,7 +667,7 @@ object ObjectBoxDB {
         if (hasTagFilter) {
             for ((attrType, attrs) in metadataMap) {
                 if (attrType != AttributeType.SOURCE) { // Not a "real" attribute in database
-                    if (attrs != null && attrs.isNotEmpty()) {
+                    if (attrs.isNotEmpty()) {
                         qc = qc.and(Content_.id.oneOf(selectFilteredContent(attrs)))
                     }
                 }
@@ -1163,7 +1161,7 @@ object ObjectBoxDB {
                 qc.and(Content_.site.oneOf(getIdsFromAttributes(params)))
             for ((attrType, attrs) in metadataMap) {
                 if (attrType != AttributeType.SOURCE) { // Not a "real" attribute in database
-                    if (attrs != null && attrs.isNotEmpty() && !includeFreeAttrs) qc =
+                    if (attrs.isNotEmpty() && !includeFreeAttrs) qc =
                         qc.and(Content_.id.oneOf(selectFilteredContent(attrs)))
                 }
             }

@@ -165,8 +165,7 @@ class PixivParser : BaseImageListParser() {
         var storedChapters: List<Chapter>? = null
         if (storedContent != null) {
             storedChapters = storedContent.chapters
-            if (storedChapters != null) storedChapters =
-                storedChapters.toMutableList() // Work on a copy
+            storedChapters = storedChapters.toMutableList() // Work on a copy
         }
         if (null == storedChapters) storedChapters = emptyList()
 
@@ -259,7 +258,7 @@ class PixivParser : BaseImageListParser() {
         var storedChapters: List<Chapter>? = null
         if (storedContent != null) {
             storedChapters = storedContent.chapters
-            if (storedChapters != null) storedChapters = storedChapters.toMutableList()
+            storedChapters = storedChapters.toMutableList()
         }
         if (null == storedChapters) storedChapters = emptyList()
         else illustIds = getExtraChaptersbyId(storedChapters, illustIds)

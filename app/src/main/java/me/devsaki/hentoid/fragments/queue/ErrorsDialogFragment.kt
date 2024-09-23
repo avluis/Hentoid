@@ -70,10 +70,10 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
     }
 
     private fun updateStats(content: Content) {
-        var images = 0
+        var images: Int
         var imgErrors = 0
         val context = context ?: return
-        content.imageFiles?.let {
+        content.imageFiles.let {
             images = it.size - 1 // Don't count the cover
             for (imgFile in it) if (imgFile.status == StatusContent.ERROR) imgErrors++
             if (0 == images) {
@@ -85,7 +85,7 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
             it.redownloadDetail.text = context.getString(
                 R.string.redownload_dialog_message, images, images - imgErrors, imgErrors
             )
-            content.errorLog?.let { log ->
+            content.errorLog.let { log ->
                 if (!log.isEmpty()) {
                     val firstError = log[0]
                     var message = context.getString(
@@ -108,11 +108,9 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
         errorLogInfo.setHeaderName("Error")
         errorLogInfo.setNoDataMessage("No error detected.")
         errorLogInfo.setEntries(log)
-        val errorLog: List<ErrorRecord>? = content.errorLog
-        if (errorLog != null) {
-            errorLogInfo.setHeader("Error log for " + content.title + " [" + content.uniqueSiteId + "@" + content.site.description + "] : " + errorLog.size + " errors")
-            for (e in errorLog) log.add(LogEntry(e.timestamp, e.toString()))
-        }
+        val errorLog: List<ErrorRecord> = content.errorLog
+        errorLogInfo.setHeader("Error log for " + content.title + " [" + content.uniqueSiteId + "@" + content.site.description + "] : " + errorLog.size + " errors")
+        for (e in errorLog) log.add(LogEntry(e.timestamp, e.toString()))
         return errorLogInfo
     }
 
