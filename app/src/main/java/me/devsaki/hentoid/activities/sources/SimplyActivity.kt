@@ -48,18 +48,14 @@ class SimplyActivity : BaseWebActivity() {
         private var swClient: SimplyViewSwClient? = null
 
         init {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                val swController = ServiceWorkerController.getInstance()
-                swClient = SimplyViewSwClient(this, webView)
-                swController.setServiceWorkerClient(swClient)
-            }
+            val swController = ServiceWorkerController.getInstance()
+            swClient = SimplyViewSwClient(this, webView)
+            swController.setServiceWorkerClient(swClient)
         }
 
         override fun destroy() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                swClient?.destroy()
-                swClient = null
-            }
+            swClient?.destroy()
+            swClient = null
             super.destroy()
         }
 
@@ -102,7 +98,6 @@ class SimplyActivity : BaseWebActivity() {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private class SimplyViewSwClient(client: CustomWebViewClient, webView: WebView) :
         ServiceWorkerClient() {
         private var webClient: CustomWebViewClient?

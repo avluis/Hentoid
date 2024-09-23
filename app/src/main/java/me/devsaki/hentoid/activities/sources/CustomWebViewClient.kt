@@ -1,11 +1,9 @@
 package me.devsaki.hentoid.activities.sources
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.webkit.WebResourceRequest
@@ -362,13 +360,6 @@ open class CustomWebViewClient : WebViewClient {
         return (Settings.isBrowserAugmented && (getChromeVersion() < 45 || getChromeVersion() > 71))
     }
 
-
-    @Deprecated("kept for API23", ReplaceWith("shouldOverrideUrlLoadingInternal(view, url, null)"))
-    override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-        return shouldOverrideUrlLoadingInternal(view, url, null, false)
-    }
-
-    @TargetApi(Build.VERSION_CODES.N)
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         return shouldOverrideUrlLoadingInternal(
             view, request.url.toString(), request.requestHeaders, request.isForMainFrame

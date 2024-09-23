@@ -49,10 +49,7 @@ class FileExplorer : Closeable {
         documentIdCache.clear()
 
         // ContentProviderClient.close only available on API level 24+
-        client?.let {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) it.close()
-            else it.release()
-        }
+        client?.close()
     }
 
 

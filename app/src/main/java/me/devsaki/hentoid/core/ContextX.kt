@@ -89,8 +89,7 @@ fun Context.convertLocaleToEnglish() {
             Locale.setDefault(englishLocale)
             config.setLocale(englishLocale)
             // TODO https://stackoverflow.com/questions/40221711/android-context-getresources-updateconfiguration-deprecated
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                this.createConfigurationContext(config)
+            this.createConfigurationContext(config)
             this.resources.updateConfiguration(config, this.resources.displayMetrics)
         }
     }
