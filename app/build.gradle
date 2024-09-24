@@ -136,7 +136,7 @@ dependencies {
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0'
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.webkit:webkit:1.12.0'
 
