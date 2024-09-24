@@ -246,7 +246,7 @@ dependencies {
     implementation 'com.bucket4j:bucket4j_jdk8-core:8.10.1'
 
     // TLS v1.3 support for Android <= 9
-    implementation 'org.conscrypt:conscrypt-android:2.5.2'
+    implementation 'org.conscrypt:conscrypt-android:2.5.3'
 
     /**
      * UTILS
