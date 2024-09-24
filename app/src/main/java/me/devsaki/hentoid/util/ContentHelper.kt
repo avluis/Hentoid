@@ -95,8 +95,6 @@ import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import me.devsaki.hentoid.workers.PurgeWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
-import org.apache.commons.lang3.ArrayUtils
-import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
 import pl.droidsonroids.jspoon.Jspoon
 import timber.log.Timber
@@ -1039,8 +1037,8 @@ fun shareContent(
 ) {
     if (items.isEmpty()) return
 
-    val subject = if ((1 == items.size)) items[0].title else ""
-    val text = StringUtils.join(items.map { it.galleryUrl }, System.lineSeparator())
+    val subject = if (1 == items.size) items[0].title else ""
+    val text = TextUtils.join(System.lineSeparator(), items.map { it.galleryUrl })
 
     shareText(context, subject, text)
 }
@@ -1779,7 +1777,7 @@ fun findDuplicate(
     // Too many resources consumed if the longest word is 1 character long
     if (null == longestWord || longestWord.length < 2) return null
 
-    val contentStatuses = ArrayUtils.addAll(libraryStatus, *queueTabStatus)
+    val contentStatuses = libraryStatus + queueTabStatus
     val roughCandidates = dao.searchTitlesWith(longestWord, contentStatuses)
     if (roughCandidates.isEmpty()) return null
 

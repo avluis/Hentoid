@@ -55,7 +55,6 @@ import me.devsaki.hentoid.util.getLibraryStatuses
 import me.devsaki.hentoid.util.getQueueStatuses
 import me.devsaki.hentoid.util.getQueueTabStatuses
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
-import org.apache.commons.lang3.ArrayUtils
 import timber.log.Timber
 import java.time.Instant
 import java.util.EnumMap
@@ -69,7 +68,7 @@ object ObjectBoxDB {
     // Status displayed in the library view (all books of the library; both internal and external)
     val libraryStatus: IntArray = getLibraryStatuses()
     val queueStatus: IntArray = getQueueStatuses()
-    private val libraryQueueStatus: IntArray = ArrayUtils.addAll(libraryStatus, *queueStatus)
+    private val libraryQueueStatus: IntArray = libraryStatus + queueStatus
 
     private const val DAY_IN_MILLIS = 1000L * 60 * 60 * 24
 
@@ -207,8 +206,7 @@ object ObjectBoxDB {
             StatusContent.UNHANDLED_ERROR.code,
             StatusContent.CANCELED.code
         )
-        if (includePlaceholders) storedContentStatus =
-            ArrayUtils.addAll(storedContentStatus, StatusContent.PLACEHOLDER.code)
+        if (includePlaceholders) storedContentStatus += StatusContent.PLACEHOLDER.code
         val query =
             store.boxFor(Content::class.java).query().`in`(Content_.status, storedContentStatus)
                 .startsWith(
@@ -230,8 +228,7 @@ object ObjectBoxDB {
             StatusContent.UNHANDLED_ERROR.code,
             StatusContent.CANCELED.code
         )
-        if (includePlaceholders) storedContentStatus =
-            ArrayUtils.addAll(storedContentStatus, StatusContent.PLACEHOLDER.code)
+        if (includePlaceholders) storedContentStatus += StatusContent.PLACEHOLDER.code
         val query = store.boxFor(Content::class.java)
             .query().`in`(Content_.status, storedContentStatus)
             .startsWith(Content_.storageUri, rootPath, QueryBuilder.StringOrder.CASE_INSENSITIVE)
