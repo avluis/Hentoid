@@ -37,7 +37,7 @@ data class ImageFile(
     var favourite: Boolean = false,
     @Uid(946562145146984364L)
     var dbIsCover: Boolean = false,
-    @Convert(converter = StatusContent.StatusContentConverter::class, dbType = Integer::class)
+    @Convert(converter = StatusContent.Converter::class, dbType = Integer::class)
     var status: StatusContent = StatusContent.UNHANDLED_ERROR,
     var mimeType: String = MIME_IMAGE_GENERIC,
     var size: Long = 0,

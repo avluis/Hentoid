@@ -89,7 +89,7 @@ data class Content(
     var downloadDate: Long = 0, // aka "Download date (processed)"
     var downloadCompletionDate: Long = 0, // aka "Download date (completed)"
     @Index
-    @Convert(converter = StatusContent.StatusContentConverter::class, dbType = Int::class)
+    @Convert(converter = StatusContent.Converter::class, dbType = Int::class)
     var status: StatusContent = StatusContent.UNHANDLED_ERROR,
     @Index
     @Convert(converter = SiteConverter::class, dbType = Long::class)

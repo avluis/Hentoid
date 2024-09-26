@@ -113,8 +113,8 @@ enum class AttributeType(
         @FromJson
         fun fromJson(name: String): AttributeType? {
             var attrType = AttributeType.searchByName(name)
-            if (null == attrType && name.equals("series", ignoreCase = true)) attrType =
-                AttributeType.SERIE // Fix the issue with v1.6.5
+            if (null == attrType && name.equals("series", ignoreCase = true))
+                attrType = SERIE // Fix the issue with v1.6.5
             return attrType
         }
     }
@@ -124,12 +124,12 @@ enum class AttributeType(
             if (databaseValue == null) {
                 return null
             }
-            for (type in AttributeType.values()) {
+            for (type in entries) {
                 if (type.code == databaseValue) {
                     return type
                 }
             }
-            return AttributeType.TAG
+            return TAG
         }
 
         override fun convertToDatabaseValue(entityProperty: AttributeType): Int {
@@ -139,7 +139,7 @@ enum class AttributeType(
 
     companion object {
         fun searchByCode(code: Int): AttributeType? {
-            for (s in AttributeType.values()) {
+            for (s in entries) {
                 if (s.code == code) {
                     return s
                 }
@@ -148,7 +148,7 @@ enum class AttributeType(
         }
 
         fun searchByName(name: String?): AttributeType? {
-            for (s in AttributeType.values()) {
+            for (s in entries) {
                 if (s.name.equals(name, ignoreCase = true)) {
                     return s
                 }
