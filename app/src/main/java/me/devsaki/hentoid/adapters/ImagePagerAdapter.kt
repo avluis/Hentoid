@@ -13,6 +13,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -169,7 +171,8 @@ class ImagePagerAdapter(val context: Context) :
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ImageViewHolder {
         val inflater = LayoutInflater.from(viewGroup.context)
-        val view: View = inflater.inflate(R.layout.item_reader_image, viewGroup, false)
+        val view = inflater.inflate(R.layout.item_reader_image, viewGroup, false)
+        view.setViewTreeLifecycleOwner(viewGroup.findViewTreeLifecycleOwner())
         return ImageViewHolder(view)
     }
 
@@ -565,7 +568,11 @@ class ImagePagerAdapter(val context: Context) :
         override fun onReady() {
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
                 val scaleView = imgView as CustomSubsamplingScaleImageView
-                adjustHeight(0, (scaleView.getAbsoluteScale() * scaleView.getSHeight()).toInt(), false)
+                adjustHeight(
+                    0,
+                    (scaleView.getAbsoluteScale() * scaleView.getSHeight()).toInt(),
+                    false
+                )
             }
         }
 

@@ -27,13 +27,9 @@ import android.view.View
 import androidx.annotation.AnyThread
 import androidx.core.util.Consumer
 import androidx.exifinterface.media.ExifInterface
-import io.reactivex.Observable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.exceptions.UndeliverableException
-import io.reactivex.plugins.RxJavaPlugins
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.customssiv.decoder.ImageDecoder
 import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder
@@ -41,10 +37,10 @@ import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder
 import me.devsaki.hentoid.customssiv.util.Debouncer
 import me.devsaki.hentoid.customssiv.util.assertNonUiThread
 import me.devsaki.hentoid.customssiv.util.getScreenDpi
+import me.devsaki.hentoid.customssiv.util.lifecycleScope
 import me.devsaki.hentoid.customssiv.util.resizeBitmap
 import me.devsaki.hentoid.gles_renderer.GPUImage
 import timber.log.Timber
-import java.io.IOException
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.math.abs
@@ -52,46 +48,6 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-/**
- * Attempt to use EXIF information on the image to rotate it. Works for external files only.
- */
-const val ORIENTATION_USE_EXIF: Int = -1
-
-/**
- * Display the image file in its native orientation.
- */
-const val ORIENTATION_0: Int = 0
-
-/**
- * Rotate the image 90 degrees clockwise.
- */
-const val ORIENTATION_90: Int = 90
-
-/**
- * Rotate the image 180 degrees.
- */
-const val ORIENTATION_180: Int = 180
-
-/**
- * Rotate the image 270 degrees clockwise.
- */
-const val ORIENTATION_270: Int = 270
-
-
-/**
- * During zoom animation, keep the point of the image that was tapped in the same place, and scale the image around it.
- */
-const val ZOOM_FOCUS_FIXED: Int = 1
-
-/**
- * During zoom animation, move the point of the image that was tapped to the center of the screen.
- */
-const val ZOOM_FOCUS_CENTER: Int = 2
-
-/**
- * Zoom in to and center the tapped point immediately without animating.
- */
-const val ZOOM_FOCUS_CENTER_IMMEDIATE: Int = 3
 
 private const val ANIMATION_LISTENER_ERROR: String = "Error thrown by animation listener"
 
@@ -114,42 +70,48 @@ private const val MESSAGE_LONG_CLICK: Int = 1
  * </p><p>
  * <a href="https://github.com/davemorrissey/subsampling-scale-image-view">View project on GitHub</a>
  */
-open class CustomSubsamplingScaleImageView : View {
-
-    companion object {
-        init {
-            // Set RxJava's default error handler for unprocessed network and IO errors
-            RxJavaPlugins.setErrorHandler { e: Throwable ->
-                var ex = e
-                if (e is UndeliverableException) e.cause?.let { ex = it }
-                if (ex is IOException) {
-                    // fine, irrelevant network problem or API that throws on cancellation
-                    return@setErrorHandler
-                }
-                if (ex is InterruptedException) {
-                    // fine, some blocking code was interrupted by a dispose call
-                    return@setErrorHandler
-                }
-                Timber.w(ex, "Undeliverable exception received, not sure what to do")
-            }
-        }
-    }
+open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet? = null) :
+    View(context, attr) {
 
     enum class Direction(val code: Int) {
         VERTICAL(0),
         HORIZONTAL(1)
     }
 
-    private val VALID_ORIENTATIONS = listOf(
-        ORIENTATION_0,
-        ORIENTATION_90,
-        ORIENTATION_180,
-        ORIENTATION_270,
-        ORIENTATION_USE_EXIF
-    )
+    enum class Orientation(val code: Int) {
+        // Display the image file in its native orientation.
+        _0(0),
 
-    private val VALID_ZOOM_STYLES =
-        listOf(ZOOM_FOCUS_FIXED, ZOOM_FOCUS_CENTER, ZOOM_FOCUS_CENTER_IMMEDIATE)
+        // Rotate the image 90 degrees clockwise.
+        _90(90),
+
+        // Rotate the image 180 degrees.
+        _180(180),
+
+        // Rotate the image 270 degrees clockwise.
+        _270(270),
+
+        // Attempt to use EXIF information on the image to rotate it. Works for external files only.
+        USE_EXIF(-1);
+
+        companion object {
+            fun fromCode(id: Int): Orientation {
+                for (s in entries) if (id == s.code) return s
+                return _0
+            }
+        }
+    }
+
+    enum class ZoomStyle(val code: Int) {
+        // During zoom animation, keep the point of the image that was tapped in the same place, and scale the image around it.
+        FOCUS_FIXED(1),
+
+        // During zoom animation, move the point of the image that was tapped to the center of the screen.
+        FOCUS_CENTER(2),
+
+        // Zoom in to and center the tapped point immediately without animating.
+        FOCUS_CENTER_IMMEDIATE(3),
+    }
 
     enum class Easing(val code: Int) {
         // Quadratic ease out. Not recommended for scale animation, but good for panning.
@@ -236,7 +198,7 @@ open class CustomSubsamplingScaleImageView : View {
     private var tileMap: MutableMap<Int, List<Tile>>? = null
 
     // Image orientation setting
-    private var orientation = ORIENTATION_0
+    private var orientation = Orientation._0
 
     // Zoom cap for double-tap zoom
     // (factor of default scaling)
@@ -274,7 +236,7 @@ open class CustomSubsamplingScaleImageView : View {
 
     // Double tap zoom behaviour
     private var doubleTapZoomScale = 1f
-    private var doubleTapZoomStyle = ZOOM_FOCUS_FIXED
+    private var doubleTapZoomStyle = ZoomStyle.FOCUS_FIXED
     private var doubleTapZoomDuration = 500
 
     // Initial scale, according to panLimit and minimumScaleType
@@ -303,7 +265,7 @@ open class CustomSubsamplingScaleImageView : View {
     // Source image dimensions and orientation - dimensions relate to the unrotated image
     private var sWidth = 0
     private var sHeight = 0
-    private var sOrientation = 0
+    private var sOrientation = Orientation._0
     private var sRegion: Rect? = null
     private var pRegion: Rect? = null
 
@@ -338,7 +300,7 @@ open class CustomSubsamplingScaleImageView : View {
     private var vDistStart = 0f
 
     // Current quickscale state
-    private var quickScaleThreshold = 0f
+    private val quickScaleThreshold: Float
     private var quickScaleLastDistance = 0f
     private var quickScaleMoved = false
     private var quickScaleVLastPoint: PointF? = null
@@ -359,14 +321,14 @@ open class CustomSubsamplingScaleImageView : View {
 
     // Scale and center listeners
     private var onStateChangedListener: OnStateChangedListener? = null
-    private var scaleDebouncer: Debouncer<Double>? = null
+    private val scaleDebouncer: Debouncer<Double>
     private var scaleListener: Consumer<Double>? = null
 
     // Long click listener
     private var onLongClickListener: OnLongClickListener? = null
 
     // Long click handler
-    private var handler: Handler? = null
+    private val handler: Handler
 
     // Paint objects created once and reused for efficiency
     private var bitmapPaint: Paint? = null
@@ -407,28 +369,25 @@ open class CustomSubsamplingScaleImageView : View {
     private var autoRotate = false
 
     // Phone screen width and height (stored here for optimization)
-    private var screenWidth = 0
-    private var screenHeight = 0
+    private val screenWidth: Int
+    private val screenHeight: Int
 
-    private var screenDpi = 0f
-
-    private val loadDisposable = CompositeDisposable()
+    private val screenDpi: Float
 
     // GPUImage instance to use to smoothen images; sharp mode will be used if not set
     private var glEsRenderer: GPUImage? = null
 
 
-    constructor(context: Context, attr: AttributeSet?) : super(context, attr) {
+    init {
         density = resources.displayMetrics.density
         screenWidth = context.resources.displayMetrics.widthPixels
         screenHeight = context.resources.displayMetrics.heightPixels
         screenDpi = getScreenDpi(context)
-
         setMinimumDpi(160)
         setDoubleTapZoomDpi(160)
         setMinimumTileDpi(320)
         setGestureDetector(context)
-        this.handler = Handler(Looper.getMainLooper()) { message: Message ->
+        handler = Handler(Looper.getMainLooper()) { message: Message ->
             if (message.what == MESSAGE_LONG_CLICK) {
                 if (onLongClickListener != null) {
                     maxTouchCount = 0
@@ -449,7 +408,7 @@ open class CustomSubsamplingScaleImageView : View {
             if (typedAttr.hasValue(R.styleable.CustomSubsamplingScaleImageView_assetName)) {
                 val assetName =
                     typedAttr.getString(R.styleable.CustomSubsamplingScaleImageView_assetName)
-                if (assetName != null && assetName.isNotEmpty()) {
+                if (!assetName.isNullOrEmpty()) {
                     setImage(asset(assetName).tilingEnabled())
                 }
             }
@@ -494,7 +453,6 @@ open class CustomSubsamplingScaleImageView : View {
             }
             typedAttr.recycle()
         }
-
         quickScaleThreshold = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
             80f,
@@ -503,11 +461,9 @@ open class CustomSubsamplingScaleImageView : View {
         scaleDebouncer = Debouncer(context, 200) { scaleListener?.accept(it) }
     }
 
-    constructor(context: Context) : super(context, null)
-
     fun clear() {
         recycle()
-        scaleDebouncer?.clear()
+        scaleDebouncer.clear()
         scaleListener = null
     }
 
@@ -539,8 +495,7 @@ open class CustomSubsamplingScaleImageView : View {
      *
      * @param orientation orientation to be set. See ORIENTATION_ static fields for valid values.
      */
-    fun setOrientation(orientation: Int) {
-        require(VALID_ORIENTATIONS.contains(orientation)) { "Invalid orientation: $orientation" }
+    fun setOrientation(orientation: Orientation) {
         this.orientation = orientation
         reset(false)
         invalidate()
@@ -610,31 +565,38 @@ open class CustomSubsamplingScaleImageView : View {
             this.sWidth = imageSource.getSWidth()
             this.sHeight = imageSource.getSHeight()
             this.pRegion = previewSource.getSRegion()
-            if (previewSource.getBitmap() != null) {
+            previewSource.getBitmap()?.let { bmp ->
                 this.bitmapIsCached = previewSource.isCached()
-                onPreviewLoaded(previewSource.getBitmap()!!)
-            } else {
+                onPreviewLoaded(bmp)
+            } ?: run {
                 var previewSourceUri = previewSource.getUri()
                 if (previewSourceUri == null && previewSource.getResource() != null) {
                     previewSourceUri =
                         Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/" + previewSource.getResource())
                 }
                 if (previewSourceUri != null) {
-                    loadDisposable.add(
-                        Single.fromCallable { loadBitmap(context, uri!!) }
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(Schedulers.computation())
-                            .map { b: Bitmap ->
+
+                    lifecycleScope?.launch {
+                        try {
+                            val bmp = withContext(Dispatchers.IO) {
+                                loadBitmap(context, uri!!)
+                            }
+                            val res = withContext(Dispatchers.Default) {
                                 processBitmap(
-                                    uri!!, context, b, this, targetScale
+                                    uri!!,
+                                    context,
+                                    bmp,
+                                    this@CustomSubsamplingScaleImageView,
+                                    targetScale
                                 )
                             }
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(
-                                { onPreviewLoaded(it.bitmap) },
-                                { onImageEventListener?.onImageLoadError(it) }
-                            )
-                    )
+                            withContext(Dispatchers.Main) {
+                                onPreviewLoaded(res.bitmap)
+                            }
+                        } catch (t: Throwable) {
+                            onImageEventListener?.onImageLoadError(t)
+                        }
+                    }
                 } else {
                     Timber.w("PreviewSourceUri cannot be determined")
                 }
@@ -650,10 +612,10 @@ open class CustomSubsamplingScaleImageView : View {
                     imageSource.getSRegion()!!
                         .width(),
                     imageSource.getSRegion()!!.height()
-                ), ORIENTATION_0, false, 1f
+                ), Orientation._0, false, 1f
             )
         } else if (imageSource.getBitmap() != null) {
-            onImageLoaded(imageSource.getBitmap()!!, ORIENTATION_0, imageSource.isCached(), 1f)
+            onImageLoaded(imageSource.getBitmap()!!, Orientation._0, imageSource.isCached(), 1f)
         } else {
             sRegion = imageSource.getSRegion()
             uri = imageSource.getUri()
@@ -663,45 +625,24 @@ open class CustomSubsamplingScaleImageView : View {
             }
             if (imageSource.getTile() || sRegion != null) {
                 // Load the bitmap using tile decoding.
-                loadDisposable.add(
-                    Single.fromCallable { initTiles(this, context, uri!!) }
-                        .subscribeOn(Schedulers.computation())
-                        .filter { it[0] > -1 } // Remove invalid results
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                            { a: IntArray ->
-                                onTilesInitialized(
-                                    a[0],
-                                    a[1],
-                                    a[2]
-                                )
-                            },
-                            { onImageEventListener?.onImageLoadError(it) })
-                )
-            } else {
-                // Load the bitmap as a single image.
-                loadDisposable.add(
-                    Single.fromCallable { loadBitmap(context, uri!!) }
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.computation())
-                        .map { b: Bitmap ->
-                            processBitmap(
-                                uri!!, context, b, this, targetScale
-                            )
+                lifecycleScope?.launch {
+                    try {
+                        val res = withContext(Dispatchers.IO) {
+                            initTiles(this@CustomSubsamplingScaleImageView, context, uri!!)
                         }
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                            { p: ProcessBitmapResult ->
-                                onImageLoaded(
-                                    p.bitmap,
-                                    p.orientation,
-                                    false,
-                                    p.scale
-                                )
-                            },
-                            { onImageEventListener?.onImageLoadError(it) }
-                        )
-                )
+                        // Remove invalid results
+                        if (res[0] < 0) return@launch
+
+                        withContext(Dispatchers.Main) {
+                            onTilesInitialized(res[0], res[1], Orientation.fromCode(res[2]))
+                        }
+                    } catch (t: Throwable) {
+                        onImageEventListener?.onImageLoadError(t)
+                    }
+                }
+            } else {
+                // Load the bitmap as a single image
+                loadBitmapToImage(context, uri!!, targetScale)
             }
         }
     }
@@ -756,7 +697,7 @@ open class CustomSubsamplingScaleImageView : View {
             }
             sWidth = 0
             sHeight = 0
-            sOrientation = 0
+            sOrientation = Orientation._0
             sRegion = null
             pRegion = null
             readySent = false
@@ -781,7 +722,7 @@ open class CustomSubsamplingScaleImageView : View {
             tileMap = null
         }
         setGestureDetector(context)
-        if (newImage) loadDisposable.clear()
+        //if (newImage) loadDisposable.clear()
     }
 
     private fun setGestureDetector(context: Context) {
@@ -1006,7 +947,7 @@ open class CustomSubsamplingScaleImageView : View {
                         maxTouchCount = 0
                     }
                     // Cancel long click timer
-                    handler!!.removeMessages(MESSAGE_LONG_CLICK)
+                    handler.removeMessages(MESSAGE_LONG_CLICK)
                 } else if (!isQuickScaling) {
                     // Start one-finger pan
                     vTranslateStart!![vTranslate!!.x] = vTranslate!!.y
@@ -1017,7 +958,7 @@ open class CustomSubsamplingScaleImageView : View {
                     m.what = MESSAGE_LONG_CLICK
                     m.arg1 = Math.round(event.x)
                     m.arg2 = Math.round(event.y)
-                    handler!!.sendMessageDelayed(m, 500)
+                    handler.sendMessageDelayed(m, 500)
                 }
                 return true
             }
@@ -1210,7 +1151,7 @@ open class CustomSubsamplingScaleImageView : View {
                             ) { // Page swipe
                                 // Haven't panned the image, and we're at the left or right edge. Switch to page swipe.
                                 maxTouchCount = 0
-                                handler!!.removeMessages(MESSAGE_LONG_CLICK)
+                                handler.removeMessages(MESSAGE_LONG_CLICK)
                                 requestDisallowInterceptTouchEvent(false)
                             }
 
@@ -1225,14 +1166,14 @@ open class CustomSubsamplingScaleImageView : View {
                     }
                 }
                 if (consumed) {
-                    handler!!.removeMessages(MESSAGE_LONG_CLICK)
+                    handler.removeMessages(MESSAGE_LONG_CLICK)
                     invalidate()
                     return true
                 }
             }
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_POINTER_2_UP -> {
-                handler!!.removeMessages(MESSAGE_LONG_CLICK)
+                handler.removeMessages(MESSAGE_LONG_CLICK)
                 if (isQuickScaling) {
                     isQuickScaling = false
                     if (!quickScaleMoved) {
@@ -1321,14 +1262,14 @@ open class CustomSubsamplingScaleImageView : View {
 
         val zoomIn = (scale <= targetDoubleTapZoomScale * 0.9) || scale == minScale
         val targetScale = if (zoomIn) targetDoubleTapZoomScale else minScale()
-        if (doubleTapZoomStyle == ZOOM_FOCUS_CENTER_IMMEDIATE) {
+        if (doubleTapZoomStyle == ZoomStyle.FOCUS_CENTER_IMMEDIATE) {
             setScaleAndCenter(targetScale, sCenter)
-        } else if (doubleTapZoomStyle == ZOOM_FOCUS_CENTER || !zoomIn || !panEnabled) {
+        } else if (doubleTapZoomStyle == ZoomStyle.FOCUS_CENTER || !zoomIn || !panEnabled) {
             AnimationBuilder(targetScale, sCenter!!).withInterruptible(false)
                 .withDuration(doubleTapZoomDuration.toLong()).withOrigin(
                     AnimOrigin.DOUBLE_TAP_ZOOM
                 ).start()
-        } else if (doubleTapZoomStyle == ZOOM_FOCUS_FIXED) {
+        } else if (doubleTapZoomStyle == ZoomStyle.FOCUS_FIXED) {
             AnimationBuilder(targetScale, sCenter!!, vFocus!!).withInterruptible(false)
                 .withDuration(doubleTapZoomDuration.toLong()).withOrigin(
                     AnimOrigin.DOUBLE_TAP_ZOOM
@@ -1468,7 +1409,7 @@ open class CustomSubsamplingScaleImageView : View {
                                     it.height.toFloat()
                                 )
                             }
-                            if (getRequiredRotation() == ORIENTATION_0) {
+                            if (getRequiredRotation() == Orientation._0) {
                                 tile.vRect?.apply {
                                     setMatrixArray(
                                         dstArray,
@@ -1482,7 +1423,7 @@ open class CustomSubsamplingScaleImageView : View {
                                         bottom.toFloat()
                                     )
                                 }
-                            } else if (getRequiredRotation() == ORIENTATION_90) {
+                            } else if (getRequiredRotation() == Orientation._90) {
                                 tile.vRect?.apply {
                                     setMatrixArray(
                                         dstArray,
@@ -1496,7 +1437,7 @@ open class CustomSubsamplingScaleImageView : View {
                                         top.toFloat()
                                     )
                                 }
-                            } else if (getRequiredRotation() == ORIENTATION_180) {
+                            } else if (getRequiredRotation() == Orientation._180) {
                                 tile.vRect?.apply {
                                     setMatrixArray(
                                         dstArray,
@@ -1510,7 +1451,7 @@ open class CustomSubsamplingScaleImageView : View {
                                         top.toFloat()
                                     )
                                 }
-                            } else if (getRequiredRotation() == ORIENTATION_270) {
+                            } else if (getRequiredRotation() == Orientation._270) {
                                 tile.vRect?.apply {
                                     setMatrixArray(
                                         dstArray,
@@ -1550,14 +1491,14 @@ open class CustomSubsamplingScaleImageView : View {
                 }
                 matrix!!.reset()
                 matrix!!.postScale(xScale, yScale)
-                matrix!!.postRotate(getRequiredRotation().toFloat())
+                matrix!!.postRotate(getRequiredRotation().code.toFloat())
                 matrix!!.postTranslate(vTranslate!!.x, vTranslate!!.y)
 
-                if (getRequiredRotation() == ORIENTATION_180) {
+                if (getRequiredRotation() == Orientation._180) {
                     matrix!!.postTranslate(usedScale * sWidth, usedScale * sHeight)
-                } else if (getRequiredRotation() == ORIENTATION_90) {
+                } else if (getRequiredRotation() == Orientation._90) {
                     matrix!!.postTranslate(usedScale * sHeight, 0f)
-                } else if (getRequiredRotation() == ORIENTATION_270) {
+                } else if (getRequiredRotation() == Orientation._270) {
                     matrix!!.postTranslate(0f, usedScale * sWidth)
                 }
 
@@ -1670,6 +1611,36 @@ open class CustomSubsamplingScaleImageView : View {
         }
     }
 
+    private fun loadBitmapToImage(context: Context, uri: Uri, targetScale: Float) {
+        lifecycleScope?.launch {
+            try {
+                val bmp = withContext(Dispatchers.IO) {
+                    loadBitmap(context, uri)
+                }
+                // Remove invalid results
+                val res = withContext(Dispatchers.Default) {
+                    processBitmap(
+                        uri,
+                        context,
+                        bmp,
+                        this@CustomSubsamplingScaleImageView,
+                        targetScale
+                    )
+                }
+                withContext(Dispatchers.Main) {
+                    onImageLoaded(
+                        res.bitmap,
+                        res.orientation,
+                        false,
+                        res.scale
+                    )
+                }
+            } catch (t: Throwable) {
+                onImageEventListener?.onImageLoadError(t)
+            }
+        }
+    }
+
     /**
      * Called on first draw when the view has dimensions. Calculates the initial sample size and starts async loading of
      * the base layer image - the whole source subsampled as necessary.
@@ -1685,8 +1656,8 @@ open class CustomSubsamplingScaleImageView : View {
         fitToBounds(true, satTemp!!, Point(sWidth(), sHeight()))
         val targetScale = satTemp!!.scale
 
-        orientation = if (autoRotate && needsRotating(sWidth(), sHeight())) ORIENTATION_90
-        else ORIENTATION_0
+        orientation = if (autoRotate && needsRotating(sWidth(), sHeight())) Orientation._90
+        else Orientation._0
 
         // Load double resolution - next level will be split into four tiles and at the center all four are required,
         // so don't bother with tiling until the next level 16 tiles are needed.
@@ -1701,50 +1672,28 @@ open class CustomSubsamplingScaleImageView : View {
             if (regionDecoder != null) regionDecoder!!.recycle()
             regionDecoder = null
 
-            loadDisposable.add(
-                Single.fromCallable { loadBitmap(context, uri!!) }
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.computation())
-                    .map { b: Bitmap ->
-                        processBitmap(
-                            uri!!, context, b, this, targetScale
-                        )
-                    }
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { p: ProcessBitmapResult ->
-                            onImageLoaded(
-                                p.bitmap,
-                                p.orientation,
-                                false,
-                                p.scale
-                            )
-                        },
-                        { onImageEventListener?.onImageLoadError(it) }
-                    )
-            )
+            loadBitmapToImage(context, uri!!, targetScale)
         } else {
             initialiseTileMap(maxTileDimensions)
 
             val baseGrid = tileMap!![fullImageSampleSize]
-            if (baseGrid != null) {
-                loadDisposable.add(
-                    Observable.fromIterable(baseGrid)
-                        .flatMap { tile ->
-                            Observable.just(tile)
-                                .observeOn(Schedulers.io())
-                                .map { loadTile(this, regionDecoder!!, it) }
-                                .observeOn(Schedulers.computation())
-                                .filter { !(it.bitmap?.isRecycled ?: true) }
-                                .map { processTile(it, targetScale) }
+            baseGrid?.let { bg ->
+                lifecycleScope?.launch {
+                    try {
+                        bg.forEach {
+                            val tile = withContext(Dispatchers.IO) {
+                                loadTile(this@CustomSubsamplingScaleImageView, regionDecoder!!, it)
+                            }
+                            if (tile.bitmap?.isRecycled == false) {
+                                withContext(Dispatchers.Default) { processTile(tile, targetScale) }
+                                withContext(Dispatchers.Main) { onTileLoaded() }
+                            }
                         }
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                            { this.onTileLoaded() },
-                            { onImageEventListener?.onTileLoadError(it) },
-                            { refreshRequiredResource(true) }
-                        )
-                )
+                        withContext(Dispatchers.Main) { refreshRequiredResource(true) }
+                    } catch (t: Throwable) {
+                        onImageEventListener?.onTileLoadError(t)
+                    }
+                }
             }
         }
     }
@@ -1761,24 +1710,7 @@ open class CustomSubsamplingScaleImageView : View {
     // TODO doc
     private fun refreshSingle(load: Boolean) {
         if (!singleImage.loading && load) {
-            loadDisposable.add(
-                Single.fromCallable { loadBitmap(context, uri!!) }
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.computation())
-                    .map { processBitmap(uri!!, context, it, this, getVirtualScale()) }
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { p: ProcessBitmapResult ->
-                            onImageLoaded(
-                                p.bitmap,
-                                p.orientation,
-                                false,
-                                p.scale
-                            )
-                        },
-                        { onImageEventListener?.onImageLoadError(it) }
-                    )
-            )
+            loadBitmapToImage(context, uri!!, getVirtualScale())
         }
     }
 
@@ -1804,20 +1736,25 @@ open class CustomSubsamplingScaleImageView : View {
                     if (tileVisible(tile)) {
                         tile.visible = true
                         if (!tile.loading && tile.bitmap == null && load) {
-                            loadDisposable.add(
-                                Single.fromCallable {
-                                    loadTile(this, regionDecoder!!, tile)
+                            lifecycleScope?.launch {
+                                try {
+                                    withContext(Dispatchers.IO) {
+                                        loadTile(
+                                            this@CustomSubsamplingScaleImageView,
+                                            regionDecoder!!,
+                                            tile
+                                        )
+                                    }
+                                    if (tile.bitmap?.isRecycled == false) {
+                                        withContext(Dispatchers.Default) {
+                                            processTile(tile, scale)
+                                        }
+                                        withContext(Dispatchers.Main) { onTileLoaded() }
+                                    }
+                                } catch (t: Throwable) {
+                                    onImageEventListener?.onTileLoadError(t)
                                 }
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(Schedulers.computation())
-                                    .filter { !(it.bitmap?.isRecycled ?: true) }
-                                    .map { processTile(it, scale) }
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(
-                                        { this.onTileLoaded() },
-                                        { onImageEventListener!!.onTileLoadError(it) }
-                                    )
-                            )
+                            }
                         }
                     } else if (tile.sampleSize != fullImageSampleSize) {
                         tile.visible = false
@@ -2108,7 +2045,7 @@ open class CustomSubsamplingScaleImageView : View {
                     sHeightTile = height()
                 }
             }
-            return intArrayOf(sWidthTile, sHeightTile, exifOrientation)
+            return intArrayOf(sWidthTile, sHeightTile, exifOrientation.code)
         }
         Timber.d("Init tiles END %s", sourceUri)
         return intArrayOf(0, 0, 0)
@@ -2119,7 +2056,7 @@ open class CustomSubsamplingScaleImageView : View {
      */
     @Synchronized
     private fun onTilesInitialized( /*ImageRegionDecoder decoder,*/
-                                    sWidth: Int, sHeight: Int, sOrientation: Int
+                                    sWidth: Int, sHeight: Int, sOrientation: Orientation
     ) {
         // If actual dimensions don't match the declared size, reset everything.
         if (this.sWidth > 0 && (this.sHeight > 0) && (this.sWidth != sWidth || this.sHeight != sHeight)) {
@@ -2256,12 +2193,12 @@ open class CustomSubsamplingScaleImageView : View {
     @Synchronized
     private fun onImageLoaded(
         bitmap: Bitmap,
-        sOrientation: Int,
+        sOrientation: Orientation,
         bitmapIsCached: Boolean,
         imageScale: Float
     ) {
-        orientation = if (autoRotate && needsRotating(bitmap.width, bitmap.height)) ORIENTATION_90
-        else ORIENTATION_0
+        orientation = if (autoRotate && needsRotating(bitmap.width, bitmap.height)) Orientation._90
+        else Orientation._0
 
         if (this.bitmap != null && !this.bitmapIsCached && !singleImage.loading) {
             this.bitmap!!.recycle()
@@ -2320,8 +2257,8 @@ open class CustomSubsamplingScaleImageView : View {
      * This will only work for external files, not assets, resources or other URIs.
      */
     @AnyThread
-    private fun getExifOrientation(context: Context, sourceUri: String): Int {
-        var exifOrientation = ORIENTATION_0
+    private fun getExifOrientation(context: Context, sourceUri: String): Orientation {
+        var exifOrientation = Orientation._0
         if (sourceUri.startsWith(ContentResolver.SCHEME_CONTENT)) {
             var cursor: Cursor? = null
             try {
@@ -2329,8 +2266,8 @@ open class CustomSubsamplingScaleImageView : View {
                 cursor =
                     context.contentResolver.query(Uri.parse(sourceUri), columns, null, null, null)
                 if (cursor != null && cursor.moveToFirst()) {
-                    val targetOrientation = cursor.getInt(0)
-                    if (VALID_ORIENTATIONS.contains(targetOrientation) && targetOrientation != ORIENTATION_USE_EXIF) {
+                    val targetOrientation = Orientation.fromCode(cursor.getInt(0))
+                    if (targetOrientation != Orientation.USE_EXIF) {
                         exifOrientation = targetOrientation
                     } else {
                         Timber.w("Unsupported orientation: %s", targetOrientation)
@@ -2349,13 +2286,13 @@ open class CustomSubsamplingScaleImageView : View {
                     ExifInterface.ORIENTATION_NORMAL
                 )
                 if (orientationAttr == ExifInterface.ORIENTATION_NORMAL || orientationAttr == ExifInterface.ORIENTATION_UNDEFINED) {
-                    exifOrientation = ORIENTATION_0
+                    exifOrientation = Orientation._0
                 } else if (orientationAttr == ExifInterface.ORIENTATION_ROTATE_90) {
-                    exifOrientation = ORIENTATION_90
+                    exifOrientation = Orientation._90
                 } else if (orientationAttr == ExifInterface.ORIENTATION_ROTATE_180) {
-                    exifOrientation = ORIENTATION_180
+                    exifOrientation = Orientation._180
                 } else if (orientationAttr == ExifInterface.ORIENTATION_ROTATE_270) {
-                    exifOrientation = ORIENTATION_270
+                    exifOrientation = Orientation._270
                 } else {
                     Timber.w("Unsupported EXIF orientation: %s", orientationAttr)
                 }
@@ -2434,7 +2371,7 @@ open class CustomSubsamplingScaleImageView : View {
      * Set scale, center and orientation from saved state.
      */
     private fun restoreState(state: ImageViewState?) {
-        if (state != null && VALID_ORIENTATIONS.contains(state.getOrientation())) {
+        if (state != null) {
             this.orientation = state.getOrientation()
             this.pendingScale = state.getScale()
             this.virtualScale = state.getVirtualScale()
@@ -2480,7 +2417,7 @@ open class CustomSubsamplingScaleImageView : View {
      */
     private fun sWidth(): Int {
         val rotation = getRequiredRotation()
-        return if (rotation == 90 || rotation == 270) {
+        return if (rotation.code == 90 || rotation.code == 270) {
             if ((singleImage.rawHeight > -1)) singleImage.rawHeight else sHeight
         } else {
             if ((singleImage.rawWidth > -1)) singleImage.rawWidth else sWidth
@@ -2492,7 +2429,7 @@ open class CustomSubsamplingScaleImageView : View {
      */
     private fun sHeight(): Int {
         val rotation = getRequiredRotation()
-        return if (rotation == 90 || rotation == 270) {
+        return if (rotation.code == 90 || rotation.code == 270) {
             if ((singleImage.rawWidth > -1)) singleImage.rawWidth else sWidth
         } else {
             if ((singleImage.rawHeight > -1)) singleImage.rawHeight else sHeight
@@ -2505,11 +2442,11 @@ open class CustomSubsamplingScaleImageView : View {
      */
     @AnyThread
     private fun fileSRect(sRect: Rect, target: Rect) {
-        if (getRequiredRotation() == 0) {
+        if (getRequiredRotation().code == 0) {
             target.set(sRect)
-        } else if (getRequiredRotation() == 90) {
+        } else if (getRequiredRotation().code == 90) {
             target[sRect.top, sHeight - sRect.right, sRect.bottom] = sHeight - sRect.left
-        } else if (getRequiredRotation() == 180) {
+        } else if (getRequiredRotation().code == 180) {
             target[sWidth - sRect.right, sHeight - sRect.bottom, sWidth - sRect.left] =
                 sHeight - sRect.top
         } else {
@@ -2521,8 +2458,8 @@ open class CustomSubsamplingScaleImageView : View {
      * Determines the rotation to be applied to tiles, based on EXIF orientation or chosen setting.
      */
     @AnyThread
-    private fun getRequiredRotation(): Int {
-        return if (orientation == ORIENTATION_USE_EXIF) {
+    private fun getRequiredRotation(): Orientation {
+        return if (orientation == Orientation.USE_EXIF) {
             sOrientation
         } else {
             orientation
@@ -3173,7 +3110,7 @@ open class CustomSubsamplingScaleImageView : View {
      *
      * @return the orientation setting. See static fields.
      */
-    fun getOrientation(): Int {
+    fun getOrientation(): Orientation {
         return orientation
     }
 
@@ -3183,7 +3120,7 @@ open class CustomSubsamplingScaleImageView : View {
      *
      * @return the orientation applied after EXIF information has been extracted. See static fields.
      */
-    fun getAppliedOrientation(): Int {
+    fun getAppliedOrientation(): Orientation {
         return getRequiredRotation()
     }
 
@@ -3353,8 +3290,7 @@ open class CustomSubsamplingScaleImageView : View {
      *
      * @param doubleTapZoomStyle New value for zoom style.
      */
-    fun setDoubleTapZoomStyle(doubleTapZoomStyle: Int) {
-        require(VALID_ZOOM_STYLES.contains(doubleTapZoomStyle)) { "Invalid zoom style: $doubleTapZoomStyle" }
+    fun setDoubleTapZoomStyle(doubleTapZoomStyle: ZoomStyle) {
         this.doubleTapZoomStyle = doubleTapZoomStyle
     }
 
@@ -3437,7 +3373,7 @@ open class CustomSubsamplingScaleImageView : View {
     }
 
     private fun signalScaleChange(targetScale: Double) {
-        scaleDebouncer!!.submit(targetScale)
+        scaleDebouncer.submit(targetScale)
     }
 
     /**
@@ -3859,7 +3795,7 @@ open class CustomSubsamplingScaleImageView : View {
 
     class ProcessBitmapResult internal constructor(
         val bitmap: Bitmap,
-        val orientation: Int,
+        val orientation: Orientation,
         val scale: Float
     )
 }

@@ -35,7 +35,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.lifecycle:lifecycle-common-java8:2.8.6'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.6'
     // Don't update exifinterface > 1.2.0 without testing library screen thumbs with large PNGs
     // v1.3.2 is bugged when loading large PNGs through Glide
     implementation 'androidx.exifinterface:exifinterface:1.2.0'
@@ -43,11 +43,6 @@ dependencies {
     // Timber (Extensible Logger): github.com/JakeWharton/timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
-    //    https://github.com/ReactiveX/RxJava
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation 'androidx.core:core-ktx:1.13.1'
 
     implementation project(path: ':app:gles-renderer')

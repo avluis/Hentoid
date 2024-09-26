@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.customssiv
 
 import android.graphics.PointF
+import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.Orientation
 import java.io.Serializable
 
 /**
@@ -10,7 +11,7 @@ class ImageViewState(
     private var scale: Float,
     private var virtualScale: Float,
     center: PointF,
-    private var orientation: Int
+    private var orientation: Orientation
 ) : Serializable {
     private var centerX = 0f
     private var centerY = 0f
@@ -32,7 +33,7 @@ class ImageViewState(
         return PointF(centerX, centerY)
     }
 
-    fun getOrientation(): Int {
+    fun getOrientation(): CustomSubsamplingScaleImageView.Orientation {
         return orientation
     }
 }

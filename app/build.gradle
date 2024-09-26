@@ -150,7 +150,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$android_lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_version"
 
 
     /**
