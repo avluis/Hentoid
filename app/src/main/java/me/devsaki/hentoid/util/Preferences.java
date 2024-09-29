@@ -69,11 +69,11 @@ public final class Preferences {
 
         // Remove non-exportable settings that make no sense on another instance
         result.remove(Key.FIRST_RUN);
-        result.remove(Key.WELCOME_DONE);
+        result.remove(Settings.Key.WELCOME_DONE);
         result.remove(Key.PRIMARY_STORAGE_URI);
         result.remove(Key.EXTERNAL_LIBRARY_URI);
         result.remove(Key.LAST_KNOWN_APP_VERSION_CODE);
-        result.remove(Key.REFRESH_JSON_1_DONE);
+        result.remove(Settings.Key.REFRESH_JSON_1_DONE);
         result.remove(Settings.Key.LOCK_TYPE);
         result.remove(Settings.Key.ACHIEVEMENTS);
         result.remove(Settings.Key.ACHIEVEMENTS_NB_AI_RESCALE);
@@ -119,30 +119,6 @@ public final class Preferences {
 
 
     // ======= PROPERTIES GETTERS / SETTERS
-
-    public static boolean isFirstRunProcessComplete() {
-        return getBoolPref(Key.WELCOME_DONE, false);
-    }
-
-    public static void setIsFirstRunProcessComplete(boolean isFirstRunProcessComplete) {
-        sharedPreferences.edit().putBoolean(Key.WELCOME_DONE, isFirstRunProcessComplete).apply();
-    }
-
-    public static boolean isRefreshJson1Complete() {
-        return getBoolPref(Key.REFRESH_JSON_1_DONE, false);
-    }
-
-    public static void setIsRefreshJson1Complete(boolean value) {
-        sharedPreferences.edit().putBoolean(Key.REFRESH_JSON_1_DONE, value).apply();
-    }
-
-    public static boolean isAnalyticsEnabled() {
-        return getBoolPref(Key.ANALYTICS_PREFERENCE, true);
-    }
-
-    public static boolean isAutomaticUpdateEnabled() {
-        return getBoolPref(Key.CHECK_UPDATES, Default.CHECK_UPDATES);
-    }
 
     public static boolean isFirstRun() {
         return getBoolPref(Key.FIRST_RUN, Default.FIRST_RUN);
@@ -795,13 +771,9 @@ public final class Preferences {
         }
 
         public static final String BROWSER_MODE = "browser_mode";
-        public static final String ANALYTICS_PREFERENCE = "pref_analytics_preference";
         public static final String APP_LOCK = "pref_app_lock";
         public static final String APP_PREVIEW = "pref_app_preview";
-        static final String CHECK_UPDATES = "pref_check_updates";
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
-        static final String WELCOME_DONE = "pref_welcome_done";
-        static final String REFRESH_JSON_1_DONE = "refresh_json_1_done";
         static final String VERSION_KEY = "prefs_version";
         public static final String FORCE_ENGLISH = "force_english";
         public static final String IMPORT_QUEUE_EMPTY = "pref_import_queue_empty";
@@ -1003,7 +975,6 @@ public final class Preferences {
         static final boolean DL_EH_HIRES = false;
         static final int DL_SPEED_CAP = Constant.DL_SPEED_CAP_NONE;
         static final int DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
-        static final boolean CHECK_UPDATES = true;
         // Default menu in v1.9.x
         static final boolean LOCK_ON_APP_RESTORE = false;
         static final int LOCK_TIMER = Constant.LOCK_TIMER_30S;

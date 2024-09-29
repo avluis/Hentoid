@@ -212,7 +212,7 @@ object AppStartup {
 
     private fun searchForUpdates(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Run app update : start")
-        if (Preferences.isAutomaticUpdateEnabled()) {
+        if (Settings.isAutomaticUpdateEnabled) {
             Timber.i("Run app update : auto-check is enabled")
             val workManager = WorkManager.getInstance(context)
             workManager.enqueueUniqueWork(

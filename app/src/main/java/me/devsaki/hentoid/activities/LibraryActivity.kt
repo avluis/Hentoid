@@ -285,10 +285,10 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
-        if (!Preferences.isFirstRunProcessComplete()) {
+        if (!Settings.isFirstRunProcessComplete) {
             // first run of the app starts with the nav drawer open
             openNavigationDrawer()
-            Preferences.setIsFirstRunProcessComplete(true)
+            Settings.isFirstRunProcessComplete = true
         }
         val vmFactory = ViewModelFactory(application)
         viewModel =
@@ -363,7 +363,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private fun onCreated(startBundle: Bundle?) {
         // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
         binding?.let {
-            if (Preferences.isFirstRunProcessComplete()) this.showTooltip(
+            if (Settings.isFirstRunProcessComplete) this.showTooltip(
                 R.string.help_search, ArrowOrientation.TOP,
                 it.toolbar, this
             )

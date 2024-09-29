@@ -90,6 +90,10 @@ object Settings {
     var nbAIRescale: Int by IntSetting(Key.ACHIEVEMENTS_NB_AI_RESCALE, 0)
 
     // MISC
+    var isFirstRunProcessComplete: Boolean by BoolSetting(Key.WELCOME_DONE, false)
+    var isRefreshJson1Complete: Boolean by BoolSetting(Key.REFRESH_JSON_1_DONE, false)
+    val isAnalyticsEnabled: Boolean by BoolSetting(Key.ANALYTICS_PREFERENCE, true)
+    val isAutomaticUpdateEnabled: Boolean by BoolSetting("pref_check_updates", true)
     var isTextMenuOn: Boolean by BoolSetting(Key.TEXT_SELECT_MENU, false)
 
 
@@ -180,6 +184,10 @@ object Settings {
 
     // Consts
     object Key {
+        const val WELCOME_DONE = "pref_welcome_done"
+        const val REFRESH_JSON_1_DONE = "refresh_json_1_done"
+        const val ANALYTICS_PREFERENCE = "pref_analytics_preference";
+
         const val LIBRARY_DISPLAY = "pref_library_display"
         const val READER_COLOR_DEPTH = "viewer_color_depth"
         const val LOCK_TYPE = "LOCK_TYPE"
