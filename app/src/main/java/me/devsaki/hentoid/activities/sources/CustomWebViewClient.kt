@@ -411,9 +411,9 @@ open class CustomWebViewClient : WebViewClient {
         getOnlineResource(
             url,
             requestHeadersList,
-            site.useMobileAgent(),
-            site.useHentoidAgent(),
-            site.useWebviewAgent()
+            site.useMobileAgent,
+            site.useHentoidAgent,
+            site.useWebviewAgent
         ).use { onlineFileResponse ->
             val body = onlineFileResponse.body ?: throw IOException("Empty response from server")
             val cacheDir = context.cacheDir
@@ -544,9 +544,9 @@ open class CustomWebViewClient : WebViewClient {
                 getOnlineResource(
                     urlStr,
                     requestHeadersList,
-                    site.useMobileAgent(),
-                    site.useHentoidAgent(),
-                    site.useWebviewAgent()
+                    site.useMobileAgent,
+                    site.useHentoidAgent,
+                    site.useWebviewAgent
                 ).use { response ->
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
@@ -607,9 +607,9 @@ open class CustomWebViewClient : WebViewClient {
             response = getOnlineResourceFast(
                 url,
                 requestHeadersList,
-                site.useMobileAgent(),
-                site.useHentoidAgent(),
-                site.useWebviewAgent(),
+                site.useMobileAgent,
+                site.useHentoidAgent,
+                site.useWebviewAgent,
                 false
             )
         } catch (e: MalformedURLException) {
@@ -621,9 +621,9 @@ open class CustomWebViewClient : WebViewClient {
                 response = getOnlineResource(
                     url,
                     requestHeadersList,
-                    site.useMobileAgent(),
-                    site.useHentoidAgent(),
-                    site.useWebviewAgent()
+                    site.useMobileAgent,
+                    site.useHentoidAgent,
+                    site.useWebviewAgent
                 )
             } catch (ex: IOException) {
                 Timber.e(ex)

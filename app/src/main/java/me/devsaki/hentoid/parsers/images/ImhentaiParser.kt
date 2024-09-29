@@ -25,8 +25,8 @@ class ImhentaiParser : BaseImageListParser() {
         val doc = getOnlineDocument(
             content.readerUrl,
             headers,
-            Site.IMHENTAI.useHentoidAgent(),
-            Site.IMHENTAI.useWebviewAgent()
+            Site.IMHENTAI.useHentoidAgent,
+            Site.IMHENTAI.useWebviewAgent
         )
         if (doc != null) {
             val thumbs: List<Element> = doc.select(".gthumb img")

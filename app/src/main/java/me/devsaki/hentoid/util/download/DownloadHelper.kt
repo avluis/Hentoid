@@ -139,15 +139,15 @@ private fun downloadToFile(
     val response = if (failFast) getOnlineResourceFast(
         url,
         requestHeaders,
-        site.useMobileAgent(),
-        site.useHentoidAgent(),
-        site.useWebviewAgent()
+        site.useMobileAgent,
+        site.useHentoidAgent,
+        site.useWebviewAgent
     ) else getOnlineResourceDownloader(
         url,
         requestHeaders,
-        site.useMobileAgent(),
-        site.useHentoidAgent(),
-        site.useWebviewAgent()
+        site.useMobileAgent,
+        site.useHentoidAgent,
+        site.useWebviewAgent
     )
     Timber.d("DOWNLOADING %d - RESPONSE %s", resourceId, response.code)
     if (response.code >= 300) throw NetworkingException(

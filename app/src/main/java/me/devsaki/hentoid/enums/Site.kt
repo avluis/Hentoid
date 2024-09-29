@@ -1,37 +1,59 @@
-package me.devsaki.hentoid.enums;
+package me.devsaki.hentoid.enums
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import io.objectbox.converter.PropertyConverter
+import me.devsaki.hentoid.R
+import me.devsaki.hentoid.json.core.JsonSiteSettings.JsonSite
+import me.devsaki.hentoid.util.network.getDesktopUserAgent
+import me.devsaki.hentoid.util.network.getDomainFromUri
+import me.devsaki.hentoid.util.network.getMobileUserAgent
+import timber.log.Timber
 
-import java.util.HashSet;
-import java.util.Set;
 
-import io.objectbox.converter.PropertyConverter;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.json.core.JsonSiteSettings;
-import me.devsaki.hentoid.util.network.HttpHelperKt;
-import timber.log.Timber;
+// Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
+private val INVISIBLE_SITES = setOf(
+    Site.NEXUS,  // Dead
+    Site.HBROWSE,  // Dead
+    Site.HENTAICAFE,  // Dead
+    Site.KSK,  // Dead
+    Site.ANCHIRA,  // Dead
+    Site.FAKKU,  // Old Fakku; kept for retrocompatibility
+    Site.FAKKU2,  // Dropped after Fakku decided to flag downloading accounts and IPs
+    Site.ASMHENTAI_COMICS,  // Does not work directly
+    Site.PANDA,  // Dropped; kept for retrocompatibility
+    Site.NONE // Technical fallback
+)
 
-/**
- * Site enumerator
- */
-public enum Site {
-
+enum class Site(val code: Int, val description: String, val url: String, val ico: Int) {
     // NOTE : to maintain compatiblity with saved JSON files and prefs, do _not_ edit either existing names or codes
-    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_site_fakku), // Legacy support for old fakku archives
+    FAKKU(
+        0,
+        "Fakku",
+        "https://www.fakku.net",
+        R.drawable.ic_site_fakku
+    ), // Legacy support for old fakku archives
     PURURIN(1, "Pururin", "https://pururin.to", R.drawable.ic_site_pururin),
     HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_site_hitomi),
     NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_site_nhentai),
     TSUMINO(4, "tsumino", "https://www.tsumino.com", R.drawable.ic_site_tsumino),
     HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", R.drawable.ic_site_hentaicafe),
     ASMHENTAI(6, "asmhentai", "https://asmhentai.com", R.drawable.ic_site_asmhentai),
-    ASMHENTAI_COMICS(7, "asmhentai comics", "https://comics.asmhentai.com", R.drawable.ic_site_asmcomics),
+    ASMHENTAI_COMICS(
+        7,
+        "asmhentai comics",
+        "https://comics.asmhentai.com",
+        R.drawable.ic_site_asmcomics
+    ),
     EHENTAI(8, "e-hentai", "https://e-hentai.org", R.drawable.ic_site_ehentai),
     FAKKU2(9, "Fakku", "https://www.fakku.net", R.drawable.ic_site_fakku),
     NEXUS(10, "Hentai Nexus", "https://hentainexus.com", R.drawable.ic_site_nexus),
     MUSES(11, "8Muses", "https://www.8muses.com", R.drawable.ic_site_8muses),
     DOUJINS(12, "doujins.com", "https://doujins.com/", R.drawable.ic_site_doujins),
-    LUSCIOUS(13, "luscious.net", "https://members.luscious.net/manga/", R.drawable.ic_site_luscious),
+    LUSCIOUS(
+        13,
+        "luscious.net",
+        "https://members.luscious.net/manga/",
+        R.drawable.ic_site_luscious
+    ),
     EXHENTAI(14, "exhentai", "https://exhentai.org", R.drawable.ic_site_exhentai),
     PORNCOMIX(15, "porncomixonline", "https://porncomix.online/", R.drawable.ic_site_porncomix),
     HBROWSE(16, "Hbrowse", "https://www.hbrowse.com/", R.drawable.ic_site_hbrowse),
@@ -46,223 +68,137 @@ public enum Site {
     MANHWA18(25, "Manhwa18", "https://manhwa18.com/", R.drawable.ic_site_manhwa18),
     MULTPORN(26, "Multporn", "https://multporn.net/", R.drawable.ic_site_multporn),
     SIMPLY(27, "Simply Hentai", "https://www.simply-hentai.com/", R.drawable.ic_site_simply),
-    HDPORNCOMICS(28, "HD Porn Comics", "https://hdporncomics.com/", R.drawable.ic_site_hdporncomics),
+    HDPORNCOMICS(
+        28,
+        "HD Porn Comics",
+        "https://hdporncomics.com/",
+        R.drawable.ic_site_hdporncomics
+    ),
     EDOUJIN(29, "Edoujin", "https://ehentaimanga.com/", R.drawable.ic_site_edoujin),
     KSK(30, "Koushoku", "https://ksk.moe", R.drawable.ic_site_ksk),
     ANCHIRA(31, "Anchira", "https://anchira.to", R.drawable.ic_site_anchira),
     DEVIANTART(32, "DeviantArt", "https://www.deviantart.com/", R.drawable.ic_site_deviantart),
     MANGAGO(33, "Mangago", "https://www.mangago.me/", R.drawable.ic_site_mangago),
     NONE(98, "none", "", R.drawable.ic_attribute_source), // External library; fallback site
-    PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_site_panda); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
+    PANDA(
+        99,
+        "panda",
+        "https://www.mangapanda.com",
+        R.drawable.ic_site_panda
+    ); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
-    private static final Site[] INVISIBLE_SITES = {
-            NEXUS, // Dead
-            HBROWSE, // Dead
-            HENTAICAFE, // Dead
-            KSK, // Dead
-            ANCHIRA, // Dead
-            FAKKU, // Old Fakku; kept for retrocompatibility
-            FAKKU2, // Dropped after Fakku decided to flag downloading accounts and IPs
-            ASMHENTAI_COMICS, // Does not work directly
-            PANDA, // Dropped; kept for retrocompatibility
-            NONE // Technical fallback
-    };
-
-
-    private final int code;
-    private final String description;
-    private final String url;
-    private final int ico;
     // Default values overridden in sites.json
-    private boolean useMobileAgent = true;
-    private boolean useHentoidAgent = false;
-    private boolean useWebviewAgent = true;
+    var useMobileAgent = true
+        private set
+    var useHentoidAgent = false
+        private set
+    var useWebviewAgent = true
+        private set
+
     // Download behaviour control
-    private boolean hasBackupURLs = false;
-    private boolean hasCoverBasedPageUpdates = false;
-    private boolean useCloudflare = false;
-    private boolean hasUniqueBookId = false;
-    private int requestsCapPerSecond = -1;
-    private int parallelDownloadCap = 0;
+    var hasBackupURLs = false
+        private set
+    var hasCoverBasedPageUpdates = false
+        private set
+    var useCloudflare = false
+        private set
+    var hasUniqueBookId = false
+        private set
+    var requestsCapPerSecond = -1
+        private set
+    var parallelDownloadCap = 0
+        private set
+
     // Controls for "Mark downloaded/merged" in browser
-    private int bookCardDepth = 2;
-    private Set<String> bookCardExcludedParentClasses = new HashSet<>();
+    var bookCardDepth = 2
+        private set
+    var bookCardExcludedParentClasses: Set<String> = HashSet()
+        private set
+
     // Controls for "Mark books with blocked tags" in browser
-    private int galleryHeight = -1;
+    var galleryHeight = -1
+        private set
+
     // Determine which Jsoup output to use when rewriting the HTML
     // 0 : html; 1 : xml
-    private int jsoupOutputSyntax = 0;
+    var jsoupOutputSyntax = 0
+        private set
 
 
-    Site(int code,
-         String description,
-         String url,
-         int ico) {
-        this.code = code;
-        this.description = description;
-        this.url = url;
-        this.ico = ico;
-    }
-
-    public static Site searchByCode(long code) {
-        for (Site s : values())
-            if (s.getCode() == code) return s;
-
-        return NONE;
-    }
-
-    // Same as ValueOf with a fallback to NONE
-    // (vital for forward compatibility)
-    public static Site searchByName(String name) {
-        for (Site s : values())
-            if (s.name().equalsIgnoreCase(name)) return s;
-
-        return NONE;
-    }
-
-    @Nullable
-    public static Site searchByUrl(String url) {
-        if (null == url || url.isEmpty()) {
-            Timber.w("Invalid url");
-            return null;
+    val isVisible: Boolean
+        get() {
+            return !INVISIBLE_SITES.contains(this)
         }
 
-        for (Site s : Site.values())
-            if (s.code > 0 && HttpHelperKt.getDomainFromUri(url).equalsIgnoreCase(HttpHelperKt.getDomainFromUri(s.url)))
-                return s;
-
-        return Site.NONE;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public int getIco() {
-        return ico;
-    }
-
-    public boolean useMobileAgent() {
-        return useMobileAgent;
-    }
-
-    public boolean useHentoidAgent() {
-        return useHentoidAgent;
-    }
-
-    public boolean useWebviewAgent() {
-        return useWebviewAgent;
-    }
-
-    public boolean hasBackupURLs() {
-        return hasBackupURLs;
-    }
-
-    public boolean hasCoverBasedPageUpdates() {
-        return hasCoverBasedPageUpdates;
-    }
-
-    public boolean isUseCloudflare() {
-        return useCloudflare;
-    }
-
-    public boolean hasUniqueBookId() {
-        return hasUniqueBookId;
-    }
-
-    public int getRequestsCapPerSecond() {
-        return requestsCapPerSecond;
-    }
-
-    public int getParallelDownloadCap() {
-        return parallelDownloadCap;
-    }
-
-    public int getBookCardDepth() {
-        return bookCardDepth;
-    }
-
-    public Set<String> getBookCardExcludedParentClasses() {
-        return bookCardExcludedParentClasses;
-    }
-
-    public int getGalleryHeight() {
-        return galleryHeight;
-    }
-
-    public int getJsoupOutputSyntax() {
-        return jsoupOutputSyntax;
-    }
-
-    public boolean isVisible() {
-        for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;
-        return true;
-    }
-
-    public String getFolder() {
-        if (this == FAKKU)
-            return "Downloads";
-        else
-            return description;
-    }
-
-    public String getUserAgent() {
-        if (useMobileAgent())
-            return HttpHelperKt.getMobileUserAgent(useHentoidAgent(), useWebviewAgent());
-        else
-            return HttpHelperKt.getDesktopUserAgent(useHentoidAgent(), useWebviewAgent());
-    }
-
-    public void updateFrom(@NonNull final JsonSiteSettings.JsonSite jsonSite) {
-        if (jsonSite.getUseMobileAgent() != null) useMobileAgent = jsonSite.getUseMobileAgent();
-        if (jsonSite.getUseHentoidAgent() != null) useHentoidAgent = jsonSite.getUseHentoidAgent();
-        if (jsonSite.getUseWebviewAgent() != null) useWebviewAgent = jsonSite.getUseWebviewAgent();
-        if (jsonSite.getHasBackupURLs() != null) hasBackupURLs = jsonSite.getHasBackupURLs();
-        if (jsonSite.getHasCoverBasedPageUpdates() != null)
-            hasCoverBasedPageUpdates = jsonSite.getHasCoverBasedPageUpdates();
-        if (jsonSite.getUseCloudflare() != null)
-            useCloudflare = jsonSite.getUseCloudflare();
-        if (jsonSite.getHasUniqueBookId() != null)
-            hasUniqueBookId = jsonSite.getHasUniqueBookId();
-        if (jsonSite.getParallelDownloadCap() != null)
-            parallelDownloadCap = jsonSite.getParallelDownloadCap();
-        if (jsonSite.getRequestsCapPerSecond() != null)
-            requestsCapPerSecond = jsonSite.getRequestsCapPerSecond();
-        if (jsonSite.getBookCardDepth() != null)
-            bookCardDepth = jsonSite.getBookCardDepth();
-        if (jsonSite.getBookCardExcludedParentClasses() != null)
-            bookCardExcludedParentClasses = new HashSet<>(jsonSite.getBookCardExcludedParentClasses());
-        if (jsonSite.getGalleryHeight() != null)
-            galleryHeight = jsonSite.getGalleryHeight();
-        if (jsonSite.getJsoupOutputSyntax() != null)
-            jsoupOutputSyntax = jsonSite.getJsoupOutputSyntax();
-    }
-
-    public static class SiteConverter implements PropertyConverter<Site, Long> {
-        @Override
-        public Site convertToEntityProperty(Long databaseValue) {
-            if (databaseValue == null) {
-                return Site.NONE;
-            }
-            for (Site site : Site.values()) {
-                if (site.getCode() == databaseValue) {
-                    return site;
-                }
-            }
-            return Site.NONE;
+    val folder: String
+        get() {
+            return if (this == FAKKU) "Downloads" else description
         }
 
-        @Override
-        public Long convertToDatabaseValue(Site entityProperty) {
-            return entityProperty == null ? null : (long) entityProperty.getCode();
+    val userAgent: String
+        get() {
+            return if (useMobileAgent) getMobileUserAgent(useHentoidAgent, useWebviewAgent)
+            else getDesktopUserAgent(useHentoidAgent, useWebviewAgent)
+        }
+
+
+    fun updateFrom(jsonSite: JsonSite) {
+        if (jsonSite.useMobileAgent != null) useMobileAgent = jsonSite.useMobileAgent
+        if (jsonSite.useHentoidAgent != null) useHentoidAgent = jsonSite.useHentoidAgent
+        if (jsonSite.useWebviewAgent != null) useWebviewAgent = jsonSite.useWebviewAgent
+        if (jsonSite.hasBackupURLs != null) hasBackupURLs = jsonSite.hasBackupURLs
+        if (jsonSite.hasCoverBasedPageUpdates != null)
+            hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates
+        if (jsonSite.useCloudflare != null) useCloudflare = jsonSite.useCloudflare
+        if (jsonSite.hasUniqueBookId != null) hasUniqueBookId = jsonSite.hasUniqueBookId
+        if (jsonSite.parallelDownloadCap != null) parallelDownloadCap = jsonSite.parallelDownloadCap
+        if (jsonSite.requestsCapPerSecond != null)
+            requestsCapPerSecond = jsonSite.requestsCapPerSecond
+        if (jsonSite.bookCardDepth != null) bookCardDepth = jsonSite.bookCardDepth
+        if (jsonSite.bookCardExcludedParentClasses != null)
+            bookCardExcludedParentClasses =
+                java.util.HashSet(jsonSite.bookCardExcludedParentClasses)
+        if (jsonSite.galleryHeight != null) galleryHeight = jsonSite.galleryHeight
+        if (jsonSite.jsoupOutputSyntax != null) jsoupOutputSyntax = jsonSite.jsoupOutputSyntax
+    }
+
+    class SiteConverter : PropertyConverter<Site, Long?> {
+        override fun convertToEntityProperty(databaseValue: Long?): Site {
+            if (databaseValue == null) return NONE
+            for (site in Site.entries) if (site.code.toLong() == databaseValue) return site
+            return NONE
+        }
+
+        override fun convertToDatabaseValue(entityProperty: Site): Long {
+            return entityProperty.code.toLong()
+        }
+    }
+
+    companion object {
+        fun searchByCode(code: Long): Site {
+            for (s in Site.entries) if (s.code.toLong() == code) return s
+            return NONE
+        }
+
+        // Same as ValueOf with a fallback to NONE
+        // (vital for forward compatibility)
+        fun searchByName(name: String?): Site {
+            for (s in Site.entries) if (s.name.equals(name, ignoreCase = true)) return s
+            return NONE
+        }
+
+        fun searchByUrl(url: String?): Site? {
+            if (url.isNullOrEmpty()) {
+                Timber.w("Invalid url")
+                return null
+            }
+
+            for (s in Site.entries) if (s.code > 0 && getDomainFromUri(url).equals(
+                    getDomainFromUri(s.url), ignoreCase = true
+                )
+            ) return s
+
+            return NONE
         }
     }
 }

@@ -887,7 +887,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             ActionMode.VIEW_QUEUE -> goToQueue()
             ActionMode.READ -> {
                 val searchUrl =
-                    if (getStartSite().hasCoverBasedPageUpdates()) currentContent!!.coverImageUrl else ""
+                    if (getStartSite().hasCoverBasedPageUpdates) currentContent!!.coverImageUrl else ""
                 currentContent = dao.selectContentByUrlOrCover(
                     currentContent!!.site,
                     currentContent!!.url,
@@ -1230,7 +1230,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         currentContent = null
         Timber.i("Content Site, URL : %s, %s", onlineContent.site.code, onlineContent.url)
         val searchUrl =
-            if (getStartSite().hasCoverBasedPageUpdates()) onlineContent.coverImageUrl else ""
+            if (getStartSite().hasCoverBasedPageUpdates) onlineContent.coverImageUrl else ""
         // TODO manage DB calls concurrency to avoid getting read transaction conflicts
         val contentDB =
             dao.selectContentByUrlOrCover(onlineContent.site, onlineContent.url, searchUrl)
@@ -1253,9 +1253,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                             getStartUrl()
                         ),
                         requestHeadersList,
-                        getStartSite().useMobileAgent(),
-                        getStartSite().useHentoidAgent(),
-                        getStartSite().useWebviewAgent()
+                        getStartSite().useMobileAgent,
+                        getStartSite().useHentoidAgent,
+                        getStartSite().useWebviewAgent
                     )
                     val coverBody = onlineCover.body
                     if (coverBody != null) {

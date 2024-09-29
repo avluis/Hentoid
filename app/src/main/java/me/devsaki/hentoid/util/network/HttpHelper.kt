@@ -792,22 +792,22 @@ fun fetchBodyFast(
     val cookieStr = getCookies(
         url,
         requestHeadersList,
-        site.useMobileAgent(),
-        site.useHentoidAgent(),
-        site.useWebviewAgent()
+        site.useMobileAgent,
+        site.useHentoidAgent,
+        site.useWebviewAgent
     )
     if (cookieStr.isNotEmpty()) requestHeadersList.add(Pair(HEADER_COOKIE_KEY, cookieStr))
 
     val response = getOnlineResourceFast(
         url,
         requestHeadersList,
-        site.useMobileAgent(),
-        site.useHentoidAgent(),
-        site.useWebviewAgent()
+        site.useMobileAgent,
+        site.useHentoidAgent,
+        site.useWebviewAgent
     )
 
     // Raise exception if blocked by Cloudflare
-    if (503 == response.code && site.isUseCloudflare) throw CloudflareHelper.CloudflareProtectedException()
+    if (503 == response.code && site.useCloudflare) throw CloudflareHelper.CloudflareProtectedException()
 
     // Scram if the response is a redirection or an error
     if (response.code >= 300) throw IOException("Network error " + response.code + " @ " + url)

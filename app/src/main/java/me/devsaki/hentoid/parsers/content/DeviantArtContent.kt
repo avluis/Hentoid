@@ -114,9 +114,9 @@ class DeviantArtContent : BaseContentParser() {
             val cookieStr = getCookies(
                 url,
                 null,
-                Site.DEVIANTART.useMobileAgent(),
-                Site.DEVIANTART.useHentoidAgent(),
-                Site.DEVIANTART.useHentoidAgent()
+                Site.DEVIANTART.useMobileAgent,
+                Site.DEVIANTART.useHentoidAgent,
+                Site.DEVIANTART.useHentoidAgent
             )
             val call = DeviantArtServer.API.getDeviation(
                 uri.getQueryParameter("deviationid") ?: "",
@@ -164,9 +164,9 @@ class DeviantArtContent : BaseContentParser() {
         val cookieStr = getCookies(
             Site.DEVIANTART.url,
             null,
-            Site.DEVIANTART.useMobileAgent(),
-            Site.DEVIANTART.useHentoidAgent(),
-            Site.DEVIANTART.useHentoidAgent()
+            Site.DEVIANTART.useMobileAgent,
+            Site.DEVIANTART.useHentoidAgent,
+            Site.DEVIANTART.useHentoidAgent
         )
 
         val call = DeviantArtServer.API.getUserProfile(

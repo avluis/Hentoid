@@ -97,8 +97,8 @@ class EHentaiParser : ImageListParser {
             val imageMetadata = getMpvImage(
                 mpvInfo,
                 requestHeaders,
-                site.useHentoidAgent(),
-                site.useWebviewAgent()
+                site.useHentoidAgent,
+                site.useWebviewAgent
             )
             var imageUrl = imageMetadata.url
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
@@ -123,8 +123,8 @@ class EHentaiParser : ImageListParser {
             val doc = getOnlineDocument(
                 url,
                 requestHeaders,
-                site.useHentoidAgent(),
-                site.useWebviewAgent()
+                site.useHentoidAgent,
+                site.useWebviewAgent
             )
             if (doc != null) {
                 var imageUrl = getDisplayedImageUrl(doc).lowercase(Locale.getDefault())
@@ -202,8 +202,8 @@ class EHentaiParser : ImageListParser {
             val doc = getOnlineDocument(
                 url,
                 reqHeaders,
-                site.useHentoidAgent(),
-                site.useWebviewAgent()
+                site.useHentoidAgent,
+                site.useWebviewAgent
             )
             if (doc != null) {
                 val imageUrl = getDisplayedImageUrl(doc).lowercase(Locale.getDefault())
@@ -469,8 +469,8 @@ class EHentaiParser : ImageListParser {
              *
              *    B.2- Call the API to get the pictures URL
              */
-            val useHentoidAgent = Site.EHENTAI.useHentoidAgent()
-            val useWebviewAgent = Site.EHENTAI.useWebviewAgent()
+            val useHentoidAgent = Site.EHENTAI.useHentoidAgent
+            val useWebviewAgent = Site.EHENTAI.useWebviewAgent
 
             val galleryDoc = getOnlineDocument(
                 content.galleryUrl,

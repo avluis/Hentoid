@@ -42,7 +42,7 @@ class ManhwaParser : BaseChapteredImageListParser() {
             postOnlineDocument(
                 postUrl,
                 headers,
-                Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent(),
+                Site.MANHWA.useHentoidAgent, Site.MANHWA.useWebviewAgent,
                 "action=ajax_chap&post_id=$postId",
                 POST_MIME_TYPE
             )?.let { return it.select(selector.selectors[0]) }
@@ -60,8 +60,7 @@ class ManhwaParser : BaseChapteredImageListParser() {
         getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
-            content.site.useHentoidAgent(),
-            content.site.useWebviewAgent()
+            content.site.useHentoidAgent, content.site.useWebviewAgent
         )?.let { doc ->
             val images: List<Element> = doc.select(".reading-content img")
             val urls = images.map { getImgSrc(it) }.filterNot { it.isEmpty() }

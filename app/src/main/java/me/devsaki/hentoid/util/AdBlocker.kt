@@ -243,9 +243,9 @@ class AdBlocker(val site: Site) {
                 val response = getOnlineResourceFast(
                     url,
                     requestHeadersList,
-                    site.useMobileAgent(),
-                    site.useHentoidAgent(),
-                    site.useWebviewAgent()
+                    site.useMobileAgent,
+                    site.useHentoidAgent,
+                    site.useWebviewAgent
                 )
                 if (response.code >= 400) {
                     Timber.d(">> grey file KO (%d) : %s", response.code, url)

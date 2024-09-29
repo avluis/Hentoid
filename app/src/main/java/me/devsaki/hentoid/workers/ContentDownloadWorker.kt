@@ -297,7 +297,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         val isCase1 = images.isEmpty()
         val isCase2 = nbErrors > 0 && nbErrors == images.size
-        val isCase3 = nbErrors > 0 && content.site.hasBackupURLs()
+        val isCase3 = nbErrors > 0 && content.site.hasBackupURLs
         val isCase4 =
             content.manuallyMerged && content.chaptersList.any { it.imageList.all { img -> img.status == StatusContent.ERROR } }
 
@@ -662,11 +662,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             if (img.downloadParams.length > 2) parseDownloadParams(img.downloadParams).toMutableMap()
             else HashMap()
         // Add referer if unset
-        if (!downloadParams.containsKey(HEADER_REFERER_KEY)) downloadParams[HEADER_REFERER_KEY] =
-            content.galleryUrl
+        if (!downloadParams.containsKey(HEADER_REFERER_KEY))
+            downloadParams[HEADER_REFERER_KEY] = content.galleryUrl
         // Add cookies if unset or if the site needs fresh cookies
-        if (!downloadParams.containsKey(HEADER_COOKIE_KEY) || content.site.isUseCloudflare) downloadParams[HEADER_COOKIE_KEY] =
-            getCookies(img.url)
+        if (!downloadParams.containsKey(HEADER_COOKIE_KEY) || content.site.useCloudflare)
+            downloadParams[HEADER_COOKIE_KEY] = getCookies(img.url)
         img.downloadParams = serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
     }
 
@@ -1240,9 +1240,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             "$cause; HTTP statusCode=$statusCode; message=$message"
         )
         // Handle cloudflare blocks
-        if (request.site.isUseCloudflare && 503 == statusCode && !isCloudFlareBlocked) {
-            isCloudFlareBlocked =
-                true // prevent associated events & notifs to be fired more than once
+        if (request.site.useCloudflare && 503 == statusCode && !isCloudFlareBlocked) {
+            // prevent associated events & notifs to be fired more than once
+            isCloudFlareBlocked = true
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.STALE_CREDENTIALS))
             dao.clearDownloadParams(contentId)

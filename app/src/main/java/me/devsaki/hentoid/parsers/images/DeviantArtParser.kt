@@ -90,9 +90,9 @@ class DeviantArtParser : BaseImageListParser() {
             val cookieStr = getCookies(
                 Site.DEVIANTART.url,
                 null,
-                Site.DEVIANTART.useMobileAgent(),
-                Site.DEVIANTART.useHentoidAgent(),
-                Site.DEVIANTART.useHentoidAgent()
+                Site.DEVIANTART.useMobileAgent,
+                Site.DEVIANTART.useHentoidAgent,
+                Site.DEVIANTART.useHentoidAgent
             )
 
             val result: MutableList<ImageFile> = ArrayList()
@@ -145,8 +145,8 @@ class DeviantArtParser : BaseImageListParser() {
             val urls = getOnlineDocument(
                 processedUrl,
                 fetchHeaders(onlineContent),
-                Site.DEVIANTART.useHentoidAgent(),
-                Site.DEVIANTART.useWebviewAgent()
+                Site.DEVIANTART.useHentoidAgent,
+                Site.DEVIANTART.useWebviewAgent
             )?.let {
                 parseDeviation(it.body())
             }
@@ -165,8 +165,8 @@ class DeviantArtParser : BaseImageListParser() {
             getOnlineDocument(
                 processedUrl,
                 fetchHeaders(onlineContent),
-                Site.DEVIANTART.useHentoidAgent(),
-                Site.DEVIANTART.useWebviewAgent()
+                Site.DEVIANTART.useHentoidAgent,
+                Site.DEVIANTART.useWebviewAgent
             )?.let {
                 result.addAll(parseGallery(it.body()).imageList)
             }
@@ -181,8 +181,8 @@ class DeviantArtParser : BaseImageListParser() {
         getOnlineDocument(
             url,
             requestHeaders,
-            Site.DEVIANTART.useHentoidAgent(),
-            Site.DEVIANTART.useWebviewAgent()
+            Site.DEVIANTART.useHentoidAgent,
+            Site.DEVIANTART.useWebviewAgent
         )?.let {
             val urls = parseDeviation(it.body())
             return Pair(urls.second, urls.third)

@@ -53,9 +53,9 @@ class PixivParser : BaseImageListParser() {
     @Throws(Exception::class)
     private fun getPages(onlineContent: Content, storedContent: Content?): List<ImageFile> {
         try {
-            val useMobileAgent = Site.PIXIV.useMobileAgent()
-            val useHentoidAgent = Site.PIXIV.useHentoidAgent()
-            val useWebviewAgent = Site.PIXIV.useWebviewAgent()
+            val useMobileAgent = Site.PIXIV.useMobileAgent
+            val useHentoidAgent = Site.PIXIV.useHentoidAgent
+            val useWebviewAgent = Site.PIXIV.useWebviewAgent
             val cookieStr = getCookies(
                 onlineContent.galleryUrl, null,
                 useMobileAgent, useHentoidAgent, useWebviewAgent

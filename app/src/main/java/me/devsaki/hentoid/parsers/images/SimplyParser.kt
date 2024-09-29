@@ -20,8 +20,8 @@ class SimplyParser : BaseImageListParser() {
         var doc = getOnlineDocument(
             content.galleryUrl,
             headers,
-            Site.SIMPLY.useHentoidAgent(),
-            Site.SIMPLY.useWebviewAgent()
+            Site.SIMPLY.useHentoidAgent,
+            Site.SIMPLY.useWebviewAgent
         )
         if (doc != null) {
             val page = doc.select(".image-wrapper").first() ?: return result
@@ -39,8 +39,8 @@ class SimplyParser : BaseImageListParser() {
         doc = getOnlineDocument(
             viewerUrl,
             headers,
-            Site.SIMPLY.useHentoidAgent(),
-            Site.SIMPLY.useWebviewAgent()
+            Site.SIMPLY.useHentoidAgent,
+            Site.SIMPLY.useWebviewAgent
         )
         if (doc != null) {
             val jsonData =

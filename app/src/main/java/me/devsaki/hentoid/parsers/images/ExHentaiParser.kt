@@ -84,8 +84,8 @@ class ExHentaiParser : ImageListParser {
              *
              *    B.2- Call the API to get the pictures URL
              */
-            val useHentoidAgent = Site.EXHENTAI.useHentoidAgent()
-            val useWebviewAgent = Site.EXHENTAI.useWebviewAgent()
+            val useHentoidAgent = Site.EXHENTAI.useHentoidAgent
+            val useWebviewAgent = Site.EXHENTAI.useWebviewAgent
             val galleryDoc = getOnlineDocument(
                 content.galleryUrl,
                 headers,
