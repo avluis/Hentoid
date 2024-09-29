@@ -16,6 +16,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IntroSlide02Binding
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.checkExternalStorageReadWritePermission
 
 class PermissionIntroFragment : Fragment(R.layout.intro_slide_02), SlidePolicy {
@@ -63,13 +64,13 @@ class PermissionIntroFragment : Fragment(R.layout.intro_slide_02), SlidePolicy {
             modeSelect.addOnButtonCheckedListener { _, _, b ->
                 if (!b) return@addOnButtonCheckedListener
 
-                Preferences.setBrowserMode(modeBrowser.isChecked)
+                Settings.isBrowserMode = modeBrowser.isChecked
                 descTxt.setText(
                     if (modeBrowser.isChecked) R.string.slide_02_browser_mode_description
                     else R.string.slide_02_library_mode_description
                 )
             }
-            modeSelect.check(if (Preferences.isBrowserMode()) R.id.mode_browser else R.id.mode_library)
+            modeSelect.check(if (Settings.isBrowserMode) R.id.mode_browser else R.id.mode_library)
         }
 
         return binding?.root

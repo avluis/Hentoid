@@ -17,6 +17,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.getFixedContext
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -82,7 +83,7 @@ internal fun Context.isFinishing(): Boolean {
 }
 
 fun Context.convertLocaleToEnglish() {
-    if (Preferences.isForceEnglishLocale()) {
+    if (Settings.isForceEnglishLocale) {
         val config = this.resources.configuration
         if (config.locale != Locale.ENGLISH) {
             val englishLocale = Locale("en")

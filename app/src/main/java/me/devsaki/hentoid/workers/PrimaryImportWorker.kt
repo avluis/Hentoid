@@ -44,6 +44,7 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.exception.ParseException
@@ -611,7 +612,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         if (cleaned) persistJson(context, content)
                     }
                     if (renumberPages) renumberPages(context, content, contentImages, log)
-                } else if (Preferences.isImportQueueEmptyBooks()
+                } else if (Settings.isImportQueueEmptyBooks
                     && !content.manuallyMerged && content.downloadMode == DownloadMode.DOWNLOAD
                 ) { // If no image file found, it goes in the errors queue
                     if (!isInQueue(content.status)) content.status = StatusContent.ERROR

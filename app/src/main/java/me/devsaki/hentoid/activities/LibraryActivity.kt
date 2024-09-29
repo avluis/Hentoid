@@ -534,7 +534,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private fun updateAlertBanner() {
         binding?.alertBanner?.apply {
             // Remind user that the app is in browser mode
-            if (Preferences.isBrowserMode()) {
+            if (Settings.isBrowserMode) {
                 alertTxt.setText(R.string.alert_browser_mode)
                 alertTxt.visibility = View.VISIBLE
                 alertIcon.visibility = View.GONE
@@ -894,7 +894,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 viewModel.setGrouping(Grouping.FLAT.id)
             }
 
-            Preferences.Key.BROWSER_MODE -> updateAlertBanner()
+            Settings.Key.BROWSER_MODE -> updateAlertBanner()
             else -> {}
         }
     }

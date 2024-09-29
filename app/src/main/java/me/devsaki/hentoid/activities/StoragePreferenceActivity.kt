@@ -31,6 +31,7 @@ import me.devsaki.hentoid.fragments.preferences.DownloadStrategyDialogFragment
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
 import me.devsaki.hentoid.fragments.preferences.StorageUsageDialogFragment
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
@@ -152,8 +153,8 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
     private fun refreshDisplay() {
         binding?.apply {
-            browseModeWarning.isVisible = Preferences.isBrowserMode()
-            browseModeImg.isVisible = Preferences.isBrowserMode()
+            browseModeWarning.isVisible = Settings.isBrowserMode
+            browseModeImg.isVisible = Settings.isBrowserMode
 
             primaryVolume1.isVisible =
                 Preferences.getStorageUri(StorageLocation.PRIMARY_1).isNotEmpty()

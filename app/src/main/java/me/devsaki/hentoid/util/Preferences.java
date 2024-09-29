@@ -68,7 +68,7 @@ public final class Preferences {
         Map<String, Object> result = new HashMap<>(sharedPreferences.getAll());
 
         // Remove non-exportable settings that make no sense on another instance
-        result.remove(Key.FIRST_RUN);
+        result.remove(Settings.Key.FIRST_RUN);
         result.remove(Settings.Key.WELCOME_DONE);
         result.remove(Key.PRIMARY_STORAGE_URI);
         result.remove(Key.EXTERNAL_LIBRARY_URI);
@@ -119,30 +119,6 @@ public final class Preferences {
 
 
     // ======= PROPERTIES GETTERS / SETTERS
-
-    public static boolean isFirstRun() {
-        return getBoolPref(Key.FIRST_RUN, Default.FIRST_RUN);
-    }
-
-    public static void setIsFirstRun(boolean isFirstRun) {
-        sharedPreferences.edit().putBoolean(Key.FIRST_RUN, isFirstRun).apply();
-    }
-
-    public static boolean isBrowserMode() {
-        return getBoolPref(Key.BROWSER_MODE, false);
-    }
-
-    public static void setBrowserMode(boolean value) {
-        sharedPreferences.edit().putBoolean(Key.BROWSER_MODE, value).apply();
-    }
-
-    public static boolean isImportQueueEmptyBooks() {
-        return getBoolPref(Key.IMPORT_QUEUE_EMPTY, Default.IMPORT_QUEUE_EMPTY);
-    }
-
-    public static boolean isForceEnglishLocale() {
-        return getBoolPref(Key.FORCE_ENGLISH, Default.FORCE_ENGLISH);
-    }
 
     public static int getContentSortField() {
         return sharedPreferences.getInt(Key.ORDER_CONTENT_FIELD, Default.ORDER_CONTENT_FIELD);
@@ -770,13 +746,10 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        public static final String BROWSER_MODE = "browser_mode";
         public static final String APP_LOCK = "pref_app_lock";
         public static final String APP_PREVIEW = "pref_app_preview";
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         static final String VERSION_KEY = "prefs_version";
-        public static final String FORCE_ENGLISH = "force_english";
-        public static final String IMPORT_QUEUE_EMPTY = "pref_import_queue_empty";
         static final String QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String ORDER_CONTENT_FIELD = "pref_order_content_field";
         static final String ORDER_CONTENT_DESC = "pref_order_content_desc";
@@ -786,7 +759,6 @@ public final class Preferences {
         static final String ORDER_RULE_DESC = "pref_order_rule_desc";
         static final String SEARCH_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String SEARCH_COUNT_ATTRIBUTE_RESULTS = "pref_order_attribute_count";
-        static final String FIRST_RUN = "pref_first_run";
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
         public static final String ENDLESS_SCROLL = "pref_endless_scroll";
         public static final String TOP_FAB = "pref_top_fab";
@@ -901,7 +873,6 @@ public final class Preferences {
         static final int PRIMARY_STORAGE_FILL_METHOD = Constant.STORAGE_FILL_BALANCE_FREE;
         static final int PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = 90;
 
-        static final boolean FORCE_ENGLISH = false;
         static final int QUANTITY_PER_PAGE = 20;
         public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
         public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
@@ -911,11 +882,9 @@ public final class Preferences {
         static final boolean ORDER_RULE_DESC = false;
         static final int SEARCH_ORDER_ATTRIBUTES = Constant.SEARCH_ORDER_ATTRIBUTES_COUNT;
         static final boolean SEARCH_COUNT_ATTRIBUTE_RESULTS = true;
-        static final boolean FIRST_RUN = true;
         static final boolean ENDLESS_SCROLL = true;
         static final boolean TOP_FAB = true;
         static final int MEMORY_ALERT = 110;
-        static final boolean IMPORT_QUEUE_EMPTY = false;
         static final boolean EXTERNAL_LIBRARY_DELETE = false;
         static final int FOLDER_NAMING_CONTENT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean WEBVIEW_OVERRIDE_OVERVIEW = false;

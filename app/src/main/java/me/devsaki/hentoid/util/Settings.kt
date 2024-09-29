@@ -19,6 +19,9 @@ object Settings {
     /**
      * FIELDS
      */
+    // IMPORT
+    val isImportQueueEmptyBooks: Boolean by BoolSetting(Key.IMPORT_QUEUE_EMPTY, false)
+
     // LIBRARY
     var libraryDisplay: Int by IntSetting(Key.LIBRARY_DISPLAY, Value.LIBRARY_DISPLAY_DEFAULT)
     var libraryDisplayGridFav: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_FAV, true)
@@ -89,11 +92,14 @@ object Settings {
     var achievements: ULong by ULongSetting(Key.ACHIEVEMENTS, 0UL)
     var nbAIRescale: Int by IntSetting(Key.ACHIEVEMENTS_NB_AI_RESCALE, 0)
 
-    // MISC
+    // APP-WIDE
+    var isFirstRun: Boolean by BoolSetting(Key.FIRST_RUN, true)
     var isFirstRunProcessComplete: Boolean by BoolSetting(Key.WELCOME_DONE, false)
     var isRefreshJson1Complete: Boolean by BoolSetting(Key.REFRESH_JSON_1_DONE, false)
     val isAnalyticsEnabled: Boolean by BoolSetting(Key.ANALYTICS_PREFERENCE, true)
     val isAutomaticUpdateEnabled: Boolean by BoolSetting("pref_check_updates", true)
+    var isBrowserMode: Boolean by BoolSetting(Key.BROWSER_MODE, false)
+    val isForceEnglishLocale: Boolean by BoolSetting(Key.FORCE_ENGLISH, false)
     var isTextMenuOn: Boolean by BoolSetting(Key.TEXT_SELECT_MENU, false)
 
 
@@ -184,9 +190,14 @@ object Settings {
 
     // Consts
     object Key {
+        const val FIRST_RUN = "pref_first_run"
         const val WELCOME_DONE = "pref_welcome_done"
         const val REFRESH_JSON_1_DONE = "refresh_json_1_done"
         const val ANALYTICS_PREFERENCE = "pref_analytics_preference";
+        const val BROWSER_MODE = "browser_mode"
+        const val FORCE_ENGLISH = "force_english"
+
+        const val IMPORT_QUEUE_EMPTY = "pref_import_queue_empty"
 
         const val LIBRARY_DISPLAY = "pref_library_display"
         const val READER_COLOR_DEPTH = "viewer_color_depth"

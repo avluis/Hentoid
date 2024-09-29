@@ -31,6 +31,7 @@ import me.devsaki.hentoid.util.PickFolderContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ProcessFolderResult
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
@@ -278,7 +279,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     private fun pickFolder() {
         // Make sure permissions are set
         if (requireActivity().requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION)) {
-            Preferences.setBrowserMode(false)
+            Settings.isBrowserMode = false
             pickFolder.launch(location) // Run folder picker
         }
     }

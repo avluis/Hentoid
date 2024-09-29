@@ -120,7 +120,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.COLOR_THEME -> onPrefColorThemeChanged()
             Preferences.Key.DL_THREADS_QUANTITY_LISTS,
             Preferences.Key.APP_PREVIEW,
-            Preferences.Key.FORCE_ENGLISH,
+            Settings.Key.FORCE_ENGLISH,
             Settings.Key.TEXT_SELECT_MENU,
             Settings.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
 
