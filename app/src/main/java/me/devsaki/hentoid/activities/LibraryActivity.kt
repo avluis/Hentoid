@@ -910,12 +910,12 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         val targetGrouping = Grouping.searchById(targetGroupingId)
         if (grouping.id != targetGroupingId) {
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
-            if (!targetGrouping.canReorderBooks && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
-                Preferences.setContentSortField(Preferences.Default.ORDER_CONTENT_FIELD)
+            if (!targetGrouping.canReorderBooks && Settings.Value.ORDER_FIELD_CUSTOM == Settings.contentSortField) {
+                Settings.contentSortField = Settings.Default.ORDER_CONTENT_FIELD
             }
             // Reset custom group ordering if reverting to a grouping where that doesn't apply
-            if (!targetGrouping.canReorderGroups && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getGroupSortField()) {
-                Preferences.setGroupSortField(Preferences.Default.ORDER_GROUP_FIELD)
+            if (!targetGrouping.canReorderGroups && Settings.Value.ORDER_FIELD_CUSTOM == Settings.groupSortField) {
+                Settings.groupSortField = Settings.Default.ORDER_GROUP_FIELD
             }
 
             // Go back to groups tab if we're not
@@ -1340,19 +1340,19 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         @StringRes
         fun getNameFromFieldCode(prefFieldCode: Int): Int {
             return when (prefFieldCode) {
-                Preferences.Constant.ORDER_FIELD_TITLE -> R.string.sort_title
-                Preferences.Constant.ORDER_FIELD_ARTIST -> R.string.sort_artist
-                Preferences.Constant.ORDER_FIELD_NB_PAGES -> R.string.sort_pages
-                Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> R.string.sort_dl_date
-                Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> R.string.sort_dl_completion_date
-                Preferences.Constant.ORDER_FIELD_UPLOAD_DATE -> R.string.sort_uplodad_date
-                Preferences.Constant.ORDER_FIELD_READ_DATE -> R.string.sort_read_date
-                Preferences.Constant.ORDER_FIELD_READS -> R.string.sort_reads
-                Preferences.Constant.ORDER_FIELD_SIZE -> R.string.sort_size
-                Preferences.Constant.ORDER_FIELD_READ_PROGRESS -> R.string.sort_reading_progress
-                Preferences.Constant.ORDER_FIELD_CUSTOM -> R.string.sort_custom
-                Preferences.Constant.ORDER_FIELD_RANDOM -> R.string.sort_random
-                Preferences.Constant.ORDER_FIELD_CHILDREN -> R.string.sort_books
+                Settings.Value.ORDER_FIELD_TITLE -> R.string.sort_title
+                Settings.Value.ORDER_FIELD_ARTIST -> R.string.sort_artist
+                Settings.Value.ORDER_FIELD_NB_PAGES -> R.string.sort_pages
+                Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> R.string.sort_dl_date
+                Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> R.string.sort_dl_completion_date
+                Settings.Value.ORDER_FIELD_UPLOAD_DATE -> R.string.sort_uplodad_date
+                Settings.Value.ORDER_FIELD_READ_DATE -> R.string.sort_read_date
+                Settings.Value.ORDER_FIELD_READS -> R.string.sort_reads
+                Settings.Value.ORDER_FIELD_SIZE -> R.string.sort_size
+                Settings.Value.ORDER_FIELD_READ_PROGRESS -> R.string.sort_reading_progress
+                Settings.Value.ORDER_FIELD_CUSTOM -> R.string.sort_custom
+                Settings.Value.ORDER_FIELD_RANDOM -> R.string.sort_random
+                Settings.Value.ORDER_FIELD_CHILDREN -> R.string.sort_books
                 else -> R.string.sort_invalid
             }
         }

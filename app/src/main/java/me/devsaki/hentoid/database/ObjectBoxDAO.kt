@@ -35,6 +35,7 @@ import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.widget.ContentSearchManager.Companion.searchContentIds
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -167,7 +168,7 @@ class ObjectBoxDAO : CollectionDAO {
         val sourceAttr: MutableSet<Attribute> = HashSet()
         if (source != null) sourceAttr.add(Attribute(source))
         bundle.attributes = buildSearchUri(sourceAttr, "", 0, 0).toString()
-        bundle.sortField = Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE
+        bundle.sortField = Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE
         return ObjectBoxLiveData(
             ObjectBoxDB.selectContentUniversalQ(
                 bundle,
@@ -204,7 +205,7 @@ class ObjectBoxDAO : CollectionDAO {
         bundle.groupId = groupId
         bundle.location = location.value
         bundle.contentType = contentType.value
-        bundle.sortField = Preferences.Constant.ORDER_FIELD_NONE
+        bundle.sortField = Settings.Value.ORDER_FIELD_NONE
         val livedata = ObjectBoxLiveData(
             ObjectBoxDB.selectContentSearchContentQ(
                 bundle,
@@ -246,7 +247,7 @@ class ObjectBoxDAO : CollectionDAO {
         searchBundle: ContentSearchBundle,
         metadata: Set<Attribute>
     ): LiveData<PagedList<Content>> {
-        val isCustomOrder = searchBundle.sortField == Preferences.Constant.ORDER_FIELD_CUSTOM
+        val isCustomOrder = searchBundle.sortField == Settings.Value.ORDER_FIELD_CUSTOM
         val contentRetrieval: Pair<Long, DataSource.Factory<Int, Content>> =
             if (isCustomOrder) getPagedContentByList(
                 isUniversal,
@@ -270,7 +271,7 @@ class ObjectBoxDAO : CollectionDAO {
         searchBundle: ContentSearchBundle,
         metadata: Set<Attribute>
     ): Pair<Long, DataSource.Factory<Int, Content>> {
-        val isRandom = searchBundle.sortField == Preferences.Constant.ORDER_FIELD_RANDOM
+        val isRandom = searchBundle.sortField == Settings.Value.ORDER_FIELD_RANDOM
         val query: Query<Content> = if (isUniversal) {
             ObjectBoxDB.selectContentUniversalQ(
                 searchBundle,
@@ -568,7 +569,7 @@ class ObjectBoxDAO : CollectionDAO {
         // === ORDERING
 
         // Order by number of children (ObjectBox can't do that natively)
-        if (Preferences.Constant.ORDER_FIELD_CHILDREN == orderField) {
+        if (Settings.Value.ORDER_FIELD_CHILDREN == orderField) {
             val result = MediatorLiveData<List<Group>>()
             result.addSource(workingData) { groups ->
                 val sortOrder = if (orderDesc) -1 else 1
@@ -579,7 +580,7 @@ class ObjectBoxDAO : CollectionDAO {
         }
 
         // Order by latest download date of children (ObjectBox can't do that natively)
-        if (Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE == orderField) {
+        if (Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE == orderField) {
             val result = MediatorLiveData<List<Group>>()
             result.addSource(workingData) { groups ->
                 val sortOrder = if (orderDesc) -1 else 1

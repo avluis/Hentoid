@@ -10,8 +10,8 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchCriteria
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.long
@@ -165,9 +165,9 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
         var query by bundle.string(default = "")
 
-        var sortField by bundle.int(default = Preferences.getContentSortField())
+        var sortField by bundle.int(default = Settings.contentSortField)
 
-        var sortDesc by bundle.boolean(default = Preferences.isContentSortDesc())
+        var sortDesc by bundle.boolean(default = Settings.isContentSortDesc)
 
         var attributes by bundle.string(default = "") // Stored using a search URI for convenience
 

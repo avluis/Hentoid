@@ -29,8 +29,8 @@ class AllPornComicParser : BaseChapteredImageListParser() {
         getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(chp.url),
-            content.site.useHentoidAgent(),
-            content.site.useWebviewAgent()
+            content.site.useHentoidAgent,
+            content.site.useWebviewAgent
         )?.let { doc ->
             progressPlus(1f)
             val images = doc.select("[class^=page-break] img")

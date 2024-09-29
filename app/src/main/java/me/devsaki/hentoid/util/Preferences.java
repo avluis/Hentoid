@@ -120,54 +120,6 @@ public final class Preferences {
 
     // ======= PROPERTIES GETTERS / SETTERS
 
-    public static int getContentSortField() {
-        return sharedPreferences.getInt(Key.ORDER_CONTENT_FIELD, Default.ORDER_CONTENT_FIELD);
-    }
-
-    public static void setContentSortField(int sortField) {
-        sharedPreferences.edit().putInt(Key.ORDER_CONTENT_FIELD, sortField).apply();
-    }
-
-    public static boolean isContentSortDesc() {
-        return getBoolPref(Key.ORDER_CONTENT_DESC, Default.ORDER_CONTENT_DESC);
-    }
-
-    public static void setContentSortDesc(boolean isDesc) {
-        sharedPreferences.edit().putBoolean(Key.ORDER_CONTENT_DESC, isDesc).apply();
-    }
-
-    public static int getGroupSortField() {
-        return sharedPreferences.getInt(Key.ORDER_GROUP_FIELD, Default.ORDER_GROUP_FIELD);
-    }
-
-    public static void setGroupSortField(int sortField) {
-        sharedPreferences.edit().putInt(Key.ORDER_GROUP_FIELD, sortField).apply();
-    }
-
-    public static boolean isGroupSortDesc() {
-        return getBoolPref(Key.ORDER_GROUP_DESC, Default.ORDER_GROUP_DESC);
-    }
-
-    public static void setGroupSortDesc(boolean isDesc) {
-        sharedPreferences.edit().putBoolean(Key.ORDER_GROUP_DESC, isDesc).apply();
-    }
-
-    public static int getRuleSortField() {
-        return sharedPreferences.getInt(Key.ORDER_RULE_FIELD, Default.ORDER_RULE_FIELD);
-    }
-
-    public static void setRuleSortField(int sortField) {
-        sharedPreferences.edit().putInt(Key.ORDER_RULE_FIELD, sortField).apply();
-    }
-
-    public static boolean isRuleSortDesc() {
-        return getBoolPref(Key.ORDER_RULE_DESC, Default.ORDER_RULE_DESC);
-    }
-
-    public static void setRuleSortDesc(boolean isDesc) {
-        sharedPreferences.edit().putBoolean(Key.ORDER_RULE_DESC, isDesc).apply();
-    }
-
     public static int getSearchAttributesSortOrder() {
         return getIntPref(Key.SEARCH_ORDER_ATTRIBUTE_LISTS, Default.SEARCH_ORDER_ATTRIBUTES);
     }
@@ -751,12 +703,6 @@ public final class Preferences {
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         static final String VERSION_KEY = "prefs_version";
         static final String QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
-        static final String ORDER_CONTENT_FIELD = "pref_order_content_field";
-        static final String ORDER_CONTENT_DESC = "pref_order_content_desc";
-        static final String ORDER_GROUP_FIELD = "pref_order_group_field";
-        static final String ORDER_GROUP_DESC = "pref_order_group_desc";
-        static final String ORDER_RULE_FIELD = "pref_order_rule_field";
-        static final String ORDER_RULE_DESC = "pref_order_rule_desc";
         static final String SEARCH_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String SEARCH_COUNT_ATTRIBUTE_RESULTS = "pref_order_attribute_count";
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
@@ -874,12 +820,6 @@ public final class Preferences {
         static final int PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = 90;
 
         static final int QUANTITY_PER_PAGE = 20;
-        public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
-        public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
-        public static final int ORDER_RULE_FIELD = Constant.ORDER_FIELD_SOURCE_NAME;
-        static final boolean ORDER_CONTENT_DESC = false;
-        static final boolean ORDER_GROUP_DESC = false;
-        static final boolean ORDER_RULE_DESC = false;
         static final int SEARCH_ORDER_ATTRIBUTES = Constant.SEARCH_ORDER_ATTRIBUTES_COUNT;
         static final boolean SEARCH_COUNT_ATTRIBUTE_RESULTS = true;
         static final boolean ENDLESS_SCROLL = true;
@@ -983,24 +923,6 @@ public final class Preferences {
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
 
         public static final int ORDER_CONTENT_FAVOURITE = -2; // Artificial order created for clarity purposes
-
-        // Sorting field codes for content and group
-        public static final int ORDER_FIELD_NONE = -1;
-        public static final int ORDER_FIELD_TITLE = 0;
-        public static final int ORDER_FIELD_ARTIST = 1;
-        public static final int ORDER_FIELD_NB_PAGES = 2;
-        public static final int ORDER_FIELD_DOWNLOAD_PROCESSING_DATE = 3;
-        public static final int ORDER_FIELD_UPLOAD_DATE = 4;
-        public static final int ORDER_FIELD_READ_DATE = 5;
-        public static final int ORDER_FIELD_READS = 6;
-        public static final int ORDER_FIELD_SIZE = 7;
-        public static final int ORDER_FIELD_CHILDREN = 8; // Groups only
-        public static final int ORDER_FIELD_READ_PROGRESS = 9;
-        public static final int ORDER_FIELD_DOWNLOAD_COMPLETION_DATE = 10;
-        public static final int ORDER_FIELD_SOURCE_NAME = 11; // Rules only
-        public static final int ORDER_FIELD_TARGET_NAME = 12; // Rules only
-        public static final int ORDER_FIELD_CUSTOM = 98;
-        public static final int ORDER_FIELD_RANDOM = 99;
 
         public static final int SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0;
         static final int SEARCH_ORDER_ATTRIBUTES_COUNT = 1;

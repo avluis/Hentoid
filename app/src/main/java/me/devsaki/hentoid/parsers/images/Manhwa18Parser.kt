@@ -34,8 +34,8 @@ class Manhwa18Parser : BaseChapteredImageListParser() {
         getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
-            content.site.useHentoidAgent(),
-            content.site.useWebviewAgent()
+            content.site.useHentoidAgent,
+            content.site.useWebviewAgent
         )?.let { doc ->
             val images = doc.select("#chapter-content img")
             val imageUrls = images.mapNotNull { getImgSrc(it) }

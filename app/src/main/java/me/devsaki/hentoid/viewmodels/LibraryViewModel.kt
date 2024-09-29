@@ -37,6 +37,7 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.SearchCriteria
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
@@ -148,8 +149,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     private fun doSearchContent() {
         // Update search properties set directly through Preferences
-        contentSearchManager.setContentSortField(Preferences.getContentSortField())
-        contentSearchManager.setContentSortDesc(Preferences.isContentSortDesc())
+        contentSearchManager.setContentSortField(Settings.contentSortField)
+        contentSearchManager.setContentSortDesc(Settings.isContentSortDesc)
         if (Preferences.getGroupingDisplay() == Grouping.FLAT) contentSearchManager.setGroup(null)
         currentSource?.let {
             libraryPaged.removeSource(it)
@@ -218,8 +219,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     private fun doSearchGroup() {
         // Update search properties set directly through Preferences
-        groupSearchManager.setSortField(Preferences.getGroupSortField())
-        groupSearchManager.setSortDesc(Preferences.isGroupSortDesc())
+        groupSearchManager.setSortField(Settings.groupSortField)
+        groupSearchManager.setSortDesc(Settings.isGroupSortDesc)
         groupSearchManager.setGrouping(Preferences.getGroupingDisplay())
         groupSearchManager.setArtistGroupVisibility(Preferences.getArtistGroupVisibility())
         currentGroupsSource?.let { groups.removeSource(it) }
@@ -354,8 +355,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (!forceRefresh && group == currentGroup) return
 
         // Reset content sorting to TITLE when reaching the Ungrouped group with CUSTOM sorting (can't work)
-        if (Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField() && (!group.grouping.canReorderBooks || group.isUngroupedGroup))
-            Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_TITLE)
+        if (Settings.Value.ORDER_FIELD_CUSTOM == Settings.contentSortField && (!group.grouping.canReorderBooks || group.isUngroupedGroup))
+            Settings.contentSortField = Settings.Value.ORDER_FIELD_TITLE
         this.group.postValue(group)
         contentSearchManager.setGroup(group)
         newContentSearch.value = true
@@ -429,11 +430,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             theContent.readPagesCount = 0
             theContent.lastReadPageIndex = 0
             theContent.lastReadDate = 0
-            val imgs: List<ImageFile>? = theContent.imageFiles
-            if (imgs != null) {
-                for (img in imgs) img.read = false
-                dao.insertImageFiles(imgs)
-            }
+            val imgs: List<ImageFile> = theContent.imageFiles
+            for (img in imgs) img.read = false
+            dao.insertImageFiles(imgs)
             persistJson(getApplication(), theContent)
             dao.insertContentCore(theContent)
             return

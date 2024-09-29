@@ -17,7 +17,7 @@ import com.mikepenz.fastadapter.select.getSelectExtension
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.IncludeRulesControlsBinding
 import me.devsaki.hentoid.enums.AttributeType
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewholders.TextItem
@@ -95,12 +95,12 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
         }
         binding.let {
             it.fieldList.adapter = fieldFastAdapter
-            fieldItemAdapter.set(getSortFields(context, Preferences.getRuleSortField()))
+            fieldItemAdapter.set(getSortFields(context, Settings.ruleSortField))
 
             it.tagFilter.adapter = typeFastAdapter
             it.sortAscDesc.addOnButtonCheckedListener { _, i, b ->
                 if (!b) return@addOnButtonCheckedListener
-                Preferences.setRuleSortDesc(i == R.id.sort_descending)
+                Settings.isRuleSortDesc = (i == R.id.sort_descending)
                 viewModel.loadRules()
             }
         }
@@ -121,7 +121,7 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
 
     private fun updateSortDirection() {
         binding.let {
-            val currentPrefSortDesc = Preferences.isRuleSortDesc()
+            val currentPrefSortDesc = Settings.isRuleSortDesc
             it.sortAscDesc.check(if (currentPrefSortDesc) R.id.sort_descending else R.id.sort_ascending)
         }
     }
@@ -151,7 +151,7 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
         val item = selectedItems.first()
         val code = item.getObject()
         if (code != null) {
-            Preferences.setRuleSortField(code)
+            Settings.ruleSortField = code
             viewModel.loadRules()
         }
         updateSortDirection()
@@ -161,13 +161,13 @@ class RuleBottomPanelFragment : BottomSheetDialogFragment() {
         return listOf(
             TextItem(
                 context.resources.getString(R.string.meta_rule_source),
-                Preferences.Constant.ORDER_FIELD_SOURCE_NAME,
-                false, (Preferences.Constant.ORDER_FIELD_SOURCE_NAME == currentSortField)
+                Settings.Value.ORDER_FIELD_SOURCE_NAME,
+                false, (Settings.Value.ORDER_FIELD_SOURCE_NAME == currentSortField)
             ),
             TextItem(
                 context.resources.getString(R.string.meta_rule_target),
-                Preferences.Constant.ORDER_FIELD_TARGET_NAME,
-                false, (Preferences.Constant.ORDER_FIELD_TARGET_NAME == currentSortField)
+                Settings.Value.ORDER_FIELD_TARGET_NAME,
+                false, (Settings.Value.ORDER_FIELD_TARGET_NAME == currentSortField)
             )
         )
     }

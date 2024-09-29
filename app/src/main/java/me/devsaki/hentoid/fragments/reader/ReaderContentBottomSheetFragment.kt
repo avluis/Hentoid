@@ -154,10 +154,10 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
                 contentTags.visibility = View.VISIBLE
                 contentTags.text = tagTxt
             }
-            if (content.site.hasUniqueBookId())
+            if (content.site.hasUniqueBookId)
                 contentLaunchCode.text =
                     resources.getString(R.string.book_launchcode, content.uniqueSiteId)
-            contentLaunchCode.isVisible = content.site.hasUniqueBookId()
+            contentLaunchCode.isVisible = content.site.hasUniqueBookId
         }
     }
 

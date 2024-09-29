@@ -35,6 +35,10 @@ object Settings {
     var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
     var libraryGridCardWidthDP: Int by IntSetting(Key.LIBRARY_GRID_CARD_WIDTH, 150)
     var activeSites: List<Site> by ListSiteSetting("active_sites", Value.ACTIVE_SITES)
+    var contentSortField: Int by IntSetting("pref_order_content_field", Default.ORDER_CONTENT_FIELD)
+    var isContentSortDesc: Boolean by BoolSetting("pref_order_content_desc", false)
+    var groupSortField: Int by IntSetting("pref_order_group_field", Default.ORDER_GROUP_FIELD)
+    var isGroupSortDesc: Boolean by BoolSetting("pref_order_group_desc", false)
 
     // DOWNLOADER
 
@@ -87,6 +91,10 @@ object Settings {
 
     // READER
     var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)
+
+    // METADATA & RULES EDITOR
+    var ruleSortField: Int by IntSetting("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
+    var isRuleSortDesc: Boolean by BoolSetting("pref_order_rule_desc", false)
 
     // ACHIEVEMENTS
     var achievements: ULong by ULongSetting(Key.ACHIEVEMENTS, 0UL)
@@ -193,7 +201,7 @@ object Settings {
         const val FIRST_RUN = "pref_first_run"
         const val WELCOME_DONE = "pref_welcome_done"
         const val REFRESH_JSON_1_DONE = "refresh_json_1_done"
-        const val ANALYTICS_PREFERENCE = "pref_analytics_preference";
+        const val ANALYTICS_PREFERENCE = "pref_analytics_preference"
         const val BROWSER_MODE = "browser_mode"
         const val FORCE_ENGLISH = "force_english"
 
@@ -218,6 +226,11 @@ object Settings {
         const val TEXT_SELECT_MENU = "TEXT_SELECT_MENU"
     }
 
+    object Default {
+        const val ORDER_CONTENT_FIELD = Value.ORDER_FIELD_TITLE
+        const val ORDER_GROUP_FIELD = Value.ORDER_FIELD_TITLE
+    }
+
     object Value {
         private val DEFAULT_SITES = arrayOf(
             Site.NHENTAI,
@@ -238,5 +251,23 @@ object Settings {
         const val LIBRARY_DISPLAY_LIST = 0
         const val LIBRARY_DISPLAY_GRID = 1
         const val LIBRARY_DISPLAY_DEFAULT = LIBRARY_DISPLAY_LIST
+
+        // Sorting field codes for content and group
+        const val ORDER_FIELD_NONE = -1
+        const val ORDER_FIELD_TITLE = 0
+        const val ORDER_FIELD_ARTIST = 1
+        const val ORDER_FIELD_NB_PAGES = 2
+        const val ORDER_FIELD_DOWNLOAD_PROCESSING_DATE = 3
+        const val ORDER_FIELD_UPLOAD_DATE = 4
+        const val ORDER_FIELD_READ_DATE = 5
+        const val ORDER_FIELD_READS = 6
+        const val ORDER_FIELD_SIZE = 7
+        const val ORDER_FIELD_CHILDREN = 8 // Groups only
+        const val ORDER_FIELD_READ_PROGRESS = 9
+        const val ORDER_FIELD_DOWNLOAD_COMPLETION_DATE = 10
+        const val ORDER_FIELD_SOURCE_NAME = 11 // Rules only
+        const val ORDER_FIELD_TARGET_NAME = 12 // Rules only
+        const val ORDER_FIELD_CUSTOM = 98
+        const val ORDER_FIELD_RANDOM = 99
     }
 }

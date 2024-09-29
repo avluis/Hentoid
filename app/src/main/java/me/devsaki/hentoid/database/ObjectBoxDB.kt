@@ -49,6 +49,7 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.RandomSeed.getSeed
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.file.getSupportedExtensions
 import me.devsaki.hentoid.util.getLibraryStatuses
@@ -401,7 +402,7 @@ object ObjectBoxDB {
                 sourceAttr.add(Attribute(source))
                 bundle.attributes = buildSearchUri(sourceAttr, "", 0, 0).toString()
             }
-            bundle.sortField = Preferences.Constant.ORDER_FIELD_NONE
+            bundle.sortField = Settings.Value.ORDER_FIELD_NONE
             val contentIds = selectContentHybridSearchId(
                 bundle,
                 LongArray(0),
@@ -459,7 +460,7 @@ object ObjectBoxDB {
 
     fun selectVisibleContentQ(): Query<Content> {
         val bundle = ContentSearchBundle()
-        bundle.sortField = Preferences.Constant.ORDER_FIELD_NONE
+        bundle.sortField = Settings.Value.ORDER_FIELD_NONE
         return selectContentSearchContentQ(
             bundle,
             LongArray(0),
@@ -597,10 +598,10 @@ object ObjectBoxDB {
     private fun applySortOrder(query: QueryBuilder<Content>, orderField: Int, orderDesc: Boolean) {
         // Random ordering is tricky (see https://github.com/objectbox/objectbox-java/issues/17)
         // => Implemented post-query build
-        if (orderField == Preferences.Constant.ORDER_FIELD_RANDOM) return
+        if (orderField == Settings.Value.ORDER_FIELD_RANDOM) return
         // Custom ordering depends on another "table"
         // => Implemented post-query build
-        if (orderField == Preferences.Constant.ORDER_FIELD_CUSTOM) {
+        if (orderField == Settings.Value.ORDER_FIELD_CUSTOM) {
             /*
             query.sort(new Content.GroupItemOrderComparator(groupId)); // doesn't work with PagedList because it uses Query.find(final long offset, final long limit)
             query.backlink(GroupItem_.content).order(GroupItem_.order); // doesn't work yet (see https://github.com/objectbox/objectbox-java/issues/141)
@@ -611,7 +612,7 @@ object ObjectBoxDB {
         if (orderDesc) query.orderDesc(field) else query.order(field)
 
         // Specifics sub-sorting fields when ordering by reads
-        if (orderField == Preferences.Constant.ORDER_FIELD_READS) {
+        if (orderField == Settings.Value.ORDER_FIELD_READS) {
             if (orderDesc) query.orderDesc(Content_.lastReadDate) else query.order(Content_.lastReadDate)
                 .orderDesc(Content_.downloadDate)
         }
@@ -619,16 +620,16 @@ object ObjectBoxDB {
 
     private fun getPropertyFromField(prefsFieldCode: Int): Property<Content>? {
         return when (prefsFieldCode) {
-            Preferences.Constant.ORDER_FIELD_TITLE -> Content_.title
-            Preferences.Constant.ORDER_FIELD_ARTIST -> Content_.dbAuthor
-            Preferences.Constant.ORDER_FIELD_NB_PAGES -> Content_.qtyPages
-            Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> Content_.downloadDate
-            Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> Content_.downloadCompletionDate
-            Preferences.Constant.ORDER_FIELD_UPLOAD_DATE -> Content_.uploadDate
-            Preferences.Constant.ORDER_FIELD_READ_DATE -> Content_.lastReadDate
-            Preferences.Constant.ORDER_FIELD_READS -> Content_.reads
-            Preferences.Constant.ORDER_FIELD_SIZE -> Content_.size
-            Preferences.Constant.ORDER_FIELD_READ_PROGRESS -> Content_.readProgress
+            Settings.Value.ORDER_FIELD_TITLE -> Content_.title
+            Settings.Value.ORDER_FIELD_ARTIST -> Content_.dbAuthor
+            Settings.Value.ORDER_FIELD_NB_PAGES -> Content_.qtyPages
+            Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> Content_.downloadDate
+            Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> Content_.downloadCompletionDate
+            Settings.Value.ORDER_FIELD_UPLOAD_DATE -> Content_.uploadDate
+            Settings.Value.ORDER_FIELD_READ_DATE -> Content_.lastReadDate
+            Settings.Value.ORDER_FIELD_READS -> Content_.reads
+            Settings.Value.ORDER_FIELD_SIZE -> Content_.size
+            Settings.Value.ORDER_FIELD_READ_PROGRESS -> Content_.readProgress
             else -> null
         }
     }
@@ -643,7 +644,7 @@ object ObjectBoxDB {
         metadata: Set<Attribute>?,
         statuses: IntArray
     ): Query<Content> {
-        if (Preferences.Constant.ORDER_FIELD_CUSTOM == searchBundle.sortField) return store.boxFor(
+        if (Settings.Value.ORDER_FIELD_CUSTOM == searchBundle.sortField) return store.boxFor(
             Content::class.java
         ).query().build()
         val metadataMap = AttributeMap()
@@ -685,7 +686,7 @@ object ObjectBoxDB {
         dynamicGroupContentIds: LongArray,
         metadata: Set<Attribute>?
     ): LongArray {
-        if (searchBundle.sortField != Preferences.Constant.ORDER_FIELD_CUSTOM) return longArrayOf()
+        if (searchBundle.sortField != Settings.Value.ORDER_FIELD_CUSTOM) return longArrayOf()
         val metadataMap = AttributeMap()
         metadataMap.addAll(metadata)
         val hasTitleFilter = searchBundle.query.isNotEmpty()
@@ -766,7 +767,7 @@ object ObjectBoxDB {
         dynamicGroupContentIds: LongArray,
         statuses: IntArray
     ): Query<Content> {
-        if (Preferences.Constant.ORDER_FIELD_CUSTOM == searchBundle.sortField)
+        if (Settings.Value.ORDER_FIELD_CUSTOM == searchBundle.sortField)
             return store.boxFor(Content::class.java).query().build()
         var qc = initContentQC(searchBundle, dynamicGroupContentIds, statuses)
         qc = qc.and(
@@ -809,7 +810,7 @@ object ObjectBoxDB {
         dynamicGroupContentIds: LongArray,
         additionalIds: LongArray
     ): LongArray {
-        if (searchBundle.sortField != Preferences.Constant.ORDER_FIELD_CUSTOM) return longArrayOf()
+        if (searchBundle.sortField != Settings.Value.ORDER_FIELD_CUSTOM) return longArrayOf()
 
         // Pre-filter and order on GroupItem
         val query = store.boxFor(
@@ -939,7 +940,7 @@ object ObjectBoxDB {
             metadata,
             statuses
         ).use { query ->
-            result = if (searchBundle.sortField != Preferences.Constant.ORDER_FIELD_RANDOM) {
+            result = if (searchBundle.sortField != Settings.Value.ORDER_FIELD_RANDOM) {
                 query.findIds()
             } else {
                 shuffleRandomSortId(query)
@@ -967,7 +968,7 @@ object ObjectBoxDB {
             dynamicGroupContentIds,
             statuses
         ).use { query ->
-            result = if (searchBundle.sortField != Preferences.Constant.ORDER_FIELD_RANDOM) {
+            result = if (searchBundle.sortField != Settings.Value.ORDER_FIELD_RANDOM) {
                 query.findIds()
             } else {
                 shuffleRandomSortId(query)
@@ -1749,8 +1750,8 @@ object ObjectBoxDB {
         val qb = if (null == qc) store.boxFor(RenamingRule::class.java).query()
         else store.boxFor(RenamingRule::class.java).query(qc)
         val sortField =
-            if (Preferences.Constant.ORDER_FIELD_SOURCE_NAME == Preferences.getRuleSortField()) RenamingRule_.sourceName else RenamingRule_.targetName
-        if (Preferences.isRuleSortDesc()) {
+            if (Settings.Value.ORDER_FIELD_SOURCE_NAME == Settings.ruleSortField) RenamingRule_.sourceName else RenamingRule_.targetName
+        if (Settings.isRuleSortDesc) {
             qb.orderDesc(sortField)
         } else {
             qb.order(sortField)
@@ -1849,7 +1850,7 @@ object ObjectBoxDB {
         ) else if (groupNonFavouritesOnly) qb.equal(Group_.favourite, false)
         if (filterRating > -1) qb.equal(Group_.rating, filterRating.toLong())
         var property = Group_.name
-        if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.id) property =
+        if (Settings.Value.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.id) property =
             Group_.order
         // Order by number of children / download date is done by the DAO
         if (orderDesc) qb.orderDesc(property) else qb.order(property)

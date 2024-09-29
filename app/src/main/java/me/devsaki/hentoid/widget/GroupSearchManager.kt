@@ -6,6 +6,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.string
@@ -109,9 +110,9 @@ class GroupSearchManager(val dao: CollectionDAO) {
 
         var groupingId by bundle.int(default = Preferences.getGroupingDisplay().id)
 
-        var sortField by bundle.int(default = Preferences.getGroupSortField())
+        var sortField by bundle.int(default = Settings.groupSortField)
 
-        var sortDesc by bundle.boolean(default = Preferences.isGroupSortDesc())
+        var sortDesc by bundle.boolean(default = Settings.isGroupSortDesc)
 
         fun isFilterActive(): Boolean {
             return query.isNotEmpty()

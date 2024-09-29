@@ -25,6 +25,7 @@ import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.bundles.LibraryBottomSortFilterBundle
 import me.devsaki.hentoid.databinding.IncludeLibrarySortFilterBottomPanelBinding
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewholders.TextItem
@@ -176,10 +177,10 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             sortAscDesc.addOnButtonCheckedListener { _, i, b ->
                 if (!b) return@addOnButtonCheckedListener
                 if (isGroupsDisplayed) {
-                    Preferences.setGroupSortDesc(i == R.id.sort_descending)
+                    Settings.isGroupSortDesc = (i == R.id.sort_descending)
                     viewModel.searchGroup()
                 } else {
-                    Preferences.setContentSortDesc(i == R.id.sort_descending)
+                    Settings.isContentSortDesc = (i == R.id.sort_descending)
                     viewModel.searchContent()
                 }
             }
@@ -219,7 +220,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
 
     private fun updateSortDirection() {
         val isRandom =
-            (if (isGroupsDisplayed) Preferences.getGroupSortField() else Preferences.getContentSortField()) == Preferences.Constant.ORDER_FIELD_RANDOM
+            (if (isGroupsDisplayed) Settings.groupSortField else Settings.contentSortField) == Settings.Value.ORDER_FIELD_RANDOM
         binding?.apply {
             if (isRandom) {
                 sortAscending.visibility = View.GONE
@@ -231,7 +232,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
                 sortAscending.visibility = View.VISIBLE
                 sortDescending.visibility = View.VISIBLE
                 val currentPrefSortDesc =
-                    if (isGroupsDisplayed) Preferences.isGroupSortDesc() else Preferences.isContentSortDesc()
+                    if (isGroupsDisplayed) Settings.isGroupSortDesc else Settings.isContentSortDesc
                 sortAscDesc.check(if (currentPrefSortDesc) R.id.sort_descending else R.id.sort_ascending)
             }
         }
@@ -253,35 +254,35 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
     private fun getSortFields(): List<TextItem<Int>> {
         val result: MutableList<TextItem<Int>> = ArrayList()
         if (isGroupsDisplayed) {
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_TITLE))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CHILDREN))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_TITLE))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_CHILDREN))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_CUSTOM))
         } else {
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_TITLE))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_ARTIST))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_NB_PAGES))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_UPLOAD_DATE))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_DATE))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READS))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_SIZE))
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_PROGRESS))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_TITLE))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_ARTIST))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_NB_PAGES))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_UPLOAD_DATE))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_READ_DATE))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_READS))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_SIZE))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_READ_PROGRESS))
             if (Preferences.getGroupingDisplay().canReorderBooks && !isUngroupedGroupDisplayed
             ) result.add(
                 createFromFieldCode(
-                    Preferences.Constant.ORDER_FIELD_CUSTOM
+                    Settings.Value.ORDER_FIELD_CUSTOM
                 )
             )
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_RANDOM))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_RANDOM))
         }
         return result
     }
 
     private fun createFromFieldCode(sortFieldCode: Int): TextItem<Int> {
         val currentPrefFieldCode =
-            if (isGroupsDisplayed) Preferences.getGroupSortField() else Preferences.getContentSortField()
+            if (isGroupsDisplayed) Settings.groupSortField else Settings.contentSortField
         return TextItem(
             resources.getString(LibraryActivity.getNameFromFieldCode(sortFieldCode)),
             sortFieldCode,
@@ -316,10 +317,10 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
         val code = item.getObject()
         if (code != null) {
             if (isGroupsDisplayed) {
-                Preferences.setGroupSortField(code)
+                Settings.groupSortField = code
                 viewModel.searchGroup()
             } else {
-                Preferences.setContentSortField(code)
+                Settings.contentSortField = code
                 viewModel.searchContent()
             }
         }

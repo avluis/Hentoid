@@ -59,8 +59,8 @@ class Hentai2ReadParser : BaseChapteredImageListParser() {
         getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
-            content.site.useHentoidAgent(),
-            content.site.useWebviewAgent()
+            content.site.useHentoidAgent,
+            content.site.useWebviewAgent
         )?.let { doc ->
             val scripts: List<Element> = doc.select("script")
             getDataFromScripts(scripts)?.let { info ->

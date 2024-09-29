@@ -442,7 +442,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         // Swipe to shuffle
         binding?.swipeContainer?.apply {
             setOnRefreshListener {
-                if (this.isRefreshing && Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_RANDOM) {
+                if (this.isRefreshing && Settings.contentSortField == Settings.Value.ORDER_FIELD_RANDOM) {
                     viewModel.shuffleContent()
                     viewModel.searchContent()
                 }
@@ -517,10 +517,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun confirmEdit() {
         // == Save new item position
         // Set ordering field to custom
-        Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM)
+        Settings.contentSortField = Settings.Value.ORDER_FIELD_CUSTOM
         // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
-        Preferences.setContentSortDesc(false)
-        viewModel.saveContentPositions(itemAdapter!!.adapterItems.mapNotNull { ci -> ci.content }) { refreshIfNeeded() }
+        Settings.isContentSortDesc = false
+        viewModel.saveContentPositions(itemAdapter!!.adapterItems.mapNotNull { it.content }) { refreshIfNeeded() }
         group?.hasCustomBookOrder = true
         activity.get()?.setEditMode(false)
     }
@@ -1446,7 +1446,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         // Reshuffle on swipe is only enabled when sort order is random
         binding?.swipeContainer?.isEnabled =
-            (Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_RANDOM)
+            (Settings.contentSortField == Settings.Value.ORDER_FIELD_RANDOM)
 
         // Update background text
         @StringRes var backgroundText = -1
@@ -1794,7 +1794,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * - when the current grouping is not flat (because the app needs to refresh the display when moving books out of/into the currently displayed group)
      */
     private fun refreshIfNeeded() {
-        if (Grouping.FLAT != Preferences.getGroupingDisplay() || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
+        if (Grouping.FLAT != Preferences.getGroupingDisplay() || Settings.contentSortField == Settings.Value.ORDER_FIELD_CUSTOM)
             viewModel.searchContent(false)
     }
 
@@ -1908,49 +1908,49 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val adapter = getItemAdapter() ?: return ""
         val c = adapter.getAdapterItem(position).content ?: return ""
         val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd", Locale.ENGLISH)
-        return when (Preferences.getContentSortField()) {
-            Preferences.Constant.ORDER_FIELD_TITLE ->
+        return when (Settings.contentSortField) {
+            Settings.Value.ORDER_FIELD_TITLE ->
                 if (c.title.isEmpty()) ""
                 else (c.title[0].toString() + "").uppercase(Locale.getDefault())
 
-            Preferences.Constant.ORDER_FIELD_ARTIST ->
+            Settings.Value.ORDER_FIELD_ARTIST ->
                 if (c.author.isEmpty()) ""
                 else (c.author[0].toString() + "").uppercase(Locale.getDefault())
 
-            Preferences.Constant.ORDER_FIELD_NB_PAGES -> c.qtyPages.toLong().toString()
-            Preferences.Constant.ORDER_FIELD_READS -> c.reads.toString()
-            Preferences.Constant.ORDER_FIELD_SIZE -> formatHumanReadableSizeInt(
+            Settings.Value.ORDER_FIELD_NB_PAGES -> c.qtyPages.toLong().toString()
+            Settings.Value.ORDER_FIELD_READS -> c.reads.toString()
+            Settings.Value.ORDER_FIELD_SIZE -> formatHumanReadableSizeInt(
                 c.size,
                 resources
             )
 
-            Preferences.Constant.ORDER_FIELD_READ_PROGRESS -> String.format(
+            Settings.Value.ORDER_FIELD_READ_PROGRESS -> String.format(
                 Locale.ENGLISH,
                 "%d %%",
                 (c.readProgress * 100).roundToInt()
             )
 
-            Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> formatEpochToDate(
+            Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> formatEpochToDate(
                 c.downloadDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_UPLOAD_DATE -> formatEpochToDate(
+            Settings.Value.ORDER_FIELD_UPLOAD_DATE -> formatEpochToDate(
                 c.uploadDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_READ_DATE -> formatEpochToDate(
+            Settings.Value.ORDER_FIELD_READ_DATE -> formatEpochToDate(
                 c.lastReadDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> formatEpochToDate(
+            Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> formatEpochToDate(
                 c.downloadCompletionDate,
                 formatter
             )
 
-            Preferences.Constant.ORDER_FIELD_NONE, Preferences.Constant.ORDER_FIELD_CUSTOM, Preferences.Constant.ORDER_FIELD_RANDOM -> ""
+            Settings.Value.ORDER_FIELD_NONE, Settings.Value.ORDER_FIELD_CUSTOM, Settings.Value.ORDER_FIELD_RANDOM -> ""
             else -> ""
         }
     }

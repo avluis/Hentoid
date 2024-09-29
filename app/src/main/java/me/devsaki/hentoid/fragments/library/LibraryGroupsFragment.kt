@@ -323,9 +323,9 @@ class LibraryGroupsFragment : Fragment(),
 
         // == Save new item position
         // Set ordering field to custom
-        Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM)
+        Settings.groupSortField = Settings.Value.ORDER_FIELD_CUSTOM
         // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
-        Preferences.setGroupSortDesc(false)
+        Settings.isGroupSortDesc = false
         viewModel.saveGroupPositions(itemAdapter.adapterItems.map { it.group })
         viewModel.searchGroup()
     }
@@ -989,14 +989,14 @@ class LibraryGroupsFragment : Fragment(),
 
     override fun getPopupText(view: View, position: Int): CharSequence {
         val g = itemAdapter.getAdapterItem(position).group
-        return when (Preferences.getGroupSortField()) {
+        return when (Settings.groupSortField) {
 
-            Preferences.Constant.ORDER_FIELD_TITLE -> if (g.name.isEmpty()) ""
+            Settings.Value.ORDER_FIELD_TITLE -> if (g.name.isEmpty()) ""
             else (g.name[0].toString() + "").uppercase(Locale.getDefault())
 
-            Preferences.Constant.ORDER_FIELD_CHILDREN -> g.contentIds.size.toString()
+            Settings.Value.ORDER_FIELD_CHILDREN -> g.contentIds.size.toString()
 
-            Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE, Preferences.Constant.ORDER_FIELD_NONE, Preferences.Constant.ORDER_FIELD_CUSTOM -> ""
+            Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE, Settings.Value.ORDER_FIELD_NONE, Settings.Value.ORDER_FIELD_CUSTOM -> ""
 
             else -> ""
         }
