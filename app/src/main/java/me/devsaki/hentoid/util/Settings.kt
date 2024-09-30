@@ -35,9 +35,9 @@ object Settings {
     var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
     var libraryGridCardWidthDP: Int by IntSetting(Key.LIBRARY_GRID_CARD_WIDTH, 150)
     var activeSites: List<Site> by ListSiteSetting("active_sites", Value.ACTIVE_SITES)
-    var contentSortField: Int by IntSetting("pref_order_content_field", Default.ORDER_CONTENT_FIELD)
+    var contentSortField: Int by IntSetting2("pref_order_content_field", Default.ORDER_CONTENT_FIELD)
     var isContentSortDesc: Boolean by BoolSetting("pref_order_content_desc", false)
-    var groupSortField: Int by IntSetting("pref_order_group_field", Default.ORDER_GROUP_FIELD)
+    var groupSortField: Int by IntSetting2("pref_order_group_field", Default.ORDER_GROUP_FIELD)
     var isGroupSortDesc: Boolean by BoolSetting("pref_order_group_desc", false)
 
     // DOWNLOADER
@@ -93,7 +93,7 @@ object Settings {
     var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)
 
     // METADATA & RULES EDITOR
-    var ruleSortField: Int by IntSetting("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
+    var ruleSortField: Int by IntSetting2("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
     var isRuleSortDesc: Boolean by BoolSetting("pref_order_rule_desc", false)
 
     // ACHIEVEMENTS
@@ -141,6 +141,16 @@ object Settings {
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
             sharedPreferences.edit().putString(key, value.toString()).apply()
+        }
+    }
+
+    private class IntSetting2(val key: String, val default: Int) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Int {
+            return (sharedPreferences.getInt(key, default))
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
+            sharedPreferences.edit().putInt(key, value).apply()
         }
     }
 
