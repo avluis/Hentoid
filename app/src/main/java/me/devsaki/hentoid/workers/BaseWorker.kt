@@ -15,7 +15,6 @@ import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.getStackTraceString
-import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.notification.NotificationManager
 import me.devsaki.hentoid.util.writeLog
@@ -46,7 +45,7 @@ abstract class BaseWorker(
             val infos =
                 WorkManager.getInstance(context).getWorkInfosForUniqueWork(serviceId.toString())
             try {
-                val info = infos.get().firstOrNull { i -> !i.state.isFinished }
+                val info = infos.get().firstOrNull { !it.state.isFinished }
                 return info != null
             } catch (e: Exception) {
                 Timber.e(e)

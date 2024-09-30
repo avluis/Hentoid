@@ -426,6 +426,7 @@
     <string-array name="archive_format_entries" translatable="false">
         <item>ZIP</item>
         <item>CBZ</item>
+        <item>PDF</item>
     </string-array>
 
     <!-- Lock dialog -->

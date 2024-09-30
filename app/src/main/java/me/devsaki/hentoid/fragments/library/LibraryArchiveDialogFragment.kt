@@ -33,7 +33,6 @@ import me.devsaki.hentoid.workers.ArchiveWorker
 
 class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFragment.Parent>() {
     companion object {
-
         const val KEY_CONTENTS = "contents"
 
         fun invoke(parent: FragmentActivity, contentList: List<Content>) {
@@ -57,8 +56,8 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
     private lateinit var contentIds: LongArray
 
     private val pickFolder =
-        registerForActivityResult(PickFolderContract()) { result ->
-            onFolderPickerResult(result.first, result.second)
+        registerForActivityResult(PickFolderContract()) {
+            onFolderPickerResult(it.first, it.second)
         }
 
 
@@ -73,9 +72,9 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogLibraryArchiveBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -197,9 +196,9 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
         binding?.apply {
             // Check if no dialog is in error state
             val nbError = container.children
-                .filter { c -> c is TextInputLayout }
-                .map { c -> c as TextInputLayout }
-                .count { til -> til.isErrorEnabled }
+                .filter { it is TextInputLayout }
+                .map { it as TextInputLayout }
+                .count { it.isErrorEnabled }
 
             if (nbError > 0) return
 
