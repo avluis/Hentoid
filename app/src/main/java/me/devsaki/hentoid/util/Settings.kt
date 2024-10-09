@@ -78,6 +78,7 @@ object Settings {
     )
     var latestTargetFolderUri: String by StringSetting("ARCHIVE_TARGET_FOLDER_LATEST", "")
     var archiveTargetFormat: Int by IntSetting("ARCHIVE_TARGET_FORMAT", 0)
+    var pdfBackgroundColor: Int by IntSetting("ARCHIVE_PDF_BGCOLOR", 0)
     var isArchiveOverwrite: Boolean by BoolSetting("ARCHIVE_OVERWRITE", true)
     var isArchiveDeleteOnSuccess: Boolean by BoolSetting("ARCHIVE_DELETE_ON_SUCCESS", false)
 

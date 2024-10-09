@@ -55,6 +55,11 @@
     <string name="invalid_selection_generic">Invalid selection</string>
     <string name="user_generic">User</string>
 
+    <!-- Colours -->
+    <string name="white">White</string>
+    <string name="light_grey">Light grey</string>
+    <string name="dark_grey">Dark grey</string>
+    <string name="black">Black</string>
 
     <!-- Activities -->
     <string name="title_activity_downloads">Library</string>
@@ -1008,6 +1013,7 @@
     <!-- Archive dialog -->
     <string name="target_folder">Target folder</string>
     <string name="archive_format">Archive format</string>
+    <string name="background_color">Background color</string>
     <string name="folder_device_downloads">Device\'s Downloads folder</string>
     <string name="folder_other">Choose folder…</string>
     <string name="archive_overwrite">Overwrite existing archives</string>

@@ -43,6 +43,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
     data class Params(
         val targetFolderUri: String,
         val targetFormat: Int,
+        val pdfBackgroundColor: Int,
         val overwrite: Boolean,
         val deleteOnSuccess: Boolean
     )
@@ -116,12 +117,18 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
             val success = outputStream?.use { os ->
                 if (2 == params.targetFormat) {
                     val mgr = PdfManager()
+                    val color = when (params.pdfBackgroundColor) {
+                        1 -> R.color.light_gray
+                        2 -> R.color.dark_gray
+                        3 -> R.color.black
+                        else -> R.color.white
+                    }
                     mgr.convertImagesToPdf(
                         applicationContext,
                         os,
                         files,
                         true,
-                        Color.valueOf(ContextCompat.getColor(applicationContext, R.color.white))
+                        Color.valueOf(ContextCompat.getColor(applicationContext, color))
                     ) {
                         globalProgress.setProgress(content.id.toString(), it)
                         notifyProcessProgress()

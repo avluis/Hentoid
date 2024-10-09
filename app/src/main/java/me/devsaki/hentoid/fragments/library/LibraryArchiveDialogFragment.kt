@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
@@ -112,6 +113,10 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
                 Settings.archiveTargetFormat = index
                 refreshControls()
             }
+            backgroundColor.setOnIndexChangeListener { index ->
+                Settings.pdfBackgroundColor = index
+                refreshControls()
+            }
             overwriteSwitch.setOnCheckedChangeListener { _, isChecked ->
                 Settings.isArchiveOverwrite = isChecked
                 refreshControls()
@@ -153,9 +158,14 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
 
                 targetFormat.index = Settings.archiveTargetFormat
 
+                // PDF only
+                backgroundColor.index = Settings.pdfBackgroundColor
+
                 overwriteSwitch.isChecked = Settings.isArchiveOverwrite
                 deleteSwitch.isChecked = Settings.isArchiveDeleteOnSuccess
             }
+            
+            backgroundColor.isVisible = (2 == targetFormat.index)
         }
     }
 
@@ -186,6 +196,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
             return ArchiveWorker.Params(
                 Settings.archiveTargetFolder,
                 targetFormat.index,
+                backgroundColor.index,
                 overwriteSwitch.isChecked,
                 deleteSwitch.isChecked
             )

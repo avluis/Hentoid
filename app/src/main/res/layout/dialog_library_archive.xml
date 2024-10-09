@@ -30,6 +30,17 @@
             app:layout_constraintTop_toBottomOf="@id/target_folder"
             app:title="@string/archive_format" />
 
+        <me.devsaki.hentoid.views.ListPickerView
+            android:id="@+id/background_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:visibility="gone"
+            app:entries="@array/background_color_entries"
+            app:layout_constraintTop_toBottomOf="@id/target_format"
+            app:title="@string/background_color"
+            tools:visibility="visible" />
+
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/overwrite_switch"
             android:layout_width="match_parent"
@@ -37,7 +48,7 @@
             android:checked="true"
             android:paddingStart="8dp"
             android:text="@string/archive_overwrite"
-            app:layout_constraintTop_toBottomOf="@id/target_format"
+            app:layout_constraintTop_toBottomOf="@id/background_color"
             tools:layout_editor_absoluteX="0dp" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
