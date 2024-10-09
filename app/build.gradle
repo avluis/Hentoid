@@ -173,6 +173,9 @@ dependencies {
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     implementation 'io.github.waynejo:androidndkgif:1.0.1'
 
+    // PDF creator
+    implementation 'com.itextpdf:itext7-core:8.0.5'
+
     /**
      * UI
      */

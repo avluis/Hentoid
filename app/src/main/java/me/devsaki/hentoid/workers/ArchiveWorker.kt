@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import android.graphics.Color
+import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -114,7 +116,13 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
             val success = outputStream?.use { os ->
                 if (2 == params.targetFormat) {
                     val mgr = PdfManager()
-                    mgr.convertImagesToPdf(applicationContext, os, files) {
+                    mgr.convertImagesToPdf(
+                        applicationContext,
+                        os,
+                        files,
+                        true,
+                        Color.valueOf(ContextCompat.getColor(applicationContext, R.color.white))
+                    ) {
                         globalProgress.setProgress(content.id.toString(), it)
                         notifyProcessProgress()
                     }
