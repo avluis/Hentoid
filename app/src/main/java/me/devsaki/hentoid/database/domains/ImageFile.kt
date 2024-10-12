@@ -279,6 +279,12 @@ data class ImageFile(
             return false
         }
 
+    val isPdf: Boolean
+        get() {
+            val lowerUri = url.lowercase(Locale.getDefault())
+            return (lowerUri.contains(".pdf" + File.separator))
+        }
+
     val needsPageParsing: Boolean
         get() {
             return pageUrl.isNotEmpty() && (url.isEmpty())

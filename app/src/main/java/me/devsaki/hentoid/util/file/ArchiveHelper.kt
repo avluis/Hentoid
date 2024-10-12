@@ -86,7 +86,7 @@ fun getSupportedExtensions(): Set<String> {
  * @return True if the app supports the reading of files with the given extension as archives; false if not
  */
 private fun isArchiveExtensionSupported(extension: String): Boolean {
-    return !SUPPORTED_EXTENSIONS.find { e -> e.equals(extension, ignoreCase = true) }
+    return !SUPPORTED_EXTENSIONS.find { it.equals(extension, ignoreCase = true) }
         .isNullOrEmpty()
 }
 

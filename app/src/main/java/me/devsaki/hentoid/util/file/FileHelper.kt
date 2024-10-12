@@ -669,11 +669,16 @@ fun getFileNameWithoutExtension(filePath: String): String {
  */
 @Throws(IOException::class)
 fun saveBinary(context: Context, uri: Uri, binaryData: ByteArray?) {
+    getOutputStream(context, uri)?.let {
+        saveBinary(it, binaryData)
+    }
+}
+
+@Throws(IOException::class)
+fun saveBinary(out: OutputStream, binaryData: ByteArray?) {
     val buffer = ByteArray(FILE_IO_BUFFER_SIZE)
     var count: Int
-
     ByteArrayInputStream(binaryData).use { input ->
-        val out = getOutputStream(context, uri)
         BufferedOutputStream(out).use { output ->
             while ((input.read(buffer).also { count = it }) != -1) {
                 output.write(buffer, 0, count)
@@ -1479,6 +1484,10 @@ fun byteCountToDisplayRoundedSize(size: Long, places: Int, res: Resources): Stri
 
 fun DocumentFile.uniqueHash(): Long {
     return hash64((this.name + "." + this.length()).toByteArray())
+}
+
+fun DocumentFile.getExtension(): String {
+    return getExtension(this.name ?: "")
 }
 
 fun interface NameFilter {

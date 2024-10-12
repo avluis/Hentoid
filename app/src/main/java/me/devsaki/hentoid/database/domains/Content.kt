@@ -48,6 +48,7 @@ import me.devsaki.hentoid.enums.Site.SiteConverter
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.formatBookAuthor
 import me.devsaki.hentoid.util.hash64
@@ -574,8 +575,13 @@ data class Content(
         return this
     }
 
+    // Warning : this assumes the URI contains the file name, which is not guaranteed (not in any spec)!
     val isArchive: Boolean
-        get() = isSupportedArchive(storageUri) // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed (not in any spec) !
+        get() = isSupportedArchive(storageUri)
+
+    // Warning : this assumes the URI contains the file name, which is not guaranteed (not in any spec)!
+    val isPdf: Boolean
+        get() = getExtension(storageUri).equals("pdf", true)
 
     val groupItemList: List<GroupItem>
         get() = groupItems.reach(this)

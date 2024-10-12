@@ -56,6 +56,7 @@ import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.getPictureFilesFromContent
+import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.image.getMimeTypeFromUri
 import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
@@ -1028,6 +1029,7 @@ class ReaderViewModel(
         if (viewerImagesInternal.size <= viewerIndex) return
         val theContent = getContent().value ?: return
         val isArchive = theContent.isArchive
+        val isPdf = theContent.isPdf
         val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
             .filter { isPictureNeedsProcessing(it, viewerImagesInternal) }.toSet()
         if (picturesLeftToProcess.isEmpty()) return
@@ -1035,7 +1037,7 @@ class ReaderViewModel(
         // Identify pages to be loaded
         val indexesToLoad: MutableList<Int> = ArrayList()
         val increment = if (direction >= 0) 1 else -1
-        val quantity = if (isArchive) EXTRACT_RANGE else DOWNLOAD_RANGE
+        val quantity = if (isArchive || isPdf) EXTRACT_RANGE else DOWNLOAD_RANGE
         // pageIndex at 1/3rd of the range to extract/download -> determine its bound
         val initialIndex = floor(
             coerceIn(
@@ -1051,7 +1053,7 @@ class ReaderViewModel(
         // Only run extraction when there's at least 1/3rd of the extract range to fetch
         // (prevents calling extraction for one single picture at every page turn)
         var greenlight = true
-        if (isArchive) {
+        if (isArchive || isPdf) {
             greenlight = indexesToLoad.size >= EXTRACT_RANGE / 3f
             if (!greenlight) {
                 val from = if (increment > 0) initialIndex else 0
@@ -1089,7 +1091,16 @@ class ReaderViewModel(
             .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
         indexesByArchive.keys.forEach {
             getFileFromSingleUriString(getApplication(), it)?.let { archiveFile ->
-                extractPics(indexesByArchive[it]!!, archiveFile)
+                extractPics(indexesByArchive[it]!!, archiveFile, false)
+            }
+        }
+
+        // Un-PDF
+        val indexesByPdf = indexesToLoad.filter { viewerImagesInternal[it].isPdf }
+            .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
+        indexesByPdf.keys.forEach {
+            getFileFromSingleUriString(getApplication(), it)?.let { pdfFile ->
+                extractPics(indexesByPdf[it]!!, pdfFile, true)
             }
         }
 
@@ -1186,12 +1197,13 @@ class ReaderViewModel(
      */
     private fun extractPics(
         indexesToLoad: List<Int>,
-        archiveFile: DocumentFile
+        archiveFile: DocumentFile,
+        isPdf: Boolean
     ) {
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    doExtractPics(indexesToLoad, archiveFile)
+                    doExtractPics(indexesToLoad, archiveFile, isPdf)
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -1199,7 +1211,7 @@ class ReaderViewModel(
         }
     }
 
-    private fun doExtractPics(indexesToLoad: List<Int>, archiveFile: DocumentFile) {
+    private fun doExtractPics(indexesToLoad: List<Int>, archiveFile: DocumentFile, isPdf: Boolean) {
         assertNonUiThread()
         // Interrupt current extracting process, if any
         if (indexExtractInProgress.isNotEmpty()) {
@@ -1247,12 +1259,23 @@ class ReaderViewModel(
         val nbProcessed = AtomicInteger()
 
         try {
-            getApplication<Application>().applicationContext.extractArchiveEntriesCached(
-                archiveFile.uri,
-                extractInstructions,
-                archiveExtractKillSwitch,
-                { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
-                { onExtractionComplete(nbProcessed, indexesToLoad.size) })
+            if (isPdf) {
+                val pdfManager = PdfManager()
+                pdfManager.extractImagesCached(
+                    getApplication<Application>().applicationContext,
+                    archiveFile,
+                    extractInstructions,
+                    archiveExtractKillSwitch,
+                    { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
+                    { onExtractionComplete(nbProcessed, indexesToLoad.size) })
+            } else {
+                getApplication<Application>().applicationContext.extractArchiveEntriesCached(
+                    archiveFile.uri,
+                    extractInstructions,
+                    archiveExtractKillSwitch,
+                    { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
+                    { onExtractionComplete(nbProcessed, indexesToLoad.size) })
+            }
         } catch (e: Exception) {
             EventBus.getDefault().post(
                 ProcessEvent(
