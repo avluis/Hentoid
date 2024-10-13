@@ -552,6 +552,21 @@ private fun findDocumentFile(
 }
 
 /**
+ * Try to find the file with the given name in the given folder, ignoring the case
+ *
+ * @param folder Folder to look inside
+ * @param fileName Name of the file to look for
+ * @return Uri of the file if found; null if nothing found
+ */
+fun findFile(folder: File, fileName: String): File? {
+    val files = folder.listFiles { _, name: String ->
+        name.equals(fileName, ignoreCase = true)
+    }
+    return if (null == files || files.isEmpty()) null
+    else files[0]
+}
+
+/**
  * Open the given file using the device's app(s) of choice
  *
  * @param context Context to use

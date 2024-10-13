@@ -41,10 +41,7 @@ const val ZIP_MIME_TYPE = "application/zip"
 
 private val SUPPORTED_EXTENSIONS = setOf("zip", "epub", "cbz", "cbr", "cb7", "7z", "rar")
 
-private val archiveNamesFilter =
-    NameFilter { displayName: String ->
-        isArchiveExtensionSupported(getExtension(displayName))
-    }
+private val archiveNamesFilter = NameFilter { isArchiveExtensionSupported(getExtension(it)) }
 
 private const val INTERRUPTION_MSG = "Extract archive INTERRUPTED"
 
@@ -205,7 +202,7 @@ fun Context.extractArchiveEntries(
     return extractArchiveEntries(
         uri,
         fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
-        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName) },
+        fileFinder = { targetFileName -> Uri.fromFile(findFile(targetFolder, targetFileName)) },
         entriesToExtract, interrupt, onExtract, onComplete
     )
 }
@@ -239,7 +236,7 @@ fun Context.extractArchiveEntriesBlocking(
     extractArchiveEntries(
         uri,
         fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
-        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName) },
+        fileFinder = { targetFileName -> Uri.fromFile(findFile(targetFolder, targetFileName)) },
         entriesToExtract, null,
         callback, null
     )
@@ -502,14 +499,6 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
         stream?.close()
         pfdInput?.close()
     }
-}
-
-private fun findFile(targetFolder: File, targetName: String): Uri? {
-    val files = targetFolder.listFiles { _, name: String ->
-        name.equals(targetName, ignoreCase = true)
-    }
-    return if (null == files || files.isEmpty()) null
-    else Uri.fromFile(files[0])
 }
 
 private class ArchiveExtractCallback(

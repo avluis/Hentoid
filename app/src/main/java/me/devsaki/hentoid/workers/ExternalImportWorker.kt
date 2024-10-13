@@ -32,7 +32,7 @@ import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.removeContent
-import me.devsaki.hentoid.util.scanArchive
+import me.devsaki.hentoid.util.scanArchivePdf
 import me.devsaki.hentoid.util.scanFolderRecursive
 import me.devsaki.hentoid.util.trace
 import me.devsaki.hentoid.workers.data.ExternalImportData
@@ -304,12 +304,12 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         deltaPlusPairs.values.forEach { docs ->
             if (isStopped) return addedContent
             if (BuildConfig.DEBUG) docs.forEach { Timber.d("delta+ => ${it.uri}") }
-            val archive = docs.firstOrNull { it.isFile && isSupportedArchive(it.name ?: "") }
+            val archivePdf = docs.firstOrNull { it.isFile && isSupportedArchivePdf(it.name ?: "") }
             val folder = docs.firstOrNull { it.isDirectory }
 
             // Import new archive
-            if (archive != null) {
-                importArchive(context, docs, deltaPlusRoot, archive, dao)
+            if (archivePdf != null) {
+                importArchivePdf(context, docs, deltaPlusRoot, archivePdf, dao)
                     ?.let { addedContent.add(it) }
             } else if (folder != null) { // Import new folder
                 scanFolderRecursive(
@@ -330,11 +330,11 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     // TODO factorize with the end of ImportHelper.scanFolderRecursive
-    private fun importArchive(
+    private fun importArchivePdf(
         context: Context,
         docs: List<DocumentFile>,
         deltaPlusRoot: DocumentFile,
-        archive: DocumentFile,
+        archivePdf: DocumentFile,
         dao: CollectionDAO
     ): Content? {
         val json =
@@ -342,10 +342,10 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 it.isFile && getExtension(it.name ?: "")
                     .equals("json", true)
             }
-        val c = scanArchive(
+        val c = scanArchivePdf(
             context,
             deltaPlusRoot,
-            archive,
+            archivePdf,
             emptyList(),
             StatusContent.EXTERNAL,
             dao,
@@ -364,9 +364,13 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 0,
                 logs,
                 message,
-                archive.name ?: "<name not found>"
+                archivePdf.name ?: "<name not found>"
             )
         }
         return null
+    }
+
+    private fun isSupportedArchivePdf(fileName: String): Boolean {
+        return isSupportedArchive(fileName) || getExtension(fileName).equals("pdf", true)
     }
 }

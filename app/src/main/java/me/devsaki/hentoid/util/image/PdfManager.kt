@@ -2,14 +2,9 @@ package me.devsaki.hentoid.util.image
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.RectF
-import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.io.source.ByteArrayOutputStream
@@ -36,17 +31,20 @@ import com.itextpdf.layout.element.AreaBreak
 import com.itextpdf.layout.element.Image
 import com.itextpdf.layout.properties.AreaBreakType
 import com.itextpdf.layout.properties.HorizontalAlignment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.util.copy
+import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.DiskCache
+import me.devsaki.hentoid.util.file.NameFilter
+import me.devsaki.hentoid.util.file.findFile
+import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.legacyFileFromUri
 import me.devsaki.hentoid.util.file.saveBinary
+import me.devsaki.hentoid.util.pause
 import net.sf.sevenzipjbinding.SevenZipException
 import timber.log.Timber
 import java.io.File
@@ -60,8 +58,21 @@ import java.util.concurrent.atomic.AtomicInteger
 private val PORTRAIT = PdfNumber(0)
 private val LANDSCAPE = PdfNumber(90)
 
+private val pdfNamesFilter = NameFilter { getExtension(it).equals("pdf", true) }
+
+/**
+ * Build a [NameFilter] only accepting archive files supported by the app
+ *
+ * @return [NameFilter] only accepting archive files supported by the app
+ */
+fun getPdfNamesFilter(): NameFilter {
+    return pdfNamesFilter
+}
+
 class PdfManager {
 
+    private val extractedFiles = ArrayList<Uri>()
+    private val entries = ArrayList<ArchiveEntry>()
     private val currentPageIndex = AtomicInteger(0)
 
     private fun computeScaleRatio(pageSize: PageSize, margin: RectF, imgDims: PointF): Float {
@@ -173,15 +184,13 @@ class PdfManager {
         }
     }
 
-    private fun cacheExtractedImage(
+    private fun saveExtractedImage(
         id: String,
         data: ByteArray,
-        onExtracted: ((String, Uri) -> Unit)?
+        fileCreator: (String) -> File,
+        fileFinder: (String) -> Uri?,
+        onExtracted: ((String, Uri) -> Unit)? = null
     ) {
-        val fileCreator: (String) -> File =
-            { targetFileName -> File(DiskCache.createFile(targetFileName).path!!) }
-        val fileFinder: (String) -> Uri? = { targetFileName -> DiskCache.getFile(targetFileName) }
-
         val existing = fileFinder.invoke(id)
         Timber.v("Extract PDF, get stream: id $id")
         try {
@@ -202,31 +211,72 @@ class PdfManager {
 
     fun extractImagesCached(
         context: Context,
-        doc: DocumentFile,
+        pdf: DocumentFile,
         entriesToExtract: List<Pair<String, String>>?,
         interrupt: AtomicBoolean?,
         onExtracted: ((String, Uri) -> Unit)?,
         onComplete: () -> Unit
     ) {
-        return extractImages(
+        val fileCreator: (String) -> File =
+            { targetFileName -> File(DiskCache.createFile(targetFileName).path!!) }
+        val fileFinder: (String) -> Uri? = { targetFileName -> DiskCache.getFile(targetFileName) }
+
+        extractImages(
             context,
-            doc,
+            pdf,
             entriesToExtract, interrupt,
-            { id, data -> cacheExtractedImage(id, data, onExtracted) },
+            { id, data -> saveExtractedImage(id, data, fileCreator, fileFinder, onExtracted) },
             onComplete
         )
     }
 
+    fun extractImagesBlocking(
+        context: Context,
+        pdf: DocumentFile,
+        targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+        entriesToExtract: List<Pair<String, String>>
+    ): List<Uri> {
+        extractedFiles.clear()
+        val fileCreator: (String) -> File =
+            { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) }
+        val fileFinder: (String) -> Uri? =
+            { targetFileName -> Uri.fromFile(findFile(targetFolder, targetFileName)) }
+
+        extractImages(
+            context,
+            pdf,
+            entriesToExtract, null,
+            { id, data -> saveExtractedImage(id, data, fileCreator, fileFinder) }
+        )
+        // Block calling thread until all entries are processed
+        val delay = 250
+        var nbPauses = 0
+        var lastSize = 0
+        while (extractedFiles.size < entriesToExtract.size) {
+            extractedFiles.apply {
+                if (lastSize == size) {
+                    // 3 seconds timeout when no progression
+                    if (nbPauses++ > 3 * 1000 / delay) throw IOException("Extraction timed out")
+                } else {
+                    nbPauses = 0
+                }
+                lastSize = size
+            }
+            pause(delay)
+        }
+        return extractedFiles
+    }
+
     fun extractImages(
         context: Context,
-        doc: DocumentFile,
+        pdf: DocumentFile,
         entriesToExtract: List<Pair<String, String>>?,
         interrupt: AtomicBoolean?,
         onExtract: (String, ByteArray) -> Unit,
-        onComplete: () -> Unit
+        onComplete: (() -> Unit)? = null
     ) {
-        getInputStream(context, doc).use { input ->
-            PdfDocument(PdfReader(input), PdfWriter(ByteArrayOutputStream())).use { pdfDoc ->
+        getInputStream(context, pdf).use { input ->
+            PdfDocument(PdfReader(input)/*, PdfWriter(ByteArrayOutputStream())*/).use { pdfDoc ->
                 val listener: IEventListener = ImageRenderListener(entriesToExtract, onExtract)
                 val parser = PdfCanvasProcessor(listener)
                 if (entriesToExtract.isNullOrEmpty()) {
@@ -252,69 +302,90 @@ class PdfManager {
                 }
             }
         }
-        onComplete.invoke()
+        onComplete?.invoke()
     }
 
-    fun convertPdfToImages(
+    fun getPdfEntries(
         context: Context,
-        pdfUri: String,
-        pages: List<Int>?,
-        onGetPagesCount: (Int) -> Unit,
-        onProgressChange: (Int, Bitmap) -> Unit,
-        onComplete: () -> Unit
-    ) {
-        context.contentResolver.openFileDescriptor(
-            pdfUri.toUri(),
-            "r"
-        )?.use { fileDescriptor ->
-            val pdfRenderer = PdfRenderer(fileDescriptor)
-
-            onGetPagesCount(pages?.size ?: pdfRenderer.pageCount)
-
-            for (pageIndex in 0 until pdfRenderer.pageCount) {
-                if (pages == null || pages.contains(pageIndex)) {
-                    val bitmap: Bitmap
-                    pdfRenderer.openPage(pageIndex).use { page ->
-                        bitmap =
-                            Bitmap.createBitmap(
-                                page.width,
-                                page.height,
-                                Bitmap.Config.ARGB_8888
-                            )
-                        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
-                    }
-
-                    val renderedBitmap = Bitmap.createBitmap(
-                        bitmap.width,
-                        bitmap.height,
-                        Bitmap.Config.ARGB_8888
-                    )
-                    Canvas(renderedBitmap).apply {
-                        drawColor(ContextCompat.getColor(context, R.color.white))
-                        drawBitmap(bitmap, 0f, 0f, Paint().apply { isAntiAlias = true })
-                    }
-
-                    onProgressChange(pageIndex, renderedBitmap)
+        doc: DocumentFile
+    ): List<ArchiveEntry> {
+        entries.clear()
+        getInputStream(context, doc).use { input ->
+            PdfDocument(PdfReader(input)).use { pdfDoc ->
+                val listener: IEventListener = ImageRenderListener(null)
+                { name, data -> entries.add(ArchiveEntry(name, data.size.toLong())) }
+                val parser = PdfCanvasProcessor(listener)
+                for (i in 1..pdfDoc.numberOfPages) {
+                    currentPageIndex.set(i)
+                    parser.processPageContent(pdfDoc.getPage(i))
                 }
             }
-            onComplete()
-            pdfRenderer.close()
         }
+        return entries
     }
-
-    suspend fun getPdfPages(
-        context: Context,
-        uri: String
-    ): List<Int> = withContext(Dispatchers.IO) {
-        runCatching {
+    /*
+        fun convertPdfToImages(
+            context: Context,
+            pdfUri: String,
+            pages: List<Int>?,
+            onGetPagesCount: (Int) -> Unit,
+            onProgressChange: (Int, Bitmap) -> Unit,
+            onComplete: () -> Unit
+        ) {
             context.contentResolver.openFileDescriptor(
-                uri.toUri(),
+                pdfUri.toUri(),
                 "r"
             )?.use { fileDescriptor ->
-                List(PdfRenderer(fileDescriptor).pageCount) { it }
+                val pdfRenderer = PdfRenderer(fileDescriptor)
+
+                onGetPagesCount(pages?.size ?: pdfRenderer.pageCount)
+
+                for (pageIndex in 0 until pdfRenderer.pageCount) {
+                    if (pages == null || pages.contains(pageIndex)) {
+                        val bitmap: Bitmap
+                        pdfRenderer.openPage(pageIndex).use { page ->
+                            bitmap =
+                                Bitmap.createBitmap(
+                                    page.width,
+                                    page.height,
+                                    Bitmap.Config.ARGB_8888
+                                )
+                            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+                        }
+
+                        val renderedBitmap = Bitmap.createBitmap(
+                            bitmap.width,
+                            bitmap.height,
+                            Bitmap.Config.ARGB_8888
+                        )
+                        Canvas(renderedBitmap).apply {
+                            drawColor(ContextCompat.getColor(context, R.color.white))
+                            drawBitmap(bitmap, 0f, 0f, Paint().apply { isAntiAlias = true })
+                        }
+
+                        onProgressChange(pageIndex, renderedBitmap)
+                    }
+                }
+                onComplete()
+                pdfRenderer.close()
             }
-        }.getOrNull() ?: emptyList()
-    }
+        }
+
+        suspend fun getPdfPages(
+            context: Context,
+            uri: String
+        ): List<Int> = withContext(Dispatchers.IO) {
+            runCatching {
+                context.contentResolver.openFileDescriptor(
+                    uri.toUri(),
+                    "r"
+                )?.use { fileDescriptor ->
+                    List(PdfRenderer(fileDescriptor).pageCount) { it }
+                }
+            }.getOrNull() ?: emptyList()
+        }
+
+     */
 
     /*
 
@@ -454,21 +525,23 @@ class PdfManager {
     ) : IEventListener {
         private var page = -1
         private var indexInPage = 0
-        override fun eventOccurred(data: IEventData, type: EventType?) {
+        override fun eventOccurred(evt: IEventData, type: EventType?) {
             when (type) {
                 EventType.RENDER_IMAGE -> try {
-                    val renderInfo = data as ImageRenderInfo
+                    val renderInfo = evt as ImageRenderInfo
                     val image = renderInfo.image ?: return
                     val curPage = currentPageIndex.get()
                     if (curPage != page) {
                         indexInPage = 0
                         page = curPage
                     }
-                    val internalIdentifier = "$curPage.$indexInPage"
+                    val data = image.getImageBytes(false)
+                    val ext = getExtensionFromMimeType(getMimeTypeFromPictureBinary(data))
+                    val internalIdentifier = "$curPage.$indexInPage.$ext"
                     val identifier = entriesToExtract?.let { entry ->
                         entry.firstOrNull { it.first == internalIdentifier }?.second
                     } ?: internalIdentifier
-                    onExtract.invoke(identifier, image.getImageBytes(false))
+                    onExtract.invoke(identifier, data)
                 } catch (e: com.itextpdf.io.exceptions.IOException) {
                     Timber.w(e)
                 } catch (e: IOException) {
