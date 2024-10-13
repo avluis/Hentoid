@@ -3,7 +3,6 @@ package me.devsaki.hentoid.customssiv.util
 import android.content.Context
 import android.os.Build
 import android.os.Looper
-import android.util.DisplayMetrics
 import android.view.WindowManager
 import java.io.IOException
 import java.io.InputStream
@@ -41,14 +40,11 @@ fun getScreenDpi(context: Context): Float {
     val metrics = context.resources.displayMetrics
     val averageDpi = (metrics.xdpi + metrics.ydpi) / 2
 
-    val wMgr = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    val generalDpi: Float
-    if (Build.VERSION.SDK_INT >= 34) {
-        generalDpi = wMgr.currentWindowMetrics.density * 160
+    val generalDpi: Float = if (Build.VERSION.SDK_INT >= 34) {
+        val wMgr = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        wMgr.currentWindowMetrics.density * 160
     } else {
-        val metrics3 = DisplayMetrics()
-        wMgr.defaultDisplay.getRealMetrics(metrics3)
-        generalDpi = metrics3.densityDpi.toFloat()
+        context.resources.configuration.densityDpi.toFloat()
     }
 
     // Dimensions retrieved by metrics.xdpi/ydpi might be expressed as ppi (as per specs) and not dpi (as per naming)
