@@ -1809,7 +1809,7 @@ fun findDuplicate(
         )
         if (entry != null) entries.add(entry)
     }
-    // Sort by similarity and size (unfortunately, Comparator.comparing is API24...)
+    // Sort by similarity and size
     val bestMatch = entries.sortedWith { obj, other ->
         obj.compareTo(other!!)
     }.firstOrNull()

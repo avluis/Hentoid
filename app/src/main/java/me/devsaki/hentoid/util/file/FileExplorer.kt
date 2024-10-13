@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
-import android.os.Build
 import android.os.RemoteException
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.CachedDocumentFile
@@ -47,8 +46,6 @@ class FileExplorer : Closeable {
     @Throws(IOException::class)
     override fun close() {
         documentIdCache.clear()
-
-        // ContentProviderClient.close only available on API level 24+
         client?.close()
     }
 
@@ -277,13 +274,13 @@ class FileExplorer : Closeable {
                     // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                     if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
                         results.add(
-                        DocumentProperties(
-                            buildDocumentUriUsingTreeCached(parent.uri, documentId),
-                            documentName,
-                            documentSize,
-                            isFolder
+                            DocumentProperties(
+                                buildDocumentUriUsingTreeCached(parent.uri, documentId),
+                                documentName,
+                                documentSize,
+                                isFolder
+                            )
                         )
-                    )
 
                     // Don't do the whole loop if the point is to find a single element
                     if (stopFirst && results.isNotEmpty()) break
