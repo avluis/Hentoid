@@ -156,7 +156,9 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
             val isStreamed = libraryContent.downloadMode == DownloadMode.STREAM
             if (libraryContent.status == StatusContent.EXTERNAL) {
                 var resourceId =
-                    if (libraryContent.isArchive) R.drawable.ic_archive else R.drawable.ic_folder_full
+                    if (libraryContent.isArchive) R.drawable.ic_archive
+                    else if (libraryContent.isPdf) R.drawable.ic_pdf_file
+                    else R.drawable.ic_folder_full
                 // External streamed is streamed icon
                 if (isStreamed) resourceId = R.drawable.ic_action_download_stream
                 ivStorage.setImageResource(resourceId)

@@ -242,9 +242,9 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
 
             // External icon
             if (content.status == StatusContent.EXTERNAL) {
-                if (content.isArchive) ivExternal.setImageResource(R.drawable.ic_archive) else ivExternal.setImageResource(
-                    R.drawable.ic_folder_full
-                )
+                if (content.isArchive) ivExternal.setImageResource(R.drawable.ic_archive)
+                else if (content.isPdf) ivExternal.setImageResource(R.drawable.ic_pdf_file)
+                else ivExternal.setImageResource(R.drawable.ic_folder_full)
                 ivExternal.visibility = View.VISIBLE
             } else ivExternal.visibility = View.GONE
 
