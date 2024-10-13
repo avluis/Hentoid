@@ -230,6 +230,7 @@ class PdfManager {
         )
     }
 
+    @Throws(IOException::class)
     fun extractImagesBlocking(
         context: Context,
         pdf: DocumentFile,
@@ -240,13 +241,16 @@ class PdfManager {
         val fileCreator: (String) -> File =
             { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) }
         val fileFinder: (String) -> Uri? =
-            { targetFileName -> Uri.fromFile(findFile(targetFolder, targetFileName)) }
+            { targetFileName -> findFile(targetFolder, targetFileName)?.let { Uri.fromFile(it) } }
 
         extractImages(
             context,
             pdf,
             entriesToExtract, null,
-            { id, data -> saveExtractedImage(id, data, fileCreator, fileFinder) }
+            { id, data ->
+                saveExtractedImage(id, data, fileCreator, fileFinder)
+                { _, uri -> extractedFiles.add(uri) }
+            }
         )
         // Block calling thread until all entries are processed
         val delay = 250
@@ -276,7 +280,7 @@ class PdfManager {
         onComplete: (() -> Unit)? = null
     ) {
         getInputStream(context, pdf).use { input ->
-            PdfDocument(PdfReader(input)/*, PdfWriter(ByteArrayOutputStream())*/).use { pdfDoc ->
+            PdfDocument(PdfReader(input)).use { pdfDoc ->
                 val listener: IEventListener = ImageRenderListener(entriesToExtract, onExtract)
                 val parser = PdfCanvasProcessor(listener)
                 if (entriesToExtract.isNullOrEmpty()) {

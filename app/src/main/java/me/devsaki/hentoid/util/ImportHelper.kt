@@ -23,6 +23,7 @@ import me.devsaki.hentoid.core.HentoidApp.LifeCycleListener.Companion.disable
 import me.devsaki.hentoid.core.JSON_FILE_NAME
 import me.devsaki.hentoid.core.JSON_FILE_NAME_OLD
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
+import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -626,7 +627,7 @@ fun scanFolderRecursive(
     val files = explorer.listDocumentFiles(context, toScan)
     val subFolders: MutableList<DocumentFile> = ArrayList()
     val images: MutableList<DocumentFile> = ArrayList()
-    val archives: MutableList<DocumentFile> = ArrayList()
+    val archivesPdf: MutableList<DocumentFile> = ArrayList()
     val jsons: MutableList<DocumentFile> = ArrayList()
     val contentJsons: MutableList<DocumentFile> = ArrayList()
 
@@ -635,7 +636,8 @@ fun scanFolderRecursive(
         val fileName = file.name ?: ""
         if (file.isDirectory) subFolders.add(file)
         else if (imageNamesFilter.accept(fileName)) images.add(file)
-        else if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
+        else if (getArchiveNamesFilter().accept(fileName)) archivesPdf.add(file)
+        else if (getPdfNamesFilter().accept(fileName)) archivesPdf.add(file)
         else if (getJsonNamesFilter().accept(fileName)) {
             jsons.add(file)
             if (getContentJsonNamesFilter().accept(fileName)) contentJsons.add(file)
@@ -645,7 +647,7 @@ fun scanFolderRecursive(
     // If at least 2 subfolders and all of them ends with a number, we've got a multi-chapter book
     if (subFolders.size >= 2) {
         val allSubfoldersEndWithNumber =
-            subFolders.mapNotNull { it.name }.all { s -> ENDS_WITH_NUMBER.matcher(s).matches() }
+            subFolders.mapNotNull { it.name }.all { ENDS_WITH_NUMBER.matcher(it).matches() }
         if (allSubfoldersEndWithNumber) {
             // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
             val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
@@ -661,15 +663,23 @@ fun scanFolderRecursive(
             val nbArchivesInside = explorer.countFiles(subFolders[0], getArchiveNamesFilter())
             if (1 == nbArchivesInside) {
                 val c =
-                    scanForArchivesPdf(context, toScan, subFolders, explorer, parentNames, dao, true)
+                    scanForArchivesPdf(
+                        context,
+                        toScan,
+                        subFolders,
+                        explorer,
+                        parentNames,
+                        dao,
+                        true
+                    )
                 library.addAll(c)
             }
         }
     }
 
     // We've got an archived book
-    if (archives.isNotEmpty()) {
-        for (archive in archives) {
+    if (archivesPdf.isNotEmpty()) {
+        for (archive in archivesPdf) {
             val json = getFileWithName(jsons, archive.name)
             val c = scanArchivePdf(
                 context, toScan, archive, parentNames, StatusContent.EXTERNAL, dao, json
@@ -943,6 +953,7 @@ fun createCover(images: MutableList<ImageFile>) {
     if (images.isNotEmpty()) {
         val img = ImageFile(images[0], populateContent = true, populateChapter = true)
         img.isCover = true
+        img.name = THUMB_FILE_NAME
         // Create a new cover entry from the 1st element
         images.add(0, img)
     }
@@ -1170,7 +1181,7 @@ fun scanArchivePdf(
         0,
         ""
     ).toMutableList()
-    val coverExists = images.any { obj: ImageFile -> obj.isCover }
+    val coverExists = images.any { it.isCover }
     if (!coverExists) createCover(images)
 
     // Create content envelope

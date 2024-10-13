@@ -1122,7 +1122,9 @@ class ReaderViewModel(
         if (pageIndex < 0 || images.size <= pageIndex) return false
         images[pageIndex].let {
             return (it.status == StatusContent.ONLINE || // Image has to be downloaded
-                    it.isArchived) // Image has to be extracted from an archive
+                    it.isArchived || // Image has to be extracted from an archive
+                    it.isPdf // Image has to be extracted from a PDF
+                    )
         }
     }
 
