@@ -14,7 +14,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,6 +56,7 @@ import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.getPictureFilesFromContent
 import me.devsaki.hentoid.util.image.PdfManager
+import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.image.getMimeTypeFromUri
 import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
@@ -2057,8 +2057,9 @@ class ReaderViewModel(
             )
         )
 
-        // Reset Glide cache as it gets confused by the swapping
-        Glide.get(getApplication()).clearDiskCache()
+        // Reset Coil cache as it gets confused by the swapping
+        clearCoilCache(getApplication())
+        //Glide.get(getApplication()).clearDiskCache()
     }
 
     /**

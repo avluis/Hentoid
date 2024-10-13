@@ -13,7 +13,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
-import com.bumptech.glide.Glide
+import coil3.load
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -26,12 +26,9 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.bindOnlineCover
 import me.devsaki.hentoid.util.formatArtistForDisplay
 import me.devsaki.hentoid.util.getFlagResourceId
-import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.isValidContextForGlide
 
 class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
     AbstractItem<DuplicateItem.ViewHolder>() {
@@ -116,8 +113,6 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         private var deleteButton: TextView? = itemView.findViewById(R.id.delete_choice)
         var keepDeleteSwitch: MaterialSwitch? = itemView.findViewById(R.id.keep_delete)
 
-        private val glideRequestOptions = getGlideOptionCenterImage(view.context)
-
         override fun bindView(item: DuplicateItem, payloads: List<Any>) {
             item.content ?: return
 
@@ -156,6 +151,8 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
                 }
                 it.visibility = View.VISIBLE
                 // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
+                it.load(thumbLocation)
+                /*
                 if (thumbLocation.startsWith("http")) {
                     bindOnlineCover(thumbLocation, content)?.let { glideUrl ->
                         Glide.with(it).load(glideUrl).apply(glideRequestOptions).into(it)
@@ -164,6 +161,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
                     .load(Uri.parse(thumbLocation))
                     .apply(glideRequestOptions)
                     .into(it)
+                 */
             }
         }
 
@@ -323,7 +321,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
 
         override fun unbindView(item: DuplicateItem) {
             ivCover?.let {
-                if (isValidContextForGlide(it)) Glide.with(it).clear(it)
+                //if (isValidContextForGlide(it)) Glide.with(it).clear(it)
             }
         }
     }

@@ -7,7 +7,7 @@ import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import com.bumptech.glide.Glide
+import coil3.SingletonImageLoader
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +31,7 @@ import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.saveBinary
 import me.devsaki.hentoid.util.image.TransformParams
+import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.image.determineEncoder
 import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.transform
@@ -67,8 +68,9 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         dao.cleanup()
         upscaler?.cleanup()
 
-        // Reset Glide cache as it gets confused by the resizing
-        Glide.get(applicationContext).clearDiskCache()
+        // Reset Coil cache as it gets confused by the resizing
+        clearCoilCache(applicationContext)
+        //Glide.get(applicationContext).clearDiskCache()
     }
 
     override fun getToWork(input: Data) {

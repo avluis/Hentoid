@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Point
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -18,15 +17,9 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.MultiTransformation
-import com.bumptech.glide.load.Transformation
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.UnitTransformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
+import coil3.load
+import coil3.request.ErrorResult
+import coil3.request.SuccessResult
 import kotlinx.coroutines.Runnable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiConsumer
@@ -43,7 +36,6 @@ import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getExtension
-import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import me.devsaki.hentoid.util.image.screenHeight
 import me.devsaki.hentoid.util.image.screenWidth
 import me.devsaki.hentoid.views.ZoomableRecyclerView
@@ -405,7 +397,7 @@ class ImagePagerAdapter(val context: Context) :
 
 
     inner class ImageViewHolder(val rootView: View) : RecyclerView.ViewHolder(rootView),
-        OnImageEventListener, RequestListener<Drawable> {
+        OnImageEventListener {
         val ssiv: CustomSubsamplingScaleImageView = itemView.requireById(R.id.ssiv)
         private val imageView: ImageView = itemView.requireById(R.id.imageview)
         val noImgTxt: TextView = itemView.requireById(R.id.viewer_no_page_txt)
@@ -442,7 +434,14 @@ class ImagePagerAdapter(val context: Context) :
                 ssiv.setImage(uri(uri))
             } else { // ImageView
                 val view = imgView as ImageView
-                Timber.d("Using Glide")
+                Timber.d("Using Coil")
+                view.load(uri) {
+                    listener(
+                        onError = { _, err -> onCoilLoadFailed(err) },
+                        onSuccess = { _, res -> onCoilLoadSuccess(res) }
+                    )
+                }
+                /*
                 val centerInside: Transformation<Bitmap> = CenterInside()
                 val smartRotate90 = if (autoRotate) SmartRotateTransformation(
                     90f, screenWidth, screenHeight
@@ -450,6 +449,7 @@ class ImagePagerAdapter(val context: Context) :
                 Glide.with(view).load(uri)
                     .optionalTransform(MultiTransformation(centerInside, smartRotate90))
                     .listener(this).into(view)
+                 */
             }
         }
 
@@ -607,28 +607,22 @@ class ImagePagerAdapter(val context: Context) :
             // Nothing special
         }
 
-        // == GLIDE CALLBACKS
-        override fun onLoadFailed(
-            e: GlideException?, model: Any?, target: Target<Drawable>, isFirstResource: Boolean
-        ): Boolean {
+        // == COIL CALLBACKS
+        private fun onCoilLoadFailed(err: ErrorResult) {
             Timber.d(
-                e, "Picture %d : Glide loading failed : %s", absoluteAdapterPosition, img!!.fileUri
+                err.throwable,
+                "Picture %d : Coil loading failed : %s",
+                absoluteAdapterPosition,
+                img!!.fileUri
             )
             if (isImageView) noImgTxt.visibility = View.VISIBLE
-            return false
         }
 
-        override fun onResourceReady(
-            resource: Drawable,
-            model: Any,
-            target: Target<Drawable>,
-            dataSource: DataSource,
-            isFirstResource: Boolean
-        ): Boolean {
+        private fun onCoilLoadSuccess(result: SuccessResult): Boolean {
             noImgTxt.visibility = View.GONE
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) adjustHeight(
-                resource.intrinsicWidth,
-                resource.intrinsicHeight,
+                result.image.width,
+                result.image.height,
                 true
             )
             return false

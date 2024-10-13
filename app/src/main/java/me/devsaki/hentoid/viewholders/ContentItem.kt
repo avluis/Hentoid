@@ -3,7 +3,6 @@ package me.devsaki.hentoid.viewholders
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.graphics.PorterDuff
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
@@ -16,8 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.signature.ObjectKey
+import coil3.load
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
@@ -43,7 +41,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.bindOnlineCover
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.formatArtistForDisplay
@@ -51,11 +48,9 @@ import me.devsaki.hentoid.util.formatSeriesForDisplay
 import me.devsaki.hentoid.util.formatTagsForDisplay
 import me.devsaki.hentoid.util.generateIdForPlaceholder
 import me.devsaki.hentoid.util.getFlagResourceId
-import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getRatingResourceId
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.isInQueue
-import me.devsaki.hentoid.util.isValidContextForGlide
 import timber.log.Timber
 import java.util.Locale
 
@@ -274,7 +269,6 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         var ivReorder: View? = view.findViewById(R.id.ivReorder)
         var downloadButton: View? = view.findViewById(R.id.ivRedownload)
 
-        private val glideRequestOptions = getGlideOptionCenterImage(view.context)
         private var deleteActionRunnable: Runnable? = null
 
         // Extra info to display in stacktraces
@@ -392,6 +386,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
             ivCover.visibility = View.VISIBLE
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
+            ivCover.load(thumbLocation)
+            /*
             if (thumbLocation.startsWith("http")) {
                 val glideUrl = bindOnlineCover(thumbLocation, content)
                 if (glideUrl != null) {
@@ -402,12 +398,15 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 Glide.with(ivCover).load(Uri.parse(thumbLocation))
                     .signature(ObjectKey(content.uniqueHash())).apply(glideRequestOptions)
                     .into(ivCover)
+             */
         }
 
         private fun attachChapterCover(chapter: Chapter) {
             val thumbLocation = chapter.imageList.firstOrNull()?.usableUri
             if (thumbLocation != null) {
+                ivCover.load(thumbLocation)
                 ivCover.visibility = View.VISIBLE
+                /*
                 val glideRequest = Glide.with(ivCover)
 
                 val builder = if (thumbLocation.startsWith("http")) glideRequest.load(
@@ -417,6 +416,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
                 builder.signature(ObjectKey(chapter.uniqueHash())).apply(glideRequestOptions)
                     .into(ivCover)
+                 */
             } else {
                 ivCover.visibility = View.INVISIBLE
             }
@@ -651,7 +651,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             deleteActionRunnable = null
             debugStr = "[no data]"
             swipeableView.translationX = 0f
-            if (isValidContextForGlide(ivCover)) Glide.with(ivCover).clear(ivCover)
+            //if (isValidContextForGlide(ivCover)) Glide.with(ivCover).clear(ivCover)
         }
 
         override fun onDragged() {

@@ -8,9 +8,14 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbManager
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -126,7 +131,7 @@ object AppStartup {
             this::stopWorkers,
             this::processAppUpdate,
             this::loadSiteProperties,
-            this::initUtils,
+            this::initNotifications,
             this::initTLS
         )
     }
@@ -139,7 +144,8 @@ object AppStartup {
             this::createBookmarksJson,
             this::createPlugReceiver,
             this::activateTextIntent,
-            this::checkAchievements
+            this::checkAchievements,
+            this::initCoil
         )
     }
 
@@ -169,8 +175,8 @@ object AppStartup {
         }
     }
 
-    private fun initUtils(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Init utils : start")
+    private fun initNotifications(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Init notifications : start")
         // Init notification channels
         StartupNotificationChannel.init(context)
         UpdateNotificationChannel.init(context)
@@ -184,7 +190,7 @@ object AppStartup {
         // Clears all previous notifications
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancelAll()
-        Timber.i("Init utils : done")
+        Timber.i("Init notifications : done")
     }
 
     private fun processAppUpdate(context: Context, emitter: (Float) -> Unit) {
@@ -293,10 +299,26 @@ object AppStartup {
         Timber.i("Check achievements : done")
     }
 
+    private fun initCoil(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Init coil : start")
+        SingletonImageLoader.setSafe {
+            ImageLoader.Builder(context)
+                .components {
+                    if (SDK_INT >= 28) {
+                        add(AnimatedImageDecoder.Factory())
+                    } else {
+                        add(GifDecoder.Factory())
+                    }
+                }
+                .build()
+        }
+        Timber.i("Init coil : done")
+    }
+
     private fun activateTextIntent(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Activate text intent : start")
 
-        val flags = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) 0
+        val flags = if (SDK_INT < Build.VERSION_CODES.R) 0
         else PackageManager.SYNCHRONOUS
 
         val state = if (Settings.isTextMenuOn) PackageManager.COMPONENT_ENABLED_STATE_ENABLED

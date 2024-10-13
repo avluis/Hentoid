@@ -12,7 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
+import coil3.load
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -42,10 +42,8 @@ import me.devsaki.hentoid.fragments.metadata.GalleryPickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.fragments.metadata.MetaRenameDialogFragment
 import me.devsaki.hentoid.util.applyTheme
-import me.devsaki.hentoid.util.bindOnlineCover
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.getFlagResourceId
-import me.devsaki.hentoid.util.glideOptionCenterInside
 import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
@@ -206,17 +204,23 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
             } else {
                 it.ivCover.visibility = View.VISIBLE
                 if (thumbLocation.startsWith("http")) {
+                    it.ivCover.load(thumbLocation)
+/*
                     bindOnlineCover(thumbLocation, contents[0])?.let { glideUrl ->
                         Glide.with(it.ivCover)
                             .load(glideUrl)
                             .apply(glideOptionCenterInside)
                             .into(it.ivCover)
                     }
+ */
                 } else  // From stored picture
+                    it.ivCover.load(thumbLocation)
+                    /*
                     Glide.with(it.ivCover)
                         .load(Uri.parse(thumbLocation))
                         .apply(glideOptionCenterInside)
                         .into(it.ivCover)
+                     */
             }
 
             // Flag (language)

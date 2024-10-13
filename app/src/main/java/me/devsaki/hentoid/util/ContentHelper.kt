@@ -12,8 +12,6 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
@@ -1710,6 +1708,7 @@ fun formatSeriesForDisplay(
     }
 }
 
+/*
 /**
  * Transform the given online URL into a working GlideUrl using the given Content's cookies
  * (useful when viewing queue screen before any image has been downloaded)
@@ -1747,6 +1746,8 @@ fun bindOnlineCover(
     }
     return null
 }
+
+ */
 
 /**
  * Find the best match for the given Content inside the library and queue

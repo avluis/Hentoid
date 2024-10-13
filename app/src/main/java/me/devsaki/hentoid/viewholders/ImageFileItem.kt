@@ -10,13 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
-import com.bumptech.glide.signature.ObjectKey
-import com.github.penfeizhou.animation.FrameAnimationDrawable
+import coil3.load
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IExpandable
 import com.mikepenz.fastadapter.IParentItem
@@ -26,8 +20,6 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.util.glideOptionCenterInside
-import me.devsaki.hentoid.util.isValidContextForGlide
 
 private const val HEART_SYMBOL = "❤"
 
@@ -139,6 +131,9 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
             } else chapterOverlay.visibility = View.GONE
 
             // Image
+            // TODO  If animated, only load frame zero as a plain bitmap
+            image.load(item.image.fileUri)
+            /*
             Glide.with(image)
                 .load(Uri.parse(item.image.fileUri))
                 .signature(ObjectKey(item.image.uniqueHash()))
@@ -176,6 +171,8 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
                 })
                 .apply(glideOptionCenterInside)
                 .into(image)
+
+             */
         }
 
         private fun updateText(item: ImageFileItem) {
@@ -193,7 +190,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
         }
 
         override fun unbindView(item: ImageFileItem) {
-            if (isValidContextForGlide(image)) Glide.with(image).clear(image)
+            //if (isValidContextForGlide(image)) Glide.with(image).clear(image)
         }
     }
 }
