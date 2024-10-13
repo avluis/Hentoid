@@ -27,6 +27,7 @@
 	  {"sourceName":"MANGAGO", "status":"ORANGE", "fixedByBuild":"739"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"742"},
 	  {"sourceName":"MANHWA", "status":"RED", "fixedByBuild":"742"},
+	  {"sourceName":"PURURIN", "status":"BLACK"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"GREY"},
