@@ -1081,13 +1081,14 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         selectedProcessedCount: Long,
         selectedLocalCount: Long,
         selectedStreamedCount: Long,
-        selectedNonArchiveExternalCount: Long,
-        selectedArchiveExternalCount: Long
+        selectedNonArchivePdfExternalCount: Long,
+        selectedArchivePdfExternalCount: Long
     ) {
         val isMultipleSelection = selectedTotalCount > 1
         val hasProcessed = selectedProcessedCount > 0
         val selectedDownloadedCount = selectedLocalCount - selectedStreamedCount
-        val selectedExternalCount = selectedNonArchiveExternalCount + selectedArchiveExternalCount
+        val selectedExternalCount =
+            selectedNonArchivePdfExternalCount + selectedArchivePdfExternalCount
         binding?.selectionToolbar?.title = resources.getQuantityString(
             R.plurals.items_selected,
             selectedTotalCount.toInt(),
@@ -1118,7 +1119,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             completedMenu?.isVisible = true
             resetReadStatsMenu?.isVisible = true
             rateMenu?.isVisible = isMultipleSelection
-            shareMenu?.isVisible = 0L == selectedArchiveExternalCount
+            shareMenu?.isVisible = 0L == selectedArchivePdfExternalCount
             archiveMenu?.isVisible = !hasProcessed
             changeGroupMenu?.isVisible = !hasProcessed
             folderMenu?.isVisible = !isMultipleSelection
@@ -1136,7 +1137,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             splitMenu?.isVisible =
                 !hasProcessed && !isMultipleSelection && 1L == selectedLocalCount
             transformMenu?.isVisible =
-                !hasProcessed && 0L == selectedStreamedCount && 0L == selectedArchiveExternalCount
+                !hasProcessed && 0L == selectedStreamedCount && 0L == selectedArchivePdfExternalCount
         }
     }
 

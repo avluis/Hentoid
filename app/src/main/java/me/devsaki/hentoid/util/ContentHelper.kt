@@ -146,7 +146,8 @@ enum class Type(val value: Int) {
     FOLDER(1),  // Images in a folder
     STREAMED(2), // Streamed book
     ARCHIVE(3), // Archive
-    PLACEHOLDER(4); // "Empty book" placeholder created my metadata import
+    PLACEHOLDER(4), // "Empty book" placeholder created my metadata import
+    PDF(5); // PDF
 
     companion object {
         fun fromValue(v: Int): Type {

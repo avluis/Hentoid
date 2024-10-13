@@ -804,6 +804,7 @@
     <string name="search_type_entries_3">Streamed</string>
     <string name="search_type_entries_4">Archive</string>
     <string name="search_type_entries_5">Placeholder</string>
+    <string name="search_type_entries_6">PDF</string>
 
     <!-- Image reader -->
     <string name="no_images">Could not load the book: No image found</string>

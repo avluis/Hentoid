@@ -1466,6 +1466,15 @@ object ObjectBoxDB {
                 if (combinedCondition != null) qc.and(combinedCondition) else qc
             }
 
+            Type.PDF -> {
+                qc = qc.and(Content_.status.equal(StatusContent.EXTERNAL.code))
+                val pdfCondition = Content_.storageUri.endsWith(
+                    "pdf",
+                    QueryBuilder.StringOrder.CASE_INSENSITIVE
+                )
+                qc.and(pdfCondition)
+            }
+
             Type.PLACEHOLDER -> qc.and(Content_.status.equal(StatusContent.PLACEHOLDER.code))
             Type.FOLDER -> {
                 // TODO : Should also not be an archive, but that would require Content_.storageUri.doesNotEndWith (see ObjectBox issue #1129)

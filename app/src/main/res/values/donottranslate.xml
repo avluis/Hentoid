@@ -372,6 +372,7 @@
         <item>@string/search_type_entries_3</item>
         <item>@string/search_type_entries_4</item>
         <item>@string/search_type_entries_5</item>
+        <item>@string/search_type_entries_6</item>
     </string-array>
     <string-array name="export_location_entries" translatable="false">
         <item>@string/refresh_location_internal</item>
