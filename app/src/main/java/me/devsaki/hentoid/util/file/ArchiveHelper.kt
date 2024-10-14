@@ -202,7 +202,7 @@ fun Context.extractArchiveEntries(
     return extractArchiveEntries(
         uri,
         fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
-        fileFinder = { targetFileName -> Uri.fromFile(findFile(targetFolder, targetFileName)) },
+        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName)?.let { Uri.fromFile(it)} },
         entriesToExtract, interrupt, onExtract, onComplete
     )
 }
@@ -236,7 +236,7 @@ fun Context.extractArchiveEntriesBlocking(
     extractArchiveEntries(
         uri,
         fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
-        fileFinder = { targetFileName -> Uri.fromFile(findFile(targetFolder, targetFileName)) },
+        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName)?.let { Uri.fromFile(it)} },
         entriesToExtract, null,
         callback, null
     )
