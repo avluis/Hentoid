@@ -29,6 +29,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -366,7 +367,9 @@ fun assembleGif(
             getInputStream(context, frame.first).use { input ->
                 BitmapFactory.decodeStream(input, null, options)?.let { b ->
                     try {
-                        gifEncoder.encodeFrame(b, frame.second)
+                        // Min cap of 11ms to make the GIF compatible with most players
+                        // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
+                        gifEncoder.encodeFrame(b, max(11, frame.second))
                     } finally {
                         b.recycle()
                     }
