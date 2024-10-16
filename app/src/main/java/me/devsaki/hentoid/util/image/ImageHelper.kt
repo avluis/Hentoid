@@ -367,9 +367,9 @@ fun assembleGif(
             getInputStream(context, frame.first).use { input ->
                 BitmapFactory.decodeStream(input, null, options)?.let { b ->
                     try {
-                        // Min cap of 11ms to make the GIF compatible with most players
+                        // Warning : if frame.second is <= 10, GIFs will be read slower on most readers
                         // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
-                        gifEncoder.encodeFrame(b, max(11, frame.second))
+                        gifEncoder.encodeFrame(b, frame.second)
                     } finally {
                         b.recycle()
                     }
