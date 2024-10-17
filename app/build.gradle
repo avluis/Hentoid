@@ -163,14 +163,14 @@ dependencies {
     implementation("com.github.bumptech.glide:okhttp3-integration:$glide_version") {
         exclude group: 'glide-parent'
     }
+    */
 
     // Animated pics support (APNG, AWEBP and GIF) -> https://github.com/penfeizhou/APNG4Android
     def APNG4Android_version = '3.0.1'
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
-    implementation "com.github.penfeizhou.android.animation:gif:$APNG4Android_version"
-    implementation "com.github.penfeizhou.android.animation:awebp:$APNG4Android_version"
-    implementation "com.github.penfeizhou.android.animation:glide-plugin:$APNG4Android_version"
-     */
+    //implementation "com.github.penfeizhou.android.animation:gif:$APNG4Android_version"
+    //implementation "com.github.penfeizhou.android.animation:awebp:$APNG4Android_version"
+    //implementation "com.github.penfeizhou.android.animation:glide-plugin:$APNG4Android_version"
 
     // Image loader and animated pics support -> https://github.com/coil-kt/coil
     implementation("io.coil-kt.coil3:coil:3.0.0-rc01")

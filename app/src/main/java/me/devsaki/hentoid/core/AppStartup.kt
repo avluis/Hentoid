@@ -50,6 +50,7 @@ import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.readStreamAsString
+import me.devsaki.hentoid.util.image.AnimatedPngDecoder
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.updateBookmarksJson
 import me.devsaki.hentoid.workers.StartupWorker
@@ -132,7 +133,8 @@ object AppStartup {
             this::processAppUpdate,
             this::loadSiteProperties,
             this::initNotifications,
-            this::initTLS
+            this::initTLS,
+            this::initCoil
         )
     }
 
@@ -144,8 +146,7 @@ object AppStartup {
             this::createBookmarksJson,
             this::createPlugReceiver,
             this::activateTextIntent,
-            this::checkAchievements,
-            this::initCoil
+            this::checkAchievements
         )
     }
 
@@ -305,10 +306,11 @@ object AppStartup {
             ImageLoader.Builder(context)
                 .components {
                     if (SDK_INT >= 28) {
-                        add(AnimatedImageDecoder.Factory())
+                        add(AnimatedImageDecoder.Factory(false))
                     } else {
-                        add(GifDecoder.Factory())
+                        add(GifDecoder.Factory(false))
                     }
+                    add(AnimatedPngDecoder.Factory())
                 }
                 .build()
         }

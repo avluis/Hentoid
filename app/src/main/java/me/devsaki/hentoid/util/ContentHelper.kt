@@ -1049,13 +1049,13 @@ fun shareContent(
  */
 fun parseDownloadParams(downloadParamsStr: String?): Map<String, String> {
     // Handle empty and {}
-    if (null == downloadParamsStr || downloadParamsStr.trim().length <= 2) return HashMap()
+    if (null == downloadParamsStr || downloadParamsStr.trim().length <= 2) return emptyMap()
     try {
         return jsonToObject(downloadParamsStr, MAP_STRINGS)!!
     } catch (e: IOException) {
         Timber.w(e)
     }
-    return HashMap()
+    return emptyMap()
 }
 
 
@@ -1746,8 +1746,33 @@ fun bindOnlineCover(
     }
     return null
 }
-
  */
+
+fun getContentHeaders(content: Content?): List<Pair<String, String>> {
+    if (getWebViewAvailable()) {
+        var cookieStr: String? = null
+        var referer: String? = null
+
+        // Quickly skip JSON deserialization if there are no cookies in downloadParams
+        if (content != null) {
+            val downloadParamsStr = content.downloadParams
+            if (downloadParamsStr.contains(HEADER_COOKIE_KEY)) {
+                val downloadParams = parseDownloadParams(downloadParamsStr)
+                cookieStr = downloadParams[HEADER_COOKIE_KEY]
+                referer = downloadParams[HEADER_REFERER_KEY]
+            }
+            if (null == cookieStr) cookieStr = getCookies(content.galleryUrl)
+            if (null == referer) referer = content.galleryUrl
+
+            val results: MutableList<Pair<String, String>> = ArrayList()
+            results.add(Pair(HEADER_COOKIE_KEY, cookieStr))
+            results.add(Pair(HEADER_REFERER_KEY, referer))
+            results.add(Pair(HEADER_USER_AGENT, content.site.userAgent))
+            return results
+        }
+    }
+    return emptyList()
+}
 
 /**
  * Find the best match for the given Content inside the library and queue

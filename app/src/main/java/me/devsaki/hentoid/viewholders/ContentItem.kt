@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import coil3.dispose
 import coil3.load
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
@@ -50,6 +51,7 @@ import me.devsaki.hentoid.util.generateIdForPlaceholder
 import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getRatingResourceId
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.image.loadCover
 import me.devsaki.hentoid.util.isInQueue
 import timber.log.Timber
 import java.util.Locale
@@ -379,15 +381,16 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         }
 
         private fun attachContentCover(content: Content) {
+            ivCover.loadCover(content)
+            /*
             val thumbLocation = content.cover.usableUri
             if (thumbLocation.isEmpty()) {
                 ivCover.visibility = View.INVISIBLE
                 return
             }
             ivCover.visibility = View.VISIBLE
+
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-            ivCover.load(thumbLocation)
-            /*
             if (thumbLocation.startsWith("http")) {
                 val glideUrl = bindOnlineCover(thumbLocation, content)
                 if (glideUrl != null) {
@@ -651,6 +654,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             deleteActionRunnable = null
             debugStr = "[no data]"
             swipeableView.translationX = 0f
+            ivCover.dispose()
             //if (isValidContextForGlide(ivCover)) Glide.with(ivCover).clear(ivCover)
         }
 

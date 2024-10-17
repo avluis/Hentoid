@@ -435,6 +435,7 @@ class ImagePagerAdapter(val context: Context) :
             } else { // ImageView
                 val view = imgView as ImageView
                 Timber.d("Using Coil")
+                Timber.d("Using uri $uri")
                 view.load(uri) {
                     listener(
                         onError = { _, err -> onCoilLoadFailed(err) },

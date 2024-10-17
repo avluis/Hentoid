@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import coil3.dispose
 import coil3.load
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IExpandable
@@ -190,6 +191,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
         }
 
         override fun unbindView(item: ImageFileItem) {
+            image.dispose()
             //if (isValidContextForGlide(image)) Glide.with(image).clear(image)
         }
     }

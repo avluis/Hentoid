@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.viewholders
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -8,6 +7,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import coil3.dispose
 import coil3.load
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
@@ -179,9 +179,8 @@ class GroupDisplayItem(
             get() = ivRating
 
         override fun unbindView(item: GroupDisplayItem) {
-            ivCover?.let {
-                //if (isValidContextForGlide(it)) Glide.with(it).clear(it)
-            }
+            ivCover?.dispose()
+            //if (isValidContextForGlide(it)) Glide.with(it).clear(it)
         }
     }
 }

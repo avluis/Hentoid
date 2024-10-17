@@ -3,7 +3,6 @@ package me.devsaki.hentoid.viewholders
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.graphics.PorterDuff
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -13,7 +12,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
-import coil3.load
+import coil3.dispose
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -29,6 +28,7 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.formatArtistForDisplay
 import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.image.loadCover
 
 class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
     AbstractItem<DuplicateItem.ViewHolder>() {
@@ -143,6 +143,8 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         }
 
         private fun attachCover(content: Content) {
+            ivCover?.loadCover(content)
+            /*
             ivCover?.let {
                 val thumbLocation = content.cover.usableUri
                 if (thumbLocation.isEmpty()) {
@@ -150,9 +152,6 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
                     return
                 }
                 it.visibility = View.VISIBLE
-                // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-                it.load(thumbLocation)
-                /*
                 if (thumbLocation.startsWith("http")) {
                     bindOnlineCover(thumbLocation, content)?.let { glideUrl ->
                         Glide.with(it).load(glideUrl).apply(glideRequestOptions).into(it)
@@ -161,8 +160,8 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
                     .load(Uri.parse(thumbLocation))
                     .apply(glideRequestOptions)
                     .into(it)
-                 */
-            }
+        }
+            */
         }
 
         private fun attachFlag(content: Content) {
@@ -320,9 +319,12 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
             get() = ivSite
 
         override fun unbindView(item: DuplicateItem) {
-            ivCover?.let {
-                //if (isValidContextForGlide(it)) Glide.with(it).clear(it)
-            }
+            ivCover?.dispose()
+            /*
+        ivCover?.let {
+            //if (isValidContextForGlide(it)) Glide.with(it).clear(it)
+        }
+             */
         }
     }
 }
