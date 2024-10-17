@@ -816,9 +816,8 @@ class ReaderViewModel(
      */
     fun deletePage(pageViewerIndex: Int, onError: (Throwable) -> Unit) {
         val imageFiles = viewerImagesInternal
-        if (imageFiles.size > pageViewerIndex && pageViewerIndex > -1) deletePages(
-            listOf(imageFiles[pageViewerIndex]), onError
-        )
+        if (imageFiles.size > pageViewerIndex && pageViewerIndex > -1)
+            deletePages(listOf(imageFiles[pageViewerIndex]), onError)
     }
 
     /**
@@ -999,7 +998,9 @@ class ReaderViewModel(
     }
 
     fun clearForceReload() {
-        viewerImagesInternal.forEach { it.isForceRefresh = false }
+        synchronized(viewerImagesInternal) {
+            viewerImagesInternal.forEach { it.isForceRefresh = false }
+        }
     }
 
     /**
@@ -1068,18 +1069,20 @@ class ReaderViewModel(
         // Populate what's already cached
         val cachedIndexes = HashSet<Int>()
         var nbProcessed = 0
-        indexesToLoad.forEach { idx ->
-            nbProcessed++
-            viewerImagesInternal[idx].let { img ->
-                val key = formatCacheKey(img)
-                if (DiskCache.peekFile(key)) {
-                    updateImgWithExtractedUri(
-                        img,
-                        idx,
-                        DiskCache.getFile(key)!!,
-                        0 == cachedIndexes.size % 4 || nbProcessed == indexesToLoad.size
-                    )
-                    cachedIndexes.add(idx)
+        synchronized(viewerImagesInternal) {
+            indexesToLoad.forEach { idx ->
+                nbProcessed++
+                viewerImagesInternal[idx].let { img ->
+                    val key = formatCacheKey(img)
+                    if (DiskCache.peekFile(key)) {
+                        updateImgWithExtractedUri(
+                            img,
+                            idx,
+                            DiskCache.getFile(key)!!,
+                            0 == cachedIndexes.size % 4 || nbProcessed == indexesToLoad.size
+                        )
+                        cachedIndexes.add(idx)
+                    }
                 }
             }
         }
