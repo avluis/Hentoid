@@ -67,9 +67,9 @@ class ProgressDialogFragment : BaseDialogFragment<Nothing>() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogProgressBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
