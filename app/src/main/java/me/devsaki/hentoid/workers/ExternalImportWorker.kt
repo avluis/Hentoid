@@ -298,7 +298,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 .split(File.separator)
         val parentNames = getFullPathFromUri(context, deltaPlusRoot.uri)
             .split(File.separator).toMutableList()
-        for (i in extRootElts.indices - 1) parentNames.removeFirst()
+        for (i in extRootElts.indices - 1) parentNames.removeAt(0)
         Timber.d("  parents : $parentNames")
 
         deltaPlusPairs.values.forEach { docs ->
