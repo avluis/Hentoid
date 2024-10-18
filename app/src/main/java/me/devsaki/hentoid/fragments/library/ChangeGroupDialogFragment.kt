@@ -32,7 +32,7 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
         }
     }
 
-    private lateinit var bookIds: LongArray
+    private lateinit var contentIds: LongArray
     private lateinit var customGroups: List<Group>
 
     private var binding: DialogLibraryChangeGroupBinding? = null
@@ -56,31 +56,36 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
         super.onViewCreated(rootView, savedInstanceState)
         check(arguments != null)
 
-        bookIds = requireArguments().getLongArray(BOOK_IDS)!!
+        contentIds = requireArguments().getLongArray(BOOK_IDS)!!
 
         // Get existing custom groups
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
-            customGroups = dao.selectGroups(Grouping.CUSTOM.id, 0).toList()
+            customGroups = dao.selectGroups(Grouping.CUSTOM.id, 0)
 
             binding?.apply {
                 // Don't select the "Ungrouped" group there
                 if (customGroups.isNotEmpty()) { // "Existing group" by default
                     existingRadio.isChecked = true
                     existingList.visibility = View.VISIBLE
-                    existingList.entries = customGroups.map { g -> g.name }
+                    existingList.entries = customGroups.map { it.name }
 
-                    // If there's only one content selected, indicate its group
-                    if (1 == bookIds.size) {
-                        val gi = dao.selectGroupItems(bookIds[0], Grouping.CUSTOM)
-                        if (gi.isNotEmpty()) for (i in customGroups.indices) {
-                            if (gi[0].groupId == customGroups[i].id) {
+                    // If all content are in the same group, show it by default
+                    val groupIds = dao.selectContent(contentIds)
+                        .flatMap { it.getGroupItems(Grouping.CUSTOM) }
+                        .map { it.groupId }
+                        .toSet()
+
+                    if (1 == groupIds.size) {
+                        for (i in customGroups.indices) {
+                            if (groupIds.first() == customGroups[i].id) {
                                 existingList.index = i
                                 break
                             }
-                        } else  // If no group attached, no need to detach from it (!)
-                            detachRadio.visibility = View.GONE
-                    }
+                        }
+                        // If no group attached, no need to detach from it (!)
+                    } else if (groupIds.isEmpty()) detachRadio.visibility = View.GONE
+
                 } else { // If none of them exist, "new group" is suggested by default
                     existingRadio.visibility = View.GONE
                     newRadio.isChecked = true
@@ -146,16 +151,19 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
         binding?.apply {
             if (existingRadio.isChecked) {
                 if (existingList.index > -1) {
-                    viewModel.moveContentsToCustomGroup(bookIds, customGroups[existingList.index]) {
-                        parent?.onChangeGroupSuccess(bookIds.size)
+                    viewModel.moveContentsToCustomGroup(
+                        contentIds,
+                        customGroups[existingList.index]
+                    ) {
+                        parent?.onChangeGroupSuccess(contentIds.size)
                         dismissAllowingStateLoss()
                     }
                 } else {
                     toast(R.string.group_not_selected)
                 }
             } else if (detachRadio.isChecked) {
-                viewModel.moveContentsToCustomGroup(bookIds, null) {
-                    parent?.onChangeGroupSuccess(bookIds.size)
+                viewModel.moveContentsToCustomGroup(contentIds, null) {
+                    parent?.onChangeGroupSuccess(contentIds.size)
                     dismissAllowingStateLoss()
                 }
             } else newNameTxt.editText?.let { edit -> // New group
@@ -164,9 +172,9 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                     val groupMatchingName =
                         customGroups.filter { g -> g.name.equals(newNameStr, ignoreCase = true) }
                     if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
-                        viewModel.moveContentsToNewCustomGroup(bookIds, newNameStr)
+                        viewModel.moveContentsToNewCustomGroup(contentIds, newNameStr)
                         {
-                            parent?.onChangeGroupSuccess(bookIds.size)
+                            parent?.onChangeGroupSuccess(contentIds.size)
                             dismissAllowingStateLoss()
                         }
                     } else {
