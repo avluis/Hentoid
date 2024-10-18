@@ -155,7 +155,6 @@ dependencies {
     /**
      * MEDIA
      */
-    /*
     // Image loader: github.com/bumptech/glide
     def glide_version = '4.16.0'
     implementation "com.github.bumptech.glide:glide:$glide_version"
@@ -170,11 +169,6 @@ dependencies {
     implementation "com.github.penfeizhou.android.animation:gif:$APNG4Android_version"
     implementation "com.github.penfeizhou.android.animation:awebp:$APNG4Android_version"
     implementation "com.github.penfeizhou.android.animation:glide-plugin:$APNG4Android_version"
-     */
-
-    // Image loader and animated pics support -> https://github.com/coil-kt/coil
-    implementation("io.coil-kt.coil3:coil:3.0.0-rc01")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc01")
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     implementation 'io.github.waynejo:androidndkgif:1.0.1'
