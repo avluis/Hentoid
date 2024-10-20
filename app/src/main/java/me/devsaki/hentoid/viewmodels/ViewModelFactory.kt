@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 
 /**
  * Responsible for creating ViewModels and supplying their dependencies
@@ -23,7 +24,7 @@ class ViewModelFactory(val application: Application) : ViewModelProvider.Factory
             SearchViewModel::class.java -> SearchViewModel(
                 application,
                 ObjectBoxDAO(),
-                Preferences.getSearchAttributesSortOrder()
+                Settings.searchAttributesSortOrder
             )
 
             QueueViewModel::class.java -> QueueViewModel(application, ObjectBoxDAO())

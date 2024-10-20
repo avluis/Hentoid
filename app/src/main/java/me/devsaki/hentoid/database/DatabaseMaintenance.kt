@@ -403,7 +403,7 @@ object DatabaseMaintenance {
                             Type.ANY,
                             false,
                             null,
-                            Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
+                            Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
                             0,
                             0
                         ).toMutableList()
@@ -417,7 +417,7 @@ object DatabaseMaintenance {
                                 Type.ANY,
                                 false,
                                 null,
-                                Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
+                                Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
                                 0,
                                 0
                             )

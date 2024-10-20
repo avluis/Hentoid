@@ -1323,7 +1323,7 @@ object ObjectBoxDB {
             ).safeFind()
 
         // Compute attribute count for sorting
-        if (Preferences.getSearchAttributesCount()) { // TODO get that call to Prefs out of there
+        if (Settings.searchAttributesCount) { // TODO get that call to Prefs out of there
             var count: Int
             for (a in result) {
                 // Only count the relevant Contents
@@ -1338,7 +1338,7 @@ object ObjectBoxDB {
 
         // Apply sort order
         var s = result.asSequence()
-        s = if (Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
+        s = if (Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
             s.sortedBy { a -> -a.count }.sortedBy { a -> a.name }
         } else {
             s.sortedBy { a -> a.name }.sortedBy { a -> -a.count }

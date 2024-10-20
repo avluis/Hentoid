@@ -21,6 +21,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.addAttribute
 import me.devsaki.hentoid.util.addContentToAttributeGroup
@@ -154,7 +155,7 @@ class MetadataEditViewModel(
                     true,
                     pageNum,
                     itemsPerPage,
-                    Preferences.getSearchAttributesSortOrder()
+                    Settings.searchAttributesSortOrder
                 )
                 libraryAttributes.postValue(result)
             }

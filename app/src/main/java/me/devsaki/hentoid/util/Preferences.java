@@ -119,15 +119,6 @@ public final class Preferences {
 
 
     // ======= PROPERTIES GETTERS / SETTERS
-
-    public static int getSearchAttributesSortOrder() {
-        return getIntPref(Key.SEARCH_ORDER_ATTRIBUTE_LISTS, Default.SEARCH_ORDER_ATTRIBUTES);
-    }
-
-    public static boolean getSearchAttributesCount() {
-        return getBoolPref(Key.SEARCH_COUNT_ATTRIBUTE_RESULTS, Default.SEARCH_COUNT_ATTRIBUTE_RESULTS);
-    }
-
     public static int getContentPageQuantity() {
         return getIntPref(Key.QUANTITY_PER_PAGE_LISTS, Default.QUANTITY_PER_PAGE);
     }
@@ -703,8 +694,6 @@ public final class Preferences {
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         static final String VERSION_KEY = "prefs_version";
         static final String QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
-        static final String SEARCH_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
-        static final String SEARCH_COUNT_ATTRIBUTE_RESULTS = "pref_order_attribute_count";
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
         public static final String ENDLESS_SCROLL = "pref_endless_scroll";
         public static final String TOP_FAB = "pref_top_fab";
@@ -820,8 +809,6 @@ public final class Preferences {
         static final int PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = 90;
 
         static final int QUANTITY_PER_PAGE = 20;
-        static final int SEARCH_ORDER_ATTRIBUTES = Constant.SEARCH_ORDER_ATTRIBUTES_COUNT;
-        static final boolean SEARCH_COUNT_ATTRIBUTE_RESULTS = true;
         static final boolean ENDLESS_SCROLL = true;
         static final boolean TOP_FAB = true;
         static final int MEMORY_ALERT = 110;
@@ -923,9 +910,6 @@ public final class Preferences {
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
 
         public static final int ORDER_CONTENT_FAVOURITE = -2; // Artificial order created for clarity purposes
-
-        public static final int SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0;
-        static final int SEARCH_ORDER_ATTRIBUTES_COUNT = 1;
 
         static final int FOLDER_NAMING_CONTENT_ID = 0;
         static final int FOLDER_NAMING_CONTENT_TITLE_ID = 1;

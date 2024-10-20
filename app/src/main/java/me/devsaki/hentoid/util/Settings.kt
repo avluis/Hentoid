@@ -7,6 +7,7 @@ import android.text.TextUtils
 import androidx.preference.PreferenceManager
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.util.Settings.Value.SEARCH_ORDER_ATTRIBUTES_COUNT
 import kotlin.reflect.KProperty
 
 object Settings {
@@ -35,10 +36,20 @@ object Settings {
     var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
     var libraryGridCardWidthDP: Int by IntSetting(Key.LIBRARY_GRID_CARD_WIDTH, 150)
     var activeSites: List<Site> by ListSiteSetting("active_sites", Value.ACTIVE_SITES)
-    var contentSortField: Int by IntSetting2("pref_order_content_field", Default.ORDER_CONTENT_FIELD)
+    var contentSortField: Int by IntSetting2(
+        "pref_order_content_field",
+        Default.ORDER_CONTENT_FIELD
+    )
     var isContentSortDesc: Boolean by BoolSetting("pref_order_content_desc", false)
     var groupSortField: Int by IntSetting2("pref_order_group_field", Default.ORDER_GROUP_FIELD)
     var isGroupSortDesc: Boolean by BoolSetting("pref_order_group_desc", false)
+
+    // ADV SEARCH
+    val searchAttributesSortOrder: Int by IntSetting(
+        "pref_order_attribute_lists",
+        SEARCH_ORDER_ATTRIBUTES_COUNT
+    )
+    val searchAttributesCount: Boolean by BoolSetting("pref_order_attribute_count", true)
 
     // DOWNLOADER
 
@@ -262,6 +273,9 @@ object Settings {
         const val LIBRARY_DISPLAY_LIST = 0
         const val LIBRARY_DISPLAY_GRID = 1
         const val LIBRARY_DISPLAY_DEFAULT = LIBRARY_DISPLAY_LIST
+
+        const val SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0
+        const val SEARCH_ORDER_ATTRIBUTES_COUNT = 1
 
         // Sorting field codes for content and group
         const val ORDER_FIELD_NONE = -1
