@@ -1303,7 +1303,7 @@ object ObjectBoxDB {
         sortOrder: Int,
         page: Int,
         itemsPerPage: Int,
-        searchAttrCount : Boolean
+        searchAttrCount: Boolean
     ): List<Attribute> {
         val filteredContent = if (includeFreeAttrs) LongArray(0) else selectFilteredContent(
             groupId,
@@ -1313,8 +1313,6 @@ object ObjectBoxDB {
             contentType
         )
         if (filteredContent.isEmpty() && !attributeFilter.isNullOrEmpty() && !includeFreeAttrs) return emptyList()
-        val filteredContentAsSet: Set<Long> = filteredContent.toSet()
-        val libraryStatusAsSet: Set<Int> = libraryStatus.toSet()
         val result =
             queryAvailableAttributesQ(
                 type,
@@ -1325,24 +1323,18 @@ object ObjectBoxDB {
 
         // Compute attribute count for sorting
         if (searchAttrCount) {
-            var count: Int
-            for (a in result) {
+            result.forEach { a ->
                 // Only count the relevant Contents
-                count = a.contents.filter {
-                    libraryStatusAsSet.contains(it.status.code)
-                }.count {
-                    filteredContentAsSet.isEmpty() || filteredContentAsSet.contains(it.id)
-                }
-                a.count = count
+                a.count = countAttributeContents(a.id, libraryStatus, filteredContent).toInt()
             }
         }
 
         // Apply sort order
         var s = result.asSequence()
         s = if (Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
-            s.sortedBy { a -> -a.count }.sortedBy { a -> a.name }
+            s.sortedBy { -it.count }.sortedBy { it.name }
         } else {
-            s.sortedBy { a -> a.name }.sortedBy { a -> -a.count }
+            s.sortedBy { it.name }.sortedBy { -it.count }
         }
         // Apply paging on sorted items
         if (itemsPerPage > 0) {
@@ -1350,6 +1342,18 @@ object ObjectBoxDB {
             s = s.take(page * itemsPerPage).drop(start)
         }
         return s.toList()
+    }
+
+    private fun countAttributeContents(
+        attrId: Long,
+        status: IntArray,
+        filteredContentIds: LongArray
+    ): Long {
+        var qc: QueryCondition<Content> = Content_.status.oneOf(status)
+        if (filteredContentIds.isNotEmpty()) qc = qc.and(Content_.id.oneOf(filteredContentIds))
+        val contentFromAttributesQueryBuilder = store.boxFor(Content::class.java).query(qc)
+        contentFromAttributesQueryBuilder.link(Content_.attributes).equal(Attribute_.dbId, attrId)
+        return contentFromAttributesQueryBuilder.build().count()
     }
 
     fun countAvailableAttributesPerType(): SparseIntArray {
