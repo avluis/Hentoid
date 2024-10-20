@@ -79,6 +79,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        view.fitsSystemWindows = true
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel =
             ViewModelProvider(requireActivity(), vmFactory)[PreferencesViewModel::class.java]

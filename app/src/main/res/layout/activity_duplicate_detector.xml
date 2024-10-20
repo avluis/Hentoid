@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".activities.DuplicateDetectorActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -12,9 +13,9 @@
         android:layout_height="wrap_content"
         android:background="?colorPrimary"
         android:elevation="@dimen/toolbar_layout_elevation"
-        app:menu="@menu/duplicate_detector_menu"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/duplicate_detector_menu"
         app:navigationIcon="@drawable/ic_arrow_back"
         app:title="@string/tools_duplicate_detector_title"
         tools:ignore="UnusedAttribute" />

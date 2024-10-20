@@ -81,6 +81,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
             val parser = ToolsBundle(extras)
             contentSearchBundle = parser.contentSearchBundle
         }
+        view.fitsSystemWindows = true
 
         rootView = view
     }

@@ -10,6 +10,7 @@ import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.util.useLegacyInsets
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -20,7 +21,7 @@ class PrefsActivity : BaseActivity(), SearchPreferenceResultListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        useLegacyInsets()
         var rootKey: String? = null
         when {
             isViewerPrefs() -> rootKey = "viewer"
@@ -29,7 +30,6 @@ class PrefsActivity : BaseActivity(), SearchPreferenceResultListener {
             isStoragePrefs() -> rootKey = "storage"
         }
         fragment = PreferencesFragment.newInstance(rootKey)
-
         supportFragmentManager.commit {
             replace(android.R.id.content, fragment)
         }
@@ -90,6 +90,7 @@ class PrefsActivity : BaseActivity(), SearchPreferenceResultListener {
     override fun onSearchResultClicked(result: SearchPreferenceResult) {
         if (result.screen != null)
             fragment = fragment.navigateToScreen(supportFragmentManager, result.screen)
+        fragment.view?.fitsSystemWindows = true
         result.highlight(fragment)
     }
 }
