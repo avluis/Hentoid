@@ -70,6 +70,7 @@ import me.devsaki.hentoid.util.updateContentReadStats
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.ReorderWorker
+import me.devsaki.hentoid.workers.SplitMergeType
 import me.devsaki.hentoid.workers.data.DeleteData
 import me.devsaki.hentoid.workers.data.SplitMergeData
 import org.greenrobot.eventbus.EventBus
@@ -1886,27 +1887,15 @@ class ReaderViewModel(
     fun saveChapterPositions(chapters: List<Chapter>) {
         // User worker to reorder ImageFiles and associated files
         val builder = SplitMergeData.Builder()
+        builder.setOperation(SplitMergeType.REORDER)
         builder.setChapterIds(chapters.map { it.id })
         val workManager = WorkManager.getInstance(getApplication())
-        workManager.enqueue(
+        workManager.enqueueUniqueWork(
+            R.id.reorder_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
             OneTimeWorkRequest.Builder(ReorderWorker::class.java)
                 .setInputData(builder.data).build()
         )
-        /*
-        val theContent = content.value ?: return
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    doSaveChapterPositions(theContent.id, chapters.map { c -> c.id })
-                }
-                withContext(Dispatchers.Main) {
-                    reloadContent()
-                }
-            } catch (t: Throwable) {
-                Timber.e(t)
-            }
-        }
-         */
     }
 
     private fun onCacheCleanup() {
@@ -1922,17 +1911,4 @@ class ReaderViewModel(
     private fun formatCacheKey(img: ImageFile): String {
         return "img" + img.id
     }
-
-    internal data class FileOperation(
-        val sourceUri: String,
-        val targetName: String,
-        val targetData: ImageFile,
-        // Following fields valued during 2nd pass (buildPermutationGroups)
-        var source: DocumentFile? = null,
-        var target: DocumentFile? = null,
-        var isRename: Boolean = false,
-        var order: Int = -1,
-        var sequenceNumber: Int = -1,
-        var isLoop: Boolean = false
-    )
 }

@@ -610,6 +610,7 @@
     <!-- Merge & split -->
     <string name="notif_split_merge">Split / merge</string>
     <string name="merge_merge">Merge</string>
+    <string name="reorder_progress">Reordering pages…</string>
     <string name="merge_progress">Merging books…</string>
     <string name="split_progress">Splitting book…</string>
     <string name="merge_split">Split</string>

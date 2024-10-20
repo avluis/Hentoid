@@ -517,26 +517,11 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
     private fun onMenuItemClicked(item: MenuItem) {
         when (item.itemId) {
-            R.id.action_show_favorite_pages -> {
-                viewModel.filterFavouriteImages(!filterFavouritesState)
-            }
-
-            R.id.action_edit_chapters -> {
-                setChapterEditMode(EditMode.EDIT_CHAPTERS)
-            }
-
-            R.id.action_add_remove_chapters -> {
-                setChapterEditMode(EditMode.ADD_CHAPTER)
-            }
-
-            R.id.action_edit_confirm -> {
-                onConfirmChapterReordering()
-            }
-
-            R.id.action_edit_cancel -> {
-                onCancelChapterReordering()
-            }
-
+            R.id.action_show_favorite_pages -> viewModel.filterFavouriteImages(!filterFavouritesState)
+            R.id.action_edit_chapters -> setChapterEditMode(EditMode.EDIT_CHAPTERS)
+            R.id.action_add_remove_chapters -> setChapterEditMode(EditMode.ADD_CHAPTER)
+            R.id.action_edit_confirm -> onConfirmChapterReordering()
+            R.id.action_edit_cancel -> onCancelChapterReordering()
             R.id.action_reset_chapters -> {
                 val builder = MaterialAlertDialogBuilder(
                     requireActivity(),

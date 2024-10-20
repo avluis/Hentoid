@@ -57,6 +57,7 @@ import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.MergeWorker
+import me.devsaki.hentoid.workers.SplitMergeType
 import me.devsaki.hentoid.workers.SplitWorker
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -1017,7 +1018,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     ) {
         if (contentList.isEmpty()) return
         val builder = SplitMergeData.Builder()
-        builder.setOperation(1)
+        builder.setOperation(SplitMergeType.MERGE)
         builder.setContentIds(contentList.map { it.id })
         builder.setNewTitle(newTitle)
         builder.setUseBooksAsChapters(useBookAsChapter)
@@ -1037,7 +1038,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         chapters: List<Chapter>
     ) {
         val builder = SplitMergeData.Builder()
-        builder.setOperation(0)
+        builder.setOperation(SplitMergeType.SPLIT)
         builder.setContentIds(listOf(content.id))
         builder.setChapterIdsForSplit(chapters.map { it.id })
         //builder.setDeleteAfterOps(deleteAfterMerging)

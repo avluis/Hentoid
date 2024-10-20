@@ -42,7 +42,6 @@ import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeContent
-import me.devsaki.hentoid.viewmodels.ReaderViewModel.FileOperation
 import me.devsaki.hentoid.workers.data.SplitMergeData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -117,7 +116,6 @@ abstract class BaseSplitMergeWorker(
         nbProgress = 0
         nbError = 0
 
-        if (contentIds.isEmpty()) return
         when (operationType) {
             SplitMergeType.SPLIT -> split(contentIds.first())
             SplitMergeType.MERGE -> merge()
@@ -126,6 +124,7 @@ abstract class BaseSplitMergeWorker(
     }
 
     private fun split(contentId: Long) {
+        if (contentIds.isEmpty()) return
         val content = dao.selectContent(contentId) ?: return
         val chapters = dao.selectChapters(chapterSplitIds.toList())
         var targetFolder: DocumentFile? = null
@@ -203,6 +202,7 @@ abstract class BaseSplitMergeWorker(
     }
 
     private fun merge() {
+        if (contentIds.isEmpty()) return
         val contentList = dao.selectContent(contentIds)
         val removedContents: MutableSet<Long> = HashSet()
         if (contentList.isEmpty()) return
@@ -305,7 +305,8 @@ abstract class BaseSplitMergeWorker(
 
     private fun reorder() {
         if (chapterIds.size < 2) return
-        val contentId = dao.selectChapter(chapterIds.first())?.contentId ?: return
+        val content = dao.selectChapter(chapterIds.first())
+        val contentId = content?.contentId ?: return
 
         val chapterStr = applicationContext.getString(R.string.gallery_chapter_prefix)
         if (null == VANILLA_CHAPTERNAME_PATTERN)
@@ -380,8 +381,7 @@ abstract class BaseSplitMergeWorker(
             }
         }
 
-        val nbTasks = finalOps.size
-        var nbProcessedTasks = 1
+        nbMax = finalOps.size
 
         // Perform swaps by exchanging file content
         // NB : "thanks to" SAF; this works faster than renaming the files :facepalm:
@@ -435,28 +435,14 @@ abstract class BaseSplitMergeWorker(
                     op.targetData.fileUri = op.target?.uri?.toString() ?: ""
                 }
             }
-
-            EventBus.getDefault().post(
-                ProcessEvent(
-                    ProcessEvent.Type.PROGRESS,
-                    R.id.generic_progress,
-                    0,
-                    nbProcessedTasks++,
-                    0,
-                    nbTasks
-                )
-            )
+            progressPlus(content.name)
         }
 
         // Finalize
         dao.insertImageFiles(orderedImages)
         val finalContent = dao.selectContent(contentId)
         if (finalContent != null) persistJson(applicationContext, finalContent)
-        EventBus.getDefault().postSticky(
-            ProcessEvent(
-                ProcessEvent.Type.COMPLETE, R.id.generic_progress, 0, nbTasks, 0, nbTasks
-            )
-        )
+        progressDone(nbMax)
 
         // Reset Glide cache as it gets confused by the swapping
         Glide.get(applicationContext).clearDiskCache()
@@ -557,7 +543,11 @@ abstract class BaseSplitMergeWorker(
         EventBus.getDefault().post(
             ProcessEvent(
                 ProcessEvent.Type.PROGRESS,
-                if (SplitMergeType.SPLIT == operationType) R.id.split_service else R.id.merge_service,
+                when (operationType) {
+                    SplitMergeType.SPLIT -> R.id.split_service
+                    SplitMergeType.MERGE -> R.id.merge_service
+                    SplitMergeType.REORDER -> R.id.generic_progress
+                },
                 0,
                 nbProgress,
                 nbError,
@@ -578,7 +568,11 @@ abstract class BaseSplitMergeWorker(
         EventBus.getDefault().postSticky(
             ProcessEvent(
                 ProcessEvent.Type.COMPLETE,
-                if (SplitMergeType.SPLIT == operationType) R.id.split_service else R.id.merge_service,
+                when (operationType) {
+                    SplitMergeType.SPLIT -> R.id.split_service
+                    SplitMergeType.MERGE -> R.id.merge_service
+                    SplitMergeType.REORDER -> R.id.generic_progress
+                },
                 0,
                 nbProgress,
                 nbError,
@@ -586,6 +580,19 @@ abstract class BaseSplitMergeWorker(
             )
         )
     }
+
+    private data class FileOperation(
+        val sourceUri: String,
+        val targetName: String,
+        val targetData: ImageFile,
+        // Following fields valued during 2nd pass (buildPermutationGroups)
+        var source: DocumentFile? = null,
+        var target: DocumentFile? = null,
+        var isRename: Boolean = false,
+        var order: Int = -1,
+        var sequenceNumber: Int = -1,
+        var isLoop: Boolean = false
+    )
 }
 
 class SplitWorker(context: Context, parameters: WorkerParameters) :
