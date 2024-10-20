@@ -405,7 +405,8 @@ object DatabaseMaintenance {
                             null,
                             Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
                             0,
-                            0
+                            0,
+                            Settings.searchAttributesCount
                         ).toMutableList()
                         artists.addAll(
                             ObjectBoxDB.selectAvailableAttributes(
@@ -419,7 +420,8 @@ object DatabaseMaintenance {
                                 null,
                                 Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
                                 0,
-                                0
+                                0,
+                                Settings.searchAttributesCount
                             )
                         )
                         var order = 1

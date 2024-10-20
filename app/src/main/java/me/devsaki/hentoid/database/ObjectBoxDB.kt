@@ -1302,7 +1302,8 @@ object ObjectBoxDB {
         filter: String?,
         sortOrder: Int,
         page: Int,
-        itemsPerPage: Int
+        itemsPerPage: Int,
+        searchAttrCount : Boolean
     ): List<Attribute> {
         val filteredContent = if (includeFreeAttrs) LongArray(0) else selectFilteredContent(
             groupId,
@@ -1323,14 +1324,14 @@ object ObjectBoxDB {
             ).safeFind()
 
         // Compute attribute count for sorting
-        if (Settings.searchAttributesCount) { // TODO get that call to Prefs out of there
+        if (searchAttrCount) {
             var count: Int
             for (a in result) {
                 // Only count the relevant Contents
-                count = a.contents.filter { c ->
-                    libraryStatusAsSet.contains(c.status.code)
-                }.count { c ->
-                    filteredContentAsSet.isEmpty() || filteredContentAsSet.contains(c.id)
+                count = a.contents.filter {
+                    libraryStatusAsSet.contains(it.status.code)
+                }.count {
+                    filteredContentAsSet.isEmpty() || filteredContentAsSet.contains(it.id)
                 }
                 a.count = count
             }

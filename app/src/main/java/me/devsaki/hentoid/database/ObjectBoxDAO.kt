@@ -995,7 +995,8 @@ class ObjectBoxDAO : CollectionDAO {
                             filter,
                             sortOrder,
                             pageNum,
-                            itemPerPage
+                            itemPerPage,
+                            Settings.searchAttributesCount
                         )
                     )
                     totalSelectedAttributes += ObjectBoxDB.countAvailableAttributes(
