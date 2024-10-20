@@ -56,6 +56,9 @@ data class Chapter(
         this.content.target = content
     }
 
+    val contentId: Long
+        get() = content.targetId
+
     val imageList: List<ImageFile>
         get() = imageFiles.reach(this)
 

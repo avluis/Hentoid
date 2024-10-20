@@ -105,6 +105,7 @@ import java.io.IOException
 import java.net.URL
 import java.time.Instant
 import java.util.Locale
+import java.util.regex.Pattern
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.log10
@@ -174,6 +175,7 @@ private val queueTabStatus = intArrayOf(StatusContent.DOWNLOADING.code, StatusCo
 // TODO empty this cache at some point
 private val fileNameMatchCache: MutableMap<String, String> = HashMap()
 
+var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
 
 fun getLibraryStatuses(): IntArray {
     return libraryStatus
