@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.customssiv.decoder;
 
 import static android.content.Context.ACTIVITY_SERVICE;
+import static me.devsaki.hentoid.customssiv.decoder.SkiaDecoderHelperKt.getResourceId;
 
 import android.app.ActivityManager;
 import android.content.ContentResolver;
@@ -143,7 +144,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
         BitmapRegionDecoder decoder;
         long localFileLength = Long.MAX_VALUE;
         if (uriString.startsWith(RESOURCE_PREFIX)) {
-            int id = SkiaDecoderHelper.getResourceId(context, uri);
+            int id = getResourceId(context, uri);
             try (AssetFileDescriptor descriptor = context.getResources().openRawResourceFd(id)) {
                 localFileLength = descriptor.getLength();
             } catch (Exception e) {

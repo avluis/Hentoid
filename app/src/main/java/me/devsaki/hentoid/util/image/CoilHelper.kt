@@ -17,9 +17,13 @@ import coil3.request.ImageRequest
 import coil3.request.Options
 import coil3.request.target
 import com.github.penfeizhou.animation.apng.APNGDrawable
-import com.github.penfeizhou.animation.apng.decode.APNGParser
+import com.github.penfeizhou.animation.io.ByteBufferReader
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.util.getContentHeaders
+import okio.BufferedSource
+import timber.log.Timber
+import java.io.InputStream
+import java.nio.ByteBuffer
 
 
 fun clearCoilCache(context: Context, memory: Boolean = true, file: Boolean = true) {
@@ -59,19 +63,42 @@ fun ImageView.loadCover(content: Content) {
 class AnimatedPngDecoder(private val source: ImageSource) : Decoder {
 
     override suspend fun decode(): DecodeResult {
+        // We must buffer the source into memory as APNGDrawable decodes
+        // the image lazily at draw time which is prohibited by Coil.
+        val buffer = source.source().squashToDirectByteBuffer()
         return DecodeResult(
-            image = APNGDrawable.fromFile(source.file().toString()).asImage(),
-            isSampled = false
+            image = APNGDrawable { ByteBufferReader(buffer) }.asImage(),
+            isSampled = false,
         )
     }
 
+    private fun BufferedSource.squashToDirectByteBuffer(): ByteBuffer {
+        // Squash bytes to BufferedSource inner buffer then we know total byteCount.
+        request(Long.MAX_VALUE)
+
+        val byteBuffer = ByteBuffer.allocateDirect(buffer.size.toInt())
+        while (!buffer.exhausted()) buffer.read(byteBuffer)
+        byteBuffer.flip()
+        return byteBuffer
+    }
+
     class Factory : Decoder.Factory {
+
+        private fun isApng(input: InputStream): Boolean {
+            val data = ByteArray(1000)
+            input.read(data, 0, 1000)
+            return getMimeTypeFromPictureBinary(data, 1000) == MIME_IMAGE_APNG
+        }
+
         override fun create(
             result: SourceFetchResult,
             options: Options,
-            imageLoader: ImageLoader
+            imageLoader: ImageLoader,
         ): Decoder? {
-            return if (APNGParser.isAPNG(result.source.file().toString())) {
+            Timber.i("what do we have here?")
+            val stream = result.source.source().peek().inputStream()
+            return if (isApng(stream)) {
+                Timber.i("we got an APNG")
                 AnimatedPngDecoder(result.source)
             } else {
                 null

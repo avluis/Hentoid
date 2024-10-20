@@ -1,24 +1,21 @@
-package me.devsaki.hentoid.customssiv.decoder;
+package me.devsaki.hentoid.customssiv.decoder
 
-import static me.devsaki.hentoid.customssiv.util.HelperKt.copy;
-import static me.devsaki.hentoid.customssiv.util.ImageHelperKt.isImageAnimated;
+import android.content.ContentResolver
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ColorSpace
+import android.net.Uri
+import me.devsaki.hentoid.customssiv.exception.UnsupportedContentException
+import me.devsaki.hentoid.customssiv.util.copy
+import me.devsaki.hentoid.customssiv.util.isImageAnimated
+import timber.log.Timber
+import java.io.IOException
+import java.io.InputStream
+import java.nio.ByteBuffer
+import java.nio.MappedByteBuffer
+import kotlin.math.min
 
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ColorSpace;
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import me.devsaki.hentoid.customssiv.exception.UnsupportedContentException;
 
 /**
  * Default implementation of {@link ImageDecoder}
@@ -26,71 +23,83 @@ import me.devsaki.hentoid.customssiv.exception.UnsupportedContentException;
  * works well in most circumstances and has reasonable performance, however it has some problems
  * with grayscale, indexed and CMYK images.
  */
-public class SkiaImageDecoder implements ImageDecoder {
 
-    private static final String FILE_PREFIX = "file://";
-    private static final String ASSET_PREFIX = FILE_PREFIX + "/android_asset/";
-    private static final String RESOURCE_PREFIX = ContentResolver.SCHEME_ANDROID_RESOURCE + "://";
+private const val FILE_PREFIX = "file://"
+private const val ASSET_PREFIX = "$FILE_PREFIX/android_asset/"
+private const val RESOURCE_PREFIX = ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
 
-    private final Bitmap.Config bitmapConfig;
-
-
-    public SkiaImageDecoder(@NonNull Bitmap.Config bitmapConfig) {
-        this.bitmapConfig = bitmapConfig;
+class ByteBufferBackedInputStream(private var buf: ByteBuffer) : InputStream() {
+    @Throws(IOException::class)
+    override fun read(): Int {
+        if (!buf.hasRemaining()) {
+            return -1
+        }
+        return buf.get().toInt() and 0xFF
     }
 
-    @Override
-    @NonNull
-    public Bitmap decode(@NonNull final Context context, @NonNull final Uri uri) throws IOException, PackageManager.NameNotFoundException, UnsupportedContentException {
-        String uriString = uri.toString();
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap bitmap = null;
-        options.inPreferredConfig = bitmapConfig;
+    @Throws(IOException::class)
+    override fun read(bytes: ByteArray, off: Int, len: Int): Int {
+        if (!buf.hasRemaining()) return -1
+
+        val theLen = min(len, buf.remaining())
+        buf[bytes, off, theLen]
+        return theLen
+    }
+
+    override fun close() {
+        buf.clear()
+        super.close()
+    }
+}
+
+class SkiaImageDecoder(private val bitmapConfig: Bitmap.Config) : ImageDecoder {
+    override fun decode(context: Context, uri: Uri): Bitmap {
+        val uriString = uri.toString()
+        val options = BitmapFactory.Options()
+        var bitmap: Bitmap? = null
+        options.inPreferredConfig = bitmapConfig
+
         // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
         // which makes resizing buggy (generates a black picture)
-        options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
+        options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB)
 
         if (uriString.startsWith(RESOURCE_PREFIX)) {
-            int id = SkiaDecoderHelper.getResourceId(context, uri);
-            bitmap = BitmapFactory.decodeResource(context.getResources(), id, options);
+            val id = getResourceId(context, uri)
+            bitmap = BitmapFactory.decodeResource(context.resources, id, options)
         } else if (uriString.startsWith(ASSET_PREFIX)) {
-            String assetName = uriString.substring(ASSET_PREFIX.length());
-            bitmap = BitmapFactory.decodeStream(context.getAssets().open(assetName), null, options);
+            val assetName = uriString.substring(ASSET_PREFIX.length)
+            bitmap = BitmapFactory.decodeStream(context.assets.open(assetName), null, options)
         } else {
-            InputStream fileStream = null;
-            try (InputStream input = context.getContentResolver().openInputStream(uri)) {
-                if (input == null)
-                    throw new RuntimeException("Content resolver returned null stream. Unable to initialise with uri.");
-
-                // First examine header
-                byte[] header = new byte[400];
-                if (input.read(header) > 0) {
-                    if (isImageAnimated(header))
-                        throw new UnsupportedContentException("SSIV doesn't handle animated pictures");
-
-                    // If it passes, load the whole picture
-                    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                        baos.write(header, 0, 400);
-
-                        copy(input, baos);
-
-                        fileStream = new ByteArrayInputStream(baos.toByteArray());
+            var fileStream: InputStream? = null
+            var size = 0
+            context.contentResolver.openFileDescriptor(uri, "r")?.use {
+                size = it.statSize.toInt()
+            }
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                if (size > 0) {
+                    // First examine header
+                    val header = ByteArray(400)
+                    if (input.read(header) > 0) {
+                        if (isImageAnimated(header))
+                            throw UnsupportedContentException("SSIV doesn't handle animated pictures")
+                        val bb = MappedByteBuffer.allocate(size)
+                        bb.put(header)
+                        copy(input, bb)
+                        fileStream = ByteBufferBackedInputStream(bb.asReadOnlyBuffer())
                     }
+                } else {
+                    Timber.e("Size is zero!")
                 }
             }
-
-            if (fileStream != null) {
-                try {
-                    bitmap = BitmapFactory.decodeStream(fileStream, null, options);
-                } finally {
-                    fileStream.close();
-                }
+                ?: throw RuntimeException("Content resolver returned null stream. Unable to initialise with uri.")
+            fileStream?.use {
+                bitmap = BitmapFactory.decodeStream(fileStream, null, options)
             }
         }
-        if (bitmap == null) {
-            throw new RuntimeException("Skia image region decoder returned null bitmap - image format may not be supported");
+        bitmap?.let {
+            return it
+        } ?: run {
+            throw RuntimeException("Skia image region decoder returned null bitmap - image format may not be supported")
         }
-
-        return bitmap;
     }
 }

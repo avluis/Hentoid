@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.customssiv.decoder;
 
+import static me.devsaki.hentoid.customssiv.decoder.SkiaDecoderHelperKt.getResourceId;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -52,7 +54,7 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
     public Point init(Context context, @NonNull Uri uri) throws IOException, PackageManager.NameNotFoundException {
         String uriString = uri.toString();
         if (uriString.startsWith(RESOURCE_PREFIX)) {
-            int id = SkiaDecoderHelper.getResourceId(context, uri);
+            int id = getResourceId(context, uri);
             decoder = BitmapRegionDecoder.newInstance(context.getResources().openRawResource(id), false);
         } else if (uriString.startsWith(ASSET_PREFIX)) {
             String assetName = uriString.substring(ASSET_PREFIX.length());

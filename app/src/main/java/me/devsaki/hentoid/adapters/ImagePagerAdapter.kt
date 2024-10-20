@@ -588,11 +588,11 @@ class ImagePagerAdapter(val context: Context) :
         override fun onImageLoadError(e: Throwable) {
             Timber.d(
                 e,
-                "Picture %d : SSIV loading failed; reloading with Glide : %s",
+                "Picture %d : SSIV loading failed; reloading on ImageVIew : %s",
                 absoluteAdapterPosition,
                 img!!.fileUri
             )
-            // Fall back to Glide
+            // Fall back to ImageView
             forceImageView()
             // Reload adapter
             notifyItemChanged(layoutPosition)

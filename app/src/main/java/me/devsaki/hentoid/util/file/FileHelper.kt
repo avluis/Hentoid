@@ -683,14 +683,14 @@ fun getFileNameWithoutExtension(filePath: String): String {
  * @throws IOException In case something horrible happens during I/O
  */
 @Throws(IOException::class)
-fun saveBinary(context: Context, uri: Uri, binaryData: ByteArray?) {
+fun saveBinary(context: Context, uri: Uri, binaryData: ByteArray) {
     getOutputStream(context, uri)?.let {
         saveBinary(it, binaryData)
     }
 }
 
 @Throws(IOException::class)
-fun saveBinary(out: OutputStream, binaryData: ByteArray?) {
+fun saveBinary(out: OutputStream, binaryData: ByteArray) {
     val buffer = ByteArray(FILE_IO_BUFFER_SIZE)
     var count: Int
     ByteArrayInputStream(binaryData).use { input ->
