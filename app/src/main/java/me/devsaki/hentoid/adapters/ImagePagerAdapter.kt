@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import coil3.load
 import coil3.request.ErrorResult
 import coil3.request.SuccessResult
+import coil3.request.transformations
 import kotlinx.coroutines.Runnable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiConsumer
@@ -36,6 +37,8 @@ import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.image.NullTransformation
+import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import me.devsaki.hentoid.util.image.screenHeight
 import me.devsaki.hentoid.util.image.screenWidth
 import me.devsaki.hentoid.views.ZoomableRecyclerView
@@ -436,21 +439,18 @@ class ImagePagerAdapter(val context: Context) :
                 val view = imgView as ImageView
                 Timber.d("Using Coil")
                 Timber.d("Using uri $uri")
+                val transformation = if (autoRotate) SmartRotateTransformation(
+                    90f,
+                    screenWidth,
+                    screenHeight
+                ) else NullTransformation()
                 view.load(uri) {
+                    transformations(transformation)
                     listener(
                         onError = { _, err -> onCoilLoadFailed(err) },
                         onSuccess = { _, res -> onCoilLoadSuccess(res) }
                     )
                 }
-                /*
-                val centerInside: Transformation<Bitmap> = CenterInside()
-                val smartRotate90 = if (autoRotate) SmartRotateTransformation(
-                    90f, screenWidth, screenHeight
-                ) else UnitTransformation.get()
-                Glide.with(view).load(uri)
-                    .optionalTransform(MultiTransformation(centerInside, smartRotate90))
-                    .listener(this).into(view)
-                 */
             }
         }
 
