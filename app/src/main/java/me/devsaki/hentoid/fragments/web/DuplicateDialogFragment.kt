@@ -114,11 +114,6 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
                     )
                 }
                 ivCover.load(thumbLocation)
-                /*
-                if (thumbLocation.startsWith("http")) Glide.with(ivCover).load(thumbLocation)
-                    .apply(glideRequestOptions).into(ivCover) else Glide.with(ivCover)
-                    .load(Uri.parse(thumbLocation)).apply(glideRequestOptions).into(ivCover)
-                 */
             }
             @DrawableRes val resId = getFlagResourceId(context, libraryContent)
             if (resId != 0) {

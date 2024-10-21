@@ -130,46 +130,6 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
 
             // Image
             image.loadStill(item.image.fileUri)
-            /*
-            Glide.with(image)
-                .load(Uri.parse(item.image.fileUri))
-                .signature(ObjectKey(item.image.uniqueHash()))
-                .addListener(object : RequestListener<Drawable> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false
-                    }
-
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        model: Any,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        var handled = false
-                        // If animated, only load frame zero as a plain bitmap
-                        if (target != null && resource is FrameAnimationDrawable<*>) {
-                            target.onResourceReady(
-                                BitmapDrawable(
-                                    image.resources,
-                                    resource.frameSeqDecoder.getFrameBitmap(0)
-                                ), null
-                            )
-                            resource.stop()
-                            handled = true
-                        }
-                        return handled
-                    }
-                })
-                .apply(glideOptionCenterInside)
-                .into(image)
-
-             */
         }
 
         private fun updateText(item: ImageFileItem) {
@@ -188,7 +148,6 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
 
         override fun unbindView(item: ImageFileItem) {
             image.dispose()
-            //if (isValidContextForGlide(image)) Glide.with(image).clear(image)
         }
     }
 }

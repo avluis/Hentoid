@@ -1259,24 +1259,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 val nextImg = adapter.getImageAt(absIndex + 1)
                 if (previousImg != null) {
                     previousImageView.load(previousImg.fileUri)
-                    /*
-                    Glide.with(previousImageView).load(Uri.parse(previousImg.fileUri))
-                        .apply(glideOptionCenterInside).into(previousImageView)
-                     */
                     previousImageView.visibility = View.VISIBLE
                 } else previousImageView.visibility = View.INVISIBLE
                 if (currentImg != null) controlsOverlay.imagePreviewCenter.load(currentImg.fileUri)
-                /*
-                Glide.with(controlsOverlay.imagePreviewCenter)
-                .load(Uri.parse(currentImg.fileUri)).apply(glideOptionCenterInside)
-                .into(controlsOverlay.imagePreviewCenter)
-                 */
                 if (nextImg != null) {
                     nextImageView.load(nextImg.fileUri)
-                    /*
-                    Glide.with(nextImageView).load(Uri.parse(nextImg.fileUri))
-                        .apply(glideOptionCenterInside).into(nextImageView)
-                     */
                     nextImageView.visibility = View.VISIBLE
                 } else nextImageView.visibility = View.INVISIBLE
             }

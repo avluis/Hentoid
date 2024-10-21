@@ -63,7 +63,7 @@ class ImagePagerAdapter(val context: Context) :
     ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder>(IMAGE_DIFF_CALLBACK) {
 
     enum class ImageType(val value: Int) {
-        IMG_TYPE_OTHER(0), // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Glide if animation detected
+        IMG_TYPE_OTHER(0), // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Coil if animation detected
         IMG_TYPE_GIF(1), // Static and animated GIFs -> use APNG4Android library
         IMG_TYPE_APNG(2), // Animated PNGs -> use APNG4Android library
         IMG_TYPE_AWEBP(3) // Animated WEBPs -> use APNG4Android library

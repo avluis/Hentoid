@@ -205,22 +205,8 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
                 it.ivCover.visibility = View.VISIBLE
                 if (thumbLocation.startsWith("http")) {
                     it.ivCover.load(thumbLocation)
-/*
-                    bindOnlineCover(thumbLocation, contents[0])?.let { glideUrl ->
-                        Glide.with(it.ivCover)
-                            .load(glideUrl)
-                            .apply(glideOptionCenterInside)
-                            .into(it.ivCover)
-                    }
- */
                 } else  // From stored picture
                     it.ivCover.load(thumbLocation)
-                    /*
-                    Glide.with(it.ivCover)
-                        .load(Uri.parse(thumbLocation))
-                        .apply(glideOptionCenterInside)
-                        .into(it.ivCover)
-                     */
             }
 
             // Flag (language)

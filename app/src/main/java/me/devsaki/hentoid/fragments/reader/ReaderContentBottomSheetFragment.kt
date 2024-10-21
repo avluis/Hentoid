@@ -117,21 +117,6 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
             } else {
                 ivCover.visibility = View.VISIBLE
                 ivCover.load(thumbLocation)
-                /*
-                if (thumbLocation.startsWith("http")) {
-                    val glideUrl = bindOnlineCover(thumbLocation, content)
-                    if (glideUrl != null) {
-                        Glide.with(ivCover)
-                            .load(glideUrl)
-                            .apply(glideRequestOptions)
-                            .into(ivCover)
-                    }
-                } else Glide.with(ivCover)
-                    .load(Uri.parse(thumbLocation))
-                    .apply(glideRequestOptions)
-                    .into(ivCover)
-
-                 */
             }
             if (openOnTap) ivCover.setOnClickListener {
                 openReader(

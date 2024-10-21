@@ -8,7 +8,6 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import coil3.dispose
-import coil3.load
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -22,6 +21,7 @@ import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getRatingResourceId
+import me.devsaki.hentoid.util.image.loadStill
 
 class GroupDisplayItem(
     val group: Group,
@@ -157,19 +157,7 @@ class GroupDisplayItem(
                     return
                 }
                 it.visibility = View.VISIBLE
-                it.load(uri)
-                /*
-                if (uri.startsWith("http")) Glide.with(it)
-                    .load(uri)
-                    .signature(ObjectKey(uri))
-                    .apply(glideRequestOptions)
-                    .into(it)
-                else Glide.with(it)
-                    .load(Uri.parse(uri))
-                    .signature(ObjectKey(uri))
-                    .apply(glideRequestOptions)
-                    .into(it)
-                 */
+                it.loadStill(uri)
             }
         }
 
@@ -180,7 +168,6 @@ class GroupDisplayItem(
 
         override fun unbindView(item: GroupDisplayItem) {
             ivCover?.dispose()
-            //if (isValidContextForGlide(it)) Glide.with(it).clear(it)
         }
     }
 }

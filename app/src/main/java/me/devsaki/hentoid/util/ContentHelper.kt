@@ -1708,46 +1708,6 @@ fun formatSeriesForDisplay(
     }
 }
 
-/*
-/**
- * Transform the given online URL into a working GlideUrl using the given Content's cookies
- * (useful when viewing queue screen before any image has been downloaded)
- *
- * @param imageUrl URL of the online picture to transform
- * @param content  Content to use for cookies / referer
- * @return Working GlideUrl pointing to the given image URL, using the correct cookies / referer
- */
-fun bindOnlineCover(
-    imageUrl: String,
-    content: Content?
-): GlideUrl? {
-    if (getWebViewAvailable()) {
-        var cookieStr: String? = null
-        var referer: String? = null
-        var builder = LazyHeaders.Builder()
-
-        // Quickly skip JSON deserialization if there are no cookies in downloadParams
-        if (content != null) {
-            val downloadParamsStr = content.downloadParams
-            if (downloadParamsStr.contains(HEADER_COOKIE_KEY)) {
-                val downloadParams = parseDownloadParams(downloadParamsStr)
-                cookieStr = downloadParams[HEADER_COOKIE_KEY]
-                referer = downloadParams[HEADER_REFERER_KEY]
-            }
-            if (null == cookieStr) cookieStr = getCookies(content.galleryUrl)
-            if (null == referer) referer = content.galleryUrl
-            builder = builder.addHeader(HEADER_COOKIE_KEY, cookieStr).addHeader(
-                HEADER_REFERER_KEY,
-                referer
-            ).addHeader(HEADER_USER_AGENT, content.site.userAgent)
-        }
-
-        return GlideUrl(imageUrl, builder.build()) // From URL
-    }
-    return null
-}
- */
-
 fun getContentHeaders(content: Content?): List<Pair<String, String>> {
     if (getWebViewAvailable()) {
         var cookieStr: String? = null

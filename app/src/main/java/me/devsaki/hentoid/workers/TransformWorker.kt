@@ -70,7 +70,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
         // Reset Coil cache as it gets confused by the resizing
         clearCoilCache(applicationContext)
-        //Glide.get(applicationContext).clearDiskCache()
     }
 
     override fun getToWork(input: Data) {

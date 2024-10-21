@@ -146,12 +146,6 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
                     sizeStr
                 )
                 binding.ivThumb.load(it.fileUri)
-                /*
-                Glide.with(binding.ivThumb)
-                    .load(Uri.parse(it.fileUri))
-                    .apply(glideRequestOptions)
-                    .into(binding.ivThumb)
-                 */
             } else {
                 binding.imageStats.setText(R.string.image_not_found)
                 binding.imgActionFavourite.imageTintList = ColorStateList.valueOf(grayColor)

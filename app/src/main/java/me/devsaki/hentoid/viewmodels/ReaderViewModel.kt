@@ -2062,7 +2062,6 @@ class ReaderViewModel(
 
         // Reset Coil cache as it gets confused by the swapping
         clearCoilCache(getApplication())
-        //Glide.get(getApplication()).clearDiskCache()
     }
 
     /**
