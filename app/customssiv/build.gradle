@@ -44,7 +44,6 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation("com.squareup.okio:okio:3.9.1")
 
     implementation project(path: ':app:gles-renderer')
 }
