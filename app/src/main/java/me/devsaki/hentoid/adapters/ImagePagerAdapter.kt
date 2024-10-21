@@ -462,7 +462,7 @@ class ImagePagerAdapter(val context: Context) :
             }
 
         // ImageView
-        // TODO doesn't work for Glide as it doesn't use ImageView's scaling
+        // TODO doesn't work for Coil as it doesn't use ImageView's scaling
         var absoluteScale: Float
             get() {
                 return if (!isImageView) {

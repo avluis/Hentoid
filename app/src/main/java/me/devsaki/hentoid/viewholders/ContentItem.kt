@@ -16,7 +16,6 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import coil3.dispose
-import coil3.load
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
@@ -52,6 +51,7 @@ import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getRatingResourceId
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.loadCover
+import me.devsaki.hentoid.util.image.loadStill
 import me.devsaki.hentoid.util.isInQueue
 import timber.log.Timber
 import java.util.Locale
@@ -381,45 +381,14 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         }
 
         private fun attachContentCover(content: Content) {
-            ivCover.loadCover(content)
-            /*
-            val thumbLocation = content.cover.usableUri
-            if (thumbLocation.isEmpty()) {
-                ivCover.visibility = View.INVISIBLE
-                return
-            }
-            ivCover.visibility = View.VISIBLE
-
-            // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-            if (thumbLocation.startsWith("http")) {
-                val glideUrl = bindOnlineCover(thumbLocation, content)
-                if (glideUrl != null) {
-                    Glide.with(ivCover).load(glideUrl).signature(ObjectKey(content.uniqueHash()))
-                        .apply(glideRequestOptions).into(ivCover)
-                }
-            } else  // From stored picture
-                Glide.with(ivCover).load(Uri.parse(thumbLocation))
-                    .signature(ObjectKey(content.uniqueHash())).apply(glideRequestOptions)
-                    .into(ivCover)
-             */
+            ivCover.loadCover(content, true)
         }
 
         private fun attachChapterCover(chapter: Chapter) {
             val thumbLocation = chapter.imageList.firstOrNull()?.usableUri
             if (thumbLocation != null) {
-                ivCover.load(thumbLocation)
+                ivCover.loadStill(thumbLocation)
                 ivCover.visibility = View.VISIBLE
-                /*
-                val glideRequest = Glide.with(ivCover)
-
-                val builder = if (thumbLocation.startsWith("http")) glideRequest.load(
-                    bindOnlineCover(thumbLocation, null)
-                )
-                else glideRequest.load(Uri.parse(thumbLocation))
-
-                builder.signature(ObjectKey(chapter.uniqueHash())).apply(glideRequestOptions)
-                    .into(ivCover)
-                 */
             } else {
                 ivCover.visibility = View.INVISIBLE
             }
@@ -655,7 +624,6 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             debugStr = "[no data]"
             swipeableView.translationX = 0f
             ivCover.dispose()
-            //if (isValidContextForGlide(ivCover)) Glide.with(ivCover).clear(ivCover)
         }
 
         override fun onDragged() {

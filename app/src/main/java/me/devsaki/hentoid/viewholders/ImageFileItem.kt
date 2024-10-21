@@ -1,9 +1,6 @@
 package me.devsaki.hentoid.viewholders
 
 import android.graphics.Typeface
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -11,7 +8,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import coil3.dispose
-import coil3.load
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IExpandable
 import com.mikepenz.fastadapter.IParentItem
@@ -21,6 +17,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.util.image.loadStill
 
 private const val HEART_SYMBOL = "❤"
 
@@ -132,8 +129,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
             } else chapterOverlay.visibility = View.GONE
 
             // Image
-            // TODO  If animated, only load frame zero as a plain bitmap
-            image.load(item.image.fileUri)
+            image.loadStill(item.image.fileUri)
             /*
             Glide.with(image)
                 .load(Uri.parse(item.image.fileUri))

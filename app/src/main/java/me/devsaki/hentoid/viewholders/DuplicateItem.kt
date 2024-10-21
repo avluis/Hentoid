@@ -143,25 +143,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         }
 
         private fun attachCover(content: Content) {
-            ivCover?.loadCover(content)
-            /*
-            ivCover?.let {
-                val thumbLocation = content.cover.usableUri
-                if (thumbLocation.isEmpty()) {
-                    it.visibility = View.INVISIBLE
-                    return
-                }
-                it.visibility = View.VISIBLE
-                if (thumbLocation.startsWith("http")) {
-                    bindOnlineCover(thumbLocation, content)?.let { glideUrl ->
-                        Glide.with(it).load(glideUrl).apply(glideRequestOptions).into(it)
-                    }
-                } else Glide.with(it)
-                    .load(Uri.parse(thumbLocation))
-                    .apply(glideRequestOptions)
-                    .into(it)
-        }
-            */
+            ivCover?.loadCover(content, true)
         }
 
         private fun attachFlag(content: Content) {
@@ -320,11 +302,6 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
 
         override fun unbindView(item: DuplicateItem) {
             ivCover?.dispose()
-            /*
-        ivCover?.let {
-            //if (isValidContextForGlide(it)) Glide.with(it).clear(it)
-        }
-             */
         }
     }
 }

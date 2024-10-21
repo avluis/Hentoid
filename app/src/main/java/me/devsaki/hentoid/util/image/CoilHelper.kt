@@ -16,15 +16,17 @@ import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.Options
 import coil3.request.target
+import coil3.serviceLoaderEnabled
 import com.github.penfeizhou.animation.apng.APNGDrawable
 import com.github.penfeizhou.animation.io.ByteBufferReader
+import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.util.getContentHeaders
 import okio.BufferedSource
-import timber.log.Timber
 import java.io.InputStream
 import java.nio.ByteBuffer
 
+private val stillImageLoader: ImageLoader by lazy { initStillImageLoader() }
 
 fun clearCoilCache(context: Context, memory: Boolean = true, file: Boolean = true) {
     val imageLoader = context.imageLoader
@@ -32,8 +34,19 @@ fun clearCoilCache(context: Context, memory: Boolean = true, file: Boolean = tru
     if (file) imageLoader.diskCache?.clear()
 }
 
-fun ImageView.loadCover(content: Content) {
-    // TODO  If animated, only load frame zero as a plain bitmap
+private fun initStillImageLoader(): ImageLoader {
+    return ImageLoader.Builder(HentoidApp.getInstance()).serviceLoaderEnabled(false).build()
+}
+
+fun ImageView.loadStill(data: Any) {
+    val request = ImageRequest.Builder(context)
+        .data(data)
+        .target(this)
+
+    stillImageLoader.enqueue(request.build())
+}
+
+fun ImageView.loadCover(content: Content, disableAnimation: Boolean = false) {
     val thumbLocation = content.cover.usableUri
     if (thumbLocation.isEmpty()) {
         this.visibility = View.INVISIBLE
@@ -57,7 +70,9 @@ fun ImageView.loadCover(content: Content) {
         .target(this)
         .httpHeaders(networkHeaders)
 
-    SingletonImageLoader.get(this.context).enqueue(request.build())
+    val loader = if (disableAnimation) stillImageLoader
+    else SingletonImageLoader.get(this.context)
+    loader.enqueue(request.build())
 }
 
 class AnimatedPngDecoder(private val source: ImageSource) : Decoder {
@@ -95,10 +110,8 @@ class AnimatedPngDecoder(private val source: ImageSource) : Decoder {
             options: Options,
             imageLoader: ImageLoader,
         ): Decoder? {
-            Timber.i("what do we have here?")
             val stream = result.source.source().peek().inputStream()
             return if (isApng(stream)) {
-                Timber.i("we got an APNG")
                 AnimatedPngDecoder(result.source)
             } else {
                 null
