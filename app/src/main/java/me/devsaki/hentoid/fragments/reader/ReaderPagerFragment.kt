@@ -920,13 +920,15 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 if (Preferences.isReaderMaintainHorizontalZoom() && absImageIndex > -1) {
                     val previousScale = adapter.getRelativeScaleAtPosition(absImageIndex)
                     Timber.d(">> relative scale : %s", previousScale)
-                    if (previousScale > 0) adapter.setRelativeScaleAtPosition(
-                        scrollPosition, previousScale
-                    )
+                    if (previousScale > 0)
+                        adapter.setRelativeScaleAtPosition(scrollPosition, previousScale)
                 } else {
                     adapter.resetScaleAtPosition(scrollPosition)
                 }
             }
+
+            // Set the correct gesture listener (recyclerView or image)
+            adapter.setGestureListenerForPosition(scrollPosition)
 
             // Don't show loading progress from previous image
             binding?.apply {
