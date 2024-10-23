@@ -36,8 +36,8 @@ data class JsonImageFile(
     )
 
     fun toEntity(chapters: List<Chapter>): ImageFile {
-        var result = ImageFile.fromImageUrl(order, url, status, name)
-        if (url.isEmpty()) result = ImageFile.fromPageUrl(order, pageUrl ?: "", status, name)
+        val result = if (url.isEmpty()) ImageFile.fromPageUrl(order, pageUrl ?: "", status, name)
+        else ImageFile.fromImageUrl(order, url, status, name)
         result.name = name
         result.isCover = isCover ?: false
         result.favourite = favourite ?: false
@@ -47,8 +47,10 @@ data class JsonImageFile(
         result.isTransformed = isTransformed ?: false
 
         if (chapters.isNotEmpty() && (chapterOrder ?: -1) > -1) {
-            val chapter = chapters.firstOrNull { it.order == chapterOrder }
-            if (chapter != null) result.setChapter(chapter)
+            chapters.firstOrNull { it.order == chapterOrder }?.let {
+                result.setChapter(it)
+                it.imageFiles.add(result)
+            }
         }
 
         return result

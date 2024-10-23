@@ -204,13 +204,13 @@ abstract class BaseSplitMergeWorker(
     private fun merge() {
         if (contentIds.isEmpty()) return
         val contentList = dao.selectContent(contentIds)
-        val removedContents: MutableSet<Long> = HashSet()
         if (contentList.isEmpty()) return
 
         // Flag the content as "being deleted" (triggers blink animation)
         if (deleteAfterOperation)
             contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
 
+        val removedContents: MutableSet<Long> = HashSet()
         nbMax = contentList.flatMap { it.imageList }.count { it.isReadable }
         try {
             mergeContents(

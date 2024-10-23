@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
-import android.os.Build.VERSION_CODES
 import android.provider.DocumentsContract
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
@@ -185,9 +183,7 @@ private fun getFolderPickerIntent(context: Context, location: StorageLocation): 
     intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
 
     // Start the SAF at the specified location
-    if (Build.VERSION.SDK_INT >= VERSION_CODES.O
-        && Preferences.getStorageUri(location).isNotEmpty()
-    ) {
+    if (Preferences.getStorageUri(location).isNotEmpty()) {
         val file = getDocumentFromTreeUriString(
             context,
             Preferences.getStorageUri(location)
@@ -733,7 +729,7 @@ fun scanFolderRecursive(
  * @param parentNames  Names of parent folders, for formatting purposes; last of the list is the immediate parent of bookFolder
  * @param targetStatus Target status of the Content to create
  * @param dao          CollectionDAO to use
- * @param imageFiles   List of images to match files with; null if they have to be recreated from the files
+ * @param files   List of images to match files with; null if they have to be recreated from the files
  * @param jsonFile     JSON file to use, if one has been detected upstream; null if it has to be detected
  * @return Content created from the folder information and files
  */
@@ -745,7 +741,7 @@ fun scanBookFolder(
     parentNames: List<String>,
     targetStatus: StatusContent,
     dao: CollectionDAO,
-    imageFiles: List<DocumentFile>?,
+    files: List<DocumentFile>?,
     jsonFile: DocumentFile?
 ): Content {
     Timber.d(">>>> scan book folder %s", bookFolder.uri)
@@ -803,7 +799,16 @@ fun scanBookFolder(
     if (StatusContent.EXTERNAL == targetStatus) result.downloadCompletionDate = now
     result.lastEditDate = now
     val images: MutableList<ImageFile> = ArrayList()
-    scanFolderImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles)
+    scanFolderImages(
+        context,
+        bookFolder,
+        explorer,
+        targetStatus,
+        false,
+        images,
+        result.imageList,
+        files
+    )
 
     // Detect cover
     val coverExists = images.any { it.isCover }
@@ -899,6 +904,7 @@ fun scanChapterFolders(
         StatusContent.EXTERNAL,
         true,
         images,
+        result.imageList,
         null
     )
     val coverExists = images.any { it.isCover }
@@ -921,7 +927,7 @@ fun scanChapterFolders(
  * @param targetStatus           Target status of the detected images
  * @param addFolderNametoImgName True if the parent folder name has to be added to detected images name
  * @param images                 Image list to populate or enrich
- * @param imgs             Image file list, if already listed upstream; null if it needs to be listed
+ * @param imgs                   Image file list, if already listed upstream; null if it needs to be listed
  */
 private fun scanFolderImages(
     context: Context,
@@ -930,18 +936,35 @@ private fun scanFolderImages(
     targetStatus: StatusContent,
     addFolderNametoImgName: Boolean,
     images: MutableList<ImageFile>,
+    contentImages: List<ImageFile>,
     imgs: List<DocumentFile>?
 ) {
-    var imageFiles = imgs
+    val imageFiles = imgs ?: explorer.listFiles(context, bookFolder, imageNamesFilter)
     val order = images.maxOfOrNull { it.order } ?: 0
     val folderName = bookFolder.name ?: ""
-    if (null == imageFiles) imageFiles =
-        explorer.listFiles(context, bookFolder, imageNamesFilter)
-    var namePrefix = ""
-    if (addFolderNametoImgName) namePrefix = "$folderName-"
-    images.addAll(
-        createImageListFromFiles(imageFiles, targetStatus, order, namePrefix)
-    )
+    val namePrefix = if (addFolderNametoImgName) "$folderName-" else ""
+    val results = createImageListFromFiles(imageFiles, targetStatus, order, namePrefix)
+    mapMetadata(results, contentImages)
+    images.addAll(results)
+}
+
+private fun mapMetadata(recipient: List<ImageFile>, ref: List<ImageFile>) {
+    // Clear chapters contained in ref images (their content will be replaced by images from 'recipient')
+    ref.mapNotNull { it.linkedChapter }.distinct().forEach { it.clearImageFiles() }
+    // Copy metadata from ref to recipient images, using name as pivot
+    recipient.forEach { img ->
+        ref.firstOrNull { it.name == img.name }?.let {
+            img.apply {
+                url = it.url
+                pageUrl = it.pageUrl
+                read = it.read
+                favourite = it.favourite
+                isTransformed = it.isTransformed
+                isCover = it.isCover
+                chapter = it.chapter
+            }
+        }
+    }
 }
 
 /**
