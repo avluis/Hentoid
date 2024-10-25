@@ -7,7 +7,6 @@ import androidx.annotation.IdRes
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import com.bumptech.glide.Glide
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
@@ -35,6 +34,7 @@ import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.getLocation
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
+import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.UriParts
@@ -444,8 +444,8 @@ abstract class BaseSplitMergeWorker(
         if (finalContent != null) persistJson(applicationContext, finalContent)
         progressDone(nbMax)
 
-        // Reset Glide cache as it gets confused by the swapping
-        Glide.get(applicationContext).clearDiskCache()
+        // Reset Coil cache as it gets confused by the swapping
+        clearCoilCache(applicationContext)
     }
 
     /**
