@@ -37,7 +37,7 @@ class PorncomixParser : BaseChapteredImageListParser() {
         postOnlineDocument(
             canonicalUrl + "ajax/chapters/",
             headers,
-            Site.PORNCOMIX.useHentoidAgent(), Site.PORNCOMIX.useWebviewAgent(),
+            Site.PORNCOMIX.useHentoidAgent, Site.PORNCOMIX.useWebviewAgent,
             "",
             POST_MIME_TYPE
         )?.let { return it.select(selector.selectors[0]) }
@@ -56,8 +56,8 @@ class PorncomixParser : BaseChapteredImageListParser() {
         val doc = getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
-            Site.PORNCOMIX.useHentoidAgent(),
-            Site.PORNCOMIX.useWebviewAgent()
+            Site.PORNCOMIX.useHentoidAgent,
+            Site.PORNCOMIX.useWebviewAgent
         ) ?: throw ParseException("Document unreachable : " + content.galleryUrl)
 
         var result = parseComixImages(content, doc, fireProgressEvents)
@@ -84,8 +84,8 @@ class PorncomixParser : BaseChapteredImageListParser() {
             getOnlineDocument(
                 pageUrl,
                 null,
-                Site.PORNCOMIX.useHentoidAgent(),
-                Site.PORNCOMIX.useWebviewAgent()
+                Site.PORNCOMIX.useHentoidAgent,
+                Site.PORNCOMIX.useWebviewAgent
             )?.let {
                 it.selectFirst(".entry-content img")?.let { img ->
                     result.add(getImgSrc(img))

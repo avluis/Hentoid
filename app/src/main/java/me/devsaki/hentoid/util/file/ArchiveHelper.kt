@@ -41,10 +41,7 @@ const val ZIP_MIME_TYPE = "application/zip"
 
 private val SUPPORTED_EXTENSIONS = setOf("zip", "epub", "cbz", "cbr", "cb7", "7z", "rar")
 
-private val archiveNamesFilter =
-    NameFilter { displayName: String ->
-        isArchiveExtensionSupported(getExtension(displayName))
-    }
+private val archiveNamesFilter = NameFilter { isArchiveExtensionSupported(getExtension(it)) }
 
 private const val INTERRUPTION_MSG = "Extract archive INTERRUPTED"
 
@@ -86,7 +83,7 @@ fun getSupportedExtensions(): Set<String> {
  * @return True if the app supports the reading of files with the given extension as archives; false if not
  */
 private fun isArchiveExtensionSupported(extension: String): Boolean {
-    return !SUPPORTED_EXTENSIONS.find { e -> e.equals(extension, ignoreCase = true) }
+    return !SUPPORTED_EXTENSIONS.find { it.equals(extension, ignoreCase = true) }
         .isNullOrEmpty()
 }
 
@@ -205,7 +202,7 @@ fun Context.extractArchiveEntries(
     return extractArchiveEntries(
         uri,
         fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
-        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName) },
+        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName)?.let { Uri.fromFile(it)} },
         entriesToExtract, interrupt, onExtract, onComplete
     )
 }
@@ -239,7 +236,7 @@ fun Context.extractArchiveEntriesBlocking(
     extractArchiveEntries(
         uri,
         fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
-        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName) },
+        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName)?.let { Uri.fromFile(it)} },
         entriesToExtract, null,
         callback, null
     )
@@ -502,14 +499,6 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
         stream?.close()
         pfdInput?.close()
     }
-}
-
-private fun findFile(targetFolder: File, targetName: String): Uri? {
-    val files = targetFolder.listFiles { _, name: String ->
-        name.equals(targetName, ignoreCase = true)
-    }
-    return if (null == files || files.isEmpty()) null
-    else Uri.fromFile(files[0])
 }
 
 private class ArchiveExtractCallback(

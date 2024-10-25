@@ -56,6 +56,9 @@ data class Chapter(
         this.content.target = content
     }
 
+    val contentId: Long
+        get() = content.targetId
+
     val imageList: List<ImageFile>
         get() = imageFiles.reach(this)
 
@@ -76,6 +79,10 @@ data class Chapter(
 
     fun addImageFile(img: ImageFile) {
         imageFiles.add(img)
+    }
+
+    fun clearImageFiles() {
+        imageFiles.clear()
     }
 
     override fun equals(other: Any?): Boolean {

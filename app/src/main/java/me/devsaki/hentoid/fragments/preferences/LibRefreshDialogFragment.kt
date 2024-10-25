@@ -31,6 +31,7 @@ import me.devsaki.hentoid.util.PickFolderContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ProcessFolderResult
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
@@ -54,11 +55,8 @@ import timber.log.Timber
  */
 class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Parent>() {
     // == UI
-    private var _binding1: DialogPrefsRefreshBinding? = null
-    private val binding1 get() = _binding1!!
-
-    private var _binding2: IncludeImportStepsBinding? = null
-    private val binding2 get() = _binding2!!
+    private var binding1: DialogPrefsRefreshBinding? = null
+    private var binding2: IncludeImportStepsBinding? = null
 
     // === VARIABLES
     private var showOptions = false
@@ -75,8 +73,8 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
-    ): View {
-        _binding1 = DialogPrefsRefreshBinding.inflate(inflater, container, false)
+    ): View? {
+        binding1 = DialogPrefsRefreshBinding.inflate(inflater, container, false)
         requireNotNull(arguments) { "No arguments found" }
         arguments?.apply {
             showOptions = getBoolean(SHOW_OPTIONS, false)
@@ -88,20 +86,20 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
         }
 
         EventBus.getDefault().register(this)
-        return binding1.root
+        return binding1?.root
     }
 
     override fun onDestroyView() {
         EventBus.getDefault().unregister(this)
-        _binding1 = null
-        _binding2 = null
+        binding1 = null
+        binding2 = null
         super.onDestroyView()
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
         if (showOptions) { // Show option screen first
-            binding1.apply {
+            binding1?.apply {
                 refreshOptions.setOnCheckedChangeListener { _, isChecked ->
                     if (isChecked) {
                         refreshOptionsSubgroup.visibility = View.VISIBLE
@@ -172,12 +170,14 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                     || ProcessFolderResult.KO_ALREADY_RUNNING == res
                     || ProcessFolderResult.KO_OTHER == res
                 ) {
-                    Snackbar.make(
-                        binding1.root,
-                        getMessage(res),
-                        BaseTransientBottomBar.LENGTH_LONG
-                    ).show()
-                    delay(3000)
+                    binding1?.apply {
+                        Snackbar.make(
+                            root,
+                            getMessage(res),
+                            BaseTransientBottomBar.LENGTH_LONG
+                        ).show()
+                        delay(3000)
+                    }
                     dismissAllowingStateLoss()
                 }
             }
@@ -221,10 +221,11 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                     || ProcessFolderResult.OK_EMPTY_FOLDER == res
                     || ProcessFolderResult.KO_OTHER == res
                 ) {
-                    Snackbar.make(
-                        binding1.root, getMessage(res), BaseTransientBottomBar.LENGTH_LONG
-                    ).show()
-                    delay(3000)
+                    binding1?.apply {
+                        Snackbar.make(root, getMessage(res), BaseTransientBottomBar.LENGTH_LONG)
+                            .show()
+                        delay(3000)
+                    }
                     if (ProcessFolderResult.OK_EMPTY_FOLDER == res) parent?.onFolderSuccess()
                     dismissAllowingStateLoss()
                 }
@@ -234,51 +235,54 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
 
     private fun showImportProgressLayout(askFolder: Boolean, location: StorageLocation) {
         // Replace launch options layout with import progress layout
-        binding1.root.removeAllViews()
-        _binding2 =
-            IncludeImportStepsBinding.inflate(requireActivity().layoutInflater, binding1.root)
+        binding1?.apply {
+            root.removeAllViews()
+            binding2 = IncludeImportStepsBinding.inflate(requireActivity().layoutInflater, root)
+        }
 
         // Memorize UI elements that will be updated during the import events
-        when (location) {
-            StorageLocation.PRIMARY_1 -> {
-                binding2.importStep1Button.setText(R.string.refresh_step1)
-                binding2.importStep1Text.setText(R.string.refresh_step1_select)
-            }
+        binding2?.apply {
+            when (location) {
+                StorageLocation.PRIMARY_1 -> {
+                    importStep1Button.setText(R.string.refresh_step1)
+                    importStep1Text.setText(R.string.refresh_step1_select)
+                }
 
-            StorageLocation.PRIMARY_2 -> {
-                binding2.importStep1Button.setText(R.string.refresh_step1_2)
-                binding2.importStep1Text.setText(R.string.refresh_step1_select_2)
-            }
+                StorageLocation.PRIMARY_2 -> {
+                    importStep1Button.setText(R.string.refresh_step1_2)
+                    importStep1Text.setText(R.string.refresh_step1_select_2)
+                }
 
-            StorageLocation.EXTERNAL -> {
-                binding2.importStep1Button.setText(R.string.refresh_step1_select_external)
-                binding2.importStep1Text.setText(R.string.refresh_step1_external)
-            }
+                StorageLocation.EXTERNAL -> {
+                    importStep1Button.setText(R.string.refresh_step1_select_external)
+                    importStep1Text.setText(R.string.refresh_step1_external)
+                }
 
-            else -> {
-                // Nothing
+                else -> {
+                    // Nothing
+                }
             }
-        }
-        if (askFolder) {
-            binding2.importStep1Button.visibility = View.VISIBLE
-            binding2.importStep1Button.setOnClickListener { pickFolder() }
-            pickFolder() // Ask right away, there's no reason why the user should click again
-        } else {
-            binding2.importStep1Folder.text = getFullPathFromUri(
-                requireContext(), Uri.parse(Preferences.getStorageUri(location))
-            )
-            binding2.importStep1Folder.isVisible = true
-            binding2.importStep1Text.isVisible = true
-            binding2.importStep1Check.isVisible = true
-            binding2.importStep2.isVisible = true
-            binding2.importStep2Bar.isIndeterminate = true
+            if (askFolder) {
+                importStep1Button.visibility = View.VISIBLE
+                importStep1Button.setOnClickListener { pickFolder() }
+                pickFolder() // Ask right away, there's no reason why the user should click again
+            } else {
+                importStep1Folder.text = getFullPathFromUri(
+                    requireContext(), Uri.parse(Preferences.getStorageUri(location))
+                )
+                importStep1Folder.isVisible = true
+                importStep1Text.isVisible = true
+                importStep1Check.isVisible = true
+                importStep2.isVisible = true
+                importStep2Bar.isIndeterminate = true
+            }
         }
     }
 
     private fun pickFolder() {
         // Make sure permissions are set
         if (requireActivity().requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION)) {
-            Preferences.setBrowserMode(false)
+            Settings.isBrowserMode = false
             pickFolder.launch(location) // Run folder picker
         }
     }
@@ -298,14 +302,21 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 }
             }
 
-            PickerResult.KO_CANCELED -> Snackbar.make(
-                binding2.root, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG
-            ).show()
+            PickerResult.KO_CANCELED -> {
+                binding2?.apply {
+                    Snackbar.make(
+                        root,
+                        R.string.import_canceled,
+                        BaseTransientBottomBar.LENGTH_LONG
+                    ).show()
+                }
+            }
 
             PickerResult.KO_OTHER, PickerResult.KO_NO_URI -> {
-                Snackbar.make(
-                    binding2.root, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG
-                ).show()
+                binding2?.apply {
+                    Snackbar.make(root, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG)
+                        .show()
+                }
                 isCancelable = true
             }
         }
@@ -338,9 +349,10 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
             ProcessFolderResult.KO_OTHER_PRIMARY,
             ProcessFolderResult.KO_PRIMARY_EXTERNAL,
             ProcessFolderResult.KO_OTHER -> {
-                Snackbar.make(
-                    binding2.root, getMessage(resultCode), BaseTransientBottomBar.LENGTH_LONG
-                ).show()
+                binding2?.apply {
+                    Snackbar.make(root, getMessage(resultCode), BaseTransientBottomBar.LENGTH_LONG)
+                        .show()
+                }
                 isCancelable = true
             }
         }
@@ -366,7 +378,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
 
     private fun onCancelExistingLibraryDialog() {
         // Revert back to initial state where only the "Select folder" button is visible
-        binding2.apply {
+        binding2?.apply {
             importStep1Text.visibility = View.INVISIBLE
             importStep1Folder.text = ""
             importStep1Check.visibility = View.INVISIBLE
@@ -377,7 +389,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     }
 
     private fun updateOnSelectFolder() {
-        binding2.apply {
+        binding2?.apply {
             importStep1Folder.text = getFullPathFromUri(
                 requireContext(), Uri.parse(
                     Preferences.getStorageUri(location)
@@ -414,7 +426,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     }
 
     private fun importEvent(event: ProcessEvent) {
-        binding2.apply {
+        binding2?.apply {
             val progressBar: ProgressBar = when (event.step) {
                 STEP_2_BOOK_FOLDERS -> importStep2Bar
                 STEP_3_BOOKS -> importStep3Bar
@@ -509,11 +521,13 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     fun onServiceDestroyed(event: ServiceDestroyedEvent) {
         if (event.service != R.id.import_service) return
         if (!isServiceGracefulClose) {
-            Snackbar.make(
-                binding1.root,
-                R.string.import_unexpected,
-                BaseTransientBottomBar.LENGTH_LONG
-            ).show()
+            binding1?.apply {
+                Snackbar.make(
+                    root,
+                    R.string.import_unexpected,
+                    BaseTransientBottomBar.LENGTH_LONG
+                ).show()
+            }
             Handler(Looper.getMainLooper()).postDelayed(
                 { dismissAllowingStateLoss() },
                 3000

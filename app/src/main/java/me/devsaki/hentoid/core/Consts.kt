@@ -2,6 +2,9 @@
 
 package me.devsaki.hentoid.core
 
+typealias BiConsumer<T, U> = (T, U) -> Unit
+typealias Consumer<T> = (T) -> Unit
+
 const val DEFAULT_PRIMARY_FOLDER_OLD = "Hentoid"
 const val DEFAULT_PRIMARY_FOLDER = ".Hentoid"
 

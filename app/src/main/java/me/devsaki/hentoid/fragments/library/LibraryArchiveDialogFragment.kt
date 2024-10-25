@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
@@ -33,7 +34,6 @@ import me.devsaki.hentoid.workers.ArchiveWorker
 
 class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFragment.Parent>() {
     companion object {
-
         const val KEY_CONTENTS = "contents"
 
         fun invoke(parent: FragmentActivity, contentList: List<Content>) {
@@ -57,8 +57,8 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
     private lateinit var contentIds: LongArray
 
     private val pickFolder =
-        registerForActivityResult(PickFolderContract()) { result ->
-            onFolderPickerResult(result.first, result.second)
+        registerForActivityResult(PickFolderContract()) {
+            onFolderPickerResult(it.first, it.second)
         }
 
 
@@ -73,9 +73,9 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogLibraryArchiveBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -111,6 +111,10 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
             }
             targetFormat.setOnIndexChangeListener { index ->
                 Settings.archiveTargetFormat = index
+                refreshControls()
+            }
+            backgroundColor.setOnIndexChangeListener { index ->
+                Settings.pdfBackgroundColor = index
                 refreshControls()
             }
             overwriteSwitch.setOnCheckedChangeListener { _, isChecked ->
@@ -154,9 +158,14 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
 
                 targetFormat.index = Settings.archiveTargetFormat
 
+                // PDF only
+                backgroundColor.index = Settings.pdfBackgroundColor
+
                 overwriteSwitch.isChecked = Settings.isArchiveOverwrite
                 deleteSwitch.isChecked = Settings.isArchiveDeleteOnSuccess
             }
+            
+            backgroundColor.isVisible = (2 == targetFormat.index)
         }
     }
 
@@ -187,6 +196,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
             return ArchiveWorker.Params(
                 Settings.archiveTargetFolder,
                 targetFormat.index,
+                backgroundColor.index,
                 overwriteSwitch.isChecked,
                 deleteSwitch.isChecked
             )
@@ -197,9 +207,9 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
         binding?.apply {
             // Check if no dialog is in error state
             val nbError = container.children
-                .filter { c -> c is TextInputLayout }
-                .map { c -> c as TextInputLayout }
-                .count { til -> til.isErrorEnabled }
+                .filter { it is TextInputLayout }
+                .map { it as TextInputLayout }
+                .count { it.isErrorEnabled }
 
             if (nbError > 0) return
 

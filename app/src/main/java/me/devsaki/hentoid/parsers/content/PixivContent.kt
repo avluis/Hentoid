@@ -33,9 +33,9 @@ class PixivContent : BaseContentParser() {
                 val cookieStr = getCookies(
                     url,
                     null,
-                    Site.PIXIV.useMobileAgent(),
-                    Site.PIXIV.useHentoidAgent(),
-                    Site.PIXIV.useWebviewAgent()
+                    Site.PIXIV.useMobileAgent,
+                    Site.PIXIV.useHentoidAgent,
+                    Site.PIXIV.useWebviewAgent
                 )
                 val userAgent = getUserAgent(Site.PIXIV)
                 val acceptAll = "*/*"

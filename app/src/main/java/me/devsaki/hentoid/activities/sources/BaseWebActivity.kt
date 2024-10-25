@@ -292,7 +292,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         bottomAlertCloseButton.setOnClickListener { onBottomAlertCloseClick() }
         downloadIcon =
             if (Preferences.getBrowserDlAction() == DownloadMode.STREAM) R.drawable.selector_download_stream_action else R.drawable.selector_download_action
-        if (Preferences.isBrowserMode()) downloadIcon = R.drawable.ic_forbidden_disabled
+        if (Settings.isBrowserMode) downloadIcon = R.drawable.ic_forbidden_disabled
         binding?.actionButton?.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon))
         displayTopAlertBanner()
         updateAdblockButton(Settings.isAdBlockerOn)
@@ -469,7 +469,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
     // Make sure permissions are set at resume time; if not, warn the user
     private fun checkPermissions() {
-        if (Preferences.isBrowserMode()) return
+        if (Settings.isBrowserMode) return
         if (!this.requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION))
             toast(R.string.web_storage_permission_denied)
     }
@@ -558,7 +558,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     private fun onLongTap(x: Int, y: Int) {
-        if (Preferences.isBrowserMode()) return
+        if (Settings.isBrowserMode) return
         val result = webView.hitTestResult
         // Plain link
         val url: String? =
@@ -638,7 +638,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
 
         // Display download button tooltip if a book page has been reached
-        if (isGalleryPage && !Preferences.isBrowserMode()) tooltip(
+        if (isGalleryPage && !Settings.isBrowserMode) tooltip(
             R.string.help_web_download,
             false
         )
@@ -887,7 +887,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             ActionMode.VIEW_QUEUE -> goToQueue()
             ActionMode.READ -> {
                 val searchUrl =
-                    if (getStartSite().hasCoverBasedPageUpdates()) currentContent!!.coverImageUrl else ""
+                    if (getStartSite().hasCoverBasedPageUpdates) currentContent!!.coverImageUrl else ""
                 currentContent = dao.selectContentByUrlOrCover(
                     currentContent!!.site,
                     currentContent!!.url,
@@ -929,7 +929,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      */
     private fun setActionMode(mode: ActionMode?) {
         val b: ActivityBaseWebBinding? = binding
-        if (Preferences.isBrowserMode() && b != null) {
+        if (Settings.isBrowserMode && b != null) {
             b.actionButton.setImageDrawable(
                 ContextCompat.getDrawable(
                     this,
@@ -1230,7 +1230,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         currentContent = null
         Timber.i("Content Site, URL : %s, %s", onlineContent.site.code, onlineContent.url)
         val searchUrl =
-            if (getStartSite().hasCoverBasedPageUpdates()) onlineContent.coverImageUrl else ""
+            if (getStartSite().hasCoverBasedPageUpdates) onlineContent.coverImageUrl else ""
         // TODO manage DB calls concurrency to avoid getting read transaction conflicts
         val contentDB =
             dao.selectContentByUrlOrCover(onlineContent.site, onlineContent.url, searchUrl)
@@ -1253,9 +1253,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                             getStartUrl()
                         ),
                         requestHeadersList,
-                        getStartSite().useMobileAgent(),
-                        getStartSite().useHentoidAgent(),
-                        getStartSite().useWebviewAgent()
+                        getStartSite().useMobileAgent,
+                        getStartSite().useHentoidAgent,
+                        getStartSite().useWebviewAgent
                     )
                     val coverBody = onlineCover.body
                     if (coverBody != null) {
@@ -1315,7 +1315,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
     override fun onContentReady(result: Content, quickDownload: Boolean) {
         // TODO Cancel whichever process was happening before
-        if (Preferences.isBrowserMode()) return
+        if (Settings.isBrowserMode) return
 
         lifecycleScope.launch {
             try {

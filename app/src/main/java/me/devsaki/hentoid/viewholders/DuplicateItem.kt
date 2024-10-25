@@ -242,21 +242,19 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
 
             // External icon
             if (content.status == StatusContent.EXTERNAL) {
-                if (content.isArchive) ivExternal.setImageResource(R.drawable.ic_archive) else ivExternal.setImageResource(
-                    R.drawable.ic_folder_full
-                )
+                if (content.isArchive) ivExternal.setImageResource(R.drawable.ic_archive)
+                else if (content.isPdf) ivExternal.setImageResource(R.drawable.ic_pdf_file)
+                else ivExternal.setImageResource(R.drawable.ic_folder_full)
                 ivExternal.visibility = View.VISIBLE
             } else ivExternal.visibility = View.GONE
 
             // Favourite icon
             if (content.favourite) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ivFavourite.tooltipText =
-                    context.getText(R.string.book_favourite_success)
+                ivFavourite.tooltipText = context.getText(R.string.book_favourite_success)
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_empty)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ivFavourite.tooltipText =
-                    context.getText(R.string.book_unfavourite_success)
+                ivFavourite.tooltipText = context.getText(R.string.book_unfavourite_success)
             }
 
             // View details icon

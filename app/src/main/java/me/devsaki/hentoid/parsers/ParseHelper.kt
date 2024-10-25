@@ -517,9 +517,9 @@ fun getImgSrc(e: Element): String {
  */
 fun getUserAgent(site: Site): String {
     return getUserAgent(
-        site.useMobileAgent(),
-        site.useHentoidAgent(),
-        site.useWebviewAgent()
+        site.useMobileAgent,
+        site.useHentoidAgent,
+        site.useWebviewAgent
     )
 }
 

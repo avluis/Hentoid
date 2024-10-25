@@ -22,8 +22,8 @@ class SimplyApiContent : BaseContentParser() {
                 val doc = getOnlineDocument(
                     url,
                     headers,
-                    Site.SIMPLY.useHentoidAgent(),
-                    Site.SIMPLY.useWebviewAgent()
+                    Site.SIMPLY.useHentoidAgent,
+                    Site.SIMPLY.useWebviewAgent
                 )
                 if (doc != null) {
                     val metadata =

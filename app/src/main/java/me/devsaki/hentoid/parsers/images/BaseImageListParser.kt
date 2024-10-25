@@ -11,7 +11,6 @@ import me.devsaki.hentoid.parsers.addSavedCookiesToHeader
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
-import org.apache.commons.lang3.NotImplementedException
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import timber.log.Timber
@@ -37,7 +36,7 @@ abstract class BaseImageListParser : ImageListParser {
         url: String,
         requestHeaders: List<Pair<String, String>>
     ): Pair<String, String?> {
-        throw NotImplementedException("Parser does not implement parseImagePage")
+        throw Exception("Parser does not implement parseImagePage")
     }
 
     override fun parseBackupUrl(

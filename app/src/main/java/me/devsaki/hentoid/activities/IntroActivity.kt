@@ -58,7 +58,7 @@ class IntroActivity : AppIntro2() {
 
         if (newFragment is ImportIntroFragment) {
             // Skip Import fragment when in browser mode
-            if (Preferences.isBrowserMode()) {
+            if (Settings.isBrowserMode) {
                 if (oldFragment is PermissionIntroFragment) {
                     lifecycleScope.launch {
                         delay(75)
@@ -108,7 +108,7 @@ class IntroActivity : AppIntro2() {
     @Suppress("DEPRECATION")
     override fun onDonePressed(currentFragment: Fragment?) {
         autoEndHandler!!.removeCallbacksAndMessages(null)
-        Preferences.setIsFirstRun(false)
+        Settings.isFirstRun = false
         // Need to do that to avoid a useless reloading of the library screen upon loading prefs for the first time
         Settings.libraryDisplay = Settings.Value.LIBRARY_DISPLAY_DEFAULT
 

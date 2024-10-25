@@ -54,7 +54,7 @@ class HentoidApp : Application() {
         )
 
         // Firebase
-        val isAnalyticsEnabled = Preferences.isAnalyticsEnabled()
+        val isAnalyticsEnabled = Settings.isAnalyticsEnabled
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled)
 
         // Make sure the app restarts with the splash screen in case of any unhandled issue

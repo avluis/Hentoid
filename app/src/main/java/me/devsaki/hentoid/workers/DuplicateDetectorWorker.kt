@@ -22,6 +22,7 @@ import me.devsaki.hentoid.notification.duplicates.DuplicateProgressNotification
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification
 import me.devsaki.hentoid.util.DuplicateCandidate
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.formatBookFolderName
 import me.devsaki.hentoid.util.indexCovers
 import me.devsaki.hentoid.util.notification.BaseNotification
@@ -125,7 +126,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         // Pre-compute all book entries as DuplicateCandidates
         val candidates: MutableList<DuplicateCandidate> = ArrayList()
         dao.streamStoredContent(
-            false, Preferences.Constant.ORDER_FIELD_SIZE, true
+            false, Settings.Value.ORDER_FIELD_SIZE, true
         ) { content: Content? ->
             candidates.add(
                 DuplicateCandidate(

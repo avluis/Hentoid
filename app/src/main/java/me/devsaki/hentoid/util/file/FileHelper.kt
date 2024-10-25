@@ -552,6 +552,21 @@ private fun findDocumentFile(
 }
 
 /**
+ * Try to find the file with the given name in the given folder, ignoring the case
+ *
+ * @param folder Folder to look inside
+ * @param fileName Name of the file to look for
+ * @return Uri of the file if found; null if nothing found
+ */
+fun findFile(folder: File, fileName: String): File? {
+    val files = folder.listFiles { _, name: String ->
+        name.equals(fileName, ignoreCase = true)
+    }
+    return if (null == files || files.isEmpty()) null
+    else files[0]
+}
+
+/**
  * Open the given file using the device's app(s) of choice
  *
  * @param context Context to use
@@ -669,11 +684,16 @@ fun getFileNameWithoutExtension(filePath: String): String {
  */
 @Throws(IOException::class)
 fun saveBinary(context: Context, uri: Uri, binaryData: ByteArray?) {
+    getOutputStream(context, uri)?.let {
+        saveBinary(it, binaryData)
+    }
+}
+
+@Throws(IOException::class)
+fun saveBinary(out: OutputStream, binaryData: ByteArray?) {
     val buffer = ByteArray(FILE_IO_BUFFER_SIZE)
     var count: Int
-
     ByteArrayInputStream(binaryData).use { input ->
-        val out = getOutputStream(context, uri)
         BufferedOutputStream(out).use { output ->
             while ((input.read(buffer).also { count = it }) != -1) {
                 output.write(buffer, 0, count)
@@ -951,7 +971,7 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
         private set
 
     init {
-        if (Build.VERSION.SDK_INT >= 26) init26(context, f)
+        init26(context, f)
         if (0L == totalSpaceBytes) init21(context, f)
         if (0L == totalSpaceBytes) initLegacy(context, f)
     }
@@ -980,7 +1000,6 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
 
     // Init for API 26+
     // Inspired by https://github.com/Cheticamp/Storage_Volumes/
-    @TargetApi(26)
     private fun init26(context: Context, f: DocumentFile) {
         val volumeId = getVolumeIdFromUri(f.uri)
         val mgr = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
@@ -1019,7 +1038,6 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
     }
 
     // Use StorageStatsManager on primary volume
-    @TargetApi(26)
     private fun processPrimary(context: Context) {
         val uuid = StorageManager.UUID_DEFAULT
         try {
@@ -1035,7 +1053,6 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
     // StorageStatsManager doesn't work for volumes other than the primary volume since
     // the "UUID" available for non-primary volumes is not acceptable to
     // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
-    @TargetApi(26)
     private fun processSecondary(volume: StorageVolume) {
         try {
             val volumePath = getVolumePath(volume)
@@ -1071,7 +1088,6 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
  * @param treeVolumeId Volume ID extracted from an Uri
  * @return True if both IDs match
  */
-@TargetApi(26)
 private fun volumeIdMatch(volume: StorageVolume, treeVolumeId: String): Boolean {
     return volumeIdMatch(volume.uuid ?: "", volume.isPrimary, treeVolumeId)
 }
@@ -1276,11 +1292,7 @@ fun fileSizeFromUri(context: Context, fileUri: Uri): Long {
  * @return Valid Uri
  */
 fun getFileUriCompat(context: Context, file: File): Uri {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        FileProvider.getUriForFile(context, AUTHORITY, file)
-    } else {
-        Uri.fromFile(file)
-    }
+    return FileProvider.getUriForFile(context, AUTHORITY, file)
 }
 
 /**
@@ -1487,6 +1499,10 @@ fun byteCountToDisplayRoundedSize(size: Long, places: Int, res: Resources): Stri
 
 fun DocumentFile.uniqueHash(): Long {
     return hash64((this.name + "." + this.length()).toByteArray())
+}
+
+fun DocumentFile.getExtension(): String {
+    return getExtension(this.name ?: "")
 }
 
 fun interface NameFilter {

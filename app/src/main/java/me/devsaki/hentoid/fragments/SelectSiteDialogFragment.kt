@@ -74,7 +74,7 @@ class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Par
         val includedSites =
             requireArguments().getIntegerArrayList(INCLUDED_SITES)?.toSet() ?: return
         val sites = Settings.activeSites
-            .filter { !showUniqueIdsOnly || it.hasUniqueBookId() }
+            .filter { !showUniqueIdsOnly || it.hasUniqueBookId }
             .filter { includedSites.contains(it.code) }
             .sortedBy { it.name }
 

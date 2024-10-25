@@ -82,9 +82,9 @@ class HitomiParser : BaseImageListParser() {
         val response = getOnlineResourceFast(
             galleryJsonUrl,
             headers,
-            Site.HITOMI.useMobileAgent(),
-            Site.HITOMI.useHentoidAgent(),
-            Site.HITOMI.useWebviewAgent()
+            Site.HITOMI.useMobileAgent,
+            Site.HITOMI.useHentoidAgent,
+            Site.HITOMI.useWebviewAgent
         )
         val body = response.body ?: throw IOException("Empty body")
         val galleryInfo = body.string()

@@ -39,7 +39,7 @@ class ToonilyParser : BaseChapteredImageListParser() {
         postOnlineDocument(
             canonicalUrl + "ajax/chapters/",
             headers,
-            Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent(),
+            Site.TOONILY.useHentoidAgent, Site.TOONILY.useWebviewAgent,
             "",
             POST_MIME_TYPE
         )?.let { return it.select(selector.selectors[0]) }
@@ -57,8 +57,8 @@ class ToonilyParser : BaseChapteredImageListParser() {
         getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
-            content.site.useHentoidAgent(),
-            content.site.useWebviewAgent()
+            content.site.useHentoidAgent,
+            content.site.useWebviewAgent
         )?.let { doc ->
             val images = doc.select(".reading-content img").filterNotNull()
             val imageUrls = images.map { getImgSrc(it) }.filter { it.isNotEmpty() }

@@ -55,9 +55,6 @@ import timber.log.Timber
 import java.io.IOException
 import java.security.Security
 
-typealias BiConsumer<T, U> = (T, U) -> Unit
-typealias Consumer<T> = (T) -> Unit
-
 @Suppress("UNUSED_PARAMETER")
 object AppStartup {
 
@@ -212,7 +209,7 @@ object AppStartup {
 
     private fun searchForUpdates(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Run app update : start")
-        if (Preferences.isAutomaticUpdateEnabled()) {
+        if (Settings.isAutomaticUpdateEnabled) {
             Timber.i("Run app update : auto-check is enabled")
             val workManager = WorkManager.getInstance(context)
             workManager.enqueueUniqueWork(

@@ -17,6 +17,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.getFixedContext
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -82,15 +83,14 @@ internal fun Context.isFinishing(): Boolean {
 }
 
 fun Context.convertLocaleToEnglish() {
-    if (Preferences.isForceEnglishLocale()) {
+    if (Settings.isForceEnglishLocale) {
         val config = this.resources.configuration
         if (config.locale != Locale.ENGLISH) {
             val englishLocale = Locale("en")
             Locale.setDefault(englishLocale)
             config.setLocale(englishLocale)
             // TODO https://stackoverflow.com/questions/40221711/android-context-getresources-updateconfiguration-deprecated
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                this.createConfigurationContext(config)
+            this.createConfigurationContext(config)
             this.resources.updateConfiguration(config, this.resources.displayMetrics)
         }
     }

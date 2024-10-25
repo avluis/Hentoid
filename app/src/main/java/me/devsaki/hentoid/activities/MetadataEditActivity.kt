@@ -326,12 +326,10 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
                                 BaseTransientBottomBar.LENGTH_SHORT
                             ).show()
                         } else {
-                            val imgs = contents[0].imageFiles?.filter { i -> i.isReadable }
-                            if (imgs != null) {
-                                b2.titleNew.visibility = View.GONE
-                                b2.tagsFab.visibility = View.GONE
-                                GalleryPickerDialogFragment.invoke(this, imgs)
-                            }
+                            val imgs = contents[0].imageFiles.filter { i -> i.isReadable }
+                            b2.titleNew.visibility = View.GONE
+                            b2.tagsFab.visibility = View.GONE
+                            GalleryPickerDialogFragment.invoke(this, imgs)
                         }
                     }
                 }

@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import android.graphics.Color
+import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -26,6 +28,7 @@ import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.file.zipFiles
 import me.devsaki.hentoid.util.formatBookFolderName
+import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.removeContent
 import timber.log.Timber
@@ -40,6 +43,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
     data class Params(
         val targetFolderUri: String,
         val targetFormat: Int,
+        val pdfBackgroundColor: Int,
         val overwrite: Boolean,
         val deleteOnSuccess: Boolean
     )
@@ -108,19 +112,36 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         val files = listFiles(applicationContext, bookFolder, null)
 
         if (files.isNotEmpty()) {
-            val success: Boolean
             val destFileResult = getFileResult(content, params)
             val outputStream: OutputStream? = destFileResult.first
-            if (outputStream != null) {
-                outputStream.use { os ->
-                    applicationContext.zipFiles(files, os, this::isStopped) { f ->
-                        globalProgress.setProgress(content.id.toString(), f)
+            val success = outputStream?.use { os ->
+                if (2 == params.targetFormat) {
+                    val mgr = PdfManager()
+                    val color = when (params.pdfBackgroundColor) {
+                        1 -> R.color.light_gray
+                        2 -> R.color.dark_gray
+                        3 -> R.color.black
+                        else -> R.color.white
+                    }
+                    mgr.convertImagesToPdf(
+                        applicationContext,
+                        os,
+                        files,
+                        true,
+                        Color.valueOf(ContextCompat.getColor(applicationContext, color))
+                    ) {
+                        globalProgress.setProgress(content.id.toString(), it)
                         notifyProcessProgress()
                     }
-                    success = !isStopped
+                } else {
+                    applicationContext.zipFiles(files, os, this::isStopped) {
+                        globalProgress.setProgress(content.id.toString(), it)
+                        notifyProcessProgress()
+                    }
                 }
-            } else {
-                success = destFileResult.second
+                !isStopped
+            } ?: run {
+                destFileResult.second
             }
             if (success && params.deleteOnSuccess && !isStopped) {
                 removeContent(applicationContext, dao, content)
@@ -131,7 +152,11 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
     private fun getFileResult(content: Content, params: Params): Pair<OutputStream?, Boolean> {
         // Build destination file
         val bookFolderName = formatBookFolderName(content)
-        val ext = if (0 == params.targetFormat) "zip" else "cbz"
+        val ext = when (params.targetFormat) {
+            1 -> "cbz"
+            2 -> "pdf"
+            else -> "zip"
+        }
         // First try creating the file with the new naming...
         var destName = bookFolderName.first + "." + ext
         return try {

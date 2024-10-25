@@ -17,6 +17,7 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.isInLibrary
 import me.devsaki.hentoid.workers.UpdateJsonWorker
@@ -402,9 +403,10 @@ object DatabaseMaintenance {
                             Type.ANY,
                             false,
                             null,
-                            Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
+                            Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
                             0,
-                            0
+                            0,
+                            Settings.searchAttributesCount
                         ).toMutableList()
                         artists.addAll(
                             ObjectBoxDB.selectAvailableAttributes(
@@ -416,9 +418,10 @@ object DatabaseMaintenance {
                                 Type.ANY,
                                 false,
                                 null,
-                                Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
+                                Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
                                 0,
-                                0
+                                0,
+                                Settings.searchAttributesCount
                             )
                         )
                         var order = 1
@@ -566,7 +569,7 @@ object DatabaseMaintenance {
     ) {
         try {
             // Refresh JSONs to persist missing downloadCompletionDates
-            if (!Preferences.isRefreshJson1Complete()) {
+            if (!Settings.isRefreshJson1Complete) {
                 Timber.i("Refresh Json for second download date : start")
                 val contentToRefresh = ObjectBoxDB.selectContentIdsWithUpdatableJson()
                 Timber.i(
@@ -586,7 +589,7 @@ object DatabaseMaintenance {
                     )
                 }
                 Timber.i("Refresh Json for second download date : done")
-                Preferences.setIsRefreshJson1Complete(true)
+                Settings.isRefreshJson1Complete = true
             }
         } finally {
             ObjectBoxDB.cleanup()

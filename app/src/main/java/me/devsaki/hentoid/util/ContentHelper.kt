@@ -62,6 +62,7 @@ import me.devsaki.hentoid.util.file.URI_ELEMENTS_SEPARATOR
 import me.devsaki.hentoid.util.file.cleanFileName
 import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
+import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.findFolder
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
@@ -75,6 +76,7 @@ import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.listFoldersFilter
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
+import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.getScaledDownBitmap
 import me.devsaki.hentoid.util.image.imageNamesFilter
@@ -95,8 +97,6 @@ import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import me.devsaki.hentoid.workers.PurgeWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
-import org.apache.commons.lang3.ArrayUtils
-import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
 import pl.droidsonroids.jspoon.Jspoon
 import timber.log.Timber
@@ -105,6 +105,7 @@ import java.io.IOException
 import java.net.URL
 import java.time.Instant
 import java.util.Locale
+import java.util.regex.Pattern
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.log10
@@ -146,7 +147,8 @@ enum class Type(val value: Int) {
     FOLDER(1),  // Images in a folder
     STREAMED(2), // Streamed book
     ARCHIVE(3), // Archive
-    PLACEHOLDER(4); // "Empty book" placeholder created my metadata import
+    PLACEHOLDER(4), // "Empty book" placeholder created my metadata import
+    PDF(5); // PDF
 
     companion object {
         fun fromValue(v: Int): Type {
@@ -173,6 +175,7 @@ private val queueTabStatus = intArrayOf(StatusContent.DOWNLOADING.code, StatusCo
 // TODO empty this cache at some point
 private val fileNameMatchCache: MutableMap<String, String> = HashMap()
 
+var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
 
 fun getLibraryStatuses(): IntArray {
     return libraryStatus
@@ -274,7 +277,7 @@ fun updateJson(context: Context, content: Content): Boolean {
  */
 fun createJson(context: Context, content: Content): DocumentFile? {
     assertNonUiThread()
-    if (content.isArchive) return null // Keep that as is, we can't find the parent folder anyway
+    if (content.isArchive || content.isPdf) return null // Keep that as is, we can't find the parent folder anyway
 
 
     val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return null
@@ -470,7 +473,7 @@ fun removeContent(context: Context, dao: CollectionDAO, content: Content) {
     // NB : start with DB to have a LiveData feedback, because file removal can take much time
     dao.deleteContent(content)
 
-    if (content.isArchive) { // Remove an archive
+    if (content.isArchive || content.isPdf) { // Remove an archive
         val archive = getFileFromSingleUriString(context, content.storageUri)
             ?: throw FileNotProcessedException(
                 content,
@@ -642,10 +645,9 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
         }
     }
 
-    // Extract the cover to the app's persistent folder if the book is an archive
-    if (content.isArchive) {
-        val archive = getFileFromSingleUriString(context, content.storageUri)
-        if (archive != null) {
+    // Extract the cover to the app's persistent folder if the book is an archive or a PDF
+    if (content.isArchive || content.isPdf) {
+        getFileFromSingleUriString(context, content.storageUri)?.let { archive ->
             try {
                 val targetFolder = context.filesDir
                 val extractInstructions: MutableList<Pair<String, String>> = ArrayList()
@@ -657,11 +659,20 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                         ), newContentId.toString() + ""
                     )
                 )
-                val results = context.extractArchiveEntriesBlocking(
+                val results = if (content.isArchive) context.extractArchiveEntriesBlocking(
                     archive.uri,
                     targetFolder,
                     extractInstructions
                 )
+                else {
+                    val mgr = PdfManager()
+                    mgr.extractImagesBlocking(
+                        context,
+                        archive,
+                        targetFolder,
+                        extractInstructions
+                    )
+                }
                 if (results.isNotEmpty()) {
                     var uri = results[0]
 
@@ -670,28 +681,17 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                     if (extractedFile.length() > 0) {
                         try {
                             getInputStream(context, uri).use { `is` ->
-                                val b = BitmapFactory.decodeStream(`is`)
-                                if (b != null) {
-                                    val targetFileName: String =
-                                        EXT_THUMB_FILE_PREFIX + extractedFile.name
-                                    // Reuse existing file if exists
-                                    val finalFile: File
-                                    val existingFiles =
-                                        targetFolder.listFiles { _, s: String -> s == targetFileName }
-                                    finalFile =
-                                        if (existingFiles != null && existingFiles.isNotEmpty()) {
-                                            existingFiles[0]
-                                        } else { // Create new file
-                                            File(targetFolder, targetFileName)
-                                        }
+                                BitmapFactory.decodeStream(`is`)?.let { b ->
+                                    val targetFileName = EXT_THUMB_FILE_PREFIX + extractedFile.name
+                                    // Reuse existing file if exists; create if not
+                                    val existingFile = findFile(targetFolder, targetFileName)
+                                    val finalFile =
+                                        existingFile ?: File(targetFolder, targetFileName)
                                     getOutputStream(finalFile).use { os ->
                                         val resizedBitmap =
                                             getScaledDownBitmap(
                                                 b,
-                                                dimensAsPx(
-                                                    context,
-                                                    libraryGridCardWidthDP
-                                                ),
+                                                dimensAsPx(context, libraryGridCardWidthDP),
                                                 false
                                             )
                                         resizedBitmap.compress(
@@ -1039,8 +1039,8 @@ fun shareContent(
 ) {
     if (items.isEmpty()) return
 
-    val subject = if ((1 == items.size)) items[0].title else ""
-    val text = StringUtils.join(items.map { it.galleryUrl }, System.lineSeparator())
+    val subject = if (1 == items.size) items[0].title else ""
+    val text = TextUtils.join(System.lineSeparator(), items.map { it.galleryUrl })
 
     shareText(context, subject, text)
 }
@@ -1779,7 +1779,7 @@ fun findDuplicate(
     // Too many resources consumed if the longest word is 1 character long
     if (null == longestWord || longestWord.length < 2) return null
 
-    val contentStatuses = ArrayUtils.addAll(libraryStatus, *queueTabStatus)
+    val contentStatuses = libraryStatus + queueTabStatus
     val roughCandidates = dao.searchTitlesWith(longestWord, contentStatuses)
     if (roughCandidates.isEmpty()) return null
 
@@ -1811,7 +1811,7 @@ fun findDuplicate(
         )
         if (entry != null) entries.add(entry)
     }
-    // Sort by similarity and size (unfortunately, Comparator.comparing is API24...)
+    // Sort by similarity and size
     val bestMatch = entries.sortedWith { obj, other ->
         obj.compareTo(other!!)
     }.firstOrNull()

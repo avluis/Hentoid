@@ -184,16 +184,11 @@ class LogInfo(// Log file name, without the extension
         if (entries.isEmpty()) logStr.append("No activity to report - ")
             .append(noDataMessage).append(LINE_SEPARATOR) else {
             // Log beginning, end and duration
-            // Unfortunately, Comparator.comparing is API24...
             val beginning = entries.minWith { a: LogEntry, b: LogEntry ->
-                a.timestamp.compareTo(
-                    b.timestamp
-                )
+                a.timestamp.compareTo(b.timestamp)
             }.timestamp
             val end = entries.maxWith { a: LogEntry, b: LogEntry ->
-                a.timestamp.compareTo(
-                    b.timestamp
-                )
+                a.timestamp.compareTo(b.timestamp)
             }.timestamp
             val durationMs = end.toEpochMilli() - beginning.toEpochMilli()
             logStr.append("Start : ").append(beginning).append(LINE_SEPARATOR)

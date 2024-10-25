@@ -68,12 +68,12 @@ public final class Preferences {
         Map<String, Object> result = new HashMap<>(sharedPreferences.getAll());
 
         // Remove non-exportable settings that make no sense on another instance
-        result.remove(Key.FIRST_RUN);
-        result.remove(Key.WELCOME_DONE);
+        result.remove(Settings.Key.FIRST_RUN);
+        result.remove(Settings.Key.WELCOME_DONE);
         result.remove(Key.PRIMARY_STORAGE_URI);
         result.remove(Key.EXTERNAL_LIBRARY_URI);
         result.remove(Key.LAST_KNOWN_APP_VERSION_CODE);
-        result.remove(Key.REFRESH_JSON_1_DONE);
+        result.remove(Settings.Key.REFRESH_JSON_1_DONE);
         result.remove(Settings.Key.LOCK_TYPE);
         result.remove(Settings.Key.ACHIEVEMENTS);
         result.remove(Settings.Key.ACHIEVEMENTS_NB_AI_RESCALE);
@@ -119,111 +119,6 @@ public final class Preferences {
 
 
     // ======= PROPERTIES GETTERS / SETTERS
-
-    public static boolean isFirstRunProcessComplete() {
-        return getBoolPref(Key.WELCOME_DONE, false);
-    }
-
-    public static void setIsFirstRunProcessComplete(boolean isFirstRunProcessComplete) {
-        sharedPreferences.edit().putBoolean(Key.WELCOME_DONE, isFirstRunProcessComplete).apply();
-    }
-
-    public static boolean isRefreshJson1Complete() {
-        return getBoolPref(Key.REFRESH_JSON_1_DONE, false);
-    }
-
-    public static void setIsRefreshJson1Complete(boolean value) {
-        sharedPreferences.edit().putBoolean(Key.REFRESH_JSON_1_DONE, value).apply();
-    }
-
-    public static boolean isAnalyticsEnabled() {
-        return getBoolPref(Key.ANALYTICS_PREFERENCE, true);
-    }
-
-    public static boolean isAutomaticUpdateEnabled() {
-        return getBoolPref(Key.CHECK_UPDATES, Default.CHECK_UPDATES);
-    }
-
-    public static boolean isFirstRun() {
-        return getBoolPref(Key.FIRST_RUN, Default.FIRST_RUN);
-    }
-
-    public static void setIsFirstRun(boolean isFirstRun) {
-        sharedPreferences.edit().putBoolean(Key.FIRST_RUN, isFirstRun).apply();
-    }
-
-    public static boolean isBrowserMode() {
-        return getBoolPref(Key.BROWSER_MODE, false);
-    }
-
-    public static void setBrowserMode(boolean value) {
-        sharedPreferences.edit().putBoolean(Key.BROWSER_MODE, value).apply();
-    }
-
-    public static boolean isImportQueueEmptyBooks() {
-        return getBoolPref(Key.IMPORT_QUEUE_EMPTY, Default.IMPORT_QUEUE_EMPTY);
-    }
-
-    public static boolean isForceEnglishLocale() {
-        return getBoolPref(Key.FORCE_ENGLISH, Default.FORCE_ENGLISH);
-    }
-
-    public static int getContentSortField() {
-        return sharedPreferences.getInt(Key.ORDER_CONTENT_FIELD, Default.ORDER_CONTENT_FIELD);
-    }
-
-    public static void setContentSortField(int sortField) {
-        sharedPreferences.edit().putInt(Key.ORDER_CONTENT_FIELD, sortField).apply();
-    }
-
-    public static boolean isContentSortDesc() {
-        return getBoolPref(Key.ORDER_CONTENT_DESC, Default.ORDER_CONTENT_DESC);
-    }
-
-    public static void setContentSortDesc(boolean isDesc) {
-        sharedPreferences.edit().putBoolean(Key.ORDER_CONTENT_DESC, isDesc).apply();
-    }
-
-    public static int getGroupSortField() {
-        return sharedPreferences.getInt(Key.ORDER_GROUP_FIELD, Default.ORDER_GROUP_FIELD);
-    }
-
-    public static void setGroupSortField(int sortField) {
-        sharedPreferences.edit().putInt(Key.ORDER_GROUP_FIELD, sortField).apply();
-    }
-
-    public static boolean isGroupSortDesc() {
-        return getBoolPref(Key.ORDER_GROUP_DESC, Default.ORDER_GROUP_DESC);
-    }
-
-    public static void setGroupSortDesc(boolean isDesc) {
-        sharedPreferences.edit().putBoolean(Key.ORDER_GROUP_DESC, isDesc).apply();
-    }
-
-    public static int getRuleSortField() {
-        return sharedPreferences.getInt(Key.ORDER_RULE_FIELD, Default.ORDER_RULE_FIELD);
-    }
-
-    public static void setRuleSortField(int sortField) {
-        sharedPreferences.edit().putInt(Key.ORDER_RULE_FIELD, sortField).apply();
-    }
-
-    public static boolean isRuleSortDesc() {
-        return getBoolPref(Key.ORDER_RULE_DESC, Default.ORDER_RULE_DESC);
-    }
-
-    public static void setRuleSortDesc(boolean isDesc) {
-        sharedPreferences.edit().putBoolean(Key.ORDER_RULE_DESC, isDesc).apply();
-    }
-
-    public static int getSearchAttributesSortOrder() {
-        return getIntPref(Key.SEARCH_ORDER_ATTRIBUTE_LISTS, Default.SEARCH_ORDER_ATTRIBUTES);
-    }
-
-    public static boolean getSearchAttributesCount() {
-        return getBoolPref(Key.SEARCH_COUNT_ATTRIBUTE_RESULTS, Default.SEARCH_COUNT_ATTRIBUTE_RESULTS);
-    }
-
     public static int getContentPageQuantity() {
         return getIntPref(Key.QUANTITY_PER_PAGE_LISTS, Default.QUANTITY_PER_PAGE);
     }
@@ -794,27 +689,11 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        public static final String BROWSER_MODE = "browser_mode";
-        public static final String ANALYTICS_PREFERENCE = "pref_analytics_preference";
         public static final String APP_LOCK = "pref_app_lock";
         public static final String APP_PREVIEW = "pref_app_preview";
-        static final String CHECK_UPDATES = "pref_check_updates";
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
-        static final String WELCOME_DONE = "pref_welcome_done";
-        static final String REFRESH_JSON_1_DONE = "refresh_json_1_done";
         static final String VERSION_KEY = "prefs_version";
-        public static final String FORCE_ENGLISH = "force_english";
-        public static final String IMPORT_QUEUE_EMPTY = "pref_import_queue_empty";
         static final String QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
-        static final String ORDER_CONTENT_FIELD = "pref_order_content_field";
-        static final String ORDER_CONTENT_DESC = "pref_order_content_desc";
-        static final String ORDER_GROUP_FIELD = "pref_order_group_field";
-        static final String ORDER_GROUP_DESC = "pref_order_group_desc";
-        static final String ORDER_RULE_FIELD = "pref_order_rule_field";
-        static final String ORDER_RULE_DESC = "pref_order_rule_desc";
-        static final String SEARCH_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
-        static final String SEARCH_COUNT_ATTRIBUTE_RESULTS = "pref_order_attribute_count";
-        static final String FIRST_RUN = "pref_first_run";
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
         public static final String ENDLESS_SCROLL = "pref_endless_scroll";
         public static final String TOP_FAB = "pref_top_fab";
@@ -929,21 +808,10 @@ public final class Preferences {
         static final int PRIMARY_STORAGE_FILL_METHOD = Constant.STORAGE_FILL_BALANCE_FREE;
         static final int PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = 90;
 
-        static final boolean FORCE_ENGLISH = false;
         static final int QUANTITY_PER_PAGE = 20;
-        public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
-        public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
-        public static final int ORDER_RULE_FIELD = Constant.ORDER_FIELD_SOURCE_NAME;
-        static final boolean ORDER_CONTENT_DESC = false;
-        static final boolean ORDER_GROUP_DESC = false;
-        static final boolean ORDER_RULE_DESC = false;
-        static final int SEARCH_ORDER_ATTRIBUTES = Constant.SEARCH_ORDER_ATTRIBUTES_COUNT;
-        static final boolean SEARCH_COUNT_ATTRIBUTE_RESULTS = true;
-        static final boolean FIRST_RUN = true;
         static final boolean ENDLESS_SCROLL = true;
         static final boolean TOP_FAB = true;
         static final int MEMORY_ALERT = 110;
-        static final boolean IMPORT_QUEUE_EMPTY = false;
         static final boolean EXTERNAL_LIBRARY_DELETE = false;
         static final int FOLDER_NAMING_CONTENT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean WEBVIEW_OVERRIDE_OVERVIEW = false;
@@ -1003,7 +871,6 @@ public final class Preferences {
         static final boolean DL_EH_HIRES = false;
         static final int DL_SPEED_CAP = Constant.DL_SPEED_CAP_NONE;
         static final int DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
-        static final boolean CHECK_UPDATES = true;
         // Default menu in v1.9.x
         static final boolean LOCK_ON_APP_RESTORE = false;
         static final int LOCK_TIMER = Constant.LOCK_TIMER_30S;
@@ -1043,27 +910,6 @@ public final class Preferences {
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
 
         public static final int ORDER_CONTENT_FAVOURITE = -2; // Artificial order created for clarity purposes
-
-        // Sorting field codes for content and group
-        public static final int ORDER_FIELD_NONE = -1;
-        public static final int ORDER_FIELD_TITLE = 0;
-        public static final int ORDER_FIELD_ARTIST = 1;
-        public static final int ORDER_FIELD_NB_PAGES = 2;
-        public static final int ORDER_FIELD_DOWNLOAD_PROCESSING_DATE = 3;
-        public static final int ORDER_FIELD_UPLOAD_DATE = 4;
-        public static final int ORDER_FIELD_READ_DATE = 5;
-        public static final int ORDER_FIELD_READS = 6;
-        public static final int ORDER_FIELD_SIZE = 7;
-        public static final int ORDER_FIELD_CHILDREN = 8; // Groups only
-        public static final int ORDER_FIELD_READ_PROGRESS = 9;
-        public static final int ORDER_FIELD_DOWNLOAD_COMPLETION_DATE = 10;
-        public static final int ORDER_FIELD_SOURCE_NAME = 11; // Rules only
-        public static final int ORDER_FIELD_TARGET_NAME = 12; // Rules only
-        public static final int ORDER_FIELD_CUSTOM = 98;
-        public static final int ORDER_FIELD_RANDOM = 99;
-
-        public static final int SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0;
-        static final int SEARCH_ORDER_ATTRIBUTES_COUNT = 1;
 
         static final int FOLDER_NAMING_CONTENT_ID = 0;
         static final int FOLDER_NAMING_CONTENT_TITLE_ID = 1;

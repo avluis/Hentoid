@@ -79,6 +79,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        view.fitsSystemWindows = true
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel =
             ViewModelProvider(requireActivity(), vmFactory)[PreferencesViewModel::class.java]
@@ -120,9 +121,9 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.COLOR_THEME -> onPrefColorThemeChanged()
             Preferences.Key.DL_THREADS_QUANTITY_LISTS,
             Preferences.Key.APP_PREVIEW,
-            Preferences.Key.FORCE_ENGLISH,
+            Settings.Key.FORCE_ENGLISH,
             Settings.Key.TEXT_SELECT_MENU,
-            Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
+            Settings.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
 
             Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()

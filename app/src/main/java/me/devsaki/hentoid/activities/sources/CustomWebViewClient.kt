@@ -1,11 +1,9 @@
 package me.devsaki.hentoid.activities.sources
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.webkit.WebResourceRequest
@@ -362,13 +360,6 @@ open class CustomWebViewClient : WebViewClient {
         return (Settings.isBrowserAugmented && (getChromeVersion() < 45 || getChromeVersion() > 71))
     }
 
-
-    @Deprecated("kept for API23", ReplaceWith("shouldOverrideUrlLoadingInternal(view, url, null)"))
-    override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-        return shouldOverrideUrlLoadingInternal(view, url, null, false)
-    }
-
-    @TargetApi(Build.VERSION_CODES.N)
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         return shouldOverrideUrlLoadingInternal(
             view, request.url.toString(), request.requestHeaders, request.isForMainFrame
@@ -420,9 +411,9 @@ open class CustomWebViewClient : WebViewClient {
         getOnlineResource(
             url,
             requestHeadersList,
-            site.useMobileAgent(),
-            site.useHentoidAgent(),
-            site.useWebviewAgent()
+            site.useMobileAgent,
+            site.useHentoidAgent,
+            site.useWebviewAgent
         ).use { onlineFileResponse ->
             val body = onlineFileResponse.body ?: throw IOException("Empty response from server")
             val cacheDir = context.cacheDir
@@ -553,9 +544,9 @@ open class CustomWebViewClient : WebViewClient {
                 getOnlineResource(
                     urlStr,
                     requestHeadersList,
-                    site.useMobileAgent(),
-                    site.useHentoidAgent(),
-                    site.useWebviewAgent()
+                    site.useMobileAgent,
+                    site.useHentoidAgent,
+                    site.useWebviewAgent
                 ).use { response ->
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
@@ -616,9 +607,9 @@ open class CustomWebViewClient : WebViewClient {
             response = getOnlineResourceFast(
                 url,
                 requestHeadersList,
-                site.useMobileAgent(),
-                site.useHentoidAgent(),
-                site.useWebviewAgent(),
+                site.useMobileAgent,
+                site.useHentoidAgent,
+                site.useWebviewAgent,
                 false
             )
         } catch (e: MalformedURLException) {
@@ -630,9 +621,9 @@ open class CustomWebViewClient : WebViewClient {
                 response = getOnlineResource(
                     url,
                     requestHeadersList,
-                    site.useMobileAgent(),
-                    site.useHentoidAgent(),
-                    site.useWebviewAgent()
+                    site.useMobileAgent,
+                    site.useHentoidAgent,
+                    site.useWebviewAgent
                 )
             } catch (ex: IOException) {
                 Timber.e(ex)
@@ -767,7 +758,7 @@ open class CustomWebViewClient : WebViewClient {
         url: String,
         quickDownload: Boolean // Useless here; useful in some overrides
     ): Content {
-        if (content.status != null && content.status == StatusContent.IGNORED) return content
+        if (content.status == StatusContent.IGNORED) return content
 
         // Save useful download params for future use during download
         val params = if (content.downloadParams.length > 2) // Params already contain values

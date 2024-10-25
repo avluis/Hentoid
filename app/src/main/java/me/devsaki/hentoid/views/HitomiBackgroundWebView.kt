@@ -83,9 +83,9 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                     val response = getOnlineResource(
                         url,
                         requestHeadersList,
-                        site.useMobileAgent(),
-                        site.useHentoidAgent(),
-                        site.useWebviewAgent()
+                        site.useMobileAgent,
+                        site.useHentoidAgent,
+                        site.useWebviewAgent
                     )
                     val body = response.body ?: throw IOException("Empty body")
                     if (response.code < 300) {
@@ -120,9 +120,9 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                     val response = getOnlineResource(
                         urlStr,
                         requestHeadersList,
-                        site.useMobileAgent(),
-                        site.useHentoidAgent(),
-                        site.useWebviewAgent()
+                        site.useMobileAgent,
+                        site.useHentoidAgent,
+                        site.useWebviewAgent
                     )
 
                     // Scram if the response is a redirection or an error

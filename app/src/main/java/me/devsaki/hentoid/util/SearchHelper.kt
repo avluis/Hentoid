@@ -50,6 +50,7 @@ data class SearchCriteria(
             Type.STREAMED -> R.string.search_type_entries_3
             Type.ARCHIVE -> R.string.search_type_entries_4
             Type.PLACEHOLDER -> R.string.search_type_entries_5
+            Type.PDF -> R.string.search_type_entries_6
             else -> R.string.search_type_entries_1
         }
     }

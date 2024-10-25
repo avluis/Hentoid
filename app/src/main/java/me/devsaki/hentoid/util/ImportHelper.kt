@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
-import android.os.Build.VERSION_CODES
 import android.provider.DocumentsContract
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
@@ -23,6 +21,7 @@ import me.devsaki.hentoid.core.HentoidApp.LifeCycleListener.Companion.disable
 import me.devsaki.hentoid.core.JSON_FILE_NAME
 import me.devsaki.hentoid.core.JSON_FILE_NAME_OLD
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
+import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -47,12 +46,15 @@ import me.devsaki.hentoid.util.file.createNoMedia
 import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getArchiveNamesFilter
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.listFoldersFilter
 import me.devsaki.hentoid.util.file.persistNewUriPermission
+import me.devsaki.hentoid.util.image.PdfManager
+import me.devsaki.hentoid.util.image.getPdfNamesFilter
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.workers.ExternalImportWorker
@@ -181,9 +183,7 @@ private fun getFolderPickerIntent(context: Context, location: StorageLocation): 
     intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
 
     // Start the SAF at the specified location
-    if (Build.VERSION.SDK_INT >= VERSION_CODES.O
-        && Preferences.getStorageUri(location).isNotEmpty()
-    ) {
+    if (Preferences.getStorageUri(location).isNotEmpty()) {
         val file = getDocumentFromTreeUriString(
             context,
             Preferences.getStorageUri(location)
@@ -623,7 +623,7 @@ fun scanFolderRecursive(
     val files = explorer.listDocumentFiles(context, toScan)
     val subFolders: MutableList<DocumentFile> = ArrayList()
     val images: MutableList<DocumentFile> = ArrayList()
-    val archives: MutableList<DocumentFile> = ArrayList()
+    val archivesPdf: MutableList<DocumentFile> = ArrayList()
     val jsons: MutableList<DocumentFile> = ArrayList()
     val contentJsons: MutableList<DocumentFile> = ArrayList()
 
@@ -632,7 +632,8 @@ fun scanFolderRecursive(
         val fileName = file.name ?: ""
         if (file.isDirectory) subFolders.add(file)
         else if (imageNamesFilter.accept(fileName)) images.add(file)
-        else if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
+        else if (getArchiveNamesFilter().accept(fileName)) archivesPdf.add(file)
+        else if (getPdfNamesFilter().accept(fileName)) archivesPdf.add(file)
         else if (getJsonNamesFilter().accept(fileName)) {
             jsons.add(file)
             if (getContentJsonNamesFilter().accept(fileName)) contentJsons.add(file)
@@ -642,7 +643,7 @@ fun scanFolderRecursive(
     // If at least 2 subfolders and all of them ends with a number, we've got a multi-chapter book
     if (subFolders.size >= 2) {
         val allSubfoldersEndWithNumber =
-            subFolders.mapNotNull { it.name }.all { s -> ENDS_WITH_NUMBER.matcher(s).matches() }
+            subFolders.mapNotNull { it.name }.all { ENDS_WITH_NUMBER.matcher(it).matches() }
         if (allSubfoldersEndWithNumber) {
             // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
             val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
@@ -658,17 +659,25 @@ fun scanFolderRecursive(
             val nbArchivesInside = explorer.countFiles(subFolders[0], getArchiveNamesFilter())
             if (1 == nbArchivesInside) {
                 val c =
-                    scanForArchives(context, toScan, subFolders, explorer, parentNames, dao, true)
+                    scanForArchivesPdf(
+                        context,
+                        toScan,
+                        subFolders,
+                        explorer,
+                        parentNames,
+                        dao,
+                        true
+                    )
                 library.addAll(c)
             }
         }
     }
 
     // We've got an archived book
-    if (archives.isNotEmpty()) {
-        for (archive in archives) {
+    if (archivesPdf.isNotEmpty()) {
+        for (archive in archivesPdf) {
             val json = getFileWithName(jsons, archive.name)
-            val c = scanArchive(
+            val c = scanArchivePdf(
                 context, toScan, archive, parentNames, StatusContent.EXTERNAL, dao, json
             )
             // Valid archive
@@ -720,7 +729,7 @@ fun scanFolderRecursive(
  * @param parentNames  Names of parent folders, for formatting purposes; last of the list is the immediate parent of bookFolder
  * @param targetStatus Target status of the Content to create
  * @param dao          CollectionDAO to use
- * @param imageFiles   List of images to match files with; null if they have to be recreated from the files
+ * @param files   List of images to match files with; null if they have to be recreated from the files
  * @param jsonFile     JSON file to use, if one has been detected upstream; null if it has to be detected
  * @return Content created from the folder information and files
  */
@@ -732,7 +741,7 @@ fun scanBookFolder(
     parentNames: List<String>,
     targetStatus: StatusContent,
     dao: CollectionDAO,
-    imageFiles: List<DocumentFile>?,
+    files: List<DocumentFile>?,
     jsonFile: DocumentFile?
 ): Content {
     Timber.d(">>>> scan book folder %s", bookFolder.uri)
@@ -790,7 +799,16 @@ fun scanBookFolder(
     if (StatusContent.EXTERNAL == targetStatus) result.downloadCompletionDate = now
     result.lastEditDate = now
     val images: MutableList<ImageFile> = ArrayList()
-    scanFolderImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles)
+    scanFolderImages(
+        context,
+        bookFolder,
+        explorer,
+        targetStatus,
+        false,
+        images,
+        result.imageList,
+        files
+    )
 
     // Detect cover
     val coverExists = images.any { it.isCover }
@@ -886,6 +904,7 @@ fun scanChapterFolders(
         StatusContent.EXTERNAL,
         true,
         images,
+        result.imageList,
         null
     )
     val coverExists = images.any { it.isCover }
@@ -908,7 +927,7 @@ fun scanChapterFolders(
  * @param targetStatus           Target status of the detected images
  * @param addFolderNametoImgName True if the parent folder name has to be added to detected images name
  * @param images                 Image list to populate or enrich
- * @param imgs             Image file list, if already listed upstream; null if it needs to be listed
+ * @param imgs                   Image file list, if already listed upstream; null if it needs to be listed
  */
 private fun scanFolderImages(
     context: Context,
@@ -917,18 +936,35 @@ private fun scanFolderImages(
     targetStatus: StatusContent,
     addFolderNametoImgName: Boolean,
     images: MutableList<ImageFile>,
+    contentImages: List<ImageFile>,
     imgs: List<DocumentFile>?
 ) {
-    var imageFiles = imgs
+    val imageFiles = imgs ?: explorer.listFiles(context, bookFolder, imageNamesFilter)
     val order = images.maxOfOrNull { it.order } ?: 0
     val folderName = bookFolder.name ?: ""
-    if (null == imageFiles) imageFiles =
-        explorer.listFiles(context, bookFolder, imageNamesFilter)
-    var namePrefix = ""
-    if (addFolderNametoImgName) namePrefix = "$folderName-"
-    images.addAll(
-        createImageListFromFiles(imageFiles, targetStatus, order, namePrefix)
-    )
+    val namePrefix = if (addFolderNametoImgName) "$folderName-" else ""
+    val results = createImageListFromFiles(imageFiles, targetStatus, order, namePrefix)
+    mapMetadata(results, contentImages)
+    images.addAll(results)
+}
+
+private fun mapMetadata(recipient: List<ImageFile>, ref: List<ImageFile>) {
+    // Clear chapters contained in ref images (their content will be replaced by images from 'recipient')
+    ref.mapNotNull { it.linkedChapter }.distinct().forEach { it.clearImageFiles() }
+    // Copy metadata from ref to recipient images, using name as pivot
+    recipient.forEach { img ->
+        ref.firstOrNull { it.name == img.name }?.let {
+            img.apply {
+                url = it.url
+                pageUrl = it.pageUrl
+                read = it.read
+                favourite = it.favourite
+                isTransformed = it.isTransformed
+                isCover = it.isCover
+                chapter = it.chapter
+            }
+        }
+    }
 }
 
 /**
@@ -940,6 +976,7 @@ fun createCover(images: MutableList<ImageFile>) {
     if (images.isNotEmpty()) {
         val img = ImageFile(images[0], populateContent = true, populateChapter = true)
         img.isCover = true
+        img.name = THUMB_FILE_NAME
         // Create a new cover entry from the 1st element
         images.add(0, img)
     }
@@ -994,7 +1031,7 @@ private fun parentNamesAsTags(parentNames: List<String>): AttributeMap {
 }
 
 /**
- * Create Content from every archive inside the given subfolders
+ * Create Content from every archive or PDF inside the given subfolders
  *
  * @param context     Context to use
  * @param subFolders  Subfolders to scan for archives
@@ -1004,7 +1041,7 @@ private fun parentNamesAsTags(parentNames: List<String>): AttributeMap {
  * @param chaptered   True to create one single book containing the 1st archive of each subfolder as chapters; false to create one book per archive
  * @return List of Content created from every archive inside the given subfolders
  */
-fun scanForArchives(
+fun scanForArchivesPdf(
     context: Context,
     parent: DocumentFile,
     subFolders: List<DocumentFile>,
@@ -1023,11 +1060,12 @@ fun scanForArchives(
         for (file in files) {
             val fileName = file.name ?: ""
             if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
+            else if (getPdfNamesFilter().accept(fileName)) archives.add(file)
             else if (getJsonNamesFilter().accept(fileName)) jsons.add(file)
         }
         for (archive in archives) {
             val json = getFileWithName(jsons, archive.name)
-            val c = scanArchive(
+            val c = scanArchivePdf(
                 context,
                 subfolder,
                 archive,
@@ -1094,12 +1132,12 @@ fun scanForArchives(
 }
 
 /**
- * Create a content from the given archive
+ * Create a content from the given archive / PDF file
  * NB : any returned Content with the IGNORED status shouldn't be taken into account by the caller
  *
  * @param context      Context to use
  * @param parentFolder Parent folder where the archive is located
- * @param archive      Archive file to scan
+ * @param doc      Archive file to scan
  * @param parentNames  Names of parent folders, for formatting purposes; last of the list is the immediate parent of parentFolder
  * @param targetStatus Target status of the Content to create
  * @param dao          CollectionDAO to use
@@ -1111,10 +1149,10 @@ fun scanForArchives(
  *      2 = failure; file doesn't contain supported images or is corrupted
  *  Value : Content created from the given archive, ur null if return code > 0
  */
-fun scanArchive(
+fun scanArchivePdf(
     context: Context,
     parentFolder: DocumentFile,
-    archive: DocumentFile,
+    doc: DocumentFile,
     parentNames: List<String>,
     targetStatus: StatusContent,
     dao: CollectionDAO,
@@ -1137,17 +1175,20 @@ fun scanArchive(
             Timber.w(e)
         }
     }
+    val isPdf = doc.getExtension().equals("pdf", true)
 
     var entries = emptyList<ArchiveEntry>()
     try {
-        entries = context.getArchiveEntries(archive)
+        entries = if (isPdf) {
+            val pdfMgr = PdfManager()
+            pdfMgr.getPdfEntries(context, doc)
+        } else context.getArchiveEntries(doc)
     } catch (e: Exception) {
         Timber.w(e)
     }
 
-    val archiveEntries = entries.filter { (path) -> isSupportedArchive(path) }
-    val imageEntries = entries.filter { (path) -> isSupportedImage(path) }
-        .filter { (_, size): ArchiveEntry -> size > 0 }
+    val archiveEntries = entries.filter { isSupportedArchive(it.path) }
+    val imageEntries = entries.filter { isSupportedImage(it.path) }.filter { it.size > 0 }
 
     if (imageEntries.isEmpty()) {
         // If it just contains other archives, raise an error
@@ -1157,30 +1198,30 @@ fun scanArchive(
     }
 
     val images = createImageListFromArchiveEntries(
-        archive.uri,
+        doc.uri,
         imageEntries,
         targetStatus,
         0,
         ""
     ).toMutableList()
-    val coverExists = images.any { obj: ImageFile -> obj.isCover }
+    val coverExists = images.any { it.isCover }
     if (!coverExists) createCover(images)
 
     // Create content envelope
     if (null == result) {
         result = Content(
             site = Site.NONE,
-            title = if (null == archive.name) ""
-            else getFileNameWithoutExtension(archive.name!!),
+            title = if (null == doc.name) ""
+            else getFileNameWithoutExtension(doc.name!!),
             dbUrl = "",
-            downloadDate = archive.lastModified()
+            downloadDate = doc.lastModified()
         )
         result.addAttributes(parentNamesAsTags(parentNames))
         result.addAttributes(newExternalAttribute())
     }
     result.apply {
         status = targetStatus
-        setStorageDoc(archive) // Here storage URI is a file URI, not a folder
+        setStorageDoc(doc) // Here storage URI is a file URI, not a folder
         parentStorageUri = parentFolder.uri.toString()
         val now = Instant.now().toEpochMilli()
         if (0L == downloadDate) downloadDate = now
@@ -1193,7 +1234,7 @@ fun scanArchive(
         }
         computeSize()
         // e.g. when the ZIP table doesn't contain any size entry
-        if (size <= 0) size = archive.length()
+        if (size <= 0) size = doc.length()
     }
     return Pair(0, result)
 }
@@ -1283,7 +1324,7 @@ private fun createJsonFileFor(
     if (content.storageUri.isEmpty()) return null
 
     // Check if the storage URI is valid
-    val contentFolder: DocumentFile? = if (content.isArchive) {
+    val contentFolder: DocumentFile? = if (content.isArchive || content.isPdf) {
         getDocumentFromTreeUriString(context, content.parentStorageUri ?: "")
     } else {
         getDocumentFromTreeUriString(context, content.storageUri)
@@ -1291,7 +1332,7 @@ private fun createJsonFileFor(
     if (null == contentFolder) return null
 
     // If a JSON file already exists at that location, use it as is, don't overwrite it
-    val jsonName = if (content.isArchive) {
+    val jsonName = if (content.isArchive || content.isPdf) {
         val archiveFile = getFileFromSingleUriString(context, content.storageUri)
         getFileNameWithoutExtension(archiveFile?.name ?: "") + ".json"
     } else {

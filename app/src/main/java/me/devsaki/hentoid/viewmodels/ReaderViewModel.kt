@@ -14,11 +14,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.SEED_PAGES
@@ -35,9 +33,9 @@ import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
+import me.devsaki.hentoid.util.VANILLA_CHAPTERNAME_PATTERN
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.coerceIn
-import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
@@ -52,15 +50,12 @@ import me.devsaki.hentoid.util.file.extractArchiveEntriesCached
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
-import me.devsaki.hentoid.util.file.getInputStream
-import me.devsaki.hentoid.util.file.getOutputStream
-import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.getPictureFilesFromContent
+import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.image.getMimeTypeFromUri
 import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
-import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
@@ -74,7 +69,10 @@ import me.devsaki.hentoid.util.setAndSaveContentCover
 import me.devsaki.hentoid.util.updateContentReadStats
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.workers.DeleteWorker
+import me.devsaki.hentoid.workers.ReorderWorker
+import me.devsaki.hentoid.workers.SplitMergeType
 import me.devsaki.hentoid.workers.data.DeleteData
+import me.devsaki.hentoid.workers.data.SplitMergeData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.File
@@ -91,8 +89,6 @@ import kotlin.math.roundToInt
 
 private const val DOWNLOAD_RANGE = 6 // Sequential download; not concurrent
 private const val EXTRACT_RANGE = 15
-
-private var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
 
 class ReaderViewModel(
     application: Application, private val dao: CollectionDAO
@@ -815,9 +811,8 @@ class ReaderViewModel(
      */
     fun deletePage(pageViewerIndex: Int, onError: (Throwable) -> Unit) {
         val imageFiles = viewerImagesInternal
-        if (imageFiles.size > pageViewerIndex && pageViewerIndex > -1) deletePages(
-            listOf(imageFiles[pageViewerIndex]), onError
-        )
+        if (imageFiles.size > pageViewerIndex && pageViewerIndex > -1)
+            deletePages(listOf(imageFiles[pageViewerIndex]), onError)
     }
 
     /**
@@ -998,7 +993,9 @@ class ReaderViewModel(
     }
 
     fun clearForceReload() {
-        viewerImagesInternal.forEach { it.isForceRefresh = false }
+        synchronized(viewerImagesInternal) {
+            viewerImagesInternal.forEach { it.isForceRefresh = false }
+        }
     }
 
     /**
@@ -1028,6 +1025,7 @@ class ReaderViewModel(
         if (viewerImagesInternal.size <= viewerIndex) return
         val theContent = getContent().value ?: return
         val isArchive = theContent.isArchive
+        val isPdf = theContent.isPdf
         val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
             .filter { isPictureNeedsProcessing(it, viewerImagesInternal) }.toSet()
         if (picturesLeftToProcess.isEmpty()) return
@@ -1035,7 +1033,7 @@ class ReaderViewModel(
         // Identify pages to be loaded
         val indexesToLoad: MutableList<Int> = ArrayList()
         val increment = if (direction >= 0) 1 else -1
-        val quantity = if (isArchive) EXTRACT_RANGE else DOWNLOAD_RANGE
+        val quantity = if (isArchive || isPdf) EXTRACT_RANGE else DOWNLOAD_RANGE
         // pageIndex at 1/3rd of the range to extract/download -> determine its bound
         val initialIndex = floor(
             coerceIn(
@@ -1051,7 +1049,7 @@ class ReaderViewModel(
         // Only run extraction when there's at least 1/3rd of the extract range to fetch
         // (prevents calling extraction for one single picture at every page turn)
         var greenlight = true
-        if (isArchive) {
+        if (isArchive || isPdf) {
             greenlight = indexesToLoad.size >= EXTRACT_RANGE / 3f
             if (!greenlight) {
                 val from = if (increment > 0) initialIndex else 0
@@ -1066,18 +1064,20 @@ class ReaderViewModel(
         // Populate what's already cached
         val cachedIndexes = HashSet<Int>()
         var nbProcessed = 0
-        indexesToLoad.forEach { idx ->
-            nbProcessed++
-            viewerImagesInternal[idx].let { img ->
-                val key = formatCacheKey(img)
-                if (DiskCache.peekFile(key)) {
-                    updateImgWithExtractedUri(
-                        img,
-                        idx,
-                        DiskCache.getFile(key)!!,
-                        0 == cachedIndexes.size % 4 || nbProcessed == indexesToLoad.size
-                    )
-                    cachedIndexes.add(idx)
+        synchronized(viewerImagesInternal) {
+            indexesToLoad.forEach { idx ->
+                nbProcessed++
+                viewerImagesInternal[idx].let { img ->
+                    val key = formatCacheKey(img)
+                    if (DiskCache.peekFile(key)) {
+                        updateImgWithExtractedUri(
+                            img,
+                            idx,
+                            DiskCache.getFile(key)!!,
+                            0 == cachedIndexes.size % 4 || nbProcessed == indexesToLoad.size
+                        )
+                        cachedIndexes.add(idx)
+                    }
                 }
             }
         }
@@ -1089,7 +1089,16 @@ class ReaderViewModel(
             .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
         indexesByArchive.keys.forEach {
             getFileFromSingleUriString(getApplication(), it)?.let { archiveFile ->
-                extractPics(indexesByArchive[it]!!, archiveFile)
+                extractPics(indexesByArchive[it]!!, archiveFile, false)
+            }
+        }
+
+        // Un-PDF
+        val indexesByPdf = indexesToLoad.filter { viewerImagesInternal[it].isPdf }
+            .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
+        indexesByPdf.keys.forEach {
+            getFileFromSingleUriString(getApplication(), it)?.let { pdfFile ->
+                extractPics(indexesByPdf[it]!!, pdfFile, true)
             }
         }
 
@@ -1111,7 +1120,9 @@ class ReaderViewModel(
         if (pageIndex < 0 || images.size <= pageIndex) return false
         images[pageIndex].let {
             return (it.status == StatusContent.ONLINE || // Image has to be downloaded
-                    it.isArchived) // Image has to be extracted from an archive
+                    it.isArchived || // Image has to be extracted from an archive
+                    it.isPdf // Image has to be extracted from a PDF
+                    )
         }
     }
 
@@ -1186,12 +1197,13 @@ class ReaderViewModel(
      */
     private fun extractPics(
         indexesToLoad: List<Int>,
-        archiveFile: DocumentFile
+        archiveFile: DocumentFile,
+        isPdf: Boolean
     ) {
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    doExtractPics(indexesToLoad, archiveFile)
+                    doExtractPics(indexesToLoad, archiveFile, isPdf)
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -1199,7 +1211,7 @@ class ReaderViewModel(
         }
     }
 
-    private fun doExtractPics(indexesToLoad: List<Int>, archiveFile: DocumentFile) {
+    private fun doExtractPics(indexesToLoad: List<Int>, archiveFile: DocumentFile, isPdf: Boolean) {
         assertNonUiThread()
         // Interrupt current extracting process, if any
         if (indexExtractInProgress.isNotEmpty()) {
@@ -1247,12 +1259,23 @@ class ReaderViewModel(
         val nbProcessed = AtomicInteger()
 
         try {
-            getApplication<Application>().applicationContext.extractArchiveEntriesCached(
-                archiveFile.uri,
-                extractInstructions,
-                archiveExtractKillSwitch,
-                { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
-                { onExtractionComplete(nbProcessed, indexesToLoad.size) })
+            if (isPdf) {
+                val pdfManager = PdfManager()
+                pdfManager.extractImagesCached(
+                    getApplication<Application>().applicationContext,
+                    archiveFile,
+                    extractInstructions,
+                    archiveExtractKillSwitch,
+                    { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
+                    { onExtractionComplete(nbProcessed, indexesToLoad.size) })
+            } else {
+                getApplication<Application>().applicationContext.extractArchiveEntriesCached(
+                    archiveFile.uri,
+                    extractInstructions,
+                    archiveExtractKillSwitch,
+                    { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
+                    { onExtractionComplete(nbProcessed, indexesToLoad.size) })
+            }
         } catch (e: Exception) {
             EventBus.getDefault().post(
                 ProcessEvent(
@@ -1862,256 +1885,17 @@ class ReaderViewModel(
     }
 
     fun saveChapterPositions(chapters: List<Chapter>) {
-        val theContent = content.value ?: return
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    doSaveChapterPositions(theContent.id, chapters.map { c -> c.id })
-                }
-                withContext(Dispatchers.Main) {
-                    reloadContent()
-                }
-            } catch (t: Throwable) {
-                Timber.e(t)
-            }
-        }
-    }
-
-    @Throws(IOException::class)
-    private fun doSaveChapterPositions(contentId: Long, newChapterOrder: List<Long>) {
-        assertNonUiThread()
-        val chapterStr =
-            getApplication<Application>().getString(R.string.gallery_chapter_prefix)
-        if (null == VANILLA_CHAPTERNAME_PATTERN)
-            VANILLA_CHAPTERNAME_PATTERN = Pattern.compile("$chapterStr [0-9]+")
-        var chapters = dao.selectChapters(contentId)
-        require(chapters.isNotEmpty()) { "No chapters found" }
-
-        // Reorder chapters according to target order
-        val orderById = newChapterOrder.withIndex().associate { (index, it) -> it to index }
-        chapters = chapters.sortedBy { orderById[it.id] }.toMutableList()
-
-        // Renumber all chapters and update the DB
-        chapters.forEachIndexed { index, c ->
-            // Update names with the default "Chapter x" naming
-            if (VANILLA_CHAPTERNAME_PATTERN!!.matcher(c.name).matches()) c.name =
-                "$chapterStr " + (index + 1)
-            // Update order
-            c.order = index + 1
-        }
-        dao.insertChapters(chapters)
-
-        // Renumber all readable images
-        val orderedImages =
-            chapters.map { it.imageFiles }.flatMap { it.toList() }.filter { it.isReadable }
-        require(orderedImages.isNotEmpty()) { "No images found" }
-
-        // Keep existing formatting
-        val nbMaxDigits = orderedImages.maxOf { it.name.length }
-        // Key = source Uri
-        // Value = operation
-        val operations = HashMap<String, FileOperation>()
-        orderedImages.forEachIndexed { index, img ->
-            img.order = index + 1
-            img.computeName(nbMaxDigits)
-
-            val uriParts = UriParts(Uri.decode(img.fileUri))
-            val sourceFileName = uriParts.entireFileName
-            val targetFileName = img.name + "." + uriParts.extension
-            // Only post actual renaming jobs
-            if (!sourceFileName.equals(targetFileName, true)) {
-                operations[img.fileUri] = FileOperation(img.fileUri, targetFileName, img)
-            }
-        }
-
-        Timber.d("Recap")
-        operations.forEach { op ->
-            Timber.d(
-                "%s <- %s",
-                op.value.targetName,
-                op.value.sourceUri
-            )
-        }
-
-        // Groups swaps into permutation groups
-        val parentFolder = getDocumentFromTreeUriString(
-            getApplication(), chapters[0].content.target.storageUri
-        ) ?: throw IOException("Parent folder not found")
-
-        buildPermutationGroups(getApplication(), operations, parentFolder)
-        val finalOpsTmp = operations.values.sortedBy { it.sequenceNumber }.sortedBy { it.order }
-        val finalOps = finalOpsTmp.groupBy { it.sequenceNumber }.values.toList()
-
-        finalOps.forEach { seq ->
-            seq.forEach { op ->
-                Timber.d(
-                    "[%d.%d] %s <- %s",
-                    op.sequenceNumber,
-                    op.order,
-                    op.targetName,
-                    op.sourceUri
-                )
-            }
-        }
-
-        val nbTasks = finalOps.size
-        var nbProcessedTasks = 1
-
-        // Perform swaps by exchanging file content
-        // NB : "thanks to" SAF; this works faster than renaming the files :facepalm:
-        var firstFileContent: ByteArray? = null
-        finalOps.forEach { seq ->
-            seq.forEachIndexed { idx, op ->
-                if (op.isLoop) {
-                    if (0 == idx) { // First item
-                        getInputStream(getApplication(), op.target!!).use {
-                            firstFileContent = it.readBytes()
-                        }
-                    } else if (idx == seq.size - 1 && firstFileContent != null) { // Last item
-                        if (BuildConfig.DEBUG) Timber.d(
-                            "[%d.%d] Swap %s <- %s (last)",
-                            op.sequenceNumber,
-                            op.order,
-                            op.targetName,
-                            op.sourceUri
-                        )
-                        getOutputStream(getApplication(), op.target!!).use { os ->
-                            os?.write(firstFileContent)
-                        }
-                        op.targetData.fileUri = op.target?.uri?.toString() ?: ""
-                        return@forEachIndexed
-                    }
-                }
-
-                if (op.isRename) {
-                    if (BuildConfig.DEBUG) Timber.d(
-                        "[%d.%d] Rename %s <- %s",
-                        op.sequenceNumber,
-                        op.order,
-                        op.targetName,
-                        op.sourceUri
-                    )
-                    op.source?.renameTo(op.targetName)
-                    op.targetData.fileUri = op.source?.uri?.toString() ?: ""
-                } else {
-                    if (BuildConfig.DEBUG) Timber.d(
-                        "[%d.%d] Swap %s <- %s",
-                        op.sequenceNumber,
-                        op.order,
-                        op.targetName,
-                        op.sourceUri
-                    )
-                    getOutputStream(getApplication(), op.target!!)?.use { os ->
-                        getInputStream(getApplication(), op.source!!).use { input ->
-                            copy(input, os)
-                        }
-                    }
-                    op.targetData.fileUri = op.target?.uri?.toString() ?: ""
-                }
-            }
-
-            EventBus.getDefault().post(
-                ProcessEvent(
-                    ProcessEvent.Type.PROGRESS,
-                    R.id.generic_progress,
-                    0,
-                    nbProcessedTasks++,
-                    0,
-                    nbTasks
-                )
-            )
-        }
-
-        // Finalize
-        dao.insertImageFiles(orderedImages)
-        val finalContent = dao.selectContent(contentId)
-        if (finalContent != null) persistJson(getApplication(), finalContent)
-        EventBus.getDefault().postSticky(
-            ProcessEvent(
-                ProcessEvent.Type.COMPLETE, R.id.generic_progress, 0, nbTasks, 0, nbTasks
-            )
+        // User worker to reorder ImageFiles and associated files
+        val builder = SplitMergeData.Builder()
+        builder.setOperation(SplitMergeType.REORDER)
+        builder.setChapterIds(chapters.map { it.id })
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            R.id.reorder_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequest.Builder(ReorderWorker::class.java)
+                .setInputData(builder.data).build()
         )
-
-        // Reset Glide cache as it gets confused by the swapping
-        Glide.get(getApplication()).clearDiskCache()
-    }
-
-    /**
-     * Enrich the given operations
-     *
-     * @param ctx Context to use
-     * @param ops Operations to enrhich
-     *      Key = source file Uri
-     *      Value = operation
-     * @param root Root of the content folder to use
-     */
-    private fun buildPermutationGroups(
-        ctx: Context,
-        ops: MutableMap<String, FileOperation>,
-        root: DocumentFile
-    ) {
-        if (ops.isEmpty()) return
-
-        // Take a snapshot of the Content's current files to simulate operations as they're built
-        val files: Map<String, Pair<DocumentFile, String>> = listFiles(ctx, root, null)
-            .associateBy({ it.uri.toString() }, { Pair(it, it.name ?: "") })
-        if (files.isEmpty()) return
-
-        val availableFiles =
-            files.values.map { it.second }.filterNot { it.isEmpty() }.toMutableSet()
-
-        // source name => source Uri
-        val uriByName = files.values.associateBy({ it.second }, { it.first.uri.toString() })
-            .filterNot { it.key.isEmpty() }
-        // target name => source name
-        val nameOpsByTarget =
-            ops.values.associateBy({ it.targetName }, { files[it.sourceUri]?.second ?: "" })
-                .filterNot { it.value.isEmpty() }
-                .toMutableMap()
-        var sequenceNumber = 0
-
-        while (nameOpsByTarget.isNotEmpty()) {
-            val sourceNames = nameOpsByTarget.values.toSet()
-            val targetNames = nameOpsByTarget.keys
-
-            // Find a target that is not referenced among the sources (= no permutation loop)
-            var isLoop = false
-            val startSourceCandidate = targetNames.firstOrNull { !sourceNames.contains(it) }
-
-            // If none, take the 1st element and prepare for doing a permutation loop
-            var source: String? = if (null == startSourceCandidate) {
-                isLoop = true
-                sourceNames.first()
-            } else startSourceCandidate
-
-            // Walk the permutation sequence from start to finish
-            var order = 0
-            while (source != null) {
-                // Enrich the corresponding operation
-                ops[uriByName[source]]?.let { operation ->
-                    operation.source = files[uriByName[source]]?.first
-                    operation.target = files[uriByName[operation.targetName]]?.first
-                    operation.isRename = !availableFiles.contains(operation.targetName)
-                    operation.order = order
-                    operation.sequenceNumber = sequenceNumber
-                    operation.isLoop = isLoop
-
-                    // Update available files
-                    if (operation.isRename) {
-                        availableFiles.remove(source)
-                        availableFiles.add(operation.targetName)
-                    }
-
-                    // Remove the operation we've just recorded
-                    nameOpsByTarget.remove(operation.targetName)
-                }
-
-                // Next permutation is the one that uses the current source as a target
-                source = nameOpsByTarget[source]
-                order++
-            }
-            sequenceNumber++
-        }
     }
 
     private fun onCacheCleanup() {
@@ -2127,17 +1911,4 @@ class ReaderViewModel(
     private fun formatCacheKey(img: ImageFile): String {
         return "img" + img.id
     }
-
-    internal data class FileOperation(
-        val sourceUri: String,
-        val targetName: String,
-        val targetData: ImageFile,
-        // Following fields valued during 2nd pass (buildPermutationGroups)
-        var source: DocumentFile? = null,
-        var target: DocumentFile? = null,
-        var isRename: Boolean = false,
-        var order: Int = -1,
-        var sequenceNumber: Int = -1,
-        var isLoop: Boolean = false
-    )
 }

@@ -7,6 +7,7 @@ import android.text.TextUtils
 import androidx.preference.PreferenceManager
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.util.Settings.Value.SEARCH_ORDER_ATTRIBUTES_COUNT
 import kotlin.reflect.KProperty
 
 object Settings {
@@ -19,6 +20,9 @@ object Settings {
     /**
      * FIELDS
      */
+    // IMPORT
+    val isImportQueueEmptyBooks: Boolean by BoolSetting(Key.IMPORT_QUEUE_EMPTY, false)
+
     // LIBRARY
     var libraryDisplay: Int by IntSetting(Key.LIBRARY_DISPLAY, Value.LIBRARY_DISPLAY_DEFAULT)
     var libraryDisplayGridFav: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_FAV, true)
@@ -32,6 +36,20 @@ object Settings {
     var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
     var libraryGridCardWidthDP: Int by IntSetting(Key.LIBRARY_GRID_CARD_WIDTH, 150)
     var activeSites: List<Site> by ListSiteSetting("active_sites", Value.ACTIVE_SITES)
+    var contentSortField: Int by IntSetting2(
+        "pref_order_content_field",
+        Default.ORDER_CONTENT_FIELD
+    )
+    var isContentSortDesc: Boolean by BoolSetting("pref_order_content_desc", false)
+    var groupSortField: Int by IntSetting2("pref_order_group_field", Default.ORDER_GROUP_FIELD)
+    var isGroupSortDesc: Boolean by BoolSetting("pref_order_group_desc", false)
+
+    // ADV SEARCH
+    val searchAttributesSortOrder: Int by IntSetting(
+        "pref_order_attribute_lists",
+        SEARCH_ORDER_ATTRIBUTES_COUNT
+    )
+    val searchAttributesCount: Boolean by BoolSetting("pref_order_attribute_count", true)
 
     // DOWNLOADER
 
@@ -71,6 +89,7 @@ object Settings {
     )
     var latestTargetFolderUri: String by StringSetting("ARCHIVE_TARGET_FOLDER_LATEST", "")
     var archiveTargetFormat: Int by IntSetting("ARCHIVE_TARGET_FORMAT", 0)
+    var pdfBackgroundColor: Int by IntSetting("ARCHIVE_PDF_BGCOLOR", 0)
     var isArchiveOverwrite: Boolean by BoolSetting("ARCHIVE_OVERWRITE", true)
     var isArchiveDeleteOnSuccess: Boolean by BoolSetting("ARCHIVE_DELETE_ON_SUCCESS", false)
 
@@ -85,11 +104,22 @@ object Settings {
     // READER
     var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)
 
+    // METADATA & RULES EDITOR
+    var ruleSortField: Int by IntSetting2("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
+    var isRuleSortDesc: Boolean by BoolSetting("pref_order_rule_desc", false)
+
     // ACHIEVEMENTS
     var achievements: ULong by ULongSetting(Key.ACHIEVEMENTS, 0UL)
     var nbAIRescale: Int by IntSetting(Key.ACHIEVEMENTS_NB_AI_RESCALE, 0)
 
-    // MISC
+    // APP-WIDE
+    var isFirstRun: Boolean by BoolSetting(Key.FIRST_RUN, true)
+    var isFirstRunProcessComplete: Boolean by BoolSetting(Key.WELCOME_DONE, false)
+    var isRefreshJson1Complete: Boolean by BoolSetting(Key.REFRESH_JSON_1_DONE, false)
+    val isAnalyticsEnabled: Boolean by BoolSetting(Key.ANALYTICS_PREFERENCE, true)
+    val isAutomaticUpdateEnabled: Boolean by BoolSetting("pref_check_updates", true)
+    var isBrowserMode: Boolean by BoolSetting(Key.BROWSER_MODE, false)
+    val isForceEnglishLocale: Boolean by BoolSetting(Key.FORCE_ENGLISH, false)
     var isTextMenuOn: Boolean by BoolSetting(Key.TEXT_SELECT_MENU, false)
 
 
@@ -123,6 +153,16 @@ object Settings {
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
             sharedPreferences.edit().putString(key, value.toString()).apply()
+        }
+    }
+
+    private class IntSetting2(val key: String, val default: Int) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Int {
+            return (sharedPreferences.getInt(key, default))
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
+            sharedPreferences.edit().putInt(key, value).apply()
         }
     }
 
@@ -180,6 +220,15 @@ object Settings {
 
     // Consts
     object Key {
+        const val FIRST_RUN = "pref_first_run"
+        const val WELCOME_DONE = "pref_welcome_done"
+        const val REFRESH_JSON_1_DONE = "refresh_json_1_done"
+        const val ANALYTICS_PREFERENCE = "pref_analytics_preference"
+        const val BROWSER_MODE = "browser_mode"
+        const val FORCE_ENGLISH = "force_english"
+
+        const val IMPORT_QUEUE_EMPTY = "pref_import_queue_empty"
+
         const val LIBRARY_DISPLAY = "pref_library_display"
         const val READER_COLOR_DEPTH = "viewer_color_depth"
         const val LOCK_TYPE = "LOCK_TYPE"
@@ -197,6 +246,11 @@ object Settings {
         const val WEB_FORCE_LIGHTMODE = "WEB_FORCE_LIGHTMODE"
         const val DL_BLOCKED_TAGS = "pref_dl_blocked_tags"
         const val TEXT_SELECT_MENU = "TEXT_SELECT_MENU"
+    }
+
+    object Default {
+        const val ORDER_CONTENT_FIELD = Value.ORDER_FIELD_TITLE
+        const val ORDER_GROUP_FIELD = Value.ORDER_FIELD_TITLE
     }
 
     object Value {
@@ -219,5 +273,26 @@ object Settings {
         const val LIBRARY_DISPLAY_LIST = 0
         const val LIBRARY_DISPLAY_GRID = 1
         const val LIBRARY_DISPLAY_DEFAULT = LIBRARY_DISPLAY_LIST
+
+        const val SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0
+        const val SEARCH_ORDER_ATTRIBUTES_COUNT = 1
+
+        // Sorting field codes for content and group
+        const val ORDER_FIELD_NONE = -1
+        const val ORDER_FIELD_TITLE = 0
+        const val ORDER_FIELD_ARTIST = 1
+        const val ORDER_FIELD_NB_PAGES = 2
+        const val ORDER_FIELD_DOWNLOAD_PROCESSING_DATE = 3
+        const val ORDER_FIELD_UPLOAD_DATE = 4
+        const val ORDER_FIELD_READ_DATE = 5
+        const val ORDER_FIELD_READS = 6
+        const val ORDER_FIELD_SIZE = 7
+        const val ORDER_FIELD_CHILDREN = 8 // Groups only
+        const val ORDER_FIELD_READ_PROGRESS = 9
+        const val ORDER_FIELD_DOWNLOAD_COMPLETION_DATE = 10
+        const val ORDER_FIELD_SOURCE_NAME = 11 // Rules only
+        const val ORDER_FIELD_TARGET_NAME = 12 // Rules only
+        const val ORDER_FIELD_CUSTOM = 98
+        const val ORDER_FIELD_RANDOM = 99
     }
 }

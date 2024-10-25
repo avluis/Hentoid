@@ -87,9 +87,9 @@ class PixivActivity : BaseWebActivity() {
                     val response = getOnlineResourceFast(
                         url,
                         webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url),
-                        Site.PIXIV.useMobileAgent(),
-                        Site.PIXIV.useHentoidAgent(),
-                        Site.PIXIV.useWebviewAgent()
+                        Site.PIXIV.useMobileAgent,
+                        Site.PIXIV.useHentoidAgent,
+                        Site.PIXIV.useWebviewAgent
                     )
 
                     // Scram if the response is a redirection or an error

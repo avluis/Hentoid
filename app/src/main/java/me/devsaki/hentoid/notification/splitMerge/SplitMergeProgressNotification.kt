@@ -31,6 +31,7 @@ class SplitMergeProgressNotification(
                         when (type) {
                             SplitMergeType.SPLIT -> R.string.split_progress
                             SplitMergeType.MERGE -> R.string.merge_progress
+                            SplitMergeType.REORDER -> R.string.reorder_progress
                         }
                     )
                 )

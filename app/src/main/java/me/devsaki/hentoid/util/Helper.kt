@@ -17,8 +17,12 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.annotation.DimenRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.view.MenuCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -501,6 +505,21 @@ fun getPrefsIndex(res: Resources, valuesRes: Int, value: String): Int {
         if (`val` == value) return index
     }
     return -1
+}
+
+// Keep everything under top bar under Android 15
+fun AppCompatActivity.useLegacyInsets() {
+    val root: View = findViewById(android.R.id.content)
+    ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+        val bars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+        v.updatePadding(
+            left = bars.left,
+            top = bars.top,
+            right = bars.right,
+            bottom = bars.bottom,
+        )
+        WindowInsetsCompat.CONSUMED
+    }
 }
 
 fun getAppHeapBytes(): Pair<Long, Long> {

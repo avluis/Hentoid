@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.net.Uri
@@ -12,10 +13,12 @@ import android.os.Build
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.documentfile.provider.DocumentFile
 import com.waynejo.androidndkgif.GifEncoder
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
+import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.findSequencePosition
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getInputStream
@@ -56,12 +59,8 @@ private val PNG_IDAT = "IDAT".toByteArray(CHARSET_LATIN_1)
 private val WEBP_VP8L = "VP8L".toByteArray(CHARSET_LATIN_1)
 private val WEBP_ANIM = "ANIM".toByteArray(CHARSET_LATIN_1)
 
-val imageNamesFilter =
-    NameFilter { displayName ->
-        isImageExtensionSupported(
-            getExtension(displayName)
-        )
-    }
+val imageNamesFilter = NameFilter { isImageExtensionSupported(getExtension(it)) }
+
 
 /**
  * Determine if the given image file extension is supported by the app
@@ -361,12 +360,11 @@ fun assembleGif(
             path,
             GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY
         )
+        val options = BitmapFactory.Options()
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888
         for (frame in frames) {
             getInputStream(context, frame.first).use { input ->
-                val options = BitmapFactory.Options()
-                options.inPreferredConfig = Bitmap.Config.ARGB_8888
-                val b = BitmapFactory.decodeStream(input, null, options)
-                if (b != null) {
+                BitmapFactory.decodeStream(input, null, options)?.let { b ->
                     try {
                         gifEncoder.encodeFrame(b, frame.second)
                     } finally {
@@ -496,4 +494,40 @@ fun needsRotating(screenWidth: Int, screenHeight: Int, width: Int, height: Int):
     val isSourceLandscape = width > height * 1.33
     val isScreenLandscape = screenWidth > screenHeight * 1.33
     return isSourceLandscape != isScreenLandscape
+}
+
+/**
+ * Return the given image's dimensions
+ *
+ * @param context Context to be used
+ * @param uri     Uri of the image to be read
+ * @return Dimensions (x,y) of the given image
+ */
+fun getImageDimensions(context: Context, uri: String): Point {
+    val fileUri = Uri.parse(uri)
+    if (!fileExists(context, fileUri)) return Point(0, 0)
+    val options = BitmapFactory.Options()
+    options.inJustDecodeBounds = true
+    return try {
+        BitmapFactory.decodeStream(getInputStream(context, fileUri), null, options)
+        Point(options.outWidth, options.outHeight)
+    } catch (e: IOException) {
+        Timber.w(e)
+        Point(0, 0)
+    } catch (e: IllegalArgumentException) {
+        Timber.w(e)
+        Point(0, 0)
+    }
+}
+
+fun loadBitmap(context: Context, file: DocumentFile): Bitmap? {
+    if (!file.exists()) return null
+    val options = BitmapFactory.Options()
+    options.inPreferredConfig = Bitmap.Config.ARGB_8888
+    return try {
+        BitmapFactory.decodeStream(getInputStream(context, file), null, options)
+    } catch (e: Exception) {
+        Timber.w(e)
+        null
+    }
 }

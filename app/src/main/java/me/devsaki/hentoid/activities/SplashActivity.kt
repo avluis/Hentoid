@@ -10,6 +10,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.AppStartup.appKilled
 import me.devsaki.hentoid.core.AppStartup.initApp
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getRandomInt
 import timber.log.Timber
 import kotlin.math.roundToInt
@@ -53,7 +54,7 @@ class SplashActivity : BaseActivity() {
         mainPb.visibility = View.GONE
         secondaryPb.visibility = View.GONE
         Timber.d("Splash / Startup flow initiated")
-        if (Preferences.isFirstRun()) { // Go to intro wizard if it's a first run
+        if (Settings.isFirstRun) { // Go to intro wizard if it's a first run
             goToActivity(Intent(this, IntroActivity::class.java))
         } else { // Go to the library screen
             goToLibraryActivity()

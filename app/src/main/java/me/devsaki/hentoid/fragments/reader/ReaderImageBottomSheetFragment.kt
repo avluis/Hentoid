@@ -37,6 +37,7 @@ import me.devsaki.hentoid.util.file.shareFile
 import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.image.getImageDimensions
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -278,30 +279,6 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
             .setNegativeButton(R.string.no) { dialog12, _ -> dialog12.dismiss() }
             .create()
             .show()
-    }
-
-    /**
-     * Return the given image's dimensions
-     *
-     * @param context Context to be used
-     * @param uri     Uri of the image to be read
-     * @return Dimensions (x,y) of the given image
-     */
-    private fun getImageDimensions(context: Context, uri: String): Point {
-        val fileUri = Uri.parse(uri)
-        if (!fileExists(context, fileUri)) return Point(0, 0)
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-        return try {
-            BitmapFactory.decodeStream(getInputStream(context, fileUri), null, options)
-            Point(options.outWidth, options.outHeight)
-        } catch (e: IOException) {
-            Timber.w(e)
-            Point(0, 0)
-        } catch (e: IllegalArgumentException) {
-            Timber.w(e)
-            Point(0, 0)
-        }
     }
 
     /**

@@ -285,10 +285,10 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
-        if (!Preferences.isFirstRunProcessComplete()) {
+        if (!Settings.isFirstRunProcessComplete) {
             // first run of the app starts with the nav drawer open
             openNavigationDrawer()
-            Preferences.setIsFirstRunProcessComplete(true)
+            Settings.isFirstRunProcessComplete = true
         }
         val vmFactory = ViewModelFactory(application)
         viewModel =
@@ -363,7 +363,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private fun onCreated(startBundle: Bundle?) {
         // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
         binding?.let {
-            if (Preferences.isFirstRunProcessComplete()) this.showTooltip(
+            if (Settings.isFirstRunProcessComplete) this.showTooltip(
                 R.string.help_search, ArrowOrientation.TOP,
                 it.toolbar, this
             )
@@ -534,7 +534,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private fun updateAlertBanner() {
         binding?.alertBanner?.apply {
             // Remind user that the app is in browser mode
-            if (Preferences.isBrowserMode()) {
+            if (Settings.isBrowserMode) {
                 alertTxt.setText(R.string.alert_browser_mode)
                 alertTxt.visibility = View.VISIBLE
                 alertIcon.visibility = View.GONE
@@ -894,7 +894,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 viewModel.setGrouping(Grouping.FLAT.id)
             }
 
-            Preferences.Key.BROWSER_MODE -> updateAlertBanner()
+            Settings.Key.BROWSER_MODE -> updateAlertBanner()
             else -> {}
         }
     }
@@ -910,12 +910,12 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         val targetGrouping = Grouping.searchById(targetGroupingId)
         if (grouping.id != targetGroupingId) {
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
-            if (!targetGrouping.canReorderBooks && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
-                Preferences.setContentSortField(Preferences.Default.ORDER_CONTENT_FIELD)
+            if (!targetGrouping.canReorderBooks && Settings.Value.ORDER_FIELD_CUSTOM == Settings.contentSortField) {
+                Settings.contentSortField = Settings.Default.ORDER_CONTENT_FIELD
             }
             // Reset custom group ordering if reverting to a grouping where that doesn't apply
-            if (!targetGrouping.canReorderGroups && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getGroupSortField()) {
-                Preferences.setGroupSortField(Preferences.Default.ORDER_GROUP_FIELD)
+            if (!targetGrouping.canReorderGroups && Settings.Value.ORDER_FIELD_CUSTOM == Settings.groupSortField) {
+                Settings.groupSortField = Settings.Default.ORDER_GROUP_FIELD
             }
 
             // Go back to groups tab if we're not
@@ -1081,13 +1081,14 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         selectedProcessedCount: Long,
         selectedLocalCount: Long,
         selectedStreamedCount: Long,
-        selectedNonArchiveExternalCount: Long,
-        selectedArchiveExternalCount: Long
+        selectedNonArchivePdfExternalCount: Long,
+        selectedArchivePdfExternalCount: Long
     ) {
         val isMultipleSelection = selectedTotalCount > 1
         val hasProcessed = selectedProcessedCount > 0
         val selectedDownloadedCount = selectedLocalCount - selectedStreamedCount
-        val selectedExternalCount = selectedNonArchiveExternalCount + selectedArchiveExternalCount
+        val selectedExternalCount =
+            selectedNonArchivePdfExternalCount + selectedArchivePdfExternalCount
         binding?.selectionToolbar?.title = resources.getQuantityString(
             R.plurals.items_selected,
             selectedTotalCount.toInt(),
@@ -1118,7 +1119,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             completedMenu?.isVisible = true
             resetReadStatsMenu?.isVisible = true
             rateMenu?.isVisible = isMultipleSelection
-            shareMenu?.isVisible = 0L == selectedArchiveExternalCount
+            shareMenu?.isVisible = 0L == selectedArchivePdfExternalCount
             archiveMenu?.isVisible = !hasProcessed
             changeGroupMenu?.isVisible = !hasProcessed
             folderMenu?.isVisible = !isMultipleSelection
@@ -1136,7 +1137,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             splitMenu?.isVisible =
                 !hasProcessed && !isMultipleSelection && 1L == selectedLocalCount
             transformMenu?.isVisible =
-                !hasProcessed && 0L == selectedStreamedCount && 0L == selectedArchiveExternalCount
+                !hasProcessed && 0L == selectedStreamedCount && 0L == selectedArchivePdfExternalCount
         }
     }
 
@@ -1340,19 +1341,19 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         @StringRes
         fun getNameFromFieldCode(prefFieldCode: Int): Int {
             return when (prefFieldCode) {
-                Preferences.Constant.ORDER_FIELD_TITLE -> R.string.sort_title
-                Preferences.Constant.ORDER_FIELD_ARTIST -> R.string.sort_artist
-                Preferences.Constant.ORDER_FIELD_NB_PAGES -> R.string.sort_pages
-                Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> R.string.sort_dl_date
-                Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> R.string.sort_dl_completion_date
-                Preferences.Constant.ORDER_FIELD_UPLOAD_DATE -> R.string.sort_uplodad_date
-                Preferences.Constant.ORDER_FIELD_READ_DATE -> R.string.sort_read_date
-                Preferences.Constant.ORDER_FIELD_READS -> R.string.sort_reads
-                Preferences.Constant.ORDER_FIELD_SIZE -> R.string.sort_size
-                Preferences.Constant.ORDER_FIELD_READ_PROGRESS -> R.string.sort_reading_progress
-                Preferences.Constant.ORDER_FIELD_CUSTOM -> R.string.sort_custom
-                Preferences.Constant.ORDER_FIELD_RANDOM -> R.string.sort_random
-                Preferences.Constant.ORDER_FIELD_CHILDREN -> R.string.sort_books
+                Settings.Value.ORDER_FIELD_TITLE -> R.string.sort_title
+                Settings.Value.ORDER_FIELD_ARTIST -> R.string.sort_artist
+                Settings.Value.ORDER_FIELD_NB_PAGES -> R.string.sort_pages
+                Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> R.string.sort_dl_date
+                Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> R.string.sort_dl_completion_date
+                Settings.Value.ORDER_FIELD_UPLOAD_DATE -> R.string.sort_uplodad_date
+                Settings.Value.ORDER_FIELD_READ_DATE -> R.string.sort_read_date
+                Settings.Value.ORDER_FIELD_READS -> R.string.sort_reads
+                Settings.Value.ORDER_FIELD_SIZE -> R.string.sort_size
+                Settings.Value.ORDER_FIELD_READ_PROGRESS -> R.string.sort_reading_progress
+                Settings.Value.ORDER_FIELD_CUSTOM -> R.string.sort_custom
+                Settings.Value.ORDER_FIELD_RANDOM -> R.string.sort_random
+                Settings.Value.ORDER_FIELD_CHILDREN -> R.string.sort_books
                 else -> R.string.sort_invalid
             }
         }

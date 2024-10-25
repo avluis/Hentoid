@@ -60,9 +60,9 @@ class CloudflareHelper {
         handler.post {
             webView?.setUserAgent(revivedSite.userAgent)
             webView?.setAgentProperties(
-                revivedSite.useMobileAgent(),
-                revivedSite.useHentoidAgent(),
-                revivedSite.useWebviewAgent()
+                revivedSite.useMobileAgent,
+                revivedSite.useHentoidAgent,
+                revivedSite.useWebviewAgent
             )
             webView?.loadUrl(revivedSite.url)
         }

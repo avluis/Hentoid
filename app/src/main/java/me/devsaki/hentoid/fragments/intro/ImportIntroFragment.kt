@@ -27,6 +27,7 @@ import me.devsaki.hentoid.util.PickFolderContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ProcessFolderResult
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.setAndScanPrimaryFolder
 import me.devsaki.hentoid.util.showExistingLibraryDialog
@@ -112,7 +113,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     override fun onResume() {
         super.onResume()
         binding?.root?.visibility =
-            if (Preferences.isBrowserMode()) View.INVISIBLE else View.VISIBLE
+            if (Settings.isBrowserMode) View.INVISIBLE else View.VISIBLE
     }
 
     private fun onFolderPickerResult(resultCode: PickerResult, treeUri: Uri?) {

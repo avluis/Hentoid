@@ -372,6 +372,7 @@
         <item>@string/search_type_entries_3</item>
         <item>@string/search_type_entries_4</item>
         <item>@string/search_type_entries_5</item>
+        <item>@string/search_type_entries_6</item>
     </string-array>
     <string-array name="export_location_entries" translatable="false">
         <item>@string/refresh_location_internal</item>
@@ -426,6 +427,13 @@
     <string-array name="archive_format_entries" translatable="false">
         <item>ZIP</item>
         <item>CBZ</item>
+        <item>PDF</item>
+    </string-array>*
+    <string-array name="background_color_entries" translatable="false">
+        <item>@string/white</item>
+        <item>@string/light_grey</item>
+        <item>@string/dark_grey</item>
+        <item>@string/black</item>
     </string-array>
 
     <!-- Lock dialog -->

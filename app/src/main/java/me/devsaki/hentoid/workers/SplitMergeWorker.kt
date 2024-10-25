@@ -7,6 +7,8 @@ import androidx.annotation.IdRes
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
+import com.bumptech.glide.Glide
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -20,27 +22,37 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.splitMerge.SplitMergeCompleteNotification
 import me.devsaki.hentoid.notification.splitMerge.SplitMergeProgressNotification
 import me.devsaki.hentoid.notification.splitMerge.SplitMergeStartNotification
+import me.devsaki.hentoid.util.VANILLA_CHAPTERNAME_PATTERN
 import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.createJson
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.copyFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.getLocation
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.util.moveContentToCustomGroup
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeContent
 import me.devsaki.hentoid.workers.data.SplitMergeData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
+import java.io.IOException
 import java.time.Instant
+import java.util.regex.Pattern
 import kotlin.math.floor
 import kotlin.math.log10
 
 enum class SplitMergeType {
-    SPLIT, MERGE
+    SPLIT, MERGE, REORDER
 }
 
 /**
@@ -55,6 +67,7 @@ abstract class BaseSplitMergeWorker(
     // Common params
     private val operationType: SplitMergeType
     private val contentIds: LongArray
+    private val chapterIds: LongArray
     private val deleteAfterOperation: Boolean
 
     // Merge params
@@ -74,8 +87,9 @@ abstract class BaseSplitMergeWorker(
 
     init {
         val inputData = SplitMergeData.Parser(inputData)
-        operationType = if (0 == inputData.operation) SplitMergeType.SPLIT else SplitMergeType.MERGE
+        operationType = SplitMergeType.entries[inputData.operation]
         contentIds = inputData.contentIds
+        chapterIds = inputData.chapterIds
         deleteAfterOperation = inputData.deleteAfterOps
         newTitle = inputData.newTitle
         useBookAsChapter = inputData.useBooksAsChapters
@@ -102,13 +116,15 @@ abstract class BaseSplitMergeWorker(
         nbProgress = 0
         nbError = 0
 
-        if (contentIds.isEmpty()) return
-
-        if (SplitMergeType.SPLIT == operationType) split(contentIds[0])
-        else merge()
+        when (operationType) {
+            SplitMergeType.SPLIT -> split(contentIds.first())
+            SplitMergeType.MERGE -> merge()
+            SplitMergeType.REORDER -> reorder()
+        }
     }
 
     private fun split(contentId: Long) {
+        if (contentIds.isEmpty()) return
         val content = dao.selectContent(contentId) ?: return
         val chapters = dao.selectChapters(chapterSplitIds.toList())
         var targetFolder: DocumentFile? = null
@@ -186,14 +202,15 @@ abstract class BaseSplitMergeWorker(
     }
 
     private fun merge() {
+        if (contentIds.isEmpty()) return
         val contentList = dao.selectContent(contentIds)
-        val removedContents: MutableSet<Long> = HashSet()
         if (contentList.isEmpty()) return
 
         // Flag the content as "being deleted" (triggers blink animation)
         if (deleteAfterOperation)
             contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
 
+        val removedContents: MutableSet<Long> = HashSet()
         nbMax = contentList.flatMap { it.imageList }.count { it.isReadable }
         try {
             mergeContents(
@@ -286,6 +303,229 @@ abstract class BaseSplitMergeWorker(
         return splitContent
     }
 
+    private fun reorder() {
+        if (chapterIds.size < 2) return
+        val content = dao.selectChapter(chapterIds.first())
+        val contentId = content?.contentId ?: return
+
+        val chapterStr = applicationContext.getString(R.string.gallery_chapter_prefix)
+        if (null == VANILLA_CHAPTERNAME_PATTERN)
+            VANILLA_CHAPTERNAME_PATTERN = Pattern.compile("$chapterStr [0-9]+")
+        var chapters = dao.selectChapters(contentId)
+        require(chapters.isNotEmpty()) { "No chapters found" }
+
+        // Reorder chapters according to target order
+        val orderById = chapterIds.withIndex().associate { (index, it) -> it to index }
+        chapters = chapters.sortedBy { orderById[it.id] }.toMutableList()
+
+        // Renumber all chapters and update the DB
+        chapters.forEachIndexed { index, c ->
+            // Update names with the default "Chapter x" naming
+            if (VANILLA_CHAPTERNAME_PATTERN!!.matcher(c.name).matches()) c.name =
+                "$chapterStr " + (index + 1)
+            // Update order
+            c.order = index + 1
+        }
+        dao.insertChapters(chapters)
+
+        // Renumber all readable images
+        val orderedImages =
+            chapters.map { it.imageFiles }.flatMap { it.toList() }.filter { it.isReadable }
+        require(orderedImages.isNotEmpty()) { "No images found" }
+
+        // Keep existing formatting
+        val nbMaxDigits = orderedImages.maxOf { it.name.length }
+        // Key = source Uri
+        // Value = operation
+        val operations = HashMap<String, FileOperation>()
+        orderedImages.forEachIndexed { index, img ->
+            img.order = index + 1
+            img.computeName(nbMaxDigits)
+
+            val uriParts = UriParts(Uri.decode(img.fileUri))
+            val sourceFileName = uriParts.entireFileName
+            val targetFileName = img.name + "." + uriParts.extension
+            // Only post actual renaming jobs
+            if (!sourceFileName.equals(targetFileName, true)) {
+                operations[img.fileUri] = FileOperation(img.fileUri, targetFileName, img)
+            }
+        }
+
+        Timber.d("Recap")
+        operations.forEach { op ->
+            Timber.d(
+                "%s <- %s",
+                op.value.targetName,
+                op.value.sourceUri
+            )
+        }
+
+        // Groups swaps into permutation groups
+        val parentFolder = getDocumentFromTreeUriString(
+            applicationContext, chapters[0].content.target.storageUri
+        ) ?: throw IOException("Parent folder not found")
+
+        buildPermutationGroups(applicationContext, operations, parentFolder)
+        val finalOpsTmp = operations.values.sortedBy { it.sequenceNumber }.sortedBy { it.order }
+        val finalOps = finalOpsTmp.groupBy { it.sequenceNumber }.values.toList()
+
+        finalOps.forEach { seq ->
+            seq.forEach { op ->
+                Timber.d(
+                    "[%d.%d] %s <- %s",
+                    op.sequenceNumber,
+                    op.order,
+                    op.targetName,
+                    op.sourceUri
+                )
+            }
+        }
+
+        nbMax = finalOps.size
+
+        // Perform swaps by exchanging file content
+        // NB : "thanks to" SAF; this works faster than renaming the files :facepalm:
+        var firstFileContent: ByteArray? = null
+        finalOps.forEach { seq ->
+            seq.forEachIndexed { idx, op ->
+                if (op.isLoop) {
+                    if (0 == idx) { // First item
+                        getInputStream(applicationContext, op.target!!).use {
+                            firstFileContent = it.readBytes()
+                        }
+                    } else if (idx == seq.size - 1 && firstFileContent != null) { // Last item
+                        if (BuildConfig.DEBUG) Timber.d(
+                            "[%d.%d] Swap %s <- %s (last)",
+                            op.sequenceNumber,
+                            op.order,
+                            op.targetName,
+                            op.sourceUri
+                        )
+                        getOutputStream(applicationContext, op.target!!).use { os ->
+                            os?.write(firstFileContent)
+                        }
+                        op.targetData.fileUri = op.target?.uri?.toString() ?: ""
+                        return@forEachIndexed
+                    }
+                }
+
+                if (op.isRename) {
+                    if (BuildConfig.DEBUG) Timber.d(
+                        "[%d.%d] Rename %s <- %s",
+                        op.sequenceNumber,
+                        op.order,
+                        op.targetName,
+                        op.sourceUri
+                    )
+                    op.source?.renameTo(op.targetName)
+                    op.targetData.fileUri = op.source?.uri?.toString() ?: ""
+                } else {
+                    if (BuildConfig.DEBUG) Timber.d(
+                        "[%d.%d] Swap %s <- %s",
+                        op.sequenceNumber,
+                        op.order,
+                        op.targetName,
+                        op.sourceUri
+                    )
+                    getOutputStream(applicationContext, op.target!!)?.use { os ->
+                        getInputStream(applicationContext, op.source!!).use { input ->
+                            copy(input, os)
+                        }
+                    }
+                    op.targetData.fileUri = op.target?.uri?.toString() ?: ""
+                }
+            }
+            progressPlus(content.name)
+        }
+
+        // Finalize
+        dao.insertImageFiles(orderedImages)
+        val finalContent = dao.selectContent(contentId)
+        if (finalContent != null) persistJson(applicationContext, finalContent)
+        progressDone(nbMax)
+
+        // Reset Glide cache as it gets confused by the swapping
+        Glide.get(applicationContext).clearDiskCache()
+    }
+
+    /**
+     * Enrich the given operations
+     *
+     * @param ctx Context to use
+     * @param ops Operations to enrhich
+     *      Key = source file Uri
+     *      Value = operation
+     * @param root Root of the content folder to use
+     */
+    private fun buildPermutationGroups(
+        ctx: Context,
+        ops: MutableMap<String, FileOperation>,
+        root: DocumentFile
+    ) {
+        if (ops.isEmpty()) return
+
+        // Take a snapshot of the Content's current files to simulate operations as they're built
+        val files: Map<String, Pair<DocumentFile, String>> = listFiles(ctx, root, null)
+            .associateBy({ it.uri.toString() }, { Pair(it, it.name ?: "") })
+        if (files.isEmpty()) return
+
+        val availableFiles =
+            files.values.map { it.second }.filterNot { it.isEmpty() }.toMutableSet()
+
+        // source name => source Uri
+        val uriByName = files.values.associateBy({ it.second }, { it.first.uri.toString() })
+            .filterNot { it.key.isEmpty() }
+        // target name => source name
+        val nameOpsByTarget =
+            ops.values.associateBy({ it.targetName }, { files[it.sourceUri]?.second ?: "" })
+                .filterNot { it.value.isEmpty() }
+                .toMutableMap()
+        var sequenceNumber = 0
+
+        while (nameOpsByTarget.isNotEmpty()) {
+            val sourceNames = nameOpsByTarget.values.toSet()
+            val targetNames = nameOpsByTarget.keys
+
+            // Find a target that is not referenced among the sources (= no permutation loop)
+            var isLoop = false
+            val startSourceCandidate = targetNames.firstOrNull { !sourceNames.contains(it) }
+
+            // If none, take the 1st element and prepare for doing a permutation loop
+            var source: String? = if (null == startSourceCandidate) {
+                isLoop = true
+                sourceNames.first()
+            } else startSourceCandidate
+
+            // Walk the permutation sequence from start to finish
+            var order = 0
+            while (source != null) {
+                // Enrich the corresponding operation
+                ops[uriByName[source]]?.let { operation ->
+                    operation.source = files[uriByName[source]]?.first
+                    operation.target = files[uriByName[operation.targetName]]?.first
+                    operation.isRename = !availableFiles.contains(operation.targetName)
+                    operation.order = order
+                    operation.sequenceNumber = sequenceNumber
+                    operation.isLoop = isLoop
+
+                    // Update available files
+                    if (operation.isRename) {
+                        availableFiles.remove(source)
+                        availableFiles.add(operation.targetName)
+                    }
+
+                    // Remove the operation we've just recorded
+                    nameOpsByTarget.remove(operation.targetName)
+                }
+
+                // Next permutation is the one that uses the current source as a target
+                source = nameOpsByTarget[source]
+                order++
+            }
+            sequenceNumber++
+        }
+    }
+
     private fun progressPlus(bookTitle: String) {
         nbProgress++
         if (!this::progressNotification.isInitialized) {
@@ -303,7 +543,11 @@ abstract class BaseSplitMergeWorker(
         EventBus.getDefault().post(
             ProcessEvent(
                 ProcessEvent.Type.PROGRESS,
-                if (SplitMergeType.SPLIT == operationType) R.id.split_service else R.id.merge_service,
+                when (operationType) {
+                    SplitMergeType.SPLIT -> R.id.split_service
+                    SplitMergeType.MERGE -> R.id.merge_service
+                    SplitMergeType.REORDER -> R.id.generic_progress
+                },
                 0,
                 nbProgress,
                 nbError,
@@ -324,7 +568,11 @@ abstract class BaseSplitMergeWorker(
         EventBus.getDefault().postSticky(
             ProcessEvent(
                 ProcessEvent.Type.COMPLETE,
-                if (SplitMergeType.SPLIT == operationType) R.id.split_service else R.id.merge_service,
+                when (operationType) {
+                    SplitMergeType.SPLIT -> R.id.split_service
+                    SplitMergeType.MERGE -> R.id.merge_service
+                    SplitMergeType.REORDER -> R.id.generic_progress
+                },
                 0,
                 nbProgress,
                 nbError,
@@ -332,6 +580,19 @@ abstract class BaseSplitMergeWorker(
             )
         )
     }
+
+    private data class FileOperation(
+        val sourceUri: String,
+        val targetName: String,
+        val targetData: ImageFile,
+        // Following fields valued during 2nd pass (buildPermutationGroups)
+        var source: DocumentFile? = null,
+        var target: DocumentFile? = null,
+        var isRename: Boolean = false,
+        var order: Int = -1,
+        var sequenceNumber: Int = -1,
+        var isLoop: Boolean = false
+    )
 }
 
 class SplitWorker(context: Context, parameters: WorkerParameters) :
@@ -339,3 +600,6 @@ class SplitWorker(context: Context, parameters: WorkerParameters) :
 
 class MergeWorker(context: Context, parameters: WorkerParameters) :
     BaseSplitMergeWorker(context, R.id.merge_service, parameters)
+
+class ReorderWorker(context: Context, parameters: WorkerParameters) :
+    BaseSplitMergeWorker(context, R.id.reorder_service, parameters)

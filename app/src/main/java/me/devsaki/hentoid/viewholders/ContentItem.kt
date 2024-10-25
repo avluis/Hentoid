@@ -614,7 +614,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
                 if (content.status == StatusContent.EXTERNAL) {
                     var resourceId =
-                        if (content.isArchive) R.drawable.ic_archive else R.drawable.ic_folder_full
+                        if (content.isArchive) R.drawable.ic_archive
+                        else if (content.isPdf) R.drawable.ic_pdf_file
+                        else R.drawable.ic_folder_full
                     ivExternal?.setImageResource(resourceId)
                     // External streamed is streamed icon
                     if (isStreamed) resourceId = R.drawable.ic_action_download_stream

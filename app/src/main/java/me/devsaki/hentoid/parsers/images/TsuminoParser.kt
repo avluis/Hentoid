@@ -16,8 +16,8 @@ class TsuminoParser : BaseImageListParser() {
         val doc = getOnlineDocument(
             content.readerUrl,
             headers,
-            Site.TSUMINO.useHentoidAgent(),
-            Site.TSUMINO.useWebviewAgent()
+            Site.TSUMINO.useHentoidAgent,
+            Site.TSUMINO.useWebviewAgent
         )
         if (null != doc) {
             val captcha = doc.select(".g-recaptcha")

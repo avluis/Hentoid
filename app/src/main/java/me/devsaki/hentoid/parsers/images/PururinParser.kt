@@ -31,8 +31,8 @@ class PururinParser : BaseChapteredImageListParser() {
         val doc = getOnlineDocument(
             chp.url,
             headers ?: fetchHeaders(content),
-            Site.PURURIN.useHentoidAgent(),
-            Site.PURURIN.useWebviewAgent()
+            Site.PURURIN.useHentoidAgent,
+            Site.PURURIN.useWebviewAgent
         )
         if (doc != null) {
             // Get all thumb URLs and convert them to page URLs
