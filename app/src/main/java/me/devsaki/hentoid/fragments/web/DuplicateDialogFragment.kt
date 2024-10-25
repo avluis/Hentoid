@@ -1,15 +1,13 @@
 package me.devsaki.hentoid.fragments.web
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.fragment.app.FragmentActivity
-import com.bumptech.glide.Glide
+import coil3.load
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -21,7 +19,6 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.formatArtistForDisplay
 import me.devsaki.hentoid.util.getFlagResourceId
-import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.isInQueue
 import me.devsaki.hentoid.util.openReader
 import org.greenrobot.eventbus.EventBus
@@ -63,8 +60,6 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
     private var onlineContentPages = 0
     private var similarity = 0f
     private var isDownloadPlus = false
-
-    private val glideRequestOptions = getGlideOptionCenterImage(getInstance())
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,9 +113,7 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
                         newTask = true
                     )
                 }
-                if (thumbLocation.startsWith("http")) Glide.with(ivCover).load(thumbLocation)
-                    .apply(glideRequestOptions).into(ivCover) else Glide.with(ivCover)
-                    .load(Uri.parse(thumbLocation)).apply(glideRequestOptions).into(ivCover)
+                ivCover.load(thumbLocation)
             }
             @DrawableRes val resId = getFlagResourceId(context, libraryContent)
             if (resId != 0) {

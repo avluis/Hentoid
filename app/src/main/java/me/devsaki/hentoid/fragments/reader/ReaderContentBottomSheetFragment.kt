@@ -12,7 +12,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
+import coil3.load
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,10 +22,8 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.IncludeReaderContentBottomPanelBinding
-import me.devsaki.hentoid.util.bindOnlineCover
 import me.devsaki.hentoid.util.formatArtistForDisplay
 import me.devsaki.hentoid.util.formatTagsForDisplay
-import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
@@ -45,7 +43,6 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
     private var pageIndex = -1
     private var openOnTap = false
     private var currentRating = -1
-    private val glideRequestOptions = getGlideOptionCenterImage(HentoidApp.getInstance())
 
 
     override fun onAttach(context: Context) {
@@ -119,18 +116,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
                 ivCover.visibility = View.INVISIBLE
             } else {
                 ivCover.visibility = View.VISIBLE
-                if (thumbLocation.startsWith("http")) {
-                    val glideUrl = bindOnlineCover(thumbLocation, content)
-                    if (glideUrl != null) {
-                        Glide.with(ivCover)
-                            .load(glideUrl)
-                            .apply(glideRequestOptions)
-                            .into(ivCover)
-                    }
-                } else Glide.with(ivCover)
-                    .load(Uri.parse(thumbLocation))
-                    .apply(glideRequestOptions)
-                    .into(ivCover)
+                ivCover.load(thumbLocation)
             }
             if (openOnTap) ivCover.setOnClickListener {
                 openReader(

@@ -41,36 +41,37 @@ fun ByteArray.startsWith(data: ByteArray): Boolean {
 /**
  * Determine the MIME-type of the given binary data if it's a picture
  *
- * @param binary Picture binary data to determine the MIME-type for
+ * @param data Picture binary data to determine the MIME-type for
  * @return MIME-type of the given binary data; empty string if not supported
  */
-fun getMimeTypeFromPictureBinary(binary: ByteArray): String {
-    if (binary.size < 12) return ""
+fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
+    if (data.size < 12) return ""
+    val theLimit = if (-1 == limit) min(data.size * 0.2f, 1000f).toInt() else limit
 
-    return if (binary.startsWith(JPEG_SIGNATURE)) MIME_IMAGE_JPEG
+    return if (data.startsWith(JPEG_SIGNATURE)) MIME_IMAGE_JPEG
     // WEBP : byte comparison is non-contiguous
-    else if (binary.startsWith(WEBP_SIGNATURE) && 0x57.toByte() == binary[8] && 0x45.toByte() == binary[9] && 0x42.toByte() == binary[10] && 0x50.toByte() == binary[11]
+    else if (data.startsWith(WEBP_SIGNATURE) && 0x57.toByte() == data[8] && 0x45.toByte() == data[9] && 0x42.toByte() == data[10] && 0x50.toByte() == data[11]
     ) MIME_IMAGE_WEBP
-    else if (binary.startsWith(PNG_SIGNATURE)) {
+    else if (data.startsWith(PNG_SIGNATURE)) {
         // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
         val acTlPos = findSequencePosition(
-            binary,
+            data,
             0,
             PNG_ACTL,
-            (binary.size * 0.2).toInt()
+            theLimit
         )
         if (acTlPos > -1) {
             val idatPos = findSequencePosition(
-                binary,
+                data,
                 acTlPos,
                 PNG_IDAT,
-                (binary.size * 0.1).toInt()
+                theLimit
             ).toLong()
             if (idatPos > -1) return MIME_IMAGE_APNG
         }
         MIME_IMAGE_PNG
-    } else if (binary.startsWith(GIF_SIGNATURE)) MIME_IMAGE_GIF
-    else if (binary.startsWith(BMP_SIGNATURE)) MIME_IMAGE_BMP
+    } else if (data.startsWith(GIF_SIGNATURE)) MIME_IMAGE_GIF
+    else if (data.startsWith(BMP_SIGNATURE)) MIME_IMAGE_BMP
     else MIME_IMAGE_GENERIC
 }
 
@@ -85,7 +86,7 @@ fun isImageAnimated(data: ByteArray): Boolean {
     return if (data.size < 400) false
     else {
         val limit = min(data.size, 1000)
-        when (getMimeTypeFromPictureBinary(data)) {
+        when (getMimeTypeFromPictureBinary(data, limit)) {
             MIME_IMAGE_APNG -> true
             MIME_IMAGE_GIF -> findSequencePosition(
                 data,

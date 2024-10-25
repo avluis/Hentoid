@@ -45,6 +45,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.nio.ByteBuffer
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -245,6 +246,16 @@ fun copy(`in`: InputStream, out: OutputStream) {
         out.write(buf, 0, len)
     }
     out.flush()
+}
+
+@Throws(IOException::class)
+fun copy(`in`: InputStream, out: ByteBuffer) {
+    // Transfer bytes from in to out
+    val buf = ByteArray(FILE_IO_BUFFER_SIZE)
+    var len: Int
+    while ((`in`.read(buf).also { len = it }) > 0) {
+        out.put(buf, 0, len)
+    }
 }
 
 /**

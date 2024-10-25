@@ -12,8 +12,6 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
@@ -1053,13 +1051,13 @@ fun shareContent(
  */
 fun parseDownloadParams(downloadParamsStr: String?): Map<String, String> {
     // Handle empty and {}
-    if (null == downloadParamsStr || downloadParamsStr.trim().length <= 2) return HashMap()
+    if (null == downloadParamsStr || downloadParamsStr.trim().length <= 2) return emptyMap()
     try {
         return jsonToObject(downloadParamsStr, MAP_STRINGS)!!
     } catch (e: IOException) {
         Timber.w(e)
     }
-    return HashMap()
+    return emptyMap()
 }
 
 
@@ -1712,22 +1710,10 @@ fun formatSeriesForDisplay(
     }
 }
 
-/**
- * Transform the given online URL into a working GlideUrl using the given Content's cookies
- * (useful when viewing queue screen before any image has been downloaded)
- *
- * @param imageUrl URL of the online picture to transform
- * @param content  Content to use for cookies / referer
- * @return Working GlideUrl pointing to the given image URL, using the correct cookies / referer
- */
-fun bindOnlineCover(
-    imageUrl: String,
-    content: Content?
-): GlideUrl? {
+fun getContentHeaders(content: Content?): List<Pair<String, String>> {
     if (getWebViewAvailable()) {
         var cookieStr: String? = null
         var referer: String? = null
-        var builder = LazyHeaders.Builder()
 
         // Quickly skip JSON deserialization if there are no cookies in downloadParams
         if (content != null) {
@@ -1739,15 +1725,15 @@ fun bindOnlineCover(
             }
             if (null == cookieStr) cookieStr = getCookies(content.galleryUrl)
             if (null == referer) referer = content.galleryUrl
-            builder = builder.addHeader(HEADER_COOKIE_KEY, cookieStr).addHeader(
-                HEADER_REFERER_KEY,
-                referer
-            ).addHeader(HEADER_USER_AGENT, content.site.userAgent)
-        }
 
-        return GlideUrl(imageUrl, builder.build()) // From URL
+            val results: MutableList<Pair<String, String>> = ArrayList()
+            results.add(Pair(HEADER_COOKIE_KEY, cookieStr))
+            results.add(Pair(HEADER_REFERER_KEY, referer))
+            results.add(Pair(HEADER_USER_AGENT, content.site.userAgent))
+            return results
+        }
     }
-    return null
+    return emptyList()
 }
 
 /**

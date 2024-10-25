@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.viewholders
 
-import android.net.Uri
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
@@ -8,7 +7,7 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil3.load
 import com.mikepenz.fastadapter.ClickListener
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
@@ -20,12 +19,9 @@ import com.mikepenz.fastadapter.listeners.TouchEventHook
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils
 import com.mikepenz.fastadapter.ui.utils.StringHolder
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.core.setMiddleEllipsis
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.util.bindOnlineCover
-import me.devsaki.hentoid.util.getGlideOptionCenterImage
 
 /**
  * Inspired by mikepenz
@@ -51,8 +47,6 @@ class SubExpandableItem<T>(
     private var draggable = false
 
     private var mOnClickListener: ClickListener<SubExpandableItem<T>>? = null
-
-    private val glideRequestOptions = getGlideOptionCenterImage(HentoidApp.getInstance())
 
     //we define a clickListener in here so we can directly animate
     /**
@@ -179,14 +173,7 @@ class SubExpandableItem<T>(
             }
             ivCover.visibility = View.VISIBLE
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-            if (thumbLocation.startsWith("http")) {
-                bindOnlineCover(thumbLocation, null)?.let { glideUrl ->
-                    Glide.with(ivCover).load(glideUrl).apply(glideRequestOptions).into(ivCover)
-                }
-            } else  // From stored picture
-                Glide.with(ivCover).load(Uri.parse(thumbLocation))
-                    .apply(glideRequestOptions)
-                    .into(ivCover)
+            ivCover.load(thumbLocation)
         }
     }
 

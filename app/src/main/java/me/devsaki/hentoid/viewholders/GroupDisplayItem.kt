@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.viewholders
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -8,8 +7,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.signature.ObjectKey
+import coil3.dispose
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -22,9 +20,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getRatingResourceId
-import me.devsaki.hentoid.util.isValidContextForGlide
+import me.devsaki.hentoid.util.image.loadStill
 
 class GroupDisplayItem(
     val group: Group,
@@ -81,8 +78,6 @@ class GroupDisplayItem(
         var bottomButton: View? = view.findViewById(R.id.queueBottomBtn)
 
         private var coverUri = ""
-
-        private var glideRequestOptions = getGlideOptionCenterImage(view.context)
 
         override fun bindView(item: GroupDisplayItem, payloads: List<Any>) {
             // Payloads are set when the content stays the same but some properties alone change
@@ -162,16 +157,7 @@ class GroupDisplayItem(
                     return
                 }
                 it.visibility = View.VISIBLE
-                if (uri.startsWith("http")) Glide.with(it)
-                    .load(uri)
-                    .signature(ObjectKey(uri))
-                    .apply(glideRequestOptions)
-                    .into(it)
-                else Glide.with(it)
-                    .load(Uri.parse(uri))
-                    .signature(ObjectKey(uri))
-                    .apply(glideRequestOptions)
-                    .into(it)
+                it.loadStill(uri)
             }
         }
 
@@ -181,9 +167,7 @@ class GroupDisplayItem(
             get() = ivRating
 
         override fun unbindView(item: GroupDisplayItem) {
-            ivCover?.let {
-                if (isValidContextForGlide(it)) Glide.with(it).clear(it)
-            }
+            ivCover?.dispose()
         }
     }
 }

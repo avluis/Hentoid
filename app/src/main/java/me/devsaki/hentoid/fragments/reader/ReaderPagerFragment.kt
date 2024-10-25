@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.graphics.Point
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -34,7 +33,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
+import coil3.load
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -82,7 +81,6 @@ import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.glideOptionCenterInside
 import me.devsaki.hentoid.util.removeLabels
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.tryShowMenuIcons
@@ -1262,16 +1260,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 val currentImg = adapter.getImageAt(absIndex)
                 val nextImg = adapter.getImageAt(absIndex + 1)
                 if (previousImg != null) {
-                    Glide.with(previousImageView).load(Uri.parse(previousImg.fileUri))
-                        .apply(glideOptionCenterInside).into(previousImageView)
+                    previousImageView.load(previousImg.fileUri)
                     previousImageView.visibility = View.VISIBLE
                 } else previousImageView.visibility = View.INVISIBLE
-                if (currentImg != null) Glide.with(controlsOverlay.imagePreviewCenter)
-                    .load(Uri.parse(currentImg.fileUri)).apply(glideOptionCenterInside)
-                    .into(controlsOverlay.imagePreviewCenter)
+                if (currentImg != null) controlsOverlay.imagePreviewCenter.load(currentImg.fileUri)
                 if (nextImg != null) {
-                    Glide.with(nextImageView).load(Uri.parse(nextImg.fileUri))
-                        .apply(glideOptionCenterInside).into(nextImageView)
+                    nextImageView.load(nextImg.fileUri)
                     nextImageView.visibility = View.VISIBLE
                 } else nextImageView.visibility = View.INVISIBLE
             }

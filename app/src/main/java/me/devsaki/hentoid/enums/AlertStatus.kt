@@ -18,7 +18,7 @@ enum class AlertStatus(@ColorRes val color: Int, @DrawableRes val icon: Int) {
         // Same as ValueOf with a fallback to NONE
         // (vital for forward compatibility)
         fun searchByName(name: String): AlertStatus {
-            for (s in AlertStatus.values()) if (s.name.equals(name, ignoreCase = true)) return s
+            for (s in entries) if (s.name.equals(name, ignoreCase = true)) return s
             return NONE
         }
     }
