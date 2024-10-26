@@ -1,37 +1,26 @@
-package me.devsaki.hentoid.customssiv.decoder;
+package me.devsaki.hentoid.customssiv.decoder
 
-import static android.content.Context.ACTIVITY_SERVICE;
-import static me.devsaki.hentoid.customssiv.decoder.SkiaDecoderHelperKt.getResourceId;
-
-import android.app.ActivityManager;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BitmapRegionDecoder;
-import android.graphics.ColorSpace;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.net.Uri;
-import android.util.Log;
-
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import android.app.ActivityManager
+import android.content.ContentResolver
+import android.content.Context
+import android.content.pm.PackageManager
+import android.content.res.AssetManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.BitmapRegionDecoder
+import android.graphics.ColorSpace
+import android.graphics.Point
+import android.graphics.Rect
+import android.net.Uri
+import androidx.annotation.Keep
+import timber.log.Timber
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Semaphore
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.ReadWriteLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
  * <p>
@@ -51,32 +40,22 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * {@link SkiaImageRegionDecoder} on old or low powered devices you could not test.
  * </p>
  */
-public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
+private const val FILE_PREFIX = "file://"
+private const val ASSET_PREFIX = "$FILE_PREFIX/android_asset/"
+private const val RESOURCE_PREFIX = ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
 
-    private static final String TAG = SkiaPooledImageRegionDecoder.class.getSimpleName();
+class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Config) : ImageRegionDecoder {
+    private var debug: Boolean = false
 
-    private static boolean debug = false;
+    private var decoderPool: DecoderPool? = DecoderPool()
+    private val decoderLock: ReadWriteLock = ReentrantReadWriteLock(true)
 
-    private DecoderPool decoderPool = new DecoderPool();
-    private final ReadWriteLock decoderLock = new ReentrantReadWriteLock(true);
+    private var context: Context? = null
+    private var uri: Uri? = null
 
-    private static final String FILE_PREFIX = "file://";
-    private static final String ASSET_PREFIX = FILE_PREFIX + "/android_asset/";
-    private static final String RESOURCE_PREFIX = ContentResolver.SCHEME_ANDROID_RESOURCE + "://";
-
-    private final Bitmap.Config bitmapConfig;
-
-    private Context context;
-    private Uri uri;
-
-    private long fileLength = Long.MAX_VALUE;
-    private final Point imageDimensions = new Point(0, 0);
-    private final AtomicBoolean lazyInited = new AtomicBoolean(false);
-
-
-    public SkiaPooledImageRegionDecoder(@NonNull Bitmap.Config bitmapConfig) {
-        this.bitmapConfig = bitmapConfig;
-    }
+    private var fileLength = Long.MAX_VALUE
+    private val imageDimensions = Point(0, 0)
+    private val lazyInited = AtomicBoolean(false)
 
     /**
      * Controls logging of debug messages. All instances are affected.
@@ -84,162 +63,173 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
      * @param debug true to enable debug logging, false to disable.
      */
     @Keep
-    @SuppressWarnings("unused")
-    public static void setDebug(boolean debug) {
-        SkiaPooledImageRegionDecoder.debug = debug;
+    @Suppress("unused")
+    fun setDebug(debug: Boolean) {
+        this.debug = debug
     }
 
     /**
      * Initialises the decoder pool. This method creates one decoder on the current thread and uses
      * it to decode the bounds, then spawns an independent thread to populate the pool with an
-     * additional three decoders. The thread will abort if {@link #recycle()} is called.
+     * additional three decoders. The thread will abort if [.recycle] is called.
      */
-    @Override
-    @NonNull
-    public Point init(final Context context, @NonNull final Uri uri) throws Exception {
-        this.context = context;
-        this.uri = uri;
-        initialiseDecoder();
-        return this.imageDimensions;
+    @Throws(Exception::class)
+    override fun init(context: Context, uri: Uri): Point {
+        this.context = context
+        this.uri = uri
+        initialiseDecoder()
+        return this.imageDimensions
     }
 
     /**
-     * Initialises extra decoders for as long as {@link #allowAdditionalDecoder(int, long)} returns
+     * Initialises extra decoders for as long as [.allowAdditionalDecoder] returns
      * true and the pool has not been recycled.
      */
-    private void lazyInit() {
+    private fun lazyInit() {
         if (lazyInited.compareAndSet(false, true) && fileLength < Long.MAX_VALUE) {
-            debug("Starting lazy init of additional decoders");
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    while (decoderPool != null && allowAdditionalDecoder(decoderPool.size(), fileLength)) {
+            debug("Starting lazy init of additional decoders")
+            val thread: Thread = object : Thread() {
+                override fun run() {
+                    while (decoderPool != null && allowAdditionalDecoder(
+                            decoderPool!!.size(),
+                            fileLength
+                        )
+                    ) {
                         // New decoders can be created while reading tiles but this read lock prevents
                         // them being initialised while the pool is being recycled.
                         try {
                             if (decoderPool != null) {
-                                long start = System.currentTimeMillis();
-                                debug("Starting decoder");
-                                initialiseDecoder();
-                                long end = System.currentTimeMillis();
-                                debug("Started decoder, took " + (end - start) + "ms");
+                                val start = System.currentTimeMillis()
+                                debug("Starting decoder")
+                                initialiseDecoder()
+                                val end = System.currentTimeMillis()
+                                debug("Started decoder, took " + (end - start) + "ms")
                             }
-                        } catch (Exception e) {
+                        } catch (e: Exception) {
                             // A decoder has already been successfully created so we can ignore this
-                            debug("Failed to start decoder: " + e.getMessage());
+                            debug("Failed to start decoder: " + e.message)
                         }
                     }
                 }
-            };
-            thread.start();
+            }
+            thread.start()
         }
     }
 
     /**
-     * Initialises a new {@link BitmapRegionDecoder} and adds it to the pool, unless the pool has
+     * Initialises a new [BitmapRegionDecoder] and adds it to the pool, unless the pool has
      * been recycled while it was created.
      */
-    private void initialiseDecoder() throws IOException, PackageManager.NameNotFoundException {
-        String uriString = uri.toString();
-        BitmapRegionDecoder decoder;
-        long localFileLength = Long.MAX_VALUE;
+    @Throws(IOException::class, PackageManager.NameNotFoundException::class)
+    private fun initialiseDecoder() {
+        val uriString = uri.toString()
+        var decoder: BitmapRegionDecoder?
+        var localFileLength = Long.MAX_VALUE
         if (uriString.startsWith(RESOURCE_PREFIX)) {
-            int id = getResourceId(context, uri);
-            try (AssetFileDescriptor descriptor = context.getResources().openRawResourceFd(id)) {
-                localFileLength = descriptor.getLength();
-            } catch (Exception e) {
-                // Pooling disabled
-            }
-            decoder = BitmapRegionDecoder.newInstance(context.getResources().openRawResource(id), false);
-        } else if (uriString.startsWith(ASSET_PREFIX)) {
-            String assetName = uriString.substring(ASSET_PREFIX.length());
-            try (AssetFileDescriptor descriptor = context.getAssets().openFd(assetName)) {
-                localFileLength = descriptor.getLength();
-            } catch (Exception e) {
-                // Pooling disabled
-            }
-            decoder = BitmapRegionDecoder.newInstance(context.getAssets().open(assetName, AssetManager.ACCESS_RANDOM), false);
-        } else if (uriString.startsWith(FILE_PREFIX)) {
-            decoder = BitmapRegionDecoder.newInstance(uriString.substring(FILE_PREFIX.length()), false);
+            val id = getResourceId(context!!, uri!!)
             try {
-                File file = new File(uriString);
-                if (file.exists()) {
-                    localFileLength = file.length();
+                context!!.resources.openRawResourceFd(id).use { descriptor ->
+                    localFileLength = descriptor.length
                 }
-            } catch (Exception e) {
+            } catch (e: Exception) {
+                // Pooling disabled
+            }
+            decoder =
+                BitmapRegionDecoder.newInstance(context!!.resources.openRawResource(id), false)
+        } else if (uriString.startsWith(ASSET_PREFIX)) {
+            val assetName = uriString.substring(ASSET_PREFIX.length)
+            try {
+                context!!.assets.openFd(assetName).use { descriptor ->
+                    localFileLength = descriptor.length
+                }
+            } catch (e: Exception) {
+                // Pooling disabled
+            }
+            decoder = BitmapRegionDecoder.newInstance(
+                context!!.assets.open(
+                    assetName,
+                    AssetManager.ACCESS_RANDOM
+                ), false
+            )
+        } else if (uriString.startsWith(FILE_PREFIX)) {
+            decoder =
+                BitmapRegionDecoder.newInstance(uriString.substring(FILE_PREFIX.length), false)
+            try {
+                val file = File(uriString)
+                if (file.exists()) {
+                    localFileLength = file.length()
+                }
+            } catch (e: Exception) {
                 // Pooling disabled
             }
         } else {
-            ContentResolver contentResolver = context.getContentResolver();
-            try (InputStream input = contentResolver.openInputStream(uri)) {
-                if (input == null)
-                    throw new RuntimeException("Content resolver returned null stream. Unable to initialise with uri.");
-                decoder = BitmapRegionDecoder.newInstance(input, false);
-                try (AssetFileDescriptor descriptor = contentResolver.openAssetFileDescriptor(uri, "r")) {
-                    if (descriptor != null) {
-                        localFileLength = descriptor.getLength();
+            val contentResolver = context!!.contentResolver
+            contentResolver.openInputStream(uri!!).use { input ->
+                if (input == null) throw RuntimeException("Content resolver returned null stream. Unable to initialise with uri.")
+                decoder = BitmapRegionDecoder.newInstance(input, false)
+                try {
+                    contentResolver.openAssetFileDescriptor(uri!!, "r").use { descriptor ->
+                        if (descriptor != null) {
+                            localFileLength = descriptor.length
+                        }
                     }
-                } catch (Exception e) {
+                } catch (e: Exception) {
                     // Stick with MAX_LENGTH
                 }
             }
         }
 
-        this.fileLength = localFileLength;
-        this.imageDimensions.set(decoder.getWidth(), decoder.getHeight());
-        decoderLock.writeLock().lock();
+        this.fileLength = localFileLength
+        imageDimensions[decoder!!.width] = decoder!!.height
+        decoderLock.writeLock().lock()
         try {
             if (decoderPool != null) {
-                decoderPool.add(decoder);
+                decoderPool!!.add(decoder)
             }
         } finally {
-            decoderLock.writeLock().unlock();
+            decoderLock.writeLock().unlock()
         }
     }
 
     /**
      * Acquire a read lock to prevent decoding overlapping with recycling, then check the pool still
      * exists and acquire a decoder to load the requested region. There is no check whether the pool
-     * currently has decoders, because it's guaranteed to have one decoder after {@link #init(Context, Uri)}
-     * is called and be null once {@link #recycle()} is called. In practice the view can't call this
-     * method until after {@link #init(Context, Uri)}, so there will be no blocking on an empty pool.
+     * currently has decoders, because it's guaranteed to have one decoder after [.init]
+     * is called and be null once [.recycle] is called. In practice the view can't call this
+     * method until after [.init], so there will be no blocking on an empty pool.
      */
-    @Override
-    @NonNull
-    public Bitmap decodeRegion(@NonNull Rect sRect, int sampleSize) {
-        debug("Decode region " + sRect + " on thread " + Thread.currentThread().getName());
+    override fun decodeRegion(sRect: Rect, sampleSize: Int): Bitmap {
+        debug("Decode region " + sRect + " on thread " + Thread.currentThread().name)
         if (sRect.width() < imageDimensions.x || sRect.height() < imageDimensions.y) {
-            lazyInit();
+            lazyInit()
         }
-        decoderLock.readLock().lock();
+        decoderLock.readLock().lock()
         try {
             if (decoderPool != null) {
-                BitmapRegionDecoder decoder = decoderPool.acquire();
+                val decoder = decoderPool!!.acquire()
                 try {
                     // Decoder can't be null or recycled in practice
-                    if (decoder != null && !decoder.isRecycled()) {
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        options.inSampleSize = sampleSize;
-                        options.inPreferredConfig = bitmapConfig;
+                    if (decoder != null && !decoder.isRecycled) {
+                        val options = BitmapFactory.Options()
+                        options.inSampleSize = sampleSize
+                        options.inPreferredConfig = bitmapConfig
                         // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
                         // which makes resizing buggy (generates a black picture)
-                        options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
+                        options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB)
 
-                        Bitmap bitmap = decoder.decodeRegion(sRect, options);
-                        if (bitmap == null) {
-                            throw new RuntimeException("Skia image decoder returned null bitmap - image format may not be supported");
-                        }
-                        return bitmap;
+                        val bitmap = decoder.decodeRegion(sRect, options)
+                            ?: throw RuntimeException("Skia image decoder returned null bitmap - image format may not be supported")
+                        return bitmap
                     }
                 } finally {
                     if (decoder != null) {
-                        decoderPool.release(decoder);
+                        decoderPool!!.release(decoder)
                     }
                 }
             }
-            throw new IllegalStateException("Cannot decode region after decoder has been recycled");
+            throw IllegalStateException("Cannot decode region after decoder has been recycled")
         } finally {
-            decoderLock.readLock().unlock();
+            decoderLock.readLock().unlock()
         }
     }
 
@@ -247,27 +237,27 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
      * Holding a read lock to avoid returning true while the pool is being recycled, this returns
      * true if the pool has at least one decoder available.
      */
-    @Override
-    public synchronized boolean isReady() {
-        return decoderPool != null && !decoderPool.isEmpty();
+    @Synchronized
+    override fun isReady(): Boolean {
+        return !(decoderPool?.isEmpty ?: true)
     }
 
     /**
-     * Wait until all read locks held by {@link #decodeRegion(Rect, int)} are released, then recycle
+     * Wait until all read locks held by [.decodeRegion] are released, then recycle
      * and destroy the pool. Elsewhere, when a read lock is acquired, we must check the pool is not null.
      */
-    @Override
-    public synchronized void recycle() {
-        decoderLock.writeLock().lock();
+    @Synchronized
+    override fun recycle() {
+        decoderLock.writeLock().lock()
         try {
             if (decoderPool != null) {
-                decoderPool.recycle();
-                decoderPool = null;
-                context = null;
-                uri = null;
+                decoderPool!!.recycle()
+                decoderPool = null
+                context = null
+                uri = null
             }
         } finally {
-            decoderLock.writeLock().unlock();
+            decoderLock.writeLock().unlock()
         }
     }
 
@@ -280,136 +270,132 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
      * @param fileLength       the size of the image file in bytes. Creating another decoder will use approximately this much native memory.
      * @return true if another decoder can be created.
      */
-    @SuppressWarnings("WeakerAccess")
-    protected boolean allowAdditionalDecoder(int numberOfDecoders, long fileLength) {
+    protected fun allowAdditionalDecoder(numberOfDecoders: Int, fileLength: Long): Boolean {
         if (numberOfDecoders >= 4) {
-            debug("No additional decoders allowed, reached hard limit (4)");
-            return false;
+            debug("No additional decoders allowed, reached hard limit (4)")
+            return false
         } else if (numberOfDecoders * fileLength > 20 * 1024 * 1024) {
-            debug("No additional encoders allowed, reached hard memory limit (20Mb)");
-            return false;
+            debug("No additional encoders allowed, reached hard memory limit (20Mb)")
+            return false
         } else if (numberOfDecoders >= getNumberOfCores()) {
-            debug("No additional encoders allowed, limited by CPU cores (" + getNumberOfCores() + ")");
-            return false;
+            debug("No additional encoders allowed, limited by CPU cores (" + getNumberOfCores() + ")")
+            return false
         } else if (isLowMemory()) {
-            debug("No additional encoders allowed, memory is low");
-            return false;
+            debug("No additional encoders allowed, memory is low")
+            return false
         }
-        debug("Additional decoder allowed, current count is " + numberOfDecoders + ", estimated native memory " + ((fileLength * numberOfDecoders) / (1024 * 1024)) + "Mb");
-        return true;
+        debug("Additional decoder allowed, current count is " + numberOfDecoders + ", estimated native memory " + ((fileLength * numberOfDecoders) / (1024 * 1024)) + "Mb")
+        return true
     }
 
 
     /**
-     * A simple pool of {@link BitmapRegionDecoder} instances, all loading from the same source.
+     * A simple pool of [BitmapRegionDecoder] instances, all loading from the same source.
      */
-    private static class DecoderPool {
-        private final Semaphore available = new Semaphore(0, true);
-        private final Map<BitmapRegionDecoder, Boolean> decoders = new ConcurrentHashMap<>();
+    private class DecoderPool {
+        private val available = Semaphore(0, true)
+        private val decoders: MutableMap<BitmapRegionDecoder?, Boolean> = ConcurrentHashMap()
 
-        /**
-         * Returns false if there is at least one decoder in the pool.
-         */
-        private synchronized boolean isEmpty() {
-            return decoders.isEmpty();
-        }
+        @get:Synchronized
+        val isEmpty: Boolean
+            /**
+             * Returns false if there is at least one decoder in the pool.
+             */
+            get() = decoders.isEmpty()
 
         /**
          * Returns number of encoders.
          */
-        private synchronized int size() {
-            return decoders.size();
+        @Synchronized
+        fun size(): Int {
+            return decoders.size
         }
 
         /**
          * Acquire a decoder. Blocks until one is available.
          */
-        @Nullable
-        private BitmapRegionDecoder acquire() {
-            available.acquireUninterruptibly();
-            return getNextAvailable();
+        fun acquire(): BitmapRegionDecoder? {
+            available.acquireUninterruptibly()
+            return nextAvailable
         }
 
         /**
          * Release a decoder back to the pool.
          */
-        private void release(BitmapRegionDecoder decoder) {
+        fun release(decoder: BitmapRegionDecoder) {
             if (markAsUnused(decoder)) {
-                available.release();
+                available.release()
             }
         }
 
         /**
          * Adds a newly created decoder to the pool, releasing an additional permit.
          */
-        private synchronized void add(BitmapRegionDecoder decoder) {
-            decoders.put(decoder, false);
-            available.release();
+        @Synchronized
+        fun add(decoder: BitmapRegionDecoder?) {
+            decoders[decoder] = false
+            available.release()
         }
 
         /**
          * While there are decoders in the map, wait until each is available before acquiring,
-         * recycling and removing it. After this is called, any call to {@link #acquire()} will
+         * recycling and removing it. After this is called, any call to [.acquire] will
          * block forever, so this call should happen within a write lock, and all calls to
-         * {@link #acquire()} should be made within a read lock so they cannot end up blocking on
+         * [.acquire] should be made within a read lock so they cannot end up blocking on
          * the semaphore when it has no permits.
          */
-        private synchronized void recycle() {
-            while (!decoders.isEmpty()) {
-                BitmapRegionDecoder decoder = acquire();
+        @Synchronized
+        fun recycle() {
+            while (decoders.isNotEmpty()) {
+                val decoder = acquire()
                 if (decoder != null) {
-                    decoder.recycle();
-                    decoders.remove(decoder);
+                    decoder.recycle()
+                    decoders.remove(decoder)
                 }
             }
         }
 
-        @Nullable
-        private synchronized BitmapRegionDecoder getNextAvailable() {
-            for (Map.Entry<BitmapRegionDecoder, Boolean> entry : decoders.entrySet()) {
-                if (!entry.getValue()) {
-                    entry.setValue(true);
-                    return entry.getKey();
+        @get:Synchronized
+        private val nextAvailable: BitmapRegionDecoder?
+            get() {
+                for (entry in decoders.entries) {
+                    if (!entry.value) {
+                        entry.setValue(true)
+                        return entry.key
+                    }
                 }
+                return null
             }
-            return null;
-        }
 
-        private synchronized boolean markAsUnused(BitmapRegionDecoder decoder) {
-            for (Map.Entry<BitmapRegionDecoder, Boolean> entry : decoders.entrySet()) {
-                if (decoder == entry.getKey()) {
-                    if (entry.getValue()) {
-                        entry.setValue(false);
-                        return true;
+        @Synchronized
+        private fun markAsUnused(decoder: BitmapRegionDecoder): Boolean {
+            for (entry in decoders.entries) {
+                if (decoder == entry.key) {
+                    if (entry.value) {
+                        entry.setValue(false)
+                        return true
                     } else {
-                        return false;
+                        return false
                     }
                 }
             }
-            return false;
-        }
-
-    }
-
-    private int getNumberOfCores() {
-        return Runtime.getRuntime().availableProcessors();
-    }
-
-    private boolean isLowMemory() {
-        ActivityManager activityManager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
-        if (activityManager != null) {
-            ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
-            activityManager.getMemoryInfo(memoryInfo);
-            return memoryInfo.lowMemory;
-        } else {
-            return true;
+            return false
         }
     }
 
-    private void debug(String message) {
-        if (debug) {
-            Log.d(TAG, message);
-        }
+    private fun getNumberOfCores(): Int {
+        return Runtime.getRuntime().availableProcessors()
     }
 
+    private fun isLowMemory(): Boolean {
+        val activityManager =
+            context!!.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val memoryInfo = ActivityManager.MemoryInfo()
+        activityManager.getMemoryInfo(memoryInfo)
+        return memoryInfo.lowMemory
+    }
+
+    private fun debug(message: String) {
+        if (debug) Timber.d(message)
+    }
 }
