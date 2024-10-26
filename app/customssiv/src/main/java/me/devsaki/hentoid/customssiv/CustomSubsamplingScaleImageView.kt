@@ -2090,10 +2090,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         tile: Tile
     ): Tile {
         assertNonUiThread()
-        if (decoder.isReady && tile.visible) {
+        if (decoder.isReady() && tile.visible) {
             view.decoderLock.readLock().lock()
             try {
-                if (decoder.isReady) {
+                if (decoder.isReady()) {
                     tile.loading = true
                     // Update tile's file sRect according to rotation
                     tile.sRect?.let { sRect ->
