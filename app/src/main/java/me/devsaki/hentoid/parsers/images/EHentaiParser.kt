@@ -558,7 +558,7 @@ class EHentaiParser : ImageListParser {
             chapter
         )
     }
-    
+
     override fun clear() {
         // No need for that here
     }
