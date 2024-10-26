@@ -1,19 +1,11 @@
-package me.devsaki.hentoid.json.sources;
+package me.devsaki.hentoid.json.sources
 
-import java.util.ArrayList;
-import java.util.List;
-
-@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
-public class EHentaiGalleryQuery {
-    private String method = "gdata";
-    private final List<List<String>> gidlist;
-    private String namespace = "1";
-
-    public EHentaiGalleryQuery(String galleryId, String galleryKey) {
-        gidlist = new ArrayList<>();
-        List<String> galleryIds = new ArrayList<>();
-        galleryIds.add(galleryId);
-        galleryIds.add(galleryKey);
-        gidlist.add(galleryIds);
-    }
+data class EHentaiGalleryQuery(
+    val gidlist: List<List<String>> = ArrayList(),
+    val method: String = "gdata",
+    val namespace: String = "1"
+) {
+    constructor(galleryId: String, galleryKey: String) : this(
+        listOf(listOf(galleryId, galleryKey))
+    )
 }
