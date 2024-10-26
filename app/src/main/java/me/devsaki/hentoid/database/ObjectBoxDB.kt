@@ -1418,7 +1418,7 @@ object ObjectBoxDB {
         return when (location) {
             Location.PRIMARY -> qc.and(Content_.status.notEqual(StatusContent.EXTERNAL.code))
             Location.PRIMARY_1 -> {
-                var root = Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+                var root = Settings.getStorageUri(StorageLocation.PRIMARY_1)
                 if (root.isEmpty()) root = "FAIL" // Auto-fails condition
                 qc.and(
                     Content_.storageUri.startsWith(
@@ -1429,7 +1429,7 @@ object ObjectBoxDB {
             }
 
             Location.PRIMARY_2 -> {
-                var root = Preferences.getStorageUri(StorageLocation.PRIMARY_2)
+                var root = Settings.getStorageUri(StorageLocation.PRIMARY_2)
                 if (root.isEmpty()) root = "FAIL" // Auto-fails condition
                 qc.and(
                     Content_.storageUri.startsWith(

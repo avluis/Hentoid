@@ -43,7 +43,6 @@ import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createImageListFromFiles
@@ -195,9 +194,9 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
         EventBus.getDefault().post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE, null))
-        var previousUriStr = Preferences.getStorageUri(location)
+        var previousUriStr = Settings.getStorageUri(location)
         if (previousUriStr.isEmpty()) previousUriStr = "FAIL" // Auto-fails if location is not set
-        Preferences.setStorageUri(location, targetRootUri)
+        Settings.setStorageUri(location, targetRootUri)
 
         val rootFolder = getDocumentFromTreeUriString(context, targetRootUri)
         if (null == rootFolder) {

@@ -277,7 +277,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         initWebview()
         initSwipeLayout()
         webView.loadUrl(getStartUrl())
-        if (!Preferences.getRecentVisibility()) {
+        if (!Settings.recentVisibility) {
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE

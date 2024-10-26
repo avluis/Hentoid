@@ -10,7 +10,7 @@ import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogPrefsDlStrategyBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.coerceIn
 
 class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialogFragment.Parent>() {
@@ -50,14 +50,14 @@ class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialog
                 } else {
                     description.text = String.format(
                         resources.getString(R.string.storage_strategy_fallover_desc),
-                        Preferences.getStorageSwitchThresholdPc()
+                        Settings.storageSwitchThresholdPc
                     )
                     threshold.isVisible = true
                 }
             }
             selector.check(
-                when (Preferences.getStorageDownloadStrategy()) {
-                    Preferences.Constant.STORAGE_FILL_BALANCE_FREE -> choiceBalance.id
+                when (Settings.storageDownloadStrategy) {
+                    Settings.Value.STORAGE_FILL_BALANCE_FREE -> choiceBalance.id
                     else -> choiceFallover.id
                 }
             )
@@ -71,7 +71,7 @@ class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialog
                     )
                 }
             }
-            setText(Preferences.getStorageSwitchThresholdPc().toString())
+            setText(Settings.storageSwitchThresholdPc.toString())
         }
         binding?.actionButton?.setOnClickListener { onOkClick() }
     }
@@ -79,18 +79,16 @@ class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialog
     private fun onOkClick() {
         binding?.threshold?.editText?.apply {
             if (text.isEmpty()) return
-            Preferences.setStorageSwitchThresholdPc(
+            Settings.storageSwitchThresholdPc =
                 coerceIn(text.toString().toFloat(), 0f, 100f).toInt()
-            )
         }
 
         binding?.apply {
-            Preferences.setStorageDownloadStrategy(
+            Settings.storageDownloadStrategy =
                 when (selector.checkedButtonId) {
-                    choiceBalance.id -> Preferences.Constant.STORAGE_FILL_BALANCE_FREE
-                    else -> Preferences.Constant.STORAGE_FILL_FALLOVER
+                    choiceBalance.id -> Settings.Value.STORAGE_FILL_BALANCE_FREE
+                    else -> Settings.Value.STORAGE_FILL_FALLOVER
                 }
-            )
         }
 
         parent?.onStrategySelected()

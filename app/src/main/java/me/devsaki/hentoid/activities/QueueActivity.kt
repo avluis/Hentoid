@@ -42,6 +42,7 @@ import me.devsaki.hentoid.fragments.queue.QueueFragment
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -136,7 +137,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
         viewModel.getQueue().observe(this) { onQueueChanged(it) }
         viewModel.getErrors().observe(this) { onErrorsChanged(it) }
 
-        if (!Preferences.getRecentVisibility()) {
+        if (!Settings.recentVisibility) {
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE

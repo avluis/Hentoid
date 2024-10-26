@@ -425,7 +425,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         // Hide FAB when scrolling up
         binding?.topFab?.apply {
             scrollListener.setDeltaYListener(lifecycleScope) { i: Int ->
-                isVisible = (Preferences.isTopFabEnabled() && i > 0)
+                isVisible = (Settings.topFabEnabled && i > 0)
             }
 
             // Top FAB
@@ -433,7 +433,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 llm?.scrollToPositionWithOffset(0, 0)
             }
             setOnLongClickListener {
-                Preferences.setTopFabEnabled(false)
+                Settings.topFabEnabled = false
                 visibility = View.GONE
                 true
             }
@@ -458,7 +458,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         // Pager
         pager.initUI(rootView)
-        setPagingMethod(Preferences.getEndlessScroll(), false)
+        setPagingMethod(Settings.endlessScroll, false)
         addCustomBackControl()
     }
 
@@ -660,10 +660,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun deleteSelectedItems() {
         val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
         if (selectedItems.isNotEmpty()) {
-            var selectedContent = selectedItems.mapNotNull { ci -> ci.content }
+            var selectedContent = selectedItems.mapNotNull { it.content }
             // Remove external items if they can't be deleted
-            if (!Preferences.isDeleteExternalLibrary()) selectedContent = selectedContent
-                .filterNot { c: Content? -> c!!.status == StatusContent.EXTERNAL }
+            if (!Settings.isDeleteExternalLibrary) selectedContent = selectedContent
+                .filterNot { it.status == StatusContent.EXTERNAL }
             if (selectedContent.isNotEmpty()) activity.get()!!.askDeleteItems(
                 selectedContent, emptyList(),
                 { refreshIfNeeded() }, selectExtension!!
@@ -1004,7 +1004,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             CommunicationEvent.Type.DISABLE -> onDisable()
             CommunicationEvent.Type.UNSELECT -> leaveSelectionMode()
             CommunicationEvent.Type.UPDATE_EDIT_MODE -> setPagingMethod(
-                Preferences.getEndlessScroll(), activity.get()!!.isEditMode()
+                Settings.endlessScroll, activity.get()!!.isEditMode()
             )
 
             CommunicationEvent.Type.SCROLL_TOP -> {
@@ -1065,16 +1065,16 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         Timber.v("Prefs change detected : %s", key)
         when (key) {
-            Preferences.Key.TOP_FAB ->
-                binding?.topFab?.isVisible = Preferences.isTopFabEnabled()
+            Settings.Key.TOP_FAB ->
+                binding?.topFab?.isVisible = Settings.topFabEnabled
 
-            Preferences.Key.ENDLESS_SCROLL -> {
+            Settings.Key.ENDLESS_SCROLL -> {
                 setPagingMethod(
-                    Preferences.getEndlessScroll(), activity.get()!!.isEditMode()
+                    Settings.endlessScroll, activity.get()!!.isEditMode()
                 )
                 FirebaseCrashlytics.getInstance().setCustomKey(
                     "Library display mode",
-                    if (Preferences.getEndlessScroll()) "endless" else "paged"
+                    if (Settings.endlessScroll) "endless" else "paged"
                 )
                 viewModel.searchContent() // Trigger a blank search
             }
@@ -1344,8 +1344,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * @return Min and max index of the books to display on the given page
      */
     private fun getShelfBound(shelfNumber: Int, librarySize: Int): Pair<Int, Int> {
-        val minIndex = (shelfNumber - 1) * Preferences.getContentPageQuantity()
-        val maxIndex = min(minIndex + Preferences.getContentPageQuantity(), librarySize)
+        val minIndex = (shelfNumber - 1) * Settings.contentPageQuantity
+        val maxIndex = min(minIndex + Settings.contentPageQuantity, librarySize)
         return Pair(minIndex, maxIndex)
     }
 
@@ -1384,7 +1384,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * @param shelfNumber Number of the shelf to display
      */
     private fun populateBookshelf(iLibrary: PagedList<Content>, shelfNumber: Int) {
-        if (Preferences.getEndlessScroll()) return
+        if (Settings.endlessScroll) return
 
         val bounds = getShelfBound(shelfNumber, iLibrary.size)
         val minIndex = bounds.first
@@ -1516,7 +1516,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         if (newSearch) topItemPosition = 0
 
         // Update displayed books
-        if (Preferences.getEndlessScroll() && !activity.get()!!
+        if (Settings.endlessScroll && !activity.get()!!
                 .isEditMode() && pagedItemAdapter != null
         ) {
             pagedItemAdapter?.submitList(result) { differEndCallback() }
@@ -1525,7 +1525,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         } else { // Paged mode
             if (newSearch) pager.setCurrentPage(1)
             pager.setPageCount(
-                ceil(result.size * 1.0 / Preferences.getContentPageQuantity()).toInt()
+                ceil(result.size * 1.0 / Settings.contentPageQuantity).toInt()
             )
             loadBookshelf(result)
         }
@@ -1899,7 +1899,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * @param scrollPosition New 0-based scroll position
      */
     private fun onScrollPositionChange(scrollPosition: Int) {
-        if (Preferences.isTopFabEnabled()) {
+        if (Settings.topFabEnabled) {
             binding?.topFab?.isVisible = (scrollPosition > 2)
         }
     }

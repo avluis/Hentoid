@@ -387,7 +387,7 @@ fun updateBookmarksJson(context: Context, dao: CollectionDAO): Boolean {
     contentCollection.replaceBookmarks(bookmarks)
 
     val rootFolder =
-        getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
             ?: return false
 
     try {
@@ -427,7 +427,7 @@ fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boolean {
     contentCollection.replaceRenamingRules(rules)
 
     val rootFolder =
-        getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
             ?: return false
 
     try {

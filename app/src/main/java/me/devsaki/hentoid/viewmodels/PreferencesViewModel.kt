@@ -8,7 +8,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.detachAllExternalContent
 import me.devsaki.hentoid.util.detachAllPrimaryContent
 import me.devsaki.hentoid.util.file.Beholder
@@ -51,7 +51,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                 // Nothing
             }
         }
-        Preferences.setStorageUri(location, "")
+        Settings.setStorageUri(location, "")
     }
 
     suspend fun merge2to1(nbBooks: Int) {

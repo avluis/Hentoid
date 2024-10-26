@@ -39,7 +39,6 @@ import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
@@ -108,7 +107,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         this.touchHelper = touchHelper
         this.deleteAction = deleteAction
         isSwipeable =
-            !content.isBeingProcessed && (content.status != StatusContent.EXTERNAL || Preferences.isDeleteExternalLibrary()) && viewType != ViewType.MERGE
+            !content.isBeingProcessed && (content.status != StatusContent.EXTERNAL || Settings.isDeleteExternalLibrary) && viewType != ViewType.MERGE
         identifier = content.uniqueHash()
     }
 

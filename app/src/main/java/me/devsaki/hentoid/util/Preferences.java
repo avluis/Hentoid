@@ -9,10 +9,8 @@ import androidx.preference.PreferenceManager;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.DownloadMode;
 import me.devsaki.hentoid.enums.Grouping;
-import me.devsaki.hentoid.enums.StorageLocation;
 import me.devsaki.hentoid.enums.Theme;
 import me.devsaki.hentoid.util.network.Source;
 import timber.log.Timber;
@@ -51,8 +49,8 @@ public final class Preferences {
             sharedPreferences.edit().remove(Key.VIEWER_FLING_FACTOR).apply();
         }
         // PIN activation -> Lock type (v1.18.4)
-        if (sharedPreferences.contains(Key.APP_LOCK)) {
-            if (!getAppLockPin().isEmpty()) Settings.INSTANCE.setLockType(1);
+        if (sharedPreferences.contains(Settings.Key.APP_LOCK)) {
+            if (!Settings.INSTANCE.getAppLockPin().isEmpty()) Settings.INSTANCE.setLockType(1);
         }
     }
 
@@ -70,8 +68,8 @@ public final class Preferences {
         // Remove non-exportable settings that make no sense on another instance
         result.remove(Settings.Key.FIRST_RUN);
         result.remove(Settings.Key.WELCOME_DONE);
-        result.remove(Key.PRIMARY_STORAGE_URI);
-        result.remove(Key.EXTERNAL_LIBRARY_URI);
+        result.remove(Settings.Key.PRIMARY_STORAGE_URI);
+        result.remove(Settings.Key.EXTERNAL_LIBRARY_URI);
         result.remove(Key.LAST_KNOWN_APP_VERSION_CODE);
         result.remove(Settings.Key.REFRESH_JSON_1_DONE);
         result.remove(Settings.Key.LOCK_TYPE);
@@ -102,11 +100,6 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(key, Integer.toString(defaultValue)));
     }
 
-    private static void setIntPref(@NonNull String key, int value) {
-        if (null == sharedPreferences) return;
-        sharedPreferences.edit().putString(key, Integer.toString(value)).apply();
-    }
-
     private static long getLongPref(@NonNull String key, long defaultValue) {
         if (null == sharedPreferences) return defaultValue;
         return Long.parseLong(sharedPreferences.getString(key, Long.toString(defaultValue)));
@@ -119,110 +112,6 @@ public final class Preferences {
 
 
     // ======= PROPERTIES GETTERS / SETTERS
-    public static int getContentPageQuantity() {
-        return getIntPref(Key.QUANTITY_PER_PAGE_LISTS, Default.QUANTITY_PER_PAGE);
-    }
-
-    public static String getAppLockPin() {
-        return sharedPreferences.getString(Key.APP_LOCK, "");
-    }
-
-    public static void setAppLockPin(String pin) {
-        sharedPreferences.edit().putString(Key.APP_LOCK, pin).apply();
-    }
-
-    public static boolean getEndlessScroll() {
-        return getBoolPref(Key.ENDLESS_SCROLL, Default.ENDLESS_SCROLL);
-    }
-
-    public static boolean isTopFabEnabled() {
-        return getBoolPref(Key.TOP_FAB, Default.TOP_FAB);
-    }
-
-    public static void setTopFabEnabled(boolean value) {
-        sharedPreferences.edit().putBoolean(Key.TOP_FAB, value).apply();
-    }
-
-    public static boolean getRecentVisibility() {
-        return getBoolPref(Key.APP_PREVIEW, BuildConfig.DEBUG);
-    }
-
-    private static String getStorageUri() {
-        return sharedPreferences.getString(Key.PRIMARY_STORAGE_URI, "");
-    }
-
-    private static void setStorageUri(String uri) {
-        sharedPreferences.edit().putString(Key.PRIMARY_STORAGE_URI, uri).apply();
-    }
-
-    private static String getStorageUri2() {
-        return sharedPreferences.getString(Key.PRIMARY_STORAGE_URI_2, "");
-    }
-
-    private static void setStorageUri2(String uri) {
-        sharedPreferences.edit().putString(Key.PRIMARY_STORAGE_URI_2, uri).apply();
-    }
-
-    public static String getStorageUri(StorageLocation location) {
-        return switch (location) {
-            case PRIMARY_1 -> getStorageUri();
-            case PRIMARY_2 -> getStorageUri2();
-            case EXTERNAL -> getExternalLibraryUri();
-            default -> "";
-        };
-    }
-
-    public static void setStorageUri(StorageLocation location, String uri) {
-        switch (location) {
-            case PRIMARY_1 -> setStorageUri(uri);
-            case PRIMARY_2 -> setStorageUri2(uri);
-            case EXTERNAL -> setExternalLibraryUri(uri);
-            default -> {
-                // Nothing
-            }
-        }
-    }
-
-    public static int getStorageDownloadStrategy() {
-        return getIntPref(Key.PRIMARY_STORAGE_FILL_METHOD, Default.PRIMARY_STORAGE_FILL_METHOD);
-    }
-
-    public static void setStorageDownloadStrategy(int value) {
-        setIntPref(Key.PRIMARY_STORAGE_FILL_METHOD, value);
-    }
-
-    public static int getStorageSwitchThresholdPc() {
-        return getIntPref(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, Default.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC);
-    }
-
-    public static void setStorageSwitchThresholdPc(int value) {
-        setIntPref(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, value);
-    }
-
-    public static int getMemoryAlertThreshold() {
-        return getIntPref(Key.MEMORY_ALERT, Default.MEMORY_ALERT);
-    }
-
-    public static void setMemoryAlertThreshold(int value) {
-        setIntPref(Key.MEMORY_ALERT, value);
-    }
-
-    public static String getExternalLibraryUri() {
-        return sharedPreferences.getString(Key.EXTERNAL_LIBRARY_URI, "");
-    }
-
-    public static void setExternalLibraryUri(String uri) {
-        sharedPreferences.edit().putString(Key.EXTERNAL_LIBRARY_URI, uri).apply();
-    }
-
-    public static boolean isDeleteExternalLibrary() {
-        return getBoolPref(Key.EXTERNAL_LIBRARY_DELETE, Default.EXTERNAL_LIBRARY_DELETE);
-    }
-
-    static int getFolderNameFormat() {
-        return getIntPref(Key.FOLDER_NAMING_CONTENT_LISTS, Default.FOLDER_NAMING_CONTENT);
-    }
-
     public static int getWebViewInitialZoom() {
         return getIntPref(Key.WEBVIEW_INITIAL_ZOOM_LISTS, Default.WEBVIEW_INITIAL_ZOOM);
     }
@@ -689,25 +578,12 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        public static final String APP_LOCK = "pref_app_lock";
-        public static final String APP_PREVIEW = "pref_app_preview";
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         static final String VERSION_KEY = "prefs_version";
-        static final String QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
-        public static final String ENDLESS_SCROLL = "pref_endless_scroll";
-        public static final String TOP_FAB = "pref_top_fab";
-        public static final String PRIMARY_STORAGE_URI = "pref_sd_storage_uri";
-        public static final String PRIMARY_STORAGE_URI_2 = "pref_sd_storage_uri_2";
-        public static final String PRIMARY_STORAGE_FILL_METHOD = "pref_storage_fill_method";
-        public static final String PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = "pref_storage_switch_threshold_pc";
         public static final String EXTERNAL_LIBRARY = "pref_external_library";
-        public static final String EXTERNAL_LIBRARY_URI = "pref_external_library_uri";
-        public static final String EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete";
         public static final String EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library";
-        static final String FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         public static final String STORAGE_MANAGEMENT = "storage_mgt";
-        public static final String MEMORY_ALERT = "pref_memory_alert";
         static final String WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String BROWSER_RESUME_LAST = "pref_browser_resume_last";
@@ -805,15 +681,6 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        static final int PRIMARY_STORAGE_FILL_METHOD = Constant.STORAGE_FILL_BALANCE_FREE;
-        static final int PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = 90;
-
-        static final int QUANTITY_PER_PAGE = 20;
-        static final boolean ENDLESS_SCROLL = true;
-        static final boolean TOP_FAB = true;
-        static final int MEMORY_ALERT = 110;
-        static final boolean EXTERNAL_LIBRARY_DELETE = false;
-        static final int FOLDER_NAMING_CONTENT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean WEBVIEW_OVERRIDE_OVERVIEW = false;
         public static final int WEBVIEW_INITIAL_ZOOM = 20;
         static final boolean BROWSER_RESUME_LAST = false;
@@ -903,18 +770,9 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        public static final int STORAGE_FILL_BALANCE_FREE = 0;
-        public static final int STORAGE_FILL_FALLOVER = 1;
-
-
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
 
         public static final int ORDER_CONTENT_FAVOURITE = -2; // Artificial order created for clarity purposes
-
-        static final int FOLDER_NAMING_CONTENT_ID = 0;
-        static final int FOLDER_NAMING_CONTENT_TITLE_ID = 1;
-        static final int FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
-        static final int FOLDER_NAMING_CONTENT_TITLE_AUTH_ID = 3;
 
         public static final int QUEUE_NEW_DOWNLOADS_POSITION_TOP = 0;
         public static final int QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM = 1;

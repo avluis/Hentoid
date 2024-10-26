@@ -325,7 +325,7 @@ fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
     queuedContent.addAll(errors)
 
     val rootFolder =
-        getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
             ?: return false
 
     try {
@@ -572,7 +572,7 @@ fun detachAllExternalContent(context: Context, dao: CollectionDAO) {
  * @param dao      DAO to use
  * @param location Location to detach
  */
-fun detachAllPrimaryContent(dao: CollectionDAO, location: StorageLocation?) {
+fun detachAllPrimaryContent(dao: CollectionDAO, location: StorageLocation) {
     // Remove all external books from DB
     // NB : do NOT use ContentHelper.removeContent as it would remove files too
     // here we just want to remove DB entries without removing files
@@ -581,8 +581,8 @@ fun detachAllPrimaryContent(dao: CollectionDAO, location: StorageLocation?) {
     // TODO groups
 }
 
-fun getPathRoot(location: StorageLocation?): String {
-    return getPathRoot(Preferences.getStorageUri(location))
+fun getPathRoot(location: StorageLocation): String {
+    return getPathRoot(Settings.getStorageUri(location))
 }
 
 fun getPathRoot(locationUriStr: String): String {
@@ -888,10 +888,10 @@ private fun formatBookFolderName(
     title: String, author: String
 ): String {
     var result = ""
-    when (Preferences.getFolderNameFormat()) {
-        Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_ID -> result += title
-        Preferences.Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID -> result += "$author - $title"
-        Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_AUTH_ID -> result += "$title - $author"
+    when (Settings.folderNameFormat) {
+        Settings.Value.FOLDER_NAMING_CONTENT_TITLE_ID -> result += title
+        Settings.Value.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID -> result += "$author - $title"
+        Settings.Value.FOLDER_NAMING_CONTENT_TITLE_AUTH_ID -> result += "$title - $author"
         else -> {}
     }
     result += " - "
@@ -975,7 +975,7 @@ fun getOrCreateSiteDownloadDir(
     location: StorageLocation,
     site: Site
 ): DocumentFile? {
-    val appUriStr = Preferences.getStorageUri(location)
+    val appUriStr = Settings.getStorageUri(location)
     if (appUriStr.isEmpty()) {
         Timber.e("No storage URI defined for location %s", location.name)
         return null
@@ -2064,7 +2064,7 @@ fun mergeContents(
     // External library root for external content
     if (mergedContent.status == StatusContent.EXTERNAL) {
         val externalRootFolder =
-            getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri())
+            getDocumentFromTreeUriString(context, Settings.externalLibraryUri)
         if (null == externalRootFolder || !externalRootFolder.exists()) throw ContentNotProcessedException(
             mergedContent,
             "Could not create target directory : external root unreachable"
@@ -2086,7 +2086,7 @@ fun mergeContents(
     } else { // Primary folder for non-external content; using download strategy
         val location = selectDownloadLocation(context)
         targetFolder = getOrCreateContentDownloadDir(context, mergedContent, location, true)
-        parentFolder = getDocumentFromTreeUriString(context, Preferences.getStorageUri(location))
+        parentFolder = getDocumentFromTreeUriString(context, Settings.getStorageUri(location))
     }
     if (null == targetFolder || !targetFolder.exists())
         throw ContentNotProcessedException(mergedContent, "Could not create target directory")
@@ -2266,7 +2266,7 @@ fun mergeContents(
 
 fun getLocation(content: Content): StorageLocation {
     for (location in StorageLocation.entries) {
-        val rootUri = Preferences.getStorageUri(location)
+        val rootUri = Settings.getStorageUri(location)
         if (rootUri.isNotEmpty() && content.storageUri.startsWith(rootUri)) return location
     }
     return StorageLocation.NONE

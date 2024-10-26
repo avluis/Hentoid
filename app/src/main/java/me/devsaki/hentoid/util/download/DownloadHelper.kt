@@ -9,7 +9,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.DownloadEvent
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.take
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
@@ -327,8 +327,8 @@ fun getCanonicalUrl(doc: Document): String {
 }
 
 fun selectDownloadLocation(context: Context): StorageLocation {
-    val uriStr1 = Preferences.getStorageUri(StorageLocation.PRIMARY_1).trim { it <= ' ' }
-    val uriStr2 = Preferences.getStorageUri(StorageLocation.PRIMARY_2).trim { it <= ' ' }
+    val uriStr1 = Settings.getStorageUri(StorageLocation.PRIMARY_1).trim()
+    val uriStr2 = Settings.getStorageUri(StorageLocation.PRIMARY_2).trim()
 
     // Obvious cases
     if (uriStr1.isEmpty() && uriStr2.isEmpty()) return StorageLocation.NONE
@@ -345,9 +345,9 @@ fun selectDownloadLocation(context: Context): StorageLocation {
     // Apply download strategy
     val memUsage1 = MemoryUsageFigures(context, root1)
     val memUsage2 = MemoryUsageFigures(context, root2!!)
-    val strategy = Preferences.getStorageDownloadStrategy()
-    return if (Preferences.Constant.STORAGE_FILL_FALLOVER == strategy) {
-        if (100 - memUsage1.freeUsageRatio100 > Preferences.getStorageSwitchThresholdPc()) StorageLocation.PRIMARY_2 else StorageLocation.PRIMARY_1
+    val strategy = Settings.storageDownloadStrategy
+    return if (Settings.Value.STORAGE_FILL_FALLOVER == strategy) {
+        if (100 - memUsage1.freeUsageRatio100 > Settings.storageSwitchThresholdPc) StorageLocation.PRIMARY_2 else StorageLocation.PRIMARY_1
     } else {
         if (memUsage1.getfreeUsageBytes() > memUsage2.getfreeUsageBytes()) StorageLocation.PRIMARY_1 else StorageLocation.PRIMARY_2
     }
@@ -373,7 +373,7 @@ fun getDownloadLocation(context: Context, content: Content): Pair<DocumentFile?,
     // Auto-select location according to storage management strategy
     if (content.storageUri.isEmpty()) {
         location = selectDownloadLocation(context)
-        if (!testDownloadFolder(context, Preferences.getStorageUri(location))) return null
+        if (!testDownloadFolder(context, Settings.getStorageUri(location))) return null
     }
     return Pair(dir, location)
 }

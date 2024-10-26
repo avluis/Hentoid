@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.FragmentManager
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 
 class UnlockPinDialogFragment : PinDialogFragment() {
     companion object {
@@ -29,7 +29,7 @@ class UnlockPinDialogFragment : PinDialogFragment() {
     }
 
     override fun onPinAccept(pin: String) {
-        if (Preferences.getAppLockPin() == pin) {
+        if (Settings.appLockPin == pin) {
             dismiss()
             parent?.onUnlockSuccess()
         } else {

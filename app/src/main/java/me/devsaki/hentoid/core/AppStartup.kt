@@ -235,10 +235,10 @@ object AppStartup {
                 "color_theme", Preferences.getColorTheme().toString()
             )
             FirebaseAnalytics.getInstance(context).setUserProperty(
-                "endless", Preferences.getEndlessScroll().toString()
+                "endless", Settings.endlessScroll.toString()
             )
             FirebaseCrashlytics.getInstance().setCustomKey(
-                "Library display mode", if (Preferences.getEndlessScroll()) "endless" else "paged"
+                "Library display mode", if (Settings.endlessScroll) "endless" else "paged"
             )
         } catch (e: IllegalStateException) { // Happens during unit tests
             Timber.e(e, "fail@init Crashlytics")
@@ -250,7 +250,7 @@ object AppStartup {
     private fun createBookmarksJson(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Create bookmarks JSON : start")
         val appRoot = getDocumentFromTreeUriString(
-            context, Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+            context, Settings.getStorageUri(StorageLocation.PRIMARY_1)
         )
         if (appRoot != null) {
             val bookmarksJson = findFile(context, appRoot, BOOKMARKS_JSON_FILE_NAME)

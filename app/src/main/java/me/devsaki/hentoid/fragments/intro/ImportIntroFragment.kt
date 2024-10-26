@@ -25,7 +25,6 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.PickFolderContract
 import me.devsaki.hentoid.util.PickerResult
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ProcessFolderResult
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getFullPathFromUri
@@ -77,7 +76,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
      */
     fun reset() {
         if (!isDone) return
-        Preferences.setStorageUri(StorageLocation.PRIMARY_1, "")
+        Settings.setStorageUri(StorageLocation.PRIMARY_1, "")
 
         mergedBinding?.apply {
             importStep1Button.visibility = View.VISIBLE
@@ -234,7 +233,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             importStep1Button.visibility = View.INVISIBLE
             importStep1Folder.text = getFullPathFromUri(
                 requireContext(),
-                Uri.parse(Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+                Uri.parse(Settings.getStorageUri(StorageLocation.PRIMARY_1))
             )
             importStep1Check.visibility = View.VISIBLE
             importStep2.visibility = View.VISIBLE

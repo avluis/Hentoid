@@ -24,7 +24,7 @@ import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.formatArtistForDisplay
 import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getThemedColor
@@ -67,7 +67,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
             isBeingDeleted = result.isBeingDeleted
         }
         content?.let {
-            canDelete = it.status != StatusContent.EXTERNAL || Preferences.isDeleteExternalLibrary()
+            canDelete = it.status != StatusContent.EXTERNAL || Settings.isDeleteExternalLibrary
         }
         nbDuplicates = result.nbDuplicates
         isReferenceItem = titleScore > 1f

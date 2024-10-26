@@ -5,7 +5,6 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 
 class ActivatePinDialogFragment : PinDialogFragment() {
@@ -30,12 +29,14 @@ class ActivatePinDialogFragment : PinDialogFragment() {
                 clearPin()
                 setHeaderText(R.string.pin_new_confirm)
             }
+
             pin -> {
-                Preferences.setAppLockPin(proposedPin)
+                Settings.appLockPin = pin
                 Settings.lockType = 1
                 dismiss()
                 parent?.onPinActivateSuccess()
             }
+
             else -> {
                 proposedPin = null
                 setHeaderText(R.string.pin_new)

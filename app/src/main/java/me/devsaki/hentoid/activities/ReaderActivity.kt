@@ -12,6 +12,7 @@ import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.fragments.reader.ReaderGalleryFragment
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.requestExternalStorageReadPermission
 import me.devsaki.hentoid.util.toast
@@ -73,7 +74,7 @@ open class ReaderActivity : BaseActivity() {
                 .add(android.R.id.content, fragment)
                 .commit()
         }
-        if (!Preferences.getRecentVisibility()) window.setFlags(
+        if (!Settings.recentVisibility) window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
         )

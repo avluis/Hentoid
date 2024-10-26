@@ -312,7 +312,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             searchRecords.addAll(records)
         }
 
-        if (!Preferences.getRecentVisibility()) {
+        if (!Settings.recentVisibility) {
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE
@@ -461,7 +461,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun considerRefreshExtLib() {
-        if (Preferences.getExternalLibraryUri().isNullOrEmpty()) return
+        if (Settings.externalLibraryUri.isEmpty()) return
         runExternalImport(this, true)
     }
 
@@ -889,7 +889,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 hasChangedDisplaySettings = true
             }
 
-            Preferences.Key.PRIMARY_STORAGE_URI, Preferences.Key.EXTERNAL_LIBRARY_URI -> {
+            Settings.Key.PRIMARY_STORAGE_URI, Settings.Key.EXTERNAL_LIBRARY_URI -> {
                 updateDisplay(Grouping.FLAT.id)
                 viewModel.setGrouping(Grouping.FLAT.id)
             }
@@ -1115,7 +1115,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         } else { // Flat view
             editMenu?.isVisible = !hasProcessed
             deleteMenu?.isVisible =
-                !hasProcessed && ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0L == selectedExternalCount || selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary())
+                !hasProcessed && ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0L == selectedExternalCount || selectedExternalCount > 0 && Settings.isDeleteExternalLibrary)
             completedMenu?.isVisible = true
             resetReadStatsMenu?.isVisible = true
             rateMenu?.isVisible = isMultipleSelection

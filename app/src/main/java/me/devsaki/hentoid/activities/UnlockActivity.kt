@@ -21,7 +21,6 @@ import me.devsaki.hentoid.core.startBiometric
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.pin.UnlockPinDialogFragment
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.pause
@@ -34,9 +33,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         applyTheme()
-        if (Preferences.getAppLockPin().length != 4) {
-            Preferences.setAppLockPin("")
-        }
+        if (Settings.appLockPin.length != 4) Settings.appLockPin = ""
         if (0 == Settings.lockType || isUnlocked()) {
             goToNextActivity()
             return

@@ -30,7 +30,6 @@ import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.preferences.DownloadStrategyDialogFragment
 import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
 import me.devsaki.hentoid.fragments.preferences.StorageUsageDialogFragment
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.dimensAsDp
@@ -129,11 +128,11 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                         getPrefsIndex(
                             resources,
                             R.array.pref_memory_alert_values,
-                            Preferences.getMemoryAlertThreshold().toString()
+                            Settings.memoryAlertThreshold.toString()
                         )
                     ) { dialog, which ->
                         val array = resources.getStringArray(R.array.pref_memory_alert_values)
-                        Preferences.setMemoryAlertThreshold(array[which].toInt())
+                        Settings.memoryAlertThreshold = array[which].toInt()
                         refreshDisplay()
                         dialog.dismiss()
                     }
@@ -157,27 +156,27 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             browseModeImg.isVisible = Settings.isBrowserMode
 
             primaryVolume1.isVisible =
-                Preferences.getStorageUri(StorageLocation.PRIMARY_1).isNotEmpty()
+                Settings.getStorageUri(StorageLocation.PRIMARY_1).isNotEmpty()
             if (primaryVolume1.isVisible) {
                 if (null == binding1) binding1 =
                     IncludePrefsStorageVolumeBinding.bind(primaryVolume1)
                 bindLocation(
                     binding1,
                     StorageLocation.PRIMARY_1,
-                    Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+                    Settings.getStorageUri(StorageLocation.PRIMARY_1)
                 )
             }
             addPrimary1.isVisible = !primaryVolume1.isVisible
 
             primaryVolume2.isVisible =
-                Preferences.getStorageUri(StorageLocation.PRIMARY_2).isNotEmpty()
+                Settings.getStorageUri(StorageLocation.PRIMARY_2).isNotEmpty()
             if (primaryVolume2.isVisible) {
                 if (null == binding2) binding2 =
                     IncludePrefsStorageVolumeBinding.bind(primaryVolume2)
                 bindLocation(
                     binding2,
                     StorageLocation.PRIMARY_2,
-                    Preferences.getStorageUri(StorageLocation.PRIMARY_2)
+                    Settings.getStorageUri(StorageLocation.PRIMARY_2)
                 )
             }
             addPrimary2.isVisible = primaryVolume1.isVisible && !primaryVolume2.isVisible
@@ -187,32 +186,32 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             alertDesc.text = textArray[getPrefsIndex(
                 resources,
                 R.array.pref_memory_alert_values,
-                Preferences.getMemoryAlertThreshold().toString()
+                Settings.memoryAlertThreshold.toString()
             )]
 
             strategyPanel.isVisible = (primaryVolume1.isVisible && primaryVolume2.isVisible)
             textArray = resources.getStringArray(R.array.pref_storage_strategy_name)
             strategyTitle.text = resources.getString(
                 R.string.storage_strategy_title,
-                textArray[Preferences.getStorageDownloadStrategy()]
+                textArray[Settings.storageDownloadStrategy]
             )
             textArray = resources.getStringArray(R.array.pref_storage_strategy_desc)
             strategyDesc.text = String.format(
-                textArray[Preferences.getStorageDownloadStrategy()],
-                Preferences.getStorageSwitchThresholdPc()
+                textArray[Settings.storageDownloadStrategy],
+                Settings.storageSwitchThresholdPc
             )
 
-            externalVolume.isVisible = Preferences.getExternalLibraryUri().isNotEmpty()
+            externalVolume.isVisible = Settings.externalLibraryUri.isNotEmpty()
             if (externalVolume.isVisible) {
                 if (null == bindingExt) bindingExt =
                     IncludePrefsStorageVolumeBinding.bind(externalVolume)
                 bindLocation(
                     bindingExt,
                     StorageLocation.EXTERNAL,
-                    Preferences.getExternalLibraryUri()
+                    Settings.externalLibraryUri
                 )
             }
-            addExternal.isVisible = Preferences.getExternalLibraryUri().isEmpty()
+            addExternal.isVisible = Settings.externalLibraryUri.isEmpty()
         }
     }
 
@@ -356,7 +355,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
                     val folder =
                         getDocumentFromTreeUriString(
                             this,
-                            Preferences.getStorageUri(location)
+                            Settings.getStorageUri(location)
                         )
                     if (folder != null) openFile(this, folder)
                 }
@@ -369,7 +368,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
 
     private fun onDetachSelected(location: StorageLocation) {
         if (StorageLocation.PRIMARY_1 == location
-            && Preferences.getStorageUri(StorageLocation.PRIMARY_2).isNotBlank()
+            && Settings.getStorageUri(StorageLocation.PRIMARY_2).isNotBlank()
         ) {
             Snackbar.make(
                 findViewById(android.R.id.content),
@@ -416,7 +415,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
         }
 
         var location1free = -1L
-        val root1 = Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+        val root1 = Settings.getStorageUri(StorageLocation.PRIMARY_1)
         if (root1.isNotEmpty()) {
             val root1Folder = getDocumentFromTreeUriString(this, root1)
             if (root1Folder != null) {
