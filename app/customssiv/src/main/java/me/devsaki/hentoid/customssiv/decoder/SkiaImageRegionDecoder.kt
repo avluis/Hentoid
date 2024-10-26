@@ -1,26 +1,20 @@
-package me.devsaki.hentoid.customssiv.decoder;
+package me.devsaki.hentoid.customssiv.decoder
 
-import static me.devsaki.hentoid.customssiv.decoder.SkiaDecoderHelperKt.getResourceId;
-
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BitmapRegionDecoder;
-import android.graphics.ColorSpace;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import android.content.ContentResolver
+import android.content.Context
+import android.content.pm.PackageManager
+import android.content.res.AssetManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.BitmapRegionDecoder
+import android.graphics.ColorSpace
+import android.graphics.Point
+import android.graphics.Rect
+import android.net.Uri
+import java.io.IOException
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReadWriteLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
  * Default implementation of {@link ImageRegionDecoder}
@@ -33,86 +27,80 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * tiles are being loaded before recycling the decoder. In practice, {@link BitmapRegionDecoder} is
  * synchronized internally so this has no real impact on performance.
  */
-public class SkiaImageRegionDecoder implements ImageRegionDecoder {
+private const val FILE_PREFIX = "file://"
+private const val ASSET_PREFIX = "$FILE_PREFIX/android_asset/"
+private const val RESOURCE_PREFIX = ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
 
-    private BitmapRegionDecoder decoder;
-    private final ReadWriteLock decoderLock = new ReentrantReadWriteLock(true);
+class SkiaImageRegionDecoder(private val bitmapConfig: Bitmap.Config) : ImageRegionDecoder {
+    private var decoder: BitmapRegionDecoder? = null
+    private val decoderLock: ReadWriteLock = ReentrantReadWriteLock(true)
 
-    private static final String FILE_PREFIX = "file://";
-    private static final String ASSET_PREFIX = FILE_PREFIX + "/android_asset/";
-    private static final String RESOURCE_PREFIX = ContentResolver.SCHEME_ANDROID_RESOURCE + "://";
-
-    private final Bitmap.Config bitmapConfig;
-
-
-    public SkiaImageRegionDecoder(@NonNull Bitmap.Config bitmapConfig) {
-        this.bitmapConfig = bitmapConfig;
-    }
-
-    @Override
-    @NonNull
-    public Point init(Context context, @NonNull Uri uri) throws IOException, PackageManager.NameNotFoundException {
-        String uriString = uri.toString();
+    @Throws(IOException::class, PackageManager.NameNotFoundException::class)
+    override fun init(context: Context, uri: Uri): Point {
+        val uriString = uri.toString()
         if (uriString.startsWith(RESOURCE_PREFIX)) {
-            int id = getResourceId(context, uri);
-            decoder = BitmapRegionDecoder.newInstance(context.getResources().openRawResource(id), false);
+            val id = getResourceId(context, uri)
+            decoder = BitmapRegionDecoder.newInstance(context.resources.openRawResource(id), false)
         } else if (uriString.startsWith(ASSET_PREFIX)) {
-            String assetName = uriString.substring(ASSET_PREFIX.length());
-            decoder = BitmapRegionDecoder.newInstance(context.getAssets().open(assetName, AssetManager.ACCESS_RANDOM), false);
+            val assetName = uriString.substring(ASSET_PREFIX.length)
+            decoder = BitmapRegionDecoder.newInstance(
+                context.assets.open(
+                    assetName,
+                    AssetManager.ACCESS_RANDOM
+                ), false
+            )
         } else if (uriString.startsWith(FILE_PREFIX)) {
-            decoder = BitmapRegionDecoder.newInstance(uriString.substring(FILE_PREFIX.length()), false);
+            decoder =
+                BitmapRegionDecoder.newInstance(uriString.substring(FILE_PREFIX.length), false)
         } else {
-            try (InputStream input = context.getContentResolver().openInputStream(uri)) {
-                if (input == null)
-                    throw new RuntimeException("Content resolver returned null stream. Unable to initialise with uri.");
-                decoder = BitmapRegionDecoder.newInstance(input, false);
+            context.contentResolver.openInputStream(uri).use { input ->
+                if (input == null) throw RuntimeException("Content resolver returned null stream. Unable to initialise with uri.")
+                decoder = BitmapRegionDecoder.newInstance(input, false)
             }
         }
-        if (decoder != null && !decoder.isRecycled())
-            return new Point(decoder.getWidth(), decoder.getHeight());
-        else return new Point(-1, -1);
+        return if (decoder != null && !decoder!!.isRecycled) Point(
+            decoder!!.width,
+            decoder!!.height
+        )
+        else Point(-1, -1)
     }
 
-    @Override
-    @NonNull
-    public Bitmap decodeRegion(@NonNull Rect sRect, int sampleSize) {
-        getDecodeLock().lock();
+    override fun decodeRegion(sRect: Rect, sampleSize: Int): Bitmap {
+        getDecodeLock().lock()
         try {
-            if (decoder != null && !decoder.isRecycled()) {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = sampleSize;
-                options.inPreferredConfig = bitmapConfig;
+            if (decoder != null && !decoder!!.isRecycled) {
+                val options = BitmapFactory.Options()
+                options.inSampleSize = sampleSize
+                options.inPreferredConfig = bitmapConfig
                 // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
                 // which makes resizing buggy (generates a black picture)
-                options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
+                options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB)
 
-                Bitmap bitmap = decoder.decodeRegion(sRect, options);
-                if (bitmap == null) {
-                    throw new RuntimeException("Skia image decoder returned null bitmap - image format may not be supported");
-                }
+                val bitmap = decoder!!.decodeRegion(sRect, options)
+                    ?: throw RuntimeException("Skia image decoder returned null bitmap - image format may not be supported")
 
-                return bitmap;
+                return bitmap
             } else {
-                throw new IllegalStateException("Cannot decode region after decoder has been recycled");
+                throw IllegalStateException("Cannot decode region after decoder has been recycled")
             }
         } finally {
-            getDecodeLock().unlock();
+            getDecodeLock().unlock()
         }
     }
 
-    @Override
-    public synchronized boolean isReady() {
-        return decoder != null && !decoder.isRecycled();
+    @Synchronized
+    override fun isReady(): Boolean {
+        return decoder != null && !decoder!!.isRecycled
     }
 
-    @Override
-    public synchronized void recycle() {
-        decoderLock.writeLock().lock();
+    @Synchronized
+    override fun recycle() {
+        decoderLock.writeLock().lock()
         try {
-            if (decoder != null) decoder.recycle();
-            decoder = null;
+            if (decoder != null) decoder!!.recycle()
+            decoder = null
         } finally {
-            decoderLock.writeLock().unlock();
+            decoderLock.writeLock().unlock()
         }
     }
 
@@ -121,7 +109,7 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
      * regions from multiple threads with one decoder instance causes a segfault. For old versions
      * use the write lock to enforce single threaded decoding.
      */
-    private Lock getDecodeLock() {
-        return decoderLock.readLock();
+    private fun getDecodeLock(): Lock {
+        return decoderLock.readLock()
     }
 }
