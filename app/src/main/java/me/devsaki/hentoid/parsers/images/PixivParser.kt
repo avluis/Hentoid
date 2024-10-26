@@ -103,9 +103,9 @@ class PixivParser : BaseImageListParser() {
             PixivServer.api.getIllustPages(content.uniqueSiteId, cookieStr, acceptAll, userAgent)
                 .execute().body()
         if (null == galleryMetadata || galleryMetadata.error == true) {
-            var message: String? = ""
-            if (galleryMetadata != null) message = galleryMetadata.message
-            throw EmptyResultException(message!!)
+            var message = ""
+            if (galleryMetadata != null) message = galleryMetadata.message ?: ""
+            throw EmptyResultException(message)
         }
         return urlsToImageFiles(
             galleryMetadata.getPageUrls(),
@@ -247,14 +247,14 @@ class PixivParser : BaseImageListParser() {
             )
         }
         val userIllustsMetadata = userIllustResp.body()
-        if (null == userIllustsMetadata || userIllustsMetadata.isError) {
+        if (null == userIllustsMetadata || userIllustsMetadata.isError()) {
             var message: String? = "Unreachable user illusts"
-            if (userIllustsMetadata != null) message = userIllustsMetadata.message
+            if (userIllustsMetadata != null) message = userIllustsMetadata.getMessage()
             throw IllegalArgumentException(message)
         }
 
         // Detect extra chapters
-        var illustIds = userIllustsMetadata.illustIds
+        var illustIds = userIllustsMetadata.getIllustIds()
         var storedChapters: List<Chapter>? = null
         if (storedContent != null) {
             storedChapters = storedContent.chapters
