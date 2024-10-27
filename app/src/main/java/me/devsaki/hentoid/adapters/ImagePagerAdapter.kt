@@ -21,6 +21,7 @@ import coil3.dispose
 import coil3.load
 import coil3.request.ErrorResult
 import coil3.request.SuccessResult
+import coil3.request.allowConversionToBitmap
 import coil3.request.transformations
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
@@ -42,7 +43,6 @@ import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getExtension
-import me.devsaki.hentoid.util.image.NullTransformation
 import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import me.devsaki.hentoid.util.image.screenHeight
 import me.devsaki.hentoid.util.image.screenWidth
@@ -425,17 +425,20 @@ class ImagePagerAdapter(val context: Context) :
             } else { // ImageView
                 val view = imgView as ImageView
                 Timber.d("Picture $absoluteAdapterPosition : Using Coil")
-                val transformation = if (autoRotate) SmartRotateTransformation(
-                    90f,
-                    screenWidth,
-                    screenHeight
-                ) else NullTransformation()
+                val transformation = if (autoRotate) listOf(
+                    SmartRotateTransformation(
+                        90f,
+                        screenWidth,
+                        screenHeight
+                    )
+                ) else emptyList()
                 view.load(uri) {
                     transformations(transformation)
                     listener(
                         onError = { _, err -> onCoilLoadFailed(err) },
                         onSuccess = { _, res -> onCoilLoadSuccess(res) }
                     )
+                    allowConversionToBitmap(false)
                 }
             }
         }

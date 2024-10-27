@@ -554,7 +554,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @param previewSource Optional source for a preview image to be displayed and allow interaction while the full size image loads.
      * @param state         State to be restored. Nullable.
      */
-    fun setImage(imageSource: ImageSource, previewSource: ImageSource?, state: ImageViewState?) {
+    private fun setImage(imageSource: ImageSource, previewSource: ImageSource?, state: ImageViewState?) {
         reset(true)
         if (state != null) restoreState(state)
         val targetScale = if ((null == state)) 1f else getVirtualScale()
@@ -575,7 +575,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                         Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/" + previewSource.getResource())
                 }
                 if (previewSourceUri != null) {
-
                     lifecycleScope?.launch {
                         try {
                             val bmp = withContext(Dispatchers.IO) {
