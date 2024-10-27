@@ -1296,6 +1296,17 @@ fun getFileUriCompat(context: Context, file: File): Uri {
 }
 
 /**
+ * Get the parent Uri of the given DocumentFile using the given root
+ * NB : doc must be a child/grandchild of the document represented by root
+ */
+fun getParent(context: Context, root: Uri, doc: DocumentFile): Uri? {
+    val parentsRoots =
+        DocumentsContract.findDocumentPath(context.contentResolver, doc.uri) ?: return null
+    // NB : that call is expensive; consider implementing that within FileExplorer if needed inside a loop
+    return DocumentsContract.buildDocumentUriUsingTree(root, parentsRoots.path[0])
+}
+
+/**
  * Remove all illegal characters from the given string to make it a valid Android file name
  *
  * @param fileName String to clean up

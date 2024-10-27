@@ -88,7 +88,8 @@ import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dimensAsPx
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.file.getParent
+import me.devsaki.hentoid.util.file.openUri
 import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.isNumeric
@@ -754,14 +755,15 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 toast(R.string.folder_undefined)
                 return
             }
-            val folder =
-                getDocumentFromTreeUriString(context, c.storageUri)
+            val folder = getDocumentFromTreeUriString(context, c.storageUri)
             if (folder != null) {
-                selectExtension?.apply {
-                    deselect(selections.toMutableSet())
-                }
+                selectExtension?.apply { deselect(selections.toMutableSet()) }
                 activity.get()?.getSelectionToolbar()?.visibility = View.GONE
-                openFile(context, folder)
+
+                val uri = if (c.isArchive || c.isPdf)
+                    getParent(context, Uri.parse(Settings.externalLibraryUri), folder)
+                else folder.uri
+                uri?.let { openUri(context, it) }
             }
         }
     }
