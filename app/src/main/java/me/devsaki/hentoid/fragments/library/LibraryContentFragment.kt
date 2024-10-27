@@ -1721,7 +1721,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val selectedNonArchivePdfExternalCount =
                 contentList.count { it.status == StatusContent.EXTERNAL && !it.isArchive && !it.isPdf }
             val selectedArchivePdfExternalCount =
-                contentList.count { it.status == StatusContent.EXTERNAL && it.isArchive && it.isPdf }
+                contentList.count { it.status == StatusContent.EXTERNAL && (it.isArchive || it.isPdf) }
             activity.get()?.updateSelectionToolbar(
                 selectedCount.toLong(),
                 selectedProcessedCount.toLong(),
