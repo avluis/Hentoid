@@ -17,6 +17,7 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import coil3.dispose
 import coil3.load
 import coil3.request.ErrorResult
 import coil3.request.SuccessResult
@@ -177,102 +178,14 @@ class ImagePagerAdapter(val context: Context) :
         return ImageViewHolder(view)
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    fun reset(holder: ImageViewHolder) {
-        holder.apply {
-            val image = rootView.findViewById<ImageView>(R.id.imageview)
-            image.isClickable = true
-            image.isFocusable = true
-            image.scaleType = ImageView.ScaleType.FIT_CENTER
-            image.setOnTouchListener(null)
-
-            val ssiv = rootView.findViewById<CustomSubsamplingScaleImageView>(R.id.ssiv)
-            ssiv.setIgnoreTouchEvents(false)
-            ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.HORIZONTAL)
-            ssiv.setPreferredBitmapConfig(colorDepth)
-            ssiv.setDoubleTapZoomDuration(500)
-            ssiv.setOnTouchListener(null)
-
-            rootView.minimumHeight = 0
-            noImgTxt.isVisible = false
-        }
-    }
-
-    // TODO make all that method less ugly
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         Timber.d("Picture %d : BindViewHolder", position)
 
         val displayParams = getDisplayParamsForPosition(position) ?: return
         val imgViewType = getImageViewType(displayParams)
 
-        reset(holder)
-
-        holder.apply {
-            val imageView = rootView.findViewById<ImageView>(R.id.imageview)
-            viewerOrientation = displayParams.orientation
-            displayMode = displayParams.displayMode
-            isSmoothRendering = displayParams.isSmoothRendering
-
-            if (ViewType.DEFAULT == imgViewType) {
-                // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
-                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
-                    imageView.isClickable = false
-                    imageView.isFocusable = false
-                }
-            } else if (ViewType.IMAGEVIEW_STRETCH == imgViewType) {
-                imageView.scaleType = ImageView.ScaleType.FIT_XY
-            } else if (ViewType.SSIV_VERTICAL == imgViewType) {
-                val ssiv = rootView.findViewById<CustomSubsamplingScaleImageView>(R.id.ssiv)
-                ssiv.setIgnoreTouchEvents(true)
-                ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL)
-            }
-
-            // Avoid stacking 0-px tall images on screen and load all of them at the same time
-            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
-                rootView.minimumHeight = pageMinHeight
-
-            val imageType = getImageType(getImageAt(position))
-            if (forceImageView != null) { // ImageView has been forced
-                switchImageView(forceImageView!!, true)
-                forceImageView = null // Reset force flag
-            } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType) {
-                animationAlertListener?.run()
-                switchImageView(isImageView = true, isClickThrough = true)
-            } else switchImageView(imgViewType == ViewType.IMAGEVIEW_STRETCH)
-
-            // Initialize SSIV when required
-            if (imgViewType == ViewType.DEFAULT && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
-                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer)
-                else ssiv.setGlEsRenderer(null)
-                ssiv.setPreloadDimensions(itemView.width, imgView.height)
-                if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
-
-                val scrollLTR =
-                    Preferences.Constant.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
-                ssiv.setOffsetLeftSide(scrollLTR)
-                ssiv.setScaleListener { s -> onAbsoluteScaleChanged(position, s.toFloat()) }
-            }
-            val layoutStyle =
-                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
-            val layoutParams = imgView.layoutParams
-            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
-            layoutParams.height = layoutStyle
-            imgView.layoutParams = layoutParams
-
-            var imageAvailable = true
-            val img = getImageAt(position)
-            if (img != null && img.fileUri.isNotEmpty()) setImage(img)
-            else imageAvailable = false
-
-            val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
-            val isExtracting = img != null && !imageAvailable && !img.url.startsWith("http")
-
-            @StringRes var text: Int = R.string.image_not_found
-            if (isStreaming) text = R.string.image_streaming
-            else if (isExtracting) text = R.string.image_extracting
-            noImgTxt.setText(text)
-            noImgTxt.isVisible = !imageAvailable
-        }
+        holder.reset()
+        holder.bind(displayParams, imgViewType, position)
     }
 
     override fun onViewRecycled(holder: ImageViewHolder) {
@@ -287,7 +200,7 @@ class ImagePagerAdapter(val context: Context) :
         }
 
         // Free the SSIV's resources
-        if (!holder.isImageView) holder.ssiv.clear()
+        holder.clear()
         super.onViewRecycled(holder)
     }
 
@@ -396,44 +309,100 @@ class ImagePagerAdapter(val context: Context) :
 
     fun setGestureListenerForPosition(position: Int) {
         recyclerView?.lifecycleScope?.launch {
-            (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.apply {
-                withContext(Dispatchers.Default) {
-                    var iterations = 0 // Wait for 5 secs max
-                    while (isLoading.get() && iterations++ < 33) pause(150)
-                }
-                // ImageView or vertical mode => ZoomableRecycleView handles gestures
-                if (isImageView || Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
-                    recyclerView?.setTapListener(itemTouchListener)
-                    imgView.setOnTouchListener(null)
-                } else { // Horizontal SSIV => SSIV handles gestures
-                    recyclerView?.setTapListener(null)
-                    imgView.setOnTouchListener(itemTouchListener)
-                }
-            }
+            (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.setTapListener()
         }
     }
 
 
     inner class ImageViewHolder(val rootView: View) : RecyclerView.ViewHolder(rootView),
         OnImageEventListener {
-        val ssiv: CustomSubsamplingScaleImageView = itemView.requireById(R.id.ssiv)
+        private val ssiv: CustomSubsamplingScaleImageView = itemView.requireById(R.id.ssiv)
         private val imageView: ImageView = itemView.requireById(R.id.imageview)
-        val noImgTxt: TextView = itemView.requireById(R.id.viewer_no_page_txt)
+        private val noImgTxt: TextView = itemView.requireById(R.id.viewer_no_page_txt)
 
-        lateinit var imgView: View
+        private lateinit var imgView: View
 
-        var displayMode: Int = 0
-        var viewerOrientation: Int = 0
-        var isSmoothRendering: Boolean = false
+        private var displayMode = 0
+        var viewerOrientation = 0
+        private var isSmoothRendering = false
 
-        var isImageView = false
-        var forceImageView: Boolean? = null
+        private var isImageView = false
+        private var forceImageView: Boolean? = null
         private var img: ImageFile? = null
         private var scaleMultiplier = 1f // When used with ZoomableFrame in vertical mode
 
-        var isLoading = AtomicBoolean(false)
+        private var isLoading = AtomicBoolean(false)
 
-        fun setImage(img: ImageFile) {
+        fun bind(
+            displayParams: ReaderPagerFragment.DisplayParams,
+            imgViewType: ViewType,
+            position: Int
+        ) {
+            viewerOrientation = displayParams.orientation
+            displayMode = displayParams.displayMode
+            isSmoothRendering = displayParams.isSmoothRendering
+
+            if (ViewType.DEFAULT == imgViewType) {
+                // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
+                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+                    imageView.isClickable = false
+                    imageView.isFocusable = false
+                }
+            } else if (ViewType.IMAGEVIEW_STRETCH == imgViewType) {
+                imageView.scaleType = ImageView.ScaleType.FIT_XY
+            } else if (ViewType.SSIV_VERTICAL == imgViewType) {
+                ssiv.setIgnoreTouchEvents(true)
+                ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL)
+            }
+
+            // Avoid stacking 0-px tall images on screen and load all of them at the same time
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+                rootView.minimumHeight = pageMinHeight
+
+            val imageType = getImageType(getImageAt(position))
+            if (forceImageView != null) { // ImageView has been forced
+                switchImageView(forceImageView!!, true)
+                forceImageView = null // Reset force flag
+            } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType) {
+                animationAlertListener?.run()
+                switchImageView(isImageView = true, isClickThrough = true)
+            } else switchImageView(imgViewType == ViewType.IMAGEVIEW_STRETCH)
+
+            // Initialize SSIV when required
+            if (imgViewType == ViewType.DEFAULT && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
+                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer)
+                else ssiv.setGlEsRenderer(null)
+                ssiv.setPreloadDimensions(itemView.width, imgView.height)
+                if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
+
+                val scrollLTR =
+                    Preferences.Constant.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
+                ssiv.setOffsetLeftSide(scrollLTR)
+                ssiv.setScaleListener { s -> onAbsoluteScaleChanged(position, s.toFloat()) }
+            }
+            val layoutStyle =
+                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
+            val layoutParams = imgView.layoutParams
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+            layoutParams.height = layoutStyle
+            imgView.layoutParams = layoutParams
+
+            var imageAvailable = true
+            val img = getImageAt(position)
+            if (img != null && img.fileUri.isNotEmpty()) setImage(img)
+            else imageAvailable = false
+
+            val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
+            val isExtracting = img != null && !imageAvailable && !img.url.startsWith("http")
+
+            @StringRes var text: Int = R.string.image_not_found
+            if (isStreaming) text = R.string.image_streaming
+            else if (isExtracting) text = R.string.image_extracting
+            noImgTxt.setText(text)
+            noImgTxt.isVisible = !imageAvailable
+        }
+
+        private fun setImage(img: ImageFile) {
             this.img = img
             val imgType = getImageType(img)
             val uri = Uri.parse(img.fileUri)
@@ -456,7 +425,6 @@ class ImagePagerAdapter(val context: Context) :
             } else { // ImageView
                 val view = imgView as ImageView
                 Timber.d("Picture $absoluteAdapterPosition : Using Coil")
-                Timber.d("Using uri $uri")
                 val transformation = if (autoRotate) SmartRotateTransformation(
                     90f,
                     screenWidth,
@@ -469,6 +437,23 @@ class ImagePagerAdapter(val context: Context) :
                         onSuccess = { _, res -> onCoilLoadSuccess(res) }
                     )
                 }
+            }
+        }
+
+        suspend fun setTapListener() {
+            withContext(Dispatchers.Default) {
+                var iterations = 0 // Wait for 5 secs max
+                while (isLoading.get() && iterations++ < 33) pause(150)
+            }
+            // ImageView or vertical mode => ZoomableRecycleView handles gestures
+            if (isImageView || Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+                Timber.d("setTapListener on recyclerView")
+                recyclerView?.setTapListener(itemTouchListener)
+                imgView.setOnTouchListener(null)
+            } else { // Horizontal SSIV => SSIV handles gestures
+                Timber.d("setTapListener on imageView")
+                recyclerView?.setTapListener(null)
+                imgView.setOnTouchListener(itemTouchListener)
             }
         }
 
@@ -561,7 +546,7 @@ class ImagePagerAdapter(val context: Context) :
             }
         }
 
-        fun switchImageView(isImageView: Boolean, isClickThrough: Boolean = false) {
+        private fun switchImageView(isImageView: Boolean, isClickThrough: Boolean = false) {
             Timber.d(
                 "Picture %d : switching to %s (%s)",
                 absoluteAdapterPosition,
@@ -582,6 +567,29 @@ class ImagePagerAdapter(val context: Context) :
         private fun forceImageView() {
             switchImageView(true)
             forceImageView = true
+        }
+
+        fun clear() {
+            if (isImageView) imageView.dispose()
+            else ssiv.clear()
+        }
+
+        @SuppressLint("ClickableViewAccessibility")
+        fun reset() {
+            clear()
+            imageView.isClickable = true
+            imageView.isFocusable = true
+            imageView.scaleType = ImageView.ScaleType.FIT_CENTER
+            imageView.setOnTouchListener(null)
+
+            ssiv.setIgnoreTouchEvents(false)
+            ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.HORIZONTAL)
+            ssiv.setPreferredBitmapConfig(colorDepth)
+            ssiv.setDoubleTapZoomDuration(500)
+            ssiv.setOnTouchListener(null)
+
+            rootView.minimumHeight = 0
+            noImgTxt.isVisible = false
         }
 
         // == SUBSAMPLINGSCALEVIEW CALLBACKS
