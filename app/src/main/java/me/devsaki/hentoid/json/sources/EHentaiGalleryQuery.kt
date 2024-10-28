@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.json.sources
 
+import com.squareup.moshi.JsonClass
+
+@JsonClass(generateAdapter = true)
 data class EHentaiGalleryQuery(
     val gidlist: List<List<String>> = ArrayList(),
     val method: String = "gdata",
