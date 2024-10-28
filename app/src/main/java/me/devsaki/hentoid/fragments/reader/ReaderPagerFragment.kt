@@ -126,7 +126,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private var latestSlideshowTick: Long = -1
 
     private var displayParams: DisplayParams? = null
-    private var isImageAnimated = false
+    private var useSsiv = false
 
     // Properties
     // Preferences of current book; to feed the book prefs dialog
@@ -438,10 +438,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             adapter.setOnScaleListener { position, scale ->
                 if (position == absImageIndex) adapterRescaleDebouncer.submit(scale)
             }
-            adapter.setAnimationAlertListener {
-                isImageAnimated = true
+            adapter.setSsivAlertListener {
+                useSsiv = false
                 displayParams?.apply {
-                    if (!hasAnimation) {
+                    if (useSsiv) {
                         onDisplayParamsChange(
                             DisplayParams(browseMode, displayMode, isSmoothRendering, true)
                         )
@@ -760,11 +760,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         binding?.apply {
             adapter.reset()
             // Required to communicate tapListener to the Adapter before images are binded
+            /*
             images.firstOrNull()?.let {
                 it.content.reach(it)?.apply {
                     adjustDisplay(bookPreferences)
                 }
             }
+             */
             adapter.submitList(images) { differEndCallback() }
             if (images.isEmpty()) {
                 setSystemBarsVisible(true)
@@ -954,7 +956,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {
         currentImg?.let {
             it.content.reach(it)?.apply {
-                adjustDisplay(bookPreferences)
+                adjustDisplay(bookPreferences, absImageIndex)
             }
         }
         viewModel.onPageChange(absImageIndex, scrollDirection)
@@ -1034,12 +1036,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
     }
 
-    private fun adjustDisplay(bookPreferences: Map<String, String>) {
+    private fun adjustDisplay(bookPreferences: Map<String, String>, absImageIndex: Int) {
         val newDisplayParams = DisplayParams(
             Preferences.getContentBrowseMode(bookPreferences),
             Preferences.getContentDisplayMode(bookPreferences),
             Preferences.isContentSmoothRendering(bookPreferences),
-            displayParams?.hasAnimation ?: false
+            adapter.getSSivAtPosition(absImageIndex)
         )
         if (null == displayParams || newDisplayParams != displayParams)
             onDisplayParamsChange(newDisplayParams)
@@ -1061,7 +1063,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val isDirectionChange =
             (null == currentDisplayParams || currentDisplayParams.direction != newDisplayParams.direction)
         val isAnimationChange =
-            (null == currentDisplayParams || currentDisplayParams.hasAnimation != newDisplayParams.hasAnimation)
+            (null == currentDisplayParams || currentDisplayParams.useSsiv != newDisplayParams.useSsiv)
         displayParams = newDisplayParams
 
         var isZoomFrameEnabled = false
@@ -1069,9 +1071,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         binding?.apply {
             // Animated picture appears in horizontal mode => enable zoom frame
             if (isAnimationChange && VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation) {
-                if (newDisplayParams.hasAnimation || isImageAnimated) {
-                    isZoomFrameEnabled = true
-                }
+                if (!newDisplayParams.useSsiv || !useSsiv) isZoomFrameEnabled = true
             }
 
             // Orientation changes
@@ -1590,7 +1590,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val browseMode: Int,
         val displayMode: Int,
         val isSmoothRendering: Boolean,
-        val hasAnimation: Boolean
+        val useSsiv: Boolean
     ) {
         val orientation =
             if (browseMode == VIEWER_BROWSE_TTB) VIEWER_ORIENTATION_VERTICAL else VIEWER_ORIENTATION_HORIZONTAL

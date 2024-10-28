@@ -32,7 +32,6 @@ import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
-import me.devsaki.hentoid.customssiv.exception.UnsupportedContentException
 import me.devsaki.hentoid.customssiv.uri
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -87,7 +86,7 @@ class ImagePagerAdapter(val context: Context) :
 
     private var itemTouchListener: OnZoneTapListener? = null
     private var scaleListener: BiConsumer<Int, Float>? = null
-    private var animationAlertListener: Runnable? = null
+    private var ssivAlertListener: Runnable? = null
 
     private var recyclerView: ZoomableRecyclerView? = null
     private val initialAbsoluteScales: MutableMap<Int, Float> = HashMap()
@@ -147,8 +146,8 @@ class ImagePagerAdapter(val context: Context) :
         this.itemTouchListener = itemTouchListener
     }
 
-    fun setAnimationAlertListener(animationAlertListener: Runnable) {
-        this.animationAlertListener = animationAlertListener
+    fun setSsivAlertListener(ssivAlertListener: Runnable) {
+        this.ssivAlertListener = ssivAlertListener
     }
 
     private fun getImageType(img: ImageFile?): ImageType {
@@ -211,7 +210,7 @@ class ImagePagerAdapter(val context: Context) :
     fun destroy() {
         if (isGlInit) glEsRenderer.clear()
         scaleListener = null
-        animationAlertListener = null
+        ssivAlertListener = null
         itemTouchListener = null
     }
 
@@ -236,8 +235,8 @@ class ImagePagerAdapter(val context: Context) :
     }
 
     fun getDimensionsAtPosition(position: Int): Point {
-        (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.let { holder ->
-            return holder.dimensions
+        (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.let {
+            return it.dimensions
         }
         return Point()
     }
@@ -246,8 +245,8 @@ class ImagePagerAdapter(val context: Context) :
         if (absoluteScales.containsKey(position)) {
             val result = absoluteScales[position]
             if (result != null) return result
-        } else (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.let { holder ->
-            return holder.absoluteScale
+        } else (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.let {
+            return it.absoluteScale
         }
         return 0f
     }
@@ -271,6 +270,16 @@ class ImagePagerAdapter(val context: Context) :
                 }
             }
         }
+    }
+
+    fun getSSivAtPosition(position: Int): Boolean {
+        var res = false
+        recyclerView?.lifecycleScope?.launch {
+            res =
+                (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.isImageView()
+                    ?: false
+        }
+        return res
     }
 
     fun resetScaleAtPosition(position: Int) {
@@ -313,6 +322,7 @@ class ImagePagerAdapter(val context: Context) :
         }
     }
 
+    // ====================== VIEWHOLDER
 
     inner class ImageViewHolder(val rootView: View) : RecyclerView.ViewHolder(rootView),
         OnImageEventListener {
@@ -364,9 +374,12 @@ class ImagePagerAdapter(val context: Context) :
                 switchImageView(forceImageView!!, true)
                 forceImageView = null // Reset force flag
             } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType) {
-                animationAlertListener?.run()
+                ssivAlertListener?.run()
                 switchImageView(isImageView = true, isClickThrough = true)
-            } else switchImageView(imgViewType == ViewType.IMAGEVIEW_STRETCH)
+            } else switchImageView(
+                imgViewType == ViewType.IMAGEVIEW_STRETCH,
+                imgViewType == ViewType.IMAGEVIEW_STRETCH
+            )
 
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
@@ -444,12 +457,8 @@ class ImagePagerAdapter(val context: Context) :
         }
 
         suspend fun setTapListener() {
-            withContext(Dispatchers.Default) {
-                var iterations = 0 // Wait for 5 secs max
-                while (isLoading.get() && iterations++ < 33) pause(150)
-            }
             // ImageView or vertical mode => ZoomableRecycleView handles gestures
-            if (isImageView || Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+            if (isImageView() || Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
                 Timber.d("setTapListener on recyclerView")
                 recyclerView?.setTapListener(itemTouchListener)
                 imgView.setOnTouchListener(null)
@@ -458,6 +467,14 @@ class ImagePagerAdapter(val context: Context) :
                 recyclerView?.setTapListener(null)
                 imgView.setOnTouchListener(itemTouchListener)
             }
+        }
+
+        suspend fun isImageView(): Boolean {
+            withContext(Dispatchers.Default) {
+                var iterations = 0 // Wait for 5 secs max
+                while (isLoading.get() && iterations++ < 33) pause(150)
+            }
+            return isImageView
         }
 
         private val scaleType: CustomSubsamplingScaleImageView.ScaleType
@@ -626,8 +643,6 @@ class ImagePagerAdapter(val context: Context) :
             forceImageView()
             // Reload adapter
             notifyItemChanged(layoutPosition)
-            // Notify the listener of the presence of an animation
-            if (e is UnsupportedContentException) animationAlertListener?.run()
         }
 
         override fun onTileLoadError(e: Throwable) {
