@@ -16,7 +16,6 @@ import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.content.ExhentaiContent
 import me.devsaki.hentoid.parsers.images.EHentaiParser
 import me.devsaki.hentoid.parsers.images.EHentaiParser.EhAuthState
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString

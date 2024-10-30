@@ -17,7 +17,7 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.download.getDownloadLocation
 import me.devsaki.hentoid.util.exception.EmptyResultException
-import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
 import me.devsaki.hentoid.util.network.UriParts
@@ -190,7 +190,7 @@ class MangagoParser : BaseChapteredImageListParser() {
         img.computeName(5)
         img.setChapter(chp)
         // Enrich physical properties
-        getFileFromSingleUriString(context, fileUri.toString())?.let {
+        getFileFromSingleUri(context, fileUri)?.let {
             img.size = it.length()
             img.mimeType = it.type ?: MIME_IMAGE_GENERIC
         }

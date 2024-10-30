@@ -52,7 +52,6 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.getPictureFilesFromContent
 import me.devsaki.hentoid.util.image.PdfManager
-import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.image.getMimeTypeFromUri
 import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY

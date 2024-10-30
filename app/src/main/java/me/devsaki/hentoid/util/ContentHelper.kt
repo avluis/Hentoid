@@ -1536,22 +1536,23 @@ fun purgeFiles(
         val tempFiles: MutableList<File> = ArrayList()
         var tempFolder: File? = null
         if (filesToKeep.isNotEmpty()) {
-            tempFolder = getOrCreateCacheFolder(context, "tmp" + content.id)
-            for (file in filesToKeep) {
-                try {
-                    val uri = copyFile(
-                        context,
-                        file.uri,
-                        Uri.fromFile(tempFolder),
-                        file.type ?: "",
-                        file.name ?: ""
-                    )
-                    if (uri != null) {
-                        val tmpFile = legacyFileFromUri(uri)
-                        if (tmpFile != null) tempFiles.add(tmpFile)
+            getOrCreateCacheFolder(context, "tmp" + content.id)?.let { tmp ->
+                tempFolder = tmp
+                for (file in filesToKeep) {
+                    try {
+                        val uri = copyFile(
+                            context,
+                            file.uri,
+                            tmp,
+                            file.name ?: ""
+                        )
+                        if (uri != null) {
+                            val tmpFile = legacyFileFromUri(uri)
+                            if (tmpFile != null) tempFiles.add(tmpFile)
+                        }
+                    } catch (e: IOException) {
+                        Timber.w(e)
                     }
-                } catch (e: IOException) {
-                    Timber.w(e)
                 }
             }
         }
@@ -1582,7 +1583,7 @@ fun purgeFiles(
                         val newUri = copyFile(
                             context,
                             Uri.fromFile(file),
-                            bookFolder.uri,
+                            bookFolder,
                             mimeType,
                             file.name
                         )
@@ -2208,9 +2209,10 @@ fun mergeContents(
                     val newUri = copyFile(
                         context,
                         Uri.parse(img.fileUri),
-                        targetFolder.uri,
+                        targetFolder,
                         newImg.mimeType,
-                        newImg.name + "." + getExtensionFromUri(img.fileUri)
+                        newImg.name + "." + getExtensionFromUri(img.fileUri),
+                        true
                     )
                     if (newUri != null) newImg.fileUri = newUri.toString()
                     else Timber.w("Could not move file %s", img.fileUri)

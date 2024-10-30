@@ -27,7 +27,7 @@ import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.createJson
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.file.Beholder
-import me.devsaki.hentoid.util.file.copyFile
+import me.devsaki.hentoid.util.file.copyFiles
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
@@ -38,7 +38,6 @@ import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.UriParts
-import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeContent
@@ -155,24 +154,21 @@ abstract class BaseSplitMergeWorker(
             Beholder.ignoreFolder(targetFolder)
 
             // Copy the corresponding images to that folder
-            val splitContentImages = splitContent.imageList
-            for (img in splitContentImages) {
-                if (isStopped) break
-                if (img.status == StatusContent.DOWNLOADED) {
-                    val extension = getExtensionFromUri(img.fileUri)
-                    val newUri = copyFile(
-                        applicationContext,
-                        Uri.parse(img.fileUri),
-                        targetFolder.uri,
-                        img.mimeType,
-                        img.name + "." + extension
-                    )
-                    if (newUri != null) img.fileUri = newUri.toString()
-                    else Timber.w("Could not move file %s", img.fileUri)
-
+            val splitContentImages =
+                splitContent.imageList.filter { it.status == StatusContent.DOWNLOADED }
+            copyFiles(
+                applicationContext,
+                splitContentImages.map { Pair(Uri.parse(it.fileUri), it.name) },
+                targetFolder.uri,
+                isCanceled = this::isStopped,
+                onProgress = { _, oldUri, newUri ->
+                    if (newUri != null) {
+                        splitContentImages.firstOrNull { it.fileUri == oldUri.toString() }?.fileUri =
+                            newUri.toString()
+                    } else Timber.w("Could not move file $oldUri")
                     progressPlus(chap.name)
                 }
-            }
+            )
             if (isStopped) break
 
             // Save the JSON for the new book

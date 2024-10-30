@@ -12,12 +12,13 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.detachAllExternalContent
 import me.devsaki.hentoid.util.detachAllPrimaryContent
 import me.devsaki.hentoid.util.file.Beholder
-import me.devsaki.hentoid.util.file.copyFile
+import me.devsaki.hentoid.util.file.copyFiles
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.getPathRoot
 import org.greenrobot.eventbus.EventBus
+import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 
 class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
@@ -103,20 +104,17 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                     if (sourceFolder != null) {
                         val files = listFiles(getApplication(), sourceFolder, null)
                         // TODO secondary progress for pages
-                        files.forEach { it1 ->
-                            val newUri = copyFile(
-                                getApplication(),
-                                it1.uri,
-                                targetFolder.uri,
-                                it1.type ?: "",
-                                it1.name ?: ""
-                            )
-                            c.imageFiles.forEach { it2 ->
-                                if (it1.uri.toString() == it2.fileUri) {
-                                    it2.fileUri = newUri.toString()
-                                }
+                        copyFiles(
+                            getApplication(),
+                            files.map { Pair(it.uri, it.name ?: "") },
+                            targetFolder.uri,
+                            onProgress = { _, oldUri, newUri ->
+                                if (newUri != null) {
+                                    c.imageFiles.firstOrNull { it.fileUri == oldUri.toString() }?.fileUri =
+                                        newUri.toString()
+                                } else Timber.w("Could not move file $oldUri")
                             }
-                        }
+                        )
                         // Update Content Uris
                         c.setStorageDoc(targetFolder)
                         dao.insertContentCore(c)

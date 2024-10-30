@@ -21,6 +21,7 @@ import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.isUriPermissionPersisted
@@ -281,7 +282,7 @@ fun createFile(
             throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri has no path")
         }
     } else {
-        getDocumentFromTreeUriString(context, targetFolderUri.toString())?.let { targetFolder ->
+        getDocumentFromTreeUri(context, targetFolderUri)?.let { targetFolder ->
             val file = findOrCreateDocumentFile(
                 context,
                 targetFolder,
