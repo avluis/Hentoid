@@ -2,6 +2,7 @@ package me.devsaki.hentoid.workers
 
 import android.content.Context
 import android.net.Uri
+import android.webkit.MimeTypeMap
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -11,12 +12,16 @@ import me.devsaki.hentoid.notification.appUpdate.UpdateFailedNotification
 import me.devsaki.hentoid.notification.appUpdate.UpdateInstallNotification
 import me.devsaki.hentoid.notification.appUpdate.UpdateProgressNotification
 import me.devsaki.hentoid.util.download.downloadToFile
+import me.devsaki.hentoid.util.file.getFileUriCompat
+import me.devsaki.hentoid.util.file.legacyFileFromUri
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.workers.data.UpdateDownloadData
 import timber.log.Timber
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.roundToInt
+
+val APK_MIMETYPE = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk")
 
 class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.update_download_service, null) {
@@ -62,6 +67,7 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
             Uri.fromFile(applicationContext.externalCacheDir),
             "hentoid.apk",
             AtomicBoolean(),
+            forceMimeType = APK_MIMETYPE,
             resourceId = 0
         ) { f ->
             Timber.v("Download progress: %s%%", f.roundToInt())
@@ -69,42 +75,14 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
         apk.first?.let {
             Timber.d("Download successful")
-            notificationManager.notifyLast(UpdateInstallNotification(it))
+            legacyFileFromUri(it)?.let { file ->
+                notificationManager.notifyLast(
+                    // Must use getFileUriCompat to avoid being molested by Android
+                    UpdateInstallNotification(getFileUriCompat(applicationContext, file))
+                )
+            }
         } ?: run {
             Timber.d("Download failed")
         }
-        /*
-                val context = applicationContext
-                Timber.w(context.resources.getString(R.string.starting_download))
-                val file = File(context.externalCacheDir, "hentoid.apk")
-                file.createNewFile()
-                val response = getOnlineResource(apkUrl, null, false, false, false)
-                Timber.d("DOWNLOADING APK - RESPONSE %s", response.code)
-                if (response.code >= 300) throw IOException("Network error " + response.code)
-                val body = response.body
-                    ?: throw IOException("Could not read response : empty body for $apkUrl")
-                var size = body.contentLength()
-                if (size < 1) size = 1
-                Timber.d("WRITING DOWNLOADED APK TO %s (size %.2f KB)", file.absolutePath, size / 1024.0)
-                val buffer = ByteArray(FILE_IO_BUFFER_SIZE)
-                var len: Int
-                var processed: Long = 0
-                var iteration = 0
-                body.byteStream().use { `in` ->
-                    getOutputStream(file).use { out ->
-                        while (`in`.read(buffer).also { len = it } > -1) {
-                            processed += len.toLong()
-                            if (0 == ++iteration % 50) // Notify every 200KB
-                                updateNotificationProgress((processed * 100f / size).roundToInt())
-                            out.write(buffer, 0, len)
-                        }
-                        out.flush()
-                    }
-                }
-                Timber.d("Download successful")
-                notificationManager.notifyLast(
-                    UpdateInstallNotification(getFileUriCompat(context, file))
-                )
-         */
     }
 }
