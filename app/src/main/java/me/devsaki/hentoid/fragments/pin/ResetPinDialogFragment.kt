@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import java.security.InvalidParameterException
 
 class ResetPinDialogFragment : PinDialogFragment() {
@@ -34,7 +34,7 @@ class ResetPinDialogFragment : PinDialogFragment() {
     }
 
     private fun step0(pin: String) {
-        if (Preferences.getAppLockPin() == pin) {
+        if (Settings.appLockPin == pin) {
             step = 1
             setHeaderText(R.string.pin_new)
         } else {
@@ -52,7 +52,7 @@ class ResetPinDialogFragment : PinDialogFragment() {
 
     private fun step2(pin: String) {
         if (proposedPin == pin) {
-            Preferences.setAppLockPin(pin)
+            Settings.appLockPin = pin
             dismiss()
             parent?.onPinResetSuccess()
         } else {

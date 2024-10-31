@@ -5,8 +5,10 @@ import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.text.TextUtils
 import androidx.preference.PreferenceManager
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Settings.Value.SEARCH_ORDER_ATTRIBUTES_COUNT
 import kotlin.reflect.KProperty
 
@@ -24,7 +26,7 @@ object Settings {
     val isImportQueueEmptyBooks: Boolean by BoolSetting(Key.IMPORT_QUEUE_EMPTY, false)
 
     // LIBRARY
-    var libraryDisplay: Int by IntSetting(Key.LIBRARY_DISPLAY, Value.LIBRARY_DISPLAY_DEFAULT)
+    var libraryDisplay: Int by IntSettingStr(Key.LIBRARY_DISPLAY, Value.LIBRARY_DISPLAY_DEFAULT)
     var libraryDisplayGridFav: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_FAV, true)
     var libraryDisplayGridRating: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_RATING, true)
     var libraryDisplayGridSource: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_SOURCE, true)
@@ -34,18 +36,22 @@ object Settings {
     )
     var libraryDisplayGridTitle: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_TITLE, true)
     var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
-    var libraryGridCardWidthDP: Int by IntSetting(Key.LIBRARY_GRID_CARD_WIDTH, 150)
+    var libraryGridCardWidthDP: Int by IntSettingStr(Key.LIBRARY_GRID_CARD_WIDTH, 150)
     var activeSites: List<Site> by ListSiteSetting("active_sites", Value.ACTIVE_SITES)
-    var contentSortField: Int by IntSetting2(
+    var contentSortField: Int by IntSetting(
         "pref_order_content_field",
         Default.ORDER_CONTENT_FIELD
     )
     var isContentSortDesc: Boolean by BoolSetting("pref_order_content_desc", false)
-    var groupSortField: Int by IntSetting2("pref_order_group_field", Default.ORDER_GROUP_FIELD)
+    var groupSortField: Int by IntSetting("pref_order_group_field", Default.ORDER_GROUP_FIELD)
     var isGroupSortDesc: Boolean by BoolSetting("pref_order_group_desc", false)
+    var contentPageQuantity: Int by IntSettingStr("pref_quantity_per_page_lists", 20)
+    var appLockPin: String by StringSetting(Key.APP_LOCK, "")
+    val endlessScroll: Boolean by BoolSetting(Key.ENDLESS_SCROLL, true)
+    var topFabEnabled: Boolean by BoolSetting(Key.TOP_FAB, true)
 
     // ADV SEARCH
-    val searchAttributesSortOrder: Int by IntSetting(
+    val searchAttributesSortOrder: Int by IntSettingStr(
         "pref_order_attribute_lists",
         SEARCH_ORDER_ATTRIBUTES_COUNT
     )
@@ -54,33 +60,33 @@ object Settings {
     // DOWNLOADER
 
     // LOCK
-    var lockType: Int by IntSetting(Key.LOCK_TYPE, 0)
+    var lockType: Int by IntSettingStr(Key.LOCK_TYPE, 0)
 
     // MASS OPERATIONS
-    var massOperation: Int by IntSetting("MASS_OPERATION", 0)
-    var massOperationScope: Int by IntSetting("MASS_SCOPE", 0)
+    var massOperation: Int by IntSettingStr("MASS_OPERATION", 0)
+    var massOperationScope: Int by IntSettingStr("MASS_SCOPE", 0)
 
     // TRANSFORM
     var isResizeEnabled: Boolean by BoolSetting("TRANSFORM_RESIZE_ENABLED", false)
-    var resizeMethod: Int by IntSetting("TRANSFORM_RESIZE_METHOD", 0)
-    var resizeMethod1Ratio: Int by IntSetting("TRANSFORM_RESIZE_1_RATIO", 120)
-    var resizeMethod2Height: Int by IntSetting("TRANSFORM_RESIZE_2_HEIGHT", 0)
-    var resizeMethod2Width: Int by IntSetting("TRANSFORM_RESIZE_2_WIDTH", 0)
-    var resizeMethod3Ratio: Int by IntSetting("TRANSFORM_RESIZE_3_RATIO", 80)
-    var transcodeMethod: Int by IntSetting("TRANSFORM_TRANSCODE_METHOD", 0)
-    var transcodeEncoderAll: Int by IntSetting(
+    var resizeMethod: Int by IntSettingStr("TRANSFORM_RESIZE_METHOD", 0)
+    var resizeMethod1Ratio: Int by IntSettingStr("TRANSFORM_RESIZE_1_RATIO", 120)
+    var resizeMethod2Height: Int by IntSettingStr("TRANSFORM_RESIZE_2_HEIGHT", 0)
+    var resizeMethod2Width: Int by IntSettingStr("TRANSFORM_RESIZE_2_WIDTH", 0)
+    var resizeMethod3Ratio: Int by IntSettingStr("TRANSFORM_RESIZE_3_RATIO", 80)
+    var transcodeMethod: Int by IntSettingStr("TRANSFORM_TRANSCODE_METHOD", 0)
+    var transcodeEncoderAll: Int by IntSettingStr(
         "TRANSFORM_TRANSCODE_ENC_ALL",
         PictureEncoder.PNG.value
     )
-    var transcodeEncoderLossless: Int by IntSetting(
+    var transcodeEncoderLossless: Int by IntSettingStr(
         "TRANSFORM_TRANSCODE_ENC_LOSSLESS",
         PictureEncoder.PNG.value
     )
-    var transcodeEncoderLossy: Int by IntSetting(
+    var transcodeEncoderLossy: Int by IntSettingStr(
         "TRANSFORM_TRANSCODE_ENC_LOSSY",
         PictureEncoder.JPEG.value
     )
-    var transcodeQuality: Int by IntSetting("TRANSFORM_TRANSCODE_QUALITY", 90)
+    var transcodeQuality: Int by IntSettingStr("TRANSFORM_TRANSCODE_QUALITY", 90)
 
     // ARCHIVES
     var archiveTargetFolder: String by StringSetting(
@@ -88,8 +94,8 @@ object Settings {
         Value.ARCHIVE_TARGET_FOLDER_DOWNLOADS
     )
     var latestTargetFolderUri: String by StringSetting("ARCHIVE_TARGET_FOLDER_LATEST", "")
-    var archiveTargetFormat: Int by IntSetting("ARCHIVE_TARGET_FORMAT", 0)
-    var pdfBackgroundColor: Int by IntSetting("ARCHIVE_PDF_BGCOLOR", 0)
+    var archiveTargetFormat: Int by IntSettingStr("ARCHIVE_TARGET_FORMAT", 0)
+    var pdfBackgroundColor: Int by IntSettingStr("ARCHIVE_PDF_BGCOLOR", 0)
     var isArchiveOverwrite: Boolean by BoolSetting("ARCHIVE_OVERWRITE", true)
     var isArchiveDeleteOnSuccess: Boolean by BoolSetting("ARCHIVE_DELETE_ON_SUCCESS", false)
 
@@ -102,15 +108,49 @@ object Settings {
     var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
 
     // READER
-    var colorDepth: Int by IntSetting(Key.READER_COLOR_DEPTH, 0)
+    var colorDepth: Int by IntSettingStr(Key.READER_COLOR_DEPTH, 0)
 
     // METADATA & RULES EDITOR
-    var ruleSortField: Int by IntSetting2("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
+    var ruleSortField: Int by IntSetting("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
     var isRuleSortDesc: Boolean by BoolSetting("pref_order_rule_desc", false)
 
     // ACHIEVEMENTS
     var achievements: ULong by ULongSetting(Key.ACHIEVEMENTS, 0UL)
-    var nbAIRescale: Int by IntSetting(Key.ACHIEVEMENTS_NB_AI_RESCALE, 0)
+    var nbAIRescale: Int by IntSettingStr(Key.ACHIEVEMENTS_NB_AI_RESCALE, 0)
+
+    // STORAGE
+    private var storageUri: String by StringSetting(Key.PRIMARY_STORAGE_URI, "")
+    private var storageUri2: String by StringSetting(Key.PRIMARY_STORAGE_URI_2, "")
+    var externalLibraryUri: String by StringSetting(Key.EXTERNAL_LIBRARY_URI, "")
+    fun getStorageUri(location: StorageLocation): String {
+        return when (location) {
+            StorageLocation.PRIMARY_1 -> storageUri
+            StorageLocation.PRIMARY_2 -> storageUri2
+            StorageLocation.EXTERNAL -> externalLibraryUri
+            else -> ""
+        }
+    }
+
+    fun setStorageUri(location: StorageLocation, uri: String) {
+        when (location) {
+            StorageLocation.PRIMARY_1 -> storageUri = uri
+            StorageLocation.PRIMARY_2 -> storageUri2 = uri
+            StorageLocation.EXTERNAL -> externalLibraryUri = uri
+            else -> {}
+        }
+    }
+
+    val folderNameFormat: Int by IntSettingStr(
+        "pref_folder_naming_content_lists",
+        Value.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID
+    )
+    var storageDownloadStrategy: Int by IntSettingStr(
+        Key.PRIMARY_STORAGE_FILL_METHOD,
+        Value.STORAGE_FILL_BALANCE_FREE
+    )
+    var storageSwitchThresholdPc: Int by IntSettingStr(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, 90)
+    var memoryAlertThreshold: Int by IntSettingStr("pref_memory_alert", 110)
+    val isDeleteExternalLibrary: Boolean by BoolSetting(Key.EXTERNAL_LIBRARY_DELETE, false)
 
     // APP-WIDE
     var isFirstRun: Boolean by BoolSetting(Key.FIRST_RUN, true)
@@ -121,6 +161,7 @@ object Settings {
     var isBrowserMode: Boolean by BoolSetting(Key.BROWSER_MODE, false)
     val isForceEnglishLocale: Boolean by BoolSetting(Key.FORCE_ENGLISH, false)
     var isTextMenuOn: Boolean by BoolSetting(Key.TEXT_SELECT_MENU, false)
+    val recentVisibility: Boolean by BoolSetting(Key.APP_PREVIEW, BuildConfig.DEBUG)
 
 
     // Public Helpers
@@ -146,7 +187,7 @@ object Settings {
         }
     }
 
-    private class IntSetting(val key: String, val default: Int) {
+    private class IntSettingStr(val key: String, val default: Int) {
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Int {
             return (sharedPreferences.getString(key, default.toString()) + "").toInt()
         }
@@ -156,7 +197,7 @@ object Settings {
         }
     }
 
-    private class IntSetting2(val key: String, val default: Int) {
+    private class IntSetting(val key: String, val default: Int) {
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Int {
             return (sharedPreferences.getInt(key, default))
         }
@@ -246,6 +287,16 @@ object Settings {
         const val WEB_FORCE_LIGHTMODE = "WEB_FORCE_LIGHTMODE"
         const val DL_BLOCKED_TAGS = "pref_dl_blocked_tags"
         const val TEXT_SELECT_MENU = "TEXT_SELECT_MENU"
+        const val APP_LOCK = "pref_app_lock"
+        const val ENDLESS_SCROLL = "pref_endless_scroll"
+        const val TOP_FAB = "pref_top_fab"
+        const val APP_PREVIEW = "pref_app_preview"
+        const val PRIMARY_STORAGE_URI = "pref_sd_storage_uri"
+        const val PRIMARY_STORAGE_URI_2 = "pref_sd_storage_uri_2"
+        const val EXTERNAL_LIBRARY_URI = "pref_external_library_uri"
+        const val PRIMARY_STORAGE_FILL_METHOD = "pref_storage_fill_method"
+        const val PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = "pref_storage_switch_threshold_pc"
+        const val EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete"
     }
 
     object Default {
@@ -294,5 +345,13 @@ object Settings {
         const val ORDER_FIELD_TARGET_NAME = 12 // Rules only
         const val ORDER_FIELD_CUSTOM = 98
         const val ORDER_FIELD_RANDOM = 99
+
+        const val STORAGE_FILL_BALANCE_FREE = 0
+        const val STORAGE_FILL_FALLOVER = 1
+
+        const val FOLDER_NAMING_CONTENT_ID = 0
+        const val FOLDER_NAMING_CONTENT_TITLE_ID = 1
+        const val FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2
+        const val FOLDER_NAMING_CONTENT_TITLE_AUTH_ID = 3
     }
 }

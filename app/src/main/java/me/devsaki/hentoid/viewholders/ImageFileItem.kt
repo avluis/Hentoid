@@ -1,22 +1,13 @@
 package me.devsaki.hentoid.viewholders
 
 import android.graphics.Typeface
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
-import com.bumptech.glide.signature.ObjectKey
-import com.github.penfeizhou.animation.FrameAnimationDrawable
+import coil3.dispose
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IExpandable
 import com.mikepenz.fastadapter.IParentItem
@@ -26,8 +17,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.util.glideOptionCenterInside
-import me.devsaki.hentoid.util.isValidContextForGlide
+import me.devsaki.hentoid.util.image.loadStill
 
 private const val HEART_SYMBOL = "❤"
 
@@ -139,43 +129,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
             } else chapterOverlay.visibility = View.GONE
 
             // Image
-            Glide.with(image)
-                .load(Uri.parse(item.image.fileUri))
-                .signature(ObjectKey(item.image.uniqueHash()))
-                .addListener(object : RequestListener<Drawable> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false
-                    }
-
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        model: Any,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        var handled = false
-                        // If animated, only load frame zero as a plain bitmap
-                        if (target != null && resource is FrameAnimationDrawable<*>) {
-                            target.onResourceReady(
-                                BitmapDrawable(
-                                    image.resources,
-                                    resource.frameSeqDecoder.getFrameBitmap(0)
-                                ), null
-                            )
-                            resource.stop()
-                            handled = true
-                        }
-                        return handled
-                    }
-                })
-                .apply(glideOptionCenterInside)
-                .into(image)
+            image.loadStill(item.image.fileUri)
         }
 
         private fun updateText(item: ImageFileItem) {
@@ -193,7 +147,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
         }
 
         override fun unbindView(item: ImageFileItem) {
-            if (isValidContextForGlide(image)) Glide.with(image).clear(image)
+            image.dispose()
         }
     }
 }

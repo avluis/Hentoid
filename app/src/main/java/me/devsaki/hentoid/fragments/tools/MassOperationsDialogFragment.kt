@@ -15,7 +15,6 @@ import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogToolsMassOperationsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.widget.ContentSearchManager
 
@@ -99,7 +98,8 @@ class MassOperationsDialogFragment : BaseDialogFragment<MassOperationsDialogFrag
                 }
 
                 if (keepFavGroups) {
-                    val favGroupsContent = dao.selectStoredFavContentIds(false, true).toSet()
+                    val favGroupsContent =
+                        dao.selectStoredFavContentIds(false, groupFavs = true).toSet()
                     Pair(allCount, scope.filterNot { e -> favGroupsContent.contains(e) }.count())
                 } else {
                     Pair(allCount, scope.count())
@@ -116,8 +116,8 @@ class MassOperationsDialogFragment : BaseDialogFragment<MassOperationsDialogFrag
             Settings.massOperationScope = massOperationScope.index
 
             externalTxt.isVisible =
-                Preferences.getExternalLibraryUri().isNotEmpty()
-                        && !Preferences.isDeleteExternalLibrary()
+                Settings.externalLibraryUri.isNotEmpty()
+                        && !Settings.isDeleteExternalLibrary
                         && 0 == massOperation.index
             actionButton.isEnabled = confirm.isChecked
 

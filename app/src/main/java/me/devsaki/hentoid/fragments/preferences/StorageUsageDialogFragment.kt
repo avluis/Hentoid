@@ -17,6 +17,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
@@ -133,7 +134,7 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     private fun getStats(location: StorageLocation): Pair<Long, Long> {
-        val root = Preferences.getStorageUri(location)
+        val root = Settings.getStorageUri(location)
         if (root.isNotEmpty()) {
             val rootFolder = getDocumentFromTreeUriString(requireActivity(), root)
             if (rootFolder != null) {

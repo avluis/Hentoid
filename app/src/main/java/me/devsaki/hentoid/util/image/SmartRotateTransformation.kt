@@ -2,42 +2,34 @@ package me.devsaki.hentoid.util.image
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
-import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
-import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
-import java.security.MessageDigest
+import coil3.size.Size
+import coil3.transform.Transformation
 
 class SmartRotateTransformation(
     private val rotateRotationAngle: Float,
     private val screenWidth: Int,
     private val screenHeight: Int
-) : BitmapTransformation() {
+) : Transformation() {
 
-    override fun transform(
-        pool: BitmapPool,
-        toTransform: Bitmap,
-        outWidth: Int,
-        outHeight: Int
-    ): Bitmap {
+    override val cacheKey = "${this::class.qualifiedName}"
+
+    override suspend fun transform(input: Bitmap, size: Size): Bitmap {
         val matrix = Matrix()
         if (needsRotating(
                 screenWidth,
                 screenHeight,
-                toTransform.width,
-                toTransform.height
+                input.width,
+                input.height
             )
         ) matrix.postRotate(rotateRotationAngle)
         return Bitmap.createBitmap(
-            toTransform,
+            input,
             0,
             0,
-            toTransform.width,
-            toTransform.height,
+            input.width,
+            input.height,
             matrix,
             true
         )
-    }
-
-    override fun updateDiskCacheKey(messageDigest: MessageDigest) {
-        messageDigest.update("rotate$rotateRotationAngle".toByteArray())
     }
 }

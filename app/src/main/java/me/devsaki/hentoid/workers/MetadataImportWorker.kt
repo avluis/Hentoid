@@ -31,7 +31,7 @@ import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createImageListFromFolder
 import me.devsaki.hentoid.util.file.findFile
@@ -315,9 +315,9 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         val result: MutableMap<Site, MutableList<DocumentFile>> = EnumMap(
             Site::class.java
         )
-        var storageUri = Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+        var storageUri = Settings.getStorageUri(StorageLocation.PRIMARY_1)
         if (storageUri.isNotEmpty()) mapSiteFolders(context, result, storageUri)
-        storageUri = Preferences.getStorageUri(StorageLocation.PRIMARY_2)
+        storageUri = Settings.getStorageUri(StorageLocation.PRIMARY_2)
         if (storageUri.isNotEmpty()) mapSiteFolders(context, result, storageUri)
         return result
     }

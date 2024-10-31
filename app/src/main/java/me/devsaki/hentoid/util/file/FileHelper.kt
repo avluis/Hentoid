@@ -62,7 +62,7 @@ private const val ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"
 
 const val URI_ELEMENTS_SEPARATOR = "%3A"
 
-const val FILE_IO_BUFFER_SIZE = 32 * 1024
+const val FILE_IO_BUFFER_SIZE = 64 * 1024
 
 
 /**
@@ -74,7 +74,11 @@ const val FILE_IO_BUFFER_SIZE = 32 * 1024
  */
 fun getFileFromSingleUriString(context: Context, uriStr: String): DocumentFile? {
     if (uriStr.isEmpty()) return null
-    val result = DocumentFile.fromSingleUri(context, Uri.parse(uriStr))
+    return getFileFromSingleUri(context, Uri.parse(uriStr))
+}
+
+fun getFileFromSingleUri(context: Context, uri: Uri): DocumentFile? {
+    val result = DocumentFile.fromSingleUri(context, uri)
     return if (null == result || !result.exists()) null
     else result
 }
@@ -88,7 +92,11 @@ fun getFileFromSingleUriString(context: Context, uriStr: String): DocumentFile? 
  */
 fun getDocumentFromTreeUriString(context: Context, treeUriStr: String): DocumentFile? {
     if (treeUriStr.isEmpty()) return null
-    val result = DocumentFile.fromTreeUri(context, Uri.parse(treeUriStr))
+    return getDocumentFromTreeUri(context, Uri.parse(treeUriStr))
+}
+
+fun getDocumentFromTreeUri(context: Context, treeUri: Uri): DocumentFile? {
+    val result = DocumentFile.fromTreeUri(context, treeUri)
     return if (null == result || !result.exists()) null
     else result
 }
@@ -316,7 +324,7 @@ fun getOutputStream(context: Context, fileUri: Uri): OutputStream? {
         val path = fileUri.path
         if (null != path) return getOutputStream(File(path))
     } else {
-        val doc = getFileFromSingleUriString(context, fileUri.toString())
+        val doc = getFileFromSingleUri(context, fileUri)
         if (doc != null) return getOutputStream(context, doc)
     }
     throw IOException("Couldn't find document for Uri : $fileUri")
@@ -370,7 +378,7 @@ fun removeFile(context: Context, fileUri: Uri) {
         val path = fileUri.path
         if (null != path) removeFile(File(path))
     } else {
-        val doc = getFileFromSingleUriString(context, fileUri.toString())
+        val doc = getFileFromSingleUri(context, fileUri)
         doc?.delete()
     }
 }
@@ -499,7 +507,11 @@ fun listFoldersFilter(
  * @param filter  Name filter to use to filter the files to list
  * @return Files of the given parent folder matching the given name filter
  */
-fun listFiles(context: Context, parent: DocumentFile, filter: NameFilter?): List<DocumentFile> {
+fun listFiles(
+    context: Context,
+    parent: DocumentFile,
+    filter: NameFilter? = null
+): List<DocumentFile> {
     var result = emptyList<DocumentFile>()
     try {
         FileExplorer(context, parent).use { fe ->
@@ -683,14 +695,14 @@ fun getFileNameWithoutExtension(filePath: String): String {
  * @throws IOException In case something horrible happens during I/O
  */
 @Throws(IOException::class)
-fun saveBinary(context: Context, uri: Uri, binaryData: ByteArray?) {
+fun saveBinary(context: Context, uri: Uri, binaryData: ByteArray) {
     getOutputStream(context, uri)?.let {
         saveBinary(it, binaryData)
     }
 }
 
 @Throws(IOException::class)
-fun saveBinary(out: OutputStream, binaryData: ByteArray?) {
+fun saveBinary(out: OutputStream, binaryData: ByteArray) {
     val buffer = ByteArray(FILE_IO_BUFFER_SIZE)
     var count: Int
     ByteArrayInputStream(binaryData).use { input ->
@@ -809,41 +821,108 @@ fun findSequencePosition(data: ByteArray, initialPos: Int, sequence: ByteArray, 
  * @param context         Context to use
  * @param sourceFileUri   Uri of the source file to copy
  * @param targetFolderUri Uri of the folder where to copy the source file
- * @param mimeType        Mime-type of the source file
+ * @param forceMime        Mime-type of the source file
  * @param newName         Filename to give of the copy
  * @return Uri of the copied file, if successful; null if failed
  * @throws IOException If something terrible happens
  */
 @Throws(IOException::class)
+fun copyFiles(
+    context: Context,
+    operations: List<Pair<Uri, String>>, // source Uri, target name
+    targetFolderUri: Uri,
+    forceMime: String? = null,
+    isCanceled: (() -> Boolean)? = null,
+    onProgress: (Float, Uri, Uri?) -> Unit,
+): List<Uri> {
+    val result = ArrayList<Uri>()
+    val nbElts = operations.size
+
+    if (ContentResolver.SCHEME_FILE == targetFolderUri.scheme) {
+        val targetFolder = legacyFileFromUri(targetFolderUri)
+        if (null == targetFolder || !targetFolder.exists()) return emptyList()
+        operations.forEachIndexed { index, op ->
+            val targetFile = File(targetFolder, op.second)
+            val newUri = if (targetFile.exists() || targetFile.createNewFile()) {
+                getOutputStream(targetFile).use { output ->
+                    getInputStream(context, op.first)
+                        .use { input -> copy(input, output) }
+                }
+                Uri.fromFile(targetFile)
+            } else null
+            if (newUri != null) result.add(newUri)
+            onProgress(index * 1f / nbElts, op.first, newUri)
+            if (isCanceled?.invoke() == true) return@forEachIndexed
+        }
+    } else {
+        val targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri)
+        if (null == targetFolder || !targetFolder.exists()) return emptyList()
+
+        val existingFiles = listFiles(context, targetFolder)
+            .groupBy { it.name ?: "" }
+            .mapValues { it.value.first() }
+
+        operations.forEachIndexed { index, op ->
+            val mime =
+                if (forceMime.isNullOrEmpty()) getMimeTypeFromFileName(op.second) else forceMime
+            var newUri: Uri? = null
+            existingFiles[op.second] ?: targetFolder.createFile(mime, op.second)?.let { out ->
+                getOutputStream(context, out)?.use { output ->
+                    getInputStream(context, op.first)
+                        .use { input -> copy(input, output) }
+                }
+                newUri = out.uri
+            }
+            newUri?.let { result.add(it) }
+            onProgress(index * 1f / nbElts, op.first, newUri)
+            if (isCanceled?.invoke() == true) return@forEachIndexed
+        }
+    }
+    return result
+}
+
+@Throws(IOException::class)
 fun copyFile(
     context: Context,
     sourceFileUri: Uri,
-    targetFolderUri: Uri,
-    mimeType: String,
+    targetFolder: File,
     newName: String
 ): Uri? {
+    if (!targetFolder.exists()) return null
     if (!fileExists(context, sourceFileUri)) return null
 
-    val targetFileUri: Uri
-    if (ContentResolver.SCHEME_FILE == targetFolderUri.scheme) {
-        val targetFolder = legacyFileFromUri(targetFolderUri)
-        if (null == targetFolder || !targetFolder.exists()) return null
-        val targetFile = File(targetFolder, newName)
-        if (!targetFile.exists() && !targetFile.createNewFile()) return null
-        targetFileUri = Uri.fromFile(targetFile)
-    } else {
-        val targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri)
-        if (null == targetFolder || !targetFolder.exists()) return null
-        val targetFile = findOrCreateDocumentFile(context, targetFolder, mimeType, newName)
-        if (null == targetFile || !targetFile.exists()) return null
-        targetFileUri = targetFile.uri
-    }
+    val targetFile = File(targetFolder, newName)
+    if (!targetFile.exists() && !targetFile.createNewFile()) return null
+    val targetFileUri = Uri.fromFile(targetFile)
 
     getOutputStream(context, targetFileUri)?.use { output ->
         getInputStream(context, sourceFileUri)
             .use { input -> copy(input, output) }
     }
     return targetFileUri
+}
+
+@Throws(IOException::class)
+fun copyFile(
+    context: Context,
+    sourceFileUri: Uri,
+    targetFolder: DocumentFile,
+    mimeType: String,
+    newName: String,
+    forceCreate: Boolean = false
+): Uri? {
+    if (!targetFolder.exists()) return null
+    if (!fileExists(context, sourceFileUri)) return null
+
+    val targetFile = if (forceCreate) targetFolder.createFile(mimeType, newName)
+    else findOrCreateDocumentFile(context, targetFolder, mimeType, newName)
+    if (null == targetFile || !targetFile.exists()) return null
+
+    getOutputStream(context, targetFile.uri)?.use { output ->
+        getInputStream(context, sourceFileUri)
+            .use { input -> copy(input, output) }
+    }
+    return targetFile.uri
 }
 
 /**
@@ -1253,7 +1332,7 @@ fun fileExists(context: Context, fileUri: Uri): Boolean {
         return if (path != null) File(path).exists()
         else false
     } else {
-        val doc = getFileFromSingleUriString(context, fileUri.toString())
+        val doc = getFileFromSingleUri(context, fileUri)
         return (doc != null)
     }
 }
@@ -1278,7 +1357,7 @@ fun fileSizeFromUri(context: Context, fileUri: Uri): Long {
         val path = fileUri.path
         if (path != null) return File(path).length()
     } else {
-        val doc = getFileFromSingleUriString(context, fileUri.toString())
+        val doc = getFileFromSingleUri(context, fileUri)
         if (doc != null) return doc.length()
     }
     return -1
@@ -1293,6 +1372,17 @@ fun fileSizeFromUri(context: Context, fileUri: Uri): Long {
  */
 fun getFileUriCompat(context: Context, file: File): Uri {
     return FileProvider.getUriForFile(context, AUTHORITY, file)
+}
+
+/**
+ * Get the parent Uri of the given DocumentFile using the given root
+ * NB : doc must be a child/grandchild of the document represented by root
+ */
+fun getParent(context: Context, root: Uri, doc: DocumentFile): Uri? {
+    val parentsRoots =
+        DocumentsContract.findDocumentPath(context.contentResolver, doc.uri) ?: return null
+    // NB : that call is expensive; consider implementing that within FileExplorer if needed inside a loop
+    return DocumentsContract.buildDocumentUriUsingTree(root, parentsRoots.path[0])
 }
 
 /**

@@ -21,7 +21,7 @@ import me.devsaki.hentoid.databinding.DialogLibraryMergeBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.InnerNameNumberContentComparator
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 
@@ -120,8 +120,8 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
             list.adapter = fastAdapter
 
             if (isExternal) {
-                mergeDeleteSwitch.isEnabled = Preferences.isDeleteExternalLibrary()
-                mergeDeleteSwitch.isChecked = Preferences.isDeleteExternalLibrary() && deleteDefault
+                mergeDeleteSwitch.isEnabled = Settings.isDeleteExternalLibrary
+                mergeDeleteSwitch.isChecked = Settings.isDeleteExternalLibrary && deleteDefault
             } else {
                 mergeDeleteSwitch.isEnabled = true
                 mergeDeleteSwitch.isChecked = deleteDefault

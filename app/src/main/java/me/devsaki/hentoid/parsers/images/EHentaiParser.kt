@@ -230,7 +230,7 @@ class EHentaiParser : ImageListParser {
         ): EHentaiImageResponse {
             val query = EHentaiImageQuery(
                 imageInfo.gid,
-                imageInfo.image.key,
+                imageInfo.image.getKey(),
                 imageInfo.mpvkey,
                 imageInfo.pageNum
             )
@@ -558,7 +558,7 @@ class EHentaiParser : ImageListParser {
             chapter
         )
     }
-    
+
     override fun clear() {
         // No need for that here
     }

@@ -103,7 +103,7 @@ fun updateGroupsJson(context: Context, dao: CollectionDAO): Boolean {
     contentCollection.replaceGroups(Grouping.DL_DATE, editedDateGroups)
 
     val rootFolder =
-        getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
             ?: return false
 
     try {

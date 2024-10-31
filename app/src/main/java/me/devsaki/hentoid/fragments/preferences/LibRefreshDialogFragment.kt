@@ -29,7 +29,6 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.ImportOptions
 import me.devsaki.hentoid.util.PickFolderContract
 import me.devsaki.hentoid.util.PickerResult
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ProcessFolderResult
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
@@ -151,7 +150,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
         isCancelable = false
 
         if (location == StorageLocation.EXTERNAL) {
-            val externalUri = Uri.parse(Preferences.getExternalLibraryUri())
+            val externalUri = Uri.parse(Settings.externalLibraryUri)
 
             lifecycleScope.launch {
                 val res = withContext(Dispatchers.IO) {
@@ -190,7 +189,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 cleanNoImages,
                 false
             )
-            val uriStr = Preferences.getStorageUri(location)
+            val uriStr = Settings.getStorageUri(location)
             if (uriStr.isEmpty()) {
                 toastShort(R.string.import_invalid_uri)
                 dismissAllowingStateLoss()
@@ -268,7 +267,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 pickFolder() // Ask right away, there's no reason why the user should click again
             } else {
                 importStep1Folder.text = getFullPathFromUri(
-                    requireContext(), Uri.parse(Preferences.getStorageUri(location))
+                    requireContext(), Uri.parse(Settings.getStorageUri(location))
                 )
                 importStep1Folder.isVisible = true
                 importStep1Text.isVisible = true
@@ -391,9 +390,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     private fun updateOnSelectFolder() {
         binding2?.apply {
             importStep1Folder.text = getFullPathFromUri(
-                requireContext(), Uri.parse(
-                    Preferences.getStorageUri(location)
-                )
+                requireContext(), Uri.parse(Settings.getStorageUri(location))
             )
             importStep1Folder.isVisible = true
             importStep1Text.isVisible = true

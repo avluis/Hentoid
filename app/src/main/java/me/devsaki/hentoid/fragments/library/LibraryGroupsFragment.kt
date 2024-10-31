@@ -371,15 +371,15 @@ class LibraryGroupsFragment : Fragment(),
     private fun deleteSelectedItems() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         if (selectedItems.isNotEmpty()) {
-            var selectedGroups = selectedItems.map { gi -> gi.group }.toMutableList()
-            val selectedContentLists = selectedGroups.map { g -> viewModel.getGroupContents(g) }
+            var selectedGroups = selectedItems.map { it.group }.toMutableList()
+            val selectedContentLists = selectedGroups.map { viewModel.getGroupContents(it) }
             var selectedContent: MutableList<Content> = ArrayList()
             for (list in selectedContentLists) selectedContent.addAll(list)
 
             // Remove external items if they can't be deleted
-            if (!Preferences.isDeleteExternalLibrary()) {
+            if (!Settings.isDeleteExternalLibrary) {
                 val contentToDelete =
-                    selectedContent.filterNot { c -> c.status == StatusContent.EXTERNAL }
+                    selectedContent.filterNot { it.status == StatusContent.EXTERNAL }
                 val diff = selectedContent.size - contentToDelete.size
                 // Remove undeletable books from the list
                 if (diff > 0) {

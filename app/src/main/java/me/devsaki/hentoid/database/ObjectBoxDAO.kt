@@ -254,7 +254,7 @@ class ObjectBoxDAO : CollectionDAO {
                 searchBundle,
                 metadata
             ) else getPagedContentByQuery(isUniversal, searchBundle, metadata)
-        val nbPages = Preferences.getContentPageQuantity()
+        val nbPages = Settings.contentPageQuantity
         var initialLoad = nbPages * 3
         if (searchBundle.loadAll) {
             // Trump Android's algorithm by setting a number of pages higher that the actual number of results

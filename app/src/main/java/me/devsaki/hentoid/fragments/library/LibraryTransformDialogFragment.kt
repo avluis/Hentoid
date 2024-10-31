@@ -17,7 +17,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.bumptech.glide.Glide
+import coil3.load
 import com.google.android.material.textfield.TextInputLayout
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -27,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.core.setOnTextChangedListener
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -40,7 +39,6 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getInputStream
-import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.determineEncoder
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
@@ -87,8 +85,6 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
     private var maxPages = -1
     private val itemAdapter = ItemAdapter<DrawerItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
-
-    private val glideRequestOptions = getGlideOptionCenterImage(HentoidApp.getInstance())
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -334,8 +330,8 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                         "${sourceDims.x} x ${sourceDims.y} ➤ ${targetDims.x} x ${targetDims.y}"
                     previewSize.text = "$sourceSize ➤ $targetSize"
                 }
-                Glide.with(thumb).load(targetData).apply(glideRequestOptions).into(thumb)
-                Glide.with(preview).load(targetData).apply(glideRequestOptions).into(preview)
+                thumb.load(targetData)
+                preview.load(targetData)
                 previewProgress.isVisible = false
             }
         }

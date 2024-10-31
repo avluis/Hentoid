@@ -74,7 +74,7 @@ import me.devsaki.hentoid.util.file.extractArchiveEntries
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
@@ -1191,9 +1191,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     // This is run on the I/O thread pool spawned by the downloader
     private fun onRequestSuccess(request: RequestOrder, fileUri: Uri) {
         val img = request.img
-        val imgFile = getFileFromSingleUriString(
-            applicationContext, fileUri.toString()
-        )
+        val imgFile = getFileFromSingleUri(applicationContext, fileUri)
         if (imgFile != null) {
             img.size = imgFile.length()
             img.mimeType = imgFile.type ?: MIME_IMAGE_GENERIC
@@ -1401,7 +1399,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             val finalImgUri = copyFile(
                 applicationContext,
                 ugoiraGifFile,
-                dir.uri,
+                dir,
                 MIME_IMAGE_GIF,
                 img.name + ".gif"
             ) ?: throw IOException("Couldn't copy result ugoira file")

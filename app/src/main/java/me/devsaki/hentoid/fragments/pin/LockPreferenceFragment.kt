@@ -108,7 +108,7 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     private fun onBiometricsActivateSuccess(result: Boolean) {
         if (result) {
             Settings.lockType = 2
-            Preferences.setAppLockPin("")
+            Settings.appLockPin = ""
         }
         refresh()
     }

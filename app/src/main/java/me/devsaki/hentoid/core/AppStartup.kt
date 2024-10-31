@@ -8,9 +8,14 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbManager
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -45,6 +50,7 @@ import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.readStreamAsString
+import me.devsaki.hentoid.util.image.AnimatedPngDecoder
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.updateBookmarksJson
 import me.devsaki.hentoid.workers.StartupWorker
@@ -126,8 +132,9 @@ object AppStartup {
             this::stopWorkers,
             this::processAppUpdate,
             this::loadSiteProperties,
-            this::initUtils,
-            this::initTLS
+            this::initNotifications,
+            this::initTLS,
+            this::initCoil
         )
     }
 
@@ -169,8 +176,8 @@ object AppStartup {
         }
     }
 
-    private fun initUtils(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Init utils : start")
+    private fun initNotifications(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Init notifications : start")
         // Init notification channels
         StartupNotificationChannel.init(context)
         UpdateNotificationChannel.init(context)
@@ -184,7 +191,7 @@ object AppStartup {
         // Clears all previous notifications
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancelAll()
-        Timber.i("Init utils : done")
+        Timber.i("Init notifications : done")
     }
 
     private fun processAppUpdate(context: Context, emitter: (Float) -> Unit) {
@@ -228,10 +235,10 @@ object AppStartup {
                 "color_theme", Preferences.getColorTheme().toString()
             )
             FirebaseAnalytics.getInstance(context).setUserProperty(
-                "endless", Preferences.getEndlessScroll().toString()
+                "endless", Settings.endlessScroll.toString()
             )
             FirebaseCrashlytics.getInstance().setCustomKey(
-                "Library display mode", if (Preferences.getEndlessScroll()) "endless" else "paged"
+                "Library display mode", if (Settings.endlessScroll) "endless" else "paged"
             )
         } catch (e: IllegalStateException) { // Happens during unit tests
             Timber.e(e, "fail@init Crashlytics")
@@ -243,7 +250,7 @@ object AppStartup {
     private fun createBookmarksJson(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Create bookmarks JSON : start")
         val appRoot = getDocumentFromTreeUriString(
-            context, Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+            context, Settings.getStorageUri(StorageLocation.PRIMARY_1)
         )
         if (appRoot != null) {
             val bookmarksJson = findFile(context, appRoot, BOOKMARKS_JSON_FILE_NAME)
@@ -293,10 +300,27 @@ object AppStartup {
         Timber.i("Check achievements : done")
     }
 
+    private fun initCoil(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Init coil : start")
+        SingletonImageLoader.setSafe {
+            ImageLoader.Builder(context)
+                .components {
+                    if (SDK_INT >= 28) {
+                        add(AnimatedImageDecoder.Factory(false))
+                    } else {
+                        add(GifDecoder.Factory(false))
+                    }
+                    add(AnimatedPngDecoder.Factory())
+                }
+                .build()
+        }
+        Timber.i("Init coil : done")
+    }
+
     private fun activateTextIntent(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Activate text intent : start")
 
-        val flags = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) 0
+        val flags = if (SDK_INT < Build.VERSION_CODES.R) 0
         else PackageManager.SYNCHRONOUS
 
         val state = if (Settings.isTextMenuOn) PackageManager.COMPONENT_ENABLED_STATE_ENABLED

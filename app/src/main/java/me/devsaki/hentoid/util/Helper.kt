@@ -45,6 +45,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.nio.ByteBuffer
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -247,6 +248,16 @@ fun copy(`in`: InputStream, out: OutputStream) {
     out.flush()
 }
 
+@Throws(IOException::class)
+fun copy(`in`: InputStream, out: ByteBuffer) {
+    // Transfer bytes from in to out
+    val buf = ByteArray(FILE_IO_BUFFER_SIZE)
+    var len: Int
+    while ((`in`.read(buf).also { len = it }) > 0) {
+        out.put(buf, 0, len)
+    }
+}
+
 /**
  * Generate an ID for a RecyclerView ViewHolder without any ID to assign to
  *
@@ -376,7 +387,7 @@ fun updateBookmarksJson(context: Context, dao: CollectionDAO): Boolean {
     contentCollection.replaceBookmarks(bookmarks)
 
     val rootFolder =
-        getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
             ?: return false
 
     try {
@@ -416,7 +427,7 @@ fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boolean {
     contentCollection.replaceRenamingRules(rules)
 
     val rootFolder =
-        getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
             ?: return false
 
     try {

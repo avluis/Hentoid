@@ -2,8 +2,6 @@ package me.devsaki.hentoid.fragments.reader
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.BitmapFactory
-import android.graphics.Point
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,14 +10,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
-import com.bumptech.glide.Glide
+import coil3.load
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
-import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.IncludeReaderImageBottomPanelBinding
 import me.devsaki.hentoid.util.copy
@@ -34,7 +31,6 @@ import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.file.shareFile
-import me.devsaki.hentoid.util.getGlideOptionCenterImage
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.getImageDimensions
@@ -57,7 +53,6 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
     private var imageIndex: Int = -1
     private var scale = -1f
     private var image: ImageFile? = null
-    private val glideRequestOptions = getGlideOptionCenterImage(HentoidApp.getInstance())
 
 
     override fun onAttach(context: Context) {
@@ -150,10 +145,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
                     scale * 100,
                     sizeStr
                 )
-                Glide.with(binding.ivThumb)
-                    .load(Uri.parse(it.fileUri))
-                    .apply(glideRequestOptions)
-                    .into(binding.ivThumb)
+                binding.ivThumb.load(it.fileUri)
             } else {
                 binding.imageStats.setText(R.string.image_not_found)
                 binding.imgActionFavourite.imageTintList = ColorStateList.valueOf(grayColor)

@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.graphics.Point
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -34,7 +33,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
+import coil3.load
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -82,7 +81,6 @@ import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.glideOptionCenterInside
 import me.devsaki.hentoid.util.removeLabels
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.tryShowMenuIcons
@@ -128,7 +126,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private var latestSlideshowTick: Long = -1
 
     private var displayParams: DisplayParams? = null
-    private var isImageAnimated = false
+    private var useSsiv = false
 
     // Properties
     // Preferences of current book; to feed the book prefs dialog
@@ -440,10 +438,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             adapter.setOnScaleListener { position, scale ->
                 if (position == absImageIndex) adapterRescaleDebouncer.submit(scale)
             }
-            adapter.setAnimationAlertListener {
-                isImageAnimated = true
+            adapter.setSsivAlertListener {
+                useSsiv = false
                 displayParams?.apply {
-                    if (!hasAnimation) {
+                    if (useSsiv) {
                         onDisplayParamsChange(
                             DisplayParams(browseMode, displayMode, isSmoothRendering, true)
                         )
@@ -762,11 +760,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         binding?.apply {
             adapter.reset()
             // Required to communicate tapListener to the Adapter before images are binded
+            /*
             images.firstOrNull()?.let {
                 it.content.reach(it)?.apply {
                     adjustDisplay(bookPreferences)
                 }
             }
+             */
             adapter.submitList(images) { differEndCallback() }
             if (images.isEmpty()) {
                 setSystemBarsVisible(true)
@@ -956,7 +956,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {
         currentImg?.let {
             it.content.reach(it)?.apply {
-                adjustDisplay(bookPreferences)
+                adjustDisplay(bookPreferences, absImageIndex)
             }
         }
         viewModel.onPageChange(absImageIndex, scrollDirection)
@@ -1036,12 +1036,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
     }
 
-    private fun adjustDisplay(bookPreferences: Map<String, String>) {
+    private fun adjustDisplay(bookPreferences: Map<String, String>, absImageIndex: Int) {
         val newDisplayParams = DisplayParams(
             Preferences.getContentBrowseMode(bookPreferences),
             Preferences.getContentDisplayMode(bookPreferences),
             Preferences.isContentSmoothRendering(bookPreferences),
-            displayParams?.hasAnimation ?: false
+            adapter.getSSivAtPosition(absImageIndex)
         )
         if (null == displayParams || newDisplayParams != displayParams)
             onDisplayParamsChange(newDisplayParams)
@@ -1063,7 +1063,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val isDirectionChange =
             (null == currentDisplayParams || currentDisplayParams.direction != newDisplayParams.direction)
         val isAnimationChange =
-            (null == currentDisplayParams || currentDisplayParams.hasAnimation != newDisplayParams.hasAnimation)
+            (null == currentDisplayParams || currentDisplayParams.useSsiv != newDisplayParams.useSsiv)
         displayParams = newDisplayParams
 
         var isZoomFrameEnabled = false
@@ -1071,9 +1071,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         binding?.apply {
             // Animated picture appears in horizontal mode => enable zoom frame
             if (isAnimationChange && VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation) {
-                if (newDisplayParams.hasAnimation || isImageAnimated) {
-                    isZoomFrameEnabled = true
-                }
+                if (!newDisplayParams.useSsiv || !useSsiv) isZoomFrameEnabled = true
             }
 
             // Orientation changes
@@ -1262,16 +1260,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 val currentImg = adapter.getImageAt(absIndex)
                 val nextImg = adapter.getImageAt(absIndex + 1)
                 if (previousImg != null) {
-                    Glide.with(previousImageView).load(Uri.parse(previousImg.fileUri))
-                        .apply(glideOptionCenterInside).into(previousImageView)
+                    previousImageView.load(previousImg.fileUri)
                     previousImageView.visibility = View.VISIBLE
                 } else previousImageView.visibility = View.INVISIBLE
-                if (currentImg != null) Glide.with(controlsOverlay.imagePreviewCenter)
-                    .load(Uri.parse(currentImg.fileUri)).apply(glideOptionCenterInside)
-                    .into(controlsOverlay.imagePreviewCenter)
+                if (currentImg != null) controlsOverlay.imagePreviewCenter.load(currentImg.fileUri)
                 if (nextImg != null) {
-                    Glide.with(nextImageView).load(Uri.parse(nextImg.fileUri))
-                        .apply(glideOptionCenterInside).into(nextImageView)
+                    nextImageView.load(nextImg.fileUri)
                     nextImageView.visibility = View.VISIBLE
                 } else nextImageView.visibility = View.INVISIBLE
             }
@@ -1596,7 +1590,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val browseMode: Int,
         val displayMode: Int,
         val isSmoothRendering: Boolean,
-        val hasAnimation: Boolean
+        val useSsiv: Boolean
     ) {
         val orientation =
             if (browseMode == VIEWER_BROWSE_TTB) VIEWER_ORIENTATION_VERTICAL else VIEWER_ORIENTATION_HORIZONTAL

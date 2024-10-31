@@ -240,7 +240,7 @@ fun Context.writeLog(logInfo: LogInfo): DocumentFile? {
 
         // Save the log; use primary folder by default
         val folder = getDocumentFromTreeUriString(
-            this, Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+            this, Settings.getStorageUri(StorageLocation.PRIMARY_1)
         )
         if (folder != null) {
             val logDocumentFile = findOrCreateDocumentFile(

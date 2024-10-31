@@ -120,12 +120,12 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         when (key) {
             Preferences.Key.COLOR_THEME -> onPrefColorThemeChanged()
             Preferences.Key.DL_THREADS_QUANTITY_LISTS,
-            Preferences.Key.APP_PREVIEW,
+            Settings.Key.APP_PREVIEW,
             Settings.Key.FORCE_ENGLISH,
             Settings.Key.TEXT_SELECT_MENU,
             Settings.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
 
-            Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
+            Settings.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
             Settings.Key.WEB_AUGMENTED_BROWSER -> onAugmentedBrowserChanged()
         }
@@ -143,7 +143,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
 
-            Preferences.Key.APP_LOCK -> {
+            Settings.Key.APP_LOCK -> {
                 requireContext().startLocalActivity<PinPreferenceActivity>()
                 true
             }
@@ -201,11 +201,11 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     private fun onExternalFolderChanged() {
         val storageFolderPref: Preference? =
             findPreference(Preferences.Key.EXTERNAL_LIBRARY) as Preference?
-        val uri = Uri.parse(Preferences.getExternalLibraryUri())
+        val uri = Uri.parse(Settings.externalLibraryUri)
         storageFolderPref?.summary = getFullPathFromUri(requireContext(), uri)
         // Enable/disable sub-prefs
         val deleteExternalLibrary: Preference? =
-            findPreference(Preferences.Key.EXTERNAL_LIBRARY_DELETE) as Preference?
+            findPreference(Settings.Key.EXTERNAL_LIBRARY_DELETE) as Preference?
         deleteExternalLibrary?.isEnabled = (uri.toString().isNotEmpty())
         val detachExternalLibrary: Preference? =
             findPreference(Preferences.Key.EXTERNAL_LIBRARY_DETACH) as Preference?

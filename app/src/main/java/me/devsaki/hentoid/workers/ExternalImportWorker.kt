@@ -17,7 +17,7 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createJsonFileFor
 import me.devsaki.hentoid.util.existsInCollection
@@ -108,14 +108,14 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
      */
     private fun startImport(context: Context) {
         logNoDataMessage = "No content detected."
-        val rootFolder = getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri())
+        val rootFolder = getDocumentFromTreeUriString(context, Settings.externalLibraryUri)
         if (null == rootFolder) {
-            Timber.e("External folder is not defined (%s)", Preferences.getExternalLibraryUri())
+            Timber.e("External folder is not defined (%s)", Settings.externalLibraryUri)
             return
         }
         try {
             Beholder.clearSnapshot(context)
-            FileExplorer(context, Uri.parse(Preferences.getExternalLibraryUri())).use { explorer ->
+            FileExplorer(context, Uri.parse(Settings.externalLibraryUri)).use { explorer ->
                 val detectedContent: MutableList<Content> = ArrayList()
                 // Deep recursive search starting from the place the user has selected
                 var dao: CollectionDAO = ObjectBoxDAO()
@@ -294,7 +294,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
         // Forge parent names using folder root path minus ext library root path
         val extRootElts =
-            getFullPathFromUri(context, Uri.parse(Preferences.getExternalLibraryUri()))
+            getFullPathFromUri(context, Uri.parse(Settings.externalLibraryUri))
                 .split(File.separator)
         val parentNames = getFullPathFromUri(context, deltaPlusRoot.uri)
             .split(File.separator).toMutableList()

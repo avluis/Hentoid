@@ -17,6 +17,7 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.tools.DuplicateDetailsFragment
 import me.devsaki.hentoid.fragments.tools.DuplicateMainFragment
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -44,7 +45,7 @@ class DuplicateDetectorActivity : BaseActivity() {
         val vmFactory = ViewModelFactory(application)
         viewModel = ViewModelProvider(this, vmFactory)[DuplicateViewModel::class.java]
 
-        if (!Preferences.getRecentVisibility()) {
+        if (!Settings.recentVisibility) {
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE

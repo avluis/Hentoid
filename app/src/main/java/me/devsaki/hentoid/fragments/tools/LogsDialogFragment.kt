@@ -22,7 +22,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogToolsAppLogsBinding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.listFiles
@@ -96,7 +96,7 @@ class LogsDialogFragment : BaseDialogFragment<Nothing>() {
             val rootFolder =
                 getDocumentFromTreeUriString(
                     requireContext(),
-                    Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+                    Settings.getStorageUri(StorageLocation.PRIMARY_1)
                 ) ?: return@withContext emptyList<DocumentFile>()
 
             var files = listFiles(

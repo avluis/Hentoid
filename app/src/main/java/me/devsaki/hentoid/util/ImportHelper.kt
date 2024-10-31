@@ -183,10 +183,10 @@ private fun getFolderPickerIntent(context: Context, location: StorageLocation): 
     intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
 
     // Start the SAF at the specified location
-    if (Preferences.getStorageUri(location).isNotEmpty()) {
+    if (Settings.getStorageUri(location).isNotEmpty()) {
         val file = getDocumentFromTreeUriString(
             context,
-            Preferences.getStorageUri(location)
+            Settings.getStorageUri(location)
         )
         if (file != null) intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, file.uri)
     }
@@ -258,8 +258,8 @@ fun setAndScanPrimaryFolder(
 
     // Check if selected folder is separate from Hentoid's other primary location
     val otherLocationUriStr: String =
-        if (location == StorageLocation.PRIMARY_1) Preferences.getStorageUri(StorageLocation.PRIMARY_2)
-        else Preferences.getStorageUri(StorageLocation.PRIMARY_1)
+        if (location == StorageLocation.PRIMARY_1) Settings.getStorageUri(StorageLocation.PRIMARY_2)
+        else Settings.getStorageUri(StorageLocation.PRIMARY_1)
 
     if (otherLocationUriStr.isNotEmpty()) {
         val treeFullPath = getFullPathFromUri(context, treeUri)
@@ -282,7 +282,7 @@ fun setAndScanPrimaryFolder(
     }
 
     // Check if selected folder is separate from Hentoid's external location
-    val extLocationStr = Preferences.getStorageUri(StorageLocation.EXTERNAL)
+    val extLocationStr = Settings.getStorageUri(StorageLocation.EXTERNAL)
     if (extLocationStr.isNotEmpty()) {
         val treeFullPath = getFullPathFromUri(context, treeUri)
         val extFullPath = getFullPathFromUri(context, Uri.parse(extLocationStr))
@@ -329,7 +329,7 @@ fun setAndScanPrimaryFolder(
         // => Don't run the import worker and settle things here
 
         // In case that Location was previously populated, drop all books
-        if (Preferences.getStorageUri(location).isNotEmpty()) {
+        if (Settings.getStorageUri(location).isNotEmpty()) {
             val dao: CollectionDAO = ObjectBoxDAO()
             try {
                 detachAllPrimaryContent(dao, location)
@@ -337,7 +337,7 @@ fun setAndScanPrimaryFolder(
                 dao.cleanup()
             }
         }
-        Preferences.setStorageUri(location, hentoidFolder.uri.toString())
+        Settings.setStorageUri(location, hentoidFolder.uri.toString())
         Pair(ProcessFolderResult.OK_EMPTY_FOLDER, hentoidFolder.uri.toString())
     }
 }
@@ -370,8 +370,8 @@ fun setAndScanExternalFolder(
     }
 
     // Check if selected folder is separate from one of Hentoid's primary locations
-    var primaryUri1 = Preferences.getStorageUri(StorageLocation.PRIMARY_1)
-    var primaryUri2 = Preferences.getStorageUri(StorageLocation.PRIMARY_2)
+    var primaryUri1 = Settings.getStorageUri(StorageLocation.PRIMARY_1)
+    var primaryUri2 = Settings.getStorageUri(StorageLocation.PRIMARY_2)
     if (primaryUri1.isNotEmpty()) primaryUri1 =
         getFullPathFromUri(context, Uri.parse(primaryUri1))
     if (primaryUri2.isNotEmpty()) primaryUri2 =
@@ -398,7 +398,7 @@ fun setAndScanExternalFolder(
 
     // Set the folder as the app's external library folder
     val folderUri = docFile.uri.toString()
-    Preferences.setExternalLibraryUri(folderUri)
+    Settings.externalLibraryUri = folderUri
 
     // Start the import
     return if (runExternalImport(context)) Pair(ProcessFolderResult.OK_LIBRARY_DETECTED, folderUri)
@@ -418,9 +418,9 @@ fun persistLocationCredentials(
     location: List<StorageLocation>
 ) {
     val uri = location
-        .mapNotNull { l -> Preferences.getStorageUri(l) }
-        .filterNot { obj -> obj.isEmpty() }
-        .map { uri -> Uri.parse(uri) }
+        .map { Settings.getStorageUri(it) }
+        .filterNot { it.isEmpty() }
+        .map { Uri.parse(it) }
     persistNewUriPermission(context, treeUri, uri)
 }
 

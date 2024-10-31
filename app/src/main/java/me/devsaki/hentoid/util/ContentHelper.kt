@@ -12,8 +12,6 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
@@ -327,7 +325,7 @@ fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
     queuedContent.addAll(errors)
 
     val rootFolder =
-        getDocumentFromTreeUriString(context, Preferences.getStorageUri(StorageLocation.PRIMARY_1))
+        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
             ?: return false
 
     try {
@@ -574,7 +572,7 @@ fun detachAllExternalContent(context: Context, dao: CollectionDAO) {
  * @param dao      DAO to use
  * @param location Location to detach
  */
-fun detachAllPrimaryContent(dao: CollectionDAO, location: StorageLocation?) {
+fun detachAllPrimaryContent(dao: CollectionDAO, location: StorageLocation) {
     // Remove all external books from DB
     // NB : do NOT use ContentHelper.removeContent as it would remove files too
     // here we just want to remove DB entries without removing files
@@ -583,8 +581,8 @@ fun detachAllPrimaryContent(dao: CollectionDAO, location: StorageLocation?) {
     // TODO groups
 }
 
-fun getPathRoot(location: StorageLocation?): String {
-    return getPathRoot(Preferences.getStorageUri(location))
+fun getPathRoot(location: StorageLocation): String {
+    return getPathRoot(Settings.getStorageUri(location))
 }
 
 fun getPathRoot(locationUriStr: String): String {
@@ -890,10 +888,10 @@ private fun formatBookFolderName(
     title: String, author: String
 ): String {
     var result = ""
-    when (Preferences.getFolderNameFormat()) {
-        Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_ID -> result += title
-        Preferences.Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID -> result += "$author - $title"
-        Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_AUTH_ID -> result += "$title - $author"
+    when (Settings.folderNameFormat) {
+        Settings.Value.FOLDER_NAMING_CONTENT_TITLE_ID -> result += title
+        Settings.Value.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID -> result += "$author - $title"
+        Settings.Value.FOLDER_NAMING_CONTENT_TITLE_AUTH_ID -> result += "$title - $author"
         else -> {}
     }
     result += " - "
@@ -977,7 +975,7 @@ fun getOrCreateSiteDownloadDir(
     location: StorageLocation,
     site: Site
 ): DocumentFile? {
-    val appUriStr = Preferences.getStorageUri(location)
+    val appUriStr = Settings.getStorageUri(location)
     if (appUriStr.isEmpty()) {
         Timber.e("No storage URI defined for location %s", location.name)
         return null
@@ -1053,13 +1051,13 @@ fun shareContent(
  */
 fun parseDownloadParams(downloadParamsStr: String?): Map<String, String> {
     // Handle empty and {}
-    if (null == downloadParamsStr || downloadParamsStr.trim().length <= 2) return HashMap()
+    if (null == downloadParamsStr || downloadParamsStr.trim().length <= 2) return emptyMap()
     try {
         return jsonToObject(downloadParamsStr, MAP_STRINGS)!!
     } catch (e: IOException) {
         Timber.w(e)
     }
-    return HashMap()
+    return emptyMap()
 }
 
 
@@ -1538,22 +1536,23 @@ fun purgeFiles(
         val tempFiles: MutableList<File> = ArrayList()
         var tempFolder: File? = null
         if (filesToKeep.isNotEmpty()) {
-            tempFolder = getOrCreateCacheFolder(context, "tmp" + content.id)
-            for (file in filesToKeep) {
-                try {
-                    val uri = copyFile(
-                        context,
-                        file.uri,
-                        Uri.fromFile(tempFolder),
-                        file.type ?: "",
-                        file.name ?: ""
-                    )
-                    if (uri != null) {
-                        val tmpFile = legacyFileFromUri(uri)
-                        if (tmpFile != null) tempFiles.add(tmpFile)
+            getOrCreateCacheFolder(context, "tmp" + content.id)?.let { tmp ->
+                tempFolder = tmp
+                for (file in filesToKeep) {
+                    try {
+                        val uri = copyFile(
+                            context,
+                            file.uri,
+                            tmp,
+                            file.name ?: ""
+                        )
+                        if (uri != null) {
+                            val tmpFile = legacyFileFromUri(uri)
+                            if (tmpFile != null) tempFiles.add(tmpFile)
+                        }
+                    } catch (e: IOException) {
+                        Timber.w(e)
                     }
-                } catch (e: IOException) {
-                    Timber.w(e)
                 }
             }
         }
@@ -1584,7 +1583,7 @@ fun purgeFiles(
                         val newUri = copyFile(
                             context,
                             Uri.fromFile(file),
-                            bookFolder.uri,
+                            bookFolder,
                             mimeType,
                             file.name
                         )
@@ -1712,22 +1711,10 @@ fun formatSeriesForDisplay(
     }
 }
 
-/**
- * Transform the given online URL into a working GlideUrl using the given Content's cookies
- * (useful when viewing queue screen before any image has been downloaded)
- *
- * @param imageUrl URL of the online picture to transform
- * @param content  Content to use for cookies / referer
- * @return Working GlideUrl pointing to the given image URL, using the correct cookies / referer
- */
-fun bindOnlineCover(
-    imageUrl: String,
-    content: Content?
-): GlideUrl? {
+fun getContentHeaders(content: Content?): List<Pair<String, String>> {
     if (getWebViewAvailable()) {
         var cookieStr: String? = null
         var referer: String? = null
-        var builder = LazyHeaders.Builder()
 
         // Quickly skip JSON deserialization if there are no cookies in downloadParams
         if (content != null) {
@@ -1739,15 +1726,15 @@ fun bindOnlineCover(
             }
             if (null == cookieStr) cookieStr = getCookies(content.galleryUrl)
             if (null == referer) referer = content.galleryUrl
-            builder = builder.addHeader(HEADER_COOKIE_KEY, cookieStr).addHeader(
-                HEADER_REFERER_KEY,
-                referer
-            ).addHeader(HEADER_USER_AGENT, content.site.userAgent)
-        }
 
-        return GlideUrl(imageUrl, builder.build()) // From URL
+            val results: MutableList<Pair<String, String>> = ArrayList()
+            results.add(Pair(HEADER_COOKIE_KEY, cookieStr))
+            results.add(Pair(HEADER_REFERER_KEY, referer))
+            results.add(Pair(HEADER_USER_AGENT, content.site.userAgent))
+            return results
+        }
     }
-    return null
+    return emptyList()
 }
 
 /**
@@ -2078,7 +2065,7 @@ fun mergeContents(
     // External library root for external content
     if (mergedContent.status == StatusContent.EXTERNAL) {
         val externalRootFolder =
-            getDocumentFromTreeUriString(context, Preferences.getExternalLibraryUri())
+            getDocumentFromTreeUriString(context, Settings.externalLibraryUri)
         if (null == externalRootFolder || !externalRootFolder.exists()) throw ContentNotProcessedException(
             mergedContent,
             "Could not create target directory : external root unreachable"
@@ -2100,7 +2087,7 @@ fun mergeContents(
     } else { // Primary folder for non-external content; using download strategy
         val location = selectDownloadLocation(context)
         targetFolder = getOrCreateContentDownloadDir(context, mergedContent, location, true)
-        parentFolder = getDocumentFromTreeUriString(context, Preferences.getStorageUri(location))
+        parentFolder = getDocumentFromTreeUriString(context, Settings.getStorageUri(location))
     }
     if (null == targetFolder || !targetFolder.exists())
         throw ContentNotProcessedException(mergedContent, "Could not create target directory")
@@ -2222,9 +2209,10 @@ fun mergeContents(
                     val newUri = copyFile(
                         context,
                         Uri.parse(img.fileUri),
-                        targetFolder.uri,
+                        targetFolder,
                         newImg.mimeType,
-                        newImg.name + "." + getExtensionFromUri(img.fileUri)
+                        newImg.name + "." + getExtensionFromUri(img.fileUri),
+                        true
                     )
                     if (newUri != null) newImg.fileUri = newUri.toString()
                     else Timber.w("Could not move file %s", img.fileUri)
@@ -2280,7 +2268,7 @@ fun mergeContents(
 
 fun getLocation(content: Content): StorageLocation {
     for (location in StorageLocation.entries) {
-        val rootUri = Preferences.getStorageUri(location)
+        val rootUri = Settings.getStorageUri(location)
         if (rootUri.isNotEmpty() && content.storageUri.startsWith(rootUri)) return location
     }
     return StorageLocation.NONE
