@@ -1382,7 +1382,10 @@ fun getParent(context: Context, root: Uri, doc: DocumentFile): Uri? {
     val parentsRoots =
         DocumentsContract.findDocumentPath(context.contentResolver, doc.uri) ?: return null
     // NB : that call is expensive; consider implementing that within FileExplorer if needed inside a loop
-    return DocumentsContract.buildDocumentUriUsingTree(root, parentsRoots.path[0])
+    return DocumentsContract.buildDocumentUriUsingTree(
+        root,
+        parentsRoots.path[parentsRoots.path.size - 2]
+    )
 }
 
 /**
