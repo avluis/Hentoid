@@ -1608,12 +1608,13 @@ fun purgeFiles(
  * @return Given Content's tags formatted for display
  */
 fun formatTagsForDisplay(content: Content): String {
-    val tagsAttributes = content.attributeMap[AttributeType.TAG]
-        ?: return ""
+    val displayTags = content.attributeMap
+        .filterKeys { it == AttributeType.TAG || it == AttributeType.CHARACTER }
+        .flatMap { it.value }
+        .map { it.name }
+        .sorted().take(30)
 
-    val allTags = tagsAttributes.map { it.name }.sorted().take(30)
-
-    return TextUtils.join(", ", allTags)
+    return TextUtils.join(", ", displayTags)
 }
 
 /**
