@@ -1563,7 +1563,7 @@ class ReaderViewModel(
         val contentList = listOf(theContent)
 
         // Flag the content as "being deleted" (triggers blink animation)
-        for (c in contentList) dao.updateContentProcessedFlag(c.id, true)
+        dao.updateContentsProcessedFlag(contentList, true)
         val targetImageStatus = StatusContent.ERROR
 
         viewModelScope.launch {

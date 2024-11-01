@@ -33,7 +33,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
@@ -385,6 +384,14 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun updateContentProcessedFlag(contentId: Long, flag: Boolean) {
         ObjectBoxDB.updateContentProcessedFlag(contentId, flag)
+    }
+
+    override fun updateContentsProcessedFlagById(contentIds: List<Long>, flag: Boolean) {
+        ObjectBoxDB.updateContentsProcessedFlag(contentIds.toLongArray(), flag)
+    }
+
+    override fun updateContentsProcessedFlag(contents: List<Content>, flag: Boolean) {
+        ObjectBoxDB.updateContentsProcessedFlag(contents.map { it.id }.toLongArray(), flag)
     }
 
     override fun deleteContent(content: Content) {

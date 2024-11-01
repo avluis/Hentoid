@@ -210,8 +210,7 @@ abstract class BaseSplitMergeWorker(
         if (contentList.isEmpty()) return
 
         // Flag the content as "being deleted" (triggers blink animation)
-        if (deleteAfterOperation)
-            contentList.forEach { dao.updateContentProcessedFlag(it.id, true) }
+        if (deleteAfterOperation) dao.updateContentsProcessedFlag(contentList, true)
 
         val removedContents: MutableSet<Long> = HashSet()
         nbMax = contentList.flatMap { it.imageList }.count { it.isReadable }
@@ -251,10 +250,10 @@ abstract class BaseSplitMergeWorker(
             Timber.w(e)
         }
         // Reset the "marked as being processed" flag for un-deleted content
-        if (deleteAfterOperation)
-            contentList.forEach {
-                if (!removedContents.contains(it.id)) dao.updateContentProcessedFlag(it.id, false)
-            }
+        if (deleteAfterOperation) {
+            val toProcess = contentList.map { it.id }.filterNot { removedContents.contains(it) }
+            dao.updateContentsProcessedFlagById(toProcess, false)
+        }
     }
 
 

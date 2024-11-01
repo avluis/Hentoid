@@ -105,7 +105,7 @@ object ObjectBoxDB {
     }
 
     fun getDbSizeBytes(): Long {
-        return store.sizeOnDisk()
+        return store.dbSize
     }
 
     private fun buildContentFromAttributesSearchQ(): Query<Content> {
@@ -181,6 +181,15 @@ object ObjectBoxDB {
                 c.isBeingProcessed = flag
                 store.boxFor(Content::class.java).put(c)
             }
+        }
+    }
+
+    fun updateContentsProcessedFlag(contentIds: LongArray, flag: Boolean) {
+        val contentStore = store.boxFor(Content::class.java)
+        store.runInTx {
+            val data = contentStore[contentIds]
+            data.forEach { it.isBeingProcessed = flag }
+            contentStore.put(data)
         }
     }
 
@@ -314,18 +323,11 @@ object ObjectBoxDB {
         val errorBox = store.boxFor(ErrorRecord::class.java)
         val imageFileBox = store.boxFor(ImageFile::class.java)
         val chapterBox = store.boxFor(Chapter::class.java)
-        val contentBox = store.boxFor(
-            Content::class.java
-        )
-        val groupItemBox = store.boxFor(
-            GroupItem::class.java
-        )
-        val groupBox = store.boxFor(
-            Group::class.java
-        )
+        val contentBox = store.boxFor(Content::class.java)
+        val groupItemBox = store.boxFor(GroupItem::class.java)
+        val groupBox = store.boxFor(Group::class.java)
         for (id in contentId) {
-            val c = contentBox[id]
-            if (c != null) {
+            contentBox[id]?.let { c ->
                 store.runInTx {
                     c.imageFiles.apply {
                         imageFileBox.remove(this)
@@ -449,7 +451,8 @@ object ObjectBoxDB {
 
     private fun deleteQueueRecords(contentId: Long) {
         val queueRecordBox = store.boxFor(QueueRecord::class.java)
-        val record = queueRecordBox.query().equal(QueueRecord_.contentId, contentId).safeFindFirst()
+        val record =
+            queueRecordBox.query().equal(QueueRecord_.contentId, contentId).safeFindFirst()
         if (record != null) queueRecordBox.remove(record)
     }
 
@@ -495,7 +498,12 @@ object ObjectBoxDB {
     ): Content? {
         val contentUrlCondition =
             Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-                .and(Content_.dbUrl.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+                .and(
+                    Content_.dbUrl.equal(
+                        contentUrl,
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    )
+                )
                 .and(Content_.site.equal(site.code))
         val chapterUrlCondition: QueryCondition<Content> =
             Content_.id.oneOf(selectContentIdsByChapterUrl(contentUrl))
@@ -522,7 +530,12 @@ object ObjectBoxDB {
     fun selectContentByUrl(site: Site, contentUrl: String): Set<Content> {
         val contentUrlCondition =
             Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-                .and(Content_.dbUrl.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+                .and(
+                    Content_.dbUrl.equal(
+                        contentUrl,
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    )
+                )
                 .and(Content_.site.equal(site.code))
 
         return store.boxFor(Content::class.java).query(contentUrlCondition)
@@ -549,7 +562,8 @@ object ObjectBoxDB {
 
     fun selectAllMergedContentUrls(site: Site): Set<String> {
         store.boxFor(Chapter::class.java).query()
-            .startsWith(Chapter_.url, site.url, QueryBuilder.StringOrder.CASE_INSENSITIVE).build()
+            .startsWith(Chapter_.url, site.url, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            .build()
             .use { allChapterQ ->
                 return allChapterQ.property(Chapter_.url).findStrings().toHashSet()
             }
@@ -559,7 +573,11 @@ object ObjectBoxDB {
         val queryBuilder = store.boxFor(
             Content::class.java
         ).query()
-            .endsWith(Content_.storageUri, folderUriEnd, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            .endsWith(
+                Content_.storageUri,
+                folderUriEnd,
+                QueryBuilder.StringOrder.CASE_INSENSITIVE
+            )
         if (onlyFlagged) queryBuilder.equal(Content_.isFlaggedForDeletion, true)
         return queryBuilder.build().safeFindFirst()
     }
@@ -595,7 +613,11 @@ object ObjectBoxDB {
         }
     }
 
-    private fun applySortOrder(query: QueryBuilder<Content>, orderField: Int, orderDesc: Boolean) {
+    private fun applySortOrder(
+        query: QueryBuilder<Content>,
+        orderField: Int,
+        orderDesc: Boolean
+    ) {
         // Random ordering is tricky (see https://github.com/objectbox/objectbox-java/issues/17)
         // => Implemented post-query build
         if (orderField == Settings.Value.ORDER_FIELD_RANDOM) return
@@ -674,7 +696,9 @@ object ObjectBoxDB {
         qc = applyContentLocationFilter(
             qc,
             Location.entries.first { it.value == searchBundle.location })
-        qc = applyContentTypeFilter(qc, Type.entries.first { it.value == searchBundle.contentType })
+        qc = applyContentTypeFilter(
+            qc,
+            Type.entries.first { it.value == searchBundle.contentType })
         val query = store.boxFor(Content::class.java).query(qc)
         if (searchBundle.filterPageFavourites) filterWithPageFavs(query)
         applySortOrder(query, searchBundle.sortField, searchBundle.sortDesc)
@@ -771,7 +795,10 @@ object ObjectBoxDB {
             return store.boxFor(Content::class.java).query().build()
         var qc = initContentQC(searchBundle, dynamicGroupContentIds, statuses)
         qc = qc.and(
-            Content_.title.contains(searchBundle.query, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            Content_.title.contains(
+                searchBundle.query,
+                QueryBuilder.StringOrder.CASE_INSENSITIVE
+            )
                 .or(
                     Content_.uniqueSiteId.equal(
                         searchBundle.query,
@@ -834,7 +861,11 @@ object ObjectBoxDB {
             Content_.rating,
             searchBundle.filterRating.toLong()
         )
-        qb.contains(Content_.title, searchBundle.query, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+        qb.contains(
+            Content_.title,
+            searchBundle.query,
+            QueryBuilder.StringOrder.CASE_INSENSITIVE
+        )
         qb.or().equal(
             Content_.uniqueSiteId,
             searchBundle.query,
@@ -886,7 +917,11 @@ object ObjectBoxDB {
             dynamicGroupContentIds,
             libraryStatus
         ).safeFindIds()
-        return selectContentUniversalContentByGroupItem(searchBundle, dynamicGroupContentIds, ids)
+        return selectContentUniversalContentByGroupItem(
+            searchBundle,
+            dynamicGroupContentIds,
+            ids
+        )
     }
 
     fun getShuffledIds(): List<Long> {
@@ -1060,7 +1095,8 @@ object ObjectBoxDB {
             val contentFromAttributesQueryBuilder = store.boxFor(
                 Content::class.java
             ).query(qc)
-            contentFromAttributesQueryBuilder.link(Content_.attributes).equal(Attribute_.type, 0)
+            contentFromAttributesQueryBuilder.link(Content_.attributes)
+                .equal(Attribute_.type, 0)
                 .equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
             contentFromAttributesQuery = contentFromAttributesQueryBuilder.build()
         }
@@ -1117,7 +1153,9 @@ object ObjectBoxDB {
                     val idsAsSet = ids.toSet()
                     // Remove ids that fit the attribute from results
                     // Careful with retainAll performance when using List instead of Set
-                    if (attr.isExcluded) results.removeAll(idsAsSet) else results.retainAll(idsAsSet)
+                    if (attr.isExcluded) results.removeAll(idsAsSet) else results.retainAll(
+                        idsAsSet
+                    )
                 }
             }
         } finally {
@@ -1352,7 +1390,8 @@ object ObjectBoxDB {
         var qc: QueryCondition<Content> = Content_.status.oneOf(status)
         if (filteredContentIds.isNotEmpty()) qc = qc.and(Content_.id.oneOf(filteredContentIds))
         val contentFromAttributesQueryBuilder = store.boxFor(Content::class.java).query(qc)
-        contentFromAttributesQueryBuilder.link(Content_.attributes).equal(Attribute_.dbId, attrId)
+        contentFromAttributesQueryBuilder.link(Content_.attributes)
+            .equal(Attribute_.dbId, attrId)
         return contentFromAttributesQueryBuilder.build().count()
     }
 
@@ -1458,15 +1497,16 @@ object ObjectBoxDB {
                 qc = qc.and(Content_.status.equal(StatusContent.EXTERNAL.code))
                 var combinedCondition: QueryCondition<Content>? = null
                 for (ext in getSupportedExtensions()) {
-                    combinedCondition = if (null == combinedCondition) Content_.storageUri.endsWith(
-                        ext,
-                        QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    ) else combinedCondition.or(
-                        Content_.storageUri.endsWith(
+                    combinedCondition =
+                        if (null == combinedCondition) Content_.storageUri.endsWith(
                             ext,
                             QueryBuilder.StringOrder.CASE_INSENSITIVE
+                        ) else combinedCondition.or(
+                            Content_.storageUri.endsWith(
+                                ext,
+                                QueryBuilder.StringOrder.CASE_INSENSITIVE
+                            )
                         )
-                    )
                 }
                 if (combinedCondition != null) qc.and(combinedCondition) else qc
             }
@@ -1531,7 +1571,8 @@ object ObjectBoxDB {
         val imgQuery = store.boxFor(ImageFile::class.java).query()
         imgQuery.equal(ImageFile_.contentId, contentId)
         val images = imgQuery.safeFind()
-        val result: MutableMap<StatusContent, Pair<Int, Long>> = EnumMap(StatusContent::class.java)
+        val result: MutableMap<StatusContent, Pair<Int, Long>> =
+            EnumMap(StatusContent::class.java)
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
         // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
@@ -1749,7 +1790,10 @@ object ObjectBoxDB {
         var qc: QueryCondition<RenamingRule>? = null
         var nameQc: QueryCondition<RenamingRule>? = null
         if (nameFilter.isNotEmpty()) nameQc =
-            RenamingRule_.sourceName.contains(nameFilter, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            RenamingRule_.sourceName.contains(
+                nameFilter,
+                QueryBuilder.StringOrder.CASE_INSENSITIVE
+            )
                 .or(
                     RenamingRule_.sourceName.contains(
                         nameFilter,
@@ -2044,7 +2088,8 @@ object ObjectBoxDB {
     fun selectContentIdsByGroup(groupId: Long): LongArray {
         val customContentQB = store.boxFor(Content::class.java)
             .query().`in`(Content_.status, libraryStatus)
-        customContentQB.link(Content_.groupItems).link(GroupItem_.group).equal(Group_.id, groupId)
+        customContentQB.link(Content_.groupItems).link(GroupItem_.group)
+            .equal(Group_.id, groupId)
         return customContentQB.safeFindIds()
     }
 

@@ -58,6 +58,10 @@ interface CollectionDAO {
 
     fun updateContentProcessedFlag(contentId: Long, flag: Boolean)
 
+    fun updateContentsProcessedFlagById(contentIds: List<Long>, flag: Boolean)
+
+    fun updateContentsProcessedFlag(contents: List<Content>, flag: Boolean)
+
     fun deleteContent(content: Content)
 
     fun selectErrorRecordByContentId(contentId: Long): List<ErrorRecord>

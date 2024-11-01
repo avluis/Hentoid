@@ -544,7 +544,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
 
         // Flag contents as "being processed" (triggers blink animation)
-        for (c in contentList) dao.updateContentProcessedFlag(c.id, true)
+        dao.updateContentsProcessedFlag(contentList, true)
 
         val sourceImageStatus = if (reparseImages) null else StatusContent.ERROR
         val targetImageStatus =
@@ -652,7 +652,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
 
         // Flag the content as "being deleted" (triggers blink animation)
-        for (c in contentList) dao.updateContentProcessedFlag(c.id, true)
+        dao.updateContentsProcessedFlag(contentList, true)
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {

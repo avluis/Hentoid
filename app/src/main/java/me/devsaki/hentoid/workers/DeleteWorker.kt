@@ -166,10 +166,8 @@ abstract class BaseDeleteWorker(
             val minIndex = i * 50
             val maxIndex = ((i + 1) * 50).coerceAtMost(ids.size)
             // Flag the content as "being processed" (triggers blink animation; lock operations)
-            for (id in minIndex until maxIndex) {
-                if (ids[id] > 0) dao.updateContentProcessedFlag(ids[id], true)
-                if (isStopped) break
-            }
+            val toProcess = ids.slice(minIndex..maxIndex).filter { it > 0 }.toList()
+            dao.updateContentsProcessedFlagById(toProcess, true)
             // Process it
             for (id in minIndex until maxIndex) {
                 dao.selectContent(ids[id])?.let {
@@ -262,7 +260,7 @@ abstract class BaseDeleteWorker(
 
     private fun purgeContentList(ids: LongArray, keepCovers: Boolean) {
         // Flag the content as "being deleted" (triggers blink animation; locks operations)
-        for (id in ids) dao.updateContentProcessedFlag(id, true)
+        dao.updateContentsProcessedFlagById(ids.toList(), true)
 
         // Purge them
         for (id in ids) {
@@ -272,8 +270,7 @@ abstract class BaseDeleteWorker(
             if (isStopped) break
         }
 
-        if (isStopped)
-            for (id in ids) dao.updateContentProcessedFlag(id, false)
+        if (isStopped) dao.updateContentsProcessedFlagById(ids.toList(), false)
     }
 
     /**
