@@ -554,7 +554,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @param previewSource Optional source for a preview image to be displayed and allow interaction while the full size image loads.
      * @param state         State to be restored. Nullable.
      */
-    private fun setImage(imageSource: ImageSource, previewSource: ImageSource?, state: ImageViewState?) {
+    private fun setImage(
+        imageSource: ImageSource,
+        previewSource: ImageSource?,
+        state: ImageViewState?
+    ) {
         reset(true)
         if (state != null) restoreState(state)
         val targetScale = if ((null == state)) 1f else getVirtualScale()
@@ -2695,10 +2699,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
         when (minimumScaleType) {
             ScaleType.CENTER_CROP, ScaleType.START -> return max(
-                (viewWidth / sWidth().toFloat()).toDouble(),
-                (viewHeight / sHeight().toFloat()).toDouble()
+                viewWidth / sWidth().toFloat(),
+                viewHeight / sHeight().toFloat()
             )
-                .toFloat()
 
             ScaleType.FIT_WIDTH -> return viewWidth / sWidth().toFloat()
             ScaleType.FIT_HEIGHT -> return viewHeight / sHeight().toFloat()
@@ -2714,27 +2717,24 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             ScaleType.SMART_FILL -> {
                 val scale1 = viewHeight / sHeight().toFloat()
                 val scale2 = viewWidth / sWidth().toFloat()
-                return max(scale1.toDouble(), scale2.toDouble()).toFloat()
+                return max(scale1, scale2)
             }
 
             ScaleType.CUSTOM -> return if (minScale > 0) minScale
             else min(
-                (viewWidth / sWidth().toFloat()).toDouble(),
-                (viewHeight / sHeight().toFloat()).toDouble()
+                viewWidth / sWidth().toFloat(),
+                viewHeight / sHeight().toFloat()
             )
-                .toFloat()
 
             ScaleType.CENTER_INSIDE -> return min(
-                (viewWidth / sWidth().toFloat()).toDouble(),
-                (viewHeight / sHeight().toFloat()).toDouble()
+                viewWidth / sWidth().toFloat(),
+                viewHeight / sHeight().toFloat()
             )
-                .toFloat()
 
             else -> return min(
-                (viewWidth / sWidth().toFloat()).toDouble(),
-                (viewHeight / sHeight().toFloat()).toDouble()
+                viewWidth / sWidth().toFloat(),
+                viewHeight / sHeight().toFloat()
             )
-                .toFloat()
         }
     }
 

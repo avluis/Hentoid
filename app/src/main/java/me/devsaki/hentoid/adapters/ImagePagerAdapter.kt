@@ -635,7 +635,7 @@ class ImagePagerAdapter(val context: Context) :
         override fun onImageLoadError(e: Throwable) {
             Timber.d(
                 e,
-                "Picture %d : SSIV loading failed; reloading on ImageVIew : %s",
+                "Picture %d : SSIV loading failed; reloading on ImageView : %s",
                 absoluteAdapterPosition,
                 img!!.fileUri
             )

@@ -85,7 +85,8 @@ class SkiaImageDecoder(private val bitmapConfig: Bitmap.Config) : ImageDecoder {
                         val bb = MappedByteBuffer.allocate(size)
                         bb.put(header)
                         copy(input, bb)
-                        fileStream = ByteBufferBackedInputStream(bb.asReadOnlyBuffer())
+                        bb.position(0)
+                        fileStream = ByteBufferBackedInputStream(bb)
                     }
                 } else {
                     Timber.e("Size is zero!")
@@ -93,13 +94,14 @@ class SkiaImageDecoder(private val bitmapConfig: Bitmap.Config) : ImageDecoder {
             }
                 ?: throw RuntimeException("Content resolver returned null stream. Unable to initialise with uri.")
             fileStream?.use {
-                bitmap = BitmapFactory.decodeStream(fileStream, null, options)
+                bitmap = BitmapFactory.decodeStream(it, null, options)
+                Timber.d("bitmap ${bitmap}")
             }
         }
         bitmap?.let {
             return it
         } ?: run {
-            throw RuntimeException("Skia image region decoder returned null bitmap - image format may not be supported")
+            throw RuntimeException("Skia image decoder returned null bitmap - image format may not be supported")
         }
     }
 }
