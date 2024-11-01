@@ -586,7 +586,7 @@ class ReaderViewModel(
      * @param updateReads     True if number of reads have to be updated; false if not
      * @param markAsCompleted True if the book has to be marked as completed
      */
-    private suspend fun doLeaveBook(
+    private fun doLeaveBook(
         contentId: Long, indexToSet: Int, updateReads: Boolean, markAsCompleted: Boolean
     ) {
         // Use a brand new DAO for that (the viewmodel's DAO may be in the process of being cleaned up)
@@ -599,9 +599,7 @@ class ReaderViewModel(
 
             // Update image read status with the cached read statuses
             val previousReadPageNumbers =
-                theImages.filter { it.read && it.isReadable }
-                    .map { it.order }
-                    .toSet()
+                theImages.filter { it.read && it.isReadable }.map { it.order }.toSet()
             val reReadPagesNumbers = readPageNumbers.toMutableSet()
             reReadPagesNumbers.retainAll(previousReadPageNumbers)
             if (readPageNumbers.size > reReadPagesNumbers.size) {
@@ -1013,102 +1011,97 @@ class ReaderViewModel(
      * @param viewerIndex Viewer index of the page that has just been displayed
      * @param direction   Direction the viewer is going to (1 : forward; -1 : backward; 0 : no movement)
      */
-    @Synchronized
     fun onPageChange(viewerIndex: Int, direction: Int) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                doPageChange(viewerIndex, direction)
-            }
-        }
+        viewModelScope.launch { doPageChange(viewerIndex, direction) }
     }
 
-    private fun doPageChange(viewerIndex: Int, direction: Int) {
-        assertNonUiThread()
-        if (viewerImagesInternal.size <= viewerIndex) return
-        val theContent = getContent().value ?: return
-        val isArchive = theContent.isArchive
-        val isPdf = theContent.isPdf
-        val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
-            .filter { isPictureNeedsProcessing(it, viewerImagesInternal) }.toSet()
-        if (picturesLeftToProcess.isEmpty()) return
+    private suspend fun doPageChange(viewerIndex: Int, direction: Int) =
+        withContext(Dispatchers.IO) {
+            if (viewerImagesInternal.size <= viewerIndex) return@withContext
+            val theContent = getContent().value ?: return@withContext
+            val isArchive = theContent.isArchive
+            val isPdf = theContent.isPdf
+            val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
+                .filter { isPictureNeedsProcessing(it, viewerImagesInternal) }.toSet()
+            if (picturesLeftToProcess.isEmpty()) return@withContext
 
-        // Identify pages to be loaded
-        val indexesToLoad: MutableList<Int> = ArrayList()
-        val increment = if (direction >= 0) 1 else -1
-        val quantity = if (isArchive || isPdf) EXTRACT_RANGE else DOWNLOAD_RANGE
-        // pageIndex at 1/3rd of the range to extract/download -> determine its bound
-        val initialIndex = floor(
-            coerceIn(
-                1f * viewerIndex - quantity * increment / 3f,
-                0f,
-                (viewerImagesInternal.size - 1).toFloat()
-            )
-        ).toInt()
-        for (i in 0 until quantity)
-            if (picturesLeftToProcess.contains(initialIndex + increment * i))
-                indexesToLoad.add(initialIndex + increment * i)
+            // Identify pages to be loaded
+            val indexesToLoad: MutableList<Int> = ArrayList()
+            val increment = if (direction >= 0) 1 else -1
+            val quantity = if (isArchive || isPdf) EXTRACT_RANGE else DOWNLOAD_RANGE
+            // pageIndex at 1/3rd of the range to extract/download -> determine its bound
+            val initialIndex = floor(
+                coerceIn(
+                    1f * viewerIndex - quantity * increment / 3f,
+                    0f,
+                    (viewerImagesInternal.size - 1).toFloat()
+                )
+            ).toInt()
+            for (i in 0 until quantity)
+                if (picturesLeftToProcess.contains(initialIndex + increment * i))
+                    indexesToLoad.add(initialIndex + increment * i)
 
-        // Only run extraction when there's at least 1/3rd of the extract range to fetch
-        // (prevents calling extraction for one single picture at every page turn)
-        var greenlight = true
-        if (isArchive || isPdf) {
-            greenlight = indexesToLoad.size >= EXTRACT_RANGE / 3f
-            if (!greenlight) {
-                val from = if (increment > 0) initialIndex else 0
-                val to = if (increment > 0) viewerImagesInternal.size else initialIndex + 1
-                val leftToProcessDirection =
-                    IntRange(from, to - 1).count { picturesLeftToProcess.contains(it) }
-                greenlight = indexesToLoad.size == leftToProcessDirection
+            // Only run extraction when there's at least 1/3rd of the extract range to fetch
+            // (prevents calling extraction for one single picture at every page turn)
+            var greenlight = true
+            if (isArchive || isPdf) {
+                greenlight = indexesToLoad.size >= EXTRACT_RANGE / 3f
+                if (!greenlight) {
+                    val from = if (increment > 0) initialIndex else 0
+                    val to = if (increment > 0) viewerImagesInternal.size else initialIndex + 1
+                    val leftToProcessDirection =
+                        IntRange(from, to - 1).count { picturesLeftToProcess.contains(it) }
+                    greenlight = indexesToLoad.size == leftToProcessDirection
+                }
             }
-        }
-        if (indexesToLoad.isEmpty() || !greenlight) return
+            if (indexesToLoad.isEmpty() || !greenlight) return@withContext
 
-        // Populate what's already cached
-        val cachedIndexes = HashSet<Int>()
-        var nbProcessed = 0
-        synchronized(viewerImagesInternal) {
-            indexesToLoad.forEach { idx ->
-                nbProcessed++
-                viewerImagesInternal[idx].let { img ->
-                    val key = formatCacheKey(img)
-                    if (DiskCache.peekFile(key)) {
-                        updateImgWithExtractedUri(
-                            img,
-                            idx,
-                            DiskCache.getFile(key)!!,
-                            0 == cachedIndexes.size % 4 || nbProcessed == indexesToLoad.size
-                        )
-                        cachedIndexes.add(idx)
+            // Populate what's already cached
+            val cachedIndexes = HashSet<Int>()
+            var nbProcessed = 0
+            synchronized(viewerImagesInternal) {
+                indexesToLoad.forEach { idx ->
+                    nbProcessed++
+                    viewerImagesInternal[idx].let { img ->
+                        val key = formatCacheKey(img)
+                        if (DiskCache.peekFile(key)) {
+                            updateImgWithExtractedUri(
+                                img,
+                                idx,
+                                DiskCache.getFile(key)!!,
+                                0 == cachedIndexes.size % 4 || nbProcessed == indexesToLoad.size
+                            )
+                            cachedIndexes.add(idx)
+                        }
                     }
                 }
             }
-        }
-        indexesToLoad.removeAll(cachedIndexes)
+            indexesToLoad.removeAll(cachedIndexes)
 
-        // Unarchive
-        // Group by archive for efficiency
-        val indexesByArchive = indexesToLoad.filter { viewerImagesInternal[it].isArchived }
-            .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
-        indexesByArchive.keys.forEach {
-            getFileFromSingleUriString(getApplication(), it)?.let { archiveFile ->
-                extractPics(indexesByArchive[it]!!, archiveFile, false)
+            // Unarchive
+            // Group by archive for efficiency
+            val indexesByArchive = indexesToLoad.filter { viewerImagesInternal[it].isArchived }
+                .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
+            indexesByArchive.keys.forEach {
+                getFileFromSingleUriString(getApplication(), it)?.let { archiveFile ->
+                    extractPics(indexesByArchive[it]!!, archiveFile, false)
+                }
             }
-        }
 
-        // Un-PDF
-        val indexesByPdf = indexesToLoad.filter { viewerImagesInternal[it].isPdf }
-            .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
-        indexesByPdf.keys.forEach {
-            getFileFromSingleUriString(getApplication(), it)?.let { pdfFile ->
-                extractPics(indexesByPdf[it]!!, pdfFile, true)
+            // Un-PDF
+            val indexesByPdf = indexesToLoad.filter { viewerImagesInternal[it].isPdf }
+                .groupBy { viewerImagesInternal[it].content.target.storageUri }.toMap()
+            indexesByPdf.keys.forEach {
+                getFileFromSingleUriString(getApplication(), it)?.let { pdfFile ->
+                    extractPics(indexesByPdf[it]!!, pdfFile, true)
+                }
             }
-        }
 
-        // Download
-        val onlineIndexes =
-            indexesToLoad.filter { viewerImagesInternal[it].status == StatusContent.ONLINE }
-        downloadPics(onlineIndexes)
-    }
+            // Download
+            val onlineIndexes =
+                indexesToLoad.filter { viewerImagesInternal[it].status == StatusContent.ONLINE }
+            downloadPics(onlineIndexes)
+        }
 
     /**
      * Indicate if the picture at the given page index in the given list needs processing
@@ -1204,17 +1197,18 @@ class ReaderViewModel(
     ) {
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    doExtractPics(indexesToLoad, archiveFile, isPdf)
-                }
+                doExtractPics(indexesToLoad, archiveFile, isPdf)
             } catch (t: Throwable) {
                 Timber.e(t)
             }
         }
     }
 
-    private fun doExtractPics(indexesToLoad: List<Int>, archiveFile: DocumentFile, isPdf: Boolean) {
-        assertNonUiThread()
+    private suspend fun doExtractPics(
+        indexesToLoad: List<Int>,
+        archiveFile: DocumentFile,
+        isPdf: Boolean
+    ) = withContext(Dispatchers.IO) {
         // Interrupt current extracting process, if any
         if (indexExtractInProgress.isNotEmpty()) {
             archiveExtractKillSwitch.set(true)
@@ -1223,7 +1217,7 @@ class ReaderViewModel(
             do {
                 pause(500)
             } while (indexExtractInProgress.isNotEmpty() && remainingIterations-- > 0)
-            if (indexExtractInProgress.isNotEmpty()) return
+            if (indexExtractInProgress.isNotEmpty()) return@withContext
         }
 
         // Reset interrupt state to make sure extraction runs
@@ -1252,7 +1246,7 @@ class ReaderViewModel(
             }
         }
         if (hasExistingUris) viewerImages.postValue(ArrayList(viewerImagesInternal))
-        if (extractInstructions.isEmpty()) return
+        if (extractInstructions.isEmpty()) return@withContext
 
         Timber.d(
             "Extracting %d files starting from index %s", extractInstructions.size, indexesToLoad[0]
