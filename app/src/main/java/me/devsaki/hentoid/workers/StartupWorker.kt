@@ -30,12 +30,16 @@ class StartupWorker(context: Context, parameters: WorkerParameters) :
         killSwitch.set(true)
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         killSwitch.set(true)
     }
 
+    override fun runProgressNotification() {
+        // Nothing
+    }
+
     @SuppressLint("TimberArgCount")
-    override fun getToWork(input: Data) {
+    override suspend fun getToWork(input: Data) {
         val launchTasks: MutableList<BiConsumer<Context, (Float) -> Unit>> = ArrayList()
         launchTasks.addAll(AppStartup.getPostLaunchTasks())
         launchTasks.addAll(DatabaseMaintenance.getPostLaunchCleanupTasks())

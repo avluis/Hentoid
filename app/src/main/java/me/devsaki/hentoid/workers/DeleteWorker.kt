@@ -7,6 +7,11 @@ import androidx.annotation.IdRes
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.database.CollectionDAO
@@ -106,7 +111,7 @@ abstract class BaseDeleteWorker(
                     bookFavs = false,
                     groupFavs = true
                 ).toSet()
-                scope.filterNot { e -> favGroupsContent.contains(e) }.toLongArray()
+                scope.filterNot { favGroupsContent.contains(it) }.toLongArray()
             } else {
                 scope.toLongArray()
             }
@@ -124,30 +129,37 @@ abstract class BaseDeleteWorker(
         // Nothing to do here
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
     }
 
-    override fun getToWork(input: Data) {
+    override fun runProgressNotification() {
+        // Using custom implementation
+    }
+
+    override suspend fun getToWork(input: Data) {
         deleteProgress = 0
         nbError = 0
 
-        // First chain contents, then groups (to be sure to delete empty groups only)
-        if (contentIds.isNotEmpty()) processContentList(contentIds, operation)
-        if (contentPurgeIds.isNotEmpty()) purgeContentList(contentPurgeIds, contentPurgeKeepCovers)
-        if (groupIds.isNotEmpty()) removeGroups(groupIds, isDeleteGroupsOnly)
+        withContext(Dispatchers.IO) {
+            // First chain contents, then groups (to be sure to delete empty groups only)
+            if (contentIds.isNotEmpty()) processContentList(contentIds, operation)
+            if (contentPurgeIds.isNotEmpty())
+                purgeContentList(contentPurgeIds, contentPurgeKeepCovers)
+            if (groupIds.isNotEmpty()) removeGroups(groupIds, isDeleteGroupsOnly)
 
-        // Remove Contents and associated QueueRecords
-        if (queueIds.isNotEmpty()) removeQueue(queueIds)
-        // Remove files linked to the given ImageFile IDs
-        if (imageIds.isNotEmpty()) removeImageFiles(imageIds)
+            // Remove Contents and associated QueueRecords
+            if (queueIds.isNotEmpty()) removeQueue(queueIds)
+            // Remove files linked to the given ImageFile IDs
+            if (imageIds.isNotEmpty()) removeImageFiles(imageIds)
 
-        // If asked, make sure all QueueRecords are removed including dead ones
-        if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore()
+            // If asked, make sure all QueueRecords are removed including dead ones
+            if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore()
+        }
         progressDone()
     }
 
-    private fun processContentList(ids: LongArray, operation: ToolsActivity.MassOperation) {
+    private suspend fun processContentList(ids: LongArray, operation: ToolsActivity.MassOperation) {
         // Process the list 50 by 50 items
         val nbPackets = ceil((ids.size / 50f).toDouble()).toInt()
         for (i in 0 until nbPackets) {
@@ -174,7 +186,7 @@ abstract class BaseDeleteWorker(
      *
      * @param content Content to be deleted
      */
-    private fun deleteContent(content: Content) {
+    private suspend fun deleteContent(content: Content) {
         progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
         try {
             removeContent(applicationContext, dao, content)
@@ -283,7 +295,7 @@ abstract class BaseDeleteWorker(
         }
     }
 
-    private fun removeGroups(ids: LongArray, deleteGroupsOnly: Boolean) {
+    private suspend fun removeGroups(ids: LongArray, deleteGroupsOnly: Boolean) {
         val groups = dao.selectGroups(ids)
         try {
             for (g in groups) {
@@ -302,7 +314,7 @@ abstract class BaseDeleteWorker(
      *
      * @param group Group to be deleted
      */
-    private fun deleteGroup(group: Group, deleteGroupsOnly: Boolean) {
+    private suspend fun deleteGroup(group: Group, deleteGroupsOnly: Boolean) {
         var theGroup: Group? = group
         progressItem(theGroup, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
         try {
@@ -335,7 +347,7 @@ abstract class BaseDeleteWorker(
         }
     }
 
-    private fun removeQueue(ids: LongArray) {
+    private suspend fun removeQueue(ids: LongArray) {
         val contents = dao.selectContent(ids)
         try {
             for (c in contents) {
@@ -352,7 +364,7 @@ abstract class BaseDeleteWorker(
         }
     }
 
-    private fun removeQueuedContent(content: Content) {
+    private suspend fun removeQueuedContent(content: Content) {
         try {
             progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
             removeQueuedContent(applicationContext, dao, content, true)
@@ -397,6 +409,7 @@ abstract class BaseDeleteWorker(
     }
 
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun progressItem(item: Any?, type: DeleteProgressNotification.ProgressType) {
         var title: String? = null
         when (item) {
@@ -406,24 +419,27 @@ abstract class BaseDeleteWorker(
         }
         if (title != null) {
             deleteProgress++
-            notificationManager.notify(
-                DeleteProgressNotification(
-                    title,
-                    deleteProgress + nbError,
-                    deleteMax,
-                    type
+            // Handle notifications on another coroutine not to steal focus for unnecessary stuff
+            GlobalScope.launch(Dispatchers.Default) {
+                notificationManager.notify(
+                    DeleteProgressNotification(
+                        title,
+                        deleteProgress + nbError,
+                        deleteMax,
+                        type
+                    )
                 )
-            )
-            EventBus.getDefault().post(
-                ProcessEvent(
-                    ProcessEvent.Type.PROGRESS,
-                    R.id.generic_progress,
-                    0,
-                    deleteProgress,
-                    nbError,
-                    deleteMax
+                EventBus.getDefault().post(
+                    ProcessEvent(
+                        ProcessEvent.Type.PROGRESS,
+                        R.id.generic_progress,
+                        0,
+                        deleteProgress,
+                        nbError,
+                        deleteMax
+                    )
                 )
-            )
+            }
         }
     }
 

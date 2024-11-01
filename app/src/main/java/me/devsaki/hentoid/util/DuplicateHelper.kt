@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.util.Consumer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -80,7 +82,7 @@ private fun getHashEngine(resolution: Int = COVER_WORK_RESOLUTION): ImagePHash {
     return ImagePHash(resolution, 8)
 }
 
-fun indexCovers(
+suspend fun indexCovers(
     context: Context,
     dao: CollectionDAO,
     stopped: AtomicBoolean,
@@ -88,22 +90,24 @@ fun indexCovers(
     progress: BiConsumer<Int, Int>,
     error: Consumer<Throwable>
 ) {
-    val hashEngine = getHashEngine()
-    val contentToIndex = dao.selectContentWithUnhashedCovers()
-    val nbContent = contentToIndex.size
+    withContext(Dispatchers.IO) {
+        val hashEngine = getHashEngine()
+        val contentToIndex = dao.selectContentWithUnhashedCovers()
+        val nbContent = contentToIndex.size
 
-    for ((index, c) in contentToIndex.withIndex()) {
-        try {
-            info.accept(c)
-            indexContent(context, dao, c, hashEngine)
-            progress.invoke(index + 1, nbContent)
-        } catch (t: Throwable) {
-            // Don't break the loop
-            error.accept(t)
+        for ((index, c) in contentToIndex.withIndex()) {
+            try {
+                info.accept(c)
+                indexContent(context, dao, c, hashEngine)
+                progress.invoke(index + 1, nbContent)
+            } catch (t: Throwable) {
+                // Don't break the loop
+                error.accept(t)
+            }
+            if (stopped.get()) break
         }
-        if (stopped.get()) break
+        progress.invoke(nbContent, nbContent)
     }
-    progress.invoke(nbContent, nbContent)
 }
 
 private fun indexContent(

@@ -6,10 +6,7 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp.Companion.isInForeground
@@ -170,16 +167,23 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         downloadInterrupted.set(true)
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         EventBus.getDefault().unregister(this)
         dao.cleanup()
     }
 
-    override fun getToWork(input: Data) {
-        iterateQueue()
+    override fun runProgressNotification() {
+        // Nothing yet
+        // TODO customize
     }
 
-    private fun iterateQueue() {
+    override suspend fun getToWork(input: Data) {
+        withContext(Dispatchers.IO) {
+            iterateQueue()
+        }
+    }
+
+    private suspend fun iterateQueue() {
         // Process these here to avoid initializing notifications for downloads that will never start
         if (isQueuePaused) {
             Timber.i("Queue is paused. Download aborted.")
@@ -202,8 +206,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * - Left : Result of the processing
      * - Right : 1st book of the download queue
      */
+    @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("TimberExceptionLogging", "TimberArgCount")
-    private fun downloadFirstInQueue(): Pair<QueuingResult, Content?> {
+    private suspend fun downloadFirstInQueue(): Pair<QueuingResult, Content?> {
         val contentPartImageList = "Image list"
         val context = applicationContext
 
@@ -536,7 +541,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             // Parse pages for images
             if (pagesToParse.isNotEmpty()) {
-                CoroutineScope(Dispatchers.Default).launch {
+                GlobalScope.launch(Dispatchers.Default) {
                     withContext(Dispatchers.IO) {
                         pagesToParse.forEach {
                             parsePageforImage(it, targetFolder, content)
@@ -547,7 +552,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             // Parse ugoiras for images
             if (ugoirasToDownload.isNotEmpty()) {
-                CoroutineScope(Dispatchers.Default).launch {
+                GlobalScope.launch(Dispatchers.Default) {
                     withContext(Dispatchers.IO) {
                         ugoirasToDownload.forEach {
                             downloadAndUnzipUgoira(it, targetFolder, content.site)
@@ -678,7 +683,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      *
      * @param content Content to watch (1st book of the download queue)
      */
-    private fun watchProgress(content: Content) {
+    private suspend fun watchProgress(content: Content) {
         val refreshDelayMs = 500
         var isDone: Boolean
         var pagesOK = 0
@@ -814,7 +819,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      *
      * @param contentId Id of the Content to mark as downloaded
      */
-    private fun completeDownload(
+    private suspend fun completeDownload(
         contentId: Long, title: String,
         pagesOK: Int, pagesKO: Int, sizeDownloadedBytes: Long
     ) {

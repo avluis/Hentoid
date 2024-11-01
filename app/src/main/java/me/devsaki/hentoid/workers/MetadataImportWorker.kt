@@ -5,12 +5,11 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
+import me.devsaki.hentoid.core.SuspendRunnable
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -82,11 +81,11 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
     }
 
-    override fun getToWork(input: Data) {
+    override suspend fun getToWork(input: Data) {
         val data = MetadataImportData.Parser(inputData)
 
         startImport(
@@ -104,7 +103,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
     /**
      * Import books from external folder
      */
-    private fun startImport(
+    private suspend fun startImport(
         context: Context,
         jsonUri: String,
         add: Boolean,
@@ -113,16 +112,16 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         importQueue: Boolean,
         importCustomGroups: Boolean,
         importBookmarks: Boolean
-    ) {
+    ) = withContext(Dispatchers.IO) {
         val jsonFile = getFileFromSingleUriString(context, jsonUri)
         if (null == jsonFile) {
             trace(Log.ERROR, "Couldn't find metadata JSON file at %s", jsonUri)
-            return
+            return@withContext
         }
         val collection = deserialiseJson(context, jsonFile)
         if (null == collection) {
             trace(Log.ERROR, "Couldn't deserialize JSON file")
-            return
+            return@withContext
         }
         dao = ObjectBoxDAO()
         if (!add) {
@@ -163,26 +162,26 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             runImportItems(context, contentToImport, dao, false, emptyBooksOption) { finish() }
     }
 
-    private fun runImportItems(
+    private suspend fun runImportItems(
         context: Context,
         items: List<Any>,
         dao: CollectionDAO,
         isGroup: Boolean,
         emptyBooksOption: Int,
-        onFinish: Runnable
-    ) {
+        onFinish: SuspendRunnable
+    ) = withContext(Dispatchers.IO) {
         for (c in items) {
             if (isStopped) break
             try {
                 importItem(context, c, emptyBooksOption, dao)
                 if (isGroup) updateGroupsJson(context, dao)
-                nextOK(context)
+                nextOK()
             } catch (e: Exception) {
-                nextKO(context, e)
+                nextKO(e)
             }
         }
         updateQueueJson(context, dao)
-        if (!isStopped) onFinish.run()
+        if (!isStopped) onFinish.invoke()
     }
 
     private fun importItem(context: Context, o: Any, emptyBooksOption: Int, dao: CollectionDAO) {
@@ -191,9 +190,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             o,
             emptyBooksOption,
             dao
-        ) else if (o is Group) importGroup(
-            o, dao
-        )
+        ) else if (o is Group) importGroup(o, dao)
     }
 
     // Try to map the given imported content to an existing book in the downloads folders
@@ -368,26 +365,18 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
     }
 
 
-    private fun nextOK(context: Context) {
+    private suspend fun nextOK() {
         nbOK++
-        notifyProcessProgress(context)
+        launchProgressNotification()
     }
 
-    private fun nextKO(context: Context, e: Throwable) {
+    private suspend fun nextKO(e: Throwable) {
         nbKO++
         Timber.w(e)
-        notifyProcessProgress(context)
+        launchProgressNotification()
     }
 
-    private fun notifyProcessProgress(context: Context) {
-        CoroutineScope(Dispatchers.Default).launch {
-            withContext(Dispatchers.Main) {
-                doNotifyProcessProgress(context)
-            }
-        }
-    }
-
-    private fun doNotifyProcessProgress(context: Context) {
+    override fun runProgressNotification() {
         notificationManager.notify(
             ImportProgressNotification(
                 context.resources.getString(R.string.importing_metadata),

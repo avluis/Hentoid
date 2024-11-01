@@ -4,8 +4,9 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.URLUtil
 import android.webkit.WebView
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
 import me.devsaki.hentoid.database.domains.Content
@@ -166,8 +167,9 @@ class HitomiParser : BaseImageListParser() {
         } else throw EmptyResultException("Couldn't find gallery information")
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun clear() {
-        CoroutineScope(Dispatchers.Main).launch {
+        GlobalScope.launch(Dispatchers.Main) {
             webview?.clear()
             webview = null
         }

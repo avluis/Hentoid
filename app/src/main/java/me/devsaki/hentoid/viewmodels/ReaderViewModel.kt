@@ -14,7 +14,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -522,10 +524,10 @@ class ReaderViewModel(
      *
      * @param viewerIndex Viewer index of the active page when the user left the book
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun onLeaveBook(viewerIndex: Int) {
-        if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getReaderDeleteAskMode()) Preferences.setReaderDeleteAskMode(
-            Preferences.Constant.VIEWER_DELETE_ASK_AGAIN
-        )
+        if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getReaderDeleteAskMode())
+            Preferences.setReaderDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN)
         indexDlInProgress.clear()
         indexExtractInProgress.clear()
         archiveExtractKillSwitch.set(true)
@@ -533,40 +535,42 @@ class ReaderViewModel(
         // Don't do anything if the Content hasn't even been loaded
         if (-1L == loadedContentId) return
         val theImages = databaseImages.value
-        val theContent = dao.selectContent(loadedContentId)
-        if (null == theImages || null == theContent) return
-        val nbReadablePages = theImages.count { obj -> obj.isReadable }
-        val readThresholdPosition: Int = when (Preferences.getReaderPageReadThreshold()) {
-            Preferences.Constant.VIEWER_READ_THRESHOLD_1 -> 1
-            Preferences.Constant.VIEWER_READ_THRESHOLD_2 -> 2
-            Preferences.Constant.VIEWER_READ_THRESHOLD_5 -> 5
-            Preferences.Constant.VIEWER_READ_THRESHOLD_ALL -> nbReadablePages
-            else -> nbReadablePages
-        }
-        val completedThresholdRatio: Float = when (Preferences.getReaderRatioCompletedThreshold()) {
-            Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_10 -> 0.1f
-            Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_25 -> 0.25f
-            Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_33 -> 0.33f
-            Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_50 -> 0.5f
-            Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_75 -> 0.75f
-            Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_ALL -> 1f
-            Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_NONE -> 2f
-            else -> 2f
-        }
-        val completedThresholdPosition = (completedThresholdRatio * nbReadablePages).roundToInt()
-        val collectionIndex =
-            viewerIndex + if (-1 == thumbIndex || thumbIndex > viewerIndex) 0 else 1
-        val isLastPage = viewerIndex >= viewerImagesInternal.size - 1
-        val indexToSet = if (isLastPage) 0 else collectionIndex
-        val updateReads = readPageNumbers.size >= readThresholdPosition || theContent.reads > 0
-        val markAsComplete = readPageNumbers.size >= completedThresholdPosition
 
-        viewModelScope.launch {
+        // We do need GlobalScope to carry these beyond current lifecycleScope
+        GlobalScope.launch {
+            val theContent = dao.selectContent(loadedContentId)
+            if (null == theImages || null == theContent) return@launch
+            val nbReadablePages = theImages.count { it.isReadable }
+            val readThresholdPosition: Int = when (Preferences.getReaderPageReadThreshold()) {
+                Preferences.Constant.VIEWER_READ_THRESHOLD_1 -> 1
+                Preferences.Constant.VIEWER_READ_THRESHOLD_2 -> 2
+                Preferences.Constant.VIEWER_READ_THRESHOLD_5 -> 5
+                Preferences.Constant.VIEWER_READ_THRESHOLD_ALL -> nbReadablePages
+                else -> nbReadablePages
+            }
+            val completedThresholdRatio: Float =
+                when (Preferences.getReaderRatioCompletedThreshold()) {
+                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_10 -> 0.1f
+                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_25 -> 0.25f
+                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_33 -> 0.33f
+                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_50 -> 0.5f
+                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_75 -> 0.75f
+                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_ALL -> 1f
+                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_NONE -> 2f
+                    else -> 2f
+                }
+            val completedThresholdPosition =
+                (completedThresholdRatio * nbReadablePages).roundToInt()
+            val collectionIndex =
+                viewerIndex + if (-1 == thumbIndex || thumbIndex > viewerIndex) 0 else 1
+            val isLastPage = viewerIndex >= viewerImagesInternal.size - 1
+            val indexToSet = if (isLastPage) 0 else collectionIndex
+            val updateReads = readPageNumbers.size >= readThresholdPosition || theContent.reads > 0
+            val markAsComplete = readPageNumbers.size >= completedThresholdPosition
+
             withContext(Dispatchers.IO) {
                 try {
-                    doLeaveBook(
-                        theContent.id, indexToSet, updateReads, markAsComplete
-                    )
+                    doLeaveBook(theContent.id, indexToSet, updateReads, markAsComplete)
                 } catch (t: Throwable) {
                     Timber.e(t)
                 }
@@ -582,11 +586,9 @@ class ReaderViewModel(
      * @param updateReads     True if number of reads have to be updated; false if not
      * @param markAsCompleted True if the book has to be marked as completed
      */
-    private fun doLeaveBook(
+    private suspend fun doLeaveBook(
         contentId: Long, indexToSet: Int, updateReads: Boolean, markAsCompleted: Boolean
     ) {
-        assertNonUiThread()
-
         // Use a brand new DAO for that (the viewmodel's DAO may be in the process of being cleaned up)
         val dao: CollectionDAO = ObjectBoxDAO()
         try {

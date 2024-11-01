@@ -8,8 +8,10 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.util.LogEntry
@@ -87,7 +89,7 @@ abstract class BaseWorker(
         logs?.add(LogEntry(s, isError))
     }
 
-    private fun clear() {
+    private suspend fun clear() {
         logs?.apply {
             add(LogEntry("Worker destroyed / stopped=%s / complete=%s", isStopped, isComplete))
         }
@@ -102,9 +104,7 @@ abstract class BaseWorker(
     override suspend fun doWork(): Result {
         try {
             ensureLongRunning()
-            withContext(Dispatchers.IO) {
-                getToWork(inputData)
-            }
+            getToWork(inputData)
         } catch (e: Exception) {
             onInterrupt()
             logs?.apply {
@@ -127,11 +127,19 @@ abstract class BaseWorker(
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
+    protected fun launchProgressNotification() {
+        // Handle notifications on another coroutine not to steal focus for unnecessary stuff
+        GlobalScope.launch(Dispatchers.Default) { runProgressNotification() }
+    }
+
     protected abstract fun getStartNotification(): BaseNotification?
+
+    protected abstract fun runProgressNotification()
 
     protected abstract fun onInterrupt()
 
-    protected abstract fun onClear(logFile: DocumentFile?)
+    protected abstract suspend fun onClear(logFile: DocumentFile?)
 
-    protected abstract fun getToWork(input: Data)
+    protected abstract suspend fun getToWork(input: Data)
 }

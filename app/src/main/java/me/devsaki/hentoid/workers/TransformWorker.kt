@@ -9,12 +9,9 @@ import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.robb.ai_upscale.AiUpscaler
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -36,6 +33,7 @@ import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.pause
+import me.robb.ai_upscale.AiUpscaler
 import timber.log.Timber
 import java.io.File
 import java.nio.ByteBuffer
@@ -63,7 +61,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
         upscaler?.cleanup()
 
@@ -71,7 +69,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         clearCoilCache(applicationContext)
     }
 
-    override fun getToWork(input: Data) {
+    override suspend fun getToWork(input: Data) {
         val contentIds = inputData.getLongArray("IDS")
         val paramsStr = inputData.getString("PARAMS")
         require(contentIds != null)
@@ -84,18 +82,20 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         require(params != null)
 
         if (params.resizeEnabled && 3 == params.resizeMethod) { // AI upscale
-            upscaler = AiUpscaler()
-            upscaler!!.init(
-                applicationContext.resources.assets,
-                "realsr/models-nose/up2x-no-denoise.param",
-                "realsr/models-nose/up2x-no-denoise.bin"
-            )
+            AiUpscaler().let {
+                upscaler = it
+                it.init(
+                    applicationContext.resources.assets,
+                    "realsr/models-nose/up2x-no-denoise.param",
+                    "realsr/models-nose/up2x-no-denoise.bin"
+                )
+            }
         }
 
         transform(contentIds, params)
     }
 
-    private fun transform(contentIds: LongArray, params: TransformParams) {
+    private suspend fun transform(contentIds: LongArray, params: TransformParams) {
         // Flag contents as "being deleted" (triggers blink animation; lock operations)
         // +count the total number of images to convert
         contentIds.forEach {
@@ -105,7 +105,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         }
 
         globalProgress = ProgressManager(totalItems)
-        notifyProcessProgress()
+        launchProgressNotification()
 
         // Process images
         contentIds.forEach {
@@ -116,17 +116,19 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         notifyProcessEnd()
     }
 
-    private fun transformContent(content: Content, params: TransformParams) {
-        val contentFolder = getDocumentFromTreeUriString(applicationContext, content.storageUri)
+    private suspend fun transformContent(content: Content, params: TransformParams) {
+        val contentFolder = withContext(Dispatchers.IO) {
+            getDocumentFromTreeUriString(applicationContext, content.storageUri)
+        }
         val images = content.imageList
         if (contentFolder != null) {
             val imagesWithoutChapters =
-                images.filter { i -> null == i.linkedChapter }.filter { i -> i.isReadable }
+                images.filter { null == it.linkedChapter }.filter { it.isReadable }
             transformChapter(imagesWithoutChapters, contentFolder, params)
 
             val chapteredImgs =
-                images.filterNot { i -> null == i.linkedChapter }.filter { i -> i.isReadable }
-                    .groupBy { i -> i.linkedChapter!!.id }
+                images.filterNot { null == it.linkedChapter }.filter { it.isReadable }
+                    .groupBy { it.linkedChapter!!.id }
 
             chapteredImgs.forEach {
                 transformChapter(it.value, contentFolder, params)
@@ -153,7 +155,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
-    private fun transformChapter(
+    private suspend fun transformChapter(
         imgs: List<ImageFile>, contentFolder: DocumentFile, params: TransformParams
     ) {
         val nbManhwa = AtomicInteger(0)
@@ -166,20 +168,23 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     @Suppress("ReplaceArrayEqualityOpWithArraysEquals")
-    private fun transformImage(
+    private suspend fun transformImage(
         img: ImageFile,
         contentFolder: DocumentFile,
         params: TransformParams,
         nbManhwa: AtomicInteger,
         nbPages: Int
     ) {
-        val sourceFile = getDocumentFromTreeUriString(applicationContext, img.fileUri)
-        if (null == sourceFile) {
+        val sourceFile = withContext(Dispatchers.IO) {
+            getDocumentFromTreeUriString(applicationContext, img.fileUri)
+        } ?: run {
             nextKO()
             return
         }
-        val rawData = getInputStream(applicationContext, sourceFile).use {
-            return@use it.readBytes()
+        val rawData = withContext(Dispatchers.IO) {
+            getInputStream(applicationContext, sourceFile).use {
+                return@use it.readBytes()
+            }
         }
         val imageId = img.fileUri
         val metadataOpts = BitmapFactory.Options()
@@ -226,10 +231,10 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
             nextOK()
             globalProgress.setProgress(imageId, 1f)
-            notifyProcessProgress()
+            launchProgressNotification()
         } else {
             nextKO()
-            notifyProcessProgress()
+            launchProgressNotification()
         }
     }
 
@@ -245,15 +250,11 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         upscaler?.let {
             try {
                 killSwitch.put(0, 0)
-                CoroutineScope(Dispatchers.Default).launch {
-                    val res = withContext(Dispatchers.Default) {
-                        it.upscale(
-                            dataIn, outputFile.absolutePath, progress, killSwitch
-                        )
-                    }
-                    // Fail => exit immediately
-                    if (res != 0) progress.put(0, 100)
-                }
+                val res = it.upscale(
+                    dataIn, outputFile.absolutePath, progress, killSwitch
+                )
+                // Fail => exit immediately
+                if (res != 0) progress.put(0, 100)
 
                 // Poll while processing
                 val intervalSeconds = 3
@@ -269,7 +270,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
                     val p = progress.get(0)
                     globalProgress.setProgress(imgId, p / 100f)
-                    notifyProcessProgress()
+                    launchProgressNotification()
 
                     iterations++
                     if (p >= 100) break
@@ -292,7 +293,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         nbKO++
     }
 
-    private fun notifyProcessProgress() {
+    override fun runProgressNotification() {
         notificationManager.notify(
             TransformProgressNotification(
                 nbOK + nbKO, totalItems, globalProgress.getGlobalProgress()

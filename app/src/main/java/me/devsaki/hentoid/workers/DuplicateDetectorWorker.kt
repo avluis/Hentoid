@@ -5,10 +5,7 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
@@ -35,14 +32,14 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
+// Processing steps
+const val STEP_COVER_INDEX = 0
+const val STEP_DUPLICATES = 1
+
 class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.duplicate_detector_service, "duplicate_detector") {
 
     companion object {
-        // Processing steps
-        const val STEP_COVER_INDEX = 0
-        const val STEP_DUPLICATES = 1
-
         fun isRunning(context: Context): Boolean {
             return isRunning(context, R.id.duplicate_detector_service)
         }
@@ -62,7 +59,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         if (!isStopped && !isComplete) Preferences.setDuplicateLastIndex(currentIndex.get())
         else Preferences.setDuplicateLastIndex(-1)
         stopped.set(true)
@@ -70,7 +67,11 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         duplicatesDao.cleanup()
     }
 
-    override fun getToWork(input: Data) {
+    override fun runProgressNotification() {
+        // Using custom implementation
+    }
+
+    override suspend fun getToWork(input: Data) {
         val inputData = DuplicateData.Parser(input)
         if (inputData.useCover) {
             // Run cover indexing in the background
@@ -98,7 +99,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         )
     }
 
-    private fun detectDuplicates(
+    private suspend fun detectDuplicates(
         useTitle: Boolean,
         useCover: Boolean,
         useArtist: Boolean,
@@ -127,10 +128,10 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         val candidates: MutableList<DuplicateCandidate> = ArrayList()
         dao.streamStoredContent(
             false, Settings.Value.ORDER_FIELD_SIZE, true
-        ) { content: Content? ->
+        ) {
             candidates.add(
                 DuplicateCandidate(
-                    content!!,
+                    it,
                     useTitle,
                     useArtist,
                     useSameLanguage,
@@ -162,7 +163,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         matchedIds.clear()
     }
 
-    private fun processAll(
+    private suspend fun processAll(
         duplicatesDao: DuplicatesDAO,
         library: List<DuplicateCandidate>,
         matchedIds: MutableMap<Long, MutableList<Long>>,
@@ -210,10 +211,8 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
                 tempResults.clear()
             }
             currentIndex.set(i)
-            if (0 == i % 10) notifyProcessProgress(
-                i,
-                max
-            ) // Only update every 10 iterations for performance
+            // Only update every 10 iterations for performance
+            if (0 == i % 10) notifyProcessProgress(i, max)
         }
         notifyProcessProgress(max, max)
     }
@@ -271,74 +270,72 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         return false
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun notifyIndexProgress(progress: Int, max: Int) {
-        Timber.i(">> indexing progress %s", progress * 1f / max)
-        if (progress < max) {
-            EventBus.getDefault().post(
-                ProcessEvent(
-                    ProcessEvent.Type.PROGRESS,
-                    R.id.duplicate_index,
-                    STEP_COVER_INDEX,
-                    progress,
-                    0,
-                    max
+        GlobalScope.launch(Dispatchers.Default) {
+            Timber.i(">> indexing progress %s", progress * 1f / max)
+            if (progress < max) {
+                EventBus.getDefault().post(
+                    ProcessEvent(
+                        ProcessEvent.Type.PROGRESS,
+                        R.id.duplicate_index,
+                        STEP_COVER_INDEX,
+                        progress,
+                        0,
+                        max
+                    )
                 )
-            )
-        } else {
-            EventBus.getDefault().postSticky(
-                ProcessEvent(
-                    ProcessEvent.Type.COMPLETE,
-                    R.id.duplicate_index,
-                    STEP_COVER_INDEX,
-                    progress,
-                    0,
-                    max
+            } else {
+                EventBus.getDefault().postSticky(
+                    ProcessEvent(
+                        ProcessEvent.Type.COMPLETE,
+                        R.id.duplicate_index,
+                        STEP_COVER_INDEX,
+                        progress,
+                        0,
+                        max
+                    )
                 )
-            )
-        }
-    }
-
-    private fun notifyProcessProgress(progress: Int, max: Int) {
-        CoroutineScope(Dispatchers.Default).launch {
-            withContext(Dispatchers.Default) {
-                doNotifyProcessProgress(progress, max)
             }
         }
     }
 
-    private fun doNotifyProcessProgress(progress: Int, max: Int) {
-        if (progress < max) {
-            setForegroundAsync(
-                notificationManager.buildForegroundInfo(
-                    DuplicateProgressNotification(progress, max)
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun notifyProcessProgress(progress: Int, max: Int) {
+        GlobalScope.launch(Dispatchers.Default) {
+            if (progress < max) {
+                setForegroundAsync(
+                    notificationManager.buildForegroundInfo(
+                        DuplicateProgressNotification(progress, max)
+                    )
                 )
-            )
-            EventBus.getDefault().post(
-                ProcessEvent(
-                    ProcessEvent.Type.PROGRESS,
-                    R.id.duplicate_detect,
-                    STEP_DUPLICATES,
-                    progress,
-                    0,
-                    max
+                EventBus.getDefault().post(
+                    ProcessEvent(
+                        ProcessEvent.Type.PROGRESS,
+                        R.id.duplicate_detect,
+                        STEP_DUPLICATES,
+                        progress,
+                        0,
+                        max
+                    )
                 )
-            )
-        } else {
-            setForegroundAsync(
-                notificationManager.buildForegroundInfo(
-                    DuplicateCompleteNotification(0)
+            } else {
+                setForegroundAsync(
+                    notificationManager.buildForegroundInfo(
+                        DuplicateCompleteNotification(0)
+                    )
                 )
-            )
-            EventBus.getDefault().postSticky(
-                ProcessEvent(
-                    ProcessEvent.Type.COMPLETE,
-                    R.id.duplicate_detect,
-                    STEP_DUPLICATES,
-                    progress,
-                    0,
-                    max
+                EventBus.getDefault().postSticky(
+                    ProcessEvent(
+                        ProcessEvent.Type.COMPLETE,
+                        R.id.duplicate_detect,
+                        STEP_DUPLICATES,
+                        progress,
+                        0,
+                        max
+                    )
                 )
-            )
+            }
         }
     }
 }

@@ -6,6 +6,8 @@ import android.webkit.MimeTypeMap
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.notification.appUpdate.UpdateFailedNotification
@@ -26,6 +28,8 @@ val APK_MIMETYPE = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk")
 class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.update_download_service, null) {
 
+    private var progressPc = 0f
+
     companion object {
         fun isRunning(context: Context): Boolean {
             return isRunning(context, R.id.update_download_service)
@@ -40,16 +44,18 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         // Nothing
     }
 
-    override fun getToWork(input: Data) {
+    override suspend fun getToWork(input: Data) {
         val data = UpdateDownloadData.Parser(inputData)
         val apkUrl = data.url
 
         try {
-            downloadUpdate(apkUrl)
+            withContext(Dispatchers.IO) {
+                downloadUpdate(apkUrl)
+            }
         } catch (e: IOException) {
             Timber.w(e, "Update download failed")
             notificationManager.notifyLast(UpdateFailedNotification(apkUrl))
@@ -69,9 +75,9 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
             AtomicBoolean(),
             forceMimeType = APK_MIMETYPE,
             resourceId = 0
-        ) { f ->
-            Timber.v("Download progress: %s%%", f.roundToInt())
-            notificationManager.notify(UpdateProgressNotification(f.roundToInt()))
+        ) { it ->
+            progressPc = it
+            launchProgressNotification()
         }
         apk.first?.let {
             Timber.d("Download successful")
@@ -84,5 +90,10 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
         } ?: run {
             Timber.d("Download failed")
         }
+    }
+
+    override fun runProgressNotification() {
+        Timber.v("Download progress: %s%%", progressPc.roundToInt())
+        notificationManager.notify(UpdateProgressNotification(progressPc.roundToInt()))
     }
 }

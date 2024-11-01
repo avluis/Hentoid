@@ -4,8 +4,9 @@ import android.app.ActivityManager
 import android.content.Context
 import android.net.Uri
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.HentoidApp
@@ -84,13 +85,14 @@ class RequestQueueManager private constructor(
      *
      * @param resetOkHttp If true, also reset the underlying OkHttp connections
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun resetRequestQueue(resetOkHttp: Boolean) {
         init(true, cancelQueue = false, resetOkHttp = resetOkHttp)
         // Requeue interrupted requests
         synchronized(activeRequests) {
             Timber.d("resetRequestQueue :: Requeuing %d requests", activeRequests.size)
             for (order in activeRequests)
-                CoroutineScope(Dispatchers.Default).launch { executeRequest(order, false) }
+                GlobalScope.launch(Dispatchers.Default) { executeRequest(order, false) }
         }
         refill()
     }
@@ -115,8 +117,9 @@ class RequestQueueManager private constructor(
      *
      * @param order Request to add to the queue
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun queueRequest(order: RequestOrder) {
-        CoroutineScope(Dispatchers.Default).launch {
+        GlobalScope.launch(Dispatchers.Default) {
             if (isNewRequestAllowed()) executeRequest(order) else {
                 synchronized(waitingRequestQueue) {
                     waitingRequestQueue.add(order)
@@ -141,9 +144,10 @@ class RequestQueueManager private constructor(
     /**
      * Refill the queue with the allowed number of requests
      */
+    @OptIn(DelicateCoroutinesApi::class)
     private fun refill() {
         if (nbActiveRequests < downloadThreadCount) {
-            CoroutineScope(Dispatchers.Default).launch {
+            GlobalScope.launch(Dispatchers.Default) {
                 try {
                     doRefill()
                 } catch (e: Exception) {

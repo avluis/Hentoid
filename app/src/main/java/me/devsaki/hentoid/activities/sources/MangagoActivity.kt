@@ -27,7 +27,6 @@ class MangagoActivity : BaseWebActivity() {
 
 
     class MangagoWebClient : CustomWebViewClient {
-
         constructor() : super(Site.MANGAGO, arrayOf(MGG_GALLERY, MGG_CHAPTER)) {
             setJsStartupScripts("mangago_parser.js")
             addJsReplacement("\$interface", WysiwygBackgroundWebView.interfaceName)
@@ -36,8 +35,7 @@ class MangagoActivity : BaseWebActivity() {
             addJsReplacement("\$force_page", "false")
         }
 
-        internal constructor(
-            activity: CustomWebActivity
-        ) : super(Site.MANGAGO, arrayOf(MGG_GALLERY, MGG_CHAPTER), activity)
+        internal constructor(activity: CustomWebActivity)
+                : super(Site.MANGAGO, arrayOf(MGG_GALLERY, MGG_CHAPTER), activity)
     }
 }

@@ -22,6 +22,8 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
+import me.devsaki.hentoid.workers.STEP_COVER_INDEX
+import me.devsaki.hentoid.workers.STEP_DUPLICATES
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -227,11 +229,11 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
         if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
 
         val progressBar: ProgressBar =
-            if (DuplicateDetectorWorker.STEP_COVER_INDEX == event.step) binding.indexPicturesPb else binding.detectBooksPb
+            if (STEP_COVER_INDEX == event.step) binding.indexPicturesPb else binding.detectBooksPb
         val progressBarTxt: TextView =
-            if (DuplicateDetectorWorker.STEP_COVER_INDEX == event.step) binding.indexPicturesPbTxt else binding.detectBooksPbTxt
+            if (STEP_COVER_INDEX == event.step) binding.indexPicturesPbTxt else binding.detectBooksPbTxt
 
-        if (DuplicateDetectorWorker.STEP_COVER_INDEX == event.step) {
+        if (STEP_COVER_INDEX == event.step) {
             if (null == binding.detectBooksPbTxt.animation) {
                 binding.detectBooksPbTxt.startAnimation(BlinkAnimation(750, 20))
                 binding.detectBooksPbTxt.text =
@@ -247,7 +249,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
         progressBarTxt.text = String.format("%d / %d", progressBar.progress, progressBar.max)
         progressBarTxt.visibility = View.VISIBLE
 
-        if (ProcessEvent.Type.COMPLETE == event.eventType && DuplicateDetectorWorker.STEP_DUPLICATES == event.step) {
+        if (ProcessEvent.Type.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
             disableScanUi()
         } else if (binding.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
                 binding.scanFab.context
@@ -263,7 +265,7 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
 
         EventBus.getDefault().removeStickyEvent(event)
 
-        if (ProcessEvent.Type.COMPLETE == event.eventType && DuplicateDetectorWorker.STEP_DUPLICATES == event.step) {
+        if (ProcessEvent.Type.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
             disableScanUi()
         } else if (binding.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
                 binding.scanFab.context

@@ -9,10 +9,10 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -124,8 +124,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     val animation = BlinkAnimation(750, 20)
                     waitTxt.startAnimation(animation)
 
-                    val scope = CoroutineScope(Dispatchers.Main)
-                    scope.launch {
+                    lifecycleScope.launch {
                         val result = withContext(Dispatchers.IO) {
                             setAndScanPrimaryFolder(
                                 requireContext(),

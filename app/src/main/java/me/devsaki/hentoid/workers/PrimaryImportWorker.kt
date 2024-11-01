@@ -7,6 +7,11 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.squareup.moshi.JsonDataException
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BOOKMARKS_JSON_FILE_NAME
 import me.devsaki.hentoid.core.GROUPS_JSON_FILE_NAME
@@ -109,13 +114,16 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         // Nothing
     }
 
-    override fun getToWork(input: Data) {
-        val data = PrimaryImportData.Parser(input)
+    override fun runProgressNotification() {
+        // Using custom method
+    }
 
+    override suspend fun getToWork(input: Data) {
+        val data = PrimaryImportData.Parser(input)
         startImport(
             data.location,
             data.targetRoot,
@@ -128,22 +136,27 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         )
     }
 
-    private fun eventProgress(step: Int, nbBooks: Int, booksOK: Int, booksKO: Int) {
-        eventProgress(step, nbBooks, booksOK, booksKO, "")
-    }
-
-    private fun eventProgress(step: Int, nbBooks: Int, booksOK: Int, booksKO: Int, name: String) {
-        EventBus.getDefault().post(
-            ProcessEvent(
-                ProcessEvent.Type.PROGRESS,
-                R.id.import_primary,
-                step,
-                name,
-                booksOK,
-                booksKO,
-                nbBooks
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun eventProgress(
+        step: Int,
+        nbBooks: Int,
+        booksOK: Int,
+        booksKO: Int,
+        name: String = ""
+    ) {
+        GlobalScope.launch(Dispatchers.Default) {
+            EventBus.getDefault().post(
+                ProcessEvent(
+                    ProcessEvent.Type.PROGRESS,
+                    R.id.import_primary,
+                    step,
+                    name,
+                    booksOK,
+                    booksKO,
+                    nbBooks
+                )
             )
-        )
+        }
     }
 
     private fun eventComplete(
@@ -176,7 +189,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
      * @param cleanNoImages      True if the user has asked for a cleanup of folders with no images when calling import from Preferences
      * @param importGroups       True if the worker has to import groups from the groups JSON; false if existing groups should be kept
      */
-    private fun startImport(
+    private suspend fun startImport(
         location: StorageLocation,
         targetRootUri: String,
         rename: Boolean,
@@ -185,7 +198,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         cleanNoJSON: Boolean,
         cleanNoImages: Boolean,
         importGroups: Boolean
-    ) {
+    ) = withContext(Dispatchers.IO) {
         booksOK = 0
         booksKO = 0
         nbFolders = 0
@@ -201,7 +214,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         val rootFolder = getDocumentFromTreeUriString(context, targetRootUri)
         if (null == rootFolder) {
             Timber.e("Root folder is invalid for location %s (%s)", location.name, targetRootUri)
-            return
+            return@withContext
         }
 
         val bookFolders: MutableList<DocumentFile> = ArrayList()

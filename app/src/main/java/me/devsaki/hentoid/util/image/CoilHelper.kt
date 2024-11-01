@@ -19,6 +19,8 @@ import coil3.request.target
 import coil3.serviceLoaderEnabled
 import com.github.penfeizhou.animation.apng.APNGDrawable
 import com.github.penfeizhou.animation.io.ByteBufferReader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.util.getContentHeaders
@@ -28,10 +30,13 @@ import java.nio.ByteBuffer
 
 private val stillImageLoader: ImageLoader by lazy { initStillImageLoader() }
 
-fun clearCoilCache(context: Context, memory: Boolean = true, file: Boolean = true) {
-    val imageLoader = context.imageLoader
-    if (memory) imageLoader.memoryCache?.clear()
-    if (file) imageLoader.diskCache?.clear()
+suspend fun clearCoilCache(context: Context, memory: Boolean = true, file: Boolean = true) {
+    withContext(Dispatchers.IO) {
+        context.imageLoader.apply {
+            if (memory) memoryCache?.clear()
+            if (file) diskCache?.clear()
+        }
+    }
 }
 
 private fun initStillImageLoader(): ImageLoader {

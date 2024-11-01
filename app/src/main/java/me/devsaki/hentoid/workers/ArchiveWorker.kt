@@ -9,6 +9,8 @@ import androidx.work.WorkerParameters
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -65,11 +67,11 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
     }
 
-    override fun getToWork(input: Data) {
+    override suspend fun getToWork(input: Data) {
         val contentIds = inputData.getLongArray("IDS")
         val paramsStr = inputData.getString("PARAMS")
         require(contentIds != null)
@@ -81,10 +83,10 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         val params = moshi.adapter(Params::class.java).fromJson(paramsStr)
         require(params != null)
 
-        archive(contentIds, params)
+        withContext(Dispatchers.IO) { archive(contentIds, params) }
     }
 
-    private fun archive(contentIds: LongArray, params: Params) {
+    private suspend fun archive(contentIds: LongArray, params: Params) {
         globalProgress = ProgressManager(contentIds.size)
 
         for (contentId in contentIds) {
@@ -102,7 +104,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         notifyProcessEnd()
     }
 
-    private fun archiveContent(content: Content, params: Params) {
+    private suspend fun archiveContent(content: Content, params: Params) {
         Timber.i(">> archive %s", content.title)
         val bookFolder = getDocumentFromTreeUriString(
             applicationContext, content.storageUri
@@ -131,12 +133,12 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                         Color.valueOf(ContextCompat.getColor(applicationContext, color))
                     ) {
                         globalProgress.setProgress(content.id.toString(), it)
-                        notifyProcessProgress()
+                        launchProgressNotification()
                     }
                 } else {
                     applicationContext.zipFiles(files, os, this::isStopped) {
                         globalProgress.setProgress(content.id.toString(), it)
-                        notifyProcessProgress()
+                        launchProgressNotification()
                     }
                 }
                 !isStopped
@@ -212,10 +214,10 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
     private fun nextKO() {
         nbKO++
-        notifyProcessProgress()
+        launchProgressNotification()
     }
 
-    private fun notifyProcessProgress() {
+    override fun runProgressNotification() {
         if (!this::progressNotification.isInitialized) {
             progressNotification =
                 ArchiveProgressNotification("", globalProgress.getGlobalProgress())

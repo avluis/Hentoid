@@ -5,6 +5,8 @@ import android.content.Context
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.events.CommunicationEvent
@@ -28,12 +30,16 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
+        // Nothing
+    }
+
+    override fun runProgressNotification() {
         // Nothing
     }
 
     @SuppressLint("TimberArgCount")
-    override fun getToWork(input: Data) {
+    override suspend fun getToWork(input: Data) {
         try {
             EventBus.getDefault().post(
                 CommunicationEvent(
@@ -42,9 +48,11 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
                     applicationContext.resources.getString(R.string.pref_check_updates_manual_checking)
                 )
             )
-            val updateInfoJson = UpdateServer.api.updateInfo.execute().body()
-            if (updateInfoJson != null) onSuccess(updateInfoJson)
-            else {
+            withContext(Dispatchers.IO) {
+                UpdateServer.api.updateInfo.execute().body()
+            }?.let {
+                onSuccess(it)
+            } ?: run {
                 EventBus.getDefault().post(
                     CommunicationEvent(
                         CommunicationEvent.Type.BROADCAST,
@@ -94,7 +102,7 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
         // Get the alerts relevant to current version code
         val sourceAlerts: List<UpdateInfo.SourceAlert> =
             updateInfoJson.getSourceAlerts(BuildConfig.DEBUG)
-                .filter { a -> a.getFixedByBuild() > BuildConfig.VERSION_CODE }
+                .filter { it.getFixedByBuild() > BuildConfig.VERSION_CODE }
         // Send update info through the bus to whom it may concern
         EventBus.getDefault().postSticky(UpdateEvent(newVersion, sourceAlerts))
     }

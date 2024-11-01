@@ -5,9 +5,7 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
@@ -62,14 +60,15 @@ class DownloadsImportWorker(
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         cfHelper?.clear()
         dao?.cleanup()
     }
 
-    override fun getToWork(input: Data) {
+    override suspend fun getToWork(input: Data) {
         val data = DownloadsImportData.Parser(inputData)
         if (data.fileUri.isEmpty()) return
+
         startImport(
             applicationContext,
             data.fileUri,
@@ -81,44 +80,36 @@ class DownloadsImportWorker(
     /**
      * Import books from external folder
      */
-    private fun startImport(
+    private suspend fun startImport(
         context: Context,
         fileUri: String,
         queuePosition: QueuePosition,
         importAsStreamed: Boolean
-    ) {
+    ) = withContext(Dispatchers.IO) {
         val file = getFileFromSingleUriString(context, fileUri)
         if (null == file) {
             trace(Log.ERROR, "Couldn't find downloads file at %s", fileUri)
-            return
+            return@withContext
         }
         val downloads = readFile(context, file)
         if (downloads.isEmpty()) {
             trace(Log.ERROR, "Downloads file %s is empty", fileUri)
-            return
+            return@withContext
         }
         totalItems = downloads.size
         dao = ObjectBoxDAO()
-        try {
-            for (s in downloads) {
-                var galleryUrl = s
-                if (isNumeric(galleryUrl)) galleryUrl = Content.getGalleryUrlFromId(
-                    Site.NHENTAI,
-                    galleryUrl
-                ) // We assume any launch code is Nhentai's
-                importGallery(galleryUrl, queuePosition, importAsStreamed, false)
-            }
-        } catch (ie: InterruptedException) {
-            Timber.e(ie)
-            Thread.currentThread().interrupt()
+        for (s in downloads) {
+            var galleryUrl = s
+            if (isNumeric(galleryUrl)) galleryUrl = Content.getGalleryUrlFromId(
+                Site.NHENTAI,
+                galleryUrl
+            ) // We assume any launch code is Nhentai's
+            importGallery(galleryUrl, queuePosition, importAsStreamed, false)
         }
-        if (Preferences.isQueueAutostart()) resumeQueue(
-            applicationContext
-        )
+        if (Preferences.isQueueAutostart()) resumeQueue(applicationContext)
         notifyProcessEnd()
     }
 
-    @Throws(InterruptedException::class)
     private fun importGallery(
         url: String,
         queuePosition: QueuePosition,
@@ -128,7 +119,7 @@ class DownloadsImportWorker(
         val site = Site.searchByUrl(url)
         if (null == site || Site.NONE == site) {
             trace(Log.WARN, "ERROR : Unsupported source @ %s", url)
-            nextKO(applicationContext, null)
+            nextKO()
             return
         }
         val existingContent =
@@ -137,14 +128,14 @@ class DownloadsImportWorker(
             val location =
                 if (isInQueue(existingContent.status)) "queue" else "library"
             trace(Log.INFO, "ERROR : Content already in %s @ %s", location, url)
-            nextKO(applicationContext, null)
+            nextKO()
             return
         }
         try {
             val content = parseFromScratch(url)
             if (null == content) {
                 trace(Log.WARN, "ERROR : Unreachable content @ %s", url)
-                nextKO(applicationContext, null)
+                nextKO()
             } else {
                 trace(Log.INFO, "Added content @ %s", url)
                 content.downloadMode =
@@ -158,15 +149,15 @@ class DownloadsImportWorker(
                     null,
                     isQueueActive(applicationContext)
                 )
-                nextOK(applicationContext)
+                nextOK()
             }
         } catch (e: IOException) {
             trace(Log.WARN, "ERROR : While loading content @ %s", url)
-            nextKO(applicationContext, e)
+            nextKO(e)
         } catch (cpe: CloudflareProtectedException) {
             if (hasPassedCf) {
                 trace(Log.WARN, "Cloudflare bypass ineffective for content @ %s", url)
-                nextKO(applicationContext, null)
+                nextKO()
                 return
             }
             trace(Log.INFO, "Trying to bypass Cloudflare for content @ %s", url)
@@ -175,34 +166,26 @@ class DownloadsImportWorker(
                 importGallery(url, queuePosition, importAsStreamed, true)
             } else {
                 trace(Log.WARN, "Cloudflare bypass failed for content @ %s", url)
-                nextKO(applicationContext, null)
+                nextKO()
             }
         }
     }
 
-    private fun nextOK(context: Context) {
+    private fun nextOK() {
         nbOK++
-        notifyProcessProgress(context)
+        launchProgressNotification()
     }
 
-    private fun nextKO(context: Context, e: Throwable?) {
+    private fun nextKO(e: Throwable? = null) {
         nbKO++
         if (e != null) Timber.w(e)
-        notifyProcessProgress(context)
+        launchProgressNotification()
     }
 
-    private fun notifyProcessProgress(context: Context) {
-        CoroutineScope(Dispatchers.Default).launch {
-            withContext(Dispatchers.Main) {
-                doNotifyProcessProgress(context)
-            }
-        }
-    }
-
-    private fun doNotifyProcessProgress(context: Context) {
+    override fun runProgressNotification() {
         notificationManager.notify(
             ImportProgressNotification(
-                context.resources.getString(R.string.importing_downloads),
+                applicationContext.resources.getString(R.string.importing_downloads),
                 nbOK + nbKO,
                 totalItems
             )

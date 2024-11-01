@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -41,11 +41,11 @@ class UpdateJsonWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         dao.cleanup()
     }
 
-    override fun getToWork(input: Data) {
+    override suspend fun getToWork(input: Data) {
         val data = UpdateJsonData.Parser(inputData)
         var contentIds = data.contentIds
 
@@ -58,10 +58,11 @@ class UpdateJsonWorker(context: Context, parameters: WorkerParameters) :
 
         totalItems = contentIds.size
 
-        for (id in contentIds) {
-            val c = dao.selectContent(id)
-            if (c != null) persistJson(applicationContext, c)
-            nextOK()
+        contentIds.forEach {
+            dao.selectContent(it)?.let { c ->
+                withContext(Dispatchers.IO) { persistJson(applicationContext, c) }
+                nextOK()
+            }
         }
         progressDone()
 
@@ -70,18 +71,10 @@ class UpdateJsonWorker(context: Context, parameters: WorkerParameters) :
 
     private fun nextOK() {
         nbOK++
-        notifyProcessProgress()
+        launchProgressNotification()
     }
 
-    private fun notifyProcessProgress() {
-        CoroutineScope(Dispatchers.Default).launch {
-            withContext(Dispatchers.Main) {
-                doNotifyProcessProgress()
-            }
-        }
-    }
-
-    private fun doNotifyProcessProgress() {
+    override fun runProgressNotification() {
         notificationManager.notify(UpdateJsonProgressNotification(nbOK, totalItems))
         EventBus.getDefault().post(
             ProcessEvent(

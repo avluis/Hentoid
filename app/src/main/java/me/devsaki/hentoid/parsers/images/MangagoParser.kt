@@ -2,8 +2,9 @@ package me.devsaki.hentoid.parsers.images
 
 import android.content.Context
 import android.net.Uri
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.activities.sources.MGG_CHAPTER_PATTERN
@@ -32,8 +33,9 @@ const val PIC_SELECTOR = "#pic_container img"
 class MangagoParser : BaseChapteredImageListParser() {
     private var webview: WysiwygBackgroundWebView? = null
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun clear() {
-        CoroutineScope(Dispatchers.Main).launch {
+        GlobalScope.launch(Dispatchers.Main) {
             webview?.clear()
             webview = null
         }
@@ -59,6 +61,7 @@ class MangagoParser : BaseChapteredImageListParser() {
     }
 
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Throws(Exception::class)
     override fun parseChapterImageFiles(
         content: Content,
@@ -79,7 +82,7 @@ class MangagoParser : BaseChapteredImageListParser() {
             location, false
         )
 
-        CoroutineScope(Dispatchers.Default).launch {
+        GlobalScope.launch(Dispatchers.Default) {
             withContext(Dispatchers.Main) {
                 webview = WysiwygBackgroundWebView(
                     getInstance(),

@@ -14,7 +14,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
@@ -189,13 +191,14 @@ open class CustomWebViewClient : WebViewClient {
         val NOTHING = ByteArray(0)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     constructor(
         site: Site,
         galleryUrl: Array<String>
     ) {
         this.site = site
         activity = null
-        scope = CoroutineScope(Dispatchers.Default)
+        scope = GlobalScope
         this.resConsumer = null
         for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
         htmlAdapter = initJspoon(site)

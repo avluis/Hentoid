@@ -6,6 +6,11 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
@@ -61,17 +66,23 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         // Nothing
     }
 
-    override fun onClear(logFile: DocumentFile?) {
+    override suspend fun onClear(logFile: DocumentFile?) {
         // Final event; should be step 4
         eventComplete(
             STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile
         )
     }
 
-    override fun getToWork(input: Data) {
+    override fun runProgressNotification() {
+        // Using custom implementation
+    }
+
+    override suspend fun getToWork(input: Data) {
         val data = ExternalImportData.Parser(inputData)
-        if (data.behold) updateWithBeholder(applicationContext)
-        else startImport(applicationContext)
+        withContext(Dispatchers.IO) {
+            if (data.behold) updateWithBeholder(applicationContext)
+            else startImport(applicationContext)
+        }
     }
 
     private fun eventProgress(step: Int, nbBooks: Int, booksOK: Int, booksKO: Int) {
@@ -106,6 +117,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     /**
      * Import books from external folder
      */
+    @OptIn(DelicateCoroutinesApi::class)
     private fun startImport(context: Context) {
         logNoDataMessage = "No content detected."
         val rootFolder = getDocumentFromTreeUriString(context, Settings.externalLibraryUri)
@@ -164,24 +176,27 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                         }
                         createJsonFileFor(context, content, explorer, logs)
                         addContent(context, dao, content)
-                        trace(
-                            Log.INFO, 1, logs, "Import book OK : %s", content.storageUri
-                        )
-                        booksOK++
-                        notificationManager.notify(
-                            ImportProgressNotification(
-                                content.title, booksOK + booksKO, detectedContent.size
-                            )
-                        )
-                        eventProgress(
-                            STEP_3_BOOKS, detectedContent.size, booksOK, booksKO
-                        )
                         content.parentStorageUri?.let { parentUri ->
                             val entry = addedContent[parentUri] ?: ArrayList()
                             addedContent[parentUri] = entry
                             content.getStorageDoc()?.let { doc ->
                                 entry.add(Pair(doc, content.id))
                             }
+                        }
+                        booksOK++
+                        // Handle notifications on another coroutine not to steal focus for unnecessary stuff
+                        GlobalScope.launch(Dispatchers.Default) {
+                            trace(
+                                Log.INFO, 1, logs, "Import book OK : %s", content.storageUri
+                            )
+                            notificationManager.notify(
+                                ImportProgressNotification(
+                                    content.title, booksOK + booksKO, detectedContent.size
+                                )
+                            )
+                            eventProgress(
+                                STEP_3_BOOKS, detectedContent.size, booksOK, booksKO
+                            )
                         }
                     } // detected content
                     dao.deleteAllFlaggedBooks(false, null)
@@ -216,7 +231,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
-    private fun updateWithBeholder(context: Context) {
+    private suspend fun updateWithBeholder(context: Context) {
         logName = "refresh_external"
         Timber.d("delta init")
         Beholder.init(context)

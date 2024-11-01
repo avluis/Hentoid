@@ -2,8 +2,9 @@ package me.devsaki.hentoid.util.file
 
 import android.content.Context
 import android.net.Uri
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
@@ -50,12 +51,13 @@ object DiskCache {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun purgeIfNeeded() {
         // Avoid straining the system
         if (Instant.now().toEpochMilli() - lastPurge < 1000) return
         lastPurge = Instant.now().toEpochMilli()
 
-        CoroutineScope(Dispatchers.Default).launch {
+        GlobalScope.launch(Dispatchers.Default) {
             val sortedEntries = entries.entries.sortedBy { it.value.first }.toMutableList()
             withContext(Dispatchers.IO) {
                 var storageTaken = getUsedStorage()
