@@ -65,7 +65,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     TOONILY(22, "Toonily", "https://toonily.com/", R.drawable.ic_site_toonily),
     ALLPORNCOMIC(23, "Allporncomic", "https://allporncomic.com/", R.drawable.ic_site_allporncomic),
     PIXIV(24, "Pixiv", "https://www.pixiv.net/", R.drawable.ic_site_pixiv),
-    MANHWA18(25, "Manhwa18", "https://manhwa18.com/", R.drawable.ic_site_manhwa18),
+    MANHWA18(25, "Manhwa18", "https://manhwa18.net/", R.drawable.ic_site_manhwa18),
     MULTPORN(26, "Multporn", "https://multporn.net/", R.drawable.ic_site_multporn),
     SIMPLY(27, "Simply Hentai", "https://www.simply-hentai.com/", R.drawable.ic_site_simply),
     HDPORNCOMICS(
