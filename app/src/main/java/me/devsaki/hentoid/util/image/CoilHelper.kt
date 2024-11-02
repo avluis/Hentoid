@@ -60,7 +60,8 @@ fun ImageView.loadCover(content: Content, disableAnimation: Boolean = false) {
     this.visibility = View.VISIBLE
 
     // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-    val networkHeaders = if (thumbLocation.startsWith("http")) {
+    val isOnline = thumbLocation.startsWith("http")
+    val networkHeaders = if (isOnline) {
         val headers = NetworkHeaders.Builder()
         getContentHeaders(content).forEach {
             headers.add(it.first, it.second)
@@ -75,7 +76,7 @@ fun ImageView.loadCover(content: Content, disableAnimation: Boolean = false) {
         .target(this)
         .httpHeaders(networkHeaders)
 
-    val loader = if (disableAnimation) stillImageLoader
+    val loader = if (disableAnimation && !isOnline) stillImageLoader
     else SingletonImageLoader.get(this.context)
     loader.enqueue(request.build())
 }
