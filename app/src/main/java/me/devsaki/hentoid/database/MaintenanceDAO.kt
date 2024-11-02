@@ -21,24 +21,6 @@ class MaintenanceDAO {
         ObjectBoxDB.cleanup()
     }
 
-    fun selectContentWithOldPururinHost(): List<Content> {
-        return ObjectBoxDB.store.boxFor(Content::class.java).query()
-            .equal(Content_.site, Site.PURURIN.code.toLong()).contains(
-                Content_.coverImageUrl,
-                "://api.pururin.io/images/",
-                QueryBuilder.StringOrder.CASE_INSENSITIVE
-            ).safeFind()
-    }
-
-    fun selectContentWithOldTsuminoCovers(): List<Content> {
-        return ObjectBoxDB.store.boxFor(Content::class.java).query()
-            .equal(Content_.site, Site.TSUMINO.code.toLong()).contains(
-                Content_.coverImageUrl,
-                "://www.tsumino.com/Image/Thumb/",
-                QueryBuilder.StringOrder.CASE_INSENSITIVE
-            ).safeFind()
-    }
-
     fun selectContentWithOldHitomiCovers(): List<Content> {
         return ObjectBoxDB.store.boxFor(Content::class.java).query()
             .equal(Content_.site, Site.HITOMI.code.toLong()).contains(

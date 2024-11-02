@@ -138,53 +138,12 @@ object DatabaseMaintenance {
     private fun cleanPropertiesOneShot(context: Context, emitter: (Float) -> Unit) {
         val db = MaintenanceDAO()
         try {
-            // Update URLs from deprecated Pururin image hosts
-            Timber.i("Upgrading Pururin image hosts : start")
-            var contents = db.selectContentWithOldPururinHost()
-            Timber.i("Upgrading Pururin image hosts : %s books detected", contents.size)
-            var max = contents.size
-            var pos = 1f
-            for (c in contents) {
-                c.coverImageUrl = c.coverImageUrl.replace(
-                    "api.pururin.to/images/",
-                    "cdn.pururin.to/assets/images/data/"
-                )
-                c.imageList.forEach {
-                    it.url = it.url.replace(
-                        "api.pururin.to/images/",
-                        "cdn.pururin.to/assets/images/data/"
-                    )
-                    db.updateImageFileUrl(it)
-                }
-                db.insertContentCore(c)
-                emitter(pos++ / max)
-            }
-            Timber.i("Upgrading Pururin image hosts : done")
-
-            // Update URLs from deprecated Tsumino image covers
-            Timber.i("Upgrading Tsumino covers : start")
-            contents = db.selectContentWithOldTsuminoCovers()
-            Timber.i("Upgrading Tsumino covers : %s books detected", contents.size)
-            max = contents.size
-            pos = 1f
-            for (c in contents) {
-                var url = c.coverImageUrl.replace(
-                    "www.tsumino.com/Image/Thumb",
-                    "content.tsumino.com/thumbs"
-                )
-                if (!url.endsWith("/1")) url += "/1"
-                c.coverImageUrl = url
-                db.insertContentCore(c)
-                emitter(pos++ / max)
-            }
-            Timber.i("Upgrading Tsumino covers : done")
-
             // Update URLs from deprecated Hitomi image covers
             Timber.i("Upgrading Hitomi covers : start")
-            contents = db.selectContentWithOldHitomiCovers()
+            var contents = db.selectContentWithOldHitomiCovers()
             Timber.i("Upgrading Hitomi covers : %s books detected", contents.size)
-            max = contents.size
-            pos = 1f
+            var max = contents.size
+            var pos = 1f
             for (c in contents) {
                 val url =
                     c.coverImageUrl.replace("/smallbigtn/", "/webpbigtn/").replace(".jpg", ".webp")
