@@ -76,6 +76,7 @@ fun ImageView.loadCover(content: Content, disableAnimation: Boolean = false) {
         .target(this)
         .httpHeaders(networkHeaders)
 
+    // TODO https://github.com/coil-kt/coil/issues/2629
     val loader = if (disableAnimation && !isOnline) stillImageLoader
     else SingletonImageLoader.get(this.context)
     loader.enqueue(request.build())
