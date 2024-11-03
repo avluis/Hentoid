@@ -9,10 +9,13 @@ import coil3.asImage
 import coil3.decode.DecodeResult
 import coil3.decode.Decoder
 import coil3.decode.ImageSource
+import coil3.disk.DiskCache
 import coil3.fetch.SourceFetchResult
 import coil3.imageLoader
+import coil3.memory.MemoryCache
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
+import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.Options
 import coil3.request.target
@@ -25,6 +28,7 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.util.getContentHeaders
 import okio.BufferedSource
+import okio.Path.Companion.toOkioPath
 import java.io.InputStream
 import java.nio.ByteBuffer
 
@@ -36,16 +40,37 @@ suspend fun clearCoilCache(context: Context, memory: Boolean = true, file: Boole
             if (memory) memoryCache?.clear()
             if (file) diskCache?.clear()
         }
+        stillImageLoader.apply {
+            if (memory) memoryCache?.clear()
+            if (file) diskCache?.clear()
+        }
     }
 }
 
 private fun initStillImageLoader(): ImageLoader {
-    return ImageLoader.Builder(HentoidApp.getInstance()).serviceLoaderEnabled(false).build()
+    HentoidApp.getInstance().let { context ->
+        return ImageLoader.Builder(context)
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.10)
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(context.cacheDir.resolve("image_cache").toOkioPath())
+                    .maxSizeBytes(50 * 1024 * 1024) // 50 MB
+                    .build()
+            }
+            .serviceLoaderEnabled(false)
+            .build()
+    }
 }
 
-fun ImageView.loadStill(data: Any) {
+fun ImageView.loadStill(data: String) {
     val request = ImageRequest.Builder(context)
         .data(data)
+        .memoryCacheKey(data)
+        .diskCacheKey(data)
         .target(this)
 
     stillImageLoader.enqueue(request.build())
@@ -73,6 +98,8 @@ fun ImageView.loadCover(content: Content, disableAnimation: Boolean = false) {
 
     val request = ImageRequest.Builder(context)
         .data(thumbLocation)
+        .memoryCacheKey(thumbLocation)
+        .diskCacheKey(thumbLocation)
         .target(this)
         .httpHeaders(networkHeaders)
 
