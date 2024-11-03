@@ -417,12 +417,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             recyclerView.requestFocus()
             // Scale listener from the ImageView, incl. top to bottom browsing
             recyclerView.setOnScaleListener { scale ->
+                /* Unwanted behaviour
                 if (LinearLayoutManager.HORIZONTAL == llm.orientation) {
                     pageSnapWidget.apply {
                         if (scale - 1.0 < 0.05 && !isPageSnapEnabled()) setPageSnapEnabled(true)
                         else if (scale - 1.0 > 0.05 && isPageSnapEnabled()) setPageSnapEnabled(false)
                     }
                 }
+                 */
                 if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
                     rescaleDebouncer.submit(scale.toFloat())
             }
@@ -562,14 +564,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun convertPrefsDelayToSliderPosition(prefsDelay: Int): Int {
         val prefsValues = resources.getStringArray(R.array.pref_viewer_slideshow_delay_values)
-            .map { s -> s.toInt() }
+            .map { it.toInt() }
         for (i in prefsValues.indices) if (prefsValues[i] == prefsDelay) return i
         return 0
     }
 
     private fun convertSliderPositionToPrefsDelay(sliderPosition: Int): Int {
         val prefsValues = resources.getStringArray(R.array.pref_viewer_slideshow_delay_values)
-            .map { s -> s.toInt() }
+            .map { it.toInt() }
         return prefsValues[sliderPosition]
     }
 
@@ -757,14 +759,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         isComputingImageList = true
         binding?.apply {
             adapter.reset()
-            // Required to communicate tapListener to the Adapter before images are binded
-            /*
-            images.firstOrNull()?.let {
-                it.content.reach(it)?.apply {
-                    adjustDisplay(bookPreferences)
-                }
-            }
-             */
             adapter.submitList(images) { differEndCallback() }
             if (images.isEmpty()) {
                 setSystemBarsVisible(true)
