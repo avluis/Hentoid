@@ -161,12 +161,12 @@ abstract class BaseDeleteWorker(
 
     private suspend fun processContentList(ids: LongArray, operation: ToolsActivity.MassOperation) {
         // Process the list 50 by 50 items
-        val nbPackets = ceil((ids.size / 50f).toDouble()).toInt()
+        val nbPackets = ceil(ids.size / 50f).toInt()
         for (i in 0 until nbPackets) {
             val minIndex = i * 50
             val maxIndex = ((i + 1) * 50).coerceAtMost(ids.size)
             // Flag the content as "being processed" (triggers blink animation; lock operations)
-            val toProcess = ids.slice(minIndex..maxIndex).filter { it > 0 }.toList()
+            val toProcess = ids.slice(minIndex..<maxIndex).filter { it > 0 }.toList()
             dao.updateContentsProcessedFlagById(toProcess, true)
             // Process it
             for (id in minIndex until maxIndex) {
