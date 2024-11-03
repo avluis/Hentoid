@@ -318,7 +318,6 @@ class ImagePagerAdapter(val context: Context) :
 
     fun setGestureListenerForPosition(position: Int) {
         recyclerView?.lifecycleScope?.launch {
-            Timber.d("pos $position")
             (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.setTapListener()
         }
     }
@@ -458,7 +457,6 @@ class ImagePagerAdapter(val context: Context) :
         }
 
         suspend fun setTapListener() {
-            Timber.d("$absoluteAdapterPosition setTapListener")
             // ImageView or vertical mode => ZoomableRecycleView handles gestures
             if (isImageView() || Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
                 Timber.d("$absoluteAdapterPosition setTapListener on recyclerView")
@@ -474,10 +472,7 @@ class ImagePagerAdapter(val context: Context) :
         suspend fun isImageView(): Boolean {
             withContext(Dispatchers.Default) {
                 var iterations = 0 // Wait for 5 secs max
-                while (isLoading.get() && iterations++ < 33) {
-                    Timber.d("$absoluteAdapterPosition ${isLoading.get()}")
-                    pause(150)
-                }
+                while (isLoading.get() && iterations++ < 33) pause(150)
             }
             return isImageView
         }
@@ -628,12 +623,10 @@ class ImagePagerAdapter(val context: Context) :
                     false
                 )
             }
-            Timber.v("$absoluteAdapterPosition loadingFalse onReady")
             isLoading.set(false) // All that's left is to load tiles => consider the job done already
         }
 
         override fun onImageLoaded() {
-            Timber.v("$absoluteAdapterPosition loadingFalse onLoaded")
             isLoading.set(false)
         }
 
