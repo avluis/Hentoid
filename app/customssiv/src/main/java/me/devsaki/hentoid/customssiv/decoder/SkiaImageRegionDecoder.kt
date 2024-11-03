@@ -40,29 +40,27 @@ class SkiaImageRegionDecoder(private val bitmapConfig: Bitmap.Config) : ImageReg
         val uriString = uri.toString()
         if (uriString.startsWith(RESOURCE_PREFIX)) {
             val id = getResourceId(context, uri)
-            decoder = BitmapRegionDecoder.newInstance(context.resources.openRawResource(id), false)
+            context.resources.openRawResource(id).use {
+                decoder = BitmapRegionDecoder.newInstance(it, false)
+            }
         } else if (uriString.startsWith(ASSET_PREFIX)) {
             val assetName = uriString.substring(ASSET_PREFIX.length)
-            decoder = BitmapRegionDecoder.newInstance(
-                context.assets.open(
-                    assetName,
-                    AssetManager.ACCESS_RANDOM
-                ), false
-            )
+            context.assets.open(assetName, AssetManager.ACCESS_RANDOM).use {
+                decoder = BitmapRegionDecoder.newInstance(it, false)
+            }
         } else if (uriString.startsWith(FILE_PREFIX)) {
             decoder =
                 BitmapRegionDecoder.newInstance(uriString.substring(FILE_PREFIX.length), false)
         } else {
-            context.contentResolver.openInputStream(uri).use { input ->
-                if (input == null) throw RuntimeException("Content resolver returned null stream. Unable to initialise with uri.")
-                decoder = BitmapRegionDecoder.newInstance(input, false)
+            context.contentResolver.openInputStream(uri)?.use {
+                decoder = BitmapRegionDecoder.newInstance(it, false)
             }
+                ?: throw RuntimeException("Content resolver returned null stream. Unable to initialise with uri.")
         }
-        return if (decoder != null && !decoder!!.isRecycled) Point(
-            decoder!!.width,
-            decoder!!.height
-        )
-        else Point(-1, -1)
+        decoder?.apply {
+            if (!isRecycled) return Point(width, height)
+        }
+        return Point(-1, -1)
     }
 
     override fun decodeRegion(sRect: Rect, sampleSize: Int): Bitmap {
@@ -97,7 +95,7 @@ class SkiaImageRegionDecoder(private val bitmapConfig: Bitmap.Config) : ImageReg
     override fun recycle() {
         decoderLock.writeLock().lock()
         try {
-            if (decoder != null) decoder!!.recycle()
+            decoder?.recycle()
             decoder = null
         } finally {
             decoderLock.writeLock().unlock()
