@@ -35,7 +35,6 @@ import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder
 import me.devsaki.hentoid.customssiv.util.Debouncer
-import me.devsaki.hentoid.customssiv.util.assertNonUiThread
 import me.devsaki.hentoid.customssiv.util.getScreenDpi
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
 import me.devsaki.hentoid.customssiv.util.resizeBitmap
@@ -581,18 +580,14 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 if (previewSourceUri != null) {
                     lifecycleScope?.launch {
                         try {
-                            val bmp = withContext(Dispatchers.IO) {
-                                loadBitmap(context, uri!!)
-                            }
-                            val res = withContext(Dispatchers.Default) {
-                                processBitmap(
-                                    uri!!,
-                                    context,
-                                    bmp,
-                                    this@CustomSubsamplingScaleImageView,
-                                    targetScale
-                                )
-                            }
+                            val bmp = loadBitmap(context, uri!!)
+                            val res = processBitmap(
+                                uri!!,
+                                context,
+                                bmp,
+                                this@CustomSubsamplingScaleImageView,
+                                targetScale
+                            )
                             withContext(Dispatchers.Main) {
                                 onPreviewLoaded(res.bitmap)
                             }
@@ -630,12 +625,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 // Load the bitmap using tile decoding.
                 lifecycleScope?.launch {
                     try {
-                        val res = withContext(Dispatchers.IO) {
-                            initTiles(this@CustomSubsamplingScaleImageView, context, uri!!)
-                        }
+                        val res = initTiles(this@CustomSubsamplingScaleImageView, context, uri!!)
                         // Remove invalid results
                         if (res[0] < 0) return@launch
-
                         withContext(Dispatchers.Main) {
                             onTilesInitialized(res[0], res[1], Orientation.fromCode(res[2]))
                         }
@@ -685,10 +677,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             uri = null
             decoderLock.writeLock().lock()
             try {
-                if (regionDecoder != null) {
-                    regionDecoder!!.recycle()
-                    regionDecoder = null
-                }
+                regionDecoder?.recycle()
+                regionDecoder = null
             } finally {
                 decoderLock.writeLock().unlock()
             }
@@ -712,8 +702,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             singleImage.scale = 1f
             if (!singleImage.loading) bitmap = null
         }
-        if (tileMap != null) {
-            for ((_, value) in tileMap!!) {
+        tileMap?.let { tm ->
+            for ((_, value) in tm) {
                 for (tile in value) {
                     tile.visible = false
                     if (!tile.loading) {
@@ -725,7 +715,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             tileMap = null
         }
         setGestureDetector(context)
-        //if (newImage) loadDisposable.clear()
     }
 
     private fun setGestureDetector(context: Context) {
@@ -1578,9 +1567,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             preDraw()
             readySent = true
             onReady()
-            if (onImageEventListener != null) {
-                onImageEventListener!!.onReady()
-            }
+            onImageEventListener?.onReady()
         }
         return ready
     }
@@ -1617,19 +1604,15 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun loadBitmapToImage(context: Context, uri: Uri, targetScale: Float) {
         lifecycleScope?.launch {
             try {
-                val bmp = withContext(Dispatchers.IO) {
-                    loadBitmap(context, uri)
-                }
+                val bmp = loadBitmap(context, uri)
                 // Remove invalid results
-                val res = withContext(Dispatchers.Default) {
-                    processBitmap(
-                        uri,
-                        context,
-                        bmp,
-                        this@CustomSubsamplingScaleImageView,
-                        targetScale
-                    )
-                }
+                val res = processBitmap(
+                    uri,
+                    context,
+                    bmp,
+                    this@CustomSubsamplingScaleImageView,
+                    targetScale
+                )
                 withContext(Dispatchers.Main) {
                     onImageLoaded(
                         res.bitmap,
@@ -1684,11 +1667,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 lifecycleScope?.launch {
                     try {
                         bg.forEach {
-                            val tile = withContext(Dispatchers.IO) {
+                            val tile =
                                 loadTile(this@CustomSubsamplingScaleImageView, regionDecoder!!, it)
-                            }
                             if (tile.bitmap?.isRecycled == false) {
-                                withContext(Dispatchers.Default) { processTile(tile, targetScale) }
+                                processTile(tile, targetScale)
                                 withContext(Dispatchers.Main) { onTileLoaded() }
                             }
                         }
@@ -1703,9 +1685,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     // TODO doc
     private fun refreshRequiredResource(load: Boolean) {
-        val sampleSize =
-            min(fullImageSampleSize.toDouble(), calculateInSampleSize(scale).toDouble()).toInt()
-
+        val sampleSize = min(fullImageSampleSize, calculateInSampleSize(scale))
         if (regionDecoder == null || tileMap == null) refreshSingle(load)
         else refreshRequiredTiles(load, sampleSize)
     }
@@ -1713,7 +1693,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     // TODO doc
     private fun refreshSingle(load: Boolean) {
         if (!singleImage.loading && load) {
-            loadBitmapToImage(context, uri!!, getVirtualScale())
+            uri?.let { loadBitmapToImage(context, it, getVirtualScale()) }
         }
     }
 
@@ -1741,17 +1721,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                         if (!tile.loading && tile.bitmap == null && load) {
                             lifecycleScope?.launch {
                                 try {
-                                    withContext(Dispatchers.IO) {
-                                        loadTile(
-                                            this@CustomSubsamplingScaleImageView,
-                                            regionDecoder!!,
-                                            tile
-                                        )
-                                    }
+                                    loadTile(
+                                        this@CustomSubsamplingScaleImageView,
+                                        regionDecoder!!,
+                                        tile
+                                    )
                                     if (tile.bitmap?.isRecycled == false) {
-                                        withContext(Dispatchers.Default) {
-                                            processTile(tile, scale)
-                                        }
+                                        processTile(tile, scale)
                                         withContext(Dispatchers.Main) { onTileLoaded() }
                                     }
                                 } catch (t: Throwable) {
@@ -2024,12 +2000,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     @Throws(Exception::class)
-    private fun initTiles(
+    private suspend fun initTiles(
         view: CustomSubsamplingScaleImageView,
         context: Context,
         source: Uri
-    ): IntArray {
-        assertNonUiThread()
+    ): IntArray = withContext(Dispatchers.IO) {
         val sourceUri = source.toString()
         Timber.d("Init tiles BEGIN %s", sourceUri)
         regionDecoder = SkiaImageRegionDecoder(preferredBitmapConfig)
@@ -2048,10 +2023,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     sHeightTile = height()
                 }
             }
-            return intArrayOf(sWidthTile, sHeightTile, exifOrientation.code)
+            return@withContext intArrayOf(sWidthTile, sHeightTile, exifOrientation.code)
         }
         Timber.d("Init tiles END %s", sourceUri)
-        return intArrayOf(0, 0, 0)
+        return@withContext intArrayOf(0, 0, 0)
     }
 
     /**
@@ -2087,12 +2062,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         requestLayout()
     }
 
-    protected fun loadTile(
+    private suspend fun loadTile(
         view: CustomSubsamplingScaleImageView,
         decoder: ImageRegionDecoder,
         tile: Tile
-    ): Tile {
-        assertNonUiThread()
+    ): Tile = withContext(Dispatchers.IO) {
         if (decoder.isReady() && tile.visible) {
             view.decoderLock.readLock().lock()
             try {
@@ -2114,26 +2088,20 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             }
         }
         if (null == tile.bitmap) tile.loading = false
-        return tile
+        return@withContext tile
     }
 
-    protected fun processTile(
+    private suspend fun processTile(
         loadedTile: Tile,
         targetScale: Float
-    ): Tile {
-        assertNonUiThread()
-
+    ): Tile = withContext(Dispatchers.Default) {
         // Take any prior subsampling into consideration _before_ processing the tile
         Timber.v("Processing tile")
         val resizeScale = targetScale * loadedTile.sampleSize
-        val resizeResult = resizeBitmap(
-            glEsRenderer,
-            loadedTile.bitmap!!, resizeScale
-        )
+        val resizeResult = resizeBitmap(glEsRenderer, loadedTile.bitmap!!, resizeScale)
         loadedTile.bitmap = resizeResult.first
-
         loadedTile.loading = false
-        return loadedTile
+        return@withContext loadedTile
     }
 
     /**
@@ -2144,13 +2112,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         checkReady()
         checkImageLoaded()
         if (isBaseLayerReady()) {
-            if (!bitmapIsCached && bitmap != null && !singleImage.loading) {
-                bitmap!!.recycle()
-            }
+            if (!bitmapIsCached && !singleImage.loading) bitmap?.recycle()
             bitmap = null
-            if (onImageEventListener != null && bitmapIsCached) {
-                onImageEventListener!!.onPreviewReleased()
-            }
+            if (bitmapIsCached) onImageEventListener?.onPreviewReleased()
             bitmapIsPreview = false
             bitmapIsCached = false
         }
@@ -2158,23 +2122,21 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     @Throws(Exception::class)
-    private fun loadBitmap(context: Context, uri: Uri): Bitmap {
-        assertNonUiThread()
-        singleImage.loading = true
-        val decoder: ImageDecoder = SkiaImageDecoder(preferredBitmapConfig)
-        return decoder.decode(context, uri)
-    }
+    private suspend fun loadBitmap(context: Context, uri: Uri): Bitmap =
+        withContext(Dispatchers.IO) {
+            singleImage.loading = true
+            val decoder: ImageDecoder = SkiaImageDecoder(preferredBitmapConfig)
+            return@withContext decoder.decode(context, uri)
+        }
 
-    private fun processBitmap(
+    private suspend fun processBitmap(
         source: Uri,
         context: Context,
         bitmap: Bitmap,
         view: CustomSubsamplingScaleImageView,
         targetScale: Float
-    ): ProcessBitmapResult {
+    ): ProcessBitmapResult = withContext(Dispatchers.Default) {
         var theBitmap = bitmap
-        assertNonUiThread()
-
         singleImage.rawWidth = theBitmap.width
         singleImage.rawHeight = theBitmap.height
 
@@ -2183,7 +2145,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         theBitmap = resizeResult.first!!
 
         singleImage.loading = false
-        return ProcessBitmapResult(
+        return@withContext ProcessBitmapResult(
             theBitmap,
             view.getExifOrientation(context, source.toString()),
             resizeResult.second
@@ -3035,7 +2997,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     fun getVirtualScale(): Float {
-        return if ((-1f == virtualScale)) scale else virtualScale
+        return if (-1f == virtualScale) scale else virtualScale
     }
 
     fun setVirtualScale(targetScale: Float) {

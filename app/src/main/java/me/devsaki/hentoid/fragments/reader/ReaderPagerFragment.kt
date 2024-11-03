@@ -115,9 +115,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private var absImageIndex = -1 // Absolute (book scale) 0-based image index
 
     private var hasGalleryBeenShown = false
-    private val scrollListener = ScrollPositionListener { scrollPosition: Int ->
-        onScrollPositionChange(scrollPosition)
-    }
+    private val scrollListener = ScrollPositionListener { onScrollPositionChange(it) }
 
     // Slideshow
     private var slideshowTimer: Timer? = null

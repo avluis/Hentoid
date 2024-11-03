@@ -178,7 +178,7 @@ class ImagePagerAdapter(val context: Context) :
     }
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-        Timber.d("Picture %d : BindViewHolder", position)
+        Timber.d("Picture $position : BindViewHolder")
 
         val displayParams = getDisplayParamsForPosition(position) ?: return
         val imgViewType = getImageViewType(displayParams)
@@ -318,6 +318,7 @@ class ImagePagerAdapter(val context: Context) :
 
     fun setGestureListenerForPosition(position: Int) {
         recyclerView?.lifecycleScope?.launch {
+            Timber.d("pos $position")
             (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.setTapListener()
         }
     }
@@ -457,13 +458,14 @@ class ImagePagerAdapter(val context: Context) :
         }
 
         suspend fun setTapListener() {
+            Timber.d("$absoluteAdapterPosition setTapListener")
             // ImageView or vertical mode => ZoomableRecycleView handles gestures
             if (isImageView() || Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
-                Timber.d("setTapListener on recyclerView")
+                Timber.d("$absoluteAdapterPosition setTapListener on recyclerView")
                 recyclerView?.setTapListener(itemTouchListener)
                 imgView.setOnTouchListener(null)
             } else { // Horizontal SSIV => SSIV handles gestures
-                Timber.d("setTapListener on imageView")
+                Timber.d("$absoluteAdapterPosition setTapListener on imageView")
                 recyclerView?.setTapListener(null)
                 imgView.setOnTouchListener(itemTouchListener)
             }
@@ -472,7 +474,10 @@ class ImagePagerAdapter(val context: Context) :
         suspend fun isImageView(): Boolean {
             withContext(Dispatchers.Default) {
                 var iterations = 0 // Wait for 5 secs max
-                while (isLoading.get() && iterations++ < 33) pause(150)
+                while (isLoading.get() && iterations++ < 33) {
+                    Timber.d("$absoluteAdapterPosition ${isLoading.get()}")
+                    pause(150)
+                }
             }
             return isImageView
         }
@@ -592,6 +597,7 @@ class ImagePagerAdapter(val context: Context) :
         fun clear() {
             if (isImageView) imageView.dispose()
             else ssiv.clear()
+            isLoading.set(false)
         }
 
         @SuppressLint("ClickableViewAccessibility")
@@ -622,9 +628,12 @@ class ImagePagerAdapter(val context: Context) :
                     false
                 )
             }
+            Timber.v("$absoluteAdapterPosition loadingFalse onReady")
+            isLoading.set(false) // All that's left is to load tiles => consider the job done already
         }
 
         override fun onImageLoaded() {
+            Timber.v("$absoluteAdapterPosition loadingFalse onLoaded")
             isLoading.set(false)
         }
 
