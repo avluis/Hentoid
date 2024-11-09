@@ -28,6 +28,8 @@
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"742"},
 	  {"sourceName":"MANHWA", "status":"RED", "fixedByBuild":"742"},
 	  {"sourceName":"MANHWA", "status":"BLACK", "fixedByBuild":"750"},
+	  {"sourceName":"IMHENTAI", "status":"ORANGE"},
+	  {"sourceName":"HENTAIFOX", "status":"ORANGE"},
 	  {"sourceName":"PURURIN", "status":"BLACK"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
