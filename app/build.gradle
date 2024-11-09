@@ -160,6 +160,9 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc02")
     implementation("io.coil-kt.coil3:coil-gif:3.0.0-rc02")
 
+    // Coil support for JXL
+    implementation 'io.github.awxkee:jxl-coder-coil:2.3.0.1'
+
     // Animated pics that Coil doesn't support (APNG) -> https://github.com/penfeizhou/APNG4Android
     def APNG4Android_version = '3.0.1'
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"

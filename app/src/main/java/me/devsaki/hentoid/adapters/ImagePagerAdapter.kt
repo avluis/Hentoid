@@ -73,9 +73,10 @@ class ImagePagerAdapter(val context: Context) :
 
     enum class ImageType(val value: Int) {
         IMG_TYPE_OTHER(0), // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Coil if animation detected
-        IMG_TYPE_GIF(1), // Static and animated GIFs -> use APNG4Android library
-        IMG_TYPE_APNG(2), // Animated PNGs -> use APNG4Android library
-        IMG_TYPE_AWEBP(3) // Animated WEBPs -> use APNG4Android library
+        IMG_TYPE_GIF(1), // Static and animated GIFs -> use Coil
+        IMG_TYPE_APNG(2), // Animated PNGs -> use Coil
+        IMG_TYPE_AWEBP(3), // Animated WEBPs -> use Coil
+        IMG_TYPE_JXL(4) // JXL -> use Coil
     }
 
     enum class ViewType(val value: Int) {
@@ -158,6 +159,9 @@ class ImagePagerAdapter(val context: Context) :
         }
         if ("apng".equals(extension, ignoreCase = true) || img.mimeType.contains("apng")) {
             return ImageType.IMG_TYPE_APNG
+        }
+        if ("jxl".equals(extension, ignoreCase = true) || img.mimeType.contains("jxl")) {
+            return ImageType.IMG_TYPE_JXL
         }
         return if ("webp".equals(extension, ignoreCase = true) || img.mimeType.contains("webp")) {
             ImageType.IMG_TYPE_AWEBP
@@ -373,7 +377,7 @@ class ImagePagerAdapter(val context: Context) :
             if (forceImageView != null) { // ImageView has been forced
                 switchImageView(forceImageView!!, true)
                 forceImageView = null // Reset force flag
-            } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType) {
+            } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType || ImageType.IMG_TYPE_AWEBP == imageType || ImageType.IMG_TYPE_JXL == imageType) {
                 ssivAlertListener?.run()
                 switchImageView(isImageView = true, isClickThrough = true)
             } else switchImageView(

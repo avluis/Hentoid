@@ -16,6 +16,8 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
+import com.awxkee.jxlcoder.coil.AnimatedJxlDecoder
+import com.awxkee.jxlcoder.coil.JxlDecoder
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -311,6 +313,8 @@ object AppStartup {
                         add(GifDecoder.Factory(false))
                     }
                     add(AnimatedPngDecoder.Factory())
+                    add(JxlDecoder.Factory())
+                    add(AnimatedJxlDecoder.Factory())
                 }
                 .build()
         }
