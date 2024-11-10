@@ -417,7 +417,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             recyclerView.requestFocus()
             // Scale listener from the ImageView, incl. top to bottom browsing
             recyclerView.setOnScaleListener { scale ->
-                /* Unwanted behaviour
+                /* TODO harmonize scale listeners + fine-tune zooming on edges
                 if (LinearLayoutManager.HORIZONTAL == llm.orientation) {
                     pageSnapWidget.apply {
                         if (scale - 1.0 < 0.05 && !isPageSnapEnabled()) setPageSnapEnabled(true)
