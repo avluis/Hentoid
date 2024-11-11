@@ -427,7 +427,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     }
                 }
                  */
-                if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+                if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
                     rescaleDebouncer.submit(scale.toFloat())
             }
             recyclerView.setLongTapListener(object : ZoomableRecyclerView.LongTapListener {
@@ -474,17 +474,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun initControlsOverlay() {
         binding?.let {
             // Slideshow slider
-            val slider: Slider = it.controlsOverlay.slideshowDelaySlider
+            val slider = it.controlsOverlay.slideshowDelaySlider
             slider.valueFrom = 0f
-            val sliderValue: Int =
-                if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(
-                        bookPreferences
-                    )
-                ) convertPrefsDelayToSliderPosition(
-                    Preferences.getReaderSlideshowDelayVertical()
-                ) else convertPrefsDelayToSliderPosition(
-                    Preferences.getReaderSlideshowDelay()
-                )
+            val sliderValue = if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
+                convertPrefsDelayToSliderPosition(Preferences.getReaderSlideshowDelayVertical())
+            else convertPrefsDelayToSliderPosition(Preferences.getReaderSlideshowDelay())
             var nbEntries =
                 resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries).size
             nbEntries = 1.coerceAtLeast(nbEntries - 1)
@@ -494,10 +488,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             slider.valueTo = nbEntries.toFloat()
             slider.setLabelFormatter { value: Float ->
                 val entries: Array<String> =
-                    if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(
-                            bookPreferences
-                        )
-                    ) {
+                    if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) {
                         resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)
                     } else {
                         resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries)
@@ -635,8 +626,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onSlideshowClick() {
         var startIndex =
-            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
-                Preferences.getReaderSlideshowDelayVertical()
+            if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) Preferences.getReaderSlideshowDelayVertical()
             else Preferences.getReaderSlideshowDelay()
         startIndex = convertPrefsDelayToSliderPosition(startIndex)
         binding?.let {
@@ -1507,7 +1497,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onSlideShowSliderChosen(sliderIndex: Int) {
         val prefsDelay = convertSliderPositionToPrefsDelay(sliderIndex)
 
-        if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+        if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
             Preferences.setReaderSlideshowDelayVertical(prefsDelay)
         else Preferences.setReaderSlideshowDelay(prefsDelay)
 
@@ -1523,10 +1513,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         hideControlsOverlay()
 
         // Compute slideshow delay
-        val delayPref: Int =
-            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
-                Preferences.getReaderSlideshowDelayVertical()
-            else Preferences.getReaderSlideshowDelay()
+        val delayPref = if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
+            Preferences.getReaderSlideshowDelayVertical()
+        else Preferences.getReaderSlideshowDelay()
 
         val factor: Float = when (delayPref) {
             VIEWER_SLIDESHOW_DELAY_05 -> 0.5f
@@ -1537,7 +1526,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             else -> 2f
         }
         if (showToast) {
-            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+            if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
                 toast(
                     R.string.slideshow_start_vertical,
                     resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)[convertPrefsDelayToSliderPosition(
@@ -1546,7 +1535,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 ) else toast(R.string.slideshow_start, factor)
         }
         scrollListener.disableScroll()
-        if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) {
+        if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) {
             // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
             smoothScroller = ReaderSmoothScroller(requireContext())
             smoothScroller.apply {
