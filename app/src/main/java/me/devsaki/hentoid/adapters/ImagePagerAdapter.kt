@@ -370,16 +370,18 @@ class ImagePagerAdapter(context: Context) :
 
             if (ViewType.DEFAULT == imgViewType) {
                 // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
-                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
                     imageView.isClickable = false
                     imageView.isFocusable = false
                 }
             } else if (ViewType.IMAGEVIEW_STRETCH == imgViewType) {
                 imageView.scaleType = ImageView.ScaleType.FIT_XY
             } else if (ViewType.SSIV_VERTICAL == imgViewType) {
-                ssiv.setIgnoreTouchEvents(true)
+                //ssiv.setIgnoreTouchEvents(true)
                 ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL)
             }
+            // WARNING following line must be coherent with what happens in setTapListener
+            ssiv.setIgnoreTouchEvents(ViewType.SSIV_VERTICAL == imgViewType || isHalfWidth)
 
             // Avoid stacking 0-px tall images on screen and load all of them at the same time
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
@@ -477,11 +479,11 @@ class ImagePagerAdapter(context: Context) :
 
         suspend fun setTapListener() {
             // ImageView or vertical mode => ZoomableRecycleView handles gestures
-            if (isImageView() || Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+            if (isImageView() || Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
                 Timber.d("$absoluteAdapterPosition setTapListener on recyclerView")
                 recyclerView?.setTapListener(itemTouchListener)
                 imgView.setOnTouchListener(null)
-            } else { // Horizontal SSIV => SSIV handles gestures
+            } else { // Single-page, horizontal SSIV => SSIV handles gestures
                 Timber.d("$absoluteAdapterPosition setTapListener on imageView")
                 recyclerView?.setTapListener(null)
                 imgView.setOnTouchListener(itemTouchListener)

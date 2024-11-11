@@ -10,7 +10,7 @@ import java.lang.ref.WeakReference
 /**
  * Zoned tap listener for the reader
  */
-class OnZoneTapListener(view: View, private val tapZoneScale: Int) : OnTouchListener {
+class OnZoneTapListener(view: View, private val tapZoneScale: Int = 1) : OnTouchListener {
     /**
      * This view's dimensions are used to determine which zone a tap belongs to
      */

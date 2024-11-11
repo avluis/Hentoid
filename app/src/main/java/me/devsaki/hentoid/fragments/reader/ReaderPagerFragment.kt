@@ -1091,7 +1091,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 if (VIEWER_ORIENTATION_VERTICAL == newDisplayParams.orientation) {
                     // For paper roll mode (vertical)
                     val onVerticalZoneTapListener =
-                        OnZoneTapListener(recyclerView, 1)
+                        OnZoneTapListener(recyclerView)
                             .setOnMiddleZoneTapListener { onMiddleTap() }
                             .setOnLongTapListener { onLongTap() }
                     adapter.setItemTouchListener(onVerticalZoneTapListener)
@@ -1109,6 +1109,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                             .setOnMiddleZoneTapListener { onMiddleTap() }
                             .setOnLongTapListener { onLongTap() }
                     adapter.setItemTouchListener(onHorizontalZoneTapListener)
+                    isZoomFrameEnabled = newDisplayParams.twoPages
                     seekToIndex(absImageIndex)
                 }
                 pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation)
