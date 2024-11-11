@@ -927,8 +927,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             adapter.setScrollLTR(isScrollLTR)
             hidePendingMicroMenus()
 
-            // Manage scaling reset / stability if we're using horizontal (independent pages) mode
             if (VIEWER_ORIENTATION_HORIZONTAL == displayParams?.orientation) {
+                // Manage scaling reset / stability if we're using horizontal (independent pages) mode
                 if (Preferences.isReaderMaintainHorizontalZoom() && absImageIndex > -1) {
                     val previousScale = adapter.getRelativeScaleAtPosition(absImageIndex)
                     Timber.d(">> relative scale : %s", previousScale)
@@ -937,6 +937,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 } else {
                     adapter.resetScaleAtPosition(scrollPosition)
                 }
+                // Reactivate snap to avoid shuffling through all pages while zoom is on
+                pageSnapWidget.setPageSnapEnabled(true)
             }
 
             // Set the correct gesture listener (recyclerView or image)
