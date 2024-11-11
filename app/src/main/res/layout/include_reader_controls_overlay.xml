@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/transparent"
-    tools:targetApi="o">
+    android:background="@color/transparent">
 
     <!-- Bottom background -->
 
@@ -226,7 +225,7 @@
         tools:ignore="ContentDescription" />
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/viewer_pager_toolbar"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:background="?colorPrimaryVariant"
@@ -243,7 +242,7 @@
         android:layout_height="2dp"
         android:layout_gravity="top"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/viewer_pager_toolbar"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         tools:visibility="visible" />
 
     <com.google.android.material.slider.Slider
@@ -259,7 +258,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewer_pager_toolbar"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:thumbColor="?colorSecondary"
         app:tickColor="?colorSecondary"
         app:tickVisible="true"

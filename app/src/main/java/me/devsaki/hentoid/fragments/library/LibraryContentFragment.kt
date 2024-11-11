@@ -85,7 +85,7 @@ import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.dimensAsDp
-import me.devsaki.hentoid.util.dimensAsPx
+import me.devsaki.hentoid.util.dpToPx
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getParent
@@ -412,7 +412,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 false
             ) else AutofitGridLayoutManager(
                 requireContext(),
-                dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
+                dpToPx(requireContext(), Settings.libraryGridCardWidthDP)
             )
         binding?.recyclerView?.apply {
             layoutManager = llm

@@ -217,7 +217,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     @SuppressLint("NonConstantResourceId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = FragmentReaderPagerBinding.inflate(inflater, container, false)
 
         displayParams = null
@@ -231,10 +231,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         // Top bar controls
         binding?.let {
             tryShowMenuIcons(
-                requireActivity(), it.controlsOverlay.viewerPagerToolbar.menu
+                requireActivity(), it.controlsOverlay.toolbar.menu
             )
-            it.controlsOverlay.viewerPagerToolbar.setNavigationOnClickListener { onBackClick() }
-            it.controlsOverlay.viewerPagerToolbar.setOnMenuItemClickListener { clickedMenuItem ->
+            it.controlsOverlay.toolbar.setNavigationOnClickListener { onBackClick() }
+            it.controlsOverlay.toolbar.setOnMenuItemClickListener { clickedMenuItem ->
                 when (clickedMenuItem.itemId) {
                     R.id.action_show_favorite_pages -> onShowFavouriteClick()
                     R.id.action_book_settings -> onBookSettingsClick()
@@ -252,13 +252,24 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 true
             }
             deleteMenu =
-                it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_delete_book)
+                it.controlsOverlay.toolbar.menu.findItem(R.id.action_delete_book)
             showFavoritePagesMenu =
-                it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_show_favorite_pages)
-            shuffleMenu = it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_shuffle)
-            reverseMenu = it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_reverse)
+                it.controlsOverlay.toolbar.menu.findItem(R.id.action_show_favorite_pages)
+            shuffleMenu = it.controlsOverlay.toolbar.menu.findItem(R.id.action_shuffle)
+            reverseMenu = it.controlsOverlay.toolbar.menu.findItem(R.id.action_reverse)
+
+            ViewCompat.setOnApplyWindowInsetsListener(it.root) { _, insets: WindowInsetsCompat ->
+                if (displayParams?.twoPages == true) {
+                    val nav = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+                    val navBarHeight = nav.left + nav.right // Covers all landscape cases
+                    val status = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+                    // Move the overlay not to be covered by navigation shapes
+                    binding?.controlsOverlay?.root?.setPadding(0, status.top, navBarHeight, 0)
+                }
+                WindowInsetsCompat.CONSUMED
+            }
         }
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -1128,9 +1139,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 navigator.setDirection(newDisplayParams.direction)
                 navigator.updatePageControls()
             }
-
             if (isLayoutChange) {
-                // TODO handle insets on the app's top bar vs. navigation shapes
                 adapter.setTwoPagesMode(newDisplayParams.twoPages)
                 shouldUpdateImageDisplay = true
                 if (newDisplayParams.twoPages) activity?.requestedOrientation =

@@ -83,7 +83,7 @@ fun dimensAsDp(context: Context, @DimenRes id: Int): Int {
  * @param dpValue Dimension value as DP
  * @return Given dimension value as pixels
  */
-fun dimensAsPx(context: Context, dpValue: Int): Int {
+fun dpToPx(context: Context, dpValue: Int): Int {
     val r = context.resources
     return Math.round(
         TypedValue.applyDimension(

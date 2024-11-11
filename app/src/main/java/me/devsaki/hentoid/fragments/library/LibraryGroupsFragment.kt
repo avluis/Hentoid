@@ -60,7 +60,7 @@ import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.dimensAsDp
-import me.devsaki.hentoid.util.dimensAsPx
+import me.devsaki.hentoid.util.dpToPx
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.snack
@@ -245,7 +245,7 @@ class LibraryGroupsFragment : Fragment(),
                 false
             ) else AutofitGridLayoutManager(
                 requireContext(),
-                dimensAsPx(requireContext(), Settings.libraryGridCardWidthDP)
+                dpToPx(requireContext(), Settings.libraryGridCardWidthDP)
             )
 
         binding?.recyclerView?.let {
