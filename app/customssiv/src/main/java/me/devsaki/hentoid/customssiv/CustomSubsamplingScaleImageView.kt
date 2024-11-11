@@ -35,6 +35,7 @@ import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder
 import me.devsaki.hentoid.customssiv.util.Debouncer
+import me.devsaki.hentoid.customssiv.util.getScreenDimensionsPx
 import me.devsaki.hentoid.customssiv.util.getScreenDpi
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
 import me.devsaki.hentoid.customssiv.util.resizeBitmap
@@ -379,8 +380,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     init {
         density = resources.displayMetrics.density
-        screenWidth = context.resources.displayMetrics.widthPixels
-        screenHeight = context.resources.displayMetrics.heightPixels
+        screenWidth = getScreenDimensionsPx(context).x
+        screenHeight = getScreenDimensionsPx(context).y
         screenDpi = getScreenDpi(context)
         setMinimumDpi(160)
         setDoubleTapZoomDpi(160)

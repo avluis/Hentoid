@@ -9,11 +9,9 @@ import kotlin.math.abs
  */
 class PageSnapWidget(val recyclerView: RecyclerView) {
 
-    private val snapHelper = SnapHelper()
+    private var isEnabled = true
 
-    private var flingSensitivity = 0f
-
-    private var isEnabled = false
+    private val snapHelper = BlockSnapHelper(1)
 
 
     init {
@@ -30,8 +28,8 @@ class PageSnapWidget(val recyclerView: RecyclerView) {
         }
     }
 
-    fun isPageSnapEnabled(): Boolean {
-        return isEnabled
+    fun setMaxFlingBlocks(value: Int) {
+        snapHelper.maxFlingBlocks = value
     }
 
     /**
@@ -41,10 +39,16 @@ class PageSnapWidget(val recyclerView: RecyclerView) {
      * fling. Values beyond this range will have undefined behavior.
      */
     fun setFlingSensitivity(sensitivity: Float) {
-        flingSensitivity = sensitivity
+        snapHelper.setFlingSensitivity(sensitivity)
     }
 
     inner class SnapHelper : PagerSnapHelper() {
+        private var flingSensitivity = 0f
+
+        fun setFlingSensitivity(sensitivity: Float) {
+            flingSensitivity = sensitivity
+        }
+
         override fun onFling(velocityX: Int, velocityY: Int): Boolean {
             val min: Int = recyclerView.minFlingVelocity
             val max: Int = recyclerView.maxFlingVelocity

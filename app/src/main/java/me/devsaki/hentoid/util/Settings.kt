@@ -108,7 +108,11 @@ object Settings {
     var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
 
     // READER
-    var colorDepth: Int by IntSettingStr(Key.READER_COLOR_DEPTH, 0)
+    var readerColorDepth: Int by IntSettingStr(Key.READER_COLOR_DEPTH, 0)
+    var reader2PagesMode: Boolean by BoolSetting(Key.READER_TWOPAGES, false)
+    fun getContent2PagesMode(bookPrefs: Map<String, String>): Boolean {
+        return bookPrefs.getOrDefault(Key.READER_TWOPAGES, reader2PagesMode.toString()).toBoolean()
+    }
 
     // METADATA & RULES EDITOR
     var ruleSortField: Int by IntSetting("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
@@ -272,6 +276,7 @@ object Settings {
 
         const val LIBRARY_DISPLAY = "pref_library_display"
         const val READER_COLOR_DEPTH = "viewer_color_depth"
+        const val READER_TWOPAGES = "reader_two_pages"
         const val LOCK_TYPE = "LOCK_TYPE"
         const val LIBRARY_DISPLAY_GRID_FAV = "LIBRARY_DISPLAY_GRID_FAV"
         const val LIBRARY_DISPLAY_GRID_RATING = "LIBRARY_DISPLAY_GRID_RATING"

@@ -707,6 +707,11 @@
                     android:key="pref_viewer_maintain_horizontal_zoom"
                     android:title="@string/pref_viewer_maintain_horizontal_zoom"
                     app:iconSpaceReserved="false" />
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_two_pages_mode"
+                    android:key="reader_two_pages"
+                    android:title="@string/reader_two_pages_mode"
+                    app:iconSpaceReserved="false" />
             </PreferenceCategory>
             <PreferenceCategory
                 android:title="@string/pref_viewer_vertical_reader"

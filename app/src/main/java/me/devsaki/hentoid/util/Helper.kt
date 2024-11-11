@@ -10,12 +10,14 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Point
 import android.graphics.drawable.InsetDrawable
+import android.os.Build
 import android.os.Debug
 import android.os.Looper
 import android.util.TypedValue
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
+import android.view.WindowManager
 import androidx.annotation.DimenRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
@@ -558,4 +560,15 @@ fun getAppTotalRamBytes(): Long {
     //val totalMem = memInfo.getMemoryStat("summary.total-pss").toLong() * 1024
 
     return javaMem + natiMem
+}
+
+fun getScreenDimensionsPx(context: Context): Point {
+    val wMgr = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    if (Build.VERSION.SDK_INT >= 30) {
+        wMgr.currentWindowMetrics.bounds.apply { return Point(width(), height()) }
+    } else {
+        val result = Point()
+        wMgr.defaultDisplay.getRealSize(result)
+        return result
+    }
 }

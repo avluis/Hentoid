@@ -32,7 +32,7 @@ private val WEBP_VP8L = "VP8L".toByteArray(CHARSET_LATIN_1)
 private val WEBP_ANIM = "ANIM".toByteArray(CHARSET_LATIN_1)
 
 
-fun ByteArray.startsWith(data: ByteArray): Boolean {
+internal fun ByteArray.startsWith(data: ByteArray): Boolean {
     if (this.size < data.size) return false
     data.forEachIndexed { index, byte -> if (byte != this[index]) return false }
     return true
@@ -44,7 +44,7 @@ fun ByteArray.startsWith(data: ByteArray): Boolean {
  * @param data Picture binary data to determine the MIME-type for
  * @return MIME-type of the given binary data; empty string if not supported
  */
-fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
+internal fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
     if (data.size < 12) return ""
     val theLimit = if (-1 == limit) min(data.size * 0.2f, 1000f).toInt() else limit
 
@@ -82,7 +82,7 @@ fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
  * @param data Binary picture file header (400 bytes minimum)
  * @return True if the format is animated and supported by the app
  */
-fun isImageAnimated(data: ByteArray): Boolean {
+internal fun isImageAnimated(data: ByteArray): Boolean {
     return if (data.size < 400) false
     else {
         val limit = min(data.size, 1000)

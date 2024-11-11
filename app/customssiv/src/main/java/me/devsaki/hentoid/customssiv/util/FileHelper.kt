@@ -13,7 +13,7 @@ const val FILE_IO_BUFFER_SIZE = 32 * 1024
  * @param limit      Limit not to cross (in bytes counted from the initial position); 0 for unlimited
  * @return Position of the sequence in the data array; -1 if not found within the given initial position and limit
  */
-fun findSequencePosition(data: ByteArray, initialPos: Int, sequence: ByteArray, limit: Int): Int {
+internal fun findSequencePosition(data: ByteArray, initialPos: Int, sequence: ByteArray, limit: Int): Int {
     var iSequence = 0
 
     if (initialPos < 0 || initialPos > data.size) return -1

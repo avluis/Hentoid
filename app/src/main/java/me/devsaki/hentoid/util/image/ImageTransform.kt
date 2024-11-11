@@ -7,6 +7,7 @@ import android.os.Build
 import com.squareup.moshi.JsonClass
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.PictureEncoder
+import me.devsaki.hentoid.util.getScreenDimensionsPx
 import java.io.ByteArrayOutputStream
 import kotlin.math.max
 import kotlin.math.min
@@ -27,8 +28,8 @@ data class TransformParams(
     @Transient var forceManhwa: Boolean = false
 )
 
-val screenWidth: Int = HentoidApp.getInstance().resources.displayMetrics.widthPixels
-val screenHeight: Int = HentoidApp.getInstance().resources.displayMetrics.heightPixels
+val screenWidth = getScreenDimensionsPx(HentoidApp.getInstance()).x
+val screenHeight = getScreenDimensionsPx(HentoidApp.getInstance()).y
 
 private const val MAX_WEBP_DIMENSION = 16383 // As per WEBP specifications
 
