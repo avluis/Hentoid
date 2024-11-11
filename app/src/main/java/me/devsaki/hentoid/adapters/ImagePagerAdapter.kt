@@ -554,12 +554,10 @@ class ImagePagerAdapter(context: Context) :
             val rootLayoutStyle =
                 if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
             val effectiveWidth = screenWidth
-//                if (Configuration.ORIENTATION_LANDSCAPE == rootView.context.resources.configuration.orientation) screenHeight else screenWidth
             val layoutParams = rootView.layoutParams
             layoutParams.width =
                 if (isHalfWidth) effectiveWidth / 2 else ViewGroup.LayoutParams.MATCH_PARENT
             layoutParams.height = rootLayoutStyle
-            Timber.i("layout width ${layoutParams.width} effectiveWidth $screenWidth")
             rootView.layoutParams = layoutParams
 
             // Image view height (for vertical mode)
