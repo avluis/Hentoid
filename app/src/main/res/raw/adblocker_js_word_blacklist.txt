@@ -20,3 +20,5 @@ exojspop
 exoslider
 exosrv.com
 realsrv.com
+&abvar=0
+adMoxyCtrl
