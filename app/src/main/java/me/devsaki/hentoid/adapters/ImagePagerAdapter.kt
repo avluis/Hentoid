@@ -322,6 +322,12 @@ class ImagePagerAdapter(context: Context) :
 
     fun setGestureListenerForPosition(position: Int) {
         recyclerView?.lifecycleScope?.launch {
+            withContext(Dispatchers.Default) {
+                // Account for items being refreshed just after that call
+                // NB : A cleaner implementation would be to intercept all notifyxxxChanged calls and set a debouncer on them,
+                // but it would add complexity for little perceived value
+                pause(500)
+            }
             (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.setTapListener()
         }
     }
