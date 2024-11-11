@@ -429,18 +429,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             }
             recyclerView.requestFocus()
             // Scale listener from the ImageView, incl. top to bottom browsing
-            recyclerView.setOnScaleListener { scale ->
-                /* TODO harmonize scale listeners + fine-tune zooming on edges
-                if (LinearLayoutManager.HORIZONTAL == llm.orientation) {
-                    pageSnapWidget.apply {
-                        if (scale - 1.0 < 0.05 && !isPageSnapEnabled()) setPageSnapEnabled(true)
-                        else if (scale - 1.0 > 0.05 && isPageSnapEnabled()) setPageSnapEnabled(false)
-                    }
-                }
-                 */
-                if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
-                    rescaleDebouncer.submit(scale.toFloat())
-            }
+            recyclerView.setOnScaleListener { onScaleChanged(it.toFloat()) }
             recyclerView.setLongTapListener(object : ZoomableRecyclerView.LongTapListener {
                 override fun onListen(ev: MotionEvent?): Boolean {
                     onLongTap()
@@ -449,7 +438,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             })
             // Scale listener from the SSIV
             adapter.setOnScaleListener { position, scale ->
-                if (position == absImageIndex) adapterRescaleDebouncer.submit(scale)
+                if (position == absImageIndex) onScaleChanged(scale)
             }
             adapter.setSsivAlertListener {
                 useSsiv = false
@@ -1592,6 +1581,17 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         isSlideshowActive = false
         scrollListener.enableScroll()
         toast(R.string.slideshow_stop)
+    }
+
+    private fun onScaleChanged(scale: Float) {
+        adapterRescaleDebouncer.submit(scale)
+        if (LinearLayoutManager.HORIZONTAL == displayParams?.orientation) {
+            pageSnapWidget.apply {
+                if (scale - 1.0 < 0.05 && !isEnabled) setPageSnapEnabled(true)
+                else if (scale - 1.0 > 0.05 && isEnabled) setPageSnapEnabled(false)
+            }
+        }
+        if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) rescaleDebouncer.submit(scale)
     }
 
     private fun displayZoomLevel(value: Float) {

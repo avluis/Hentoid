@@ -9,7 +9,8 @@ import kotlin.math.abs
  */
 class PageSnapWidget(val recyclerView: RecyclerView) {
 
-    private var isEnabled = true
+    var isEnabled = true
+        private set
 
     private val snapHelper = BlockSnapHelper(1)
 
