@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.graphics.Point
 import android.graphics.Typeface
 import android.os.Build
@@ -259,13 +260,21 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             reverseMenu = it.controlsOverlay.toolbar.menu.findItem(R.id.action_reverse)
 
             ViewCompat.setOnApplyWindowInsetsListener(it.root) { _, insets: WindowInsetsCompat ->
-                if (displayParams?.twoPages == true) {
-                    val nav = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-                    val navBarHeight = nav.left + nav.right // Covers all landscape cases
-                    val status = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-                    // Move the overlay not to be covered by navigation shapes
-                    binding?.controlsOverlay?.root?.setPadding(0, status.top, navBarHeight, 0)
-                }
+                val nav = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+                // Covers all landscape cases
+                val navBarHeight = nav.left + nav.right + nav.top + nav.bottom
+                val status = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+
+                // Move the overlay not to be covered by navigation shapes
+                val isLandscape =
+                    (Configuration.ORIENTATION_LANDSCAPE == resources.configuration.orientation)
+                binding?.controlsOverlay?.root?.setPadding(
+                    0,
+                    status.top,
+                    if (isLandscape) navBarHeight else 0,
+                    if (isLandscape) 0 else navBarHeight
+                )
+
                 WindowInsetsCompat.CONSUMED
             }
         }
@@ -1131,8 +1140,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             if (isLayoutChange) {
                 adapter.setTwoPagesMode(newDisplayParams.twoPages)
                 shouldUpdateImageDisplay = true
-                if (newDisplayParams.twoPages) activity?.requestedOrientation =
-                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                activity?.requestedOrientation =
+                    if (newDisplayParams.twoPages) ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 pageSnapWidget.setMaxFlingBlocks(if (newDisplayParams.twoPages) 2 else 1)
             }
             if (shouldUpdateImageDisplay) onUpdateImageDisplay(false)
