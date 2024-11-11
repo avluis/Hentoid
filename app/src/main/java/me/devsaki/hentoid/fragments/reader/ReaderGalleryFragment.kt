@@ -259,8 +259,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             expandableItemAdapter.clear()
 
             binding?.apply {
-                val glm = recyclerView.layoutManager as GridLayoutManager?
-                if (glm != null) {
+                (recyclerView.layoutManager as GridLayoutManager?)?.let { glm ->
                     val spanCount = Preferences.getReaderGalleryColumns()
                     glm.spanCount = spanCount
 
@@ -360,8 +359,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 fastAdapter.onClickListener = { _, _, i, _ -> onItemClick(i) }
 
                 // Dynamic column size
-                val glm = recyclerView.layoutManager as GridLayoutManager?
-                if (glm != null) {
+                (recyclerView.layoutManager as GridLayoutManager?)?.let { glm ->
                     val spanCount = Preferences.getReaderGalleryColumns()
                     glm.spanCount = spanCount
 
