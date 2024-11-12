@@ -233,6 +233,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private var zoomEnabled = true
     private var quickScaleEnabled = true
     private var longTapZoomEnabled = true
+    private var isDoubleTapZoomEnabled = true
 
     // Double tap zoom behaviour
     private var doubleTapZoomScale = 1f
@@ -771,8 +772,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                         quickScaleMoved = false
                         // We need to get events in onTouchEvent after this.
                         return false
-                    } else {
-                        // Start double tap zoom animation.
+                    } else if (isDoubleTapZoomEnabled) {
+                        // Start double tap zoom animation
                         val sCenter = viewToSourceCoord(PointF(e.x, e.y))
                         doubleTapZoom(sCenter, PointF(e.x, e.y))
                         return true
@@ -1169,8 +1170,12 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 handler.removeMessages(MESSAGE_LONG_CLICK)
                 if (isQuickScaling) {
                     isQuickScaling = false
-                    if (!quickScaleMoved) {
-                        doubleTapZoom(quickScaleSCenter, vCenterStart)
+                    if (!quickScaleMoved && isDoubleTapZoomEnabled) {
+                        quickScaleSCenter?.let { qsc ->
+                            vCenterStart?.let { vcs ->
+                                doubleTapZoom(qsc, vcs)
+                            }
+                        }
                     }
                 }
                 if (maxTouchCount > 0 && (isZooming || isPanning)) {
@@ -1230,43 +1235,37 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * Double tap zoom handler triggered from gesture detector or on touch, depending on whether
      * quick scale is enabled.
      */
-    private fun doubleTapZoom(sCenter: PointF?, vFocus: PointF?) {
+    private fun doubleTapZoom(sCenter: PointF, vFocus: PointF) {
         if (!panEnabled) {
             if (sRequestedCenter != null) {
                 // With a center specified from code, zoom around that point.
-                sCenter!!.x = sRequestedCenter!!.x
+                sCenter.x = sRequestedCenter!!.x
                 sCenter.y = sRequestedCenter!!.y
             } else {
                 // With no requested center, scale around the image center.
-                sCenter!!.x = sWidth() / 2f
+                sCenter.x = sWidth() / 2f
                 sCenter.y = sHeight() / 2f
             }
         }
-        var targetDoubleTapZoomScale =
-            min(maxScale.toDouble(), doubleTapZoomScale.toDouble()).toFloat()
+        var targetDoubleTapZoomScale = min(maxScale, doubleTapZoomScale)
         if (doubleTapZoomCap > -1) {
-            targetDoubleTapZoomScale = min(
-                targetDoubleTapZoomScale.toDouble(),
-                (initialScale * doubleTapZoomCap).toDouble()
-            )
-                .toFloat()
-            Timber.i(">> doubleTapZoomCap %s -> %s", initialScale, targetDoubleTapZoomScale)
+            targetDoubleTapZoomScale =
+                min(targetDoubleTapZoomScale, initialScale * doubleTapZoomCap)
         }
+        Timber.d(">> doubleTapZoom $initialScale / $scale -> ^$targetDoubleTapZoomScale")
 
         val zoomIn = (scale <= targetDoubleTapZoomScale * 0.9) || scale == minScale
         val targetScale = if (zoomIn) targetDoubleTapZoomScale else minScale()
         if (doubleTapZoomStyle == ZoomStyle.FOCUS_CENTER_IMMEDIATE) {
             setScaleAndCenter(targetScale, sCenter)
         } else if (doubleTapZoomStyle == ZoomStyle.FOCUS_CENTER || !zoomIn || !panEnabled) {
-            AnimationBuilder(targetScale, sCenter!!).withInterruptible(false)
-                .withDuration(doubleTapZoomDuration.toLong()).withOrigin(
-                    AnimOrigin.DOUBLE_TAP_ZOOM
-                ).start()
+            AnimationBuilder(targetScale, sCenter).withInterruptible(false)
+                .withDuration(doubleTapZoomDuration.toLong())
+                .withOrigin(AnimOrigin.DOUBLE_TAP_ZOOM).start()
         } else if (doubleTapZoomStyle == ZoomStyle.FOCUS_FIXED) {
-            AnimationBuilder(targetScale, sCenter!!, vFocus!!).withInterruptible(false)
-                .withDuration(doubleTapZoomDuration.toLong()).withOrigin(
-                    AnimOrigin.DOUBLE_TAP_ZOOM
-                ).start()
+            AnimationBuilder(targetScale, sCenter, vFocus).withInterruptible(false)
+                .withDuration(doubleTapZoomDuration.toLong())
+                .withOrigin(AnimOrigin.DOUBLE_TAP_ZOOM).start()
         }
         invalidate()
     }
@@ -3139,10 +3138,14 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     /**
      * Enable or disable temp zoom on long tap
      *
-     * @param longTapZoomEnabled true to enable temp zoom on hold, false to disable.
+     * @param value true to enable temp zoom on hold, false to disable.
      */
-    fun setLongTapZoomEnabled(longTapZoomEnabled: Boolean) {
-        this.longTapZoomEnabled = longTapZoomEnabled
+    fun setLongTapZoomEnabled(value: Boolean) {
+        this.longTapZoomEnabled = value
+    }
+
+    fun setDoubleTapZoomEnabled(value: Boolean) {
+        this.isDoubleTapZoomEnabled = value
     }
 
     /**

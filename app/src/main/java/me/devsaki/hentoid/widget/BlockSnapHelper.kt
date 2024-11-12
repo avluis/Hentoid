@@ -46,9 +46,6 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
 
     private var flingSensitivity = 0f
 
-    // Maximum number of positions to move on a fling.
-    //private var maxPositionsToMove: Int = 0
-
     // Width of a RecyclerView item if orientation is horizonal; height of the item if vertical
     private var itemDimension: Int = 0
 
@@ -242,8 +239,7 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
     }
 
     private fun initItemDimensionIfNeeded(layoutManager: RecyclerView.LayoutManager) {
-        if (itemDimension != 0)
-            return
+        if (itemDimension != 0) return
         val child = layoutManager.getChildAt(0) ?: return
         if (layoutManager.canScrollHorizontally()) {
             itemDimension = child.width
@@ -252,7 +248,6 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
             itemDimension = child.height
             blocksize = getSpanCount(layoutManager) * (recyclerView.height / itemDimension)
         }
-//        maxPositionsToMove = blocksize * maxFlingBlocks
     }
 
     private fun getMaxPositionsToMove(): Int {
@@ -362,12 +357,11 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
     }
 
     override fun onFling(velocityX: Int, velocityY: Int): Boolean {
-        val min: Int = recyclerView.minFlingVelocity
-        val max: Int = recyclerView.maxFlingVelocity
-        val threshold: Int = (max * (1.0 - flingSensitivity) + min * flingSensitivity).toInt()
-        return if (abs(velocityX) > threshold) {
-            false
-        } else super.onFling(velocityX, velocityY)
+        val min = recyclerView.minFlingVelocity
+        val max = recyclerView.maxFlingVelocity
+        val threshold = (max * (1.0 - flingSensitivity) + min * flingSensitivity).toInt()
+        return if (abs(velocityX) > threshold || abs(velocityX) > threshold) false
+        else super.onFling(velocityX, velocityY)
     }
 
     /**
