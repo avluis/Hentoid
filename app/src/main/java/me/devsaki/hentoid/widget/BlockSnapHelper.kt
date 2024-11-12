@@ -158,10 +158,8 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
         // 1) toward the bottom of the data and therefore on screen, or
         // 2) toward the top of the data and may be off-screen.
         val snapPos = calcTargetPosition(layoutManager as LinearLayoutManager)
-        val snapView =
-            if (snapPos == RecyclerView.NO_POSITION) null else layoutManager.findViewByPosition(
-                snapPos
-            )
+        val snapView = if (snapPos == RecyclerView.NO_POSITION) null
+        else layoutManager.findViewByPosition(snapPos)
         if (snapView == null) Timber.d("<<<<findSnapView is returning null!")
         Timber.d("<<<<findSnapView snapos=$snapPos")
         return snapView
