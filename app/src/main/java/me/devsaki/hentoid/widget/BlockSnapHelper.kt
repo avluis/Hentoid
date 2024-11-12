@@ -14,7 +14,7 @@ import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.max
 
-private const val MILLISECONDS_PER_INCH = 100f
+private const val MILLISECONDS_PER_INCH = 33f
 
 /**
  * https://gist.github.com/Moes81/0cfbb1f2d8492025a7ddaa9549f870e7
@@ -108,11 +108,11 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
             out[0] = layoutDirectionHelper!!.getScrollToAlignView(targetView)
         if (layoutManager.canScrollVertically())
             out[1] = layoutDirectionHelper!!.getScrollToAlignView(targetView)
-        if (snapBlockCallback != null)
-            if (out[0] == 0 && out[1] == 0)
-                snapBlockCallback!!.onBlockSnapped(layoutManager.getPosition(targetView))
-            else
-                snapBlockCallback!!.onBlockSnap(layoutManager.getPosition(targetView))
+
+        if (out[0] == 0 && out[1] == 0)
+            snapBlockCallback?.onBlockSnapped(layoutManager.getPosition(targetView))
+        else
+            snapBlockCallback?.onBlockSnap(layoutManager.getPosition(targetView))
         return out
     }
 
