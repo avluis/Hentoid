@@ -1795,6 +1795,7 @@ class ReaderViewModel(
         dao.insertChapters(updatedChapters)
         val finalContent = dao.selectContent(contentId)
         if (finalContent != null) persistJson(getApplication(), finalContent)
+        dao.cleanup()
     }
 
     /**
@@ -1862,6 +1863,7 @@ class ReaderViewModel(
         for (img in chapterImages) img.setChapter(precedingChapter)
         dao.insertImageFiles(chapterImages)
         dao.deleteChapter(toRemove)
+        dao.cleanup()
     }
 
     fun renameChapter(chapterId: Long, newName: String) {
