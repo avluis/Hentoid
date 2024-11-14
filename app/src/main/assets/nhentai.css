@@ -1,0 +1,4 @@
+/* Custom style to fix search button display after augmented browser has been enabled */
+.search input {
+    width: 90%;
+}

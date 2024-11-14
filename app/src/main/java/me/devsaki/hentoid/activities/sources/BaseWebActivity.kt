@@ -1678,6 +1678,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             if (getStartSite() == Site.IMHENTAI) getAssetAsString(
                 assets, "imhentai.css", sb
             )
+            if (getStartSite() == Site.NHENTAI) getAssetAsString(
+                assets, "nhentai.css", sb
+            )
             if (getStartSite() == Site.KSK) getAssetAsString(
                 assets, "ksk.css", sb
             )
