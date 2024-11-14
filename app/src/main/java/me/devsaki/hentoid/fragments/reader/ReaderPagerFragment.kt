@@ -5,6 +5,8 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.graphics.Point
 import android.graphics.Typeface
 import android.os.Build
@@ -33,6 +35,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import coil3.load
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
@@ -107,7 +110,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     ReaderDeleteDialogFragment.Parent, Pager {
 
     private lateinit var adapter: ImagePagerAdapter
-    private lateinit var llm: PrefetchLinearLayoutManager
+    private lateinit var layoutMgr: LinearLayoutManager
     private lateinit var pageSnapWidget: PageSnapWidget
     private val prefsListener =
         OnSharedPreferenceChangeListener { _, key -> onSharedPreferenceChanged(key) }
@@ -215,7 +218,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     @SuppressLint("NonConstantResourceId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = FragmentReaderPagerBinding.inflate(inflater, container, false)
 
         displayParams = null
@@ -229,10 +232,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         // Top bar controls
         binding?.let {
             tryShowMenuIcons(
-                requireActivity(), it.controlsOverlay.viewerPagerToolbar.menu
+                requireActivity(), it.controlsOverlay.toolbar.menu
             )
-            it.controlsOverlay.viewerPagerToolbar.setNavigationOnClickListener { onBackClick() }
-            it.controlsOverlay.viewerPagerToolbar.setOnMenuItemClickListener { clickedMenuItem ->
+            it.controlsOverlay.toolbar.setNavigationOnClickListener { onBackClick() }
+            it.controlsOverlay.toolbar.setOnMenuItemClickListener { clickedMenuItem ->
                 when (clickedMenuItem.itemId) {
                     R.id.action_show_favorite_pages -> onShowFavouriteClick()
                     R.id.action_book_settings -> onBookSettingsClick()
@@ -250,13 +253,32 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 true
             }
             deleteMenu =
-                it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_delete_book)
+                it.controlsOverlay.toolbar.menu.findItem(R.id.action_delete_book)
             showFavoritePagesMenu =
-                it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_show_favorite_pages)
-            shuffleMenu = it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_shuffle)
-            reverseMenu = it.controlsOverlay.viewerPagerToolbar.menu.findItem(R.id.action_reverse)
+                it.controlsOverlay.toolbar.menu.findItem(R.id.action_show_favorite_pages)
+            shuffleMenu = it.controlsOverlay.toolbar.menu.findItem(R.id.action_shuffle)
+            reverseMenu = it.controlsOverlay.toolbar.menu.findItem(R.id.action_reverse)
+
+            ViewCompat.setOnApplyWindowInsetsListener(it.root) { _, insets: WindowInsetsCompat ->
+                val nav = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+                // Covers all landscape cases
+                val navBarHeight = nav.left + nav.right + nav.top + nav.bottom
+                val status = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+
+                // Move the overlay not to be covered by navigation shapes
+                val isLandscape =
+                    (Configuration.ORIENTATION_LANDSCAPE == resources.configuration.orientation)
+                binding?.controlsOverlay?.root?.setPadding(
+                    0,
+                    status.top,
+                    if (isLandscape) navBarHeight else 0,
+                    if (isLandscape) 0 else navBarHeight
+                )
+
+                WindowInsetsCompat.CONSUMED
+            }
         }
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -318,8 +340,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
         (requireActivity() as ReaderActivity)
             .registerKeyListener(ReaderKeyListener(lifecycleScope)
-                .setOnVolumeDownListener { b: Boolean -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.previousFunctional() else previousPage() }
-                .setOnVolumeUpListener { b: Boolean -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.nextFunctional() else nextPage() }
+                .setOnVolumeDownListener { b -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.previousFunctional() else previousPage() }
+                .setOnVolumeUpListener { b -> if (b && Preferences.isReaderVolumeToSwitchBooks()) navigator.nextFunctional() else nextPage() }
                 .setOnKeyLeftListener { onLeftTap() }.setOnKeyRightListener { onRightTap() }
                 .setOnBackListener { onBackClick() })
     }
@@ -416,18 +438,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             }
             recyclerView.requestFocus()
             // Scale listener from the ImageView, incl. top to bottom browsing
-            recyclerView.setOnScaleListener { scale ->
-                /* Unwanted behaviour
-                if (LinearLayoutManager.HORIZONTAL == llm.orientation) {
-                    pageSnapWidget.apply {
-                        if (scale - 1.0 < 0.05 && !isPageSnapEnabled()) setPageSnapEnabled(true)
-                        else if (scale - 1.0 > 0.05 && isPageSnapEnabled()) setPageSnapEnabled(false)
-                    }
-                }
-                 */
-                if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
-                    rescaleDebouncer.submit(scale.toFloat())
-            }
+            recyclerView.setOnScaleListener { onScaleChanged(it.toFloat()) }
             recyclerView.setLongTapListener(object : ZoomableRecyclerView.LongTapListener {
                 override fun onListen(ev: MotionEvent?): Boolean {
                     onLongTap()
@@ -436,24 +447,32 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             })
             // Scale listener from the SSIV
             adapter.setOnScaleListener { position, scale ->
-                if (position == absImageIndex) adapterRescaleDebouncer.submit(scale)
+                if (position == absImageIndex) onScaleChanged(scale)
             }
             adapter.setSsivAlertListener {
                 useSsiv = false
                 displayParams?.apply {
                     if (useSsiv) {
                         onDisplayParamsChange(
-                            DisplayParams(browseMode, displayMode, isSmoothRendering, true)
+                            DisplayParams(
+                                browseMode,
+                                displayMode,
+                                twoPages,
+                                isSmoothRendering,
+                                true
+                            )
                         )
                     }
                 }
             }
 
             adapter.setRecyclerView(recyclerView)
-            llm = PrefetchLinearLayoutManager(requireContext())
-            llm.orientation = LinearLayoutManager.HORIZONTAL
-            llm.setExtraLayoutSpace(10)
-            recyclerView.layoutManager = llm
+            PrefetchLinearLayoutManager(requireContext()).let {
+                it.orientation = RecyclerView.HORIZONTAL
+                it.setExtraLayoutSpace(10)
+                layoutMgr = it
+                recyclerView.layoutManager = layoutMgr
+            }
             pageSnapWidget = PageSnapWidget(recyclerView)
         }
         smoothScroller = ReaderSmoothScroller(requireContext())
@@ -464,17 +483,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun initControlsOverlay() {
         binding?.let {
             // Slideshow slider
-            val slider: Slider = it.controlsOverlay.slideshowDelaySlider
+            val slider = it.controlsOverlay.slideshowDelaySlider
             slider.valueFrom = 0f
-            val sliderValue: Int =
-                if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(
-                        bookPreferences
-                    )
-                ) convertPrefsDelayToSliderPosition(
-                    Preferences.getReaderSlideshowDelayVertical()
-                ) else convertPrefsDelayToSliderPosition(
-                    Preferences.getReaderSlideshowDelay()
-                )
+            val sliderValue = if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
+                convertPrefsDelayToSliderPosition(Preferences.getReaderSlideshowDelayVertical())
+            else convertPrefsDelayToSliderPosition(Preferences.getReaderSlideshowDelay())
             var nbEntries =
                 resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries).size
             nbEntries = 1.coerceAtLeast(nbEntries - 1)
@@ -484,19 +497,17 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             slider.valueTo = nbEntries.toFloat()
             slider.setLabelFormatter { value: Float ->
                 val entries: Array<String> =
-                    if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(
-                            bookPreferences
-                        )
-                    ) {
+                    if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) {
                         resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)
                     } else {
                         resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries)
                     }
                 entries[value.toInt()]
             }
-            slider.onFocusChangeListener = OnFocusChangeListener { _: View?, hasFocus: Boolean ->
-                if (!hasFocus) slider.visibility = View.GONE
-            }
+            slider.onFocusChangeListener =
+                OnFocusChangeListener { _: View?, hasFocus: Boolean ->
+                    if (!hasFocus) slider.visibility = View.GONE
+                }
             slider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
                 override fun onStartTrackingTouch(slider: Slider) {
                     slideshowSliderDebouncer.clear()
@@ -530,10 +541,20 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     onInfoMicroMenuClick(p)
                 }
                 informationMicroMenu.addSubmarineItem(
-                    SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book))
+                    SubmarineItem(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            R.drawable.ic_book
+                        )
+                    )
                 )
                 informationMicroMenu.addSubmarineItem(
-                    SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page))
+                    SubmarineItem(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            R.drawable.ic_page
+                        )
+                    )
                 )
                 infoBtn.setOnClickListener {
                     favouriteMicroMenu.dips()
@@ -614,8 +635,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onSlideshowClick() {
         var startIndex =
-            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
-                Preferences.getReaderSlideshowDelayVertical()
+            if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) Preferences.getReaderSlideshowDelayVertical()
             else Preferences.getReaderSlideshowDelay()
         startIndex = convertPrefsDelayToSliderPosition(startIndex)
         binding?.let {
@@ -803,16 +823,16 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun applyStartingIndexInternal(startingIndex: Int) {
         startingIndexLoaded = true
-        val currentPosition = llm.findFirstVisibleItemPosition()
-            .coerceAtLeast(llm.findFirstCompletelyVisibleItemPosition())
+        val currentPosition = layoutMgr.findFirstVisibleItemPosition()
+            .coerceAtLeast(layoutMgr.findFirstCompletelyVisibleItemPosition())
 
         // When target position is the same as current scroll index (0), scrolling is pointless
         // -> activate scroll listener manually
         if (currentPosition == startingIndex) onScrollPositionChange(startingIndex)
         else {
-            if (LinearLayoutManager.HORIZONTAL == llm.orientation)
+            if (RecyclerView.HORIZONTAL == layoutMgr.orientation)
                 binding?.recyclerView?.scrollToPosition(startingIndex)
-            else llm.scrollToPositionWithOffset(startingIndex, 0)
+            else layoutMgr.scrollToPositionWithOffset(startingIndex, 0)
         }
     }
 
@@ -838,7 +858,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         updateFavouriteButtonIcon()
         // Reset animation presence flag
         displayParams?.apply {
-            displayParams = DisplayParams(browseMode, displayMode, isSmoothRendering, false)
+            displayParams =
+                DisplayParams(browseMode, displayMode, twoPages, isSmoothRendering, false)
             // onDisplayParamsChange will be called as soon as images are loaded
         }
 
@@ -899,16 +920,15 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
         if (scrollPosition != absImageIndex) {
             var isScrollLTR = true
-            val direction = Preferences.getContentDirection(bookPreferences)
-            if (VIEWER_DIRECTION_LTR == direction && absImageIndex > scrollPosition)
+            if (VIEWER_DIRECTION_LTR == displayParams?.direction && absImageIndex > scrollPosition)
                 isScrollLTR = false
-            else if (VIEWER_DIRECTION_RTL == direction && absImageIndex < scrollPosition)
+            else if (VIEWER_DIRECTION_RTL == displayParams?.direction && absImageIndex < scrollPosition)
                 isScrollLTR = false
             adapter.setScrollLTR(isScrollLTR)
             hidePendingMicroMenus()
 
-            // Manage scaling reset / stability if we're using horizontal (independent pages) mode
-            if (VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences)) {
+            if (VIEWER_ORIENTATION_HORIZONTAL == displayParams?.orientation) {
+                // Manage scaling reset / stability if we're using horizontal (independent pages) mode
                 if (Preferences.isReaderMaintainHorizontalZoom() && absImageIndex > -1) {
                     val previousScale = adapter.getRelativeScaleAtPosition(absImageIndex)
                     Timber.d(">> relative scale : %s", previousScale)
@@ -917,6 +937,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 } else {
                     adapter.resetScaleAtPosition(scrollPosition)
                 }
+                // Reactivate snap to avoid shuffling through all pages while zoom is on
+                pageSnapWidget.setPageSnapEnabled(true)
             }
 
             // Set the correct gesture listener (recyclerView or image)
@@ -963,7 +985,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         if (null == key) return
         Timber.v("Prefs change detected : %s", key)
         when (key) {
-            Preferences.Key.VIEWER_BROWSE_MODE, Preferences.Key.VIEWER_HOLD_TO_ZOOM, Preferences.Key.VIEWER_CONTINUOUS -> onBrowseModeChange()
+            Preferences.Key.VIEWER_BROWSE_MODE, Preferences.Key.VIEWER_HOLD_TO_ZOOM, Preferences.Key.VIEWER_CONTINUOUS, Settings.Key.READER_TWOPAGES -> onBrowseModeChange()
             Preferences.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()
             Preferences.Key.VIEWER_ZOOM_TRANSITIONS, Preferences.Key.VIEWER_SEPARATING_BARS, Preferences.Key.VIEWER_AUTO_ROTATE
             -> onUpdateImageDisplay(true)
@@ -1014,7 +1036,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 recyclerView.layoutManager = null
                 recyclerView.recycledViewPool.clear()
                 recyclerView.swapAdapter(adapter, false)
-                recyclerView.layoutManager = llm
+                recyclerView.layoutManager = layoutMgr
             }
             adapter.notifyDataSetChanged() // NB : will re-run onBindViewHolder for all displayed pictures
         }
@@ -1032,6 +1054,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val newDisplayParams = DisplayParams(
             Preferences.getContentBrowseMode(bookPreferences),
             Preferences.getContentDisplayMode(bookPreferences),
+            Settings.getContent2PagesMode(bookPreferences),
             Preferences.isContentSmoothRendering(bookPreferences),
             adapter.getSSivAtPosition(absImageIndex)
         )
@@ -1056,9 +1079,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             (null == currentDisplayParams || currentDisplayParams.direction != newDisplayParams.direction)
         val isAnimationChange =
             (null == currentDisplayParams || currentDisplayParams.useSsiv != newDisplayParams.useSsiv)
+        val isLayoutChange =
+            (null == currentDisplayParams || currentDisplayParams.twoPages != newDisplayParams.twoPages)
         displayParams = newDisplayParams
 
         var isZoomFrameEnabled = false
+        var shouldUpdateImageDisplay = false
 
         binding?.apply {
             // Animated picture appears in horizontal mode => enable zoom frame
@@ -1068,31 +1094,33 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
             // Orientation changes
             if (isOrientationChange) {
-                llm.orientation = getOrientation(newDisplayParams.orientation)
+                layoutMgr.orientation = getOrientation(newDisplayParams.orientation)
 
                 // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
                 recyclerView.resetScale()
 
-                val tapZoneScale = if (Preferences.isReaderTapToTurn2x()) 2 else 1
-
                 if (VIEWER_ORIENTATION_VERTICAL == newDisplayParams.orientation) {
                     // For paper roll mode (vertical)
                     val onVerticalZoneTapListener =
-                        OnZoneTapListener(recyclerView, 1)
+                        OnZoneTapListener(recyclerView)
                             .setOnMiddleZoneTapListener { onMiddleTap() }
                             .setOnLongTapListener { onLongTap() }
                     adapter.setItemTouchListener(onVerticalZoneTapListener)
                     isZoomFrameEnabled = true
-                    onUpdateImageDisplay(false)
+                    shouldUpdateImageDisplay = true
                 } else {
                     // For independent images mode (horizontal)
                     val onHorizontalZoneTapListener =
-                        OnZoneTapListener(recyclerView, tapZoneScale)
+                        OnZoneTapListener(
+                            recyclerView,
+                            if (Preferences.isReaderTapToTurn2x()) 2 else 1
+                        )
                             .setOnLeftZoneTapListener { onLeftTap() }
                             .setOnRightZoneTapListener { onRightTap() }
                             .setOnMiddleZoneTapListener { onMiddleTap() }
                             .setOnLongTapListener { onLongTap() }
                     adapter.setItemTouchListener(onHorizontalZoneTapListener)
+                    isZoomFrameEnabled = newDisplayParams.twoPages
                     seekToIndex(absImageIndex)
                 }
                 pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation)
@@ -1105,12 +1133,20 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             if (isDirectionChange) {
                 val currentLayoutDirection: Int =
                     if (View.LAYOUT_DIRECTION_LTR == controlsOverlay.root.layoutDirection) VIEWER_DIRECTION_LTR else VIEWER_DIRECTION_RTL
-                llm.reverseLayout = newDisplayParams.direction != currentLayoutDirection
+                layoutMgr.reverseLayout = newDisplayParams.direction != currentLayoutDirection
 
                 adapter.setScrollLTR(VIEWER_DIRECTION_LTR == newDisplayParams.direction)
                 navigator.setDirection(newDisplayParams.direction)
                 navigator.updatePageControls()
             }
+            if (isLayoutChange) {
+                adapter.setTwoPagesMode(newDisplayParams.twoPages)
+                shouldUpdateImageDisplay = true
+                activity?.requestedOrientation =
+                    if (newDisplayParams.twoPages) ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                pageSnapWidget.setMaxFlingBlocks(if (newDisplayParams.twoPages) 2 else 1)
+            }
+            if (shouldUpdateImageDisplay) onUpdateImageDisplay(false)
         }
     }
 
@@ -1121,9 +1157,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun getOrientation(orientation: Int): Int {
         return if (VIEWER_ORIENTATION_HORIZONTAL == orientation) {
-            LinearLayoutManager.HORIZONTAL
+            RecyclerView.HORIZONTAL
         } else {
-            LinearLayoutManager.VERTICAL
+            RecyclerView.VERTICAL
         }
     }
 
@@ -1181,7 +1217,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     }
                 }
             }
-        powerMenu.setIconColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87))
+        powerMenu.setIconColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.white_opacity_87
+            )
+        )
         binding?.apply {
             powerMenu.showAtCenter(recyclerView)
         }
@@ -1191,25 +1232,23 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Load next page
      */
     private fun nextPage() {
-        if (absImageIndex == adapter.itemCount - 1) {
+        val delta = if (displayParams?.twoPages == true) 2 else 1
+        if (absImageIndex + delta > adapter.itemCount - 1) {
             if (Preferences.isReaderContinuous()) navigator.nextFunctional()
             return
         }
         binding?.apply {
             if (Preferences.isReaderTapTransitions()) {
-                if (VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(
-                        bookPreferences
-                    )
-                ) recyclerView.smoothScrollToPosition(absImageIndex + 1) else {
-                    smoothScroller.targetPosition = absImageIndex + 1
-                    llm.startSmoothScroll(smoothScroller)
+                if (VIEWER_ORIENTATION_HORIZONTAL == displayParams?.orientation)
+                    recyclerView.smoothScrollToPosition(absImageIndex + delta)
+                else {
+                    smoothScroller.targetPosition = absImageIndex + delta
+                    layoutMgr.startSmoothScroll(smoothScroller)
                 }
             } else {
-                if (VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(
-                        bookPreferences
-                    )
-                ) recyclerView.scrollToPosition(absImageIndex + 1)
-                else llm.scrollToPositionWithOffset(absImageIndex + 1, 0)
+                if (VIEWER_ORIENTATION_HORIZONTAL == displayParams?.orientation)
+                    recyclerView.scrollToPosition(absImageIndex + delta)
+                else layoutMgr.scrollToPositionWithOffset(absImageIndex + delta, 0)
             }
         }
     }
@@ -1218,14 +1257,15 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Load previous page
      */
     private fun previousPage() {
-        if (0 == absImageIndex) {
+        val delta = if (displayParams?.twoPages == true) 2 else 1
+        if (absImageIndex - delta < 0) {
             if (Preferences.isReaderContinuous()) navigator.previousFunctional()
             return
         }
         binding?.apply {
             if (Preferences.isReaderTapTransitions())
-                recyclerView.smoothScrollToPosition(absImageIndex - 1)
-            else recyclerView.scrollToPosition(absImageIndex - 1)
+                recyclerView.smoothScrollToPosition(absImageIndex - delta)
+            else recyclerView.scrollToPosition(absImageIndex - delta)
         }
     }
 
@@ -1296,8 +1336,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Handler for tapping on the left zone of the screen
      */
     private fun onLeftTap() {
-        if (null == binding) return
-
         // Hide pending micro-menus
         hidePendingMicroMenus()
 
@@ -1320,8 +1358,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Handler for tapping on the right zone of the screen
      */
     private fun onRightTap() {
-        if (null == binding) return
-
         // Hide pending micro-menus
         hidePendingMicroMenus()
 
@@ -1471,7 +1507,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onSlideShowSliderChosen(sliderIndex: Int) {
         val prefsDelay = convertSliderPositionToPrefsDelay(sliderIndex)
 
-        if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+        if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
             Preferences.setReaderSlideshowDelayVertical(prefsDelay)
         else Preferences.setReaderSlideshowDelay(prefsDelay)
 
@@ -1487,10 +1523,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         hideControlsOverlay()
 
         // Compute slideshow delay
-        val delayPref: Int =
-            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
-                Preferences.getReaderSlideshowDelayVertical()
-            else Preferences.getReaderSlideshowDelay()
+        val delayPref = if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
+            Preferences.getReaderSlideshowDelayVertical()
+        else Preferences.getReaderSlideshowDelay()
 
         val factor: Float = when (delayPref) {
             VIEWER_SLIDESHOW_DELAY_05 -> 0.5f
@@ -1501,7 +1536,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             else -> 2f
         }
         if (showToast) {
-            if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+            if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
                 toast(
                     R.string.slideshow_start_vertical,
                     resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)[convertPrefsDelayToSliderPosition(
@@ -1510,7 +1545,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 ) else toast(R.string.slideshow_start, factor)
         }
         scrollListener.disableScroll()
-        if (VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) {
+        if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) {
             // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
             smoothScroller = ReaderSmoothScroller(requireContext())
             smoothScroller.apply {
@@ -1519,10 +1554,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 targetPosition = adapter.itemCount - 1
                 setSpeed(900f / (factor / 4f))
             }
-            llm.startSmoothScroll(smoothScroller)
+            layoutMgr.startSmoothScroll(smoothScroller)
         } else {
             slideshowPeriodMs = (factor * 1000).toLong()
-            val initialDelayFinal = if (initialDelayMs > -1) initialDelayMs else slideshowPeriodMs
+            val initialDelayFinal =
+                if (initialDelayMs > -1) initialDelayMs else slideshowPeriodMs
             slideshowTimer =
                 timer("slideshow-timer", false, initialDelayFinal, slideshowPeriodMs) {
                     // Timer task is not on the UI thread
@@ -1548,14 +1584,25 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             smoothScroller = ReaderSmoothScroller(requireContext())
             smoothScroller.apply {
                 setCurrentPositionY(scrollListener.totalScrolledY)
-                targetPosition = llm.findFirstVisibleItemPosition()
-                    .coerceAtLeast(llm.findFirstCompletelyVisibleItemPosition())
+                targetPosition = layoutMgr.findFirstVisibleItemPosition()
+                    .coerceAtLeast(layoutMgr.findFirstCompletelyVisibleItemPosition())
             }
-            llm.startSmoothScroll(smoothScroller)
+            layoutMgr.startSmoothScroll(smoothScroller)
         }
         isSlideshowActive = false
         scrollListener.enableScroll()
         toast(R.string.slideshow_stop)
+    }
+
+    private fun onScaleChanged(scale: Float) {
+        adapterRescaleDebouncer.submit(scale)
+        if (LinearLayoutManager.HORIZONTAL == displayParams?.orientation) {
+            pageSnapWidget.apply {
+                if (scale - 1.0 < 0.05 && !isEnabled) setPageSnapEnabled(true)
+                else if (scale - 1.0 > 0.05 && isEnabled) setPageSnapEnabled(false)
+            }
+        }
+        if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) rescaleDebouncer.submit(scale)
     }
 
     private fun displayZoomLevel(value: Float) {
@@ -1581,6 +1628,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     data class DisplayParams(
         val browseMode: Int,
         val displayMode: Int,
+        private val twoPagesIn: Boolean,
         val isSmoothRendering: Boolean,
         val useSsiv: Boolean
     ) {
@@ -1588,5 +1636,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             if (browseMode == VIEWER_BROWSE_TTB) VIEWER_ORIENTATION_VERTICAL else VIEWER_ORIENTATION_HORIZONTAL
         val direction =
             if (browseMode == VIEWER_BROWSE_RTL) VIEWER_DIRECTION_RTL else VIEWER_DIRECTION_LTR
+
+        // Fix cases where book settings cumulated with default settings lead to incompatible values
+        val twoPages = if (browseMode == VIEWER_BROWSE_TTB) false else twoPagesIn
     }
 }

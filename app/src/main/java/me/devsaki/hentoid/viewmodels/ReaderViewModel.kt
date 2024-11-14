@@ -235,6 +235,8 @@ class ReaderViewModel(
                 loadContentFromId(contentId, pageNumber)
             } catch (e: Throwable) {
                 Timber.w(e)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -301,11 +303,15 @@ class ReaderViewModel(
         // e.g. page favourited
         if (!theContent.isArchive) {
             viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    processStorageImages(theContent, newImages)
-                    cacheJson(getApplication<Application>().applicationContext, theContent)
+                try {
+                    withContext(Dispatchers.IO) {
+                        processStorageImages(theContent, newImages)
+                        cacheJson(getApplication<Application>().applicationContext, theContent)
+                    }
+                    processImages(theContent, -1, newImages)
+                } finally {
+                    dao.cleanup()
                 }
-                processImages(theContent, -1, newImages)
             }
         } else {
             // Copy location properties of the new list on the current list
@@ -370,6 +376,7 @@ class ReaderViewModel(
             withContext(Dispatchers.IO) {
                 AchievementsManager.checkCollection()
             }
+            dao.cleanup()
         }
     }
 
@@ -575,6 +582,7 @@ class ReaderViewModel(
                     Timber.e(t)
                 }
             }
+            dao.cleanup()
         }
     }
 
@@ -663,6 +671,8 @@ class ReaderViewModel(
                 successCallback.run()
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -710,6 +720,8 @@ class ReaderViewModel(
                 successCallback.invoke(newState)
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -748,6 +760,8 @@ class ReaderViewModel(
                 successCallback.invoke(rating)
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -830,6 +844,8 @@ class ReaderViewModel(
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -847,6 +863,8 @@ class ReaderViewModel(
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -958,6 +976,8 @@ class ReaderViewModel(
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -1012,7 +1032,10 @@ class ReaderViewModel(
      * @param direction   Direction the viewer is going to (1 : forward; -1 : backward; 0 : no movement)
      */
     fun onPageChange(viewerIndex: Int, direction: Int) {
-        viewModelScope.launch { doPageChange(viewerIndex, direction) }
+        viewModelScope.launch {
+            doPageChange(viewerIndex, direction)
+            dao.cleanup()
+        }
     }
 
     private suspend fun doPageChange(viewerIndex: Int, direction: Int) =
@@ -1180,6 +1203,7 @@ class ReaderViewModel(
                         Timber.w(t)
                     }
                 }
+                dao.cleanup()
             }
         }
     }
@@ -1200,6 +1224,8 @@ class ReaderViewModel(
                 doExtractPics(indexesToLoad, archiveFile, isPdf)
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -1535,6 +1561,8 @@ class ReaderViewModel(
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -1586,6 +1614,8 @@ class ReaderViewModel(
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -1601,6 +1631,7 @@ class ReaderViewModel(
             withContext(Dispatchers.IO) {
                 doNotifyDownloadProgress(progressPc, pageIndex)
             }
+            dao.cleanup()
         }
     }
 
@@ -1661,6 +1692,8 @@ class ReaderViewModel(
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -1686,6 +1719,8 @@ class ReaderViewModel(
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -1760,6 +1795,7 @@ class ReaderViewModel(
         dao.insertChapters(updatedChapters)
         val finalContent = dao.selectContent(contentId)
         if (finalContent != null) persistJson(getApplication(), finalContent)
+        dao.cleanup()
     }
 
     /**
@@ -1827,6 +1863,7 @@ class ReaderViewModel(
         for (img in chapterImages) img.setChapter(precedingChapter)
         dao.insertImageFiles(chapterImages)
         dao.deleteChapter(toRemove)
+        dao.cleanup()
     }
 
     fun renameChapter(chapterId: Long, newName: String) {
@@ -1843,6 +1880,8 @@ class ReaderViewModel(
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -1876,6 +1915,8 @@ class ReaderViewModel(
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }

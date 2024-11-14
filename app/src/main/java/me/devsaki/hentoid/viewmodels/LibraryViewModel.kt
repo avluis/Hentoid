@@ -378,6 +378,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     Timber.e(t)
                 }
             }
+            dao.cleanup()
             onSuccess.run()
         }
     }
@@ -411,6 +412,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     Timber.e(t)
                 }
             }
+            dao.cleanup()
             onSuccess.run()
         }
     }
@@ -455,6 +457,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     Timber.e(t)
                 }
             }
+            dao.cleanup()
             onSuccess.run()
         }
     }
@@ -497,6 +500,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     Timber.e(t)
                 }
             }
+            dao.cleanup()
             onSuccess.run()
         }
     }
@@ -635,6 +639,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             } catch (t: Throwable) {
                 onError.invoke(t)
             }
+            dao.cleanup()
         }
     }
 
@@ -717,6 +722,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 }
             } catch (t: Throwable) {
                 onError.invoke(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -769,6 +776,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 onSuccess.run()
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -796,6 +805,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -837,6 +848,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     }
                 } catch (t: Throwable) {
                     Timber.e(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
         }
@@ -880,6 +893,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     onSuccess.run()
                 } catch (t: Throwable) {
                     Timber.e(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
         }
@@ -900,6 +915,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -944,6 +961,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     }
                 }
             }
+            dao.cleanup()
         }
     }
 
@@ -1001,6 +1019,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 onSuccess.run()
             } catch (t: Throwable) {
                 Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }

@@ -40,7 +40,7 @@ class AutofitGridLayoutManager : GridLayoutManager {
         } else columnWidthPx
     }
 
-    fun setColumnWidth(newColumnWidthPx: Int) {
+    private fun setColumnWidth(newColumnWidthPx: Int) {
         if (newColumnWidthPx > 0 && newColumnWidthPx != columnWidthPx) {
             columnWidthPx = newColumnWidthPx
             isColumnWidthChanged = true

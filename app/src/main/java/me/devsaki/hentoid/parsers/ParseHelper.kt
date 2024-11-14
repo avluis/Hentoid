@@ -325,6 +325,7 @@ fun getExtensionFromFormat(imgFormat: Map<String, String>, i: Int): String {
             'p' -> "png"
             'g' -> "gif"
             'j' -> "jpg"
+            'w' -> "webp"
             else -> "jpg"
         }
     } else ""

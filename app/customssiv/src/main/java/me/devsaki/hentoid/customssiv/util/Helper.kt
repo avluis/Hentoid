@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.customssiv.util
 
 import android.content.Context
+import android.graphics.Point
 import android.os.Build
 import android.os.Looper
 import android.view.WindowManager
@@ -15,7 +16,7 @@ import kotlin.math.abs
  * Crashes if called on the UI thread
  * To be used as a marker wherever processing in a background thread is mandatory
  */
-fun assertNonUiThread() {
+internal fun assertNonUiThread() {
     check(Looper.getMainLooper().thread !== Thread.currentThread()) { "This should not be run on the UI thread" }
 }
 
@@ -27,7 +28,7 @@ fun assertNonUiThread() {
  * @throws IOException If something horrible happens during I/O
  */
 @Throws(IOException::class)
-fun copy(`in`: InputStream, out: OutputStream) {
+internal fun copy(`in`: InputStream, out: OutputStream) {
     // Transfer bytes from in to out
     val buf = ByteArray(FILE_IO_BUFFER_SIZE)
     var len: Int
@@ -38,7 +39,7 @@ fun copy(`in`: InputStream, out: OutputStream) {
 }
 
 @Throws(IOException::class)
-fun copy(`in`: InputStream, out: ByteBuffer) {
+internal fun copy(`in`: InputStream, out: ByteBuffer) {
     // Transfer bytes from in to out
     val buf = ByteArray(FILE_IO_BUFFER_SIZE)
     var len: Int
@@ -47,7 +48,7 @@ fun copy(`in`: InputStream, out: ByteBuffer) {
     }
 }
 
-fun getScreenDpi(context: Context): Float {
+internal fun getScreenDpi(context: Context): Float {
     val metrics = context.resources.displayMetrics
     val averageDpi = (metrics.xdpi + metrics.ydpi) / 2
 
@@ -61,4 +62,15 @@ fun getScreenDpi(context: Context): Float {
     // Dimensions retrieved by metrics.xdpi/ydpi might be expressed as ppi (as per specs) and not dpi (as per naming)
     // In that case, values are off scale => fallback to general dpi
     return if (((abs((generalDpi - averageDpi).toDouble()) / averageDpi) > 1)) generalDpi else averageDpi
+}
+
+internal fun getScreenDimensionsPx(context: Context): Point {
+    val wMgr = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    if (Build.VERSION.SDK_INT >= 30) {
+        wMgr.currentWindowMetrics.bounds.apply { return Point(width(), height()) }
+    } else {
+        val result = Point()
+        wMgr.defaultDisplay.getRealSize(result)
+        return result
+    }
 }

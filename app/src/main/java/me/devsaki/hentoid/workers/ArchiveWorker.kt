@@ -52,7 +52,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
     private val dao: CollectionDAO = ObjectBoxDAO()
 
-    private var nbOK = 0
+    private var nbItems = 0
     private var nbKO = 0
     private lateinit var globalProgress: ProgressManager
 
@@ -112,12 +112,13 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
         // Everything (incl. JSON and thumb) gets into the archive
         val files = listFiles(applicationContext, bookFolder, null)
+        nbItems = files.size
 
         if (files.isNotEmpty()) {
             val destFileResult = getFileResult(content, params)
             val outputStream: OutputStream? = destFileResult.first
             val success = outputStream?.use { os ->
-                if (2 == params.targetFormat) {
+                if (2 == params.targetFormat) { // PDF
                     val mgr = PdfManager()
                     val color = when (params.pdfBackgroundColor) {
                         1 -> R.color.light_gray
@@ -228,6 +229,6 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun notifyProcessEnd() {
-        notificationManager.notifyLast(ArchiveCompleteNotification(nbOK, nbKO))
+        notificationManager.notifyLast(ArchiveCompleteNotification(nbItems, nbKO))
     }
 }

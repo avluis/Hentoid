@@ -816,6 +816,7 @@
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
     <string name="viewer_direction_ttb">Top to bottom</string>
+    <string name="reader_two_pages_mode">Two pages (book) mode</string>
     <string name="viewer_slideshow">Slideshow</string>
     <string name="viewer_slideshow_help">Slideshow mode</string>
     <string name="viewer_order_reverse">Reverse order</string>

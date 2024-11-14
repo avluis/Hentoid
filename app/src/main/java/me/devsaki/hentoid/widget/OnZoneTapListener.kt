@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.widget
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
@@ -9,7 +10,7 @@ import java.lang.ref.WeakReference
 /**
  * Zoned tap listener for the reader
  */
-class OnZoneTapListener(view: View, private val tapZoneScale: Int) : OnTouchListener {
+class OnZoneTapListener(view: View, private val tapZoneScale: Int = 1) : OnTouchListener {
     /**
      * This view's dimensions are used to determine which zone a tap belongs to
      */
@@ -56,9 +57,9 @@ class OnZoneTapListener(view: View, private val tapZoneScale: Int) : OnTouchList
 
     fun onSingleTapConfirmedAction(e: MotionEvent): Boolean {
         view.get()?.let {
-            if (e.x < getPagerTapZoneWidth(it.width) && onLeftZoneTapListener != null) {
+            if (e.rawX < getPagerTapZoneWidth(it.width) && onLeftZoneTapListener != null) {
                 onLeftZoneTapListener?.run()
-            } else if (e.x > it.width - getPagerTapZoneWidth(it.width) && onRightZoneTapListener != null) {
+            } else if (e.rawX > it.width - getPagerTapZoneWidth(it.width) && onRightZoneTapListener != null) {
                 onRightZoneTapListener?.run()
             } else {
                 if (onMiddleZoneTapListener != null) onMiddleZoneTapListener?.run()

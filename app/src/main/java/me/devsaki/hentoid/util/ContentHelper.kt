@@ -690,7 +690,7 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                                         val resizedBitmap =
                                             getScaledDownBitmap(
                                                 b,
-                                                dimensAsPx(context, libraryGridCardWidthDP),
+                                                dpToPx(context, libraryGridCardWidthDP),
                                                 false
                                             )
                                         resizedBitmap.compress(

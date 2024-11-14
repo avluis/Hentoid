@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.3/hentoid1203-751.apk",
-  "versionCode": "751",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.5/hentoid1205-755.apk",
+  "versionCode": "755",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/v1.20.0/hentoid1200-747.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -28,6 +28,9 @@
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"742"},
 	  {"sourceName":"MANHWA", "status":"RED", "fixedByBuild":"742"},
 	  {"sourceName":"MANHWA", "status":"BLACK", "fixedByBuild":"750"},
+	  {"sourceName":"IMHENTAI", "status":"ORANGE", "fixedByBuild":"753"},
+	  {"sourceName":"HENTAIFOX", "status":"ORANGE", "fixedByBuild":"753"},
+	  {"sourceName":"NHENTAI", "status":"ORANGE", "fixedByBuild":"755"},
 	  {"sourceName":"PURURIN", "status":"BLACK"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},

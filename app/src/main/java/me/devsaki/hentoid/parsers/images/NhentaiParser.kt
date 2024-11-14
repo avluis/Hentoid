@@ -3,7 +3,6 @@ package me.devsaki.hentoid.parsers.images
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 
@@ -19,9 +18,19 @@ class NhentaiParser : BaseImageListParser() {
             for (e in thumbs) {
                 val s = getImgSrc(e)
                 if (s.isEmpty()) continue
-                result.add(serverUrl + index++ + "." + getExtension(s))
+                result.add(serverUrl + index++ + "." + getNhGalleryExtension(s))
             }
             return result
+        }
+
+        private fun getNhGalleryExtension(uri: String): String {
+            val name = uri.substring(uri.lastIndexOf("/") + 1)
+            if (!name.contains(".")) return ""
+            val parts = name.split(".")
+            // Classic case
+            if (2 == parts.size) return parts[1].lowercase()
+            // Nhentai-specific stuff (name.jpg.webp) => last but one is the correct one
+            return parts[parts.size - 2].lowercase()
         }
     }
 
@@ -31,7 +40,6 @@ class NhentaiParser : BaseImageListParser() {
             ?: throw ParseException("Document unreachable : " + content.galleryUrl)
 
         val thumbs = doc.select("#thumbnail-container img[data-src]").filterNotNull()
-
         return parseImages(content, thumbs)
     }
 }

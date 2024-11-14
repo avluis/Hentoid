@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PrefsActivity
@@ -12,12 +13,16 @@ import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.databinding.DialogReaderBookPrefsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
+import timber.log.Timber
+import kotlin.math.min
 
 class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.Parent>() {
     companion object {
 
         const val RENDERING_MODE = "render_mode"
         const val BROWSE_MODE = "browse_mode"
+        const val TWOPAGES_MODE = "twopages_mode"
         const val DISPLAY_MODE = "display_mode"
 
         fun invoke(parent: Fragment, bookPrefs: Map<String, String>) {
@@ -29,6 +34,10 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
             if (bookPrefs.containsKey(Preferences.Key.VIEWER_BROWSE_MODE)) args.putInt(
                 BROWSE_MODE,
                 Preferences.getContentBrowseMode(bookPrefs)
+            )
+            if (bookPrefs.containsKey(Settings.Key.READER_TWOPAGES)) args.putBoolean(
+                TWOPAGES_MODE,
+                Settings.getContent2PagesMode(bookPrefs)
             )
             if (bookPrefs.containsKey(Preferences.Key.VIEWER_IMAGE_DISPLAY)) args.putInt(
                 DISPLAY_MODE,
@@ -45,6 +54,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
     private var renderingMode = 0
     private var browseMode = 0
     private var displayMode = 0
+    private var twoPagesMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,15 +63,16 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         renderingMode = requireArguments().getInt(RENDERING_MODE, -1)
         browseMode = requireArguments().getInt(BROWSE_MODE, -1)
         displayMode = requireArguments().getInt(DISPLAY_MODE, -1)
+        twoPagesMode = requireArguments().getBoolean(TWOPAGES_MODE, false)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogReaderBookPrefsBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -76,7 +87,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
 
         // == Dropdown lists
         val browseModes = resources.getStringArray(R.array.pref_viewer_browse_mode_entries)
-        val browseItems: MutableList<String> = ArrayList()
+        val browseItems = ArrayList<String>()
         // App pref
         browseItems.add(
             res.getString(
@@ -89,7 +100,9 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
 
         binding?.apply {
             browsePicker.entries = browseItems
-            browsePicker.index = browseMode + 1
+            browsePicker.index = min(browseMode + 1, browsePicker.entries.size - 1)
+            browsePicker.setOnIndexChangeListener { refreshValues() }
+            twoPagesSwitch.isChecked = twoPagesMode
         }
 
         val renderingModes = resources.getStringArray(R.array.pref_viewer_rendering_entries)
@@ -136,8 +149,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         }
 
         // == Bottom buttons
-        val appSettingsBtn = rootView.findViewById<View>(R.id.book_prefs_app_prefs_btn)
-        appSettingsBtn.setOnClickListener {
+        binding?.appPrefsBtn?.setOnClickListener {
             val intent = Intent(requireActivity(), PrefsActivity::class.java)
             val prefsBundle = PrefsBundle()
             prefsBundle.isViewerPrefs = true
@@ -145,19 +157,30 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
             requireContext().startActivity(intent)
         }
 
-        val okBtn = rootView.findViewById<View>(R.id.action_button)
-        okBtn.setOnClickListener {
+        binding?.actionButton?.setOnClickListener {
             val newPrefs: MutableMap<String, String> = HashMap()
             binding?.apply {
                 if (renderingPicker.index > 0) newPrefs[Preferences.Key.VIEWER_RENDERING] =
-                    (renderingPicker.index - 1).toString() + ""
+                    (renderingPicker.index - 1).toString()
                 if (browsePicker.index > 0) newPrefs[Preferences.Key.VIEWER_BROWSE_MODE] =
-                    (browsePicker.index - 1).toString() + ""
+                    (browsePicker.index - 1).toString()
+                newPrefs[Settings.Key.READER_TWOPAGES] = twoPagesSwitch.isChecked.toString()
                 if (displayPicker.index > 0) newPrefs[Preferences.Key.VIEWER_IMAGE_DISPLAY] =
-                    (displayPicker.index - 1).toString() + ""
+                    (displayPicker.index - 1).toString()
             }
             parent?.onBookPreferenceChanged(newPrefs)
             dismiss()
+        }
+    }
+
+    private fun refreshValues() {
+        binding?.apply {
+            Timber.d("sjnjsn ${browsePicker.index}")
+            twoPagesSwitch.isVisible =
+                (Preferences.Constant.VIEWER_BROWSE_TTB != browsePicker.index - 1)
+            if (0 == browsePicker.index && Preferences.getReaderBrowseMode() == Preferences.Constant.VIEWER_BROWSE_TTB)
+                twoPagesSwitch.isVisible = false
+            if (!twoPagesSwitch.isVisible) twoPagesSwitch.isChecked = false
         }
     }
 

@@ -35,7 +35,6 @@ import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.PurgeWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import org.greenrobot.eventbus.EventBus
-import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
 
@@ -367,6 +366,7 @@ class QueueViewModel(
                 )
             }
             onSuccess.invoke(contentList.size - errorCount.get())
+            dao.cleanup()
         }
     }
 
@@ -388,6 +388,7 @@ class QueueViewModel(
                 // Force display by updating queue
                 dao.updateQueue(dao.selectQueue())
             }
+            dao.cleanup()
         }
     }
 
@@ -402,6 +403,7 @@ class QueueViewModel(
                 // Update queue JSON
                 updateQueueJson(getApplication(), dao)
             }
+            dao.cleanup()
         }
     }
 }

@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center|center_vertical"
         android:clipToPadding="false"
-        android:padding="16dp">
+        android:padding="8dp">
 
         <TextView
             android:id="@+id/export_title"
@@ -33,36 +33,46 @@
             app:layout_constraintTop_toBottomOf="@id/export_title"
             app:title="@string/pref_viewer_browse_mode" />
 
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/two_pages_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:checked="false"
+            android:paddingStart="8dp"
+            android:text="@string/reader_two_pages_mode"
+            app:layout_constraintTop_toBottomOf="@id/browse_picker" />
+
         <me.devsaki.hentoid.views.ListPickerView
             android:id="@+id/rendering_picker"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/browse_picker"
+            app:layout_constraintTop_toBottomOf="@id/two_pages_switch"
             app:title="@string/pref_viewer_rendering" />
 
         <me.devsaki.hentoid.views.ListPickerView
             android:id="@+id/display_picker"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rendering_picker"
             app:title="@string/pref_viewer_display_mode" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/book_prefs_app_prefs_btn"
+            android:id="@+id/app_prefs_btn"
             style="@style/Widget.Material3.Button.TextButton.Dialog"
             android:layout_width="wrap_content"
             android:layout_height="?android:attr/actionBarSize"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="32dp"
             android:text="@string/goto_app_prefs"
-            app:iconTint="?colorSecondary"
             android:textColor="?colorSecondary"
             app:icon="@drawable/ic_settings"
+            app:iconTint="?colorSecondary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/display_picker" />
 
@@ -71,7 +81,7 @@
             style="@style/HentoidMaterialButtonOutlinedStyle"
             android:layout_width="96dp"
             android:layout_height="?android:attr/actionBarSize"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="32dp"
             android:text="@string/ok"
             android:textColor="?colorSecondary"
             android:textSize="@dimen/text_body_1"
