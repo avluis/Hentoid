@@ -41,6 +41,9 @@ import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DISPLAY_FILL
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DISPLAY_STRETCH
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_ORIENTATION_VERTICAL
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.getScreenDimensionsPx
 import me.devsaki.hentoid.util.image.SmartRotateTransformation
@@ -168,8 +171,8 @@ class ImagePagerAdapter(context: Context) :
     }
 
     private fun getImageViewType(displayParams: ReaderPagerFragment.DisplayParams): ViewType {
-        return if (Preferences.Constant.VIEWER_DISPLAY_STRETCH == displayParams.displayMode) ViewType.IMAGEVIEW_STRETCH
-        else if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == displayParams.orientation) ViewType.SSIV_VERTICAL
+        return if (VIEWER_DISPLAY_STRETCH == displayParams.displayMode) ViewType.IMAGEVIEW_STRETCH
+        else if (VIEWER_ORIENTATION_VERTICAL == displayParams.orientation) ViewType.SSIV_VERTICAL
         else ViewType.DEFAULT
     }
 
@@ -193,7 +196,7 @@ class ImagePagerAdapter(context: Context) :
     override fun onViewRecycled(holder: ImageViewHolder) {
         // Set the holder back to its original constraints while in vertical mode
         // (not doing this will cause super high memory usage by trying to load _all_ images)
-        if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == holder.viewerOrientation) {
+        if (VIEWER_ORIENTATION_VERTICAL == holder.viewerOrientation) {
             holder.rootView.minimumHeight = pageMinHeight
             val layoutParams = holder.rootView.layoutParams
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
@@ -228,10 +231,10 @@ class ImagePagerAdapter(context: Context) :
         if (content != null) {
             val bookPreferences = content.bookPreferences
             return ReaderPagerFragment.DisplayParams(
-                Preferences.getContentBrowseMode(bookPreferences),
-                Preferences.getContentDisplayMode(bookPreferences),
+                Settings.getContentBrowseMode(bookPreferences),
+                Settings.getContentDisplayMode(bookPreferences),
                 Settings.getContent2PagesMode(bookPreferences),
-                Preferences.isContentSmoothRendering(bookPreferences),
+                Settings.isContentSmoothRendering(bookPreferences),
                 false
             )
         }
@@ -370,7 +373,7 @@ class ImagePagerAdapter(context: Context) :
 
             if (ViewType.DEFAULT == imgViewType) {
                 // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
-                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
+                if (VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
                     imageView.isClickable = false
                     imageView.isFocusable = false
                 }
@@ -384,7 +387,7 @@ class ImagePagerAdapter(context: Context) :
             ssiv.setIgnoreTouchEvents(ViewType.SSIV_VERTICAL == imgViewType || isHalfWidth)
 
             // Avoid stacking 0-px tall images on screen and load all of them at the same time
-            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+            if (VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
                 rootView.minimumHeight = pageMinHeight
 
             val imageType = getImageType(getImageAt(position))
@@ -400,14 +403,14 @@ class ImagePagerAdapter(context: Context) :
             )
 
             // Initialize SSIV when required
-            if (imgViewType == ViewType.DEFAULT && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
+            if (imgViewType == ViewType.DEFAULT && Settings.Value.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
                 if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer)
                 else ssiv.setGlEsRenderer(null)
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
 
                 val scrollLTR =
-                    Preferences.Constant.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
+                    Settings.Value.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
                 ssiv.setOffsetLeftSide(scrollLTR)
                 ssiv.setScaleListener { s -> onAbsoluteScaleChanged(position, s.toFloat()) }
             }
@@ -415,7 +418,7 @@ class ImagePagerAdapter(context: Context) :
             // Image layout constraints
             // NB : Will be rewritten once images have been loaded
             val layoutStyle =
-                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
+                if (VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
             val layoutParams = imgView.layoutParams
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
             layoutParams.height = layoutStyle
@@ -479,7 +482,7 @@ class ImagePagerAdapter(context: Context) :
 
         suspend fun setTapListener() {
             // ImageView or vertical mode => ZoomableRecycleView handles gestures
-            if (isImageView() || Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
+            if (isImageView() || VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
                 Timber.d("$absoluteAdapterPosition setTapListener on recyclerView")
                 recyclerView?.setTapListener(itemTouchListener)
                 imgView.setOnTouchListener(null)
@@ -499,7 +502,7 @@ class ImagePagerAdapter(context: Context) :
         }
 
         private val scaleType: CustomSubsamplingScaleImageView.ScaleType
-            get() = if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) {
+            get() = if (VIEWER_DISPLAY_FILL == displayMode) {
                 CustomSubsamplingScaleImageView.ScaleType.SMART_FILL
             } else {
                 CustomSubsamplingScaleImageView.ScaleType.CENTER_INSIDE
@@ -560,7 +563,7 @@ class ImagePagerAdapter(context: Context) :
         ) {
             // Root view layout
             val rootLayoutStyle =
-                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
+                if (VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
             val effectiveWidth = screenWidth
             val layoutParams = rootView.layoutParams
             layoutParams.width =
@@ -585,7 +588,7 @@ class ImagePagerAdapter(context: Context) :
         }
 
         private fun getTargetScale(imgWidth: Int, imgHeight: Int, displayMode: Int): Float {
-            return if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
+            return if (VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
                 if (imgHeight > imgWidth) {
                     // Fit to width
                     screenWidth / imgWidth.toFloat()
@@ -651,7 +654,7 @@ class ImagePagerAdapter(context: Context) :
             adjustDimensions(
                 0,
                 (scaleView.getAbsoluteScale() * scaleView.getSHeight()).toInt(),
-                Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation,
+                VIEWER_ORIENTATION_VERTICAL == viewerOrientation,
                 false
             )
             isLoading.set(false) // All that's left is to load tiles => consider the job done already
@@ -703,7 +706,7 @@ class ImagePagerAdapter(context: Context) :
             adjustDimensions(
                 result.image.width,
                 result.image.height,
-                Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation,
+                VIEWER_ORIENTATION_VERTICAL == viewerOrientation,
                 true
             )
             isLoading.set(false)

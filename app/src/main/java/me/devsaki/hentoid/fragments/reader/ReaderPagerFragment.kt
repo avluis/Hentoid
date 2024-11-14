@@ -65,21 +65,21 @@ import me.devsaki.hentoid.fragments.reader.ReaderNavigation.Pager
 import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_BROWSE_NONE
-import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_BROWSE_RTL
-import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_BROWSE_TTB
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_DELETE_ASK_AGAIN
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_DELETE_TARGET_PAGE
-import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_DIRECTION_LTR
-import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_DIRECTION_RTL
-import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL
-import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_ORIENTATION_VERTICAL
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_05
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_1
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_16
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_4
 import me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Key.VIEWER_BROWSE_MODE
+import me.devsaki.hentoid.util.Settings.Key.VIEWER_IMAGE_DISPLAY
+import me.devsaki.hentoid.util.Settings.Key.VIEWER_RENDERING
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_LTR
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_RTL
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_ORIENTATION_HORIZONTAL
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_ORIENTATION_VERTICAL
 import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
@@ -352,7 +352,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             // System bars are visible only if HUD is visible
             setSystemBarsVisible(controlsOverlay.root.visibility == View.VISIBLE)
         }
-        if (VIEWER_BROWSE_NONE == Preferences.getReaderBrowseMode()) invoke(this)
+        if (Settings.Value.VIEWER_BROWSE_NONE == Settings.readerBrowseMode) invoke(this)
         navigator.updatePageControls()
     }
 
@@ -985,12 +985,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         if (null == key) return
         Timber.v("Prefs change detected : %s", key)
         when (key) {
-            Preferences.Key.VIEWER_BROWSE_MODE, Preferences.Key.VIEWER_HOLD_TO_ZOOM, Preferences.Key.VIEWER_CONTINUOUS, Settings.Key.READER_TWOPAGES -> onBrowseModeChange()
-            Preferences.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()
+            VIEWER_BROWSE_MODE, Preferences.Key.VIEWER_HOLD_TO_ZOOM, Preferences.Key.VIEWER_CONTINUOUS, Settings.Key.READER_TWOPAGES -> onBrowseModeChange()
+            Settings.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()
             Preferences.Key.VIEWER_ZOOM_TRANSITIONS, Preferences.Key.VIEWER_SEPARATING_BARS, Preferences.Key.VIEWER_AUTO_ROTATE
             -> onUpdateImageDisplay(true)
 
-            Preferences.Key.VIEWER_IMAGE_DISPLAY, Preferences.Key.VIEWER_RENDERING, Settings.Key.READER_COLOR_DEPTH
+            VIEWER_IMAGE_DISPLAY, VIEWER_RENDERING, Settings.Key.READER_COLOR_DEPTH
             -> onUpdateImageDisplay(false)
 
             Preferences.Key.VIEWER_SWIPE_TO_FLING -> onUpdateSwipeToFling()
@@ -1006,7 +1006,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     private fun onUpdatePrefsScreenOn() {
-        if (Preferences.isReaderKeepScreenOn()) requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else requireActivity().window.clearFlags(
+        if (Settings.isReaderKeepScreenOn) requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else requireActivity().window.clearFlags(
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         )
     }
@@ -1052,10 +1052,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun adjustDisplay(bookPreferences: Map<String, String>, absImageIndex: Int) {
         val newDisplayParams = DisplayParams(
-            Preferences.getContentBrowseMode(bookPreferences),
-            Preferences.getContentDisplayMode(bookPreferences),
+            Settings.getContentBrowseMode(bookPreferences),
+            Settings.getContentDisplayMode(bookPreferences),
             Settings.getContent2PagesMode(bookPreferences),
-            Preferences.isContentSmoothRendering(bookPreferences),
+            Settings.isContentSmoothRendering(bookPreferences),
             adapter.getSSivAtPosition(absImageIndex)
         )
         if (null == displayParams || newDisplayParams != displayParams)
@@ -1281,7 +1281,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             if (View.VISIBLE == controlsOverlay.imagePreviewCenter.visibility) {
                 val previousImageView: ImageView
                 val nextImageView: ImageView
-                if (VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences)) {
+                if (VIEWER_DIRECTION_LTR == Settings.getContentDirection(bookPreferences)) {
                     previousImageView = controlsOverlay.imagePreviewLeft
                     nextImageView = controlsOverlay.imagePreviewRight
                 } else {
@@ -1351,7 +1351,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isReaderTapToTurn()) return
-        if (VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences)) previousPage() else nextPage()
+        if (VIEWER_DIRECTION_LTR == Settings.getContentDirection(bookPreferences)) previousPage() else nextPage()
     }
 
     /**
@@ -1373,7 +1373,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isReaderTapToTurn()) return
-        if (VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences)) nextPage() else previousPage()
+        if (VIEWER_DIRECTION_LTR == Settings.getContentDirection(bookPreferences)) nextPage() else previousPage()
     }
 
     /**
@@ -1489,7 +1489,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 }
             }
             // Display around the notch area
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && Preferences.isReaderDisplayAroundNotch()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && Settings.isReaderDisplayAroundNotch) {
                 params.layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
@@ -1633,11 +1633,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val useSsiv: Boolean
     ) {
         val orientation =
-            if (browseMode == VIEWER_BROWSE_TTB) VIEWER_ORIENTATION_VERTICAL else VIEWER_ORIENTATION_HORIZONTAL
+            if (browseMode == Settings.Value.VIEWER_BROWSE_TTB) VIEWER_ORIENTATION_VERTICAL else VIEWER_ORIENTATION_HORIZONTAL
         val direction =
-            if (browseMode == VIEWER_BROWSE_RTL) VIEWER_DIRECTION_RTL else VIEWER_DIRECTION_LTR
+            if (browseMode == Settings.Value.VIEWER_BROWSE_RTL) VIEWER_DIRECTION_RTL else VIEWER_DIRECTION_LTR
 
         // Fix cases where book settings cumulated with default settings lead to incompatible values
-        val twoPages = if (browseMode == VIEWER_BROWSE_TTB) false else twoPagesIn
+        val twoPages = if (browseMode == Settings.Value.VIEWER_BROWSE_TTB) false else twoPagesIn
     }
 }

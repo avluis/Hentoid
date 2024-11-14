@@ -28,7 +28,7 @@ open class ReaderActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (Preferences.isReaderKeepScreenOn()) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (Settings.isReaderKeepScreenOn) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         val vmFactory = ViewModelFactory(application)
         viewModel = ViewModelProvider(this, vmFactory)[ReaderViewModel::class.java]

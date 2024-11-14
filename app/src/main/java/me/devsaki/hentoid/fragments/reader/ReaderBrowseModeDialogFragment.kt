@@ -7,7 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.databinding.DialogReaderBrowseModeChooserBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_BROWSE_LTR
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_BROWSE_RTL
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_BROWSE_TTB
 
 class ReaderBrowseModeDialogFragment : BaseDialogFragment<ReaderBrowseModeDialogFragment.Parent>() {
     companion object {
@@ -39,19 +42,19 @@ class ReaderBrowseModeDialogFragment : BaseDialogFragment<ReaderBrowseModeDialog
 
         binding?.apply {
             chooseHorizontalLtr.setOnClickListener {
-                chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_LTR)
+                chooseBrowseMode(VIEWER_BROWSE_LTR)
             }
             chooseHorizontalRtl.setOnClickListener {
-                chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_RTL)
+                chooseBrowseMode(VIEWER_BROWSE_RTL)
             }
             chooseVertical.setOnClickListener {
-                chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_TTB)
+                chooseBrowseMode(VIEWER_BROWSE_TTB)
             }
         }
     }
 
     private fun chooseBrowseMode(browseMode: Int) {
-        Preferences.setReaderBrowseMode(browseMode)
+        Settings.readerBrowseMode = browseMode
         parent?.onBrowseModeChange()
         dismiss()
     }

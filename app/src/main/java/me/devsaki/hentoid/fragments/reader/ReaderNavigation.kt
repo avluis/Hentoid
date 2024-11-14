@@ -12,6 +12,9 @@ import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
 import me.devsaki.hentoid.databinding.IncludeReaderControlsOverlayBinding
 import me.devsaki.hentoid.ui.invokeNumberInputDialog
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_LTR
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_RTL
 import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.toast
 import java.util.Locale
@@ -86,11 +89,11 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
      * @param content Current book
      */
     fun onContentChanged(content: Content) {
-        val direction = Preferences.getContentDirection(content.bookPreferences)
+        val direction = Settings.getContentDirection(content.bookPreferences)
         nextFunctionalButton =
-            if (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) binding?.nextBookBtn else binding?.prevBookBtn
+            if (VIEWER_DIRECTION_LTR == direction) binding?.nextBookBtn else binding?.prevBookBtn
         prevFunctionalButton =
-            if (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) binding?.prevBookBtn else binding?.nextBookBtn
+            if (VIEWER_DIRECTION_LTR == direction) binding?.prevBookBtn else binding?.nextBookBtn
         isContentFirst = content.isFirst
         isContentLast = content.isLast
         isContentDynamic = content.isDynamic
@@ -124,13 +127,13 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
 
     fun setDirection(direction: Int) {
         binding?.apply {
-            if (Preferences.Constant.VIEWER_DIRECTION_LTR == direction) {
+            if (VIEWER_DIRECTION_LTR == direction) {
                 pageCurrentNumber = pagerLeftTxt
                 pageMaxNumber = pagerRightTxt
                 pageSlider.rotationY = 0f
                 prevBookBtn.setOnClickListener { previousFunctional() }
                 nextBookBtn.setOnClickListener { nextFunctional() }
-            } else if (Preferences.Constant.VIEWER_DIRECTION_RTL == direction) {
+            } else if (VIEWER_DIRECTION_RTL == direction) {
                 pageCurrentNumber = pagerRightTxt
                 pageMaxNumber = pagerLeftTxt
                 pageSlider.rotationY = 180f

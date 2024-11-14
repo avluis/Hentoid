@@ -12,8 +12,11 @@ import me.devsaki.hentoid.activities.PrefsActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.databinding.DialogReaderBookPrefsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Key.VIEWER_BROWSE_MODE
+import me.devsaki.hentoid.util.Settings.Key.VIEWER_IMAGE_DISPLAY
+import me.devsaki.hentoid.util.Settings.Key.VIEWER_RENDERING
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_BROWSE_TTB
 import timber.log.Timber
 import kotlin.math.min
 
@@ -27,21 +30,21 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
 
         fun invoke(parent: Fragment, bookPrefs: Map<String, String>) {
             val args = Bundle()
-            if (bookPrefs.containsKey(Preferences.Key.VIEWER_RENDERING)) args.putInt(
+            if (bookPrefs.containsKey(VIEWER_RENDERING)) args.putInt(
                 RENDERING_MODE,
-                if (Preferences.isContentSmoothRendering(bookPrefs)) 1 else 0
+                if (Settings.isContentSmoothRendering(bookPrefs)) 1 else 0
             )
-            if (bookPrefs.containsKey(Preferences.Key.VIEWER_BROWSE_MODE)) args.putInt(
+            if (bookPrefs.containsKey(VIEWER_BROWSE_MODE)) args.putInt(
                 BROWSE_MODE,
-                Preferences.getContentBrowseMode(bookPrefs)
+                Settings.getContentBrowseMode(bookPrefs)
             )
             if (bookPrefs.containsKey(Settings.Key.READER_TWOPAGES)) args.putBoolean(
                 TWOPAGES_MODE,
                 Settings.getContent2PagesMode(bookPrefs)
             )
-            if (bookPrefs.containsKey(Preferences.Key.VIEWER_IMAGE_DISPLAY)) args.putInt(
+            if (bookPrefs.containsKey(VIEWER_IMAGE_DISPLAY)) args.putInt(
                 DISPLAY_MODE,
-                Preferences.getContentDisplayMode(bookPrefs)
+                Settings.getContentDisplayMode(bookPrefs)
             )
             invoke(parent, ReaderPrefsDialogFragment(), args)
         }
@@ -92,7 +95,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         browseItems.add(
             res.getString(
                 R.string.use_app_prefs,
-                browseModes[Preferences.getReaderBrowseMode()]
+                browseModes[Settings.readerBrowseMode]
             )
         )
         // Available prefs
@@ -111,7 +114,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         renderingItems.add(
             res.getString(
                 R.string.use_app_prefs,
-                renderingModes[if (Preferences.isReaderSmoothRendering()) 1 else 0].replace(
+                renderingModes[if (Settings.isReaderSmoothRendering()) 1 else 0].replace(
                     " (" + getString(R.string._default) + ")", ""
                 )
             )
@@ -136,7 +139,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         displayItems.add(
             res.getString(
                 R.string.use_app_prefs,
-                displayModes[Preferences.getReaderDisplayMode()]
+                displayModes[Settings.readerDisplayMode]
             )
         )
         // Available prefs
@@ -160,12 +163,12 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         binding?.actionButton?.setOnClickListener {
             val newPrefs: MutableMap<String, String> = HashMap()
             binding?.apply {
-                if (renderingPicker.index > 0) newPrefs[Preferences.Key.VIEWER_RENDERING] =
+                if (renderingPicker.index > 0) newPrefs[VIEWER_RENDERING] =
                     (renderingPicker.index - 1).toString()
-                if (browsePicker.index > 0) newPrefs[Preferences.Key.VIEWER_BROWSE_MODE] =
+                if (browsePicker.index > 0) newPrefs[VIEWER_BROWSE_MODE] =
                     (browsePicker.index - 1).toString()
                 newPrefs[Settings.Key.READER_TWOPAGES] = twoPagesSwitch.isChecked.toString()
-                if (displayPicker.index > 0) newPrefs[Preferences.Key.VIEWER_IMAGE_DISPLAY] =
+                if (displayPicker.index > 0) newPrefs[VIEWER_IMAGE_DISPLAY] =
                     (displayPicker.index - 1).toString()
             }
             parent?.onBookPreferenceChanged(newPrefs)
@@ -176,9 +179,8 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
     private fun refreshValues() {
         binding?.apply {
             Timber.d("sjnjsn ${browsePicker.index}")
-            twoPagesSwitch.isVisible =
-                (Preferences.Constant.VIEWER_BROWSE_TTB != browsePicker.index - 1)
-            if (0 == browsePicker.index && Preferences.getReaderBrowseMode() == Preferences.Constant.VIEWER_BROWSE_TTB)
+            twoPagesSwitch.isVisible = (VIEWER_BROWSE_TTB != browsePicker.index - 1)
+            if (0 == browsePicker.index && Settings.readerBrowseMode == VIEWER_BROWSE_TTB)
                 twoPagesSwitch.isVisible = false
             if (!twoPagesSwitch.isVisible) twoPagesSwitch.isChecked = false
         }

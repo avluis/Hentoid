@@ -168,81 +168,6 @@ public final class Preferences {
         return getIntPref(Key.DL_HTTP_429_DEFAULT_DELAY, Default.DL_HTTP_429_DEFAULT_DELAY);
     }
 
-    static int getFolderTruncationNbChars() {
-        return getIntPref(Key.FOLDER_TRUNCATION_LISTS, Default.FOLDER_TRUNCATION);
-    }
-
-    public static boolean isReaderResumeLastLeft() {
-        return getBoolPref(Key.VIEWER_RESUME_LAST_LEFT, Default.VIEWER_RESUME_LAST_LEFT);
-    }
-
-    public static boolean isReaderKeepScreenOn() {
-        return getBoolPref(Key.VIEWER_KEEP_SCREEN_ON, Default.VIEWER_KEEP_SCREEN_ON);
-    }
-
-    public static boolean isReaderDisplayAroundNotch() {
-        return getBoolPref(Key.VIEWER_DISPLAY_AROUND_NOTCH, Default.VIEWER_DISPLAY_AROUND_NOTCH);
-    }
-
-    public static int getContentDisplayMode(final Map<String, String> bookPrefs) {
-        if (Constant.VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(bookPrefs)) {
-            if (bookPrefs != null && bookPrefs.containsKey(Key.VIEWER_IMAGE_DISPLAY)) {
-                String value = bookPrefs.get(Key.VIEWER_IMAGE_DISPLAY);
-                if (value != null) return Integer.parseInt(value);
-            }
-            return getReaderDisplayMode();
-        } else
-            return Constant.VIEWER_DISPLAY_FIT; // The only relevant mode for vertical (aka. webtoon) display
-    }
-
-    public static int getReaderDisplayMode() {
-        return getIntPref(Key.VIEWER_IMAGE_DISPLAY, Default.VIEWER_IMAGE_DISPLAY);
-    }
-
-    public static int getContentBrowseMode(final Map<String, String> bookPrefs) {
-        if (bookPrefs != null && bookPrefs.containsKey(Key.VIEWER_BROWSE_MODE)) {
-            String value = bookPrefs.get(Key.VIEWER_BROWSE_MODE);
-            if (value != null) return Integer.parseInt(value);
-        }
-        return getReaderBrowseMode();
-    }
-
-    public static int getContentDirection(final Map<String, String> bookPrefs) {
-        return (getContentBrowseMode(bookPrefs) == Constant.VIEWER_BROWSE_RTL) ? Constant.VIEWER_DIRECTION_RTL : Constant.VIEWER_DIRECTION_LTR;
-    }
-
-    public static int getContentOrientation(final Map<String, String> bookPrefs) {
-        return (getContentBrowseMode(bookPrefs) == Constant.VIEWER_BROWSE_TTB) ? Constant.VIEWER_ORIENTATION_VERTICAL : Constant.VIEWER_ORIENTATION_HORIZONTAL;
-    }
-
-    public static int getReaderBrowseMode() {
-        return getIntPref(Key.VIEWER_BROWSE_MODE, Default.VIEWER_BROWSE_MODE);
-    }
-
-    public static void setReaderBrowseMode(int browseMode) {
-        sharedPreferences.edit().putString(Key.VIEWER_BROWSE_MODE, Integer.toString(browseMode)).apply();
-    }
-
-    public static boolean isContentSmoothRendering(final Map<String, String> bookPrefs) {
-        if (bookPrefs != null && bookPrefs.containsKey(Key.VIEWER_RENDERING)) {
-            String value = bookPrefs.get(Key.VIEWER_RENDERING);
-            if (value != null) return isSmoothRendering(Integer.parseInt(value));
-        }
-        return isReaderSmoothRendering();
-    }
-
-    public static boolean isReaderSmoothRendering() {
-        return isSmoothRendering(getReaderRenderingMode());
-    }
-
-    private static boolean isSmoothRendering(int mode) {
-        return (mode == Constant.VIEWER_RENDERING_SMOOTH);
-    }
-
-    private static int getReaderRenderingMode() {
-        return getIntPref(Key.VIEWER_RENDERING, Default.VIEWER_RENDERING);
-    }
-
     public static boolean isReaderDisplayPageNum() {
         return getBoolPref(Key.VIEWER_DISPLAY_PAGENUM, Default.VIEWER_DISPLAY_PAGENUM);
     }
@@ -597,13 +522,6 @@ public final class Preferences {
         public static final String BROWSER_DNS_OVER_HTTPS = "pref_browser_dns_over_https";
         public static final String BROWSER_CLEAR_COOKIES = "pref_browser_clear_cookies";
         public static final String BROWSER_NHENTAI_INVISIBLE_BLACKLIST = "pref_nhentai_invisible_blacklist";
-        static final String FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
-        static final String VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
-        public static final String VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
-        public static final String VIEWER_DISPLAY_AROUND_NOTCH = "pref_viewer_display_notch";
-        public static final String VIEWER_IMAGE_DISPLAY = "pref_viewer_image_display";
-        public static final String VIEWER_RENDERING = "pref_viewer_rendering";
-        public static final String VIEWER_BROWSE_MODE = "pref_viewer_browse_mode";
         public static final String VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         public static final String VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling";
         static final String VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
@@ -695,13 +613,6 @@ public final class Preferences {
         static final boolean BROWSER_NHENTAI_INVISIBLE_BLACKLIST = false;
         static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int DL_HTTP_429_DEFAULT_DELAY = 120;
-        static final int FOLDER_TRUNCATION = Constant.TRUNCATE_FOLDER_100;
-        static final boolean VIEWER_RESUME_LAST_LEFT = true;
-        static final boolean VIEWER_KEEP_SCREEN_ON = true;
-        static final boolean VIEWER_DISPLAY_AROUND_NOTCH = true;
-        static final int VIEWER_IMAGE_DISPLAY = Constant.VIEWER_DISPLAY_FIT;
-        static final int VIEWER_RENDERING = Constant.VIEWER_RENDERING_SHARP;
-        static final int VIEWER_BROWSE_MODE = Constant.VIEWER_BROWSE_NONE;
         static final boolean VIEWER_DISPLAY_PAGENUM = false;
         static final boolean VIEWER_TAP_TRANSITIONS = true;
         static final boolean VIEWER_ZOOM_TRANSITIONS = true;
@@ -790,26 +701,6 @@ public final class Preferences {
         public static final int DL_SPEED_CAP_200 = 1;
         public static final int DL_SPEED_CAP_400 = 2;
         public static final int DL_SPEED_CAP_800 = 3;
-
-        static final int TRUNCATE_FOLDER_100 = 100;
-
-        public static final int VIEWER_DISPLAY_FIT = 0;
-        public static final int VIEWER_DISPLAY_FILL = 1;
-        public static final int VIEWER_DISPLAY_STRETCH = 2;
-
-        public static final int VIEWER_RENDERING_SHARP = 0;
-        public static final int VIEWER_RENDERING_SMOOTH = 1;
-
-        public static final int VIEWER_BROWSE_NONE = -1;
-        public static final int VIEWER_BROWSE_LTR = 0;
-        public static final int VIEWER_BROWSE_RTL = 1;
-        public static final int VIEWER_BROWSE_TTB = 2;
-
-        public static final int VIEWER_DIRECTION_LTR = 0;
-        public static final int VIEWER_DIRECTION_RTL = 1;
-
-        public static final int VIEWER_ORIENTATION_HORIZONTAL = 0;
-        public static final int VIEWER_ORIENTATION_VERTICAL = 1;
 
         public static final int VIEWER_SEPARATING_BARS_OFF = 0;
         public static final int VIEWER_SEPARATING_BARS_SMALL = 1;

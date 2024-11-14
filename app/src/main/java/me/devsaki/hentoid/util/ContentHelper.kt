@@ -902,7 +902,7 @@ private fun formatBookFolderName(
 
     // Truncate folder dir to something manageable for Windows
     // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
-    val truncLength = Preferences.getFolderTruncationNbChars()
+    val truncLength = Settings.folderTruncationNbChars
     val titleLength = result.length
     if (truncLength > 0 && titleLength + suffix.length > truncLength) result =
         result.substring(0, truncLength - suffix.length - 1)

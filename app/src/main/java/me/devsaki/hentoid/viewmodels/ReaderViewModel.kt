@@ -35,6 +35,7 @@ import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.VANILLA_CHAPTERNAME_PATTERN
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.coerceIn
@@ -425,7 +426,7 @@ class ReaderViewModel(
         var startingIndex = 0
 
         // Auto-restart at last read position if asked to
-        if (Preferences.isReaderResumeLastLeft() && theContent.lastReadPageIndex > -1)
+        if (Settings.isReaderResumeLastLeft && theContent.lastReadPageIndex > -1)
             startingIndex = theContent.lastReadPageIndex
 
         // Start at the given page number, if any

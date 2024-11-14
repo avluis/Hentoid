@@ -108,11 +108,69 @@ object Settings {
     var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
 
     // READER
+    var isReaderResumeLastLeft: Boolean by BoolSetting("pref_viewer_resume_last_left", true)
+    var isReaderKeepScreenOn: Boolean by BoolSetting(Key.VIEWER_KEEP_SCREEN_ON, true)
+    var isReaderDisplayAroundNotch: Boolean by BoolSetting(Key.VIEWER_DISPLAY_AROUND_NOTCH, true)
+
     var readerColorDepth: Int by IntSettingStr(Key.READER_COLOR_DEPTH, 0)
-    var reader2PagesMode: Boolean by BoolSetting(Key.READER_TWOPAGES, false)
+    private var reader2PagesMode: Boolean by BoolSetting(Key.READER_TWOPAGES, false)
     fun getContent2PagesMode(bookPrefs: Map<String, String>): Boolean {
         return bookPrefs.getOrDefault(Key.READER_TWOPAGES, reader2PagesMode.toString()).toBoolean()
     }
+
+    fun getContentDisplayMode(bookPrefs: Map<String, String>): Int {
+        if (Value.VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(bookPrefs)) {
+            if (bookPrefs.containsKey(Key.VIEWER_IMAGE_DISPLAY)) {
+                val value = bookPrefs[Key.VIEWER_IMAGE_DISPLAY]
+                if (value != null) return value.toInt()
+            }
+            return readerDisplayMode
+        } else return Value.VIEWER_DISPLAY_FIT // The only relevant mode for vertical (aka. webtoon) display
+    }
+
+    val readerDisplayMode: Int by IntSettingStr(Key.VIEWER_IMAGE_DISPLAY, Value.VIEWER_DISPLAY_FIT)
+
+    fun getContentBrowseMode(bookPrefs: Map<String, String>?): Int {
+        bookPrefs?.let {
+            if (it.containsKey(Key.VIEWER_BROWSE_MODE)) {
+                val value = it[Key.VIEWER_BROWSE_MODE]
+                if (value != null) return value.toInt()
+            }
+        }
+        return readerBrowseMode
+    }
+
+    var readerBrowseMode: Int by IntSettingStr(Key.VIEWER_BROWSE_MODE, Value.VIEWER_BROWSE_NONE)
+
+    fun getContentDirection(bookPrefs: Map<String, String>?): Int {
+        return if ((getContentBrowseMode(bookPrefs) == Value.VIEWER_BROWSE_RTL)) Value.VIEWER_DIRECTION_RTL else Value.VIEWER_DIRECTION_LTR
+    }
+
+    private fun getContentOrientation(bookPrefs: Map<String, String>): Int {
+        return if ((getContentBrowseMode(bookPrefs) == Value.VIEWER_BROWSE_TTB)) Value.VIEWER_ORIENTATION_VERTICAL else Value.VIEWER_ORIENTATION_HORIZONTAL
+    }
+
+    fun isContentSmoothRendering(bookPrefs: Map<String, String>): Boolean {
+        if (bookPrefs.containsKey(Key.VIEWER_RENDERING)) {
+            val value = bookPrefs[Key.VIEWER_RENDERING]
+            if (value != null) return isSmoothRendering(value.toInt())
+        }
+        return isReaderSmoothRendering()
+    }
+
+    fun isReaderSmoothRendering(): Boolean {
+        return isSmoothRendering(readerRenderingMode)
+    }
+
+    private fun isSmoothRendering(mode: Int): Boolean {
+        return (mode == Value.VIEWER_RENDERING_SMOOTH)
+    }
+
+    private val readerRenderingMode: Int by IntSetting(
+        Key.VIEWER_RENDERING,
+        Value.VIEWER_RENDERING_SHARP
+    )
+
 
     // METADATA & RULES EDITOR
     var ruleSortField: Int by IntSetting("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
@@ -155,6 +213,7 @@ object Settings {
     var storageSwitchThresholdPc: Int by IntSettingStr(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, 90)
     var memoryAlertThreshold: Int by IntSettingStr("pref_memory_alert", 110)
     val isDeleteExternalLibrary: Boolean by BoolSetting(Key.EXTERNAL_LIBRARY_DELETE, false)
+    val folderTruncationNbChars: Int by IntSettingStr("pref_folder_trunc_lists", 100)
 
     // APP-WIDE
     var isFirstRun: Boolean by BoolSetting(Key.FIRST_RUN, true)
@@ -275,8 +334,6 @@ object Settings {
         const val IMPORT_QUEUE_EMPTY = "pref_import_queue_empty"
 
         const val LIBRARY_DISPLAY = "pref_library_display"
-        const val READER_COLOR_DEPTH = "viewer_color_depth"
-        const val READER_TWOPAGES = "reader_two_pages"
         const val LOCK_TYPE = "LOCK_TYPE"
         const val LIBRARY_DISPLAY_GRID_FAV = "LIBRARY_DISPLAY_GRID_FAV"
         const val LIBRARY_DISPLAY_GRID_RATING = "LIBRARY_DISPLAY_GRID_RATING"
@@ -302,6 +359,14 @@ object Settings {
         const val PRIMARY_STORAGE_FILL_METHOD = "pref_storage_fill_method"
         const val PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = "pref_storage_switch_threshold_pc"
         const val EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete"
+
+        const val READER_COLOR_DEPTH = "viewer_color_depth"
+        const val READER_TWOPAGES = "reader_two_pages"
+        const val VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on"
+        const val VIEWER_DISPLAY_AROUND_NOTCH = "pref_viewer_display_notch"
+        const val VIEWER_IMAGE_DISPLAY = "pref_viewer_image_display"
+        const val VIEWER_BROWSE_MODE = "pref_viewer_browse_mode"
+        const val VIEWER_RENDERING = "pref_viewer_rendering"
     }
 
     object Default {
@@ -358,5 +423,23 @@ object Settings {
         const val FOLDER_NAMING_CONTENT_TITLE_ID = 1
         const val FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2
         const val FOLDER_NAMING_CONTENT_TITLE_AUTH_ID = 3
+
+        const val VIEWER_DISPLAY_FIT = 0
+        const val VIEWER_DISPLAY_FILL = 1
+        const val VIEWER_DISPLAY_STRETCH = 2
+
+        const val VIEWER_ORIENTATION_HORIZONTAL = 0
+        const val VIEWER_ORIENTATION_VERTICAL = 1
+
+        const val VIEWER_DIRECTION_LTR = 0
+        const val VIEWER_DIRECTION_RTL = 1
+
+        const val VIEWER_BROWSE_NONE = -1
+        const val VIEWER_BROWSE_LTR = 0
+        const val VIEWER_BROWSE_RTL = 1
+        const val VIEWER_BROWSE_TTB = 2
+
+        const val VIEWER_RENDERING_SHARP = 0
+        const val VIEWER_RENDERING_SMOOTH = 1
     }
 }
