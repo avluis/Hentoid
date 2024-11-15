@@ -363,7 +363,7 @@
 
                 <data
                     android:host="doujins.com"
-                    android:pathPattern="..*/..*"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -374,19 +374,19 @@
 
                 <data
                     android:host="luscious.net"
-                    android:pathPattern="..*/..*"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
                 <data
                     android:host="www.luscious.net"
-                    android:pathPattern="..*/..*"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
                 <data
                     android:host="members.luscious.net"
-                    android:pathPattern="..*/..*"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
                 <data
                     android:host="www.members.luscious.net"
-                    android:pathPattern="..*/..*"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -397,19 +397,19 @@
 
                 <data
                     android:host="porncomixonline.net"
-                    android:pathPattern="..*/.*"
+                    android:pathPattern="/..*/.*"
                     android:scheme="https" />
                 <data
                     android:host="porncomixonline.com"
-                    android:pathPattern="..*/.*"
+                    android:pathPattern="/..*/.*"
                     android:scheme="https" />
                 <data
                     android:host="www.porncomixonline.net"
-                    android:pathPattern="..*/.*"
+                    android:pathPattern="/..*/.*"
                     android:scheme="https" />
                 <data
                     android:host="www.porncomixonline.com"
-                    android:pathPattern="..*/.*"
+                    android:pathPattern="/..*/.*"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
