@@ -161,7 +161,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-gif:3.0.3")
 
     // Animated pics that Coil doesn't support (APNG) -> https://github.com/penfeizhou/APNG4Android
-    def APNG4Android_version = '3.0.1'
+    def APNG4Android_version = '3.0.2'
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
