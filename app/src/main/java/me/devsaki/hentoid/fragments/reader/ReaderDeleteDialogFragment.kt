@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.databinding.DialogReaderDeleteBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_TARGET_BOOK
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_TARGET_PAGE
 
 class ReaderDeleteDialogFragment : BaseDialogFragment<ReaderDeleteDialogFragment.Parent>() {
 
@@ -59,8 +61,9 @@ class ReaderDeleteDialogFragment : BaseDialogFragment<ReaderDeleteDialogFragment
 
             actionButton.setOnClickListener {
                 if (!deleteModePage.isChecked && !deleteModeBook.isChecked) return@setOnClickListener
-                Preferences.setReaderDeleteAskMode(deleteWhat.index)
-                Preferences.setReaderDeleteTarget(if (deleteModePage.isChecked) Preferences.Constant.VIEWER_DELETE_TARGET_PAGE else Preferences.Constant.VIEWER_DELETE_TARGET_BOOK)
+                Settings.readerDeleteAskMode = deleteWhat.index
+                Settings.readerDeleteTarget =
+                    if (deleteModePage.isChecked) VIEWER_DELETE_TARGET_PAGE else VIEWER_DELETE_TARGET_BOOK
                 parent?.onDeleteElement(deleteModePage.isChecked)
                 dismiss()
             }

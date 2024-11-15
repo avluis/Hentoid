@@ -16,7 +16,6 @@ import me.devsaki.hentoid.databinding.DialogPrefsStorageBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
@@ -122,7 +121,7 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
                 onDetailsClick()
             }
 
-            val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
+            val dbMaxSizeKb = Settings.maxDbSizeKb
             memoryDb.text =
                 resources.getString(
                     R.string.memory_database, formatHumanReadableSize(

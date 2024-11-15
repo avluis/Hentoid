@@ -170,7 +170,64 @@ object Settings {
         Key.VIEWER_RENDERING,
         Value.VIEWER_RENDERING_SHARP
     )
-
+    val isReaderDisplayPageNum: Boolean by BoolSetting(Key.VIEWER_DISPLAY_PAGENUM, false)
+    val isReaderTapTransitions: Boolean by BoolSetting("pref_viewer_tap_transitions", true)
+    val isReaderZoomTransitions: Boolean by BoolSetting(Key.VIEWER_ZOOM_TRANSITIONS, true)
+    val isReaderSwipeToFling: Boolean by BoolSetting(Key.VIEWER_SWIPE_TO_FLING, false)
+    val isReaderInvertVolumeRocker: Boolean by BoolSetting(
+        "pref_viewer_invert_volume_rocker",
+        false
+    )
+    val isReaderTapToTurn: Boolean by BoolSetting("pref_viewer_page_turn_tap", true)
+    val isReaderTapToTurn2x: Boolean by BoolSetting("pref_viewer_page_turn_tap_2x", false)
+    val isReaderVolumeToTurn: Boolean by BoolSetting("pref_viewer_page_turn_volume", true)
+    val isReaderSwipeToTurn: Boolean by BoolSetting(Key.VIEWER_PAGE_TURN_SWIPE, true)
+    val isReaderKeyboardToTurn: Boolean by BoolSetting("pref_viewer_page_turn_keyboard", true)
+    val isReaderVolumeToSwitchBooks: Boolean by BoolSetting("pref_viewer_book_switch_volume", false)
+    val isReaderOpenBookInGalleryMode: Boolean by BoolSetting("pref_viewer_open_gallery", false)
+    val isReaderChapteredNavigation: Boolean by BoolSetting("viewer_chaptered_navigation", false)
+    val isReaderContinuous: Boolean by BoolSetting(Key.VIEWER_CONTINUOUS, false)
+    val readerPageReadThreshold: Int by IntSettingStr(
+        "pref_viewer_read_threshold",
+        Value.VIEWER_READ_THRESHOLD_1
+    )
+    val readerRatioCompletedThreshold: Int by IntSettingStr(
+        "pref_viewer_ratio_completed_threshold",
+        Value.VIEWER_COMPLETED_RATIO_THRESHOLD_NONE
+    )
+    var readerSlideshowDelay: Int by IntSettingStr(
+        "pref_viewer_slideshow_delay",
+        Value.VIEWER_SLIDESHOW_DELAY_2
+    )
+    var readerSlideshowDelayVertical: Int by IntSettingStr(
+        "pref_viewer_slideshow_delay_vertical",
+        Value.VIEWER_SLIDESHOW_DELAY_2
+    )
+    val readerSeparatingBars: Int by IntSettingStr(
+        Key.VIEWER_SEPARATING_BARS,
+        Value.VIEWER_SEPARATING_BARS_OFF
+    )
+    val isReaderHoldToZoom: Boolean by BoolSetting(Key.VIEWER_HOLD_TO_ZOOM, false)
+    val readerCapTapZoom: Int by IntSettingStr(
+        "pref_viewer_cap_tap_zoom",
+        Value.VIEWER_CAP_TAP_ZOOM_NONE
+    )
+    val isReaderMaintainHorizontalZoom: Boolean by BoolSetting(
+        "pref_viewer_maintain_horizontal_zoom",
+        false
+    )
+    val isReaderAutoRotate: Boolean by BoolSetting(Key.VIEWER_AUTO_ROTATE, false)
+    var readerCurrentContent: Long by LongSetting("viewer_current_content", -1)
+    var readerCurrentPageNum: Int by IntSettingStr("viewer_current_pagenum", -1)
+    var readerGalleryColumns: Int by IntSettingStr("viewer_gallery_columns", 4)
+    var readerDeleteAskMode: Int by IntSettingStr(
+        Key.VIEWER_DELETE_ASK_MODE,
+        Value.VIEWER_DELETE_ASK_AGAIN
+    )
+    var readerDeleteTarget: Int by IntSettingStr(
+        Key.VIEWER_DELETE_TARGET,
+        Value.VIEWER_DELETE_TARGET_PAGE
+    )
 
     // METADATA & RULES EDITOR
     var ruleSortField: Int by IntSetting("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
@@ -225,6 +282,7 @@ object Settings {
     val isForceEnglishLocale: Boolean by BoolSetting(Key.FORCE_ENGLISH, false)
     var isTextMenuOn: Boolean by BoolSetting(Key.TEXT_SELECT_MENU, false)
     val recentVisibility: Boolean by BoolSetting(Key.APP_PREVIEW, BuildConfig.DEBUG)
+    val maxDbSizeKb: Long by LongSetting("db_max_size", 2L * 1024 * 1024) // 2GB
 
 
     // Public Helpers
@@ -246,6 +304,16 @@ object Settings {
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: ULong) {
+            sharedPreferences.edit().putString(key, value.toString()).apply()
+        }
+    }
+
+    private class LongSetting(val key: String, val default: Long) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Long {
+            return (sharedPreferences.getString(key, default.toString()) + "").toLong()
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Long) {
             sharedPreferences.edit().putString(key, value.toString()).apply()
         }
     }
@@ -367,6 +435,16 @@ object Settings {
         const val VIEWER_IMAGE_DISPLAY = "pref_viewer_image_display"
         const val VIEWER_BROWSE_MODE = "pref_viewer_browse_mode"
         const val VIEWER_RENDERING = "pref_viewer_rendering"
+        const val VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum"
+        const val VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions"
+        const val VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling"
+        const val VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe"
+        const val VIEWER_CONTINUOUS = "pref_viewer_continuous"
+        const val VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars"
+        const val VIEWER_HOLD_TO_ZOOM = "pref_viewer_zoom_holding"
+        const val VIEWER_AUTO_ROTATE = "pref_viewer_auto_rotate"
+        const val VIEWER_DELETE_ASK_MODE = "viewer_delete_ask"
+        const val VIEWER_DELETE_TARGET = "viewer_delete_target"
     }
 
     object Default {
@@ -441,5 +519,43 @@ object Settings {
 
         const val VIEWER_RENDERING_SHARP = 0
         const val VIEWER_RENDERING_SMOOTH = 1
+
+        const val VIEWER_READ_THRESHOLD_NONE = -1
+        const val VIEWER_READ_THRESHOLD_1 = 0
+        const val VIEWER_READ_THRESHOLD_2 = 1
+        const val VIEWER_READ_THRESHOLD_5 = 2
+        const val VIEWER_READ_THRESHOLD_ALL = 3
+
+        const val VIEWER_COMPLETED_RATIO_THRESHOLD_NONE = -1
+        const val VIEWER_COMPLETED_RATIO_THRESHOLD_10 = 0
+        const val VIEWER_COMPLETED_RATIO_THRESHOLD_25 = 1
+        const val VIEWER_COMPLETED_RATIO_THRESHOLD_33 = 2
+        const val VIEWER_COMPLETED_RATIO_THRESHOLD_50 = 3
+        const val VIEWER_COMPLETED_RATIO_THRESHOLD_75 = 4
+        const val VIEWER_COMPLETED_RATIO_THRESHOLD_ALL = 99
+
+        const val VIEWER_SLIDESHOW_DELAY_2 = 0
+        const val VIEWER_SLIDESHOW_DELAY_4 = 1
+        const val VIEWER_SLIDESHOW_DELAY_8 = 2
+        const val VIEWER_SLIDESHOW_DELAY_16 = 3
+        const val VIEWER_SLIDESHOW_DELAY_1 = 4
+        const val VIEWER_SLIDESHOW_DELAY_05 = 5
+
+        const val VIEWER_SEPARATING_BARS_OFF = 0
+        const val VIEWER_SEPARATING_BARS_SMALL = 1
+        const val VIEWER_SEPARATING_BARS_MEDIUM = 2
+        const val VIEWER_SEPARATING_BARS_LARGE = 3
+
+        const val VIEWER_DELETE_ASK_AGAIN = 0
+        const val VIEWER_DELETE_ASK_BOOK = 1
+        const val VIEWER_DELETE_ASK_SESSION = 2
+
+        const val VIEWER_DELETE_TARGET_BOOK = 0
+        const val VIEWER_DELETE_TARGET_PAGE = 1
+
+        const val VIEWER_CAP_TAP_ZOOM_NONE = 0
+        const val VIEWER_CAP_TAP_ZOOM_2X = 2
+        const val VIEWER_CAP_TAP_ZOOM_4X = 4
+        const val VIEWER_CAP_TAP_ZOOM_6X = 6
     }
 }

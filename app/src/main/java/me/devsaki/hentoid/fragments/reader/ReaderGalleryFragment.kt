@@ -43,7 +43,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.FragmentReaderGalleryBinding
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.toast
@@ -260,7 +260,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
             binding?.apply {
                 (recyclerView.layoutManager as GridLayoutManager?)?.let { glm ->
-                    val spanCount = Preferences.getReaderGalleryColumns()
+                    val spanCount = Settings.readerGalleryColumns
                     glm.spanCount = spanCount
 
                     // Use the correct size to display chapter separators, if any
@@ -360,7 +360,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
                 // Dynamic column size
                 (recyclerView.layoutManager as GridLayoutManager?)?.let { glm ->
-                    val spanCount = Preferences.getReaderGalleryColumns()
+                    val spanCount = Settings.readerGalleryColumns
                     glm.spanCount = spanCount
 
                     // Use the correct size to display chapter separators, if any

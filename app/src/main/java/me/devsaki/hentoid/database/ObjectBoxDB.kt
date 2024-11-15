@@ -86,7 +86,7 @@ object ObjectBoxDB {
     private fun initStore(): BoxStore {
         val context = HentoidApp.getInstance()
         val mStore = MyObjectBox.builder().androidContext(context)
-            .maxSizeInKByte(Preferences.getMaxDbSizeKb()).build()
+            .maxSizeInKByte(Settings.maxDbSizeKb).build()
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
             val started = Admin(mStore).start(context)
             Timber.i("ObjectBrowser started: %s", started)

@@ -421,8 +421,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun considerResumeReading() {
-        val previouslyViewedContent = Preferences.getReaderCurrentContent()
-        val previouslyViewedPage = Preferences.getReaderCurrentPageNum()
+        val previouslyViewedContent = Settings.readerCurrentContent
+        val previouslyViewedPage = Settings.readerCurrentPageNum
         if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ReaderActivity.isRunning()) {
             binding?.let {
                 val snackbar: Snackbar =
@@ -455,8 +455,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 snackbar.show()
             }
             // Only show that once
-            Preferences.setReaderCurrentContent(-1)
-            Preferences.setReaderCurrentPageNum(-1)
+            Settings.readerCurrentContent = -1
+            Settings.readerCurrentPageNum = -1
         }
     }
 
@@ -885,7 +885,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             Settings.Key.LIBRARY_DISPLAY_GRID_SOURCE,
             Settings.Key.LIBRARY_DISPLAY_GRID_TITLE,
             Settings.Key.LIBRARY_GRID_CARD_WIDTH
-            -> {
+                -> {
                 hasChangedDisplaySettings = true
             }
 
@@ -971,7 +971,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun isLowDatabaseStorage(): Boolean {
-        val dbMaxSizeKb = Preferences.getMaxDbSizeKb()
+        val dbMaxSizeKb = Settings.maxDbSizeKb
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
             return dao.getDbSizeBytes() / 1024f / dbMaxSizeKb < 0.02

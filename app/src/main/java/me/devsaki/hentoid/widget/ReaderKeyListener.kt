@@ -6,7 +6,7 @@ import android.view.ViewConfiguration
 import kotlinx.coroutines.CoroutineScope
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 
 class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
     private var onVolumeDownListener: Consumer<Boolean>? = null
@@ -57,17 +57,17 @@ class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
     }
 
     private fun isTurboEnabled(): Boolean {
-        return !Preferences.isReaderVolumeToSwitchBooks()
+        return !Settings.isReaderVolumeToSwitchBooks
     }
 
     private fun isDetectLongPress(): Boolean {
-        return Preferences.isReaderVolumeToSwitchBooks()
+        return Settings.isReaderVolumeToSwitchBooks
     }
 
     private fun isVolumeKey(keyCode: Int, targetKeyCode: Int): Boolean {
         // Ignore volume keys when disabled in preferences
-        if (!Preferences.isReaderVolumeToTurn()) return false
-        if (Preferences.isReaderInvertVolumeRocker()) {
+        if (!Settings.isReaderVolumeToTurn) return false
+        if (Settings.isReaderInvertVolumeRocker) {
             if (targetKeyCode == KeyEvent.KEYCODE_VOLUME_DOWN) return keyCode == KeyEvent.KEYCODE_VOLUME_UP else if (targetKeyCode == KeyEvent.KEYCODE_VOLUME_UP) return keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
         }
         return keyCode == targetKeyCode
@@ -79,9 +79,9 @@ class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
             onVolumeDownListener
         } else if (isVolumeKey(keyCode, KeyEvent.KEYCODE_VOLUME_UP)) {
             onVolumeUpListener
-        } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && Preferences.isReaderKeyboardToTurn()) {
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && Settings.isReaderKeyboardToTurn) {
             onKeyLeftListener
-        } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && Preferences.isReaderKeyboardToTurn()) {
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && Settings.isReaderKeyboardToTurn) {
             onKeyRightListener
         } else if (keyCode == KeyEvent.KEYCODE_BACK) {
             onBackListener

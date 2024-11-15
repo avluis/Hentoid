@@ -14,7 +14,7 @@ import android.view.animation.DecelerateInterpolator
 import androidx.core.util.Consumer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.widget.OnZoneTapListener
 import me.devsaki.hentoid.widget.ViewZoomGestureListener
@@ -176,7 +176,7 @@ class ZoomableRecyclerView : RecyclerView {
         }
         animatorSet.playTogether(translationXAnimator, translationYAnimator, scaleAnimator)
         animatorSet.duration =
-            if (Preferences.isReaderZoomTransitions()) ANIMATOR_DURATION_TIME else 0
+            if (Settings.isReaderZoomTransitions) ANIMATOR_DURATION_TIME else 0
         animatorSet.interpolator = DecelerateInterpolator()
         animatorSet.start()
         animatorSet.addListener(object : Animator.AnimatorListener {

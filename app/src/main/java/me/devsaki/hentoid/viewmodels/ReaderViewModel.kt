@@ -36,6 +36,8 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_AGAIN
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_BOOK
 import me.devsaki.hentoid.util.VANILLA_CHAPTERNAME_PATTERN
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.coerceIn
@@ -389,7 +391,7 @@ class ReaderViewModel(
      * @param imageFiles Pictures to process
      */
     private fun processImages(theContent: Content, pageNumber: Int, imageFiles: List<ImageFile>) {
-        sortAndSetViewerImages(imageFiles, getShuffled().value ?: false, reversed.value ?: false)
+        sortAndSetViewerImages(imageFiles, getShuffled().value == true, reversed.value == true)
         if (theContent.id != loadedContentId) contentFirstLoad(theContent, pageNumber, imageFiles)
         loadedContentId = theContent.id
     }
@@ -453,11 +455,11 @@ class ReaderViewModel(
      * Toggle the shuffle mode
      */
     fun toggleShuffle() {
-        val isShuffled = !(getShuffled().value ?: false)
+        val isShuffled = getShuffled().value != true
         if (isShuffled) RandomSeed.renewSeed(SEED_PAGES)
         shuffled.postValue(isShuffled)
         databaseImages.value?.let {
-            sortAndSetViewerImages(it, isShuffled, reversed.value ?: false)
+            sortAndSetViewerImages(it, isShuffled, reversed.value == true)
         }
     }
 
@@ -465,10 +467,10 @@ class ReaderViewModel(
      * Reverse page order
      */
     fun reverse() {
-        val isReversed = !(reversed.value ?: false)
+        val isReversed = reversed.value != true
         reversed.postValue(isReversed)
         databaseImages.value?.let {
-            sortAndSetViewerImages(it, shuffled.value ?: false, isReversed)
+            sortAndSetViewerImages(it, shuffled.value == true, isReversed)
         }
     }
 
@@ -534,8 +536,8 @@ class ReaderViewModel(
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun onLeaveBook(viewerIndex: Int) {
-        if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getReaderDeleteAskMode())
-            Preferences.setReaderDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN)
+        if (VIEWER_DELETE_ASK_BOOK == Settings.readerDeleteAskMode)
+            Settings.readerDeleteAskMode = VIEWER_DELETE_ASK_AGAIN
         indexDlInProgress.clear()
         indexExtractInProgress.clear()
         archiveExtractKillSwitch.set(true)
@@ -549,22 +551,22 @@ class ReaderViewModel(
             val theContent = dao.selectContent(loadedContentId)
             if (null == theImages || null == theContent) return@launch
             val nbReadablePages = theImages.count { it.isReadable }
-            val readThresholdPosition: Int = when (Preferences.getReaderPageReadThreshold()) {
-                Preferences.Constant.VIEWER_READ_THRESHOLD_1 -> 1
-                Preferences.Constant.VIEWER_READ_THRESHOLD_2 -> 2
-                Preferences.Constant.VIEWER_READ_THRESHOLD_5 -> 5
-                Preferences.Constant.VIEWER_READ_THRESHOLD_ALL -> nbReadablePages
+            val readThresholdPosition: Int = when (Settings.readerPageReadThreshold) {
+                Settings.Value.VIEWER_READ_THRESHOLD_1 -> 1
+                Settings.Value.VIEWER_READ_THRESHOLD_2 -> 2
+                Settings.Value.VIEWER_READ_THRESHOLD_5 -> 5
+                Settings.Value.VIEWER_READ_THRESHOLD_ALL -> nbReadablePages
                 else -> nbReadablePages
             }
             val completedThresholdRatio: Float =
-                when (Preferences.getReaderRatioCompletedThreshold()) {
-                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_10 -> 0.1f
-                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_25 -> 0.25f
-                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_33 -> 0.33f
-                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_50 -> 0.5f
-                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_75 -> 0.75f
-                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_ALL -> 1f
-                    Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_NONE -> 2f
+                when (Settings.readerRatioCompletedThreshold) {
+                    Settings.Value.VIEWER_COMPLETED_RATIO_THRESHOLD_10 -> 0.1f
+                    Settings.Value.VIEWER_COMPLETED_RATIO_THRESHOLD_25 -> 0.25f
+                    Settings.Value.VIEWER_COMPLETED_RATIO_THRESHOLD_33 -> 0.33f
+                    Settings.Value.VIEWER_COMPLETED_RATIO_THRESHOLD_50 -> 0.5f
+                    Settings.Value.VIEWER_COMPLETED_RATIO_THRESHOLD_75 -> 0.75f
+                    Settings.Value.VIEWER_COMPLETED_RATIO_THRESHOLD_ALL -> 1f
+                    Settings.Value.VIEWER_COMPLETED_RATIO_THRESHOLD_NONE -> 2f
                     else -> 2f
                 }
             val completedThresholdPosition =
@@ -918,7 +920,7 @@ class ReaderViewModel(
      * @param pageNumber Page number to start with
      */
     private fun loadContent(c: Content, pageNumber: Int) {
-        Preferences.setReaderCurrentContent(c.id)
+        Settings.readerCurrentContent = c.id
         currentContentIndex = contentIds.indexOf(c.id)
         if (-1 == currentContentIndex) currentContentIndex = 0
         c.isFirst = 0 == currentContentIndex
@@ -1299,7 +1301,7 @@ class ReaderViewModel(
                     { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
                     { onExtractionComplete(nbProcessed, indexesToLoad.size) })
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             EventBus.getDefault().post(
                 ProcessEvent(
                     ProcessEvent.Type.COMPLETE,
@@ -1460,7 +1462,7 @@ class ReaderViewModel(
             mimeType = result.second
 
             return Triple(pageIndex, Uri.fromFile(targetFile).toString(), mimeType)
-        } catch (ie: DownloadInterruptedException) {
+        } catch (_: DownloadInterruptedException) {
             Timber.d("Download interrupted for pic %d", pageIndex)
         } catch (e: Exception) {
             Timber.w(e)

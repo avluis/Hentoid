@@ -39,11 +39,13 @@ import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.gles_renderer.GPUImage
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DISPLAY_FILL
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DISPLAY_STRETCH
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_ORIENTATION_VERTICAL
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_LARGE
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_MEDIUM
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_SMALL
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.getScreenDimensionsPx
 import me.devsaki.hentoid.util.image.SmartRotateTransformation
@@ -126,19 +128,19 @@ class ImagePagerAdapter(context: Context) :
     // Book prefs have to be set explicitely because the cached Content linked from each ImageFile
     // might not have the latest properties
     fun refreshPrefs() {
-        val separatingBarsPrefs = Preferences.getReaderSeparatingBars()
+        val separatingBarsPrefs = Settings.readerSeparatingBars
         separatingBarsHeight = when (separatingBarsPrefs) {
-            Preferences.Constant.VIEWER_SEPARATING_BARS_SMALL -> 4
-            Preferences.Constant.VIEWER_SEPARATING_BARS_MEDIUM -> 16
-            Preferences.Constant.VIEWER_SEPARATING_BARS_LARGE -> 64
+            VIEWER_SEPARATING_BARS_SMALL -> 4
+            VIEWER_SEPARATING_BARS_MEDIUM -> 16
+            VIEWER_SEPARATING_BARS_LARGE -> 64
             else -> 0
         }
-        longTapZoomEnabled = Preferences.isReaderHoldToZoom()
-        autoRotate = Preferences.isReaderAutoRotate()
+        longTapZoomEnabled = Settings.isReaderHoldToZoom
+        autoRotate = Settings.isReaderAutoRotate
 
-        val doubleTapZoomCapCode = Preferences.getReaderCapTapZoom()
+        val doubleTapZoomCapCode = Settings.readerCapTapZoom
         doubleTapZoomCap =
-            if (Preferences.Constant.VIEWER_CAP_TAP_ZOOM_NONE == doubleTapZoomCapCode) -1f else doubleTapZoomCapCode.toFloat()
+            if (Settings.Value.VIEWER_CAP_TAP_ZOOM_NONE == doubleTapZoomCapCode) -1f else doubleTapZoomCapCode.toFloat()
 
         colorDepth =
             if (0 == Settings.readerColorDepth) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
@@ -407,7 +409,7 @@ class ImagePagerAdapter(context: Context) :
                 if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer)
                 else ssiv.setGlEsRenderer(null)
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
-                if (!Preferences.isReaderZoomTransitions()) ssiv.setDoubleTapZoomDuration(10)
+                if (!Settings.isReaderZoomTransitions) ssiv.setDoubleTapZoomDuration(10)
 
                 val scrollLTR =
                     Settings.Value.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR

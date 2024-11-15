@@ -11,7 +11,6 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.fragments.reader.ReaderGalleryFragment
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.requestExternalStorageReadPermission
@@ -69,7 +68,7 @@ open class ReaderActivity : BaseActivity() {
 
         if (null == savedInstanceState) {
             val fragment: Fragment =
-                if (Preferences.isReaderOpenBookInGalleryMode() || parser.isForceShowGallery) ReaderGalleryFragment() else ReaderPagerFragment()
+                if (Settings.isReaderOpenBookInGalleryMode || parser.isForceShowGallery) ReaderGalleryFragment() else ReaderPagerFragment()
             supportFragmentManager.beginTransaction()
                 .add(android.R.id.content, fragment)
                 .commit()
@@ -92,9 +91,9 @@ open class ReaderActivity : BaseActivity() {
     override fun onStop() {
         if (isFinishing) { // i.e. the activity is closing for good; not being paused / backgrounded
             viewModel.onActivityLeave()
-            Preferences.setReaderDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN)
-            Preferences.setReaderCurrentPageNum(-1)
-            Preferences.setReaderCurrentContent(-1)
+            Settings.readerDeleteAskMode = Settings.Value.VIEWER_DELETE_ASK_AGAIN
+            Settings.readerCurrentPageNum = -1
+            Settings.readerCurrentContent = -1
             setRunning(false)
         }
         super.onStop()

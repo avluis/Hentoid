@@ -6,7 +6,7 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.database.domains.DuplicateEntry_
 import me.devsaki.hentoid.database.domains.MyObjectBox
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 
 object DuplicatesDB {
     private const val DB_NAME = "duplicates-db"
@@ -16,7 +16,7 @@ object DuplicatesDB {
     private fun initStore(): BoxStore {
         val context = HentoidApp.getInstance()
         return MyObjectBox.builder().name(DB_NAME).androidContext(context)
-            .maxSizeInKByte(Preferences.getMaxDbSizeKb()).build()
+            .maxSizeInKByte(Settings.maxDbSizeKb).build()
     }
 
 
