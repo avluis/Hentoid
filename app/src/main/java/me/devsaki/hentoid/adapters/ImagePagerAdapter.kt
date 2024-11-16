@@ -17,11 +17,14 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import coil3.SingletonImageLoader
 import coil3.dispose
-import coil3.load
 import coil3.request.ErrorResult
+import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.request.allowConversionToBitmap
+import coil3.request.allowHardware
+import coil3.request.target
 import coil3.request.transformations
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
@@ -344,9 +347,9 @@ class ImagePagerAdapter(context: Context) :
 
     inner class ImageViewHolder(val rootView: View) : RecyclerView.ViewHolder(rootView),
         OnImageEventListener {
-        private val ssiv: CustomSubsamplingScaleImageView = itemView.requireById(R.id.ssiv)
-        private val imageView: ImageView = itemView.requireById(R.id.imageview)
-        private val noImgTxt: TextView = itemView.requireById(R.id.viewer_no_page_txt)
+        private val ssiv: CustomSubsamplingScaleImageView = rootView.requireById(R.id.ssiv)
+        private val imageView: ImageView = rootView.requireById(R.id.imageview)
+        private val noImgTxt: TextView = rootView.requireById(R.id.viewer_no_page_txt)
 
         private lateinit var imgView: View
 
@@ -427,7 +430,10 @@ class ImagePagerAdapter(context: Context) :
 
             var imageAvailable = true
             val img = getImageAt(position)
-            if (img != null && img.fileUri.isNotEmpty()) setImage(img)
+            if (img != null && img.fileUri.isNotEmpty()) setImage(
+                img,
+                ImageType.IMG_TYPE_JXL == imageType
+            )
             else imageAvailable = false
 
             val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
@@ -440,7 +446,7 @@ class ImagePagerAdapter(context: Context) :
             noImgTxt.isVisible = !imageAvailable
         }
 
-        private fun setImage(img: ImageFile) {
+        private fun setImage(img: ImageFile, isJxl: Boolean) {
             this.img = img
             val imgType = getImageType(img)
             val uri = Uri.parse(img.fileUri)
@@ -470,13 +476,22 @@ class ImagePagerAdapter(context: Context) :
                         screenHeight
                     )
                 ) else emptyList()
-                view.load(uri) {
-                    transformations(transformation)
-                    listener(
-                        onError = { _, err -> onCoilLoadFailed(err) },
-                        onSuccess = { _, res -> onCoilLoadSuccess(res) }
-                    )
-                    allowConversionToBitmap(false)
+
+                // Custom loader to handle JXL
+                // (doesn't support Hardware bitmaps : https://github.com/awxkee/jxl-coder-coil/issues/7)
+                view.context.let { ctx ->
+                    val imageLoader = SingletonImageLoader.get(ctx)
+                    val request = ImageRequest.Builder(ctx)
+                        .data(uri)
+                        .target(imageView)
+                        .allowHardware(!isJxl)
+                        .transformations(transformation)
+                        .listener(
+                            onError = { _, err -> onCoilLoadFailed(err) },
+                            onSuccess = { _, res -> onCoilLoadSuccess(res) }
+                        )
+                        .allowConversionToBitmap(false)
+                    imageLoader.enqueue(request.build())
                 }
             }
         }
