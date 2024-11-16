@@ -228,6 +228,10 @@ object Settings {
         Key.VIEWER_DELETE_TARGET,
         Value.VIEWER_DELETE_TARGET_PAGE
     )
+    var readerSlideshowLoop: Int by IntSettingStr(
+        "viewer_slideshow_loop",
+        Value.VIEWER_SLIDESHOW_LOOP_NONE
+    )
 
     // METADATA & RULES EDITOR
     var ruleSortField: Int by IntSetting("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
@@ -540,6 +544,11 @@ object Settings {
         const val VIEWER_SLIDESHOW_DELAY_16 = 3
         const val VIEWER_SLIDESHOW_DELAY_1 = 4
         const val VIEWER_SLIDESHOW_DELAY_05 = 5
+
+        const val VIEWER_SLIDESHOW_LOOP_NONE = 0
+        const val VIEWER_SLIDESHOW_LOOP_CHAPTER = 1
+        const val VIEWER_SLIDESHOW_LOOP_BOOK = 1
+        const val VIEWER_SLIDESHOW_LOOP_FOLLOW_CONTINUOUS = 2
 
         const val VIEWER_SEPARATING_BARS_OFF = 0
         const val VIEWER_SEPARATING_BARS_SMALL = 1
