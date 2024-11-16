@@ -15,11 +15,11 @@ import coil3.imageLoader
 import coil3.memory.MemoryCache
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
-import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.Options
 import coil3.request.target
 import coil3.serviceLoaderEnabled
+import com.awxkee.jxlcoder.coil.JxlDecoder
 import com.github.penfeizhou.animation.apng.APNGDrawable
 import com.github.penfeizhou.animation.io.ByteBufferReader
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +54,9 @@ private fun initStillImageLoader(): ImageLoader {
                 MemoryCache.Builder()
                     .maxSizePercent(context, 0.10)
                     .build()
+            }
+            .components {
+                add(JxlDecoder.Factory())
             }
             .diskCache {
                 DiskCache.Builder()

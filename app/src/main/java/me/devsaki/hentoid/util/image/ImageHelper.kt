@@ -41,6 +41,7 @@ const val MIME_IMAGE_GIF = "image/gif"
 private const val MIME_IMAGE_BMP = "image/bmp"
 const val MIME_IMAGE_PNG = "image/png"
 const val MIME_IMAGE_APNG = "image/apng"
+const val MIME_IMAGE_JXL = "image/jxl"
 
 // In Java and Kotlin, byte type is signed !
 // => Converting all raw values to byte to be sure they are evaluated as expected
@@ -59,6 +60,22 @@ private val PNG_IDAT = "IDAT".toByteArray(CHARSET_LATIN_1)
 private val WEBP_VP8L = "VP8L".toByteArray(CHARSET_LATIN_1)
 private val WEBP_ANIM = "ANIM".toByteArray(CHARSET_LATIN_1)
 
+private val JXL_NAKED = byteArrayOf(0xFF.toByte(), 0x0A.toByte())
+private val JXL_ISO = byteArrayOf(
+    0x00.toByte(),
+    0x00.toByte(),
+    0x00.toByte(),
+    0x0C.toByte(),
+    0x4A.toByte(),
+    0x58.toByte(),
+    0x4C.toByte(),
+    0x20.toByte(),
+    0x0D.toByte(),
+    0x0A.toByte(),
+    0x87.toByte(),
+    0x0A.toByte()
+)
+
 val imageNamesFilter = NameFilter { isImageExtensionSupported(getExtension(it)) }
 
 
@@ -74,7 +91,9 @@ fun isMimeTypeSupported(extension: String): Boolean {
             || extension.equals(MIME_IMAGE_PNG, ignoreCase = true)
             || extension.equals(MIME_IMAGE_APNG, ignoreCase = true)
             || extension.equals(MIME_IMAGE_GIF, ignoreCase = true)
-            || extension.equals(MIME_IMAGE_BMP, ignoreCase = true))
+            || extension.equals(MIME_IMAGE_BMP, ignoreCase = true)
+            || extension.equals(MIME_IMAGE_JXL, ignoreCase = true)
+            )
 }
 
 /**
@@ -89,7 +108,8 @@ private fun isImageExtensionSupported(mimeType: String): Boolean {
             || mimeType.equals("webp", ignoreCase = true)
             || mimeType.equals("png", ignoreCase = true)
             || mimeType.equals("jfif", ignoreCase = true)
-            || mimeType.equals("gif", ignoreCase = true))
+            || mimeType.equals("gif", ignoreCase = true)
+            || mimeType.equals("jxl", ignoreCase = true))
 }
 
 fun isSupportedImage(fileName: String): Boolean {
@@ -113,6 +133,8 @@ fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
     val theLimit = if (-1 == limit) min(data.size * 0.2f, 1000f).toInt() else limit
 
     return if (data.startsWith(JPEG_SIGNATURE)) MIME_IMAGE_JPEG
+    else if (data.startsWith(JXL_NAKED)) MIME_IMAGE_JXL
+    else if (data.startsWith(JXL_ISO)) MIME_IMAGE_JXL
     // WEBP : byte comparison is non-contiguous
     else if (data.startsWith(WEBP_SIGNATURE) && 0x57.toByte() == data[8] && 0x45.toByte() == data[9] && 0x42.toByte() == data[10] && 0x50.toByte() == data[11]
     ) MIME_IMAGE_WEBP
@@ -147,6 +169,7 @@ fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
  * @return True if the format is animated and supported by the app
  */
 fun isImageAnimated(data: ByteArray): Boolean {
+    // TODO JXL (specs aren't public :/)
     return if (data.size < 400) false
     else {
         val limit = min(data.size, 1000)
@@ -179,6 +202,7 @@ fun isImageAnimated(data: ByteArray): Boolean {
  * @return True if the format is lossless and supported by the app
  */
 fun isImageLossless(data: ByteArray): Boolean {
+    // TODO JXL (specs aren't public :/)
     return if (data.size < 16) false else when (getMimeTypeFromPictureBinary(data)) {
         MIME_IMAGE_PNG -> true
         MIME_IMAGE_APNG -> true
