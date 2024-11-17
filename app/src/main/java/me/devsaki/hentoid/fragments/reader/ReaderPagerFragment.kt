@@ -42,6 +42,7 @@ import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import com.skydoves.submarine.SubmarineItem
 import com.skydoves.submarine.SubmarineView
+import kotlinx.coroutines.launch
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
@@ -111,7 +112,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override val scrollListener = ScrollPositionListener { onScrollPositionChange(it) }
 
     override var displayParams: DisplayParams? = null
-    private var useSsiv = false
 
     // Properties
     // Preferences of current book; to feed the book prefs dialog
@@ -422,22 +422,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             // Scale listener from the SSIV
             adapter.setOnScaleListener { position, scale ->
                 if (position == absImageIndex) onScaleChanged(scale)
-            }
-            adapter.setSsivAlertListener {
-                useSsiv = false
-                displayParams?.apply {
-                    if (useSsiv) {
-                        onDisplayParamsChange(
-                            DisplayParams(
-                                browseMode,
-                                displayMode,
-                                twoPages,
-                                isSmoothRendering,
-                                true
-                            )
-                        )
-                    }
-                }
             }
 
             adapter.setRecyclerView(recyclerView)
@@ -861,7 +845,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             }
 
             // Set the correct gesture listener (recyclerView or image)
-            adapter.setGestureListenerForPosition(scrollPosition)
+            adapter.adjustBehaviourForPosition(scrollPosition)
 
             // Don't show loading progress from previous image
             binding?.apply {
@@ -972,15 +956,17 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     private fun adjustDisplay(bookPreferences: Map<String, String>, absImageIndex: Int) {
-        val newDisplayParams = DisplayParams(
-            Settings.getContentBrowseMode(bookPreferences),
-            Settings.getContentDisplayMode(bookPreferences),
-            Settings.getContent2PagesMode(bookPreferences),
-            Settings.isContentSmoothRendering(bookPreferences),
-            adapter.getSSivAtPosition(absImageIndex)
-        )
-        if (null == displayParams || newDisplayParams != displayParams)
-            onDisplayParamsChange(newDisplayParams)
+        activity?.lifecycleScope?.launch {
+            val newDisplayParams = DisplayParams(
+                Settings.getContentBrowseMode(bookPreferences),
+                Settings.getContentDisplayMode(bookPreferences),
+                Settings.getContent2PagesMode(bookPreferences),
+                Settings.isContentSmoothRendering(bookPreferences),
+                adapter.getSSivAtPosition(absImageIndex)
+            )
+            if (null == displayParams || newDisplayParams != displayParams)
+                onDisplayParamsChange(newDisplayParams)
+        }
     }
 
     override fun onBrowseModeChange() {
@@ -1010,7 +996,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         binding?.apply {
             // Animated picture appears in horizontal mode => enable zoom frame
             if (isAnimationChange && VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation) {
-                if (!newDisplayParams.useSsiv || !useSsiv) isZoomFrameEnabled = true
+                Timber.d("ssiv ${newDisplayParams.useSsiv}")
+                if (!newDisplayParams.useSsiv) isZoomFrameEnabled = true
             }
 
             // Orientation changes
@@ -1041,7 +1028,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                             .setOnMiddleZoneTapListener { onMiddleTap() }
                             .setOnLongTapListener { onLongTap() }
                     adapter.setItemTouchListener(onHorizontalZoneTapListener)
-                    isZoomFrameEnabled = newDisplayParams.twoPages
+                    isZoomFrameEnabled = isZoomFrameEnabled || newDisplayParams.twoPages
                     seekToIndex(absImageIndex)
                 }
                 pageSnapWidget.setPageSnapEnabled(VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation)

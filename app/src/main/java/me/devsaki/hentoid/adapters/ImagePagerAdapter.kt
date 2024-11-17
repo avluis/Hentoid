@@ -27,7 +27,6 @@ import coil3.request.allowHardware
 import coil3.request.target
 import coil3.request.transformations
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -95,7 +94,6 @@ class ImagePagerAdapter(context: Context) :
 
     private var itemTouchListener: OnZoneTapListener? = null
     private var scaleListener: BiConsumer<Int, Float>? = null
-    private var ssivAlertListener: Runnable? = null
 
     private var recyclerView: ZoomableRecyclerView? = null
     private val initialAbsoluteScales: MutableMap<Int, Float> = HashMap()
@@ -155,10 +153,6 @@ class ImagePagerAdapter(context: Context) :
 
     fun setItemTouchListener(itemTouchListener: OnZoneTapListener?) {
         this.itemTouchListener = itemTouchListener
-    }
-
-    fun setSsivAlertListener(ssivAlertListener: Runnable) {
-        this.ssivAlertListener = ssivAlertListener
     }
 
     private fun getImageType(img: ImageFile?): ImageType {
@@ -224,7 +218,6 @@ class ImagePagerAdapter(context: Context) :
     fun destroy() {
         if (isGlInit) glEsRenderer.clear()
         scaleListener = null
-        ssivAlertListener = null
         itemTouchListener = null
     }
 
@@ -287,14 +280,8 @@ class ImagePagerAdapter(context: Context) :
         }
     }
 
-    fun getSSivAtPosition(position: Int): Boolean {
-        var res = false
-        recyclerView?.lifecycleScope?.launch {
-            res =
-                (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.isImageView()
-                    ?: false
-        }
-        return res
+    suspend fun getSSivAtPosition(position: Int): Boolean = withContext(Dispatchers.Default) {
+        (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.isImageView() == false
     }
 
     fun resetScaleAtPosition(position: Int) {
@@ -331,7 +318,7 @@ class ImagePagerAdapter(context: Context) :
         this.isScrollLTR = isScrollLTR
     }
 
-    fun setGestureListenerForPosition(position: Int) {
+    fun adjustBehaviourForPosition(position: Int) {
         recyclerView?.lifecycleScope?.launch {
             withContext(Dispatchers.Default) {
                 // Account for items being refreshed just after that call
@@ -339,7 +326,9 @@ class ImagePagerAdapter(context: Context) :
                 // but it would add complexity for little perceived value
                 pause(500)
             }
-            (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.setTapListener()
+            (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.apply {
+                setTapListener()
+            }
         }
     }
 
@@ -403,7 +392,6 @@ class ImagePagerAdapter(context: Context) :
                 switchImageView(forceImageView!!, true)
                 forceImageView = null // Reset force flag
             } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType || ImageType.IMG_TYPE_AWEBP == imageType || ImageType.IMG_TYPE_JXL == imageType) {
-                ssivAlertListener?.run()
                 switchImageView(isImageView = true, isClickThrough = true)
             } else switchImageView(
                 imgViewType == ViewType.IMAGEVIEW_STRETCH,
@@ -513,12 +501,10 @@ class ImagePagerAdapter(context: Context) :
             }
         }
 
-        suspend fun isImageView(): Boolean {
-            withContext(Dispatchers.Default) {
-                var iterations = 0 // Wait for 5 secs max
-                while (isLoading.get() && iterations++ < 33) pause(150)
-            }
-            return isImageView
+        suspend fun isImageView(): Boolean = withContext(Dispatchers.Default) {
+            var iterations = 0 // Wait for 5 secs max
+            while (isLoading.get() && iterations++ < 33) pause(150)
+            isImageView
         }
 
         private val scaleType: CustomSubsamplingScaleImageView.ScaleType
