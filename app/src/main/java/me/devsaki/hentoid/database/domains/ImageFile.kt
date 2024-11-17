@@ -186,9 +186,7 @@ data class ImageFile(
     }
 
     var isCover: Boolean
-        get() {
-            return dbIsCover
-        }
+        get() = dbIsCover
         set(value) {
             dbIsCover = value
             if (value) read = true
@@ -196,18 +194,14 @@ data class ImageFile(
         }
 
     var url: String
-        get() {
-            return dbUrl
-        }
+        get() = dbUrl
         set(value) {
             dbUrl = value
             uniqueHash = 0
         }
 
     var pageUrl: String
-        get() {
-            return dbPageUrl
-        }
+        get() = dbPageUrl
         set(value) {
             dbPageUrl = value
             uniqueHash = 0
@@ -215,36 +209,26 @@ data class ImageFile(
 
 
     var order: Int
-        get() {
-            return dbOrder
-        }
+        get() = dbOrder
         set(value) {
             dbOrder = value
             uniqueHash = 0
         }
 
     var contentId: Long
-        get() {
-            return content.targetId
-        }
+        get() = content.targetId
         set(value) {
             content.targetId = value
         }
 
     val linkedChapter: Chapter?
-        get() {
-            return chapter.reach(this)
-        }
+        get() = chapter.reach(this)
 
     val linkedContent: Content?
-        get() {
-            return content.reach(this)
-        }
+        get() = content.reach(this)
 
     var chapterId: Long
-        get() {
-            return chapter.targetId
-        }
+        get() = chapter.targetId
         set(value) {
             chapter.targetId = value
             uniqueHash = 0

@@ -24,18 +24,15 @@ data class GroupItem(
         this.group.target = group
     }
 
-
-    fun reachContent(): Content? {
-        return content.reach(this)
-    }
-
-    fun reachGroup(): Group? {
-        return group.reach(this)
-    }
-
     val contentId: Long
         get() = content.targetId
 
     val groupId: Long
         get() = group.targetId
+
+    val linkedContent: Content?
+        get() = content.reach(this)
+
+    val linkedGroup: Group?
+        get() = group.reach(this)
 }

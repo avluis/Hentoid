@@ -188,7 +188,7 @@ abstract class BaseSplitMergeWorker(
             // Set custom group, if any
             val customGroups = content.getGroupItems(Grouping.CUSTOM)
             if (customGroups.isNotEmpty())
-                moveContentToCustomGroup(splitContent, customGroups[0].reachGroup(), dao)
+                moveContentToCustomGroup(splitContent, customGroups[0].linkedGroup, dao)
         } // Chapters loop
 
         // Remove latest target folder and split images if manually canceled

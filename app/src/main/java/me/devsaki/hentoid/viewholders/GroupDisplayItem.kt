@@ -118,7 +118,7 @@ class GroupDisplayItem(
                 if (!item.group.coverContent.isNull) coverContent = item.group.coverContent.target
                 else if (item.group.getItems().isNotEmpty()) {
                     item.group.getItems()[0].let {
-                        val c = it.reachContent()
+                        val c = it.linkedContent
                         if (c != null) coverContent = c
                     }
                 }

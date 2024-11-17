@@ -39,7 +39,7 @@ data class Chapter(
 
     // NB : Doesn't work when Content is not linked
     fun populateUniqueId() {
-        val c = content.reach(this)
+        val c = linkedContent
         if (c != null) {
             this.uniqueId = c.uniqueSiteId + "-" + order
         } else {
@@ -64,6 +64,9 @@ data class Chapter(
 
     val readableImageFiles: List<ImageFile>
         get() = imageList.filter(ImageFile::isReadable)
+
+    val linkedContent: Content?
+        get() = content.reach(this)
 
     fun setImageFiles(imageFiles: List<ImageFile>?) {
         // We do want to compare array references, not content
