@@ -244,8 +244,9 @@
     <string name="pref_viewer_continuous_summary_on">Using next page on last page loads the next book</string>
     <string name="pref_viewer_read_threshold">Mark book as read after N pages</string>
     <string name="pref_viewer_ratio_completed_threshold">Mark book as completed after N% pages</string>
-    <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page (horizontal display)</string>
-    <string name="pref_viewer_slideshow_delay_vertical">Slideshow / Scrolling speed (vertical display)</string>
+    <string name="pref_viewer_slideshow_delay">Delay between each page (horizontal display)</string>
+    <string name="pref_viewer_slideshow_delay_vertical">Scrolling speed (vertical display)</string>
+    <string name="pref_viewer_slideshow_loop">Loop</string>
     <string name="doh_warning">Some websites won\'t work well with DNS over HTTPS. Use an external DNS app if you experience issues during navigation (e.g. blank pages, unresponsive login forms)</string>
 
     <!-- Misc -->

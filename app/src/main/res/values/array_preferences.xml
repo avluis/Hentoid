@@ -93,6 +93,9 @@
     <string name="pref_viewer_slideshow_delay_entries_vertical_4">Quick</string>
     <string name="pref_viewer_slideshow_delay_entries_vertical_5">Fast</string>
     <string name="pref_viewer_slideshow_delay_entries_vertical_6">Super fast</string>
+    <!-- Choice for "Slideshow loop" setting -->
+    <string name="pref_viewer_slideshow_loop_entries_1">Stop at the end (no loop)</string>
+    <string name="pref_viewer_slideshow_loop_entries_2">Restart at page 1</string>
     <!-- Choice for "Display mode" setting -->
     <string name="pref_viewer_display_mode_entries_1">Fit to screen (default)</string>
     <string name="pref_viewer_display_mode_entries_2">Fill screen (proportionate)</string>

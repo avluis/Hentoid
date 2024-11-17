@@ -130,14 +130,14 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
                 pageCurrentNumber = pagerLeftTxt
                 pageMaxNumber = pagerRightTxt
                 pageSlider.rotationY = 0f
-                prevBookBtn.setOnClickListener { previousFunctional() }
-                nextBookBtn.setOnClickListener { nextFunctional() }
+                prevBookBtn.setOnClickListener { previousContainer() }
+                nextBookBtn.setOnClickListener { nextContainer() }
             } else if (VIEWER_DIRECTION_RTL == direction) {
                 pageCurrentNumber = pagerRightTxt
                 pageMaxNumber = pagerLeftTxt
                 pageSlider.rotationY = 180f
-                prevBookBtn.setOnClickListener { nextFunctional() }
-                nextBookBtn.setOnClickListener { previousFunctional() }
+                prevBookBtn.setOnClickListener { nextContainer() }
+                nextBookBtn.setOnClickListener { previousContainer() }
             }
             pageMaxNumber?.setOnClickListener(null)
             pageCurrentNumber?.setOnClickListener {
@@ -211,12 +211,16 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
         } else updateNextPrevButtonsChapter(currentChapter)
     }
 
-    fun previousFunctional() {
-        if (!Settings.isReaderChapteredNavigation) pager.previousBook() else if (!previousChapter()) pager.previousBook()
+    fun previousContainer(): Boolean {
+        return if (!Settings.isReaderChapteredNavigation) pager.previousBook()
+        else if (!previousChapter()) pager.previousBook()
+        else true
     }
 
-    fun nextFunctional() {
-        if (!Settings.isReaderChapteredNavigation) pager.nextBook() else if (!nextChapter()) pager.nextBook()
+    fun nextContainer(): Boolean {
+        return if (!Settings.isReaderChapteredNavigation) pager.nextBook()
+        else if (!nextChapter()) pager.nextBook()
+        else true
     }
 
     private fun previousChapter(): Boolean {

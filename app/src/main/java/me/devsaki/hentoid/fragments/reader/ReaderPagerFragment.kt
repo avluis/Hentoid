@@ -315,8 +315,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
         (requireActivity() as ReaderActivity)
             .registerKeyListener(ReaderKeyListener(lifecycleScope)
-                .setOnVolumeDownListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.previousFunctional() else previousPage() }
-                .setOnVolumeUpListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.nextFunctional() else nextPage() }
+                .setOnVolumeDownListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.previousContainer() else previousPage() }
+                .setOnVolumeUpListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.nextContainer() else nextPage() }
                 .setOnKeyLeftListener { onLeftTap() }.setOnKeyRightListener { onRightTap() }
                 .setOnBackListener { onBackClick() })
     }
@@ -451,8 +451,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             pageSnapWidget = PageSnapWidget(recyclerView)
         }
         smoothScroller = ReaderSmoothScroller(requireContext())
-        scrollListener.setOnStartOutOfBoundScrollListener { if (Settings.isReaderContinuous) navigator.previousFunctional() }
-        scrollListener.setOnEndOutOfBoundScrollListener { if (Settings.isReaderContinuous) navigator.nextFunctional() }
+        scrollListener.setOnStartOutOfBoundScrollListener { if (Settings.isReaderContinuous) navigator.previousContainer() }
+        scrollListener.setOnEndOutOfBoundScrollListener { if (Settings.isReaderContinuous) navigator.nextContainer() }
     }
 
     private fun initControlsOverlay() {
@@ -1150,12 +1150,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     /**
      * Load next page
+     *
+     * @return true if there's a page to load; false if there is none
      */
-    override fun nextPage() {
+    override fun nextPage(): Boolean {
         val delta = if (displayParams?.twoPages == true) 2 else 1
         if (absImageIndex + delta > adapter.itemCount - 1) {
-            if (Settings.isReaderContinuous) navigator.nextFunctional()
-            return
+            if (Settings.isReaderContinuous) return navigator.nextContainer()
+            return false
         }
         binding?.apply {
             if (Settings.isReaderTapTransitions) {
@@ -1171,22 +1173,26 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 else layoutMgr.scrollToPositionWithOffset(absImageIndex + delta, 0)
             }
         }
+        return true
     }
 
     /**
      * Load previous page
+     *
+     * @return true if there's a page to load; false if there is none
      */
-    override fun previousPage() {
+    override fun previousPage(): Boolean {
         val delta = if (displayParams?.twoPages == true) 2 else 1
         if (absImageIndex - delta < 0) {
-            if (Settings.isReaderContinuous) navigator.previousFunctional()
-            return
+            if (Settings.isReaderContinuous) return navigator.previousContainer()
+            return false
         }
         binding?.apply {
             if (Settings.isReaderTapTransitions)
                 recyclerView.smoothScrollToPosition(absImageIndex - delta)
             else recyclerView.scrollToPosition(absImageIndex - delta)
         }
+        return true
     }
 
     /**
@@ -1229,10 +1235,16 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
     }
 
+    /**
+     * @return true if there's a book to load; false if there is none
+     */
     override fun nextBook(): Boolean {
         return viewModel.loadNextContent(absImageIndex)
     }
 
+    /**
+     * @return true if there's a book to load; false if there is none
+     */
     override fun previousBook(): Boolean {
         return viewModel.loadPreviousContent(absImageIndex)
     }
@@ -1250,6 +1262,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     override fun indexFromPageNum(pageNum: Int): Int {
         return adapter.currentList.indexOfFirst { i -> i.order == pageNum }
+    }
+
+    /**
+     * Go back to book 1, page 1
+     */
+    override fun goToBookSelectionStart() {
+        viewModel.loadFirstContent(absImageIndex)
     }
 
     /**

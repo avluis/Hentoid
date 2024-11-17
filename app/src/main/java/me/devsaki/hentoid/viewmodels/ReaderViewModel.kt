@@ -908,6 +908,17 @@ class ReaderViewModel(
         return false
     }
 
+    /**
+     * Load the first Content according to the current filter & search criteria
+     *
+     * @param viewerIndex Page viewer index the current Content has been left on
+     */
+    fun loadFirstContent(viewerIndex: Int) {
+        currentContentIndex = 0
+        onLeaveBook(viewerIndex)
+        loadContentFromId(contentIds[currentContentIndex], 1)
+    }
+
     private fun reloadContent(viewerIndex: Int = -1) {
         loadContentFromId(contentIds[currentContentIndex], -1)
         if (viewerIndex > -1) setViewerStartingIndex(viewerIndex)

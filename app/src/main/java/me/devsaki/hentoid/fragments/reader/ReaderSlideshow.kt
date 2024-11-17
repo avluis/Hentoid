@@ -223,7 +223,10 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
 
     private fun onSlideshowTick() {
         latestSlideshowTick = Instant.now().toEpochMilli()
-        pager.nextPage()
+        if (!pager.nextPage() && Settings.readerSlideshowLoop > 0) {
+            if (!Settings.isReaderContinuous) pager.seekToIndex(0)
+            else pager.goToBookSelectionStart()
+        }
     }
 
     private fun convertPrefsDelayToSliderPosition(prefsDelay: Int): Int {
@@ -240,10 +243,12 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
     }
 
     interface Pager {
-        fun nextPage()
-        fun previousPage()
+        fun nextPage() : Boolean
+        fun previousPage() : Boolean
         fun setAndStartSmoothScroll(s: ReaderSmoothScroller)
         fun hideControlsOverlay()
+        fun seekToIndex(absIndex: Int)
+        fun goToBookSelectionStart()
         val displayParams: ReaderPagerFragment.DisplayParams?
         val scrollListener: ScrollPositionListener
         val layoutMgr: LinearLayoutManager
