@@ -11,13 +11,10 @@ import android.graphics.Point
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageView
@@ -37,8 +34,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
-import com.google.android.material.slider.LabelFormatter
-import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.skydoves.powermenu.MenuAnimation
@@ -61,7 +56,6 @@ import me.devsaki.hentoid.fragments.reader.ReaderBrowseModeDialogFragment.Compan
 import me.devsaki.hentoid.fragments.reader.ReaderContentBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderDeleteDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderImageBottomSheetFragment.Companion.invoke
-import me.devsaki.hentoid.fragments.reader.ReaderNavigation.Pager
 import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
@@ -78,16 +72,9 @@ import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_LTR
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_RTL
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_ORIENTATION_HORIZONTAL
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_ORIENTATION_VERTICAL
-import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_DELAY_05
-import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_DELAY_1
-import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_DELAY_16
-import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_DELAY_4
-import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_DELAY_8
-import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.getThemedColor
-import me.devsaki.hentoid.util.removeLabels
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
@@ -103,33 +90,28 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
-import java.time.Instant
-import java.util.Timer
-import kotlin.concurrent.timer
 
+
+private const val KEY_HUD_VISIBLE = "hud_visible"
+private const val KEY_GALLERY_SHOWN = "gallery_shown"
+private const val KEY_IMG_INDEX = "image_index"
 
 class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     ReaderBrowseModeDialogFragment.Parent, ReaderPrefsDialogFragment.Parent,
-    ReaderDeleteDialogFragment.Parent, Pager {
+    ReaderDeleteDialogFragment.Parent, ReaderNavigation.Pager, ReaderSlideshow.Pager {
 
-    private lateinit var adapter: ImagePagerAdapter
-    private lateinit var layoutMgr: LinearLayoutManager
+    override lateinit var adapter: ImagePagerAdapter
+    override lateinit var layoutMgr: LinearLayoutManager
     private lateinit var pageSnapWidget: PageSnapWidget
     private val prefsListener =
         OnSharedPreferenceChangeListener { _, key -> onSharedPreferenceChanged(key) }
     private lateinit var viewModel: ReaderViewModel
-    private var absImageIndex = -1 // Absolute (book scale) 0-based image index
+    override var absImageIndex = -1 // Absolute (book scale) 0-based image index
 
     private var hasGalleryBeenShown = false
-    private val scrollListener = ScrollPositionListener { onScrollPositionChange(it) }
+    override val scrollListener = ScrollPositionListener { onScrollPositionChange(it) }
 
-    // Slideshow
-    private var slideshowTimer: Timer? = null
-    private var isSlideshowActive = false
-    private var slideshowPeriodMs: Long = -1
-    private var latestSlideshowTick: Long = -1
-
-    private var displayParams: DisplayParams? = null
+    override var displayParams: DisplayParams? = null
     private var useSsiv = false
 
     // Properties
@@ -172,10 +154,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var reverseMenu: MenuItem
 
     private lateinit var navigator: ReaderNavigation
-
-    // Debouncer for the slideshow slider
-    private lateinit var slideshowSliderDebouncer: Debouncer<Int>
-
+    private lateinit var slideshowMgr: ReaderSlideshow
 
     // Pager implementation
     override val currentImg: ImageFile?
@@ -196,9 +175,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         super.onCreate(savedInstanceState)
         indexRefreshDebouncer = Debouncer(lifecycleScope, 75) { startingIndex ->
             applyStartingIndexInternal(startingIndex)
-        }
-        slideshowSliderDebouncer = Debouncer(lifecycleScope, 2500) { sliderIndex ->
-            onSlideShowSliderChosen(sliderIndex)
         }
         processPositionDebouncer = Debouncer(lifecycleScope, 75) { pair ->
             onPageChanged(pair.first, pair.second)
@@ -286,12 +262,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     override fun onDestroyView() {
         indexRefreshDebouncer.clear()
-        slideshowSliderDebouncer.clear()
         processPositionDebouncer.clear()
         rescaleDebouncer.clear()
         adapterRescaleDebouncer.clear()
         zoomLevelDebouncer.clear()
         navigator.clear()
+        slideshowMgr.clear()
         binding?.recyclerView?.adapter = null
         binding = null
         super.onDestroyView()
@@ -313,25 +289,21 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         binding?.apply {
             outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.root.visibility)
         }
-        outState.putBoolean(KEY_SLIDESHOW_ON, isSlideshowActive)
-        val currentSlideshowSeconds = Instant.now().toEpochMilli() - latestSlideshowTick
-        outState.putLong(KEY_SLIDESHOW_REMAINING_MS, slideshowPeriodMs - currentSlideshowSeconds)
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown)
         // Memorize current page
         outState.putInt(KEY_IMG_INDEX, absImageIndex)
+        slideshowMgr.onSaveInstanceState(outState)
         viewModel.setViewerStartingIndex(absImageIndex)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         var hudVisibility = View.INVISIBLE // Default state at startup
-        if (savedInstanceState != null) {
-            hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE)
-            hasGalleryBeenShown = savedInstanceState.getBoolean(KEY_GALLERY_SHOWN, false)
-            absImageIndex = savedInstanceState.getInt(KEY_IMG_INDEX, -1)
-            if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) {
-                startSlideshow(false, savedInstanceState.getLong(KEY_SLIDESHOW_REMAINING_MS))
-            }
+        savedInstanceState?.apply {
+            hudVisibility = getInt(KEY_HUD_VISIBLE, View.INVISIBLE)
+            hasGalleryBeenShown = getBoolean(KEY_GALLERY_SHOWN, false)
+            absImageIndex = getInt(KEY_IMG_INDEX, -1)
+            slideshowMgr.onViewStateRestored(this)
         }
         binding?.apply {
             controlsOverlay.root.visibility = hudVisibility
@@ -363,7 +335,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override fun onStop() {
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
         viewModel.onLeaveBook(absImageIndex)
-        slideshowTimer?.cancel()
+        slideshowMgr.cancel()
         (requireActivity() as ReaderActivity).unregisterKeyListener()
         super.onStop()
     }
@@ -486,40 +458,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun initControlsOverlay() {
         binding?.let {
             // Slideshow slider
-            val slider = it.controlsOverlay.slideshowDelaySlider
-            slider.valueFrom = 0f
-            val sliderValue = if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
-                convertPrefsDelayToSliderPosition(Settings.readerSlideshowDelayVertical)
-            else convertPrefsDelayToSliderPosition(Settings.readerSlideshowDelay)
-            var nbEntries =
-                resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries).size
-            nbEntries = 1.coerceAtLeast(nbEntries - 1)
-
-            // TODO at some point we'd need to better synch images and book loading to avoid that
-            slider.value = coerceIn(sliderValue.toFloat(), 0f, nbEntries.toFloat())
-            slider.valueTo = nbEntries.toFloat()
-            slider.setLabelFormatter { value: Float ->
-                val entries: Array<String> =
-                    if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) {
-                        resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)
-                    } else {
-                        resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries)
-                    }
-                entries[value.toInt()]
-            }
-            slider.onFocusChangeListener =
-                OnFocusChangeListener { _: View?, hasFocus: Boolean ->
-                    if (!hasFocus) slider.visibility = View.GONE
-                }
-            slider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
-                override fun onStartTrackingTouch(slider: Slider) {
-                    slideshowSliderDebouncer.clear()
-                }
-
-                override fun onStopTrackingTouch(slider: Slider) {
-                    onSlideShowSliderChosen(slider.value.toInt())
-                }
-            })
+            slideshowMgr = ReaderSlideshow(this, lifecycleScope)
+            slideshowMgr.init(it, this.resources)
 
             // Fix page button
             it.viewerFixBtn.setOnClickListener { fixPage() }
@@ -586,19 +526,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
     }
 
-    private fun convertPrefsDelayToSliderPosition(prefsDelay: Int): Int {
-        val prefsValues = resources.getStringArray(R.array.pref_viewer_slideshow_delay_values)
-            .map { it.toInt() }
-        for (i in prefsValues.indices) if (prefsValues[i] == prefsDelay) return i
-        return 0
-    }
-
-    private fun convertSliderPositionToPrefsDelay(sliderPosition: Int): Int {
-        val prefsValues = resources.getStringArray(R.array.pref_viewer_slideshow_delay_values)
-            .map { it.toInt() }
-        return prefsValues[sliderPosition]
-    }
-
     /**
      * Back button handler
      */
@@ -637,17 +564,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Handle click on "Slideshow" action button
      */
     private fun onSlideshowClick() {
-        var startIndex =
-            if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) Settings.readerSlideshowDelayVertical
-            else Settings.readerSlideshowDelay
-        startIndex = convertPrefsDelayToSliderPosition(startIndex)
-        binding?.let {
-            it.controlsOverlay.slideshowDelaySlider.value = startIndex.toFloat()
-            it.controlsOverlay.slideshowDelaySlider.labelBehavior =
-                LabelFormatter.LABEL_FLOATING
-            it.controlsOverlay.slideshowDelaySlider.visibility = View.VISIBLE
-        }
-        slideshowSliderDebouncer.submit(startIndex)
+        slideshowMgr.showUI()
     }
 
     /**
@@ -1234,7 +1151,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     /**
      * Load next page
      */
-    private fun nextPage() {
+    override fun nextPage() {
         val delta = if (displayParams?.twoPages == true) 2 else 1
         if (absImageIndex + delta > adapter.itemCount - 1) {
             if (Settings.isReaderContinuous) navigator.nextFunctional()
@@ -1259,7 +1176,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     /**
      * Load previous page
      */
-    private fun previousPage() {
+    override fun previousPage() {
         val delta = if (displayParams?.twoPages == true) 2 else 1
         if (absImageIndex - delta < 0) {
             if (Settings.isReaderContinuous) navigator.previousFunctional()
@@ -1343,8 +1260,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         hidePendingMicroMenus()
 
         // Stop slideshow if it is on
-        if (isSlideshowActive) {
-            stopSlideshow()
+        if (slideshowMgr.isActive()) {
+            slideshowMgr.stop()
             return
         }
 
@@ -1365,8 +1282,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         hidePendingMicroMenus()
 
         // Stop slideshow if it is on
-        if (isSlideshowActive) {
-            stopSlideshow()
+        if (slideshowMgr.isActive()) {
+            slideshowMgr.stop()
             return
         }
 
@@ -1388,8 +1305,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             hidePendingMicroMenus()
 
             // Stop slideshow if it is on
-            if (isSlideshowActive) {
-                stopSlideshow()
+            if (slideshowMgr.isActive()) {
+                slideshowMgr.stop()
                 return
             }
             if (controlsOverlay.root.isVisible) hideControlsOverlay() else showControlsOverlay()
@@ -1427,7 +1344,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
     }
 
-    private fun hideControlsOverlay() {
+    override fun hideControlsOverlay() {
         binding?.apply {
             controlsOverlay.root.animate().alpha(0.0f).setDuration(100)
                 .setListener(object : AnimatorListenerAdapter() {
@@ -1507,96 +1424,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         adapter.setMaxDimensions(maxDimensions.x, maxDimensions.y)
     }
 
-    private fun onSlideShowSliderChosen(sliderIndex: Int) {
-        val prefsDelay = convertSliderPositionToPrefsDelay(sliderIndex)
-
-        if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
-            Settings.readerSlideshowDelayVertical = prefsDelay
-        else Settings.readerSlideshowDelay = prefsDelay
-
-        binding?.apply {
-            removeLabels(controlsOverlay.slideshowDelaySlider)
-            controlsOverlay.slideshowDelaySlider.visibility = View.GONE
-        }
-        startSlideshow(true, -1)
-    }
-
-    private fun startSlideshow(showToast: Boolean, initialDelayMs: Long) {
-        // Hide UI
-        hideControlsOverlay()
-
-        // Compute slideshow delay
-        val delayPref = if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
-            Settings.readerSlideshowDelayVertical
-        else Settings.readerSlideshowDelay
-
-        val factor: Float = when (delayPref) {
-            VIEWER_SLIDESHOW_DELAY_05 -> 0.5f
-            VIEWER_SLIDESHOW_DELAY_1 -> 1f
-            VIEWER_SLIDESHOW_DELAY_4 -> 4f
-            VIEWER_SLIDESHOW_DELAY_8 -> 8f
-            VIEWER_SLIDESHOW_DELAY_16 -> 16f
-            else -> 2f
-        }
-        if (showToast) {
-            if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
-                toast(
-                    R.string.slideshow_start_vertical,
-                    resources.getStringArray(R.array.pref_viewer_slideshow_delay_entries_vertical)[convertPrefsDelayToSliderPosition(
-                        delayPref
-                    )]
-                ) else toast(R.string.slideshow_start, factor)
-        }
-        scrollListener.disableScroll()
-        if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation) {
-            // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
-            smoothScroller = ReaderSmoothScroller(requireContext())
-            smoothScroller.apply {
-                setCurrentPositionY(scrollListener.totalScrolledY)
-                setItemHeight(adapter.getDimensionsAtPosition(absImageIndex).y)
-                targetPosition = adapter.itemCount - 1
-                setSpeed(900f / (factor / 4f))
-            }
-            layoutMgr.startSmoothScroll(smoothScroller)
-        } else {
-            slideshowPeriodMs = (factor * 1000).toLong()
-            val initialDelayFinal =
-                if (initialDelayMs > -1) initialDelayMs else slideshowPeriodMs
-            slideshowTimer =
-                timer("slideshow-timer", false, initialDelayFinal, slideshowPeriodMs) {
-                    // Timer task is not on the UI thread
-                    val handler = Handler(Looper.getMainLooper())
-                    handler.post { onSlideshowTick() }
-                }
-            latestSlideshowTick = Instant.now().toEpochMilli()
-        }
-        isSlideshowActive = true
-    }
-
-    private fun onSlideshowTick() {
-        latestSlideshowTick = Instant.now().toEpochMilli()
-        nextPage()
-    }
-
-    private fun stopSlideshow() {
-        if (slideshowTimer != null) {
-            slideshowTimer?.cancel()
-            slideshowTimer = null
-        } else {
-            // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
-            smoothScroller = ReaderSmoothScroller(requireContext())
-            smoothScroller.apply {
-                setCurrentPositionY(scrollListener.totalScrolledY)
-                targetPosition = layoutMgr.findFirstVisibleItemPosition()
-                    .coerceAtLeast(layoutMgr.findFirstCompletelyVisibleItemPosition())
-            }
-            layoutMgr.startSmoothScroll(smoothScroller)
-        }
-        isSlideshowActive = false
-        scrollListener.enableScroll()
-        toast(R.string.slideshow_stop)
-    }
-
     private fun onScaleChanged(scale: Float) {
         adapterRescaleDebouncer.submit(scale)
         if (LinearLayoutManager.HORIZONTAL == displayParams?.orientation) {
@@ -1620,12 +1447,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         binding?.viewerZoomText?.isVisible = false
     }
 
-    companion object {
-        const val KEY_HUD_VISIBLE = "hud_visible"
-        const val KEY_GALLERY_SHOWN = "gallery_shown"
-        const val KEY_SLIDESHOW_ON = "slideshow_on"
-        const val KEY_SLIDESHOW_REMAINING_MS = "slideshow_remaining_ms"
-        const val KEY_IMG_INDEX = "image_index"
+    override fun setAndStartSmoothScroll(s: ReaderSmoothScroller) {
+        smoothScroller = s
+        layoutMgr.startSmoothScroll(s)
     }
 
     data class DisplayParams(
