@@ -162,7 +162,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-gif:$Coil_version")
 
     // Coil support for JXL
-    implementation 'io.github.awxkee:jxl-coder-coil:2.4.0.4'
+    implementation 'io.github.awxkee:jxl-coder-coil:2.4.0.5'
 
     // Animated pics that Coil doesn't support (APNG) -> https://github.com/penfeizhou/APNG4Android
     def APNG4Android_version = '3.0.2'
