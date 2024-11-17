@@ -236,6 +236,11 @@ data class ImageFile(
             return chapter.reach(this)
         }
 
+    val linkedContent: Content?
+        get() {
+            return content.reach(this)
+        }
+
     var chapterId: Long
         get() {
             return chapter.targetId

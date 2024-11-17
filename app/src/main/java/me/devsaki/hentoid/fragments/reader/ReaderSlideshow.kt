@@ -13,6 +13,7 @@ import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.adapters.ImagePagerAdapter
+import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
 import me.devsaki.hentoid.databinding.IncludeReaderControlsOverlayBinding
 import me.devsaki.hentoid.util.Debouncer
@@ -23,6 +24,9 @@ import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_DELAY_1
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_DELAY_16
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_DELAY_4
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_DELAY_8
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_FOLLOW_CONTINUOUS
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_LOOP_BOOK
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_SLIDESHOW_LOOP_CHAPTER
 import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.removeLabels
 import me.devsaki.hentoid.util.toast
@@ -157,6 +161,7 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
             slideshowTimer?.cancel()
             slideshowTimer = null
         } else {
+            // Restore original ReaderSmoothScroller
             // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
             val smoothScroller = ReaderSmoothScroller(controlsOverlay!!.root.context)
             smoothScroller.apply {
@@ -180,7 +185,7 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
             Settings.readerSlideshowDelayVertical
         else Settings.readerSlideshowDelay
 
-        val factor : Float = when (delayPref) {
+        val factor: Float = when (delayPref) {
             VIEWER_SLIDESHOW_DELAY_05 -> 0.5f
             VIEWER_SLIDESHOW_DELAY_1 -> 1f
             VIEWER_SLIDESHOW_DELAY_4 -> 4f
@@ -197,6 +202,7 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
         }
         pager.scrollListener.disableScroll()
         if (VIEWER_ORIENTATION_VERTICAL == pager.displayParams?.orientation) {
+            // Create a a specific ReaderSmoothScroller to perform vertical slideshow (=auto-scroll)
             // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
             val smoothScroller = ReaderSmoothScroller(controlsOverlay!!.root.context)
             smoothScroller.apply {
@@ -223,10 +229,41 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
 
     private fun onSlideshowTick() {
         latestSlideshowTick = Instant.now().toEpochMilli()
-        if (!pager.nextPage() && Settings.readerSlideshowLoop > 0) {
-            if (!Settings.isReaderContinuous) pager.seekToIndex(0)
-            else pager.goToBookSelectionStart()
+        val currentImg = pager.currentImg ?: return
+        when (Settings.readerSlideshowLoop) {
+            VIEWER_SLIDESHOW_LOOP_CHAPTER -> loopChapter(currentImg)
+            VIEWER_SLIDESHOW_LOOP_BOOK -> loopBook(currentImg, false)
+            VIEWER_SLIDESHOW_FOLLOW_CONTINUOUS -> loopBook(currentImg, true)
+            else -> {} // Nothing
         }
+    }
+
+    private fun loopBook(currentImg: ImageFile, followContinuous: Boolean) {
+        // Are we at end of the book?
+        if (Settings.isReaderContinuous && !followContinuous) {
+            val content = currentImg.linkedContent ?: return
+            if (currentImg.order == content.imageList.filter { it.isReadable }.maxOf { it.order }) {
+                pager.seekToIndex(0)
+                return
+            }
+        }
+        if (pager.nextPage()) return
+        if (Settings.isReaderContinuous && followContinuous) pager.goToBookSelectionStart()
+        else pager.seekToIndex(0)
+    }
+
+    private fun loopChapter(currentImg: ImageFile) {
+        val chp = currentImg.linkedChapter
+        if (null == chp) {
+            // Fallback to "loop book" behaviour if no chapter is present
+            loopBook(currentImg, false)
+            return
+        }
+        // Are we at the end of the chapter?
+        if (currentImg.order == chp.readableImageFiles.maxOf { it.order }) {
+            // Go back to chapter page 1
+            pager.goToPage(chp.readableImageFiles.minOf { it.order })
+        } else pager.nextPage()
     }
 
     private fun convertPrefsDelayToSliderPosition(prefsDelay: Int): Int {
@@ -243,16 +280,18 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
     }
 
     interface Pager {
-        fun nextPage() : Boolean
-        fun previousPage() : Boolean
+        fun nextPage(): Boolean
+        fun previousPage(): Boolean
         fun setAndStartSmoothScroll(s: ReaderSmoothScroller)
         fun hideControlsOverlay()
         fun seekToIndex(absIndex: Int)
+        fun goToPage(absPageNum: Int)
         fun goToBookSelectionStart()
         val displayParams: ReaderPagerFragment.DisplayParams?
         val scrollListener: ScrollPositionListener
         val layoutMgr: LinearLayoutManager
         val adapter: ImagePagerAdapter
         val absImageIndex: Int
+        val currentImg: ImageFile?
     }
 }

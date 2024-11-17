@@ -546,7 +546,9 @@ object Settings {
         const val VIEWER_SLIDESHOW_DELAY_05 = 5
 
         const val VIEWER_SLIDESHOW_LOOP_NONE = 0
-        const val VIEWER_SLIDESHOW_LOOP_FOLLOW_CHAPTERED_CONTINUOUS = 1
+        const val VIEWER_SLIDESHOW_LOOP_CHAPTER = 1
+        const val VIEWER_SLIDESHOW_LOOP_BOOK = 2
+        const val VIEWER_SLIDESHOW_FOLLOW_CONTINUOUS = 3
 
         const val VIEWER_SEPARATING_BARS_OFF = 0
         const val VIEWER_SEPARATING_BARS_SMALL = 1
