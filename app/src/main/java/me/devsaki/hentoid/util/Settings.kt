@@ -166,7 +166,7 @@ object Settings {
         return (mode == Value.VIEWER_RENDERING_SMOOTH)
     }
 
-    private val readerRenderingMode: Int by IntSetting(
+    private val readerRenderingMode: Int by IntSettingStr(
         Key.VIEWER_RENDERING,
         Value.VIEWER_RENDERING_SHARP
     )
