@@ -351,7 +351,7 @@ object ObjectBoxDB {
                     val groupItems = groupItemBox.query().equal(GroupItem_.contentId, id).safeFind()
                     for (groupItem in groupItems) {
                         // If we're not in the Custom grouping and it's the only item of its group, delete the group
-                        val g = groupItem.reachGroup()
+                        val g = groupItem.linkedGroup
                         if (g != null && g.grouping != Grouping.CUSTOM && g.getItems().size < 2)
                             groupBox.remove(g)
                         // Delete the item
@@ -385,7 +385,7 @@ object ObjectBoxDB {
         val result: MutableList<Content> = ArrayList()
         val queueRecords = selectQueueRecordsQ().safeFind()
         for (q in queueRecords) {
-            q.content.reach(q)?.let { result.add(it) }
+            q.linkedContent?.let { result.add(it) }
         }
         return result
     }

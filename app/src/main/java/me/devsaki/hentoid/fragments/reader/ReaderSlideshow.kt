@@ -52,6 +52,8 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
     private var latestSlideshowTick: Long = -1
     private var isSlideshowActive = false
 
+    private var hasGoneBack = false
+
     // Debouncer for the slideshow slider
     private val slideshowSliderDebouncer: Debouncer<Int>
 
@@ -181,39 +183,20 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
         pager.hideControlsOverlay()
 
         // Compute slideshow delay
-        val delayPref = if (VIEWER_ORIENTATION_VERTICAL == pager.displayParams?.orientation)
-            Settings.readerSlideshowDelayVertical
-        else Settings.readerSlideshowDelay
+        val scrollParams = getScrollParams()
 
-        val factor: Float = when (delayPref) {
-            VIEWER_SLIDESHOW_DELAY_05 -> 0.5f
-            VIEWER_SLIDESHOW_DELAY_1 -> 1f
-            VIEWER_SLIDESHOW_DELAY_4 -> 4f
-            VIEWER_SLIDESHOW_DELAY_8 -> 8f
-            VIEWER_SLIDESHOW_DELAY_16 -> 16f
-            else -> 2f
-        }
         if (showToast) {
             if (VIEWER_ORIENTATION_VERTICAL == pager.displayParams?.orientation)
                 toast(
                     R.string.slideshow_start_vertical,
-                    verticalDelays[convertPrefsDelayToSliderPosition(delayPref)]
-                ) else toast(R.string.slideshow_start, factor)
+                    verticalDelays[convertPrefsDelayToSliderPosition(scrollParams.first)]
+                ) else toast(R.string.slideshow_start, scrollParams.second)
         }
         pager.scrollListener.disableScroll()
         if (VIEWER_ORIENTATION_VERTICAL == pager.displayParams?.orientation) {
-            // Create a a specific ReaderSmoothScroller to perform vertical slideshow (=auto-scroll)
-            // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
-            val smoothScroller = ReaderSmoothScroller(controlsOverlay!!.root.context)
-            smoothScroller.apply {
-                setCurrentPositionY(pager.scrollListener.totalScrolledY)
-                setItemHeight(pager.adapter.getDimensionsAtPosition(pager.absImageIndex).y)
-                targetPosition = pager.adapter.itemCount - 1
-                setSpeed(900f / (factor / 4f))
-            }
-            pager.setAndStartSmoothScroll(smoothScroller)
+            activateAutoScroll(scrollParams.second)
         } else {
-            slideshowPeriodMs = (factor * 1000).toLong()
+            slideshowPeriodMs = (scrollParams.second * 1000).toLong()
             val initialDelayFinal =
                 if (initialDelayMs > -1) initialDelayMs else slideshowPeriodMs
             slideshowTimer =
@@ -227,43 +210,101 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
         isSlideshowActive = true
     }
 
+    private fun getScrollParams(): Pair<Int, Float> {
+        val delayPref = if (VIEWER_ORIENTATION_VERTICAL == pager.displayParams?.orientation)
+            Settings.readerSlideshowDelayVertical
+        else Settings.readerSlideshowDelay
+
+        val factor = when (delayPref) {
+            VIEWER_SLIDESHOW_DELAY_05 -> 0.5f
+            VIEWER_SLIDESHOW_DELAY_1 -> 1f
+            VIEWER_SLIDESHOW_DELAY_4 -> 4f
+            VIEWER_SLIDESHOW_DELAY_8 -> 8f
+            VIEWER_SLIDESHOW_DELAY_16 -> 16f
+            else -> 2f
+        }
+        return Pair(delayPref, factor)
+    }
+
+    private fun activateAutoScroll(factor: Float = -1f) {
+        val theFactor = if (factor < 0) {
+            val scrollParams = getScrollParams()
+            scrollParams.second
+        } else factor
+
+        // Create a a specific ReaderSmoothScroller to perform vertical slideshow (=auto-scroll)
+        // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
+        val smoothScroller = ReaderSmoothScroller(controlsOverlay!!.root.context)
+        smoothScroller.apply {
+            setCurrentPositionY(pager.scrollListener.totalScrolledY)
+            setItemHeight(pager.adapter.getDimensionsAtPosition(pager.absImageIndex).y)
+            targetPosition = pager.adapter.itemCount - 1
+            setSpeed(900f / (theFactor / 4f))
+        }
+        pager.setAndStartSmoothScroll(smoothScroller)
+    }
+
     private fun onSlideshowTick() {
         latestSlideshowTick = Instant.now().toEpochMilli()
+        onPageChange()
+    }
+
+    fun onPageChange(changed: Boolean = false) {
+        if (!isActive()) return
         val currentImg = pager.currentImg ?: return
-        when (Settings.readerSlideshowLoop) {
-            VIEWER_SLIDESHOW_LOOP_CHAPTER -> loopChapter(currentImg)
-            VIEWER_SLIDESHOW_LOOP_BOOK -> loopBook(currentImg, false)
-            VIEWER_SLIDESHOW_FOLLOW_CONTINUOUS -> loopBook(currentImg, true)
-            else -> {} // Nothing
+
+        if (hasGoneBack) {
+            if (VIEWER_ORIENTATION_VERTICAL == pager.displayParams?.orientation) activateAutoScroll()
+            hasGoneBack = false
+        } else {
+            when (Settings.readerSlideshowLoop) {
+                VIEWER_SLIDESHOW_LOOP_CHAPTER -> loopChapter(currentImg, changed)
+                VIEWER_SLIDESHOW_LOOP_BOOK -> loopBook(currentImg, false, changed)
+                VIEWER_SLIDESHOW_FOLLOW_CONTINUOUS -> loopBook(currentImg, true, changed)
+                else -> {} // Nothing
+            }
         }
     }
 
-    private fun loopBook(currentImg: ImageFile, followContinuous: Boolean) {
+    private fun loopBook(currentImg: ImageFile, followContinuous: Boolean, changed: Boolean) {
         // Are we at end of the book?
-        if (Settings.isReaderContinuous && !followContinuous) {
+        val continuousBehaviour = Settings.isReaderContinuous && followContinuous
+        if (changed || !continuousBehaviour) {
             val content = currentImg.linkedContent ?: return
             if (currentImg.order == content.imageList.filter { it.isReadable }.maxOf { it.order }) {
-                pager.seekToIndex(0)
+                if (!continuousBehaviour) {
+                    // Loop back to page 1
+                    pager.seekToIndex(0)
+                    hasGoneBack = true
+                } else {
+                    // Next book or first book of selection
+                    if (!pager.nextPage()) pager.goToBookSelectionStart()
+                    hasGoneBack = true
+                }
                 return
             }
         }
-        if (pager.nextPage()) return
-        if (Settings.isReaderContinuous && followContinuous) pager.goToBookSelectionStart()
+
+        if (changed || pager.nextPage()) return
+
+        if (continuousBehaviour) pager.goToBookSelectionStart()
         else pager.seekToIndex(0)
+        hasGoneBack = true
     }
 
-    private fun loopChapter(currentImg: ImageFile) {
+    private fun loopChapter(currentImg: ImageFile, changed: Boolean) {
         val chp = currentImg.linkedChapter
         if (null == chp) {
             // Fallback to "loop book" behaviour if no chapter is present
-            loopBook(currentImg, false)
+            loopBook(currentImg, false, changed)
             return
         }
         // Are we at the end of the chapter?
         if (currentImg.order == chp.readableImageFiles.maxOf { it.order }) {
             // Go back to chapter page 1
             pager.goToPage(chp.readableImageFiles.minOf { it.order })
-        } else pager.nextPage()
+            hasGoneBack = true
+        } else if (!changed) pager.nextPage()
     }
 
     private fun convertPrefsDelayToSliderPosition(prefsDelay: Int): Int {

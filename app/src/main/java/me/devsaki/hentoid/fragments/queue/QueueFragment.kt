@@ -745,7 +745,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             if (!act.isSearchActive()) {
                 unfilteredSources.clear()
                 unfilteredSources.addAll(
-                    result.mapNotNull { c -> c.content.reach(c) }.map { c -> c.site }
+                    result.mapNotNull { it.linkedContent }.map { it.site }
                 )
             }
 

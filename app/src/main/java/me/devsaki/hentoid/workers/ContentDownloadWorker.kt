@@ -249,7 +249,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         var queueIdx = 0
         for (rec in queue) {
             if (!rec.frozen) {
-                content = rec.content.reach(rec)
+                content = rec.linkedContent
                 if (content != null) break // Don't take broken links
             }
             queueIdx++
@@ -996,7 +996,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     if (groupItems.isNotEmpty()) {
                         for (gi in groupItems) {
                             moveContentToCustomGroup(
-                                content, gi.reachGroup(), dao, gi.order
+                                content, gi.linkedGroup, dao, gi.order
                             )
                         }
                     }

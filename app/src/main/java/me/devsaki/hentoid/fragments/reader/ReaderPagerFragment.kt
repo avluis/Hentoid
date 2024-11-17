@@ -48,7 +48,6 @@ import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.adapters.ImagePagerAdapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
@@ -538,7 +537,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onBookSettingsClick() {
         currentImg?.let {
-            it.content.reach(it)?.apply {
+            it.linkedContent?.apply {
                 invoke(this@ReaderPagerFragment, bookPreferences)
             }
         }
@@ -889,10 +888,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {
         currentImg?.let {
-            it.content.reach(it)?.apply {
+            it.linkedContent?.apply {
                 adjustDisplay(bookPreferences, absImageIndex)
             }
         }
+        if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
+            slideshowMgr.onPageChange(true)
         viewModel.onPageChange(absImageIndex, scrollDirection)
     }
 

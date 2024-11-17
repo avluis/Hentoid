@@ -390,7 +390,7 @@ class LibraryGroupsFragment : Fragment(),
                     // Rebuild the groups list from the remaining contents if needed
                     if (Preferences.getGroupingDisplay().canDeleteGroups) selectedGroups =
                         selectedContent.flatMap { it.groupItems }
-                            .mapNotNull { it.reachGroup() }
+                            .mapNotNull { it.linkedGroup }
                             .toMutableList()
                 }
             }

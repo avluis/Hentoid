@@ -604,7 +604,7 @@ class ObjectBoxDAO : CollectionDAO {
     private fun enrichGroupWithItemsByDlDate(g: Group, minDays: Int, maxDays: Int): Group {
         val items = selectGroupItemsByDlDate(g, minDays, maxDays)
         g.setItems(items)
-        if (items.isNotEmpty()) g.coverContent.target = items[0].reachContent()
+        if (items.isNotEmpty()) g.coverContent.target = items[0].linkedContent
         return g
     }
 
@@ -706,9 +706,9 @@ class ObjectBoxDAO : CollectionDAO {
         if (-1 == item.order) item.order = ObjectBoxDB.getMaxGroupItemOrderFor(item.groupId) + 1
 
         // If target group doesn't have a cover, get the corresponding Content's
-        item.reachGroup()?.coverContent?.let { groupCoverContent ->
+        item.linkedGroup?.coverContent?.let { groupCoverContent ->
             if (!groupCoverContent.isResolvedAndNotNull) {
-                val c: Content? = item.reachContent() ?: selectContent(item.contentId)
+                val c: Content? = item.linkedContent ?: selectContent(item.contentId)
                 groupCoverContent.setAndPutTarget(c)
             }
         }
@@ -740,7 +740,7 @@ class ObjectBoxDAO : CollectionDAO {
         // Check if one of the GroupItems to delete is linked to the content that contains the group's cover picture
         val groupItems = ObjectBoxDB.selectGroupItems(groupItemIds.toLongArray())
         for (gi in groupItems) {
-            gi.reachGroup()?.coverContent?.let { groupCoverContent ->
+            gi.linkedGroup?.coverContent?.let { groupCoverContent ->
                 // If so, remove the cover picture
                 if (groupCoverContent.isResolvedAndNotNull && groupCoverContent.targetId == gi.contentId)
                     groupCoverContent.setAndPutTarget(null)

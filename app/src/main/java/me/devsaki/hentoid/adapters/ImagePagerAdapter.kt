@@ -38,7 +38,6 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEven
 import me.devsaki.hentoid.customssiv.uri
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.gles_renderer.GPUImage
@@ -236,7 +235,7 @@ class ImagePagerAdapter(context: Context) :
 
     private fun getDisplayParamsForPosition(position: Int): ReaderPagerFragment.DisplayParams? {
         val img = getItem(position)
-        val content = img.content.reach(img)
+        val content = img.linkedContent
         if (content != null) {
             val bookPreferences = content.bookPreferences
             return ReaderPagerFragment.DisplayParams(
