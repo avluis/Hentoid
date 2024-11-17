@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import coil3.load
@@ -46,8 +45,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
     private lateinit var viewModel: ReaderViewModel
 
     // UI
-    private var _binding: IncludeReaderImageBottomPanelBinding? = null
-    private val binding get() = _binding!!
+    private var binding: IncludeReaderImageBottomPanelBinding? = null
 
     // VARS
     private var imageIndex: Int = -1
@@ -74,19 +72,21 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = IncludeReaderImageBottomPanelBinding.inflate(inflater, container, false)
+    ): View? {
+        binding = IncludeReaderImageBottomPanelBinding.inflate(inflater, container, false)
 
-        binding.imgActionFavourite.setOnClickListener { onFavouriteClick() }
-        binding.imgActionCopy.setOnClickListener { onCopyClick() }
-        binding.imgActionShare.setOnClickListener { onShareClick() }
-        binding.imgActionDelete.setOnClickListener { onDeleteClick() }
+        binding?.apply {
+            imgActionFavourite.setOnClickListener { onFavouriteClick() }
+            imgActionCopy.setOnClickListener { onCopyClick() }
+            imgActionShare.setOnClickListener { onShareClick() }
+            imgActionDelete.setOnClickListener { onDeleteClick() }
+        }
 
-        return binding.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
@@ -127,41 +127,43 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
                     getFullPathFromUri(requireContext(), Uri.parse(it.fileUri))
             }
 
-            binding.imagePath.text = filePath
-            val imageExists = fileExists(requireContext(), Uri.parse(it.fileUri))
-            if (imageExists) {
-                val dimensions = getImageDimensions(requireContext(), it.fileUri)
-                val sizeStr: String = if (it.size > 0) {
-                    formatHumanReadableSize(it.size, resources)
+            binding?.apply {
+                imagePath.text = filePath
+                val imageExists = fileExists(requireContext(), Uri.parse(it.fileUri))
+                if (imageExists) {
+                    val dimensions = getImageDimensions(requireContext(), it.fileUri)
+                    val sizeStr: String = if (it.size > 0) {
+                        formatHumanReadableSize(it.size, resources)
+                    } else {
+                        val size =
+                            fileSizeFromUri(requireContext(), Uri.parse(it.fileUri))
+                        formatHumanReadableSize(size, resources)
+                    }
+                    imageStats.text = resources.getString(
+                        R.string.viewer_img_details,
+                        dimensions.x,
+                        dimensions.y,
+                        scale * 100,
+                        sizeStr
+                    )
+                    ivThumb.load(it.fileUri)
                 } else {
-                    val size =
-                        fileSizeFromUri(requireContext(), Uri.parse(it.fileUri))
-                    formatHumanReadableSize(size, resources)
+                    imageStats.setText(R.string.image_not_found)
+                    imgActionFavourite.imageTintList = ColorStateList.valueOf(grayColor)
+                    imgActionFavourite.isEnabled = false
+                    imgActionCopy.imageTintList = ColorStateList.valueOf(grayColor)
+                    imgActionCopy.isEnabled = false
+                    imgActionShare.imageTintList = ColorStateList.valueOf(grayColor)
+                    imgActionShare.isEnabled = false
                 }
-                binding.imageStats.text = resources.getString(
-                    R.string.viewer_img_details,
-                    dimensions.x,
-                    dimensions.y,
-                    scale * 100,
-                    sizeStr
-                )
-                binding.ivThumb.load(it.fileUri)
-            } else {
-                binding.imageStats.setText(R.string.image_not_found)
-                binding.imgActionFavourite.imageTintList = ColorStateList.valueOf(grayColor)
-                binding.imgActionFavourite.isEnabled = false
-                binding.imgActionCopy.imageTintList = ColorStateList.valueOf(grayColor)
-                binding.imgActionCopy.isEnabled = false
-                binding.imgActionShare.imageTintList = ColorStateList.valueOf(grayColor)
-                binding.imgActionShare.isEnabled = false
-            }
-            // Don't allow deleting the image if it is archived
-            if (it.isArchived) {
-                binding.imgActionDelete.imageTintList = ColorStateList.valueOf(grayColor)
-                binding.imgActionDelete.isEnabled = false
-            } else {
-                binding.imgActionDelete.imageTintList = null
-                binding.imgActionDelete.isEnabled = true
+                // Don't allow deleting the image if it is archived
+                if (it.isArchived) {
+                    imgActionDelete.imageTintList = ColorStateList.valueOf(grayColor)
+                    imgActionDelete.isEnabled = false
+                } else {
+                    imgActionDelete.imageTintList = null
+                    imgActionDelete.isEnabled = true
+                }
             }
             updateFavouriteDisplay(it.favourite)
         }
@@ -190,8 +192,10 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
      * @param isFavourited True if the button has to represent a favourite page; false instead
      */
     private fun updateFavouriteDisplay(isFavourited: Boolean) {
-        if (isFavourited) binding.imgActionFavourite.setImageResource(R.drawable.ic_fav_full)
-        else binding.imgActionFavourite.setImageResource(R.drawable.ic_fav_empty)
+        binding?.imgActionFavourite?.apply {
+            if (isFavourited) setImageResource(R.drawable.ic_fav_full)
+            else setImageResource(R.drawable.ic_fav_empty)
+        }
     }
 
     /**
@@ -201,38 +205,40 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
         image?.let {
             val targetFileName =
                 it.content.target.uniqueSiteId + "-" + it.name + "." + getExtension(it.fileUri)
-            try {
-                val fileUri = Uri.parse(it.fileUri)
-                if (!fileExists(requireContext(), fileUri)) return
-                openNewDownloadOutputStream(
-                    requireContext(),
-                    targetFileName,
-                    it.mimeType
-                )?.use { newDownload ->
-                    getInputStream(requireContext(), fileUri)
-                        .use { input -> copy(input, newDownload) }
-                }
-                Snackbar.make(
-                    binding.root,
-                    R.string.copy_download_folder_success,
-                    BaseTransientBottomBar.LENGTH_LONG
-                )
-                    .setAction(R.string.open_folder) {
-                        openFile(requireContext(), getDownloadsFolder())
+            binding?.apply {
+                try {
+                    val fileUri = Uri.parse(it.fileUri)
+                    if (!fileExists(requireContext(), fileUri)) return
+                    openNewDownloadOutputStream(
+                        requireContext(),
+                        targetFileName,
+                        it.mimeType
+                    )?.use { newDownload ->
+                        getInputStream(requireContext(), fileUri)
+                            .use { input -> copy(input, newDownload) }
                     }
-                    .show()
-            } catch (e: IOException) {
-                Snackbar.make(
-                    binding.root,
-                    R.string.copy_download_folder_fail,
-                    BaseTransientBottomBar.LENGTH_LONG
-                ).show()
-            } catch (e: IllegalArgumentException) {
-                Snackbar.make(
-                    binding.root,
-                    R.string.copy_download_folder_fail,
-                    BaseTransientBottomBar.LENGTH_LONG
-                ).show()
+                    Snackbar.make(
+                        root,
+                        R.string.copy_download_folder_success,
+                        BaseTransientBottomBar.LENGTH_LONG
+                    )
+                        .setAction(R.string.open_folder) {
+                            openFile(requireContext(), getDownloadsFolder())
+                        }
+                        .show()
+                } catch (_: IOException) {
+                    Snackbar.make(
+                        root,
+                        R.string.copy_download_folder_fail,
+                        BaseTransientBottomBar.LENGTH_LONG
+                    ).show()
+                } catch (_: IllegalArgumentException) {
+                    Snackbar.make(
+                        root,
+                        R.string.copy_download_folder_fail,
+                        BaseTransientBottomBar.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
@@ -281,7 +287,9 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
         if (t is ContentNotProcessedException) {
             val message =
                 if (null == t.message) resources.getString(R.string.file_removal_failed) else t.message!!
-            Snackbar.make(binding.root, message, BaseTransientBottomBar.LENGTH_LONG).show()
+            binding?.apply {
+                Snackbar.make(root, message, BaseTransientBottomBar.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -301,7 +309,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
 
             context.setStyle(
                 bottomSheetFragment,
-                DialogFragment.STYLE_NORMAL,
+                STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
             )
 
