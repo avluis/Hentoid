@@ -43,7 +43,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
         private fun getArgs(contentList: List<Content>): Bundle {
             val args = Bundle()
             args.putLongArray(
-                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
+                KEY_CONTENTS, contentList.map { it.id }.toLongArray()
             )
             return args
         }
@@ -92,7 +92,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
             targetFolder.setOnIndexChangeListener { index ->
                 when (index) {
                     0 -> Settings.archiveTargetFolder =
-                        Settings.Value.ARCHIVE_TARGET_FOLDER_DOWNLOADS
+                        Settings.Value.TARGET_FOLDER_DOWNLOADS
 
                     targetFolder.entries.size - 1 -> { // Last item => Pick a folder
                         // Make sure permissions are set
@@ -105,7 +105,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
                         }
                     }
 
-                    else -> Settings.archiveTargetFolder = Settings.latestTargetFolderUri
+                    else -> Settings.archiveTargetFolder = Settings.latestArchiveTargetFolderUri
                 }
                 refreshControls()
             }
@@ -136,8 +136,8 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
                     resources.getString(R.string.folder_device_downloads),
                     resources.getString(R.string.folder_other)
                 )
-                if (Settings.latestTargetFolderUri.isNotEmpty()) {
-                    val uri = Uri.parse(Settings.latestTargetFolderUri)
+                if (Settings.latestArchiveTargetFolderUri.isNotEmpty()) {
+                    val uri = Uri.parse(Settings.latestArchiveTargetFolderUri)
                     if (getDocumentFromTreeUriString(
                             requireContext(),
                             uri.toString()
@@ -147,14 +147,14 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
                             1,
                             getFullPathFromUri(
                                 requireContext(),
-                                Uri.parse(Settings.latestTargetFolderUri)
+                                Uri.parse(Settings.latestArchiveTargetFolderUri)
                             )
                         )
                     }
                 }
                 targetFolder.entries = entries
                 targetFolder.index =
-                    if (Settings.archiveTargetFolder == Settings.latestTargetFolderUri) 1 else 0
+                    if (Settings.archiveTargetFolder == Settings.latestArchiveTargetFolderUri) 1 else 0
 
                 targetFormat.index = Settings.archiveTargetFormat
 
@@ -164,7 +164,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
                 overwriteSwitch.isChecked = Settings.isArchiveOverwrite
                 deleteSwitch.isChecked = Settings.isArchiveDeleteOnSuccess
             }
-            
+
             backgroundColor.isVisible = (2 == targetFormat.index)
         }
     }
@@ -182,7 +182,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
                         StorageLocation.EXTERNAL
                     )
                 )
-                Settings.latestTargetFolderUri = uri.toString()
+                Settings.latestArchiveTargetFolderUri = uri.toString()
                 Settings.archiveTargetFolder = uri.toString()
                 refreshControls(true)
             }

@@ -54,6 +54,7 @@
     <string name="remove_generic">Remove</string>
     <string name="invalid_selection_generic">Invalid selection</string>
     <string name="user_generic">User</string>
+    <string name="copy_generic">Copy</string>
 
     <!-- Colours -->
     <string name="white">White</string>
@@ -830,6 +831,8 @@
     <string name="viewer_delete_book">Delete book</string>
     <string name="copy_download_folder_success">Copied to Downloads folder</string>
     <string name="copy_download_folder_fail">Could not write to Downloads folder</string>
+    <string name="copy_target_folder_success">Copied to target folder</string>
+    <string name="copy_target_folder_fail">Could not write to target folder</string>
     <string name="viewer_ask_delete_page">Delete this page\?</string>
     <string name="information_help">Information</string>
     <string name="previous_book_help">Previous book</string>

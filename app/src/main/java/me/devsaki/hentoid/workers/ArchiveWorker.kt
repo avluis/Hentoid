@@ -180,7 +180,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         displayName: String,
         overwrite: Boolean
     ): Pair<OutputStream?, Boolean> {
-        if (targetFolderUri == Settings.Value.ARCHIVE_TARGET_FOLDER_DOWNLOADS) {
+        if (targetFolderUri == Settings.Value.TARGET_FOLDER_DOWNLOADS) {
             // Overwrite can't be taken into account as Android prevents listing
             // what's inside the Downloads folder for security/privacy reasons
             return Pair(

@@ -91,9 +91,9 @@ object Settings {
     // ARCHIVES
     var archiveTargetFolder: String by StringSetting(
         "ARCHIVE_TARGET_FOLDER",
-        Value.ARCHIVE_TARGET_FOLDER_DOWNLOADS
+        Value.TARGET_FOLDER_DOWNLOADS
     )
-    var latestTargetFolderUri: String by StringSetting("ARCHIVE_TARGET_FOLDER_LATEST", "")
+    var latestArchiveTargetFolderUri: String by StringSetting("ARCHIVE_TARGET_FOLDER_LATEST", "")
     var archiveTargetFormat: Int by IntSettingStr("ARCHIVE_TARGET_FORMAT", 0)
     var pdfBackgroundColor: Int by IntSettingStr("ARCHIVE_PDF_BGCOLOR", 0)
     var isArchiveOverwrite: Boolean by BoolSetting("ARCHIVE_OVERWRITE", true)
@@ -232,6 +232,11 @@ object Settings {
         "viewer_slideshow_loop",
         Value.VIEWER_SLIDESHOW_LOOP_NONE
     )
+    var readerTargetFolder: String by StringSetting(
+        "READER_TARGET_FOLDER",
+        Value.TARGET_FOLDER_DOWNLOADS
+    )
+    var latestReaderTargetFolderUri: String by StringSetting("READER_TARGET_FOLDER_LATEST", "")
 
     // METADATA & RULES EDITOR
     var ruleSortField: Int by IntSetting("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
@@ -471,7 +476,7 @@ object Settings {
         )
         val ACTIVE_SITES: String = TextUtils.join(",", DEFAULT_SITES.map { it.code })
 
-        const val ARCHIVE_TARGET_FOLDER_DOWNLOADS = "downloads"
+        const val TARGET_FOLDER_DOWNLOADS = "downloads"
 
         const val LIBRARY_DISPLAY_LIST = 0
         const val LIBRARY_DISPLAY_GRID = 1

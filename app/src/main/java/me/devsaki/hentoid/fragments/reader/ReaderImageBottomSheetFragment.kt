@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import coil3.load
@@ -18,17 +19,12 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.IncludeReaderImageBottomPanelBinding
-import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
-import me.devsaki.hentoid.util.file.getDownloadsFolder
-import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFullPathFromUri
-import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.openFile
-import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.file.shareFile
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.getThemedColor
@@ -37,9 +33,10 @@ import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
-import java.io.IOException
+import java.io.File
 
-class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
+class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
+    ReaderCopyImgDialogFragment.Parent {
 
     // Communication
     private lateinit var viewModel: ReaderViewModel
@@ -203,43 +200,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
      */
     private fun onCopyClick() {
         image?.let {
-            val targetFileName =
-                it.content.target.uniqueSiteId + "-" + it.name + "." + getExtension(it.fileUri)
-            binding?.apply {
-                try {
-                    val fileUri = Uri.parse(it.fileUri)
-                    if (!fileExists(requireContext(), fileUri)) return
-                    openNewDownloadOutputStream(
-                        requireContext(),
-                        targetFileName,
-                        it.mimeType
-                    )?.use { newDownload ->
-                        getInputStream(requireContext(), fileUri)
-                            .use { input -> copy(input, newDownload) }
-                    }
-                    Snackbar.make(
-                        root,
-                        R.string.copy_download_folder_success,
-                        BaseTransientBottomBar.LENGTH_LONG
-                    )
-                        .setAction(R.string.open_folder) {
-                            openFile(requireContext(), getDownloadsFolder())
-                        }
-                        .show()
-                } catch (_: IOException) {
-                    Snackbar.make(
-                        root,
-                        R.string.copy_download_folder_fail,
-                        BaseTransientBottomBar.LENGTH_LONG
-                    ).show()
-                } catch (_: IllegalArgumentException) {
-                    Snackbar.make(
-                        root,
-                        R.string.copy_download_folder_fail,
-                        BaseTransientBottomBar.LENGTH_LONG
-                    ).show()
-                }
-            }
+            ReaderCopyImgDialogFragment.invoke(this, it.id)
         }
     }
 
@@ -290,6 +251,20 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment() {
             binding?.apply {
                 Snackbar.make(root, message, BaseTransientBottomBar.LENGTH_LONG).show()
             }
+        }
+    }
+
+    override fun feedback(message: Int, file: Any?) {
+        binding?.apply {
+            val snack = Snackbar.make(root, message, BaseTransientBottomBar.LENGTH_LONG)
+            if (file != null) {
+                snack.setAction(R.string.open_folder)
+                {
+                    if (file is DocumentFile) openFile(requireContext(), file)
+                    else if (file is File) openFile(requireContext(), file)
+                }
+            }
+            snack.show()
         }
     }
 
