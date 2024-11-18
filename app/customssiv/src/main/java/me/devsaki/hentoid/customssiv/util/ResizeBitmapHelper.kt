@@ -9,6 +9,7 @@ import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 // Credits go to https://medium.com/@petrakeas/alias-free-resize-with-renderscript-5bf15a86ce3
 
@@ -42,7 +43,7 @@ fun resizeBitmap(
  *
  * @param targetScale target scale of the image to display (% of the raw dimensions)
  * @return Pair containing
- * - First : Number of half-resizes to perform (see [ResizeBitmapHelper])
+ * - First : Number of half-resizes to perform (see ResizeBitmapHelper)
  * - Second : Corresponding scale
  */
 private fun computeResizeParams(targetScale: Float): Pair<Int, Float> {
@@ -63,7 +64,7 @@ fun successiveResize(src: Bitmap, resizeNum: Int): Bitmap {
     var srcWidth = src.width
     var srcHeight = src.height
     var output = src
-    for (i in 0 until resizeNum) {
+    (0 until resizeNum).forEach {
         srcWidth /= 2
         srcHeight /= 2
         val temp = Bitmap.createScaledBitmap(output, srcWidth, srcHeight, true)
@@ -88,9 +89,9 @@ fun resizeGLES(glEsRenderer: GPUImage, src: Bitmap?, xScale: Float, yScale: Floa
     val srcWidth = src.width
     val srcHeight = src.height
     // Must be multiple of 2
-    var dstWidth = Math.round(srcWidth * xScale)
+    var dstWidth = (srcWidth * xScale).roundToInt()
     dstWidth += (dstWidth % 2)
-    var dstHeight = Math.round(srcHeight * yScale)
+    var dstHeight = (srcHeight * yScale).roundToInt()
     dstHeight += (dstHeight % 2)
     src.setHasAlpha(false)
 
