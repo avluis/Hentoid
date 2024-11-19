@@ -327,6 +327,7 @@ class ImagePagerAdapter(context: Context) :
                 pause(500)
             }
             (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.apply {
+                Timber.d("adjustBehaviourForPosition $position")
                 setTapListener()
             }
         }
@@ -377,7 +378,6 @@ class ImagePagerAdapter(context: Context) :
             } else if (ViewType.IMAGEVIEW_STRETCH == imgViewType) {
                 imageView.scaleType = ImageView.ScaleType.FIT_XY
             } else if (ViewType.SSIV_VERTICAL == imgViewType) {
-                //ssiv.setIgnoreTouchEvents(true)
                 ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL)
             }
             // WARNING following line must be coherent with what happens in setTapListener

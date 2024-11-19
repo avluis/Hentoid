@@ -702,7 +702,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Activated when all displayed items are placed on their definitive position
      */
     private fun differEndCallback() {
-        if (null == binding) return
         navigator.onImagesChanged(adapter.currentList)
         if (targetStartingIndex > -1) applyStartingIndex(targetStartingIndex) else navigator.updatePageControls()
         viewModel.clearForceReload()
@@ -759,12 +758,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         absImageIndex = -1 // Will be updated by onStartingIndexChanged
         navigator.onContentChanged(content)
         updateFavouriteButtonIcon()
-        // Reset animation presence flag
-        displayParams?.apply {
-            displayParams =
-                DisplayParams(browseMode, displayMode, twoPages, isSmoothRendering, false)
-            // onDisplayParamsChange will be called as soon as images are loaded
-        }
 
         showFavoritePagesMenu.isVisible = !content.isDynamic
         deleteMenu.isVisible = !content.isDynamic
@@ -795,7 +788,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         if (onDeletePage) viewModel.deletePage(absImageIndex) { t -> onDeleteError(t) }
         else viewModel.deleteContent { t -> onDeleteError(t) }
     }
-
 
     /**
      * Callback for the failure of the "delete item" action
@@ -945,6 +937,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             }
             adapter.notifyDataSetChanged() // NB : will re-run onBindViewHolder for all displayed pictures
         }
+        adapter.adjustBehaviourForPosition(absImageIndex)
         seekToIndex(absImageIndex)
     }
 
@@ -996,7 +989,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         binding?.apply {
             // Animated picture appears in horizontal mode => enable zoom frame
             if (isAnimationChange && VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation) {
-                Timber.d("ssiv ${newDisplayParams.useSsiv}")
                 if (!newDisplayParams.useSsiv) isZoomFrameEnabled = true
             }
 
