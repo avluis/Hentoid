@@ -95,7 +95,7 @@ class SkiaImageDecoder(private val bitmapConfig: Bitmap.Config) : ImageDecoder {
                 ?: throw RuntimeException("Content resolver returned null stream. Unable to initialise with uri.")
             fileStream?.use {
                 bitmap = BitmapFactory.decodeStream(it, null, options)
-                Timber.d("bitmap ${bitmap}")
+                Timber.d("bitmap $bitmap")
             }
         }
         bitmap?.let {

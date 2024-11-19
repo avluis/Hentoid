@@ -1582,9 +1582,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             preDraw()
             imageLoadedSent = true
             onImageLoaded()
-            if (onImageEventListener != null) {
-                onImageEventListener!!.onImageLoaded()
-            }
+            onImageEventListener?.onImageLoaded()
         }
         return imageLoaded
     }
