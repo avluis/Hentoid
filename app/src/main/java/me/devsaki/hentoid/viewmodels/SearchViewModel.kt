@@ -94,6 +94,7 @@ class SearchViewModel(
                     attributeSortOrder
                 )
             }
+            dao.cleanup()
             availableAttributes.postValue(result)
         }
     }
@@ -173,17 +174,14 @@ class SearchViewModel(
                     contentType
                 )
             }
+            dao.cleanup()
             // Result has to take into account the number of attributes already selected (hence unavailable)
-            val selectedAttrs =
-                selectedAttributes.value
-            if (selectedAttrs != null) {
-                for (a in selectedAttrs) {
-                    // if attribute is excluded already, there's no need to reduce attrPerType value,
-                    // since attr is no longer amongst results
-                    if (!a.isExcluded) {
-                        var countForType = result[a.type.code]
-                        if (countForType > 0) result.put(a.type.code, --countForType)
-                    }
+            selectedAttributes.value?.forEach {
+                // if attribute is excluded already, there's no need to reduce attrPerType value,
+                // since attr is no longer amongst results
+                if (!it.isExcluded) {
+                    var countForType = result[it.type.code]
+                    if (countForType > 0) result.put(it.type.code, --countForType)
                 }
             }
             nbAttributesPerType.postValue(result)

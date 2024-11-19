@@ -146,6 +146,7 @@ class DuplicateViewModel(
                     if (it.titleScore <= 1f) duplicatesDao.delete(it)
                 }
             }
+            dao.cleanup()
             onComplete.run()
         }
     }
@@ -213,6 +214,7 @@ class DuplicateViewModel(
                 return@withContext false
             }
             if (result) onSuccess.run()
+            dao.cleanup()
         }
     }
 

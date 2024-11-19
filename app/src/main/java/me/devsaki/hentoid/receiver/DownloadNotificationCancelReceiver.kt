@@ -25,12 +25,11 @@ class DownloadNotificationCancelReceiver : BroadcastReceiver() {
                 val content = queue[0].content.target
                 GlobalScope.launch {
                     removeQueuedContent(context, dao, content, true)
+                    dao.cleanup()
                 }
             }
         } catch (e: ContentNotProcessedException) {
             Timber.w(e)
-        } finally {
-            dao.cleanup()
         }
     }
 }

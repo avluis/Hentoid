@@ -140,6 +140,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                     nbBooks
                 )
             )
+            dao.cleanup()
         }
     }
 }

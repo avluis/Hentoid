@@ -20,7 +20,6 @@ import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.addAttribute
@@ -120,6 +119,8 @@ class MetadataEditViewModel(
                         contentList.postValue(mutableListOf(content))
                     } catch (t: Throwable) {
                         Timber.e(t)
+                    } finally {
+                        dao.cleanup()
                     }
                 }
             }
@@ -158,6 +159,7 @@ class MetadataEditViewModel(
                     Settings.searchAttributesSortOrder
                 )
                 libraryAttributes.postValue(result)
+                dao.cleanup()
             }
         }
     }
@@ -261,6 +263,8 @@ class MetadataEditViewModel(
                     doSaveContent()
                 } catch (t: Throwable) {
                     Timber.e(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
         }
@@ -318,6 +322,8 @@ class MetadataEditViewModel(
                     doRenameAttribute(newName, id, createRule)
                 } catch (t: Throwable) {
                     Timber.e(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
         }

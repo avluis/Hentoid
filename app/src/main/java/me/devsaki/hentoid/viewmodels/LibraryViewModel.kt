@@ -158,7 +158,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
         currentSource = contentSearchManager.getLibrary()
         currentSource?.let {
-            libraryPaged.addSource(it) { value -> libraryPaged.setValue(value) }
+            libraryPaged.addSource(it) { v -> libraryPaged.value = v }
         }
         contentSearchBundle.postValue(contentSearchManager.toBundle())
     }
@@ -210,7 +210,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
         currentSource = dao.selectNoContent()
         currentSource?.let {
-            libraryPaged.addSource(it) { value -> libraryPaged.setValue(value) }
+            libraryPaged.addSource(it) { v -> libraryPaged.value = v }
         }
     }
 
@@ -226,7 +226,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         groupSearchManager.setArtistGroupVisibility(Preferences.getArtistGroupVisibility())
         currentGroupsSource?.let { groups.removeSource(it) }
         currentGroupsSource = groupSearchManager.getGroups()
-        currentGroupsSource?.let { groups.addSource(it) { value -> groups.setValue(value) } }
+        currentGroupsSource?.let { groups.addSource(it) { v -> groups.value = v } }
 
         currentGroupsTotalSource?.let { currentGroupTotal.removeSource(it) }
         currentGroupsTotalSource = groupSearchManager.getAllGroups()
