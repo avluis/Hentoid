@@ -493,12 +493,16 @@ class ImagePagerAdapter(context: Context) :
             if (isImageView() || VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
                 Timber.d("$absoluteAdapterPosition setTapListener on recyclerView")
                 recyclerView?.setTapListener(itemTouchListener)
-                imgView.setOnTouchListener(null)
+                setTapListener(true)
             } else { // Single-page, horizontal SSIV => SSIV handles gestures
                 Timber.d("$absoluteAdapterPosition setTapListener on imageView")
                 recyclerView?.setTapListener(null)
-                imgView.setOnTouchListener(itemTouchListener)
+                setTapListener(false)
             }
+        }
+
+        fun setTapListener(isImageView: Boolean) {
+            imgView.setOnTouchListener(if (isImageView) null else itemTouchListener)
         }
 
         suspend fun isImageView(): Boolean = withContext(Dispatchers.Default) {
@@ -622,6 +626,7 @@ class ImagePagerAdapter(context: Context) :
                 imageView.isClickable = !isClickThrough
                 imageView.isFocusable = !isClickThrough
             }
+            setTapListener(isImageView)
             this.isImageView = isImageView
         }
 
@@ -656,6 +661,7 @@ class ImagePagerAdapter(context: Context) :
 
         // == SUBSAMPLINGSCALEVIEW CALLBACKS
         override fun onReady() {
+            isLoading.set(false) // All that's left is to load tiles => consider the job done already
             val scaleView = imgView as CustomSubsamplingScaleImageView
             adjustDimensions(
                 0,
@@ -663,7 +669,6 @@ class ImagePagerAdapter(context: Context) :
                 VIEWER_ORIENTATION_VERTICAL == viewerOrientation,
                 false
             )
-            isLoading.set(false) // All that's left is to load tiles => consider the job done already
         }
 
         override fun onImageLoaded() {

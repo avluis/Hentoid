@@ -949,7 +949,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     private fun adjustDisplay(bookPreferences: Map<String, String>, absImageIndex: Int) {
-        activity?.lifecycleScope?.launch {
+        lifecycleScope.launch {
             val newDisplayParams = DisplayParams(
                 Settings.getContentBrowseMode(bookPreferences),
                 Settings.getContentDisplayMode(bookPreferences),
