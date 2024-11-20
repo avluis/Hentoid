@@ -149,6 +149,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * Perform a new library search
      */
     private fun doSearchContent() {
+        dao.cleanup()
         // Update search properties set directly through Preferences
         contentSearchManager.setContentSortField(Settings.contentSortField)
         contentSearchManager.setContentSortDesc(Settings.isContentSortDesc)
@@ -219,6 +220,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     private fun doSearchGroup() {
+        dao.cleanup()
         // Update search properties set directly through Preferences
         groupSearchManager.setSortField(Settings.groupSortField)
         groupSearchManager.setSortDesc(Settings.isGroupSortDesc)
