@@ -225,7 +225,7 @@ class AdBlocker(val site: Site) {
 
         // 3- Accept non-JS files that are not blacklisted
         val extension = getExtensionFromUri(cleanUrl)
-        val isJs = extension == "js" || extension.isEmpty() // Obvious js and hidden js
+        val isJs = extension == "js" || extension == "go" || extension.isEmpty() // Obvious js and hidden js
         if (!isJs) return false
 
         // If no grey list has been defined...
