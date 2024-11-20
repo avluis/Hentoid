@@ -286,9 +286,7 @@ fun tryShowMenuIcons(context: Context, menu: Menu) {
             val iconMarginPx = context.resources.getDimension(R.dimen.icon_margin).toInt()
             for (item in menu.visibleItems) {
                 if (item.icon != null) item.setIcon(
-                    InsetDrawable(
-                        item.icon, iconMarginPx, 0, iconMarginPx, 0
-                    )
+                    InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
                 )
             }
         }
@@ -524,7 +522,7 @@ fun getPrefsIndex(res: Resources, valuesRes: Int, value: String): Int {
 fun AppCompatActivity.useLegacyInsets() {
     val root: View = findViewById(android.R.id.content)
     ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
-        val bars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+        val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         v.updatePadding(
             left = bars.left,
             top = bars.top,
