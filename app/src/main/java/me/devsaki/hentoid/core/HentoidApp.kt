@@ -46,7 +46,7 @@ class HentoidApp : Application() {
         // Prefs
         Preferences.init(this)
         Settings.init(this)
-        Preferences.performHousekeeping()
+        Settings.performHousekeeping()
 
         // Init version number
         if (0 == Preferences.getLastKnownAppVersionCode()) Preferences.setLastKnownAppVersionCode(

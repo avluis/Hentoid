@@ -21,7 +21,7 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.jsonToObject
 import timber.log.Timber
 import java.io.IOException
@@ -144,7 +144,7 @@ class SettingsImportDialogFragment : BaseDialogFragment<Nothing>() {
 
     private fun runImport(settings: JsonSettings) {
         isCancelable = false
-        Preferences.importInformation(settings.settings)
+        Settings.importInformation(settings.settings)
         finish()
     }
 

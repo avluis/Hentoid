@@ -41,58 +41,12 @@ public final class Preferences {
         }
     }
 
-    public static void performHousekeeping() {
-        // Fling factor -> Swipe to fling (v1.9.0)
-        if (sharedPreferences.contains(Key.VIEWER_FLING_FACTOR)) {
-            int flingFactor = getIntPref(Key.VIEWER_FLING_FACTOR, 0);
-            sharedPreferences.edit().putBoolean(Settings.Key.VIEWER_SWIPE_TO_FLING, flingFactor > 0).apply();
-            sharedPreferences.edit().remove(Key.VIEWER_FLING_FACTOR).apply();
-        }
-        // PIN activation -> Lock type (v1.18.4)
-        if (sharedPreferences.contains(Settings.Key.APP_LOCK)) {
-            if (!Settings.INSTANCE.getAppLockPin().isEmpty()) Settings.INSTANCE.setLockType(1);
-        }
-    }
-
     public static void registerPrefsChangedListener(SharedPreferences.OnSharedPreferenceChangeListener listener) {
         sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
     }
 
     public static void unregisterPrefsChangedListener(SharedPreferences.OnSharedPreferenceChangeListener listener) {
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
-    }
-
-    public static Map<String, Object> extractPortableInformation() {
-        Map<String, Object> result = new HashMap<>(sharedPreferences.getAll());
-
-        // Remove non-exportable settings that make no sense on another instance
-        result.remove(Settings.Key.FIRST_RUN);
-        result.remove(Settings.Key.WELCOME_DONE);
-        result.remove(Settings.Key.PRIMARY_STORAGE_URI);
-        result.remove(Settings.Key.EXTERNAL_LIBRARY_URI);
-        result.remove(Key.LAST_KNOWN_APP_VERSION_CODE);
-        result.remove(Settings.Key.REFRESH_JSON_1_DONE);
-        result.remove(Settings.Key.LOCK_TYPE);
-        result.remove(Settings.Key.ACHIEVEMENTS);
-        result.remove(Settings.Key.ACHIEVEMENTS_NB_AI_RESCALE);
-
-        return result;
-    }
-
-    public static void importInformation(Map<String, ?> settings) {
-        for (Map.Entry<String, ?> entry : settings.entrySet()) {
-            if (entry.getValue() instanceof Integer) {
-                sharedPreferences.edit().putInt(entry.getKey(), (Integer) entry.getValue()).apply();
-            } else if (entry.getValue() instanceof String) {
-                sharedPreferences.edit().putString(entry.getKey(), (String) entry.getValue()).apply();
-            } else if (entry.getValue() instanceof Boolean) {
-                sharedPreferences.edit().putBoolean(entry.getKey(), (Boolean) entry.getValue()).apply();
-            } else if (entry.getValue() instanceof Float) {
-                sharedPreferences.edit().putFloat(entry.getKey(), (Float) entry.getValue()).apply();
-            } else if (entry.getValue() instanceof Long) {
-                sharedPreferences.edit().putLong(entry.getKey(), (Long) entry.getValue()).apply();
-            }
-        }
     }
 
     private static int getIntPref(@NonNull String key, int defaultValue) {
@@ -413,9 +367,6 @@ public final class Preferences {
         public static final String DUPLICATE_LAST_INDEX = "last_index";
         public static final String DOWNLOAD_DUPLICATE_ASK = "download_duplicate_ask";
         public static final String DOWNLOAD_PLUS_DUPLICATE_TRY = "download_plus_duplicate_try";
-
-        // Deprecated values kept for housekeeping/migration
-        static final String VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml

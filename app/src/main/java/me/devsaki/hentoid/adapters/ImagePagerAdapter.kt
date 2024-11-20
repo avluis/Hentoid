@@ -33,6 +33,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
+import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.AutoRotateMethod
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
 import me.devsaki.hentoid.customssiv.uri
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
@@ -117,7 +118,7 @@ class ImagePagerAdapter(context: Context) :
     private var twoPagesMode = false
 
     private var longTapZoomEnabled = false
-    private var autoRotate = false
+    private var autoRotate = Settings.Value.READER_AUTO_ROTATE_NONE
     private var doubleTapZoomCap = 0f
 
 
@@ -137,7 +138,7 @@ class ImagePagerAdapter(context: Context) :
             else -> 0
         }
         longTapZoomEnabled = Settings.isReaderHoldToZoom
-        autoRotate = Settings.isReaderAutoRotate
+        autoRotate = Settings.readerAutoRotate
 
         val doubleTapZoomCapCode = Settings.readerCapTapZoom
         doubleTapZoomCap =
@@ -452,7 +453,13 @@ class ImagePagerAdapter(context: Context) :
                 ssiv.setOnImageEventListener(this)
                 ssiv.setLongTapZoomEnabled(longTapZoomEnabled)
                 ssiv.setDoubleTapZoomCap(doubleTapZoomCap)
-                ssiv.setAutoRotate(autoRotate)
+                ssiv.setAutoRotate(
+                    when (autoRotate) {
+                        Settings.Value.READER_AUTO_ROTATE_LEFT -> AutoRotateMethod.LEFT
+                        Settings.Value.READER_AUTO_ROTATE_RIGHT -> AutoRotateMethod.RIGHT
+                        else -> AutoRotateMethod.NONE
+                    }
+                )
                 // 120 dpi = equivalent to the web browser's max zoom level
                 ssiv.setMinimumDpi(120)
                 ssiv.setDoubleTapZoomDpi(120)
@@ -461,13 +468,25 @@ class ImagePagerAdapter(context: Context) :
             } else { // ImageView
                 val view = imgView as ImageView
                 Timber.d("Picture $absoluteAdapterPosition : Using Coil")
-                val transformation = if (autoRotate) listOf(
-                    SmartRotateTransformation(
-                        90f,
-                        screenWidth,
-                        screenHeight
+                val transformation = when (autoRotate) {
+                    Settings.Value.READER_AUTO_ROTATE_LEFT -> listOf(
+                        SmartRotateTransformation(
+                            90f,
+                            screenWidth,
+                            screenHeight
+                        )
                     )
-                ) else emptyList()
+
+                    Settings.Value.READER_AUTO_ROTATE_RIGHT -> listOf(
+                        SmartRotateTransformation(
+                            -90f,
+                            screenWidth,
+                            screenHeight
+                        )
+                    )
+
+                    else -> emptyList()
+                }
 
                 // Custom loader to handle JXL
                 // (doesn't support Hardware bitmaps : https://github.com/awxkee/jxl-coder-coil/issues/7)

@@ -15,13 +15,8 @@ class SmartRotateTransformation(
 
     override suspend fun transform(input: Bitmap, size: Size): Bitmap {
         val matrix = Matrix()
-        if (needsRotating(
-                screenWidth,
-                screenHeight,
-                input.width,
-                input.height
-            )
-        ) matrix.postRotate(rotateRotationAngle)
+        if (needsRotating(screenWidth, screenHeight, input.width, input.height))
+            matrix.postRotate(rotateRotationAngle)
         return Bitmap.createBitmap(
             input,
             0,

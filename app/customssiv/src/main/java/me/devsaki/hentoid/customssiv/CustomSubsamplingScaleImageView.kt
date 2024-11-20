@@ -175,6 +175,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         LONG_TAP_ZOOM(5)
     }
 
+    enum class AutoRotateMethod {
+        NONE, LEFT, RIGHT
+    }
+
 
     // Bitmap (preview or full image)
     private var bitmap: Bitmap? = null
@@ -367,7 +371,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private var sideOffsetConsumed = false
 
     // Flag for auto-rotate mode enabled
-    private var autoRotate = false
+    private var autoRotate = AutoRotateMethod.NONE
 
     // Phone screen width and height (stored here for optimization)
     private val screenWidth: Int
@@ -1640,8 +1644,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         fitToBounds(true, satTemp!!, Point(sWidth(), sHeight()))
         val targetScale = satTemp!!.scale
 
-        orientation = if (autoRotate && needsRotating(sWidth(), sHeight())) Orientation._90
-        else Orientation._0
+        orientation = if (needsRotating(sWidth(), sHeight())) {
+            when (autoRotate) {
+                AutoRotateMethod.LEFT -> Orientation._90
+                AutoRotateMethod.RIGHT -> Orientation._270
+                else -> Orientation._0
+            }
+        } else Orientation._0
 
         // Load double resolution - next level will be split into four tiles and at the center all four are required,
         // so don't bother with tiling until the next level 16 tiles are needed.
@@ -2160,8 +2169,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         bitmapIsCached: Boolean,
         imageScale: Float
     ) {
-        orientation = if (autoRotate && needsRotating(bitmap.width, bitmap.height)) Orientation._90
-        else Orientation._0
+        orientation = if (needsRotating(bitmap.width, bitmap.height)) {
+            when (autoRotate) {
+                AutoRotateMethod.LEFT -> Orientation._90
+                AutoRotateMethod.RIGHT -> Orientation._270
+                else -> Orientation._0
+            }
+        } else Orientation._0
 
         if (this.bitmap != null && !this.bitmapIsCached && !singleImage.loading) {
             this.bitmap!!.recycle()
@@ -3195,14 +3209,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     /**
      * Enable auto-rotate mode (default : false)
      *
-     *
      * Auto-rotate chooses automatically the most fitting orientation so that the image occupies
      * most of the screen, according to its dimensions and the device's screen dimensions and
      * the device's orientation (see needsRotating method)
      *
      * @param autoRotate True if auto-rotate mode should be on
      */
-    fun setAutoRotate(autoRotate: Boolean) {
+    fun setAutoRotate(autoRotate: AutoRotateMethod) {
         this.autoRotate = autoRotate
     }
 

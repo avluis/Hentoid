@@ -19,6 +19,62 @@ object Settings {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     }
 
+    fun performHousekeeping() {
+        // Fling factor -> Swipe to fling (v1.9.0)
+        if (sharedPreferences.contains(Key.VIEWER_FLING_FACTOR)) {
+            val flingFactor =
+                sharedPreferences.getString(Key.VIEWER_FLING_FACTOR, "0")?.toInt() ?: 0
+            sharedPreferences.edit().putBoolean(Key.VIEWER_SWIPE_TO_FLING, flingFactor > 0).apply()
+            sharedPreferences.edit().remove(Key.VIEWER_FLING_FACTOR).apply()
+        }
+        // PIN activation -> Lock type (v1.18.4)
+        if (sharedPreferences.contains(Key.APP_LOCK)) {
+            if (!appLockPin.isEmpty()) lockType = 1
+        }
+        // Auto rotate switch -> Auto rotate direction (v1.20.6)
+        if (sharedPreferences.contains(Key.VIEWER_AUTO_ROTATE_OLD)) {
+            val autoRotate = sharedPreferences.getBoolean(Key.VIEWER_AUTO_ROTATE_OLD, false)
+            sharedPreferences.edit().remove(Key.VIEWER_AUTO_ROTATE_OLD).apply()
+            readerAutoRotate =
+                if (autoRotate) Value.READER_AUTO_ROTATE_LEFT else Value.READER_AUTO_ROTATE_NONE
+        }
+    }
+
+    fun extractPortableInformation(): Map<String, Any> {
+        val result: MutableMap<String, Any?> = HashMap(sharedPreferences.all)
+
+        // Remove non-exportable settings that make no sense on another instance
+        result.remove(Key.FIRST_RUN)
+        result.remove(Key.WELCOME_DONE)
+        result.remove(Key.PRIMARY_STORAGE_URI)
+        result.remove(Key.EXTERNAL_LIBRARY_URI)
+        result.remove(Preferences.Key.LAST_KNOWN_APP_VERSION_CODE)
+        result.remove(Key.REFRESH_JSON_1_DONE)
+        result.remove(Key.LOCK_TYPE)
+        result.remove(Key.ACHIEVEMENTS)
+        result.remove(Key.ACHIEVEMENTS_NB_AI_RESCALE)
+
+        return result.filterValues { it != null }.mapValues { it -> it.value as Any }
+    }
+
+    fun importInformation(settings: Map<String, Any?>) {
+        settings.entries.forEach {
+            it.value?.let { value ->
+                if (value is Int) {
+                    sharedPreferences.edit().putInt(it.key, value).apply()
+                } else if (value is String) {
+                    sharedPreferences.edit().putString(it.key, value).apply()
+                } else if (value is Boolean) {
+                    sharedPreferences.edit().putBoolean(it.key, value).apply()
+                } else if (value is Float) {
+                    sharedPreferences.edit().putFloat(it.key, value).apply()
+                } else if (value is Long) {
+                    sharedPreferences.edit().putLong(it.key, value).apply()
+                }
+            }
+        }
+    }
+
     /**
      * FIELDS
      */
@@ -216,7 +272,10 @@ object Settings {
         "pref_viewer_maintain_horizontal_zoom",
         false
     )
-    val isReaderAutoRotate: Boolean by BoolSetting(Key.VIEWER_AUTO_ROTATE, false)
+    var readerAutoRotate: Int by IntSettingStr(
+        Key.VIEWER_AUTO_ROTATE,
+        Value.READER_AUTO_ROTATE_NONE
+    )
     var readerCurrentContent: Long by LongSetting("viewer_current_content", -1)
     var readerCurrentPageNum: Int by IntSettingStr("viewer_current_pagenum", -1)
     var readerGalleryColumns: Int by IntSettingStr("viewer_gallery_columns", 4)
@@ -451,9 +510,13 @@ object Settings {
         const val VIEWER_CONTINUOUS = "pref_viewer_continuous"
         const val VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars"
         const val VIEWER_HOLD_TO_ZOOM = "pref_viewer_zoom_holding"
-        const val VIEWER_AUTO_ROTATE = "pref_viewer_auto_rotate"
+        const val VIEWER_AUTO_ROTATE = "pref_viewer_auto_rotate_mode"
         const val VIEWER_DELETE_ASK_MODE = "viewer_delete_ask"
         const val VIEWER_DELETE_TARGET = "viewer_delete_target"
+
+        // Deprecated values kept for housekeeping/migration
+        const val VIEWER_FLING_FACTOR = "pref_viewer_fling_factor"
+        const val VIEWER_AUTO_ROTATE_OLD = "pref_viewer_auto_rotate"
     }
 
     object Default {
@@ -571,5 +634,9 @@ object Settings {
         const val VIEWER_CAP_TAP_ZOOM_2X = 2
         const val VIEWER_CAP_TAP_ZOOM_4X = 4
         const val VIEWER_CAP_TAP_ZOOM_6X = 6
+
+        const val READER_AUTO_ROTATE_NONE = 0
+        const val READER_AUTO_ROTATE_LEFT = 1
+        const val READER_AUTO_ROTATE_RIGHT = 2
     }
 }

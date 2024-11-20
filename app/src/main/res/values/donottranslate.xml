@@ -332,6 +332,11 @@
         <item>@string/pref_viewer_display_mode_entries_2</item>
         <item>@string/pref_viewer_display_mode_entries_3</item>
     </string-array>
+    <string-array name="pref_viewer_auto_rotate_entries" translatable="false">
+        <item>@string/pref_viewer_auto_rotate_entries_1</item>
+        <item>@string/pref_viewer_auto_rotate_entries_2</item>
+        <item>@string/pref_viewer_auto_rotate_entries_3</item>
+    </string-array>
     <string-array name="pref_viewer_rendering_entries" translatable="false">
         <item>@string/pref_viewer_rendering_entries_1</item>
         <item>@string/pref_viewer_rendering_entries_2</item>
@@ -586,7 +591,7 @@
     <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
     <string name="pref_viewer_display_mode_default" translatable="false">0</string>
     <string name="pref_viewer_rendering_default" translatable="false">0</string>
-    <bool name="pref_viewer_auto_rotate_default" translatable="false">false</bool>
+    <string name="pref_viewer_auto_rotate_default" translatable="false">0</string>
     <string name="pref_viewer_gallery_columns_default" translatable="false">4</string>
     <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
     <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>

@@ -31,7 +31,7 @@ import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.JSON_MIME_TYPE
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
@@ -227,11 +227,10 @@ class ToolsFragment : PreferenceFragmentCompat(),
         }
     }
 
-    private fun getExportedSettings()
-            : JsonSettings {
+    private fun getExportedSettings(): JsonSettings {
         val jsonSettings = JsonSettings()
 
-        jsonSettings.settings = Preferences.extractPortableInformation()
+        jsonSettings.settings = Settings.extractPortableInformation()
 
         return jsonSettings
     }
@@ -265,13 +264,13 @@ class ToolsFragment : PreferenceFragmentCompat(),
                         )
                     }
                     .show()
-            } catch (e: IOException) {
+            } catch (_: IOException) {
                 Snackbar.make(
                     it,
                     R.string.copy_download_folder_fail,
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
-            } catch (e: IllegalArgumentException) {
+            } catch (_: IllegalArgumentException) {
                 Snackbar.make(
                     it,
                     R.string.copy_download_folder_fail,
