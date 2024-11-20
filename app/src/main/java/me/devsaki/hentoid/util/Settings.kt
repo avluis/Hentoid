@@ -291,7 +291,7 @@ object Settings {
     val isForceEnglishLocale: Boolean by BoolSetting(Key.FORCE_ENGLISH, false)
     var isTextMenuOn: Boolean by BoolSetting(Key.TEXT_SELECT_MENU, false)
     val recentVisibility: Boolean by BoolSetting(Key.APP_PREVIEW, BuildConfig.DEBUG)
-    val maxDbSizeKb: Long by LongSetting("db_max_size", 2L * 1024 * 1024) // 2GB
+    val maxDbSizeKb: Long by LongSetting("db_max_size", 3L * 1024 * 1024) // 3GB
 
 
     // Public Helpers
