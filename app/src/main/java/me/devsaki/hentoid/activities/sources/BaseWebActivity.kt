@@ -104,6 +104,7 @@ import me.devsaki.hentoid.util.setMargins
 import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.tryShowMenuIcons
+import me.devsaki.hentoid.util.useLegacyInsets
 import me.devsaki.hentoid.views.NestedScrollWebView
 import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
 import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
@@ -234,6 +235,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBaseWebBinding.inflate(layoutInflater)
+        useLegacyInsets()
         setContentView(binding!!.root)
         if (!WebkitPackageHelper.getWebViewAvailable()) {
             startActivity(Intent(this, MissingWebViewActivity::class.java))
