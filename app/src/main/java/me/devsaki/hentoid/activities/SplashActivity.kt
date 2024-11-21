@@ -9,9 +9,9 @@ import android.widget.TextView
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.AppStartup.appKilled
 import me.devsaki.hentoid.core.AppStartup.initApp
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getRandomInt
+import me.devsaki.hentoid.util.useLegacyInsets
 import timber.log.Timber
 import kotlin.math.roundToInt
 
@@ -28,6 +28,7 @@ class SplashActivity : BaseActivity() {
         appKilled = false
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+        useLegacyInsets()
         //ThemeHelper.applyTheme(this); <-- this won't help; the starting activity is shown with the default theme, aka Light
         mainPb = findViewById(R.id.progress_main)
         secondaryPb = findViewById(R.id.progress_secondary)
