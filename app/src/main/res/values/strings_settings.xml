@@ -210,6 +210,7 @@
     <string name="pref_viewer_book_switch">Book switch control</string>
     <string name="pref_viewer_book_switch_volume">Volume button (long tap)</string>
     <string name="pref_viewer_zoom">Zoom control</string>
+    <string name="pref_viewer_zoom_double_tap">Double tap to zoom</string>
     <string name="pref_viewer_zoom_holding">Temp zoom while holding</string>
     <string name="pref_viewer_cap_tap_zoom">Cap double &amp; long tap zoom</string>
     <string name="pref_viewer_visuals">Visuals</string>

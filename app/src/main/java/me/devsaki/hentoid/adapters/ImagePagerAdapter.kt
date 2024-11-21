@@ -117,13 +117,13 @@ class ImagePagerAdapter(context: Context) :
     private var separatingBarsHeight = 0
     private var twoPagesMode = false
 
+    private var doubleTapZoomEnabled = false
     private var longTapZoomEnabled = false
     private var autoRotate = Settings.Value.READER_AUTO_ROTATE_NONE
     private var doubleTapZoomCap = 0f
 
 
     init {
-
         refreshPrefs()
     }
 
@@ -137,6 +137,7 @@ class ImagePagerAdapter(context: Context) :
             VIEWER_SEPARATING_BARS_LARGE -> 64
             else -> 0
         }
+        doubleTapZoomEnabled = Settings.isReaderDoubleTapToZoom
         longTapZoomEnabled = Settings.isReaderHoldToZoom
         autoRotate = Settings.readerAutoRotate
 
@@ -450,6 +451,7 @@ class ImagePagerAdapter(context: Context) :
                 ssiv.recycle()
                 ssiv.setMinimumScaleType(scaleType)
                 ssiv.setOnImageEventListener(this)
+                ssiv.setDoubleTapZoomEnabled(doubleTapZoomEnabled)
                 ssiv.setLongTapZoomEnabled(longTapZoomEnabled)
                 ssiv.setDoubleTapZoomCap(doubleTapZoomCap)
                 ssiv.setAutoRotate(

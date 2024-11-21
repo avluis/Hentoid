@@ -620,6 +620,11 @@
                 android:title="@string/pref_viewer_zoom"
                 app:iconSpaceReserved="false">
                 <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_zoom_double_tap_default"
+                    android:key="pref_viewer_double_tap_zoom"
+                    android:title="@string/pref_viewer_zoom_double_tap"
+                    app:iconSpaceReserved="false" />
+                <CheckBoxPreference
                     android:defaultValue="@bool/pref_viewer_zoom_holding_default"
                     android:key="pref_viewer_zoom_holding"
                     android:title="@string/pref_viewer_zoom_holding"

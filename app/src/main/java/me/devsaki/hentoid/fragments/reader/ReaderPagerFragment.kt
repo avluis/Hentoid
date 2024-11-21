@@ -62,6 +62,7 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_AUTO_ROTATE
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_BROWSE_MODE
+import me.devsaki.hentoid.util.Settings.Key.VIEWER_DOUBLE_TAP_TO_ZOOM
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_HOLD_TO_ZOOM
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_IMAGE_DISPLAY
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_RENDERING
@@ -884,7 +885,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         when (key) {
             VIEWER_BROWSE_MODE, VIEWER_HOLD_TO_ZOOM, Settings.Key.VIEWER_CONTINUOUS, Settings.Key.READER_TWOPAGES -> onBrowseModeChange()
             Settings.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()
-            Settings.Key.VIEWER_ZOOM_TRANSITIONS, VIEWER_SEPARATING_BARS, VIEWER_AUTO_ROTATE
+            Settings.Key.VIEWER_ZOOM_TRANSITIONS, VIEWER_SEPARATING_BARS, VIEWER_AUTO_ROTATE, VIEWER_DOUBLE_TAP_TO_ZOOM
                 -> onUpdateImageDisplay(true)
 
             VIEWER_IMAGE_DISPLAY, VIEWER_RENDERING, Settings.Key.READER_COLOR_DEPTH

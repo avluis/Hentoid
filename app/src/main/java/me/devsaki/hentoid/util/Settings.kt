@@ -263,6 +263,7 @@ object Settings {
         Key.VIEWER_SEPARATING_BARS,
         Value.VIEWER_SEPARATING_BARS_OFF
     )
+    val isReaderDoubleTapToZoom: Boolean by BoolSetting(Key.VIEWER_DOUBLE_TAP_TO_ZOOM, true)
     val isReaderHoldToZoom: Boolean by BoolSetting(Key.VIEWER_HOLD_TO_ZOOM, false)
     val readerCapTapZoom: Int by IntSettingStr(
         "pref_viewer_cap_tap_zoom",
@@ -509,6 +510,7 @@ object Settings {
         const val VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe"
         const val VIEWER_CONTINUOUS = "pref_viewer_continuous"
         const val VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars"
+        const val VIEWER_DOUBLE_TAP_TO_ZOOM = "pref_viewer_double_tap_zoom"
         const val VIEWER_HOLD_TO_ZOOM = "pref_viewer_zoom_holding"
         const val VIEWER_AUTO_ROTATE = "pref_viewer_auto_rotate_mode"
         const val VIEWER_DELETE_ASK_MODE = "viewer_delete_ask"
