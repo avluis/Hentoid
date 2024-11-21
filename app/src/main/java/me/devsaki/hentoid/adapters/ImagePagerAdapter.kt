@@ -25,7 +25,6 @@ import coil3.request.SuccessResult
 import coil3.request.allowConversionToBitmap
 import coil3.request.allowHardware
 import coil3.request.target
-import coil3.request.transformations
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,15 +41,16 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
 import me.devsaki.hentoid.gles_renderer.GPUImage
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_LTR
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DISPLAY_FILL
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DISPLAY_STRETCH
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_ORIENTATION_HORIZONTAL
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_ORIENTATION_VERTICAL
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_LARGE
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_MEDIUM
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_SMALL
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.getScreenDimensionsPx
-import me.devsaki.hentoid.util.image.SmartRotateTransformation
 import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.views.ZoomableRecyclerView
 import me.devsaki.hentoid.widget.OnZoneTapListener
@@ -400,14 +400,13 @@ class ImagePagerAdapter(context: Context) :
             )
 
             // Initialize SSIV when required
-            if (imgViewType == ViewType.DEFAULT && Settings.Value.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
+            if (imgViewType == ViewType.DEFAULT && VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
                 if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer)
                 else ssiv.setGlEsRenderer(null)
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Settings.isReaderZoomTransitions) ssiv.setDoubleTapZoomDuration(10)
 
-                val scrollLTR =
-                    Settings.Value.VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
+                val scrollLTR = VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
                 ssiv.setOffsetLeftSide(scrollLTR)
                 ssiv.setScaleListener { s -> onAbsoluteScaleChanged(position, s.toFloat()) }
             }
@@ -468,24 +467,19 @@ class ImagePagerAdapter(context: Context) :
             } else { // ImageView
                 val view = imgView as ImageView
                 Timber.d("Picture $absoluteAdapterPosition : Using Coil")
-                val transformation = when (autoRotate) {
-                    Settings.Value.READER_AUTO_ROTATE_LEFT -> listOf(
-                        SmartRotateTransformation(
-                            90f,
-                            screenWidth,
-                            screenHeight
-                        )
-                    )
 
-                    Settings.Value.READER_AUTO_ROTATE_RIGHT -> listOf(
-                        SmartRotateTransformation(
-                            -90f,
-                            screenWidth,
-                            screenHeight
-                        )
-                    )
-
-                    else -> emptyList()
+                val isChangeDims = when (autoRotate) {
+                    Settings.Value.READER_AUTO_ROTATE_LEFT -> true
+                    Settings.Value.READER_AUTO_ROTATE_RIGHT -> true
+                    else -> false
+                }
+                recyclerView?.let {
+                    val imgLayoutParams = imageView.layoutParams
+                    imgLayoutParams.width =
+                        if (isChangeDims) it.height else ViewGroup.LayoutParams.MATCH_PARENT
+                    imgLayoutParams.height =
+                        if (isChangeDims) it.width else ViewGroup.LayoutParams.MATCH_PARENT
+                    imageView.layoutParams = imgLayoutParams
                 }
 
                 // Custom loader to handle JXL
@@ -496,7 +490,6 @@ class ImagePagerAdapter(context: Context) :
                         .data(uri)
                         .target(imageView)
                         .allowHardware(!isJxl)
-                        .transformations(transformation)
                         .listener(
                             onError = { _, err -> onCoilLoadFailed(err) },
                             onSuccess = { _, res -> onCoilLoadSuccess(res) }
@@ -584,38 +577,6 @@ class ImagePagerAdapter(context: Context) :
                 }
             }
 
-        private fun adjustDimensions(
-            imgWidth: Int,
-            imgHeight: Int,
-            adjustImgHeight: Boolean,
-            resizeSmallPics: Boolean
-        ) {
-            // Root view layout
-            val rootLayoutStyle =
-                if (VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
-            val effectiveWidth = screenWidth
-            val layoutParams = rootView.layoutParams
-            layoutParams.width =
-                if (isHalfWidth) effectiveWidth / 2 else ViewGroup.LayoutParams.MATCH_PARENT
-            layoutParams.height = rootLayoutStyle
-            rootView.layoutParams = layoutParams
-
-            // Image view height (for vertical mode)
-            if (adjustImgHeight) {
-                var targetImgHeight = imgHeight
-                // If we display a picture smaller than the screen dimensions, we have to zoom it
-                if (resizeSmallPics && imgHeight < screenHeight && imgWidth < screenWidth) {
-                    targetImgHeight =
-                        (imgHeight * getTargetScale(imgWidth, imgHeight, displayMode)).roundToInt()
-                    val imgLayoutParams = imgView.layoutParams
-                    imgLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
-                    imgLayoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-                    imgView.layoutParams = imgLayoutParams
-                }
-                rootView.minimumHeight = targetImgHeight + separatingBarsHeight
-            }
-        }
-
         private fun getTargetScale(imgWidth: Int, imgHeight: Int, displayMode: Int): Float {
             return if (VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
                 if (imgHeight > imgWidth) {
@@ -678,6 +639,51 @@ class ImagePagerAdapter(context: Context) :
             noImgTxt.isVisible = false
         }
 
+        private fun adjustDimensions(
+            imgWidth: Int,
+            imgHeight: Int,
+            adjustImgHeight: Boolean,
+            resizeSmallPics: Boolean,
+            isAutoRotate: Boolean
+        ) {
+            imgView.rotation = if (isAutoRotate) {
+                when (autoRotate) {
+                    Settings.Value.READER_AUTO_ROTATE_LEFT -> 90f
+                    Settings.Value.READER_AUTO_ROTATE_RIGHT -> -90f
+                    else -> 0f
+                }
+            } else {
+                0f
+            }
+
+            // Root view layout
+            if (imgView.rotation != 0f || isHalfWidth) {
+                val rootLayoutStyle =
+                    if (VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
+                val effectiveWidth = screenWidth
+                val layoutParams = rootView.layoutParams
+                layoutParams.width =
+                    if (isHalfWidth) effectiveWidth / 2 else ViewGroup.LayoutParams.MATCH_PARENT
+                layoutParams.height = rootLayoutStyle
+                rootView.layoutParams = layoutParams
+            }
+
+            // Image view height (for vertical mode)
+            if (adjustImgHeight) {
+                var targetImgHeight = imgHeight
+                // If we display a picture smaller than the screen dimensions, we have to zoom it
+                if (resizeSmallPics && imgHeight < screenHeight && imgWidth < screenWidth) {
+                    targetImgHeight =
+                        (imgHeight * getTargetScale(imgWidth, imgHeight, displayMode)).roundToInt()
+                    val imgLayoutParams = imgView.layoutParams
+                    imgLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+                    imgLayoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+                    imgView.layoutParams = imgLayoutParams
+                }
+                rootView.minimumHeight = targetImgHeight + separatingBarsHeight
+            }
+        }
+
         // == SUBSAMPLINGSCALEVIEW CALLBACKS
         override fun onReady() {
             isLoading.set(false) // All that's left is to load tiles => consider the job done already
@@ -686,6 +692,7 @@ class ImagePagerAdapter(context: Context) :
                 0,
                 (scaleView.getAbsoluteScale() * scaleView.getSHeight()).toInt(),
                 VIEWER_ORIENTATION_VERTICAL == viewerOrientation,
+                false,
                 false
             )
         }
@@ -737,7 +744,8 @@ class ImagePagerAdapter(context: Context) :
                 result.image.width,
                 result.image.height,
                 VIEWER_ORIENTATION_VERTICAL == viewerOrientation,
-                true
+                true,
+                VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation
             )
             isLoading.set(false)
             return false
