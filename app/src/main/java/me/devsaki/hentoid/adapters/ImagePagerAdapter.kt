@@ -630,6 +630,7 @@ class ImagePagerAdapter(context: Context) :
             imageView.isFocusable = true
             imageView.scaleType = ImageView.ScaleType.FIT_CENTER
             imageView.setOnTouchListener(null)
+            imageView.rotation = 0f
 
             ssiv.setIgnoreTouchEvents(false)
             ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.HORIZONTAL)
@@ -659,16 +660,13 @@ class ImagePagerAdapter(context: Context) :
             }
 
             // Root view layout
-            if (imgView.rotation != 0f || isHalfWidth) {
-                val rootLayoutStyle =
-                    if (VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
-                val effectiveWidth = screenWidth
-                val layoutParams = rootView.layoutParams
-                layoutParams.width =
-                    if (isHalfWidth) effectiveWidth / 2 else ViewGroup.LayoutParams.MATCH_PARENT
-                layoutParams.height = rootLayoutStyle
-                rootView.layoutParams = layoutParams
-            }
+            val rootLayoutStyle =
+                if (VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
+            val layoutParams = rootView.layoutParams
+            layoutParams.width =
+                if (isHalfWidth) screenWidth / 2 else ViewGroup.LayoutParams.MATCH_PARENT
+            layoutParams.height = rootLayoutStyle
+            rootView.layoutParams = layoutParams
 
             // Image view height (for vertical mode)
             if (adjustImgHeight) {
