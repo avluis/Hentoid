@@ -1414,20 +1414,20 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     yScale = usedScale * (sHeight.toFloat() / bitmap!!.height)
                 }
 
-                if (matrix == null) {
-                    matrix = Matrix()
-                }
-                matrix!!.reset()
-                matrix!!.postScale(xScale, yScale)
-                matrix!!.postRotate(getRequiredRotation().code.toFloat())
-                matrix!!.postTranslate(vTranslate!!.x, vTranslate!!.y)
+                if (matrix == null) matrix = Matrix()
+                matrix?.apply {
+                    reset()
+                    postScale(xScale, yScale)
+                    postRotate(getRequiredRotation().code.toFloat())
+                    postTranslate(vTranslate!!.x, vTranslate!!.y)
 
-                if (getRequiredRotation() == Orientation.O_180) {
-                    matrix!!.postTranslate(usedScale * sWidth, usedScale * sHeight)
-                } else if (getRequiredRotation() == Orientation.O_90) {
-                    matrix!!.postTranslate(usedScale * sHeight, 0f)
-                } else if (getRequiredRotation() == Orientation.O_270) {
-                    matrix!!.postTranslate(0f, usedScale * sWidth)
+                    if (getRequiredRotation() == Orientation.O_180) {
+                        postTranslate(usedScale * sWidth, usedScale * sHeight)
+                    } else if (getRequiredRotation() == Orientation.O_90) {
+                        postTranslate(usedScale * sHeight, 0f)
+                    } else if (getRequiredRotation() == Orientation.O_270) {
+                        postTranslate(0f, usedScale * sWidth)
+                    }
                 }
 
                 if (tileBgPaint != null) {
