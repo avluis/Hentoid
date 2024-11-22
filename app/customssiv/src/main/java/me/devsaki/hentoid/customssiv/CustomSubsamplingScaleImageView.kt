@@ -325,8 +325,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     // Scale and center listeners
     private var onStateChangedListener: OnStateChangedListener? = null
-    private val scaleDebouncer: Debouncer<Double>
-    private var scaleListener: Consumer<Double>? = null
+    private val scaleDebouncer: Debouncer<Float>
+    private var scaleListener: Consumer<Float>? = null
 
     // Long click listener
     private var onLongClickListener: OnLongClickListener? = null
@@ -894,9 +894,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                             isPanning = true
                             consumed = true
 
-                            val previousScale = scale.toDouble()
+                            val previousScale = scale
                             scale = min(maxScale, vDistEnd / vDistStart * scaleStart)
-                            signalScaleChange(scale.toDouble())
+                            signalScaleChange(scale)
 
                             if (scale <= minScale()) {
                                 // Minimum scale reached so don't pan. Adjust start settings so any expand will zoom in.
@@ -958,9 +958,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                                 multiplier = if (isUpwards) (1 + spanDiff) else (1 - spanDiff)
                             }
 
-                            val previousScale = scale.toDouble()
+                            val previousScale = scale
                             scale = max(minScale(), min(maxScale, scale * multiplier))
-                            signalScaleChange(scale.toDouble())
+                            signalScaleChange(scale)
 
                             if (panEnabled) {
                                 val vLeftStart = vCenterStart!!.x - vTranslateStart!!.x
@@ -1212,7 +1212,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 anim!!.scaleEnd - anim!!.scaleStart,
                 anim!!.duration
             )
-            signalScaleChange(scale.toDouble())
+            signalScaleChange(scale)
 
             // Apply required animation to the focal point
             val vFocusNowX = ease(
@@ -1326,14 +1326,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             }
         } else if (bitmap != null) {
             synchronized(singleImage) {
-                var xScale = scale / singleImage.scale
-                var yScale = scale / singleImage.scale
-
-                // TODO use that to implement fit to screen
-                if (minimumScaleType == ScaleType.STRETCH_SCREEN) {
-                    xScale = getUsefulWidth().toFloat() / sWidth
-                    yScale = getUsefulHeight().toFloat() / sHeight
-                }
+                val isStretched = (minimumScaleType == ScaleType.STRETCH_SCREEN)
+                val xScale = if (isStretched) getUsefulWidth() * 1f / sWidth
+                else scale / singleImage.scale
+                val yScale = if (isStretched) getUsefulHeight() * 1f / sHeight
+                else scale / singleImage.scale
 
                 if (matrix == null) matrix = Matrix()
                 matrix?.apply {
@@ -1632,10 +1629,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         if (sPendingCenter != null) {
             pendingScale?.let {
                 scale = it
-                signalScaleChange(scale.toDouble())
-                if (vTranslate == null) {
-                    vTranslate = PointF()
-                }
+                signalScaleChange(scale)
+                if (vTranslate == null) vTranslate = PointF()
                 vTranslate!!.x = (getWidthInternal() / 2f) - (scale * sPendingCenter!!.x)
                 vTranslate!!.y = (getHeightInternal() / 2f) - (scale * sPendingCenter!!.y)
                 sPendingCenter = null
@@ -1762,7 +1757,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         satTemp!!.vTranslate.set(vTranslate!!)
         fitToBounds(center, satTemp!!, sSize)
         scale = satTemp!!.scale
-        signalScaleChange(scale.toDouble())
+        signalScaleChange(scale)
         if (-1f == initialScale) {
             initialScale = scale
             Timber.i(">> initialScale : %s", initialScale)
@@ -3034,11 +3029,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             onStateChangedListener?.onCenterChanged(getCenter(), origin)
     }
 
-    fun setScaleListener(scaleListener: Consumer<Double>?) {
+    fun setScaleListener(scaleListener: Consumer<Float>?) {
         this.scaleListener = scaleListener
     }
 
-    private fun signalScaleChange(targetScale: Double) {
+    private fun signalScaleChange(targetScale: Float) {
         scaleDebouncer.submit(targetScale)
     }
 
