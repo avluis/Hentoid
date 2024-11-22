@@ -46,6 +46,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
@@ -732,11 +733,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 velocityY: Float
             ): Boolean {
                 // NB : Even though e1 and e2 are marked @NonNull on the overriden method, one of them may be actually null, hence the present implementation
-                if (panEnabled && readySent && vTranslate != null && e1 != null && (abs(
-                        (e1.x - e2.x).toDouble()
-                    ) > 50 || abs((e1.y - e2.y).toDouble()) > 50) && (abs(velocityX.toDouble()) > 500 || abs(
-                        velocityY.toDouble()
-                    ) > 500) && !isZooming
+                if (panEnabled && readySent && vTranslate != null && e1 != null
+                    && (abs(e1.x - e2.x) > 50 || abs(e1.y - e2.y) > 50)
+                    && (abs(velocityX) > 500 || abs(velocityY) > 500) && !isZooming
                 ) {
                     val vTranslateEnd = PointF(
                         vTranslate!!.x + (velocityX * 0.25f),
@@ -800,14 +799,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             vCenterStart = PointF(x.toFloat(), y.toFloat())
             val sCenter = viewToSourceCoord(vCenterStart!!)
 
-            var targetDoubleTapZoomScale =
-                min(maxScale.toDouble(), doubleTapZoomScale.toDouble()).toFloat()
+            var targetDoubleTapZoomScale = min(maxScale, doubleTapZoomScale)
             if (doubleTapZoomCap > -1) {
-                targetDoubleTapZoomScale = min(
-                    targetDoubleTapZoomScale.toDouble(),
-                    (initialScale * doubleTapZoomCap).toDouble()
-                )
-                    .toFloat()
+                targetDoubleTapZoomScale =
+                    min(targetDoubleTapZoomScale, (initialScale * doubleTapZoomCap))
                 Timber.i(">> longTapZoomCap %s -> %s", initialScale, targetDoubleTapZoomScale)
             }
 
@@ -852,13 +847,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 width = sWidth()
                 height = sHeight()
             } else if (resizeHeight) {
-                height = ((sHeight().toDouble() / sWidth().toDouble()) * width).toInt()
+                height = (sHeight() * 1f / sWidth() * width).toInt()
             } else if (resizeWidth) {
-                width = ((sWidth().toDouble() / sHeight().toDouble()) * height).toInt()
+                width = (sWidth() * 1f / sHeight() * height).toInt()
             }
         }
-        width = max(width.toDouble(), suggestedMinimumWidth.toDouble()).toInt()
-        height = max(height.toDouble(), suggestedMinimumHeight.toDouble()).toInt()
+        width = max(width, suggestedMinimumWidth)
+        height = max(height, suggestedMinimumHeight)
         setMeasuredDimension(width, height)
     }
 
@@ -929,7 +924,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_1_DOWN, MotionEvent.ACTION_POINTER_2_DOWN -> {
                 anim = null
                 requestDisallowInterceptTouchEvent(true)
-                maxTouchCount = max(maxTouchCount.toDouble(), touchCount.toDouble()).toInt()
+                maxTouchCount = max(maxTouchCount, touchCount)
                 if (touchCount >= 2) {
                     if (zoomEnabled) {
                         // Start pinch to zoom. Calculate distance between touch points and center point of the pinch.
@@ -977,18 +972,14 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                                 vCenterEndX,
                                 vCenterStart!!.y,
                                 vCenterEndY
-                            ) > 5 || abs((vDistEnd - vDistStart).toDouble()) > 5 || isPanning)
+                            ) > 5 || abs(vDistEnd - vDistStart) > 5 || isPanning)
                         ) {
                             isZooming = true
                             isPanning = true
                             consumed = true
 
                             val previousScale = scale.toDouble()
-                            scale = min(
-                                maxScale.toDouble(),
-                                ((vDistEnd / vDistStart) * scaleStart).toDouble()
-                            )
-                                .toFloat()
+                            scale = min(maxScale, vDistEnd / vDistStart * scaleStart)
                             signalScaleChange(scale.toDouble())
 
                             if (scale <= minScale()) {
@@ -1034,8 +1025,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     } else if (isQuickScaling) {
                         // One finger zoom
                         // Stole Google's Magical Formula™ to make sure it feels the exact same
-                        var dist =
-                            (abs((quickScaleVStart!!.y - event.y).toDouble()) * 2 + quickScaleThreshold).toFloat()
+                        var dist = abs(quickScaleVStart!!.y - event.y) * 2 + quickScaleThreshold
 
                         if (quickScaleLastDistance == -1f) {
                             quickScaleLastDistance = dist
@@ -1043,9 +1033,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                         val isUpwards = event.y > quickScaleVLastPoint!!.y
                         quickScaleVLastPoint!![0f] = event.y
 
-                        val spanDiff =
-                            (abs((1 - (dist / quickScaleLastDistance)).toDouble()) * 0.5f).toFloat()
-
+                        val spanDiff = abs(1 - dist / quickScaleLastDistance) * 0.5f
                         if (spanDiff > 0.03f || quickScaleMoved) {
                             quickScaleMoved = true
 
@@ -1055,11 +1043,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                             }
 
                             val previousScale = scale.toDouble()
-                            scale = max(
-                                minScale().toDouble(),
-                                min(maxScale.toDouble(), (scale * multiplier).toDouble())
-                            )
-                                .toFloat()
+                            scale = max(minScale(), min(maxScale, scale * multiplier))
                             signalScaleChange(scale.toDouble())
 
                             if (panEnabled) {
@@ -1103,15 +1087,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
                         // When long tap zoom animation has ended, use final vTranslate coordinates calculated by the animator
 
-                        if (isLongTapZooming && vTranslateStart!!.equals(0f, 0f)) vTranslateStart =
-                            PointF(
-                                vTranslate!!.x, vTranslate!!.y
-                            )
+                        if (isLongTapZooming && vTranslateStart!!.equals(0f, 0f))
+                            vTranslateStart = PointF(vTranslate!!.x, vTranslate!!.y)
 
-                        val dx =
-                            abs((event.x - vCenterStart!!.x).toDouble()).toFloat()
-                        val dy =
-                            abs((event.y - vCenterStart!!.y).toDouble()).toFloat()
+                        val dx = abs(event.x - vCenterStart!!.x)
+                        val dy = abs(event.y - vCenterStart!!.y)
 
                         //On the Samsung S6 long click event does not work, because the dx > 5 usually true
                         val offset = density * 5
@@ -1313,7 +1293,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
             var scaleElapsed = System.currentTimeMillis() - anim!!.time
             val finished = scaleElapsed > anim!!.duration
-            scaleElapsed = min(scaleElapsed.toDouble(), anim!!.duration.toDouble()).toLong()
+            scaleElapsed = min(scaleElapsed, anim!!.duration)
             scale = ease(
                 anim!!.easing,
                 scaleElapsed,
@@ -1362,9 +1342,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         if (tileMap != null && isBaseLayerReady()) {
             // Optimum sample size for current scale
 
-            val sampleSize =
-                min(fullImageSampleSize.toDouble(), calculateInSampleSize(scale).toDouble())
-                    .toInt()
+            val sampleSize = min(fullImageSampleSize, calculateInSampleSize(scale))
 
             // First check for missing tiles - if there are any we need the base layer underneath to avoid gaps
             var hasMissingTiles = false
@@ -1820,13 +1798,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         if (sHeight() > reqHeight || sWidth() > reqWidth) {
             // Calculate ratios of height and width to requested height and width
 
-            val heightRatio = Math.round(sHeight().toFloat() / reqHeight.toFloat())
-            val widthRatio = Math.round(sWidth().toFloat() / reqWidth.toFloat())
+            val heightRatio = (sHeight() * 1f / reqHeight).roundToInt()
+            val widthRatio = (sWidth() * 1f / reqWidth).roundToInt()
 
             // Choose the smallest ratio as inSampleSize value, this will guarantee
             // a final image with both dimensions larger than or equal to the
             // requested height and width.
-            inSampleSize = min(heightRatio.toDouble(), widthRatio.toDouble()).toInt()
+            inSampleSize = min(heightRatio, widthRatio)
         }
 
         // We want the actual sample size that will be used, so round down to nearest power of 2.
@@ -2006,10 +1984,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             val exifOrientation = view.getExifOrientation(context, sourceUri)
             if (sWidthTile > -1) {
                 view.sRegion?.apply {
-                    left = max(0.0, left.toDouble()).toInt()
-                    top = max(0.0, top.toDouble()).toInt()
-                    right = min(sWidthTile.toDouble(), right.toDouble()).toInt()
-                    bottom = min(sHeightTile.toDouble(), bottom.toDouble()).toInt()
+                    left = max(0, left)
+                    top = max(0, top)
+                    right = min(sWidthTile, right)
+                    bottom = min(sHeightTile, bottom)
                     sWidthTile = width()
                     sHeightTile = height()
                 }
@@ -2274,7 +2252,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @return True if the picture needs to be rotated 90°
      */
     private fun needsRotating(sWidth: Int, sHeight: Int): Boolean {
-        val isSourceSquare = (abs((sHeight - sWidth).toDouble()) < sWidth * 0.1)
+        val isSourceSquare = (abs(sHeight - sWidth) < sWidth * 0.1)
         if (isSourceSquare) return false
 
         val isSourceLandscape = (sWidth > sHeight * 1.33)
@@ -2895,8 +2873,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @param minimumTileDpi Tile loading threshold.
      */
     fun setMinimumTileDpi(minimumTileDpi: Int) {
-        this.minimumTileDpi =
-            min(screenDpi.toDouble(), minimumTileDpi.toDouble()).toInt()
+        this.minimumTileDpi = min(screenDpi.toInt(), minimumTileDpi)
         if (isReady()) {
             reset(false)
             invalidate()
@@ -3243,7 +3220,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @param durationMs Duration in milliseconds.
      */
     fun setDoubleTapZoomDuration(durationMs: Int) {
-        this.doubleTapZoomDuration = max(0.0, durationMs.toDouble()).toInt()
+        this.doubleTapZoomDuration = max(0, durationMs)
     }
 
     // TODO doc
