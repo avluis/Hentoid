@@ -1854,28 +1854,14 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         val scaleHeight = targetScale * sSize.y
 
         if (panLimit == PanLimit.CENTER && isReady()) {
-            targetvTranslate.x = max(
-                targetvTranslate.x.toDouble(),
-                (getWidthInternal() / 2f - scaleWidth).toDouble()
-            )
-                .toFloat()
-            targetvTranslate.y = max(
-                targetvTranslate.y.toDouble(),
-                (getHeightInternal() / 2f - scaleHeight).toDouble()
-            )
-                .toFloat()
+            targetvTranslate.x = max(targetvTranslate.x, getWidthInternal() / 2f - scaleWidth)
+            targetvTranslate.y = max(targetvTranslate.y, getHeightInternal() / 2f - scaleHeight)
         } else if (theCenter) {
-            targetvTranslate.x =
-                max(targetvTranslate.x.toDouble(), (getWidthInternal() - scaleWidth).toDouble())
-                    .toFloat()
-            targetvTranslate.y =
-                max(targetvTranslate.y.toDouble(), (getHeightInternal() - scaleHeight).toDouble())
-                    .toFloat()
+            targetvTranslate.x = max(targetvTranslate.x, getWidthInternal() - scaleWidth)
+            targetvTranslate.y = max(targetvTranslate.y, getHeightInternal() - scaleHeight)
         } else {
-            targetvTranslate.x =
-                max(targetvTranslate.x.toDouble(), -scaleWidth.toDouble()).toFloat()
-            targetvTranslate.y =
-                max(targetvTranslate.y.toDouble(), -scaleHeight.toDouble()).toFloat()
+            targetvTranslate.x = max(targetvTranslate.x, -scaleWidth)
+            targetvTranslate.y = max(targetvTranslate.y, -scaleHeight)
         }
 
         // Asymmetric padding adjustments
@@ -1887,20 +1873,18 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         val maxTx: Float
         val maxTy: Float
         if (panLimit == PanLimit.CENTER && isReady()) {
-            maxTx = max(0.0, (getWidthInternal() / 2).toDouble()).toFloat()
-            maxTy = max(0.0, (getHeightInternal() / 2).toDouble()).toFloat()
+            maxTx = max(0f, getWidthInternal() / 2f)
+            maxTy = max(0f, getHeightInternal() / 2f)
         } else if (theCenter) {
-            maxTx = max(0.0, ((getWidthInternal() - scaleWidth) * xPaddingRatio).toDouble())
-                .toFloat()
-            maxTy = max(0.0, ((getHeightInternal() - scaleHeight) * yPaddingRatio).toDouble())
-                .toFloat()
+            maxTx = max(0f, (getWidthInternal() - scaleWidth) * xPaddingRatio)
+            maxTy = max(0f, (getHeightInternal() - scaleHeight) * yPaddingRatio)
         } else {
-            maxTx = max(0.0, getWidthInternal().toDouble()).toFloat()
-            maxTy = max(0.0, getHeightInternal().toDouble()).toFloat()
+            maxTx = max(0f, getWidthInternal().toFloat())
+            maxTy = max(0f, getHeightInternal().toFloat())
         }
 
-        targetvTranslate.x = min(targetvTranslate.x.toDouble(), maxTx.toDouble()).toFloat()
-        targetvTranslate.y = min(targetvTranslate.y.toDouble(), maxTy.toDouble()).toFloat()
+        targetvTranslate.x = min(targetvTranslate.x, maxTx)
+        targetvTranslate.y = min(targetvTranslate.y, maxTy)
 
         sat.scale = targetScale
     }
