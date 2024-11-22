@@ -184,9 +184,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     // Bitmap (preview or full image)
     private var bitmap: Bitmap? = null
 
-    // Whether the bitmap is a preview image
-    private var bitmapIsPreview = false
-
     // Specifies if a cache handler is also referencing the bitmap. Do not recycle if so.
     private var bitmapIsCached = false
 
@@ -502,35 +499,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @param imageSource Image source.
      */
     fun setImage(imageSource: ImageSource) {
-        setImage(imageSource, null, null)
-    }
-
-    /**
-     * Set the image source from a bitmap, resource, asset, file or other URI, starting with a given orientation
-     * setting, scale and center. This is the best method to use when you want scale and center to be restored
-     * after screen orientation change; it avoids any redundant loading of tiles in the wrong orientation.
-     *
-     * @param imageSource Image source.
-     * @param state        State to be restored. Nullable.
-     */
-    fun setImage(imageSource: ImageSource, state: ImageViewState?) {
-        setImage(imageSource, null, state)
-    }
-
-    /**
-     * Set the image source from a bitmap, resource, asset, file or other URI, providing a preview image to be
-     * displayed until the full size image is loaded.
-     *
-     *
-     * You must declare the dimensions of the full size image by calling [ImageSource::dimensions]
-     * on the imageSource object. The preview source will be ignored if you don't provide dimensions,
-     * and if you provide a bitmap for the full size image.
-     *
-     * @param imageSource  Image source. Dimensions must be declared.
-     * @param previewSource Optional source for a preview image to be displayed and allow interaction while the full size image loads.
-     */
-    fun setImage(imageSource: ImageSource, previewSource: ImageSource?) {
-        setImage(imageSource, previewSource, null)
+        setImage(imageSource, null)
     }
 
     /**
@@ -545,56 +514,15 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * and if you provide a bitmap for the full size image.
      *
      * @param imageSource  Image source. Dimensions must be declared.
-     * @param previewSource Optional source for a preview image to be displayed and allow interaction while the full size image loads.
      * @param state         State to be restored. Nullable.
      */
     private fun setImage(
         imageSource: ImageSource,
-        previewSource: ImageSource?,
         state: ImageViewState?
     ) {
         reset(true)
         if (state != null) restoreState(state)
-        val targetScale = if ((null == state)) 1f else getVirtualScale()
-
-        if (previewSource != null) {
-            require(imageSource.getBitmap() == null) { "Preview image cannot be used when a bitmap is provided for the main image" }
-            require(!(imageSource.getSWidth() <= 0 || imageSource.getSHeight() <= 0)) { "Preview image cannot be used unless dimensions are provided for the main image" }
-            this.sWidth = imageSource.getSWidth()
-            this.sHeight = imageSource.getSHeight()
-            this.pRegion = previewSource.getSRegion()
-            previewSource.getBitmap()?.let { bmp ->
-                this.bitmapIsCached = previewSource.isCached()
-                onPreviewLoaded(bmp)
-            } ?: run {
-                var previewSourceUri = previewSource.getUri()
-                if (previewSourceUri == null && previewSource.getResource() != null) {
-                    previewSourceUri =
-                        Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/" + previewSource.getResource())
-                }
-                if (previewSourceUri != null) {
-                    lifecycleScope?.launch {
-                        try {
-                            val bmp = loadBitmap(context, uri!!)
-                            val res = processBitmap(
-                                uri!!,
-                                context,
-                                bmp,
-                                this@CustomSubsamplingScaleImageView,
-                                targetScale
-                            )
-                            withContext(Dispatchers.Main) {
-                                onPreviewLoaded(res.bitmap)
-                            }
-                        } catch (t: Throwable) {
-                            onImageEventListener?.onImageLoadError(t)
-                        }
-                    }
-                } else {
-                    Timber.w("PreviewSourceUri cannot be determined")
-                }
-            }
-        }
+        val targetScale = if (null == state) 1f else getVirtualScale()
 
         if (imageSource.getBitmap() != null && imageSource.getSRegion() != null) {
             onImageLoaded(
@@ -690,7 +618,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             pRegion = null
             readySent = false
             imageLoadedSent = false
-            bitmapIsPreview = false
             bitmapIsCached = false
             singleImage.rawWidth = -1
             singleImage.rawHeight = -1
@@ -1409,11 +1336,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 var xScale = usedScale
                 var yScale = usedScale
 
-                if (bitmapIsPreview) {
-                    xScale = usedScale * (sWidth.toFloat() / bitmap!!.width)
-                    yScale = usedScale * (sHeight.toFloat() / bitmap!!.height)
-                }
-
                 if (matrix == null) matrix = Matrix()
                 matrix?.apply {
                     reset()
@@ -1432,8 +1354,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
                 if (tileBgPaint != null) {
                     if (sRect == null) sRect = RectF()
-                    sRect!![0f, 0f, (if (bitmapIsPreview) bitmap!!.width else sWidth).toFloat()] =
-                        (if (bitmapIsPreview) bitmap!!.height else sHeight).toFloat()
+                    sRect!![0f, 0f, sWidth.toFloat()] = sHeight.toFloat()
                     matrix!!.mapRect(sRect)
                     canvas.drawRect(sRect!!, tileBgPaint!!)
                 }
@@ -1470,7 +1391,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * Checks whether the base layer of tiles or full size bitmap is ready.
      */
     private fun isBaseLayerReady(): Boolean {
-        if (bitmap != null && !bitmapIsPreview) {
+        if (bitmap != null) {
             return true
         } else if (tileMap != null) {
             var baseLayerReady = true
@@ -1968,7 +1889,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 if (onImageEventListener != null && bitmapIsCached) {
                     onImageEventListener!!.onPreviewReleased()
                 }
-                bitmapIsPreview = false
                 bitmapIsCached = false
             }
         }
@@ -2036,7 +1956,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             if (!bitmapIsCached && !singleImage.loading) bitmap?.recycle()
             bitmap = null
             if (bitmapIsCached) onImageEventListener?.onPreviewReleased()
-            bitmapIsPreview = false
             bitmapIsCached = false
         }
         invalidate()
@@ -2100,7 +2019,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         }
 
         synchronized(singleImage) {
-            this.bitmapIsPreview = false
             this.bitmapIsCached = bitmapIsCached
             singleImage.scale = imageScale
             this.bitmap = bitmap
@@ -2111,33 +2029,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         val ready = checkReady()
         val imageLoaded = checkImageLoaded()
         if (ready || imageLoaded) {
-            invalidate()
-            requestLayout()
-        }
-    }
-
-    /**
-     * Called by worker task when preview image is loaded.
-     */
-    @Synchronized
-    private fun onPreviewLoaded(previewBitmap: Bitmap) {
-        if (bitmap != null || imageLoadedSent) {
-            previewBitmap.recycle()
-            return
-        }
-        bitmap = if (pRegion != null) {
-            Bitmap.createBitmap(
-                previewBitmap,
-                pRegion!!.left,
-                pRegion!!.top,
-                pRegion!!.width(),
-                pRegion!!.height()
-            )
-        } else {
-            previewBitmap
-        }
-        bitmapIsPreview = true
-        if (checkReady()) {
             invalidate()
             requestLayout()
         }
