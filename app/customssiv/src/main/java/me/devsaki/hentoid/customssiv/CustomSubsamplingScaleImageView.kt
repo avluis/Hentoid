@@ -81,16 +81,16 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     enum class Orientation(val code: Int) {
         // Display the image file in its native orientation.
-        _0(0),
+        O_0(0),
 
         // Rotate the image 90 degrees clockwise.
-        _90(90),
+        O_90(90),
 
         // Rotate the image 180 degrees.
-        _180(180),
+        O_180(180),
 
         // Rotate the image 270 degrees clockwise.
-        _270(270),
+        O_270(270),
 
         // Attempt to use EXIF information on the image to rotate it. Works for external files only.
         USE_EXIF(-1);
@@ -98,7 +98,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         companion object {
             fun fromCode(id: Int): Orientation {
                 for (s in entries) if (id == s.code) return s
-                return _0
+                return O_0
             }
         }
     }
@@ -203,7 +203,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private var tileMap: MutableMap<Int, List<Tile>>? = null
 
     // Image orientation setting
-    private var orientation = Orientation._0
+    private var orientation = Orientation.O_0
 
     // Zoom cap for double-tap zoom
     // (factor of default scaling)
@@ -271,7 +271,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     // Source image dimensions and orientation - dimensions relate to the unrotated image
     private var sWidth = 0
     private var sHeight = 0
-    private var sOrientation = Orientation._0
+    private var sOrientation = Orientation.O_0
     private var sRegion: Rect? = null
     private var pRegion: Rect? = null
 
@@ -338,8 +338,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     // Paint objects created once and reused for efficiency
     private var bitmapPaint: Paint? = null
-    private var debugTextPaint: Paint? = null
-    private var debugLinePaint: Paint? = null
     private var tileBgPaint: Paint? = null
 
     // Volatile fields used to reduce object creation
@@ -471,16 +469,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         recycle()
         scaleDebouncer.clear()
         scaleListener = null
-    }
-
-    /**
-     * Get the current preferred configuration for decoding bitmaps. [ImageDecoder] and [ImageRegionDecoder]
-     * instances can read this and use it when decoding images.
-     *
-     * @return the preferred bitmap configuration, or null if none has been set.
-     */
-    fun getPreferredBitmapConfig(): Bitmap.Config {
-        return preferredBitmapConfig
     }
 
     /**
@@ -617,10 +605,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     imageSource.getSRegion()!!
                         .width(),
                     imageSource.getSRegion()!!.height()
-                ), Orientation._0, false, 1f
+                ), Orientation.O_0, false, 1f
             )
         } else if (imageSource.getBitmap() != null) {
-            onImageLoaded(imageSource.getBitmap()!!, Orientation._0, imageSource.isCached(), 1f)
+            onImageLoaded(imageSource.getBitmap()!!, Orientation.O_0, imageSource.isCached(), 1f)
         } else {
             sRegion = imageSource.getSRegion()
             uri = imageSource.getUri()
@@ -697,7 +685,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             }
             sWidth = 0
             sHeight = 0
-            sOrientation = Orientation._0
+            sOrientation = Orientation.O_0
             sRegion = null
             pRegion = null
             readySent = false
@@ -949,8 +937,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     // Start long click timer
                     val m = Message()
                     m.what = MESSAGE_LONG_CLICK
-                    m.arg1 = Math.round(event.x)
-                    m.arg2 = Math.round(event.y)
+                    m.arg1 = event.x.roundToInt()
+                    m.arg2 = event.y.roundToInt()
                     handler.sendMessageDelayed(m, 500)
                 }
                 return true
@@ -1283,7 +1271,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         preDraw()
 
         // If animating scale, calculate current scale and center with easing equations
-        if (anim != null && anim!!.vFocusStart != null) {
+        if (anim?.vFocusStart != null) {
             // Store current values so we can send an event if they change
             val scaleBefore = scale
             if (vTranslateBefore == null) {
@@ -1361,89 +1349,55 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             for ((key, value) in tileMap!!) {
                 if (key == sampleSize || hasMissingTiles) {
                     for (tile in value) {
-                        sourceToViewRect(tile.sRect!!, tile.vRect!!)
-                        if (!tile.loading && tile.bitmap != null) {
-                            if (tileBgPaint != null) {
-                                tile.vRect?.let { canvas.drawRect(it, tileBgPaint!!) }
+                        if (tile.loading) continue
+                        tile.bitmap?.let { tBmp ->
+                            sourceToViewRect(tile.sRect!!, tile.vRect!!)
+                            tileBgPaint?.let { bgPaint ->
+                                tile.vRect?.let { canvas.drawRect(it, bgPaint) }
                             }
-                            if (matrix == null) {
-                                matrix = Matrix()
-                            }
-                            matrix!!.reset()
-                            tile.bitmap?.let {
-                                setMatrixArray(
-                                    srcArray,
-                                    0f,
-                                    0f,
-                                    it.width.toFloat(),
-                                    0f,
-                                    it.width.toFloat(),
-                                    it.height.toFloat(),
-                                    0f,
-                                    it.height.toFloat()
-                                )
-                            }
-                            if (getRequiredRotation() == Orientation._0) {
+                            if (matrix == null) matrix = Matrix()
+                            matrix?.reset()
+                            setMatrixArray(
+                                srcArray,
+                                0f, 0f, tBmp.width.toFloat(), 0f,
+                                tBmp.width.toFloat(), tBmp.height.toFloat(),
+                                0f, tBmp.height.toFloat()
+                            )
+                            if (getRequiredRotation() == Orientation.O_0) {
                                 tile.vRect?.apply {
                                     setMatrixArray(
                                         dstArray,
-                                        left.toFloat(),
-                                        top.toFloat(),
-                                        right.toFloat(),
-                                        top.toFloat(),
-                                        right.toFloat(),
-                                        bottom.toFloat(),
-                                        left.toFloat(),
-                                        bottom.toFloat()
+                                        left, top, right, top,
+                                        right, bottom, left, bottom
                                     )
                                 }
-                            } else if (getRequiredRotation() == Orientation._90) {
+                            } else if (getRequiredRotation() == Orientation.O_90) {
                                 tile.vRect?.apply {
                                     setMatrixArray(
                                         dstArray,
-                                        right.toFloat(),
-                                        top.toFloat(),
-                                        right.toFloat(),
-                                        bottom.toFloat(),
-                                        left.toFloat(),
-                                        bottom.toFloat(),
-                                        left.toFloat(),
-                                        top.toFloat()
+                                        right, top, right, bottom,
+                                        left, bottom, left, top
                                     )
                                 }
-                            } else if (getRequiredRotation() == Orientation._180) {
+                            } else if (getRequiredRotation() == Orientation.O_180) {
                                 tile.vRect?.apply {
                                     setMatrixArray(
                                         dstArray,
-                                        right.toFloat(),
-                                        bottom.toFloat(),
-                                        left.toFloat(),
-                                        bottom.toFloat(),
-                                        left.toFloat(),
-                                        top.toFloat(),
-                                        right.toFloat(),
-                                        top.toFloat()
+                                        right, bottom, left, bottom,
+                                        left, top, right, top
                                     )
                                 }
-                            } else if (getRequiredRotation() == Orientation._270) {
+                            } else if (getRequiredRotation() == Orientation.O_270) {
                                 tile.vRect?.apply {
                                     setMatrixArray(
                                         dstArray,
-                                        left.toFloat(),
-                                        bottom.toFloat(),
-                                        left.toFloat(),
-                                        top.toFloat(),
-                                        right.toFloat(),
-                                        top.toFloat(),
-                                        right.toFloat(),
-                                        bottom.toFloat()
+                                        left, bottom, left, top,
+                                        right, top, right, bottom
                                     )
                                 }
                             }
-                            matrix!!.setPolyToPoly(srcArray, 0, dstArray, 0, 4)
-                            tile.bitmap?.let {
-                                canvas.drawBitmap(it, matrix!!, bitmapPaint)
-                            }
+                            matrix?.setPolyToPoly(srcArray, 0, dstArray, 0, 4)
+                            canvas.drawBitmap(tBmp, matrix!!, bitmapPaint)
                         }
                     }
                 }
@@ -1468,18 +1422,16 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 matrix!!.postRotate(getRequiredRotation().code.toFloat())
                 matrix!!.postTranslate(vTranslate!!.x, vTranslate!!.y)
 
-                if (getRequiredRotation() == Orientation._180) {
+                if (getRequiredRotation() == Orientation.O_180) {
                     matrix!!.postTranslate(usedScale * sWidth, usedScale * sHeight)
-                } else if (getRequiredRotation() == Orientation._90) {
+                } else if (getRequiredRotation() == Orientation.O_90) {
                     matrix!!.postTranslate(usedScale * sHeight, 0f)
-                } else if (getRequiredRotation() == Orientation._270) {
+                } else if (getRequiredRotation() == Orientation.O_270) {
                     matrix!!.postTranslate(0f, usedScale * sWidth)
                 }
 
                 if (tileBgPaint != null) {
-                    if (sRect == null) {
-                        sRect = RectF()
-                    }
+                    if (sRect == null) sRect = RectF()
                     sRect!![0f, 0f, (if (bitmapIsPreview) bitmap!!.width else sWidth).toFloat()] =
                         (if (bitmapIsPreview) bitmap!!.height else sHeight).toFloat()
                     matrix!!.mapRect(sRect)
@@ -1624,11 +1576,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
         orientation = if (needsRotating(sWidth(), sHeight())) {
             when (autoRotate) {
-                AutoRotateMethod.LEFT -> Orientation._90
-                AutoRotateMethod.RIGHT -> Orientation._270
-                else -> Orientation._0
+                AutoRotateMethod.LEFT -> Orientation.O_90
+                AutoRotateMethod.RIGHT -> Orientation.O_270
+                else -> Orientation.O_0
             }
-        } else Orientation._0
+        } else Orientation.O_0
 
         // Load double resolution - next level will be split into four tiles and at the center all four are required,
         // so don't bother with tiling until the next level 16 tiles are needed.
@@ -1745,7 +1697,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
         return tile.sRect?.let {
             !(sVisLeft > it.right || it.left > sVisRight || sVisTop > it.bottom || it.top > sVisBottom)
-        } ?: false
+        } == true
     }
 
     /**
@@ -1954,7 +1906,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                         if (x == xTiles - 1) sWidth() else (x + 1) * sTileWidth,
                         if (y == yTiles - 1) sHeight() else (y + 1) * sTileHeight
                     )
-                    tile.vRect = Rect(0, 0, 0, 0)
+                    tile.vRect = RectF(0f, 0f, 0f, 0f)
                     tile.fileSRect = Rect(tile.sRect)
                     tileGrid.add(tile)
                 }
@@ -2048,7 +2000,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                             view.sRegion?.let { sRegion ->
                                 fileSRect.offset(sRegion.left, sRegion.top)
                             }
-                            tile.bitmap = decoder.decodeRegion(tile.fileSRect!!, tile.sampleSize)
+                            tile.bitmap = decoder.decodeRegion(fileSRect, tile.sampleSize)
                         }
                     }
                 }
@@ -2133,11 +2085,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     ) {
         orientation = if (needsRotating(bitmap.width, bitmap.height)) {
             when (autoRotate) {
-                AutoRotateMethod.LEFT -> Orientation._90
-                AutoRotateMethod.RIGHT -> Orientation._270
-                else -> Orientation._0
+                AutoRotateMethod.LEFT -> Orientation.O_90
+                AutoRotateMethod.RIGHT -> Orientation.O_270
+                else -> Orientation.O_0
             }
-        } else Orientation._0
+        } else Orientation.O_0
 
         if (this.bitmap != null && !this.bitmapIsCached && !singleImage.loading) {
             this.bitmap!!.recycle()
@@ -2197,7 +2149,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      */
     @AnyThread
     private fun getExifOrientation(context: Context, sourceUri: String): Orientation {
-        var exifOrientation = Orientation._0
+        var exifOrientation = Orientation.O_0
         if (sourceUri.startsWith(ContentResolver.SCHEME_CONTENT)) {
             var cursor: Cursor? = null
             try {
@@ -2213,7 +2165,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     }
                 }
             } catch (e: Exception) {
-                Timber.w("Could not get orientation of image from media store")
+                Timber.w(e, "Could not get orientation of image from media store")
             } finally {
                 cursor?.close()
             }
@@ -2225,18 +2177,18 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     ExifInterface.ORIENTATION_NORMAL
                 )
                 if (orientationAttr == ExifInterface.ORIENTATION_NORMAL || orientationAttr == ExifInterface.ORIENTATION_UNDEFINED) {
-                    exifOrientation = Orientation._0
+                    exifOrientation = Orientation.O_0
                 } else if (orientationAttr == ExifInterface.ORIENTATION_ROTATE_90) {
-                    exifOrientation = Orientation._90
+                    exifOrientation = Orientation.O_90
                 } else if (orientationAttr == ExifInterface.ORIENTATION_ROTATE_180) {
-                    exifOrientation = Orientation._180
+                    exifOrientation = Orientation.O_180
                 } else if (orientationAttr == ExifInterface.ORIENTATION_ROTATE_270) {
-                    exifOrientation = Orientation._270
+                    exifOrientation = Orientation.O_270
                 } else {
                     Timber.w("Unsupported EXIF orientation: %s", orientationAttr)
                 }
             } catch (e: Exception) {
-                Timber.w("Could not get EXIF orientation of image")
+                Timber.w(e, "Could not get EXIF orientation of image")
             }
         }
         return exifOrientation
@@ -2276,7 +2228,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         var visible: Boolean = false
 
         // Volatile fields instantiated once then updated before use to reduce GC.
-        var vRect: Rect? = null
+        var vRect: RectF? = null
         var fileSRect: Rect? = null
     }
 
@@ -2317,16 +2269,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             this.sPendingCenter = state.getCenter()
             invalidate()
         }
-    }
-
-    /**
-     * By default the View automatically calculates the optimal tile size. Set this to override this, and force an upper limit to the dimensions of the generated tiles. Passing [.TILE_SIZE_AUTO] will re-enable the default behaviour.
-     *
-     * @param maxPixels Maximum tile size X and Y in pixels.
-     */
-    fun setMaxTileSize(maxPixels: Int) {
-        this.maxTileWidth = maxPixels
-        this.maxTileHeight = maxPixels
     }
 
     /**
@@ -2397,11 +2339,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      */
     @AnyThread
     private fun getRequiredRotation(): Orientation {
-        return if (orientation == Orientation.USE_EXIF) {
-            sOrientation
-        } else {
-            orientation
-        }
+        return if (orientation == Orientation.USE_EXIF) sOrientation else orientation
     }
 
     /**
@@ -2421,8 +2359,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     fun recycle() {
         reset(true)
         bitmapPaint = null
-        debugTextPaint = null
-        debugLinePaint = null
         tileBgPaint = null
     }
 
@@ -2591,13 +2527,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     /**
-     * Convert source rect to screen rect, integer values.
+     * Convert source rect to screen rect
      */
-    private fun sourceToViewRect(sRect: Rect, vTarget: Rect) {
-        vTarget[sourceToViewX(sRect.left.toFloat()).toInt(), sourceToViewY(sRect.top.toFloat()).toInt(), sourceToViewX(
-            sRect.right.toFloat()
-        ).toInt()] =
-            sourceToViewY(sRect.bottom.toFloat()).toInt()
+    private fun sourceToViewRect(sRect: Rect, vTarget: RectF) {
+        vTarget[sourceToViewX(sRect.left.toFloat()), sourceToViewY(sRect.top.toFloat()),
+            sourceToViewX(sRect.right.toFloat())] = sourceToViewY(sRect.bottom.toFloat())
     }
 
     /**
@@ -2844,25 +2778,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         setMinScale(screenDpi / dpi)
     }
 
-
-    /**
-     * Returns the maximum allowed scale.
-     *
-     * @return the maximum scale as a source/view pixels ratio.
-     */
-    fun getMaxScale(): Float {
-        return maxScale
-    }
-
-    /**
-     * Returns the minimum allowed scale.
-     *
-     * @return the minimum scale as a source/view pixels ratio.
-     */
-    fun getMinScale(): Float {
-        return minScale()
-    }
-
     /**
      * By default, image tiles are at least as high resolution as the screen. For a retina screen this may not be
      * necessary, and may increase the likelihood of an OutOfMemoryError. This method sets a DPI at which higher
@@ -3022,26 +2937,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     /**
-     * Returns the orientation setting. This can return [.ORIENTATION_USE_EXIF], in which case it doesn't tell you
-     * the applied orientation of the image. For that, use [.getAppliedOrientation].
-     *
-     * @return the orientation setting. See static fields.
-     */
-    fun getOrientation(): Orientation {
-        return orientation
-    }
-
-    /**
-     * Returns the actual orientation of the image relative to the source file. This will be based on the source file's
-     * EXIF orientation if you're using ORIENTATION_USE_EXIF. Values are 0, 90, 180, 270.
-     *
-     * @return the orientation applied after EXIF information has been extracted. See static fields.
-     */
-    fun getAppliedOrientation(): Orientation {
-        return getRequiredRotation()
-    }
-
-    /**
      * Get the current state of the view (scale, center, orientation) for restoration after rotate. Will return null if
      * the view is not ready.
      *
@@ -3056,30 +2951,12 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     /**
-     * Returns true if zoom gesture detection is enabled.
-     *
-     * @return true if zoom gesture detection is enabled.
-     */
-    fun isZoomEnabled(): Boolean {
-        return zoomEnabled
-    }
-
-    /**
      * Enable or disable zoom gesture detection. Disabling zoom locks the the current scale.
      *
      * @param zoomEnabled true to enable zoom gestures, false to disable.
      */
     fun setZoomEnabled(zoomEnabled: Boolean) {
         this.zoomEnabled = zoomEnabled
-    }
-
-    /**
-     * Returns true if double tap &amp; swipe to zoom is enabled.
-     *
-     * @return true if double tap &amp; swipe to zoom is enabled.
-     */
-    fun isQuickScaleEnabled(): Boolean {
-        return quickScaleEnabled
     }
 
     /**
@@ -3102,15 +2979,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     fun setDoubleTapZoomEnabled(value: Boolean) {
         this.isDoubleTapZoomEnabled = value
-    }
-
-    /**
-     * Returns true if pan gesture detection is enabled.
-     *
-     * @return true if pan gesture detection is enabled.
-     */
-    fun isPanEnabled(): Boolean {
-        return panEnabled
     }
 
     /**
@@ -3244,15 +3112,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     /**
-     * Check if an image has been set. The image may not have been loaded and displayed yet.
-     *
-     * @return If an image is currently set.
-     */
-    fun hasImage(): Boolean {
-        return uri != null || bitmap != null
-    }
-
-    /**
      * {@inheritDoc}
      */
     override fun setOnLongClickListener(onLongClickListener: OnLongClickListener?) {
@@ -3280,12 +3139,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     private fun sendStateChanged(oldScale: Float, oldVTranslate: PointF, origin: AnimOrigin) {
-        if (onStateChangedListener != null && scale != oldScale) {
-            onStateChangedListener!!.onScaleChanged(scale, origin)
-        }
-        if (onStateChangedListener != null && vTranslate != oldVTranslate) {
-            onStateChangedListener!!.onCenterChanged(getCenter(), origin)
-        }
+        if (scale != oldScale) onStateChangedListener?.onScaleChanged(scale, origin)
+        if (vTranslate != oldVTranslate)
+            onStateChangedListener?.onCenterChanged(getCenter(), origin)
     }
 
     fun setScaleListener(scaleListener: Consumer<Double>?) {
@@ -3549,10 +3405,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         ): PointF {
             val targetvTranslate: PointF =
                 vTranslateForSCenter(sCenterX, sCenterY, scale, Point(sWidth(), sHeight()))
-            val vxCenter: Int =
+            val vxCenter =
                 getPaddingLeft() + (getWidthInternal() - getPaddingRight() - getPaddingLeft()) / 2
-            val vyCenter: Int =
-                getPaddingTop() + (getHeightInternal() - getPaddingBottom() - getPaddingTop()) / 2
+            val vyCenter = paddingTop + (getHeightInternal() - paddingBottom - paddingTop) / 2
             val sx = (vxCenter - targetvTranslate.x) / scale
             val sy = (vyCenter - targetvTranslate.y) / scale
             sTarget[sx] = sy
