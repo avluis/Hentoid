@@ -1178,21 +1178,16 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         createPaints()
 
         // If image or view dimensions are not known yet, abort.
-        if (sWidth == 0 || sHeight == 0 || getWidthInternal() == 0 || getHeightInternal() == 0) {
-            return
-        }
+        if (sWidth == 0 || sHeight == 0 || getWidthInternal() == 0 || getHeightInternal() == 0) return
 
         // When using tiles, on first render with no tile map ready, initialise it and kick off async base image loading.
-        if (tileMap == null && regionDecoder != null) {
+        if (tileMap == null && regionDecoder != null)
             initialiseBaseLayer(getMaxBitmapDimensions(canvas))
-        }
 
         // If image has been loaded or supplied as a bitmap, onDraw may be the first time the view has
         // dimensions and therefore the first opportunity to set scale and translate. If this call returns
         // false there is nothing to be drawn so return immediately.
-        if (!checkReady()) {
-            return
-        }
+        if (!checkReady()) return
 
         // Set scale and translate before draw.
         preDraw()
@@ -1256,7 +1251,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
         if (tileMap != null && isBaseLayerReady()) {
             // Optimum sample size for current scale
-
             val sampleSize = min(fullImageSampleSize, calculateInSampleSize(scale))
 
             // First check for missing tiles - if there are any we need the base layer underneath to avoid gaps
