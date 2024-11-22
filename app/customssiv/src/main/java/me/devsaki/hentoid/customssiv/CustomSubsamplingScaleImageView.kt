@@ -157,6 +157,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         SMART_FIT(7),
         SMART_FILL(8),
         ORIGINAL_SIZE(9),
+        STRETCH_SCREEN(10)
     }
 
     enum class AnimOrigin(val code: Int) {
@@ -1325,10 +1326,14 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             }
         } else if (bitmap != null) {
             synchronized(singleImage) {
-                val usedScale = scale / singleImage.scale
+                var xScale = scale / singleImage.scale
+                var yScale = scale / singleImage.scale
+
                 // TODO use that to implement fit to screen
-                var xScale = usedScale
-                var yScale = usedScale
+                if (minimumScaleType == ScaleType.STRETCH_SCREEN) {
+                    xScale = getUsefulWidth().toFloat() / sWidth
+                    yScale = getUsefulHeight().toFloat() / sHeight
+                }
 
                 if (matrix == null) matrix = Matrix()
                 matrix?.apply {
@@ -1338,11 +1343,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     postTranslate(vTranslate!!.x, vTranslate!!.y)
 
                     if (getRequiredRotation() == Orientation.O_180) {
-                        postTranslate(usedScale * sWidth, usedScale * sHeight)
+                        postTranslate(xScale * sWidth, yScale * sHeight)
                     } else if (getRequiredRotation() == Orientation.O_90) {
-                        postTranslate(usedScale * sHeight, 0f)
+                        postTranslate(yScale * sHeight, 0f)
                     } else if (getRequiredRotation() == Orientation.O_270) {
-                        postTranslate(0f, usedScale * sWidth)
+                        postTranslate(0f, xScale * sWidth)
                     }
                 }
 
@@ -2430,8 +2435,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         scale: Float,
         sSize: Point
     ): PointF {
-        val vxCenter = paddingLeft + (getWidthInternal() - paddingRight - paddingLeft) / 2
-        val vyCenter = paddingTop + (getHeightInternal() - paddingBottom - paddingTop) / 2
+        val vxCenter = paddingLeft + getUsefulWidth() / 2
+        val vyCenter = paddingTop + getUsefulHeight() / 2
         if (satTemp == null) {
             satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
         }
@@ -2697,8 +2702,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @return screen coordinates of the center of the view
      */
     fun getvCenter(): PointF {
-        val vxCenter = paddingLeft + (getWidthInternal() - paddingRight - paddingLeft) / 2
-        val vyCenter = paddingTop + (getHeightInternal() - paddingBottom - paddingTop) / 2
+        val vxCenter = paddingLeft + getUsefulWidth() / 2
+        val vyCenter = paddingTop + getUsefulHeight() / 2
         return PointF(vxCenter.toFloat(), vyCenter.toFloat())
     }
 
@@ -3102,6 +3107,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         else preloadDimensions!!.x
     }
 
+    private fun getUsefulWidth(): Int {
+        return getWidthInternal() - paddingLeft - paddingRight
+    }
+
     /**
      * Get the height of the CustomSubsamplingScaleImageView
      * If not inflated/known yet, use the temporary image dimensions
@@ -3114,6 +3123,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         else preloadDimensions!!.y
     }
 
+    private fun getUsefulHeight(): Int {
+        return getHeightInternal() - paddingTop - paddingBottom
+    }
 
     /**
      * Builder class used to set additional options for a scale animation. Create an instance using [.animateScale],
@@ -3290,9 +3302,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         ): PointF {
             val targetvTranslate: PointF =
                 vTranslateForSCenter(sCenterX, sCenterY, scale, Point(sWidth(), sHeight()))
-            val vxCenter =
-                getPaddingLeft() + (getWidthInternal() - getPaddingRight() - getPaddingLeft()) / 2
-            val vyCenter = paddingTop + (getHeightInternal() - paddingBottom - paddingTop) / 2
+            val vxCenter = paddingLeft + getUsefulWidth() / 2
+            val vyCenter = paddingTop + getUsefulHeight() / 2
             val sx = (vxCenter - targetvTranslate.x) / scale
             val sy = (vyCenter - targetvTranslate.y) / scale
             sTarget[sx] = sy

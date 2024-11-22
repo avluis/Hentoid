@@ -34,6 +34,7 @@ import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.AutoRotateMethod
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
+import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.ScaleType
 import me.devsaki.hentoid.customssiv.uri
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -86,7 +87,7 @@ class ImagePagerAdapter(context: Context) :
     }
 
     enum class ViewType(val value: Int) {
-        DEFAULT(0), IMAGEVIEW_STRETCH(1), SSIV_VERTICAL(2)
+        DEFAULT(0), /*IMAGEVIEW_STRETCH(1),*/ SSIV_VERTICAL(2)
     }
 
     private val pageMinHeight = context.resources.getDimension(R.dimen.page_min_height).toInt()
@@ -175,8 +176,8 @@ class ImagePagerAdapter(context: Context) :
     }
 
     private fun getImageViewType(displayParams: ReaderPagerFragment.DisplayParams): ViewType {
-        return if (VIEWER_DISPLAY_STRETCH == displayParams.displayMode) ViewType.IMAGEVIEW_STRETCH
-        else if (VIEWER_ORIENTATION_VERTICAL == displayParams.orientation) ViewType.SSIV_VERTICAL
+        return /*if (VIEWER_DISPLAY_STRETCH == displayParams.displayMode) ViewType.IMAGEVIEW_STRETCH
+        else */ if (VIEWER_ORIENTATION_VERTICAL == displayParams.orientation) ViewType.SSIV_VERTICAL
         else ViewType.DEFAULT
     }
 
@@ -377,9 +378,9 @@ class ImagePagerAdapter(context: Context) :
                     imageView.isClickable = false
                     imageView.isFocusable = false
                 }
-            } else if (ViewType.IMAGEVIEW_STRETCH == imgViewType) {
+            }/* else if (ViewType.IMAGEVIEW_STRETCH == imgViewType) {
                 imageView.scaleType = ImageView.ScaleType.FIT_XY
-            } else if (ViewType.SSIV_VERTICAL == imgViewType) {
+            }*/ else if (ViewType.SSIV_VERTICAL == imgViewType) {
                 ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL)
             }
             // WARNING following line must be coherent with what happens in setTapListener
@@ -395,10 +396,11 @@ class ImagePagerAdapter(context: Context) :
                 forceImageView = null // Reset force flag
             } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType || ImageType.IMG_TYPE_AWEBP == imageType || ImageType.IMG_TYPE_JXL == imageType) {
                 switchImageView(isImageView = true, isClickThrough = true)
-            } else switchImageView(
+            } else switchImageView(false, false)
+            /*
                 imgViewType == ViewType.IMAGEVIEW_STRETCH,
                 imgViewType == ViewType.IMAGEVIEW_STRETCH
-            )
+            )*/
 
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT && VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
@@ -525,12 +527,10 @@ class ImagePagerAdapter(context: Context) :
             isImageView
         }
 
-        private val scaleType: CustomSubsamplingScaleImageView.ScaleType
-            get() = if (VIEWER_DISPLAY_FILL == displayMode) {
-                CustomSubsamplingScaleImageView.ScaleType.SMART_FILL
-            } else {
-                CustomSubsamplingScaleImageView.ScaleType.CENTER_INSIDE
-            }
+        private val scaleType: ScaleType
+            get() = if (VIEWER_DISPLAY_FILL == displayMode) ScaleType.SMART_FILL
+            else if (VIEWER_DISPLAY_STRETCH == displayMode) ScaleType.STRETCH_SCREEN
+            else ScaleType.CENTER_INSIDE
 
         // ImageView
         // TODO doesn't work for Coil as it doesn't use ImageView's scaling
