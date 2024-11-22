@@ -2367,9 +2367,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      */
     private fun getMaxBitmapDimensions(canvas: Canvas): Point {
         return Point(
-            min(canvas.maximumBitmapWidth.toDouble(), maxTileWidth.toDouble())
-                .toInt(),
-            min(canvas.maximumBitmapHeight.toDouble(), maxTileHeight.toDouble()).toInt()
+            min(canvas.maximumBitmapWidth, maxTileWidth),
+            min(canvas.maximumBitmapHeight, maxTileHeight)
         )
     }
 
@@ -2433,7 +2432,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun distance(x0: Float, x1: Float, y0: Float, y1: Float): Float {
         val x = x0 - x1
         val y = y0 - y1
-        return sqrt((x * x + y * y).toDouble()).toFloat()
+        return sqrt(x * x + y * y)
     }
 
     /**
@@ -2487,11 +2486,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         ).toInt()] =
             viewToSourceY(vRect.bottom.toFloat()).toInt()
         fileSRect(fRect, fRect)
-        fRect[max(0.0, fRect.left.toDouble()).toInt(), max(0.0, fRect.top.toDouble()).toInt(), min(
-            sWidth.toDouble(),
-            fRect.right.toDouble()
-        ).toInt()] =
-            min(sHeight.toDouble(), fRect.bottom.toDouble()).toInt()
+        fRect[max(0, fRect.left), max(0, fRect.top), min(sWidth, fRect.right)] =
+            min(sHeight, fRect.bottom)
         if (sRegion != null) {
             fRect.offset(sRegion!!.left, sRegion!!.top)
         }
@@ -2701,9 +2697,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      */
     private fun limitedScale(targetScale: Float): Float {
         var theTargetScale = targetScale
-        theTargetScale = max(minScale().toDouble(), theTargetScale.toDouble()).toFloat()
-        theTargetScale = min(maxScale.toDouble(), theTargetScale.toDouble()).toFloat()
-
+        theTargetScale = max(minScale(), theTargetScale)
+        theTargetScale = min(maxScale, theTargetScale)
         return theTargetScale
     }
 
@@ -2786,32 +2781,20 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         val scaleHeight = scale * sHeight()
 
         if (panLimit == PanLimit.CENTER) {
-            vTarget.top = max(0.0, -(vTranslate!!.y - (getHeightInternal() / 2f)).toDouble())
-                .toFloat()
-            vTarget.left = max(0.0, -(vTranslate!!.x - (getWidthInternal() / 2f)).toDouble())
-                .toFloat()
-            vTarget.bottom =
-                max(0.0, (vTranslate!!.y - ((getHeightInternal() / 2f) - scaleHeight)).toDouble())
-                    .toFloat()
-            vTarget.right =
-                max(0.0, (vTranslate!!.x - ((getWidthInternal() / 2f) - scaleWidth)).toDouble())
-                    .toFloat()
+            vTarget.top = max(0f, -(vTranslate!!.y - getHeightInternal() / 2f))
+            vTarget.left = max(0f, -(vTranslate!!.x - getWidthInternal() / 2f))
+            vTarget.bottom = max(0f, vTranslate!!.y - (getHeightInternal() / 2f - scaleHeight))
+            vTarget.right = max(0f, vTranslate!!.x - (getWidthInternal() / 2f - scaleWidth))
         } else if (panLimit == PanLimit.OUTSIDE) {
-            vTarget.top =
-                max(0.0, -(vTranslate!!.y - getHeightInternal()).toDouble()).toFloat()
-            vTarget.left =
-                max(0.0, -(vTranslate!!.x - getWidthInternal()).toDouble()).toFloat()
-            vTarget.bottom = max(0.0, (vTranslate!!.y + scaleHeight).toDouble()).toFloat()
-            vTarget.right = max(0.0, (vTranslate!!.x + scaleWidth).toDouble()).toFloat()
+            vTarget.top = max(0f, -(vTranslate!!.y - getHeightInternal()))
+            vTarget.left = max(0f, -(vTranslate!!.x - getWidthInternal()))
+            vTarget.bottom = max(0f, vTranslate!!.y + scaleHeight)
+            vTarget.right = max(0f, vTranslate!!.x + scaleWidth)
         } else {
-            vTarget.top = max(0.0, -vTranslate!!.y.toDouble()).toFloat()
-            vTarget.left = max(0.0, -vTranslate!!.x.toDouble()).toFloat()
-            vTarget.bottom =
-                max(0.0, ((scaleHeight + vTranslate!!.y) - getHeightInternal()).toDouble())
-                    .toFloat()
-            vTarget.right =
-                max(0.0, ((scaleWidth + vTranslate!!.x) - getWidthInternal()).toDouble())
-                    .toFloat()
+            vTarget.top = max(0f, -vTranslate!!.y)
+            vTarget.left = max(0f, -vTranslate!!.x)
+            vTarget.bottom = max(0f, scaleHeight + vTranslate!!.y - getHeightInternal())
+            vTarget.right = max(0f, scaleWidth + vTranslate!!.x - getWidthInternal())
         }
     }
 
