@@ -404,8 +404,7 @@ class ImagePagerAdapter(context: Context) :
 
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT && VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
-                if (isSmoothRendering) ssiv.setGlEsRenderer(glEsRenderer)
-                else ssiv.setGlEsRenderer(null)
+                ssiv.setGlEsRenderer(if (isSmoothRendering) glEsRenderer else null)
                 ssiv.setPreloadDimensions(itemView.width, imgView.height)
                 if (!Settings.isReaderZoomTransitions) ssiv.setDoubleTapZoomDuration(10)
 

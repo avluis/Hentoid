@@ -104,7 +104,7 @@ fun dpToPx(context: Context, dpValue: Int): Int {
  */
 fun coerceIn(value: Float, min: Float, max: Float): Float {
     return if (value < min) min
-    else min(value.toDouble(), max.toDouble()).toFloat()
+    else min(value, max)
 }
 
 /**

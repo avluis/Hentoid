@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.customssiv.util
 
 import android.graphics.Bitmap
+import android.graphics.PointF
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.gles_renderer.GPUImage
@@ -8,6 +9,7 @@ import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilter
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageGaussianBlurFilter
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageResizeFilter
 import timber.log.Timber
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -19,24 +21,80 @@ suspend fun resizeBitmap(
     glEsRenderer: GPUImage?,
     src: Bitmap,
     targetScale: Float
-): Pair<Bitmap?, Float> = withContext(Dispatchers.Default) {
+): Pair<Bitmap, Float> = withContext(Dispatchers.Default) {
+    resizeBitmap(glEsRenderer, src, PointF(targetScale, targetScale))
+}
+
+suspend fun resizeBitmap(
+    glEsRenderer: GPUImage?,
+    src: Bitmap,
+    targetScale: PointF
+): Pair<Bitmap, Float> = withContext(Dispatchers.Default) {
+    if (abs(targetScale.x - targetScale.y) < 0.001)
+        resizeBitmapProportional(glEsRenderer, src, targetScale.x)
+    else
+        resizeBitmapNonProportional(glEsRenderer, src, targetScale)
+}
+
+private fun resizeBitmapProportional(
+    glEsRenderer: GPUImage?,
+    src: Bitmap,
+    targetScale: Float
+): Pair<Bitmap, Float> {
     if (null == glEsRenderer) {
         val resizeParams = computeResizeParams(targetScale)
-        Timber.d(">> resizing successively to scale %s", resizeParams.second)
-        Pair(successiveResize(src, resizeParams.first), resizeParams.second)
+        Timber.d(">> resizing to scale %s", resizeParams.second)
+        return Pair(successiveResizeProportional(src, resizeParams.first), resizeParams.second)
     } else {
         if (targetScale < 0.75 || (targetScale > 1.0 && targetScale < 1.55)) {
             // Don't use smooth resize above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
-            Pair(
+            return Pair(
                 resizeGLES(glEsRenderer, src, targetScale, targetScale),
                 targetScale
             )
         } else {
-            Timber.d(">> No resize needed; keeping raw image")
-            Pair(src, 1f)
+            Timber.d(">> No resize needed; keeping raw bitmap")
+            return Pair(src, 1f)
         }
     }
 }
+
+private fun resizeBitmapNonProportional(
+    glEsRenderer: GPUImage?,
+    src: Bitmap,
+    targetScale: PointF
+): Pair<Bitmap, Float> {
+    val meanScale = (targetScale.x + targetScale.y) / 2f
+    Timber.d(">> meanScale $meanScale")
+    if (null == glEsRenderer) {
+        val xAmplitude = abs(1 - targetScale.x)
+        val yAmplitude = abs(1 - targetScale.y)
+        val resizeParams =
+            computeResizeParams(if (xAmplitude < yAmplitude) targetScale.x else targetScale.y)
+        if (resizeParams.first > 0) {
+            Timber.d(">> resizing to scale %s", resizeParams.second)
+            return Pair(
+                successiveResizeNonProportional(src, resizeParams.first, targetScale),
+                resizeParams.second
+            )
+        }
+    } else if (meanScale < 0.75 || (meanScale > 1.0 && meanScale < 1.55)) {
+        // Don't use smooth resize above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
+        return Pair(resizeGLES(glEsRenderer, src, targetScale.x, targetScale.y), 1f)
+    }
+    // One shot bilinear
+    // No successive resize   or   0.75 <= Scale <= 1   or   scale >= 1.55
+    Timber.d(">> Using native bilinear")
+    val temp = Bitmap.createScaledBitmap(
+        src,
+        (src.width * targetScale.x).roundToInt(),
+        (src.height * targetScale.y).roundToInt(),
+        true
+    )
+    src.recycle()
+    return Pair(temp, 1f)
+}
+
 
 /**
  * Compute resizing parameters according to the given target scale
@@ -44,7 +102,7 @@ suspend fun resizeBitmap(
  *
  * @param targetScale target scale of the image to display (% of the raw dimensions)
  * @return Pair containing
- * - First : Number of half-resizes to perform (see ResizeBitmapHelper)
+ * - First : Number of successive half-resizes to perform
  * - Second : Corresponding scale
  */
 private fun computeResizeParams(targetScale: Float): Pair<Int, Float> {
@@ -59,7 +117,7 @@ private fun computeResizeParams(targetScale: Float): Pair<Int, Float> {
     return Pair(nbResize, resultScale)
 }
 
-private fun successiveResize(src: Bitmap, resizeNum: Int): Bitmap {
+private fun successiveResizeProportional(src: Bitmap, resizeNum: Int): Bitmap {
     if (0 == resizeNum) return src
 
     var srcWidth = src.width
@@ -68,7 +126,32 @@ private fun successiveResize(src: Bitmap, resizeNum: Int): Bitmap {
     (0 until resizeNum).forEach {
         srcWidth /= 2
         srcHeight /= 2
+        // Using bilinear filtering
         val temp = Bitmap.createScaledBitmap(output, srcWidth, srcHeight, true)
+        output.recycle()
+        output = temp
+    }
+
+    return output
+}
+
+private fun successiveResizeNonProportional(
+    src: Bitmap,
+    resizeNum: Int,
+    targetScale: PointF
+): Bitmap {
+    if (0 == resizeNum) return src
+    val factorx = targetScale.x.pow(1f / resizeNum)
+    val factory = targetScale.y.pow(1f / resizeNum)
+
+    var srcWidth = src.width.toFloat()
+    var srcHeight = src.height.toFloat()
+    var output = src
+    (0 until resizeNum).forEach {
+        srcWidth *= factorx
+        srcHeight *= factory
+        // Using bilinear filtering
+        val temp = Bitmap.createScaledBitmap(output, srcWidth.toInt(), srcHeight.toInt(), true)
         output.recycle()
         output = temp
     }
@@ -78,19 +161,20 @@ private fun successiveResize(src: Bitmap, resizeNum: Int): Bitmap {
 
 private fun resizeGLES(
     glEsRenderer: GPUImage,
-    src: Bitmap?,
+    src: Bitmap,
     xScale: Float,
     yScale: Float
-): Bitmap? {
+): Bitmap {
+    val meanScale = (xScale + yScale) / 2f
     // Calculate gaussian's radius
-    val sigma = (1 / xScale) / Math.PI.toFloat()
+    val sigma = (1 / meanScale) / Math.PI.toFloat()
     // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
     var radius = 3f * sigma /* - 1.5f*/ // Works better that way
     radius = min(25.0, max(0.0001, radius.toDouble())).toFloat()
-    Timber.v(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius)
+    Timber.v(">> using sigma=%s for meanScale=%s => radius=%s", sigma, meanScale, radius)
 
     // Defensive programming in case the threading/view recycling recycles a bitmap just before that methods is reached
-    if (null == src || src.isRecycled) return src
+    if (src.isRecycled) return src
 
     val srcWidth = src.width
     val srcHeight = src.height

@@ -10,15 +10,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import kotlin.math.abs
-
-
-/**
- * Crashes if called on the UI thread
- * To be used as a marker wherever processing in a background thread is mandatory
- */
-internal fun assertNonUiThread() {
-    check(Looper.getMainLooper().thread !== Thread.currentThread()) { "This should not be run on the UI thread" }
-}
+import kotlin.math.min
 
 /**
  * Copy all data from the given InputStream to the given OutputStream
@@ -73,4 +65,17 @@ internal fun getScreenDimensionsPx(context: Context): Point {
         wMgr.defaultDisplay.getRealSize(result)
         return result
     }
+}
+
+/**
+ * Inclusively coerce the given value between the given min and max values
+ *
+ * @param value Value to coerce
+ * @param min   Min limit (inclusive)
+ * @param max   Max limit (inclusive)
+ * @return Given value inclusively coerced between the given min and max
+ */
+fun coerceIn(value: Float, min: Float, max: Float): Float {
+    return if (value < min) min
+    else min(value, max)
 }

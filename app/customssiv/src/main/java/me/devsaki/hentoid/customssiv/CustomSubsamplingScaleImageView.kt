@@ -35,6 +35,7 @@ import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder
 import me.devsaki.hentoid.customssiv.util.Debouncer
+import me.devsaki.hentoid.customssiv.util.coerceIn
 import me.devsaki.hentoid.customssiv.util.getScreenDimensionsPx
 import me.devsaki.hentoid.customssiv.util.getScreenDpi
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
@@ -651,14 +652,15 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 // NB : Even though e1 and e2 are marked @NonNull on the overriden method, one of them may be actually null, hence the present implementation
                 if (panEnabled && readySent && vTranslate != null && e1 != null
                     && (abs(e1.x - e2.x) > 50 || abs(e1.y - e2.y) > 50)
-                    && (abs(velocityX) > 500 || abs(velocityY) > 500) && !isZooming
+                    && (abs(velocityX) > 500 || abs(velocityY) > 500)
+                    && !isZooming
                 ) {
                     val vTranslateEnd = PointF(
                         vTranslate!!.x + (velocityX * 0.25f),
                         vTranslate!!.y + (velocityY * 0.25f)
                     )
-                    val sCenterXEnd = ((getWidthInternal() / 2f) - vTranslateEnd.x) / scale
-                    val sCenterYEnd = ((getHeightInternal() / 2f) - vTranslateEnd.y) / scale
+                    val sCenterXEnd = (getWidthInternal() / 2f - vTranslateEnd.x) / scale
+                    val sCenterYEnd = (getHeightInternal() / 2f - vTranslateEnd.y) / scale
                     AnimationBuilder(PointF(sCenterXEnd, sCenterYEnd)).withEasing(Easing.OUT_QUAD)
                         .withPanLimited(false).withOrigin(AnimOrigin.FLING).start()
                     return true
@@ -1316,29 +1318,22 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             }
         } else if (bitmap != null) {
             synchronized(singleImage) {
-                val isStretched = (minimumScaleType == ScaleType.STRETCH_SCREEN)
-
-                val xScale = if (isStretched) getUsefulWidth() * 1f / sWidth
-                else scale / singleImage.scale
-                val yScale = if (isStretched) getUsefulHeight() * 1f / sHeight
-                else scale / singleImage.scale
-                // TODO fix that upstream by setting the correct value to vTranslate
-                val xTrans = if (isStretched && abs(scale - initialScale) < 0.01) 0f else vTranslate!!.x
-                val yTrans = if (isStretched && abs(scale - initialScale) < 0.01) 0f else vTranslate!!.y
+                val xScale = scale / singleImage.scale
+                val yScale = scale / singleImage.scale
 
                 if (matrix == null) matrix = Matrix()
                 matrix?.apply {
                     reset()
                     postScale(xScale, yScale)
                     postRotate(getRequiredRotation().code.toFloat())
-                    postTranslate(xTrans, yTrans)
+                    postTranslate(vTranslate!!.x, vTranslate!!.y)
 
                     if (getRequiredRotation() == Orientation.O_180) {
                         postTranslate(xScale * sWidth, yScale * sHeight)
                     } else if (getRequiredRotation() == Orientation.O_90) {
-                        postTranslate(xScale * sHeight, 0f)
+                        postTranslate(yScale * sHeight, 0f)
                     } else if (getRequiredRotation() == Orientation.O_270) {
-                        postTranslate(0f, yScale * sWidth)
+                        postTranslate(0f, xScale * sWidth)
                     }
                 }
 
@@ -1684,18 +1679,24 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @param sat    The scale we want and the translation we're aiming for. The values are adjusted to be valid.
      */
     private fun fitToBounds(center: Boolean, sat: ScaleAndTranslate, sSize: Point) {
-        var theCenter = center
-        if (panLimit == PanLimit.OUTSIDE && isReady()) theCenter = false
+        var doCenter = center
+        if (panLimit == PanLimit.OUTSIDE && isReady()) doCenter = false
 
         val targetvTranslate = sat.vTranslate
-        val targetScale = limitedScale(sat.scale)
-        val scaleWidth = targetScale * sSize.x
-        val scaleHeight = targetScale * sSize.y
+        val targetScale = if (minimumScaleType == ScaleType.STRETCH_SCREEN) {
+            // TODO take zoom into account
+            PointF(getUsefulWidth() / sWidth().toFloat(), getUsefulHeight() / sHeight().toFloat())
+        } else {
+            val scale = limitedScale(sat.scale)
+            PointF(scale, scale)
+        }
+        val scaleWidth = targetScale.x * sSize.x
+        val scaleHeight = targetScale.y * sSize.y
 
         if (panLimit == PanLimit.CENTER && isReady()) {
             targetvTranslate.x = max(targetvTranslate.x, getWidthInternal() / 2f - scaleWidth)
             targetvTranslate.y = max(targetvTranslate.y, getHeightInternal() / 2f - scaleHeight)
-        } else if (theCenter) {
+        } else if (doCenter) {
             targetvTranslate.x = max(targetvTranslate.x, getWidthInternal() - scaleWidth)
             targetvTranslate.y = max(targetvTranslate.y, getHeightInternal() - scaleHeight)
         } else {
@@ -1704,17 +1705,16 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         }
 
         // Asymmetric padding adjustments
-        val xPaddingRatio =
-            if (paddingLeft > 0 || paddingRight > 0) paddingLeft / (paddingLeft + paddingRight).toFloat() else 0.5f
-        val yPaddingRatio =
-            if (paddingTop > 0 || paddingBottom > 0) paddingTop / (paddingTop + paddingBottom).toFloat() else 0.5f
-
         val maxTx: Float
         val maxTy: Float
         if (panLimit == PanLimit.CENTER && isReady()) {
             maxTx = max(0f, getWidthInternal() / 2f)
             maxTy = max(0f, getHeightInternal() / 2f)
-        } else if (theCenter) {
+        } else if (doCenter) {
+            val xPaddingRatio =
+                if (paddingLeft > 0 || paddingRight > 0) paddingLeft / (paddingLeft + paddingRight).toFloat() else 0.5f
+            val yPaddingRatio =
+                if (paddingTop > 0 || paddingBottom > 0) paddingTop / (paddingTop + paddingBottom).toFloat() else 0.5f
             maxTx = max(0f, (getWidthInternal() - scaleWidth) * xPaddingRatio)
             maxTy = max(0f, (getHeightInternal() - scaleHeight) * yPaddingRatio)
         } else {
@@ -1725,7 +1725,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         targetvTranslate.x = min(targetvTranslate.x, maxTx)
         targetvTranslate.y = min(targetvTranslate.y, maxTy)
 
-        sat.scale = targetScale
+        sat.scale = (targetScale.x + targetScale.y) / 2f // TODO is that valid?
     }
 
     /**
@@ -1744,9 +1744,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             init = true
             vTranslate = PointF(0f, 0f)
         }
-        if (satTemp == null) {
-            satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
-        }
+        if (satTemp == null) satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
         satTemp!!.scale = scale
         satTemp!!.vTranslate.set(vTranslate!!)
         fitToBounds(center, satTemp!!, sSize)
@@ -1761,12 +1759,18 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         // Recenter images if their dimensions are lower than the view's dimensions after the above call to fitToBounds
         val viewHeight = getHeightInternal() - paddingBottom + paddingTop
         val viewWidth = getWidthInternal() - paddingLeft + paddingRight
-        val sourcevWidth = sSize.x * scale
-        val sourcevHeight = sSize.y * scale
+        val targetScale = if (minimumScaleType == ScaleType.STRETCH_SCREEN) {
+            // TODO take zoom into account
+            PointF(getUsefulWidth() / sWidth().toFloat(), getUsefulHeight() / sHeight().toFloat())
+        } else PointF(scale, scale)
 
-        if (sourcevWidth < viewWidth) vTranslate!![(viewWidth - sourcevWidth) / 2] = vTranslate!!.y
-        if (sourcevHeight < viewHeight) vTranslate!![vTranslate!!.x] =
-            (viewHeight - sourcevHeight) / 2
+        val sourcevWidth = sSize.x * targetScale.x
+        val sourcevHeight = sSize.y * targetScale.y
+
+        vTranslate?.let {
+            if (sourcevWidth < viewWidth) it[(viewWidth - sourcevWidth) / 2] = it.y
+            if (sourcevHeight < viewHeight) it[it.x] = (viewHeight - sourcevHeight) / 2
+        }
 
         // Display images from the right side if asked to do so
         if (!offsetLeftSide && !sideOffsetConsumed
@@ -1966,17 +1970,23 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         view: CustomSubsamplingScaleImageView,
         targetScale: Float
     ): ProcessBitmapResult = withContext(Dispatchers.Default) {
-        var theBitmap = bitmap
-        singleImage.rawWidth = theBitmap.width
-        singleImage.rawHeight = theBitmap.height
+        singleImage.rawWidth = bitmap.width
+        singleImage.rawHeight = bitmap.height
 
         // TODO sharp mode - don't ask to resize when the image in memory already has the correct target scale
-        val resizeResult = resizeBitmap(glEsRenderer, theBitmap, targetScale)
-        theBitmap = resizeResult.first!!
+        val resizeResult = if (minimumScaleType == ScaleType.STRETCH_SCREEN) {
+            val stretchedScale = PointF(
+                getUsefulWidth() / targetScale / bitmap.width,
+                getUsefulHeight() / targetScale / bitmap.height
+            )
+            resizeBitmap(glEsRenderer, bitmap, stretchedScale)
+        } else {
+            resizeBitmap(glEsRenderer, bitmap, targetScale)
+        }
 
         singleImage.loading = false
         return@withContext ProcessBitmapResult(
-            theBitmap,
+            resizeResult.first,
             view.getExifOrientation(context, source.toString()),
             resizeResult.second
         )
@@ -2179,9 +2189,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun sWidth(): Int {
         val rotation = getRequiredRotation()
         return if (rotation.code == 90 || rotation.code == 270) {
-            if ((singleImage.rawHeight > -1)) singleImage.rawHeight else sHeight
+            if (singleImage.rawHeight > -1) singleImage.rawHeight else sHeight
         } else {
-            if ((singleImage.rawWidth > -1)) singleImage.rawWidth else sWidth
+            if (singleImage.rawWidth > -1) singleImage.rawWidth else sWidth
         }
     }
 
@@ -2191,9 +2201,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun sHeight(): Int {
         val rotation = getRequiredRotation()
         return if (rotation.code == 90 || rotation.code == 270) {
-            if ((singleImage.rawWidth > -1)) singleImage.rawWidth else sWidth
+            if (singleImage.rawWidth > -1) singleImage.rawWidth else sWidth
         } else {
-            if ((singleImage.rawHeight > -1)) singleImage.rawHeight else sHeight
+            if (singleImage.rawHeight > -1) singleImage.rawHeight else sHeight
         }
     }
 
@@ -2428,9 +2438,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     ): PointF {
         val vxCenter = paddingLeft + getUsefulWidth() / 2
         val vyCenter = paddingTop + getUsefulHeight() / 2
-        if (satTemp == null) {
-            satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
-        }
+        if (satTemp == null) satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
         satTemp!!.scale = scale
         satTemp!!.vTranslate[vxCenter - (sCenterX * scale)] = vyCenter - (sCenterY * scale)
         fitToBounds(true, satTemp!!, sSize)
@@ -2489,10 +2497,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * Adjust a requested scale to be within the allowed limits.
      */
     private fun limitedScale(targetScale: Float): Float {
-        var theTargetScale = targetScale
-        theTargetScale = max(minScale(), theTargetScale)
-        theTargetScale = min(maxScale, theTargetScale)
-        return theTargetScale
+        return coerceIn(targetScale, minScale(), maxScale)
     }
 
     /**
@@ -2715,13 +2720,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     fun setScaleAndCenter(absoluteScale: Float, sCenter: PointF?) {
         this.anim = null
         this.pendingScale = absoluteScale
-        if (sCenter != null) {
-            this.sPendingCenter = sCenter
-            this.sRequestedCenter = sCenter
-        } else {
-            this.sPendingCenter = getCenter()
-            this.sRequestedCenter = getCenter()
-        }
+        this.sPendingCenter = sCenter ?: getCenter()
+        this.sRequestedCenter = sCenter ?: getCenter()
         invalidate()
     }
 
@@ -3117,7 +3117,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     private fun isCentered(st: ScaleType): Boolean {
-        return st != ScaleType.START && st != ScaleType.FIT_HEIGHT && st != ScaleType.FIT_WIDTH && st != ScaleType.SMART_FIT && st != ScaleType.SMART_FILL && st != ScaleType.STRETCH_SCREEN
+        return st != ScaleType.START && st != ScaleType.FIT_HEIGHT && st != ScaleType.FIT_WIDTH && st != ScaleType.SMART_FIT && st != ScaleType.SMART_FILL
     }
 
     /**
