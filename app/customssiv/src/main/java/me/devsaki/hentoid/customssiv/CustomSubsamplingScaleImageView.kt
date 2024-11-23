@@ -51,11 +51,9 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
-private const val ANIMATION_LISTENER_ERROR: String = "Error thrown by animation listener"
+const val TILE_SIZE_AUTO = Int.MAX_VALUE
 
-const val TILE_SIZE_AUTO: Int = Int.MAX_VALUE
-
-private const val MESSAGE_LONG_CLICK: Int = 1
+private const val MESSAGE_LONG_CLICK = 1
 
 /**
  * Displays an image subsampled as necessary to avoid loading too much image data into memory. After zooming in,
@@ -260,7 +258,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     // Screen coordinate of top-left corner of source image (image offset relative to screen)
     private var vTranslate: PointF? = null
     private var vTranslateStart: PointF? = null
-    private var vTranslateBefore: PointF? = null
 
     // Source coordinate to center on, used when new position is set externally before view is ready
     private var pendingScale: Float? = null
@@ -325,7 +322,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private var onImageEventListener: OnImageEventListener? = null
 
     // Scale and center listeners
-    private var onStateChangedListener: OnStateChangedListener? = null
     private val scaleDebouncer: Debouncer<Float>
     private var scaleListener: Consumer<Float>? = null
 
@@ -412,14 +408,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 val assetName =
                     typedAttr.getString(R.styleable.CustomSubsamplingScaleImageView_assetName)
                 if (!assetName.isNullOrEmpty()) {
-                    setImage(asset(assetName).tilingEnabled())
-                }
-            }
-            if (typedAttr.hasValue(R.styleable.CustomSubsamplingScaleImageView_src)) {
-                val resId =
-                    typedAttr.getResourceId(R.styleable.CustomSubsamplingScaleImageView_src, 0)
-                if (resId > 0) {
-                    setImage(resource(resId).tilingEnabled())
+                    setImage(asset(assetName).enableTiling())
                 }
             }
             if (typedAttr.hasValue(R.styleable.CustomSubsamplingScaleImageView_panEnabled)) {
@@ -496,35 +485,19 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     /**
-     * Set the image source from a bitmap, resource, asset, file or other URI.
-     *
-     * @param imageSource Image source.
-     */
-    fun setImage(imageSource: ImageSource) {
-        setImage(imageSource, null)
-    }
-
-    /**
      * Set the image source from a bitmap, resource, asset, file or other URI, providing a preview image to be
      * displayed until the full size image is loaded, starting with a given orientation setting, scale and center.
      * This is the best method to use when you want scale and center to be restored after screen orientation change;
      * it avoids any redundant loading of tiles in the wrong orientation.
-     *
      *
      * You must declare the dimensions of the full size image by calling [ImageSource.dimensions]
      * on the imageSource object. The preview source will be ignored if you don't provide dimensions,
      * and if you provide a bitmap for the full size image.
      *
      * @param imageSource  Image source. Dimensions must be declared.
-     * @param state         State to be restored. Nullable.
      */
-    private fun setImage(
-        imageSource: ImageSource,
-        state: ImageViewState?
-    ) {
+    fun setImage(imageSource: ImageSource) {
         reset(true)
-        if (state != null) restoreState(state)
-        val targetScale = if (null == state) 1f else getVirtualScale()
 
         if (imageSource.getBitmap() != null && imageSource.getSRegion() != null) {
             onImageLoaded(
@@ -542,15 +515,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         } else {
             sRegion = imageSource.getSRegion()
             uri = imageSource.getUri()
-            if (uri == null && imageSource.getResource() != null) {
-                uri =
-                    Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/" + imageSource.getResource())
-            }
             if (imageSource.getTile() || sRegion != null) {
                 // Load the bitmap using tile decoding.
                 lifecycleScope?.launch {
                     try {
-                        val res = initTiles(this@CustomSubsamplingScaleImageView, context, uri!!)
+                        val res = initTiles(context, uri!!)
                         // Remove invalid results
                         if (res[0] < 0) return@launch
                         withContext(Dispatchers.Main) {
@@ -562,7 +531,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 }
             } else {
                 // Load the bitmap as a single image
-                loadBitmapToImage(context, uri!!, targetScale)
+                loadBitmapToImage(context, uri!!, targetScale = 1f)
             }
         }
     }
@@ -577,7 +546,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         scaleStart = 0f
         vTranslate = null
         vTranslateStart = null
-        vTranslateBefore = null
         pendingScale = 0f
         sPendingCenter = null
         sRequestedCenter = null
@@ -661,7 +629,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     )
                     val sCenterXEnd = (getWidthInternal() / 2f - vTranslateEnd.x) / scale
                     val sCenterYEnd = (getHeightInternal() / 2f - vTranslateEnd.y) / scale
-                    AnimationBuilder(PointF(sCenterXEnd, sCenterYEnd)).withEasing(Easing.OUT_QUAD)
+                    AnimationBuilder(
+                        scale,
+                        PointF(sCenterXEnd, sCenterYEnd)
+                    ).withEasing(Easing.OUT_QUAD)
                         .withPanLimited(false).withOrigin(AnimOrigin.FLING).start()
                     return true
                 }
@@ -760,7 +731,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         val resizeHeight = heightSpecMode != MeasureSpec.EXACTLY
         var width = parentWidth
         var height = parentHeight
-        if (sWidth > 0 && sHeight > 0) {
+        if (sWidth() > 0 && sHeight() > 0) {
             if (resizeWidth && resizeHeight) {
                 width = sWidth()
                 height = sHeight()
@@ -791,13 +762,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             requestDisallowInterceptTouchEvent(true)
             return true
         } else {
-            if (anim != null && anim!!.listener != null) {
-                try {
-                    anim!!.listener!!.onInterruptedByUser()
-                } catch (e: Exception) {
-                    Timber.w(e, ANIMATION_LISTENER_ERROR)
-                }
-            }
             anim = null
         }
 
@@ -815,15 +779,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         }
 
         if (vTranslateStart == null) vTranslateStart = PointF(0f, 0f)
-        if (vTranslateBefore == null) vTranslateBefore = PointF(0f, 0f)
         if (vCenterStart == null) vCenterStart = PointF(0f, 0f)
 
-        // Store current values so we can send an event if they change
-        val scaleBefore = scale
-        vTranslateBefore?.set(vTranslate!!)
-
         val handled = onTouchEventInternal(event)
-        sendStateChanged(scaleBefore, vTranslateBefore!!, AnimOrigin.TOUCH)
         return handled || super.onTouchEvent(event)
     }
 
@@ -1187,13 +1145,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
         // If animating scale, calculate current scale and center with easing equations
         if (anim?.vFocusStart != null) {
-            // Store current values so we can send an event if they change
-            val scaleBefore = scale
-            if (vTranslateBefore == null) {
-                vTranslateBefore = PointF(0f, 0f)
-            }
-            vTranslateBefore!!.set(vTranslate!!)
-
             var scaleElapsed = System.currentTimeMillis() - anim!!.time
             val finished = scaleElapsed > anim!!.duration
             scaleElapsed = min(scaleElapsed, anim!!.duration)
@@ -1227,18 +1178,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
             // For translate anims, showing the image non-centered is never allowed, for scaling anims it is during the animation.
             fitToBounds(finished || (anim!!.scaleStart == anim!!.scaleEnd))
-            sendStateChanged(scaleBefore, vTranslateBefore!!, anim!!.origin)
             refreshRequiredResource(finished)
-            if (finished) {
-                if (anim!!.listener != null) {
-                    try {
-                        anim!!.listener!!.onComplete()
-                    } catch (e: Exception) {
-                        Timber.w(e, ANIMATION_LISTENER_ERROR)
-                    }
-                }
-                anim = null
-            }
+            if (finished) anim = null
             invalidate()
         }
 
@@ -1837,7 +1778,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     @Throws(Exception::class)
     private suspend fun initTiles(
-        view: CustomSubsamplingScaleImageView,
         context: Context,
         source: Uri
     ): IntArray = withContext(Dispatchers.IO) {
@@ -1848,9 +1788,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             val dimensions = it.init(context, source)
             var sWidthTile = dimensions.x
             var sHeightTile = dimensions.y
-            val exifOrientation = view.getExifOrientation(context, sourceUri)
+            val exifOrientation = getExifOrientation(context, sourceUri)
             if (sWidthTile > -1) {
-                view.sRegion?.apply {
+                sRegion?.apply {
                     left = max(0, left)
                     top = max(0, top)
                     right = min(sWidthTile, right)
@@ -1869,9 +1809,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * Called by worker task when decoder is ready and image size and EXIF orientation is known.
      */
     @Synchronized
-    private fun onTilesInitialized( /*ImageRegionDecoder decoder,*/
-                                    sWidth: Int, sHeight: Int, sOrientation: Orientation
-    ) {
+    private fun onTilesInitialized(sWidth: Int, sHeight: Int, sOrientation: Orientation) {
         // If actual dimensions don't match the declared size, reset everything.
         if (this.sWidth > 0 && (this.sHeight > 0) && (this.sWidth != sWidth || this.sHeight != sHeight)) {
             reset(false)
@@ -2010,13 +1948,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             }
         } else Orientation.O_0
 
-        if (this.bitmap != null && !this.bitmapIsCached && !singleImage.loading) {
-            this.bitmap!!.recycle()
-        }
+        if (!this.bitmapIsCached && !singleImage.loading) this.bitmap?.recycle()
 
-        if (this.bitmap != null && this.bitmapIsCached && (onImageEventListener != null)) {
-            onImageEventListener!!.onPreviewReleased()
-        }
+        if (this.bitmap != null && this.bitmapIsCached) onImageEventListener?.onPreviewReleased()
 
         synchronized(singleImage) {
             this.bitmapIsCached = bitmapIsCached
@@ -2144,23 +2078,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
         var origin = AnimOrigin.ANIM // Animation origin (API, double tap or fling)
         var time = System.currentTimeMillis() // Start time
-        var listener: OnAnimationEventListener? = null // Event listener
     }
 
     class ScaleAndTranslate(var scale: Float, val vTranslate: PointF)
-
-    /**
-     * Set scale, center and orientation from saved state.
-     */
-    private fun restoreState(state: ImageViewState?) {
-        if (state != null) {
-            this.orientation = state.getOrientation()
-            this.pendingScale = state.getScale()
-            this.virtualScale = state.getVirtualScale()
-            this.sPendingCenter = state.getCenter()
-            invalidate()
-        }
-    }
 
     /**
      * By default the View automatically calculates the optimal tile size. Set this to override this, and force an upper limit to the dimensions of the generated tiles. Passing [.TILE_SIZE_AUTO] will re-enable the default behaviour.
@@ -2486,6 +2406,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 viewHeight / sHeight().toFloat()
             )
 
+            ScaleType.STRETCH_SCREEN -> return 1f
+
             else -> return min(
                 viewWidth / sWidth().toFloat(),
                 viewHeight / sHeight().toFloat()
@@ -2554,13 +2476,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             timeF--
             return (-change / 2f) * (timeF * (timeF - 2) - 1) + from
         }
-    }
-
-    /**
-     * For debug overlays. Scale pixel value according to screen density.
-     */
-    private fun px(px: Int): Int {
-        return (density * px).toInt()
     }
 
     /**
@@ -2796,8 +2711,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     /**
-     * Get source width, ignoring orientation. If [.getOrientation] returns 90 or 270, you can use [.getSHeight]
-     * for the apparent width.
+     * Get source width, ignoring orientation.
+     * If [.getOrientation] returns 90 or 270, you can use [.getSHeight] for the apparent width.
      *
      * @return the source image width in pixels.
      */
@@ -2806,27 +2721,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     /**
-     * Get source height, ignoring orientation. If [.getOrientation] returns 90 or 270, you can use [.getSWidth]
-     * for the apparent height.
+     * Get source height, ignoring orientation.
+     * If [.getOrientation] returns 90 or 270, you can use [.getSWidth] for the apparent height.
      *
      * @return the source image height in pixels.
      */
     fun getSHeight(): Int {
         return sHeight
-    }
-
-    /**
-     * Get the current state of the view (scale, center, orientation) for restoration after rotate. Will return null if
-     * the view is not ready.
-     *
-     * @return an [ImageViewState] instance representing the current position of the image. null if the view isn't ready.
-     */
-    fun getState(): ImageViewState? {
-        val center = getCenter()
-        if (vTranslate != null && sWidth > 0 && sHeight > 0) {
-            return ImageViewState(scale, virtualScale, center, orientation)
-        }
-        return null
     }
 
     /**
@@ -3007,73 +2908,12 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         this.onImageEventListener = onImageEventListener
     }
 
-    /**
-     * Add a listener for pan and zoom events. Extend [DefaultOnStateChangedListener] to simplify
-     * implementation.
-     *
-     * @param onStateChangedListener an [OnStateChangedListener] instance.
-     */
-    fun setOnStateChangedListener(onStateChangedListener: OnStateChangedListener?) {
-        this.onStateChangedListener = onStateChangedListener
-    }
-
-    private fun sendStateChanged(oldScale: Float, oldVTranslate: PointF, origin: AnimOrigin) {
-        if (scale != oldScale) onStateChangedListener?.onScaleChanged(scale, origin)
-        if (vTranslate != oldVTranslate)
-            onStateChangedListener?.onCenterChanged(getCenter(), origin)
-    }
-
     fun setScaleListener(scaleListener: Consumer<Float>?) {
         this.scaleListener = scaleListener
     }
 
     private fun signalScaleChange(targetScale: Float) {
         scaleDebouncer.submit(targetScale)
-    }
-
-    /**
-     * Creates a panning animation builder, that when started will animate the image to place the given coordinates of
-     * the image in the center of the screen. If doing this would move the image beyond the edges of the screen, the
-     * image is instead animated to move the center point as near to the center of the screen as is allowed - it's
-     * guaranteed to be on screen.
-     *
-     * @param sCenter Target center point
-     * @return [AnimationBuilder] instance. Call [CustomSubsamplingScaleImageView.AnimationBuilder.start] to start the anim.
-     */
-    fun animateCenter(sCenter: PointF): AnimationBuilder? {
-        if (!isReady()) {
-            return null
-        }
-        return AnimationBuilder(sCenter)
-    }
-
-    /**
-     * Creates a scale animation builder, that when started will animate a zoom in or out. If this would move the image
-     * beyond the panning limits, the image is automatically panned during the animation.
-     *
-     * @param scale Target scale.
-     * @return [AnimationBuilder] instance. Call [CustomSubsamplingScaleImageView.AnimationBuilder.start] to start the anim.
-     */
-    fun animateScale(scale: Float): AnimationBuilder? {
-        if (!isReady()) {
-            return null
-        }
-        return AnimationBuilder(scale)
-    }
-
-    /**
-     * Creates a scale animation builder, that when started will animate a zoom in or out. If this would move the image
-     * beyond the panning limits, the image is automatically panned during the animation.
-     *
-     * @param scale   Target scale.
-     * @param sCenter Target source center.
-     * @return [AnimationBuilder] instance. Call [CustomSubsamplingScaleImageView.AnimationBuilder.start] to start the anim.
-     */
-    fun animateScaleAndCenter(scale: Float, sCenter: PointF): AnimationBuilder? {
-        if (!isReady()) {
-            return null
-        }
-        return AnimationBuilder(scale, sCenter)
     }
 
     /**
@@ -3136,27 +2976,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         private var origin = AnimOrigin.ANIM
         private var interruptible = true
         private var panLimited = true
-        private var listener: OnAnimationEventListener? = null
 
-        constructor(sCenter: PointF) {
-            this.targetScale = scale
-            this.targetSCenter = sCenter
-            this.vFocus = null
-        }
-
-        constructor(scale: Float) {
-            this.targetScale = scale
-            this.targetSCenter = getCenter()
-            this.vFocus = null
-        }
-
-        constructor(scale: Float, sCenter: PointF) {
-            this.targetScale = scale
-            this.targetSCenter = sCenter
-            this.vFocus = null
-        }
-
-        constructor(scale: Float, sCenter: PointF, vFocus: PointF) {
+        constructor(scale: Float, sCenter: PointF, vFocus: PointF? = null) {
             this.targetScale = scale
             this.targetSCenter = sCenter
             this.vFocus = vFocus
@@ -3196,17 +3017,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         }
 
         /**
-         * Add an animation event listener.
-         *
-         * @param listener The listener.
-         * @return this builder for method chaining.
-         */
-        fun withOnAnimationEventListener(listener: OnAnimationEventListener?): AnimationBuilder {
-            this.listener = listener
-            return this
-        }
-
-        /**
          * Only for internal use. When set to true, the animation proceeds towards the actual end point - the nearest
          * point to the center allowed by pan limits. When false, animation is in the direction of the requested end
          * point and is stopped when the limit for each axis is reached. The latter behaviour is used for flings but
@@ -3229,12 +3039,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
          * Starts the animation.
          */
         fun start() {
-            try {
-                anim?.listener?.onInterruptedByNewAnim()
-            } catch (e: Exception) {
-                Timber.w(e, ANIMATION_LISTENER_ERROR)
-            }
-
             val localTargetScale: Float = limitedScale(targetScale)
             val localTargetSCenter = if (panLimited) limitedSCenter(
                 targetSCenter.x,
@@ -3257,7 +3061,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 anm.easing = easing
                 anm.origin = origin
                 anm.time = System.currentTimeMillis()
-                anm.listener = listener
 
                 if (vFocus != null) {
                     // Calculate where translation will be at the end of the anim
@@ -3301,43 +3104,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             val sy = (vyCenter - targetvTranslate.y) / scale
             sTarget[sx] = sy
             return sTarget
-        }
-    }
-
-    /**
-     * An event listener for animations, allows events to be triggered when an animation completes,
-     * is aborted by another animation starting, or is aborted by a touch event. Note that none of
-     * these events are triggered if the activity is paused, the image is swapped, or in other cases
-     * where the view's internal state gets wiped or draw events stop.
-     */
-    interface OnAnimationEventListener {
-        /**
-         * The animation has completed, having reached its endpoint.
-         */
-        fun onComplete()
-
-        /**
-         * The animation has been aborted before reaching its endpoint because the user touched the screen.
-         */
-        fun onInterruptedByUser()
-
-        /**
-         * The animation has been aborted before reaching its endpoint because a new animation has been started.
-         */
-        fun onInterruptedByNewAnim()
-    }
-
-    /**
-     * Default implementation of [OnAnimationEventListener] for extension. This does nothing in any method.
-     */
-    class DefaultOnAnimationEventListener : OnAnimationEventListener {
-        override fun onComplete() {
-        }
-
-        override fun onInterruptedByUser() {
-        }
-
-        override fun onInterruptedByNewAnim() {
         }
     }
 
@@ -3418,42 +3184,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         }
 
         override fun onPreviewReleased() {
-        }
-    }
-
-    /**
-     * An event listener, allowing activities to be notified of pan and zoom events. Initialisation
-     * and calls made by your code do not trigger events; touch events and animations do. Methods in
-     * this listener will be called on the UI thread and may be called very frequently - your
-     * implementation should return quickly.
-     */
-    interface OnStateChangedListener {
-        /**
-         * The scale has changed. Use with [.getMaxScale] and [.getMinScale] to determine
-         * whether the image is fully zoomed in or out.
-         *
-         * @param newScale The new scale.
-         * @param origin   Where the event originated from - one of AnimOrigin.ANIM, AnimOrigin.TOUCH.
-         */
-        fun onScaleChanged(newScale: Float, origin: AnimOrigin)
-
-        /**
-         * The source center has been changed. This can be a result of panning or zooming.
-         *
-         * @param newCenter The new source center point.
-         * @param origin    Where the event originated from - one of AnimOrigin.ANIM, AnimOrigin.TOUCH.
-         */
-        fun onCenterChanged(newCenter: PointF?, origin: AnimOrigin)
-    }
-
-    /**
-     * Default implementation of [OnStateChangedListener]. This does nothing in any method.
-     */
-    class DefaultOnStateChangedListener : OnStateChangedListener {
-        override fun onCenterChanged(newCenter: PointF?, origin: AnimOrigin) {
-        }
-
-        override fun onScaleChanged(newScale: Float, origin: AnimOrigin) {
         }
     }
 

@@ -9,7 +9,7 @@ import java.net.URLDecoder
 
 /**
  * Helper class used to set the source and additional attributes from a variety of sources. Supports
- * use of a bitmap, asset, resource, external file or any other URI.
+ * use of a bitmap, asset, external file or any other URI.
  * <p>
  * When you are using a preview image, you must set the dimensions of the full size image on the
  * ImageSource object for the full size image using the {@link #dimensions(int, int)} method.
@@ -17,16 +17,6 @@ import java.net.URLDecoder
 const val FILE_SCHEME = "file:///"
 const val ASSET_SCHEME = "file:///android_asset/"
 
-
-/**
- * Create an instance from a resource. The correct resource for the device screen resolution will be used.
- *
- * @param resId resource ID.
- * @return an [ImageSource] instance.
- */
-fun resource(resId: Int): ImageSource {
-    return ImageSource(resId)
-}
 
 /**
  * Create an instance from an asset name.
@@ -76,23 +66,10 @@ fun bitmap(bitmap: Bitmap): ImageSource {
     return ImageSource(bitmap, false)
 }
 
-/**
- * Provide a loaded and cached bitmap for display. This bitmap will not be recycled when it is no
- * longer needed. Use this method if you loaded the bitmap with an image loader such as Picasso
- * or Volley.
- *
- * @param bitmap bitmap to be displayed.
- * @return an [ImageSource] instance.
- */
-fun cachedBitmap(bitmap: Bitmap): ImageSource {
-    return ImageSource(bitmap, true)
-}
-
 @SuppressWarnings("unused", "WeakerAccess")
 class ImageSource {
     private var uri: Uri? = null
     private var bitmap: Bitmap? = null
-    private var resource: Int? = null
     private var tile = false
     private var sWidth = 0
     private var sHeight = 0
@@ -102,7 +79,6 @@ class ImageSource {
     internal constructor(bitmap: Bitmap, cached: Boolean) {
         this.bitmap = bitmap
         this.uri = null
-        this.resource = null
         this.tile = false
         this.sWidth = bitmap.width
         this.sHeight = bitmap.height
@@ -118,21 +94,13 @@ class ImageSource {
             if (!uriFile.exists()) {
                 try {
                     theUri = Uri.parse(URLDecoder.decode(uriString, "UTF-8"))
-                } catch (e: UnsupportedEncodingException) {
+                } catch (_: UnsupportedEncodingException) {
                     // Fallback to encoded URI. This exception is not expected.
                 }
             }
         }
         this.bitmap = null
         this.uri = theUri
-        this.resource = null
-        this.tile = true
-    }
-
-    internal constructor(resource: Int) {
-        this.bitmap = null
-        this.uri = null
-        this.resource = resource
         this.tile = true
     }
 
@@ -142,7 +110,7 @@ class ImageSource {
      *
      * @return this instance for chaining.
      */
-    fun tilingEnabled(): ImageSource {
+    fun enableTiling(): ImageSource {
         return tiling(true)
     }
 
@@ -152,7 +120,7 @@ class ImageSource {
      *
      * @return this instance for chaining.
      */
-    fun tilingDisabled(): ImageSource {
+    fun disableTiling(): ImageSource {
         return tiling(false)
     }
 
@@ -163,7 +131,7 @@ class ImageSource {
      * @param tile whether tiling should be enabled.
      * @return this instance for chaining.
      */
-    fun tiling(tile: Boolean): ImageSource {
+    private fun tiling(tile: Boolean): ImageSource {
         this.tile = tile
         return this
     }
@@ -213,10 +181,6 @@ class ImageSource {
 
     fun getBitmap(): Bitmap? {
         return bitmap
-    }
-
-    fun getResource(): Int? {
-        return resource
     }
 
     fun getTile(): Boolean {

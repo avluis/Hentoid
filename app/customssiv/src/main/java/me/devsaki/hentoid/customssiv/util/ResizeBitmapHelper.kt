@@ -85,14 +85,18 @@ private fun resizeBitmapNonProportional(
     // One shot bilinear
     // No successive resize   or   0.75 <= Scale <= 1   or   scale >= 1.55
     Timber.d(">> Using native bilinear")
-    val temp = Bitmap.createScaledBitmap(
-        src,
-        (src.width * targetScale.x).roundToInt(),
-        (src.height * targetScale.y).roundToInt(),
-        true
-    )
-    src.recycle()
-    return Pair(temp, 1f)
+    try {
+        return Pair(
+            Bitmap.createScaledBitmap(
+                src,
+                (src.width * targetScale.x).roundToInt(),
+                (src.height * targetScale.y).roundToInt(),
+                true
+            ), 1f
+        )
+    } finally {
+        src.recycle()
+    }
 }
 
 
