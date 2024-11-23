@@ -41,6 +41,7 @@ private fun resizeBitmapProportional(
     src: Bitmap,
     targetScale: Float
 ): Pair<Bitmap, Float> {
+    Timber.d(">> target scale $targetScale")
     if (null == glEsRenderer) {
         val resizeParams = computeResizeParams(targetScale)
         Timber.d(">> resizing to scale %s", resizeParams.second)
@@ -65,7 +66,7 @@ private fun resizeBitmapNonProportional(
     targetScale: PointF
 ): Pair<Bitmap, Float> {
     val meanScale = (targetScale.x + targetScale.y) / 2f
-    Timber.d(">> meanScale $meanScale")
+    Timber.d(">> target meanScale $meanScale")
     if (null == glEsRenderer) {
         val xAmplitude = abs(1 - targetScale.x)
         val yAmplitude = abs(1 - targetScale.y)
@@ -84,16 +85,11 @@ private fun resizeBitmapNonProportional(
     }
     // One shot bilinear
     // No successive resize   or   0.75 <= Scale <= 1   or   scale >= 1.55
-    Timber.d(">> Using native bilinear")
+    val xTarget = (src.width * targetScale.x).roundToInt()
+    val yTarget = (src.height * targetScale.y).roundToInt()
+    Timber.d(">> Using native bilinear => ${xTarget}x$yTarget")
     try {
-        return Pair(
-            Bitmap.createScaledBitmap(
-                src,
-                (src.width * targetScale.x).roundToInt(),
-                (src.height * targetScale.y).roundToInt(),
-                true
-            ), 1f
-        )
+        return Pair(Bitmap.createScaledBitmap(src, xTarget, yTarget, true), 1f)
     } finally {
         src.recycle()
     }

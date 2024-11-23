@@ -405,7 +405,11 @@ class ImagePagerAdapter(context: Context) :
             // Initialize SSIV when required
             if (imgViewType == ViewType.DEFAULT && VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !isImageView) {
                 ssiv.setGlEsRenderer(if (isSmoothRendering) glEsRenderer else null)
-                ssiv.setPreloadDimensions(itemView.width, imgView.height)
+                // Only valid for horizontal
+                ssiv.setPreloadDimensions(
+                    if (isHalfWidth) screenWidth / 2 else screenWidth,
+                    screenHeight
+                )
                 if (!Settings.isReaderZoomTransitions) ssiv.setDoubleTapZoomDuration(10)
 
                 val scrollLTR = VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
@@ -424,10 +428,8 @@ class ImagePagerAdapter(context: Context) :
 
             var imageAvailable = true
             val img = getImageAt(position)
-            if (img != null && img.fileUri.isNotEmpty()) setImage(
-                img,
-                ImageType.IMG_TYPE_JXL == imageType
-            )
+            if (img != null && img.fileUri.isNotEmpty())
+                setImage(img, ImageType.IMG_TYPE_JXL == imageType)
             else imageAvailable = false
 
             val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
@@ -451,7 +453,7 @@ class ImagePagerAdapter(context: Context) :
                 Timber.d("Picture $absoluteAdapterPosition : Using SSIV")
                 ssiv.recycle()
                 ssiv.setMinimumScaleType(scaleType)
-                ssiv.setOnImageEventListener(this)
+                ssiv.setOnImageEventListener(this@ImageViewHolder)
                 ssiv.setDoubleTapZoomEnabled(doubleTapZoomEnabled)
                 ssiv.setLongTapZoomEnabled(longTapZoomEnabled)
                 ssiv.setDoubleTapZoomCap(doubleTapZoomCap)

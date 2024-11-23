@@ -575,11 +575,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             } finally {
                 decoderLock.writeLock().unlock()
             }
-            if (bitmap != null && !bitmapIsCached && !singleImage.loading) {
-                bitmap!!.recycle()
+            if (!bitmapIsCached && !singleImage.loading) {
+                bitmap?.recycle()
             }
-            if (bitmap != null && bitmapIsCached && onImageEventListener != null) {
-                onImageEventListener!!.onPreviewReleased()
+            if (bitmap != null && bitmapIsCached) {
+                onImageEventListener?.onPreviewReleased()
             }
             sWidth = 0
             sHeight = 0
@@ -1418,7 +1418,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         if (null == uri) return
 
         satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
-        fitToBounds(true, satTemp!!, Point(sWidth(), sHeight()))
+        fitToBounds(true, Point(sWidth(), sHeight()), satTemp!!)
         val targetScale = satTemp!!.scale
 
         orientation = if (needsRotating(sWidth(), sHeight())) {
@@ -1612,6 +1612,61 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     /**
+     * Adjusts current scale and translate values to keep scale within the allowed range and the image on screen. Minimum scale
+     * is set so one dimension fills the view and the image is centered on the other dimension.
+     *
+     * @param center Whether the image should be centered in the dimension it's too small to fill. While animating this can be false to avoid changes in direction as bounds are reached.
+     */
+    private fun fitToBounds(center: Boolean) {
+        fitToBounds(center, Point(sWidth(), sHeight()))
+    }
+
+    private fun fitToBounds(center: Boolean, sSize: Point) {
+        var init = false
+        if (vTranslate == null) {
+            init = true
+            vTranslate = PointF(0f, 0f)
+        }
+        if (satTemp == null) satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
+        satTemp?.let {
+            it.scale = scale
+            it.vTranslate.set(vTranslate!!)
+            fitToBounds(center, sSize, it)
+            scale = it.scale
+            signalScaleChange(scale)
+            if (-1f == initialScale) {
+                initialScale = scale
+                Timber.i(">> initialScale : %s", initialScale)
+            }
+            vTranslate!!.set(it.vTranslate)
+        }
+
+        // Recenter images if their dimensions are lower than the view's dimensions after the above call to fitToBounds
+        val viewHeight = getHeightInternal() - paddingBottom + paddingTop
+        val viewWidth = getWidthInternal() - paddingLeft + paddingRight
+        val sourcevWidth = sSize.x * scale
+        val sourcevHeight = sSize.y * scale
+
+        vTranslate?.let {
+            if (sourcevWidth < viewWidth) it[(viewWidth - sourcevWidth) / 2] = it.y
+            if (sourcevHeight < viewHeight) it[it.x] = (viewHeight - sourcevHeight) / 2
+        }
+
+        // Display images from the right side if asked to do so
+        if (!offsetLeftSide && !sideOffsetConsumed
+            && sourcevWidth > viewWidth
+            && !isCentered(minimumScaleType)
+        ) {
+            vTranslate!![scale * (-sSize.x + viewWidth / scale)] = vTranslate!!.y
+            sideOffsetConsumed = true
+        }
+
+        if (init && isCentered(minimumScaleType)) {
+            vTranslate!!.set(vTranslateForSCenter(sSize.x / 2f, sSize.y / 2f, scale, sSize))
+        }
+    }
+
+    /**
      * Adjusts hypothetical future scale and translate values to keep scale within the allowed range and the image on screen. Minimum scale
      * is set so one dimension fills the view and the image is centered on the other dimension. Used to calculate what the target of an
      * animation should be.
@@ -1619,20 +1674,15 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @param center Whether the image should be centered in the dimension it's too small to fill. While animating this can be false to avoid changes in direction as bounds are reached.
      * @param sat    The scale we want and the translation we're aiming for. The values are adjusted to be valid.
      */
-    private fun fitToBounds(center: Boolean, sat: ScaleAndTranslate, sSize: Point) {
+    private fun fitToBounds(center: Boolean, sSize: Point, sat: ScaleAndTranslate) {
         var doCenter = center
         if (panLimit == PanLimit.OUTSIDE && isReady()) doCenter = false
 
         val targetvTranslate = sat.vTranslate
-        val targetScale = if (minimumScaleType == ScaleType.STRETCH_SCREEN) {
-            // TODO take zoom into account
-            PointF(getUsefulWidth() / sWidth().toFloat(), getUsefulHeight() / sHeight().toFloat())
-        } else {
-            val scale = limitedScale(sat.scale)
-            PointF(scale, scale)
-        }
-        val scaleWidth = targetScale.x * sSize.x
-        val scaleHeight = targetScale.y * sSize.y
+
+        val targetScale = limitedScale(sat.scale)
+        val scaleWidth = targetScale * sSize.x
+        val scaleHeight = targetScale * sSize.y
 
         if (panLimit == PanLimit.CENTER && isReady()) {
             targetvTranslate.x = max(targetvTranslate.x, getWidthInternal() / 2f - scaleWidth)
@@ -1666,65 +1716,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         targetvTranslate.x = min(targetvTranslate.x, maxTx)
         targetvTranslate.y = min(targetvTranslate.y, maxTy)
 
-        sat.scale = (targetScale.x + targetScale.y) / 2f // TODO is that valid?
-    }
-
-    /**
-     * Adjusts current scale and translate values to keep scale within the allowed range and the image on screen. Minimum scale
-     * is set so one dimension fills the view and the image is centered on the other dimension.
-     *
-     * @param center Whether the image should be centered in the dimension it's too small to fill. While animating this can be false to avoid changes in direction as bounds are reached.
-     */
-    private fun fitToBounds(center: Boolean) {
-        fitToBounds(center, Point(sWidth(), sHeight()))
-    }
-
-    private fun fitToBounds(center: Boolean, sSize: Point) {
-        var init = false
-        if (vTranslate == null) {
-            init = true
-            vTranslate = PointF(0f, 0f)
-        }
-        if (satTemp == null) satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
-        satTemp!!.scale = scale
-        satTemp!!.vTranslate.set(vTranslate!!)
-        fitToBounds(center, satTemp!!, sSize)
-        scale = satTemp!!.scale
-        signalScaleChange(scale)
-        if (-1f == initialScale) {
-            initialScale = scale
-            Timber.i(">> initialScale : %s", initialScale)
-        }
-        vTranslate!!.set(satTemp!!.vTranslate)
-
-        // Recenter images if their dimensions are lower than the view's dimensions after the above call to fitToBounds
-        val viewHeight = getHeightInternal() - paddingBottom + paddingTop
-        val viewWidth = getWidthInternal() - paddingLeft + paddingRight
-        val targetScale = if (minimumScaleType == ScaleType.STRETCH_SCREEN) {
-            // TODO take zoom into account
-            PointF(getUsefulWidth() / sWidth().toFloat(), getUsefulHeight() / sHeight().toFloat())
-        } else PointF(scale, scale)
-
-        val sourcevWidth = sSize.x * targetScale.x
-        val sourcevHeight = sSize.y * targetScale.y
-
-        vTranslate?.let {
-            if (sourcevWidth < viewWidth) it[(viewWidth - sourcevWidth) / 2] = it.y
-            if (sourcevHeight < viewHeight) it[it.x] = (viewHeight - sourcevHeight) / 2
-        }
-
-        // Display images from the right side if asked to do so
-        if (!offsetLeftSide && !sideOffsetConsumed
-            && sourcevWidth > viewWidth
-            && !isCentered(minimumScaleType)
-        ) {
-            vTranslate!![scale * (-sSize.x + viewWidth / scale)] = vTranslate!!.y
-            sideOffsetConsumed = true
-        }
-
-        if (init && isCentered(minimumScaleType)) {
-            vTranslate!!.set(vTranslateForSCenter(sSize.x / 2f, sSize.y / 2f, scale, sSize))
-        }
+        sat.scale = targetScale
     }
 
     /**
@@ -1914,9 +1906,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         // TODO sharp mode - don't ask to resize when the image in memory already has the correct target scale
         val resizeResult = if (minimumScaleType == ScaleType.STRETCH_SCREEN) {
             val stretchedScale = PointF(
-                getUsefulWidth() / targetScale / bitmap.width,
-                getUsefulHeight() / targetScale / bitmap.height
+                getUsefulWidth().toFloat() / bitmap.width,
+                getUsefulHeight().toFloat() / bitmap.height
             )
+            Timber.d("stretchedScale ${stretchedScale.x}x${stretchedScale.y}")
             resizeBitmap(glEsRenderer, bitmap, stretchedScale)
         } else {
             resizeBitmap(glEsRenderer, bitmap, targetScale)
@@ -2109,9 +2102,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun sWidth(): Int {
         val rotation = getRequiredRotation()
         return if (rotation.code == 90 || rotation.code == 270) {
-            if (singleImage.rawHeight > -1) singleImage.rawHeight else sHeight
+            if (sHeight > 0) sHeight else singleImage.rawHeight
         } else {
-            if (singleImage.rawWidth > -1) singleImage.rawWidth else sWidth
+            if (sWidth > 0) sWidth else singleImage.rawWidth
         }
     }
 
@@ -2121,9 +2114,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun sHeight(): Int {
         val rotation = getRequiredRotation()
         return if (rotation.code == 90 || rotation.code == 270) {
-            if (singleImage.rawWidth > -1) singleImage.rawWidth else sWidth
+            if (sWidth > 0) sWidth else singleImage.rawWidth
         } else {
-            if (singleImage.rawHeight > -1) singleImage.rawHeight else sHeight
+            if (sHeight > 0) sHeight else singleImage.rawHeight
         }
     }
 
@@ -2361,7 +2354,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         if (satTemp == null) satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
         satTemp!!.scale = scale
         satTemp!!.vTranslate[vxCenter - (sCenterX * scale)] = vyCenter - (sCenterY * scale)
-        fitToBounds(true, satTemp!!, sSize)
+        fitToBounds(true, sSize, satTemp!!)
         return satTemp!!.vTranslate
     }
 
@@ -3073,7 +3066,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                                 PointF(vTranslateXEnd, vTranslateYEnd)
                             )
                         // Fit the end translation into bounds
-                        fitToBounds(true, satEnd, Point(sWidth(), sHeight()))
+                        fitToBounds(true, Point(sWidth(), sHeight()), satEnd)
                         // Adjust the position of the focus point at end so image will be in bounds
                         anm.vFocusEnd = PointF(
                             vFocus.x + (satEnd.vTranslate.x - vTranslateXEnd),

@@ -101,7 +101,6 @@ class ImageSource {
         }
         this.bitmap = null
         this.uri = theUri
-        this.tile = true
     }
 
     /**
