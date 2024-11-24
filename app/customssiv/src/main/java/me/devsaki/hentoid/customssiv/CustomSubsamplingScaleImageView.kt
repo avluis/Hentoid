@@ -1421,13 +1421,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         fitToBounds(true, Point(sWidth(), sHeight()), satTemp!!)
         val targetScale = satTemp!!.scale
 
-        orientation = if (needsRotating(sWidth(), sHeight())) {
-            when (autoRotate) {
-                AutoRotateMethod.LEFT -> Orientation.O_90
-                AutoRotateMethod.RIGHT -> Orientation.O_270
-                else -> Orientation.O_0
-            }
-        } else Orientation.O_0
+        orientation = detectRotation()
 
         // Load double resolution - next level will be split into four tiles and at the center all four are required,
         // so don't bother with tiling until the next level 16 tiles are needed.
@@ -1904,10 +1898,17 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         singleImage.rawHeight = bitmap.height
 
         // TODO sharp mode - don't ask to resize when the image in memory already has the correct target scale
+        val isPrepareRotate = when (detectRotation()) {
+            Orientation.O_90 -> true
+            Orientation.O_270 -> true
+            else -> false
+        }
+        val targetWidth = if (isPrepareRotate) getUsefulHeight() else getUsefulWidth()
+        val targetHeight = if (isPrepareRotate) getUsefulWidth() else getUsefulHeight()
         val resizeResult = if (minimumScaleType == ScaleType.STRETCH_SCREEN) {
             val stretchedScale = PointF(
-                getUsefulWidth().toFloat() / bitmap.width,
-                getUsefulHeight().toFloat() / bitmap.height
+                targetWidth.toFloat() / bitmap.width,
+                targetHeight.toFloat() / bitmap.height
             )
             Timber.d("stretchedScale ${stretchedScale.x}x${stretchedScale.y}")
             resizeBitmap(glEsRenderer, bitmap, stretchedScale)
@@ -1933,13 +1934,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         bitmapIsCached: Boolean,
         imageScale: Float
     ) {
-        orientation = if (needsRotating(bitmap.width, bitmap.height)) {
-            when (autoRotate) {
-                AutoRotateMethod.LEFT -> Orientation.O_90
-                AutoRotateMethod.RIGHT -> Orientation.O_270
-                else -> Orientation.O_0
-            }
-        } else Orientation.O_0
+        orientation = detectRotation()
 
         if (!this.bitmapIsCached && !singleImage.loading) this.bitmap?.recycle()
 
@@ -2646,6 +2641,18 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             this.sPendingCenter = PointF(0f, 0f)
         }
         invalidate()
+    }
+
+    private fun detectRotation(): Orientation {
+        val dimX = if (sWidth > 0) sWidth else singleImage.rawWidth
+        val dimY = if (sHeight > 0) sHeight else singleImage.rawHeight
+        return if (needsRotating(dimX, dimY)) {
+            when (autoRotate) {
+                AutoRotateMethod.LEFT -> Orientation.O_90
+                AutoRotateMethod.RIGHT -> Orientation.O_270
+                else -> Orientation.O_0
+            }
+        } else Orientation.O_0
     }
 
     fun resetScale() {
