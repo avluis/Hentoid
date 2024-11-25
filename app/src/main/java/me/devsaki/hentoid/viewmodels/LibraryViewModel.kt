@@ -378,9 +378,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     content.forEach { doToggleContentCompleted(it.id) }
                 } catch (t: Throwable) {
                     Timber.e(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
-            dao.cleanup()
             onSuccess.run()
         }
     }
@@ -412,9 +413,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     content.forEach { doResetReadStats(it.id) }
                 } catch (t: Throwable) {
                     Timber.e(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
-            dao.cleanup()
             onSuccess.run()
         }
     }
@@ -457,9 +459,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     doToggleContentFavourite(content.id)
                 } catch (t: Throwable) {
                     Timber.e(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
-            dao.cleanup()
             onSuccess.run()
         }
     }
@@ -500,9 +503,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     }
                 } catch (t: Throwable) {
                     Timber.e(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
-            dao.cleanup()
             onSuccess.run()
         }
     }
@@ -635,13 +639,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             )
                         }
                     } // Each content
-                }
+                    dao.cleanup()
+                } // Dispatchers.IO
                 if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
                 onSuccess.invoke(contentList.size - nbErrors.get())
             } catch (t: Throwable) {
                 onError.invoke(t)
             }
-            dao.cleanup()
         }
     }
 
@@ -721,11 +725,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             )
                         }
                     }
-                }
+                    dao.cleanup()
+                } // Dispatchers.IO
             } catch (t: Throwable) {
                 onError.invoke(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -774,12 +777,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 withContext(Dispatchers.IO) {
                     doSaveContentPositions(orderedContent)
                     updateGroupsJson(getApplication(), dao)
+                    dao.cleanup()
                 }
                 onSuccess.run()
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -804,11 +806,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 withContext(Dispatchers.IO) {
                     doSaveGroupPositions(orderedGroups)
                     updateGroupsJson(getApplication(), dao)
+                    dao.cleanup()
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -847,11 +848,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         dao.insertGroup(newGroup)
                         refreshAvailableGroupings()
                         updateGroupsJson(getApplication(), dao)
+                        dao.cleanup()
                     }
                 } catch (t: Throwable) {
                     Timber.e(t)
-                } finally {
-                    dao.cleanup()
                 }
             }
         }
@@ -891,12 +891,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 .setInputData(builder.data)
                                 .build()
                         )
+                        dao.cleanup()
                     }
                     onSuccess.run()
                 } catch (t: Throwable) {
                     Timber.e(t)
-                } finally {
-                    dao.cleanup()
                 }
             }
         }
@@ -914,11 +913,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             try {
                 withContext(Dispatchers.IO) {
                     doToggleGroupFavourite(group.id)
+                    dao.cleanup()
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -953,17 +951,16 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param targetRating Rating to set
      */
     fun rateGroups(groupIds: List<Long>, targetRating: Int) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                groupIds.forEach {
-                    try {
-                        doRateGroup(it, targetRating)
-                    } catch (t: Throwable) {
-                        Timber.w(t)
-                    }
+        viewModelScope.launch(Dispatchers.IO) {
+            groupIds.forEach {
+                try {
+                    doRateGroup(it, targetRating)
+                } catch (t: Throwable) {
+                    Timber.w(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
-            dao.cleanup()
         }
     }
 
@@ -1017,12 +1014,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     }
                     refreshAvailableGroupings()
                     updateGroupsJson(getApplication(), dao)
+                    dao.cleanup()
                 }
                 onSuccess.run()
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }

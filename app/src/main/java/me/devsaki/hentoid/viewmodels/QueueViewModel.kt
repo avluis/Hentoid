@@ -364,9 +364,9 @@ class QueueViewModel(
                         contentList.size
                     )
                 )
-            }
+                dao.cleanup()
+            } // Dispatchers.IO
             onSuccess.invoke(contentList.size - errorCount.get())
-            dao.cleanup()
         }
     }
 
@@ -375,34 +375,30 @@ class QueueViewModel(
     }
 
     fun setDownloadMode(contentIds: List<Long>, downloadMode: DownloadMode) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                contentIds.forEach {
-                    val theContent = dao.selectContent(it)
-                    if (theContent != null && !theContent.isBeingProcessed) {
-                        theContent.downloadMode = downloadMode
-                        dao.insertContent(theContent)
-                    }
+        viewModelScope.launch(Dispatchers.IO) {
+            contentIds.forEach {
+                val theContent = dao.selectContent(it)
+                if (theContent != null && !theContent.isBeingProcessed) {
+                    theContent.downloadMode = downloadMode
+                    dao.insertContent(theContent)
                 }
-                updateQueueJson(getApplication(), dao)
-                // Force display by updating queue
-                dao.updateQueue(dao.selectQueue())
             }
+            updateQueueJson(getApplication(), dao)
+            // Force display by updating queue
+            dao.updateQueue(dao.selectQueue())
             dao.cleanup()
         }
     }
 
     fun toogleFreeze(recordId: List<Long>) {
-        viewModelScope.launch {
-            launch(Dispatchers.IO) {
-                val queue = dao.selectQueue()
-                queue.forEach {
-                    if (recordId.contains(it.id)) it.frozen = !it.frozen
-                }
-                dao.updateQueue(queue)
-                // Update queue JSON
-                updateQueueJson(getApplication(), dao)
+        viewModelScope.launch(Dispatchers.IO) {
+            val queue = dao.selectQueue()
+            queue.forEach {
+                if (recordId.contains(it.id)) it.frozen = !it.frozen
             }
+            dao.updateQueue(queue)
+            // Update queue JSON
+            updateQueueJson(getApplication(), dao)
             dao.cleanup()
         }
     }
