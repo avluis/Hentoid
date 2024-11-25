@@ -131,6 +131,7 @@ abstract class BaseSplitMergeWorker(
         val chapters = dao.selectChapters(chapterSplitIds.toList())
         var targetFolder: DocumentFile? = null
 
+
         val images = content.imageList
         if (chapters.isEmpty()) throw ContentNotProcessedException(content, "No chapters detected")
         if (images.isEmpty()) throw ContentNotProcessedException(content, "No images detected")
@@ -160,28 +161,32 @@ abstract class BaseSplitMergeWorker(
             val splitContentImages =
                 splitContent.imageList.filter { it.status == StatusContent.DOWNLOADED }
             withContext(Dispatchers.IO) {
-                copyFiles(
-                    applicationContext,
-                    splitContentImages.map { Pair(Uri.parse(it.fileUri), it.name) },
-                    targetFolder.uri,
-                    isCanceled = this@BaseSplitMergeWorker::isStopped,
-                    onProgress = { _, oldUri, newUri ->
-                        if (newUri != null) {
-                            splitContentImages.firstOrNull { it.fileUri == oldUri.toString() }?.fileUri =
-                                newUri.toString()
-                        } else Timber.w("Could not move file $oldUri")
-                        bookTitle = chap.name
-                        launchProgressNotification()
-                    }
-                )
-                if (isStopped) return@withContext
+                try {
+                    copyFiles(
+                        applicationContext,
+                        splitContentImages.map { Pair(Uri.parse(it.fileUri), it.name) },
+                        targetFolder.uri,
+                        isCanceled = this@BaseSplitMergeWorker::isStopped,
+                        onProgress = { _, oldUri, newUri ->
+                            if (newUri != null) {
+                                splitContentImages.firstOrNull { it.fileUri == oldUri.toString() }?.fileUri =
+                                    newUri.toString()
+                            } else Timber.w("Could not move file $oldUri")
+                            bookTitle = chap.name
+                            launchProgressNotification()
+                        }
+                    )
+                    if (isStopped) return@withContext
 
-                // Save the JSON for the new book
-                val jsonFile = createJson(applicationContext, splitContent)
-                if (jsonFile != null) splitContent.jsonUri = jsonFile.uri.toString()
+                    // Save the JSON for the new book
+                    val jsonFile = createJson(applicationContext, splitContent)
+                    if (jsonFile != null) splitContent.jsonUri = jsonFile.uri.toString()
 
-                // Save new content (incl. non-custom group operations)
-                addContent(applicationContext, dao, splitContent)
+                    // Save new content (incl. non-custom group operations)
+                    addContent(applicationContext, dao, splitContent)
+                } finally {
+                    dao.cleanup()
+                }
             }
             if (isStopped) break
 
@@ -384,8 +389,26 @@ abstract class BaseSplitMergeWorker(
 
         // Perform swaps by exchanging file content
         // NB : "thanks to" SAF; this works faster than renaming the files :facepalm:
-        withContext(Dispatchers.IO) {
-            var firstFileContent: ByteArray? = null
+        performSwaps(
+            finalOps,
+            contentId,
+            content.name,
+            orderedImages
+        )
+        progressDone(nbMax)
+
+        // Reset Coil cache as it gets confused by the swapping
+        clearCoilCache(applicationContext)
+    }
+
+    private suspend fun performSwaps(
+        finalOps: List<List<FileOperation>>,
+        contentId: Long,
+        contentName: String,
+        orderedImages: List<ImageFile>
+    ) = withContext(Dispatchers.IO) {
+        var firstFileContent: ByteArray? = null
+        try {
             finalOps.forEach { seq ->
                 seq.forEachIndexed { idx, op ->
                     if (op.isLoop) {
@@ -435,7 +458,7 @@ abstract class BaseSplitMergeWorker(
                         op.targetData.fileUri = op.target?.uri?.toString() ?: ""
                     }
                 }
-                bookTitle = content.name
+                bookTitle = contentName
                 launchProgressNotification()
             }
 
@@ -443,11 +466,9 @@ abstract class BaseSplitMergeWorker(
             dao.insertImageFiles(orderedImages)
             val finalContent = dao.selectContent(contentId)
             if (finalContent != null) persistJson(applicationContext, finalContent)
+        } finally {
+            dao.cleanup()
         }
-        progressDone(nbMax)
-
-        // Reset Coil cache as it gets confused by the swapping
-        clearCoilCache(applicationContext)
     }
 
     /**

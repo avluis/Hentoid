@@ -42,7 +42,6 @@ class DownloadsImportWorker(
     parameters: WorkerParameters
 ) : BaseWorker(context, parameters, R.id.downloads_import_service, "downloads-import") {
     // Variable used during the import process
-    private var dao: CollectionDAO? = null
     private var totalItems = 0
     private var cfHelper: CloudflareHelper? = null
     private var nbOK = 0
@@ -62,7 +61,6 @@ class DownloadsImportWorker(
 
     override suspend fun onClear(logFile: DocumentFile?) {
         cfHelper?.clear()
-        dao?.cleanup()
     }
 
     override suspend fun getToWork(input: Data) {
@@ -97,14 +95,18 @@ class DownloadsImportWorker(
             return@withContext
         }
         totalItems = downloads.size
-        dao = ObjectBoxDAO()
-        for (s in downloads) {
-            var galleryUrl = s
-            if (isNumeric(galleryUrl)) galleryUrl = Content.getGalleryUrlFromId(
-                Site.NHENTAI,
-                galleryUrl
-            ) // We assume any launch code is Nhentai's
-            importGallery(galleryUrl, queuePosition, importAsStreamed, false)
+        val dao = ObjectBoxDAO()
+        try {
+            for (s in downloads) {
+                var galleryUrl = s
+                if (isNumeric(galleryUrl)) galleryUrl = Content.getGalleryUrlFromId(
+                    Site.NHENTAI,
+                    galleryUrl
+                ) // We assume any launch code is Nhentai's
+                importGallery(galleryUrl, queuePosition, importAsStreamed, false, dao)
+            }
+        } finally {
+            dao.cleanup()
         }
         if (Preferences.isQueueAutostart()) resumeQueue(applicationContext)
         notifyProcessEnd()
@@ -114,7 +116,8 @@ class DownloadsImportWorker(
         url: String,
         queuePosition: QueuePosition,
         importAsStreamed: Boolean,
-        hasPassedCf: Boolean
+        hasPassedCf: Boolean,
+        dao : CollectionDAO
     ) {
         val site = Site.searchByUrl(url)
         if (null == site || Site.NONE == site) {
@@ -154,7 +157,7 @@ class DownloadsImportWorker(
         } catch (e: IOException) {
             trace(Log.WARN, "ERROR : While loading content @ %s", url)
             nextKO(e)
-        } catch (cpe: CloudflareProtectedException) {
+        } catch (_: CloudflareProtectedException) {
             if (hasPassedCf) {
                 trace(Log.WARN, "Cloudflare bypass ineffective for content @ %s", url)
                 nextKO()
@@ -163,7 +166,7 @@ class DownloadsImportWorker(
             trace(Log.INFO, "Trying to bypass Cloudflare for content @ %s", url)
             if (null == cfHelper) cfHelper = CloudflareHelper()
             if (cfHelper!!.tryPassCloudflare(site, null)) {
-                importGallery(url, queuePosition, importAsStreamed, true)
+                importGallery(url, queuePosition, importAsStreamed, true, dao)
             } else {
                 trace(Log.WARN, "Cloudflare bypass failed for content @ %s", url)
                 nextKO()

@@ -61,7 +61,6 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
     BaseWorker(context, params, R.id.metadata_import_service, "metadata-import") {
 
     // Variable used during the import process
-    private lateinit var dao: CollectionDAO
     private var totalItems = 0
     private var nbOK = 0
     private var nbKO = 0
@@ -82,7 +81,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
     }
 
     override suspend fun onClear(logFile: DocumentFile?) {
-        dao.cleanup()
+        // Nothing
     }
 
     override suspend fun getToWork(input: Data) {
@@ -123,43 +122,47 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             trace(Log.ERROR, "Couldn't deserialize JSON file")
             return@withContext
         }
-        dao = ObjectBoxDAO()
-        if (!add) {
-            if (importLibrary) dao.deleteAllInternalBooks("", false)
-            if (importQueue) dao.deleteAllQueuedBooks()
-            if (importCustomGroups) dao.deleteAllGroups(Grouping.CUSTOM)
-            if (importBookmarks) dao.deleteAllBookmarks()
-        }
-
-        // Done in one shot
-        if (importBookmarks) {
-            val bookmarks = collection.getEntityBookmarks()
-            totalItems += bookmarks.size
-            importBookmarks(dao, bookmarks)
-            nbOK += bookmarks.size
-        }
-        val contentToImport: MutableList<JsonContent> = ArrayList()
-        if (importLibrary) contentToImport.addAll(collection.library)
-        if (importQueue) contentToImport.addAll(collection.queue)
-        queueSize = dao.countAllQueueBooks().toInt()
-        totalItems += contentToImport.size
-        if (importCustomGroups) {
-            val customGroups = collection.getEntityGroups(Grouping.CUSTOM)
-            totalItems += customGroups.size
-            // Chain group import followed by content import
-            runImportItems(
-                context,
-                customGroups,
-                dao,
-                true,
-                emptyBooksOption
-            ) {
-                runImportItems(
-                    context, contentToImport, dao, false, emptyBooksOption
-                ) { finish() }
+        val dao = ObjectBoxDAO()
+        try {
+            if (!add) {
+                if (importLibrary) dao.deleteAllInternalBooks("", false)
+                if (importQueue) dao.deleteAllQueuedBooks()
+                if (importCustomGroups) dao.deleteAllGroups(Grouping.CUSTOM)
+                if (importBookmarks) dao.deleteAllBookmarks()
             }
-        } else  // Run content import alone
-            runImportItems(context, contentToImport, dao, false, emptyBooksOption) { finish() }
+
+            // Done in one shot
+            if (importBookmarks) {
+                val bookmarks = collection.getEntityBookmarks()
+                totalItems += bookmarks.size
+                importBookmarks(dao, bookmarks)
+                nbOK += bookmarks.size
+            }
+            val contentToImport: MutableList<JsonContent> = ArrayList()
+            if (importLibrary) contentToImport.addAll(collection.library)
+            if (importQueue) contentToImport.addAll(collection.queue)
+            queueSize = dao.countAllQueueBooks().toInt()
+            totalItems += contentToImport.size
+            if (importCustomGroups) {
+                val customGroups = collection.getEntityGroups(Grouping.CUSTOM)
+                totalItems += customGroups.size
+                // Chain group import followed by content import
+                runImportItems(
+                    context,
+                    customGroups,
+                    dao,
+                    true,
+                    emptyBooksOption
+                ) {
+                    runImportItems(
+                        context, contentToImport, dao, false, emptyBooksOption
+                    ) { finish() }
+                }
+            } else  // Run content import alone
+                runImportItems(context, contentToImport, dao, false, emptyBooksOption) { finish() }
+        } finally {
+            dao.cleanup()
+        }
     }
 
     private suspend fun runImportItems(
@@ -365,12 +368,12 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
     }
 
 
-    private suspend fun nextOK() {
+    private fun nextOK() {
         nbOK++
         launchProgressNotification()
     }
 
-    private suspend fun nextKO(e: Throwable) {
+    private fun nextKO(e: Throwable) {
         nbKO++
         Timber.w(e)
         launchProgressNotification()

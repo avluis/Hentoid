@@ -73,7 +73,7 @@ abstract class BaseDeleteWorker(
     private var deleteProgress = 0
     private var nbError = 0
 
-    private val dao: CollectionDAO
+    private val dao: CollectionDAO = ObjectBoxDAO()
 
     init {
         val inputData = DeleteData.Parser(inputData)
@@ -88,7 +88,6 @@ abstract class BaseDeleteWorker(
         isDownloadPrepurge = inputData.isDownloadPrepurge
         operation =
             if (1 == inputData.massOperation) ToolsActivity.MassOperation.STREAM else ToolsActivity.MassOperation.DELETE
-        dao = ObjectBoxDAO()
 
         // Queried here to avoid serialization hard-limit of androidx.work.Data.Builder
         // when passing a large long[] through DeleteData
@@ -130,7 +129,7 @@ abstract class BaseDeleteWorker(
     }
 
     override suspend fun onClear(logFile: DocumentFile?) {
-        dao.cleanup()
+        // Nothing
     }
 
     override fun runProgressNotification() {
@@ -142,19 +141,23 @@ abstract class BaseDeleteWorker(
         nbError = 0
 
         withContext(Dispatchers.IO) {
-            // First chain contents, then groups (to be sure to delete empty groups only)
-            if (contentIds.isNotEmpty()) processContentList(contentIds, operation)
-            if (contentPurgeIds.isNotEmpty())
-                purgeContentList(contentPurgeIds, contentPurgeKeepCovers)
-            if (groupIds.isNotEmpty()) removeGroups(groupIds, isDeleteGroupsOnly)
+            try {
+                // First chain contents, then groups (to be sure to delete empty groups only)
+                if (contentIds.isNotEmpty()) processContentList(contentIds, operation)
+                if (contentPurgeIds.isNotEmpty())
+                    purgeContentList(contentPurgeIds, contentPurgeKeepCovers)
+                if (groupIds.isNotEmpty()) removeGroups(groupIds, isDeleteGroupsOnly)
 
-            // Remove Contents and associated QueueRecords
-            if (queueIds.isNotEmpty()) removeQueue(queueIds)
-            // Remove files linked to the given ImageFile IDs
-            if (imageIds.isNotEmpty()) removeImageFiles(imageIds)
+                // Remove Contents and associated QueueRecords
+                if (queueIds.isNotEmpty()) removeQueue(queueIds)
+                // Remove files linked to the given ImageFile IDs
+                if (imageIds.isNotEmpty()) removeImageFiles(imageIds)
 
-            // If asked, make sure all QueueRecords are removed including dead ones
-            if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore()
+                // If asked, make sure all QueueRecords are removed including dead ones
+                if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore()
+            } finally {
+                dao.cleanup()
+            }
         }
         progressDone()
     }
