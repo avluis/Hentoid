@@ -253,7 +253,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     if (isLandscape) navBarHeight else 0,
                     if (isLandscape) 0 else navBarHeight
                 )
-
                 WindowInsetsCompat.CONSUMED
             }
         }
