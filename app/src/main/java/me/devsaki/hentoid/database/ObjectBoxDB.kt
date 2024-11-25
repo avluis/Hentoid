@@ -176,21 +176,17 @@ object ObjectBoxDB {
     }
 
     fun updateContentProcessedFlag(contentId: Long, flag: Boolean) {
-        store.runInTx {
-            store.boxFor(Content::class.java)[contentId]?.let { c ->
-                c.isBeingProcessed = flag
-                store.boxFor(Content::class.java).put(c)
-            }
+        store.boxFor(Content::class.java)[contentId]?.let { c ->
+            c.isBeingProcessed = flag
+            store.boxFor(Content::class.java).put(c)
         }
     }
 
     fun updateContentsProcessedFlag(contentIds: LongArray, flag: Boolean) {
         val contentStore = store.boxFor(Content::class.java)
-        store.runInTx {
-            val data = contentStore[contentIds]
-            data.forEach { it.isBeingProcessed = flag }
-            contentStore.put(data)
-        }
+        val data = contentStore[contentIds]
+        data.forEach { it.isBeingProcessed = flag }
+        contentStore.put(data)
     }
 
     fun selectContentByStatus(status: StatusContent): List<Content> {
@@ -1673,7 +1669,7 @@ object ObjectBoxDB {
     fun replaceImageFiles(contentId: Long, newList: List<ImageFile>) {
         store.runInTx {
             deleteImageFiles(contentId)
-            for (img in newList) img.contentId = contentId
+            newList.forEach { it.contentId = contentId }
             insertImageFiles(newList)
         }
     }
