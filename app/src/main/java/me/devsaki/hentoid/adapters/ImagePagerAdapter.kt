@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil3.SingletonImageLoader
 import coil3.dispose
+import coil3.executeBlocking
+import coil3.imageLoader
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -52,6 +54,7 @@ import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_MEDIUM
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_SMALL
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.getScreenDimensionsPx
+import me.devsaki.hentoid.util.image.needsRotating
 import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.views.ZoomableRecyclerView
 import me.devsaki.hentoid.widget.OnZoneTapListener
@@ -453,10 +456,25 @@ class ImagePagerAdapter(context: Context) :
                 Timber.d("Picture $absoluteAdapterPosition : Using Coil")
 
                 val isChangeDims = when (autoRotate) {
-                    Settings.Value.READER_AUTO_ROTATE_LEFT -> true
-                    Settings.Value.READER_AUTO_ROTATE_RIGHT -> true
-                    else -> false
+                    Settings.Value.READER_AUTO_ROTATE_NONE -> false
+                    else -> {
+                        // Preload the pic to get its dimensions
+                        val dims = view.context.let { ctx ->
+                            val request = ImageRequest.Builder(ctx)
+                                .data(uri)
+                                .diskCacheKey(uri.toString())
+                                .memoryCacheKey(uri.toString())
+                                .allowHardware(!isJxl)
+                                .allowConversionToBitmap(false)
+                                .build()
+                            view.context.imageLoader.executeBlocking(request).image?.let {
+                                Point(it.width, it.height)
+                            } ?: Point(0, 0)
+                        }
+                        needsRotating(screenWidth, screenHeight, dims.x, dims.y)
+                    }
                 }
+
                 recyclerView?.let {
                     val imgLayoutParams = imageView.layoutParams
                     imgLayoutParams.width =
@@ -472,6 +490,8 @@ class ImagePagerAdapter(context: Context) :
                     val imageLoader = SingletonImageLoader.get(ctx)
                     val request = ImageRequest.Builder(ctx)
                         .data(uri)
+                        .diskCacheKey(uri.toString())
+                        .memoryCacheKey(uri.toString())
                         .target(imageView)
                         .allowHardware(!isJxl)
                         .listener(
@@ -627,17 +647,18 @@ class ImagePagerAdapter(context: Context) :
             imgHeight: Int,
             adjustImgHeight: Boolean,
             resizeSmallPics: Boolean,
-            isAutoRotate: Boolean
+            doAutoRotate: Boolean
         ) {
-            imgView.rotation = if (isAutoRotate) {
-                when (autoRotate) {
-                    Settings.Value.READER_AUTO_ROTATE_LEFT -> 90f
-                    Settings.Value.READER_AUTO_ROTATE_RIGHT -> -90f
-                    else -> 0f
+            imgView.rotation =
+                if (doAutoRotate && needsRotating(screenWidth, screenHeight, imgWidth, imgHeight)) {
+                    when (autoRotate) {
+                        Settings.Value.READER_AUTO_ROTATE_LEFT -> 90f
+                        Settings.Value.READER_AUTO_ROTATE_RIGHT -> -90f
+                        else -> 0f
+                    }
+                } else {
+                    0f
                 }
-            } else {
-                0f
-            }
 
             // Root view layout
             val rootLayoutStyle =

@@ -525,6 +525,7 @@ fun needsRotating(screenWidth: Int, screenHeight: Int, width: Int, height: Int):
 
 /**
  * Return the given image's dimensions
+ * NB : Only works for formats natively supported by Android
  *
  * @param context Context to be used
  * @param uri     Uri of the image to be read
