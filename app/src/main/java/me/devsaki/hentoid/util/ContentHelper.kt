@@ -512,6 +512,7 @@ suspend fun removeContent(context: Context, dao: CollectionDAO, content: Content
                 )
             }
         }
+        dao.cleanup()
     }
 
 /**
@@ -545,6 +546,7 @@ suspend fun removeQueuedContent(
 
     // Remove content itself
     if (deleteContent) removeContent(context, dao, content)
+    dao.cleanup()
 }
 
 /**
@@ -2264,6 +2266,7 @@ suspend fun mergeContents(
                 )
         }
     }
+    dao.cleanup()
 
     if (!isCanceled.invoke()) onComplete.invoke()
 }

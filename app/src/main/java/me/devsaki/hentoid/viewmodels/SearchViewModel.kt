@@ -79,23 +79,21 @@ class SearchViewModel(
      * @param itemsPerPage Number of items per result "page"
      */
     fun setAttributeQuery(query: String, pageNum: Int, itemsPerPage: Int) {
-        viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                dao.selectAttributeMasterDataPaged(
-                    attributeTypes!!,
-                    query,
-                    selectedGroup,
-                    selectedAttributes.value!!.toSet(),
-                    location,
-                    contentType,
-                    false,
-                    pageNum,
-                    itemsPerPage,
-                    attributeSortOrder
-                )
-            }
-            dao.cleanup()
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = dao.selectAttributeMasterDataPaged(
+                attributeTypes!!,
+                query,
+                selectedGroup,
+                selectedAttributes.value!!.toSet(),
+                location,
+                contentType,
+                false,
+                pageNum,
+                itemsPerPage,
+                attributeSortOrder
+            )
             availableAttributes.postValue(result)
+            dao.cleanup()
         }
     }
 
@@ -166,15 +164,16 @@ class SearchViewModel(
      */
     private fun countAttributesPerType() {
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                dao.countAttributesPerType(
+            val result : SparseIntArray
+            withContext(Dispatchers.IO) {
+                result = dao.countAttributesPerType(
                     selectedGroup,
                     selectedAttributes.value!!.toSet(),
                     location,
                     contentType
                 )
+                dao.cleanup()
             }
-            dao.cleanup()
             // Result has to take into account the number of attributes already selected (hence unavailable)
             selectedAttributes.value?.forEach {
                 // if attribute is excluded already, there's no need to reduce attrPerType value,

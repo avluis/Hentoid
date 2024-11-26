@@ -50,8 +50,6 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         val deleteOnSuccess: Boolean
     )
 
-    private val dao: CollectionDAO = ObjectBoxDAO()
-
     private var nbItems = 0
     private var nbKO = 0
     private lateinit var globalProgress: ProgressManager
@@ -68,7 +66,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
     }
 
     override suspend fun onClear(logFile: DocumentFile?) {
-        dao.cleanup()
+        // Nothing
     }
 
     override suspend fun getToWork(input: Data) {
@@ -83,28 +81,34 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         val params = moshi.adapter(Params::class.java).fromJson(paramsStr)
         require(params != null)
 
-        withContext(Dispatchers.IO) { archive(contentIds, params) }
+        archive(contentIds, params)
     }
 
-    private suspend fun archive(contentIds: LongArray, params: Params) {
-        globalProgress = ProgressManager(contentIds.size)
+    private suspend fun archive(contentIds: LongArray, params: Params) =
+        withContext(Dispatchers.IO) {
+            globalProgress = ProgressManager(contentIds.size)
 
-        for (contentId in contentIds) {
-            if (isStopped) break
-            val content = dao.selectContent(contentId)
-            content?.let {
-                if (canBeArchived(content)) archiveContent(content, params)
-                else {
-                    globalProgress.setProgress(content.id.toString(), 1f)
-                    nextKO()
+            val dao: CollectionDAO = ObjectBoxDAO()
+            try {
+                for (contentId in contentIds) {
+                    if (isStopped) break
+                    val content = dao.selectContent(contentId)
+                    content?.let {
+                        if (canBeArchived(content)) archiveContent(content, params, dao)
+                        else {
+                            globalProgress.setProgress(content.id.toString(), 1f)
+                            nextKO()
+                        }
+                    }
                 }
+                if (isStopped) notificationManager.cancel()
+                notifyProcessEnd()
+            } finally {
+                dao.cleanup()
             }
         }
-        if (isStopped) notificationManager.cancel()
-        notifyProcessEnd()
-    }
 
-    private suspend fun archiveContent(content: Content, params: Params) {
+    private suspend fun archiveContent(content: Content, params: Params, dao: CollectionDAO) {
         Timber.i(">> archive %s", content.title)
         val bookFolder = getDocumentFromTreeUriString(
             applicationContext, content.storageUri
@@ -164,7 +168,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         var destName = bookFolderName.first + "." + ext
         return try {
             createTargetFile(params.targetFolderUri, destName, params.overwrite)
-        } catch (e: IOException) { // ...if it fails, try creating the file with the old sanitized naming
+        } catch (_: IOException) { // ...if it fails, try creating the file with the old sanitized naming
             destName = bookFolderName.second + "." + ext
             createTargetFile(params.targetFolderUri, destName, params.overwrite)
         }

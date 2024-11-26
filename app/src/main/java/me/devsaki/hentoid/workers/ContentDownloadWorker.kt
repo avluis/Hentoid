@@ -22,7 +22,6 @@ import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.RenamingRule
-import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.ErrorType
 import me.devsaki.hentoid.enums.Grouping
@@ -131,7 +130,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     }
 
     // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
-    private val dao: CollectionDAO
+    private val dao: CollectionDAO = ObjectBoxDAO()
 
     // True if a Cancel event has been processed; false by default
     private val downloadCanceled = AtomicBoolean(false)
@@ -148,7 +147,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     init {
         EventBus.getDefault().register(this)
-        dao = ObjectBoxDAO()
         requestQueueManager = getInstance(
             context, this::onRequestSuccess, this::onRequestError
         )
@@ -169,7 +167,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     override suspend fun onClear(logFile: DocumentFile?) {
         EventBus.getDefault().unregister(this)
-        dao.cleanup()
     }
 
     override fun runProgressNotification() {
@@ -178,21 +175,20 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     }
 
     override suspend fun getToWork(input: Data) {
-        withContext(Dispatchers.IO) {
-            iterateQueue()
-        }
+        iterateQueue()
     }
 
-    private suspend fun iterateQueue() {
+    private suspend fun iterateQueue() = withContext(Dispatchers.IO) {
         // Process these here to avoid initializing notifications for downloads that will never start
         if (isQueuePaused) {
             Timber.i("Queue is paused. Download aborted.")
-            return
+            return@withContext
         }
         var result = downloadFirstInQueue()
         while (result.first != QueuingResult.QUEUE_END) {
             if (result.first == QueuingResult.CONTENT_FOUND) watchProgress(result.second!!)
             result = downloadFirstInQueue()
+            dao.cleanup()
         }
         notificationManager.cancel()
     }
@@ -541,22 +537,18 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             // Parse pages for images
             if (pagesToParse.isNotEmpty()) {
-                GlobalScope.launch(Dispatchers.Default) {
-                    withContext(Dispatchers.IO) {
-                        pagesToParse.forEach {
-                            parsePageforImage(it, targetFolder, content)
-                        }
+                GlobalScope.launch(Dispatchers.IO) {
+                    pagesToParse.forEach {
+                        parsePageforImage(it, targetFolder, content)
                     }
                 }
             }
 
             // Parse ugoiras for images
             if (ugoirasToDownload.isNotEmpty()) {
-                GlobalScope.launch(Dispatchers.Default) {
-                    withContext(Dispatchers.IO) {
-                        ugoirasToDownload.forEach {
-                            downloadAndUnzipUgoira(it, targetFolder, content.site)
-                        }
+                GlobalScope.launch(Dispatchers.IO) {
+                    ugoirasToDownload.forEach {
+                        downloadAndUnzipUgoira(it, targetFolder, content.site)
                     }
                 }
             }

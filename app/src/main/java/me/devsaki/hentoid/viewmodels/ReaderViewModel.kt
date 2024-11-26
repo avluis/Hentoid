@@ -231,15 +231,15 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
+                    dao.cleanup()
                     val list = searchManager.searchContentIds()
                     contentIds.clear()
                     contentIds.addAll(list)
                 }
                 loadContentFromId(contentId, pageNumber)
+                dao.cleanup()
             } catch (e: Throwable) {
                 Timber.w(e)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -306,15 +306,13 @@ class ReaderViewModel(
         // e.g. page favourited
         if (!theContent.isArchive) {
             viewModelScope.launch {
-                try {
-                    withContext(Dispatchers.IO) {
-                        processStorageImages(theContent, newImages)
-                        cacheJson(getApplication<Application>().applicationContext, theContent)
-                    }
-                    processImages(theContent, -1, newImages)
-                } finally {
+                withContext(Dispatchers.IO) {
+                    processStorageImages(theContent, newImages)
+                    cacheJson(getApplication<Application>().applicationContext, theContent)
                     dao.cleanup()
                 }
+                processImages(theContent, -1, newImages)
+                dao.cleanup()
             }
         } else {
             // Copy location properties of the new list on the current list
@@ -375,10 +373,8 @@ class ReaderViewModel(
      * Callback to run when the activity is on the verge of being destroyed
      */
     fun onActivityLeave() {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                AchievementsManager.checkCollection()
-            }
+        viewModelScope.launch(Dispatchers.IO) {
+            AchievementsManager.checkCollection()
             dao.cleanup()
         }
     }
@@ -583,9 +579,10 @@ class ReaderViewModel(
                     doLeaveBook(theContent.id, indexToSet, updateReads, markAsComplete)
                 } catch (t: Throwable) {
                     Timber.e(t)
+                } finally {
+                    dao.cleanup()
                 }
             }
-            dao.cleanup()
         }
     }
 
@@ -670,12 +667,11 @@ class ReaderViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     doToggleImageFavourite(images)
+                    dao.cleanup()
                 }
                 successCallback.run()
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -718,13 +714,12 @@ class ReaderViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     doToggleContentFavourite(theContent)
+                    dao.cleanup()
                 }
                 reloadContent(viewerIndex) // Must run on the main thread
                 successCallback.invoke(newState)
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -759,12 +754,11 @@ class ReaderViewModel(
                     persistJson(
                         getApplication<Application>().applicationContext, targetContent
                     )
+                    dao.cleanup()
                 }
                 successCallback.invoke(rating)
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -843,12 +837,11 @@ class ReaderViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     removePages(pages, dao, getApplication())
+                    dao.cleanup()
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -863,11 +856,10 @@ class ReaderViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     setAndSaveContentCover(page, dao, getApplication())
+                    dao.cleanup()
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -979,6 +971,7 @@ class ReaderViewModel(
                         it.bookPreferences = newPrefs
                         dao.insertContent(it)
                     }
+                    dao.cleanup()
                 }
                 forceImageUIReload = true
                 reloadContent(viewerIndex) // Must run on the main thread
@@ -987,6 +980,7 @@ class ReaderViewModel(
                     theContent?.let {
                         persistJson(getApplication(), it)
                     }
+                    dao.cleanup()
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -1138,6 +1132,8 @@ class ReaderViewModel(
             val onlineIndexes =
                 indexesToLoad.filter { viewerImagesInternal[it].status == StatusContent.ONLINE }
             downloadPics(onlineIndexes)
+
+            dao.cleanup()
         }
 
     /**
@@ -1178,46 +1174,45 @@ class ReaderViewModel(
             // Schedule a new download
             val stopDownload = AtomicBoolean(false)
             downloadKillSwitches.add(stopDownload)
-            viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    try {
-                        val resultOpt = downloadPic(index, stopDownload)
-                        indexDlInProgress.remove(index)
-                        if (null == resultOpt) { // Nothing to download
-                            Timber.d("NO IMAGE FOUND AT INDEX %d", index)
-                            notifyDownloadProgress(-1f, index)
-                            return@withContext
-                        }
-                        val downloadedPageIndex = resultOpt.first
-                        synchronized(viewerImagesInternal) {
-                            if (viewerImagesInternal.size <= downloadedPageIndex) return@withContext
-
-                            // Instanciate a new ImageFile not to modify the one used by the UI
-                            val downloadedPic =
-                                ImageFile(
-                                    viewerImagesInternal[downloadedPageIndex],
-                                    populateContent = true,
-                                    populateChapter = true
-                                )
-                            downloadedPic.fileUri = resultOpt.second
-                            downloadedPic.mimeType = resultOpt.third
-                            viewerImagesInternal.removeAt(downloadedPageIndex)
-                            viewerImagesInternal.add(downloadedPageIndex, downloadedPic)
-                            Timber.d(
-                                "REPLACING INDEX %d - ORDER %d -> %s",
-                                downloadedPageIndex,
-                                downloadedPic.order,
-                                downloadedPic.fileUri
-                            )
-
-                            // Instanciate a new list to trigger an actual Adapter UI refresh
-                            viewerImages.postValue(ArrayList(viewerImagesInternal))
-                        }
-                    } catch (t: Throwable) {
-                        Timber.w(t)
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val resultOpt = downloadPic(index, stopDownload)
+                    indexDlInProgress.remove(index)
+                    if (null == resultOpt) { // Nothing to download
+                        Timber.d("NO IMAGE FOUND AT INDEX %d", index)
+                        notifyDownloadProgress(-1f, index)
+                        return@launch
                     }
+                    val downloadedPageIndex = resultOpt.first
+                    synchronized(viewerImagesInternal) {
+                        if (viewerImagesInternal.size <= downloadedPageIndex) return@launch
+
+                        // Instanciate a new ImageFile not to modify the one used by the UI
+                        val downloadedPic =
+                            ImageFile(
+                                viewerImagesInternal[downloadedPageIndex],
+                                populateContent = true,
+                                populateChapter = true
+                            )
+                        downloadedPic.fileUri = resultOpt.second
+                        downloadedPic.mimeType = resultOpt.third
+                        viewerImagesInternal.removeAt(downloadedPageIndex)
+                        viewerImagesInternal.add(downloadedPageIndex, downloadedPic)
+                        Timber.d(
+                            "REPLACING INDEX %d - ORDER %d -> %s",
+                            downloadedPageIndex,
+                            downloadedPic.order,
+                            downloadedPic.fileUri
+                        )
+
+                        // Instanciate a new list to trigger an actual Adapter UI refresh
+                        viewerImages.postValue(ArrayList(viewerImagesInternal))
+                    }
+                } catch (t: Throwable) {
+                    Timber.w(t)
+                } finally {
+                    dao.cleanup()
                 }
-                dao.cleanup()
             }
         }
     }
@@ -1238,8 +1233,6 @@ class ReaderViewModel(
                 doExtractPics(indexesToLoad, archiveFile, isPdf)
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -1326,6 +1319,7 @@ class ReaderViewModel(
             indexExtractInProgress.clear()
             archiveExtractKillSwitch.set(false)
         }
+        dao.cleanup()
     }
 
     private fun onResourceExtracted(
@@ -1571,12 +1565,11 @@ class ReaderViewModel(
                         isQueueActive(getApplication())
                     )
                     if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
+                    dao.cleanup()
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -1623,13 +1616,12 @@ class ReaderViewModel(
                         )
                     }
                     if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
+                    dao.cleanup()
                 }
                 onContentRemoved()
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -1641,10 +1633,8 @@ class ReaderViewModel(
      * @param pageIndex  Index of downloaded page
      */
     private fun notifyDownloadProgress(progressPc: Float, pageIndex: Int) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                doNotifyDownloadProgress(progressPc, pageIndex)
-            }
+        viewModelScope.launch(Dispatchers.IO) {
+            doNotifyDownloadProgress(progressPc, pageIndex)
             dao.cleanup()
         }
     }
@@ -1700,6 +1690,7 @@ class ReaderViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     dao.deleteChapters(theContent)
+                    dao.cleanup()
                 }
                 // Force reload images
                 loadDatabaseImages(theContent, -1)
@@ -1727,6 +1718,7 @@ class ReaderViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     doCreateRemoveChapter(theContent.id, selectedPage.id)
+                    dao.cleanup()
                 }
                 // Force reload images
                 loadDatabaseImages(theContent, -1)
@@ -1888,6 +1880,7 @@ class ReaderViewModel(
                         chp.name = newName
                         dao.insertChapters(listOf(chp))
                     }
+                    dao.cleanup()
                 }
                 withContext(Dispatchers.Main) {
                     reloadContent()
@@ -1921,8 +1914,8 @@ class ReaderViewModel(
                         OneTimeWorkRequest.Builder(DeleteWorker::class.java)
                             .setInputData(builder.data).build()
                     )
+                    dao.cleanup()
                 }
-
                 withContext(Dispatchers.Main) {
                     reloadContent()
                 }

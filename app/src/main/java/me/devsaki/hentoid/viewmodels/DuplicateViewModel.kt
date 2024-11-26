@@ -145,8 +145,8 @@ class DuplicateViewModel(
                     // Don't delete the fake reference entry that has been put there for display
                     if (it.titleScore <= 1f) duplicatesDao.delete(it)
                 }
+                dao.cleanup()
             }
-            dao.cleanup()
             onComplete.run()
         }
     }
@@ -210,11 +210,12 @@ class DuplicateViewModel(
                     return@withContext true
                 } catch (e: ContentNotProcessedException) {
                     Timber.e(e)
+                } finally {
+                    dao.cleanup()
                 }
                 return@withContext false
             }
             if (result) onSuccess.run()
-            dao.cleanup()
         }
     }
 
