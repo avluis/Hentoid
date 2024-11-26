@@ -884,8 +884,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         when (key) {
             VIEWER_BROWSE_MODE, VIEWER_HOLD_TO_ZOOM, Settings.Key.VIEWER_CONTINUOUS, Settings.Key.READER_TWOPAGES -> onBrowseModeChange()
             Settings.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()
-            Settings.Key.VIEWER_ZOOM_TRANSITIONS, VIEWER_SEPARATING_BARS, VIEWER_AUTO_ROTATE, VIEWER_DOUBLE_TAP_TO_ZOOM
+            Settings.Key.VIEWER_ZOOM_TRANSITIONS, VIEWER_SEPARATING_BARS, VIEWER_AUTO_ROTATE
                 -> onUpdateImageDisplay(true)
+
+            VIEWER_DOUBLE_TAP_TO_ZOOM -> {
+                // Actions on both ImageView and SSIV
+                onBrowseModeChange()
+                onUpdateImageDisplay(true)
+            }
 
             VIEWER_IMAGE_DISPLAY, VIEWER_RENDERING, Settings.Key.READER_COLOR_DEPTH
                 -> onUpdateImageDisplay(false)
@@ -977,8 +983,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             (null == currentDisplayParams || currentDisplayParams.orientation != newDisplayParams.orientation)
         val isDirectionChange =
             (null == currentDisplayParams || currentDisplayParams.direction != newDisplayParams.direction)
-        val isAnimationChange =
-            (null == currentDisplayParams || currentDisplayParams.useSsiv != newDisplayParams.useSsiv)
+        //val isSsivChange =
+//            (null == currentDisplayParams || currentDisplayParams.useSsiv != newDisplayParams.useSsiv)
         val isLayoutChange =
             (null == currentDisplayParams || currentDisplayParams.twoPages != newDisplayParams.twoPages)
         displayParams = newDisplayParams
@@ -987,10 +993,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         var shouldUpdateImageDisplay = false
 
         binding?.apply {
-            // Animated picture appears in horizontal mode => enable zoom frame
-            if (isAnimationChange && VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation) {
-                if (!newDisplayParams.useSsiv) isZoomFrameEnabled = true
-            }
+            // SSIV appears in horizontal mode => enable zoom frame
+            if (VIEWER_ORIENTATION_HORIZONTAL == newDisplayParams.orientation && !newDisplayParams.useSsiv)
+                isZoomFrameEnabled = true
 
             // Orientation changes
             if (isOrientationChange) {
@@ -1028,6 +1033,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
             zoomFrame.frameEnabled = isZoomFrameEnabled
             recyclerView.setLongTapZoomEnabled(!(Settings.isReaderHoldToZoom xor isZoomFrameEnabled))
+            recyclerView.setDoubleTapZoomEnabled(!(Settings.isReaderDoubleTapToZoom xor isZoomFrameEnabled))
 
             // Direction changes
             if (isDirectionChange) {

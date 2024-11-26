@@ -59,6 +59,7 @@ class ZoomableRecyclerView : RecyclerView {
     private var maxBitmapDimensions: Point? = null
 
     private var longTapZoomEnabled = true
+    private var doubleTapZoomEnabled = true
 
 
     constructor(context: Context) : super(context)
@@ -98,8 +99,12 @@ class ZoomableRecyclerView : RecyclerView {
         this.scaleListener = scaleListener
     }
 
-    fun setLongTapZoomEnabled(longTapZoomEnabled: Boolean) {
-        this.longTapZoomEnabled = longTapZoomEnabled
+    fun setLongTapZoomEnabled(value: Boolean) {
+        longTapZoomEnabled = value
+    }
+
+    fun setDoubleTapZoomEnabled(value: Boolean) {
+        doubleTapZoomEnabled = value
     }
 
     interface LongTapListener {
@@ -291,6 +296,7 @@ class ZoomableRecyclerView : RecyclerView {
         }
 
         override fun onDoubleTapConfirmed(ev: MotionEvent) {
+            if (!doubleTapZoomEnabled) return
             if (!isZooming) {
                 if (scaleX != DEFAULT_SCALE) {
                     zoom(scale, DEFAULT_SCALE, x, 0f, y, 0f)

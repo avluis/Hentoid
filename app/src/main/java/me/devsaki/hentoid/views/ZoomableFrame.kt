@@ -96,10 +96,7 @@ class ZoomableFrame : FrameLayout {
             velocityY: Float
         ): Boolean {
             if (!frameEnabled) return false
-
-            return getRecycler()?.zoomFling(
-                velocityX.roundToInt(), velocityY.roundToInt()
-            ) ?: false
+            return getRecycler()?.zoomFling(velocityX.roundToInt(), velocityY.roundToInt()) == true
         }
 
         override fun onDown(e: MotionEvent): Boolean {
