@@ -434,7 +434,7 @@ class ImagePagerAdapter(context: Context) :
             if (!isImageView) { // SubsamplingScaleImageView
                 Timber.d("Picture $absoluteAdapterPosition : Using SSIV")
                 ssiv.recycle()
-                ssiv.setMinimumScaleType(scaleType)
+                ssiv.setMinimumScaleType(ssivScaleType)
                 ssiv.setOnImageEventListener(this@ImageViewHolder)
                 ssiv.setDoubleTapZoomEnabled(doubleTapZoomEnabled)
                 ssiv.setLongTapZoomEnabled(longTapZoomEnabled)
@@ -467,6 +467,7 @@ class ImagePagerAdapter(context: Context) :
                                 .allowHardware(!isJxl)
                                 .allowConversionToBitmap(false)
                                 .build()
+                            // TODO does that block the UI thread?
                             view.context.imageLoader.executeBlocking(request).image?.let {
                                 Point(it.width, it.height)
                             } ?: Point(0, 0)
@@ -483,6 +484,8 @@ class ImagePagerAdapter(context: Context) :
                         if (isChangeDims) it.width else ViewGroup.LayoutParams.MATCH_PARENT
                     imageView.layoutParams = imgLayoutParams
                 }
+
+                imageView.scaleType = scaleType
 
                 // Custom loader to handle JXL
                 // (doesn't support Hardware bitmaps : https://github.com/awxkee/jxl-coder-coil/issues/7)
@@ -527,10 +530,15 @@ class ImagePagerAdapter(context: Context) :
             isImageView
         }
 
-        private val scaleType: ScaleType
+        private val ssivScaleType: ScaleType
             get() = if (VIEWER_DISPLAY_FILL == displayMode) ScaleType.SMART_FILL
             else if (VIEWER_DISPLAY_STRETCH == displayMode) ScaleType.STRETCH_SCREEN
             else ScaleType.CENTER_INSIDE
+
+        private val scaleType: ImageView.ScaleType
+            get() = if (VIEWER_DISPLAY_FILL == displayMode) ImageView.ScaleType.FIT_CENTER
+            else if (VIEWER_DISPLAY_STRETCH == displayMode) ImageView.ScaleType.FIT_XY
+            else ImageView.ScaleType.FIT_CENTER
 
         // ImageView
         // TODO doesn't work for Coil as it doesn't use ImageView's scaling
