@@ -67,6 +67,7 @@ import me.devsaki.hentoid.util.Settings.Key.VIEWER_HOLD_TO_ZOOM
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_IMAGE_DISPLAY
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_RENDERING
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_SEPARATING_BARS
+import me.devsaki.hentoid.util.Settings.Value.VIEWER_BROWSE_LTR
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_AGAIN
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_TARGET_PAGE
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_LTR
@@ -406,9 +407,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             recyclerView.setHasFixedSize(true)
             recyclerView.addOnScrollListener(scrollListener)
             recyclerView.setOnGetMaxDimensionsListener { maxDimensions: Point ->
-                onGetMaxDimensions(
-                    maxDimensions
-                )
+                onGetMaxDimensions(maxDimensions)
             }
             recyclerView.requestFocus()
             // Scale listener from the ImageView, incl. top to bottom browsing
@@ -748,6 +747,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             activity?.finish()
             return
         }
+        Timber.v("Content changed")
         bookPreferences = content.bookPreferences
         isContentArchive = content.isArchive
         isContentDynamic = content.isDynamic
@@ -983,8 +983,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             (null == currentDisplayParams || currentDisplayParams.orientation != newDisplayParams.orientation)
         val isDirectionChange =
             (null == currentDisplayParams || currentDisplayParams.direction != newDisplayParams.direction)
-        //val isSsivChange =
-//            (null == currentDisplayParams || currentDisplayParams.useSsiv != newDisplayParams.useSsiv)
         val isLayoutChange =
             (null == currentDisplayParams || currentDisplayParams.twoPages != newDisplayParams.twoPages)
         displayParams = newDisplayParams

@@ -1854,7 +1854,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         targetScale: Float
     ): Tile = withContext(Dispatchers.Default) {
         // Take any prior subsampling into consideration _before_ processing the tile
-        Timber.v("Processing tile")
+        loadedTile.sRect?.apply {
+            Timber.v("Processing tile $left $top")
+        }
         val resizeScale = targetScale * loadedTile.sampleSize
         val resizeResult = resizeBitmap(glEsRenderer, loadedTile.bitmap!!, resizeScale)
         loadedTile.bitmap = resizeResult.first
