@@ -500,6 +500,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         reset(true)
 
         if (imageSource.getBitmap() != null && imageSource.getSRegion() != null) {
+            // Load part of Bitmap directly handed inside the source
             onImageLoaded(
                 Bitmap.createBitmap(
                     imageSource.getBitmap()!!,
@@ -511,6 +512,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 ), Orientation.O_0, false, 1f
             )
         } else if (imageSource.getBitmap() != null) {
+            // Load Bitmap directly handed inside the source
             onImageLoaded(imageSource.getBitmap()!!, Orientation.O_0, imageSource.isCached(), 1f)
         } else {
             sRegion = imageSource.getSRegion()
@@ -1133,7 +1135,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
         // When using tiles, on first render with no tile map ready, initialise it and kick off async base image loading.
         if (tileMap == null && regionDecoder != null)
-            initialiseBaseLayer(getMaxBitmapDimensions(canvas))
+            initialiseTileLayer(getMaxBitmapDimensions(canvas))
 
         // If image has been loaded or supplied as a bitmap, onDraw may be the first time the view has
         // dimensions and therefore the first opportunity to set scale and translate. If this call returns
@@ -1183,7 +1185,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             invalidate()
         }
 
-        if (tileMap != null && isBaseLayerReady()) {
+        if (tileMap != null && isTileLayerReady()) {
             // Optimum sample size for current scale
             val sampleSize = min(fullImageSampleSize, calculateInSampleSize(scale))
 
@@ -1316,22 +1318,22 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     /**
      * Checks whether the base layer of tiles or full size bitmap is ready.
      */
-    private fun isBaseLayerReady(): Boolean {
+    private fun isTileLayerReady(): Boolean {
         if (bitmap != null) {
             return true
         } else if (tileMap != null) {
-            var baseLayerReady = true
+            var tileLayerReady = true
             for ((key, value) in tileMap!!) {
                 if (key == fullImageSampleSize) {
                     for (tile in value) {
                         if (tile.loading || tile.bitmap == null) {
-                            baseLayerReady = false
+                            tileLayerReady = false
                             break
                         }
                     }
                 }
             }
-            return baseLayerReady
+            return tileLayerReady
         }
         return false
     }
@@ -1343,7 +1345,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      */
     private fun checkReady(): Boolean {
         val ready =
-            getWidthInternal() > 0 && getHeightInternal() > 0 && sWidth > 0 && sHeight > 0 && (bitmap != null || isBaseLayerReady())
+            getWidthInternal() > 0 && getHeightInternal() > 0 && sWidth > 0 && sHeight > 0 && (bitmap != null || isTileLayerReady())
         if (!readySent && ready) {
             preDraw()
             readySent = true
@@ -1358,7 +1360,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * loaded event to listener.
      */
     private fun checkImageLoaded(): Boolean {
-        val imageLoaded = isBaseLayerReady()
+        val imageLoaded = isTileLayerReady()
         if (!imageLoadedSent && imageLoaded) {
             preDraw()
             imageLoadedSent = true
@@ -1412,9 +1414,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      */
     @SuppressLint("NewApi")
     @Synchronized
-    private fun initialiseBaseLayer(maxTileDimensions: Point) {
+    private fun initialiseTileLayer(maxTileDimensions: Point) {
         // null Uri's may happen when sliding fast, which causes views to be reset when recycled by the RecyclerView
-        // they reset faster than their initialization can process them, hence initialiseBaseLayer being called (e.g. through onDraw) _after_ recycle has been called
+        // they reset faster than their initialization can process them, hence initialiseTileLayer being called (e.g. through onDraw) _after_ recycle has been called
         if (null == uri) return
 
         satTemp = ScaleAndTranslate(0f, PointF(0f, 0f))
@@ -1426,9 +1428,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         // Load double resolution - next level will be split into four tiles and at the center all four are required,
         // so don't bother with tiling until the next level 16 tiles are needed.
         fullImageSampleSize = calculateInSampleSize(satTemp!!.scale)
-        if (fullImageSampleSize > 1) {
-            fullImageSampleSize /= 2
-        }
+        if (fullImageSampleSize > 1) fullImageSampleSize /= 2
 
         if (fullImageSampleSize == 1 && sRegion == null && sWidth() < maxTileDimensions.x && sHeight() < maxTileDimensions.y) {
             Timber.d("Using basic loading")
@@ -1813,7 +1813,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         this.sOrientation = sOrientation
         checkReady()
         if (!checkImageLoaded() && maxTileWidth > 0 && maxTileWidth != TILE_SIZE_AUTO && maxTileHeight > 0 && maxTileHeight != TILE_SIZE_AUTO && getWidthInternal() > 0 && getHeightInternal() > 0) {
-            initialiseBaseLayer(Point(maxTileWidth, maxTileHeight))
+            initialiseTileLayer(Point(maxTileWidth, maxTileHeight))
         }
         invalidate()
         requestLayout()
@@ -1868,7 +1868,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun onTileLoaded() {
         checkReady()
         checkImageLoaded()
-        if (isBaseLayerReady()) {
+        if (isTileLayerReady()) {
             if (!bitmapIsCached && !singleImage.loading) bitmap?.recycle()
             bitmap = null
             if (bitmapIsCached) onImageEventListener?.onPreviewReleased()
