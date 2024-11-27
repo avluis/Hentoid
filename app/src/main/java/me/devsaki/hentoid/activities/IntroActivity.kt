@@ -107,7 +107,7 @@ class IntroActivity : AppIntro2() {
     // Validation of the final step of the wizard
     @Suppress("DEPRECATION")
     override fun onDonePressed(currentFragment: Fragment?) {
-        autoEndHandler!!.removeCallbacksAndMessages(null)
+        autoEndHandler?.removeCallbacksAndMessages(null)
         Settings.isFirstRun = false
         // Need to do that to avoid a useless reloading of the library screen upon loading prefs for the first time
         Settings.libraryDisplay = Settings.Value.LIBRARY_DISPLAY_DEFAULT
