@@ -1431,13 +1431,15 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         }
 
         if (fullImageSampleSize == 1 && sRegion == null && sWidth() < maxTileDimensions.x && sHeight() < maxTileDimensions.y) {
+            Timber.d("Using basic loading")
             // Whole image is required at native resolution, and is smaller than the canvas max bitmap size.
             // Use BitmapDecoder for better image support.
-            if (regionDecoder != null) regionDecoder!!.recycle()
+            if (regionDecoder != null) regionDecoder?.recycle()
             regionDecoder = null
 
             loadBitmapToImage(context, uri!!, targetScale)
         } else {
+            Timber.d("Using tiled loading")
             initialiseTileMap(maxTileDimensions)
 
             val baseGrid = tileMap!![fullImageSampleSize]
@@ -1769,9 +1771,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     ): IntArray = withContext(Dispatchers.IO) {
         val sourceUri = source.toString()
         Timber.d("Init tiles BEGIN %s", sourceUri)
-        regionDecoder = SkiaImageRegionDecoder(preferredBitmapConfig)
-        regionDecoder?.let {
-            val dimensions = it.init(context, source)
+        SkiaImageRegionDecoder(preferredBitmapConfig).let { decoder ->
+            regionDecoder = decoder
+            val dimensions = decoder.init(context, source)
             var sWidthTile = dimensions.x
             var sHeightTile = dimensions.y
             val exifOrientation = getExifOrientation(context, sourceUri)
@@ -1800,13 +1802,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         if (this.sWidth > 0 && (this.sHeight > 0) && (this.sWidth != sWidth || this.sHeight != sHeight)) {
             reset(false)
             if (bitmap != null) {
-                if (!bitmapIsCached && !singleImage.loading) {
-                    bitmap!!.recycle()
-                }
+                if (!bitmapIsCached && !singleImage.loading) bitmap?.recycle()
                 bitmap = null
-                if (onImageEventListener != null && bitmapIsCached) {
-                    onImageEventListener!!.onPreviewReleased()
-                }
+                if (bitmapIsCached) onImageEventListener?.onPreviewReleased()
                 bitmapIsCached = false
             }
         }
