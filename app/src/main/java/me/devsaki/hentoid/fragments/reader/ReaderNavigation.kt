@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.reader
 
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.isVisible
 import com.google.android.material.slider.Slider
 import me.devsaki.hentoid.R
@@ -15,13 +16,13 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_LTR
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_RTL
 import me.devsaki.hentoid.util.coerceIn
-import me.devsaki.hentoid.util.toast
 import java.util.Locale
 
 class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerBinding) {
     // == UI
     private var superBinding: FragmentReaderPagerBinding? = null
     private var binding: IncludeReaderControlsOverlayBinding? = null
+    private var chapterToast: Toast? = null
 
     // Bottom bar controls (proxies for left or right position, depending on current reading direction)
     private var pageCurrentNumber: TextView? = null
@@ -112,7 +113,11 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
     }
 
     private fun onChapterChanged(chapter: Chapter) {
-        pageCurrentNumber?.context?.toast(chapter.name)
+        binding?.pageSlider?.apply {
+            chapterToast?.cancel()
+            chapterToast = Toast.makeText(context, chapter.name, Toast.LENGTH_SHORT)
+            chapterToast?.show()
+        }
         updateNextPrevButtonsChapter(chapter)
     }
 
