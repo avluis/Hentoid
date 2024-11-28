@@ -67,7 +67,6 @@ import me.devsaki.hentoid.util.Settings.Key.VIEWER_HOLD_TO_ZOOM
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_IMAGE_DISPLAY
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_RENDERING
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_SEPARATING_BARS
-import me.devsaki.hentoid.util.Settings.Value.VIEWER_BROWSE_LTR
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_AGAIN
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_TARGET_PAGE
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DIRECTION_LTR
@@ -753,7 +752,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         isContentDynamic = content.isDynamic
         isContentFavourite = content.favourite
         // Wait for starting index only if content actually changes
-        if (content.id != contentId) startingIndexLoaded = false
+        if (content.id != contentId) {
+            adjustDisplay(content.bookPreferences)
+            startingIndexLoaded = false
+        }
         contentId = content.id
         absImageIndex = -1 // Will be updated by onStartingIndexChanged
         navigator.onContentChanged(content)
@@ -954,14 +956,14 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
     }
 
-    private fun adjustDisplay(bookPreferences: Map<String, String>, absImageIndex: Int) {
+    private fun adjustDisplay(bookPreferences: Map<String, String>, absImageIndex: Int = -1) {
         lifecycleScope.launch {
             val newDisplayParams = DisplayParams(
                 Settings.getContentBrowseMode(bookPreferences),
                 Settings.getContentDisplayMode(bookPreferences),
                 Settings.getContent2PagesMode(bookPreferences),
                 Settings.isContentSmoothRendering(bookPreferences),
-                adapter.getSSivAtPosition(absImageIndex)
+                if (absImageIndex > -1) adapter.getSSivAtPosition(absImageIndex) else true
             )
             if (null == displayParams || newDisplayParams != displayParams)
                 onDisplayParamsChange(newDisplayParams)
