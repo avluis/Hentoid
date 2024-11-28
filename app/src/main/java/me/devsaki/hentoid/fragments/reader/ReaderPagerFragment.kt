@@ -108,6 +108,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         OnSharedPreferenceChangeListener { _, key -> onSharedPreferenceChanged(key) }
     private lateinit var viewModel: ReaderViewModel
     override var absImageIndex = -1 // Absolute (book scale) 0-based image index
+    var reachedPosition = -1 // Absolute (book scale) 0-based image index for reached position listened
 
     private var hasGalleryBeenShown = false
     override val scrollListener = ScrollPositionListener { onScrollPositionChange(it) }
@@ -434,6 +435,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         smoothScroller = ReaderSmoothScroller(requireContext())
         scrollListener.setOnStartOutOfBoundScrollListener { if (Settings.isReaderContinuous) navigator.previousContainer() }
         scrollListener.setOnEndOutOfBoundScrollListener { if (Settings.isReaderContinuous) navigator.nextContainer() }
+        scrollListener.setOnPositionReachedListener { onScrollPositionReached(it) }
     }
 
     private fun initControlsOverlay() {
@@ -758,6 +760,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         contentId = content.id
         absImageIndex = -1 // Will be updated by onStartingIndexChanged
+        reachedPosition = -1
         navigator.onContentChanged(content)
         updateFavouriteButtonIcon()
 
@@ -873,6 +876,17 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
             slideshowMgr.onPageChange(true)
         viewModel.onPageChange(absImageIndex, scrollDirection)
+    }
+
+    /**
+     * Scroll / page reach listener
+     * NB : Triggered when a page becomes visible as opposed to onScrollPositionChange
+     * that is triggered when that page takes up the majority of the screen
+     */
+    private fun onScrollPositionReached(position: Int) {
+        if (position == absImageIndex || position == reachedPosition) return
+        reachedPosition = position
+        adapter.adjustBehaviourForPosition(position)
     }
 
     /**

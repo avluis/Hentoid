@@ -24,6 +24,8 @@ class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit
 
     private var deltaEventDebouncer: Debouncer<Int>? = null
 
+    private var onPositionReachedListener: ((Int) -> Unit)? = null
+
     private var onStartOutOfBoundScroll: Runnable? = null
     private var onEndOutOfBoundScroll: Runnable? = null
 
@@ -43,19 +45,27 @@ class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit
         onEndOutOfBoundScroll = onEndOutOfBoundScrollListener
     }
 
+    /**
+     * Listener triggered when the scroller reaches a point where a position become partially visible
+     * (as opposed to onPositionChangeListener which is triggered when the new position takes up more than half the screen)
+     */
+    fun setOnPositionReachedListener(onPositionReachedListener: ((Int) -> Unit)?) {
+        this.onPositionReachedListener = onPositionReachedListener
+    }
+
     override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
         super.onScrolled(recyclerView, dx, dy)
         if (mInitialOffsetY < 0) mInitialOffsetY = totalScrolledY
         totalScrolledY += dy
         totalScrolledX += dx
         deltaEventDebouncer?.submit(totalScrolledY)
-        val llm = recyclerView.layoutManager as LinearLayoutManager?
-        if (llm != null) {
+        (recyclerView.layoutManager as LinearLayoutManager?)?.let { llm ->
             val firstVisibleItemPosition = llm.findFirstVisibleItemPosition()
             val lastCompletelyVisibleItemPosition = llm.findLastCompletelyVisibleItemPosition()
             onPositionChangeListener.invoke(
                 firstVisibleItemPosition.coerceAtLeast(lastCompletelyVisibleItemPosition)
             )
+            onPositionReachedListener?.invoke(llm.findLastVisibleItemPosition())
         }
     }
 
