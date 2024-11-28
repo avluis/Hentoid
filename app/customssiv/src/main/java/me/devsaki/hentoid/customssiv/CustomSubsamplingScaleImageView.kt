@@ -228,6 +228,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private var maxTileHeight = TILE_SIZE_AUTO
 
     // Whether tiles should be loaded while gestures and animations are still in progress
+    private val refreshSingleDebouncer: Debouncer<Boolean>
     private var eagerLoadingEnabled = true
 
     // Gesture detection settings
@@ -451,6 +452,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             context.resources.displayMetrics
         )
         scaleDebouncer = Debouncer(context, 200) { scaleListener?.accept(it) }
+        refreshSingleDebouncer = Debouncer(context, 50) { refreshSingle(it) }
     }
 
     fun clear() {
@@ -1105,7 +1107,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             targetDoubleTapZoomScale =
                 min(targetDoubleTapZoomScale, initialScale * doubleTapZoomCap)
         }
-        Timber.d(">> doubleTapZoom $initialScale / $scale -> ^$targetDoubleTapZoomScale")
+        Timber.d(">> doubleTapZoom $initialScale / $scale -> $targetDoubleTapZoomScale")
 
         val zoomIn = (scale <= targetDoubleTapZoomScale * 0.9) || scale == minScale
         val targetScale = if (zoomIn) targetDoubleTapZoomScale else minScale()
@@ -1467,13 +1469,14 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     // TODO doc
     private fun refreshRequiredResource(load: Boolean) {
         val sampleSize = min(fullImageSampleSize, calculateInSampleSize(scale))
-        if (regionDecoder == null || tileMap == null) refreshSingle(load)
+        if (regionDecoder == null || tileMap == null) refreshSingleDebouncer.submit(load)
         else refreshRequiredTiles(load, sampleSize)
     }
 
     // TODO doc
     private fun refreshSingle(load: Boolean) {
         if (!singleImage.loading && load) {
+            Timber.d("refreshSingle")
             uri?.let { loadBitmapToImage(context, it, getVirtualScale()) }
         }
     }
@@ -1912,6 +1915,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 targetHeight.toFloat() / bitmap.height
             )
             Timber.d("stretchedScale ${stretchedScale.x}x${stretchedScale.y}")
+            // That's more or less cheating but it does work
+            singleImage.rawWidth = targetWidth
+            singleImage.rawHeight = targetHeight
             resizeBitmap(glEsRenderer, bitmap, stretchedScale)
         } else {
             resizeBitmap(glEsRenderer, bitmap, targetScale)
@@ -1941,6 +1947,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
         if (this.bitmap != null && this.bitmapIsCached) onImageEventListener?.onPreviewReleased()
 
+        Timber.v("imageLoaded $imageScale")
         synchronized(singleImage) {
             this.bitmapIsCached = bitmapIsCached
             singleImage.scale = imageScale
@@ -1952,6 +1959,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         val ready = checkReady()
         val imageLoaded = checkImageLoaded()
         if (ready || imageLoaded) {
+            Timber.v("imageLoaded 2 $imageScale")
             invalidate()
             requestLayout()
         }
@@ -2098,9 +2106,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun sWidth(): Int {
         val rotation = getRequiredRotation()
         return if (rotation.code == 90 || rotation.code == 270) {
-            if (sHeight > 0) sHeight else singleImage.rawHeight
+            if (singleImage.rawHeight > -1) singleImage.rawHeight else sHeight
         } else {
-            if (sWidth > 0) sWidth else singleImage.rawWidth
+            if (singleImage.rawWidth > -1) singleImage.rawWidth else sWidth
         }
     }
 
@@ -2110,9 +2118,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun sHeight(): Int {
         val rotation = getRequiredRotation()
         return if (rotation.code == 90 || rotation.code == 270) {
-            if (sWidth > 0) sWidth else singleImage.rawWidth
+            if (singleImage.rawWidth > -1) singleImage.rawWidth else sWidth
         } else {
-            if (sHeight > 0) sHeight else singleImage.rawHeight
+            if (singleImage.rawHeight > -1) singleImage.rawHeight else sHeight
         }
     }
 
@@ -2645,8 +2653,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     private fun detectRotation(): Orientation {
-        val dimX = if (sWidth > 0) sWidth else singleImage.rawWidth
-        val dimY = if (sHeight > 0) sHeight else singleImage.rawHeight
+        val dimX = if (singleImage.rawWidth > -1) singleImage.rawWidth else sWidth
+        val dimY = if (singleImage.rawHeight > -1) singleImage.rawHeight else sHeight
         return if (needsRotating(dimX, dimY)) {
             when (autoRotate) {
                 AutoRotateMethod.LEFT -> Orientation.O_90
