@@ -166,11 +166,8 @@ class ImagePagerAdapter(context: Context) :
         if ("apng".equals(extension, ignoreCase = true) || img.mimeType.contains("apng")) {
             return ImageType.IMG_TYPE_APNG
         }
-        if ("jxl".equals(extension, ignoreCase = true) || img.mimeType.contains("jxl")) {
+        return if ("jxl".equals(extension, ignoreCase = true) || img.mimeType.contains("jxl")) {
             return ImageType.IMG_TYPE_JXL
-        }
-        return if ("webp".equals(extension, ignoreCase = true) || img.mimeType.contains("webp")) {
-            ImageType.IMG_TYPE_AWEBP
         } else ImageType.IMG_TYPE_OTHER
     }
 
