@@ -873,6 +873,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 adjustDisplay(bookPreferences, absImageIndex)
             }
         }
+        adapter.adjustBehaviourForPosition(absImageIndex, true)
         if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
             slideshowMgr.onPageChange(true)
         viewModel.onPageChange(absImageIndex, scrollDirection)
@@ -886,7 +887,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onScrollPositionReached(position: Int) {
         if (position == absImageIndex || position == reachedPosition) return
         reachedPosition = position
-        adapter.adjustBehaviourForPosition(position)
+        adapter.adjustBehaviourForPosition(position, true)
     }
 
     /**
