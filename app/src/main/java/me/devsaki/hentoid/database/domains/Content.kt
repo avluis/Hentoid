@@ -267,7 +267,7 @@ data class Content(
                 Site.TSUMINO -> return url.replace("/Read/Index", "")
                 Site.PURURIN -> {
                     if (url.contains("/collection/")) return url
-                    return url.replace(getHttpProtocol(url) + "://pururin.to/gallery", "")
+                    return url.replace(getHttpProtocol(url) + "://pururin.me/gallery", "")
                 }
 
                 Site.NHENTAI -> return url.replace(site.url, "").replace("/g/", "/")

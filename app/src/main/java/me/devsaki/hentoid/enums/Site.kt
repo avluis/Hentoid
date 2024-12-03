@@ -31,7 +31,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
         "https://www.fakku.net",
         R.drawable.ic_site_fakku
     ), // Legacy support for old fakku archives
-    PURURIN(1, "Pururin", "https://pururin.to", R.drawable.ic_site_pururin),
+    PURURIN(1, "Pururin", "https://pururin.me", R.drawable.ic_site_pururin),
     HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_site_hitomi),
     NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_site_nhentai),
     TSUMINO(4, "tsumino", "https://www.tsumino.com", R.drawable.ic_site_tsumino),
