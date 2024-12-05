@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.5/hentoid1205-755.apk",
-  "versionCode": "755",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.6/hentoid1206-760.apk",
+  "versionCode": "760",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/v1.20.0/hentoid1200-747.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -31,7 +31,7 @@
 	  {"sourceName":"IMHENTAI", "status":"ORANGE", "fixedByBuild":"753"},
 	  {"sourceName":"HENTAIFOX", "status":"ORANGE", "fixedByBuild":"753"},
 	  {"sourceName":"NHENTAI", "status":"ORANGE", "fixedByBuild":"755"},
-	  {"sourceName":"PURURIN", "status":"BLACK"},
+	  {"sourceName":"PURURIN", "status":"BLACK", "fixedByBuild":"760"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"GREY"},
