@@ -12,7 +12,7 @@ class NhentaiParser : BaseImageListParser() {
             val coverParts = content.coverImageUrl.split("/")
             val mediaId = coverParts[coverParts.size - 2]
             // We infer the whole book is stored on the same server
-            val serverUrl = "https://i.nhentai.net/galleries/$mediaId/"
+            val serverUrl = "https://i2.nhentai.net/galleries/$mediaId/"
             val result: MutableList<String> = ArrayList()
             var index = 1
             for (e in thumbs) {
