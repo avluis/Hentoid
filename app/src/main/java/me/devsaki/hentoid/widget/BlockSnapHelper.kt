@@ -321,6 +321,7 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
          * equal to zero.
          */
         fun getPositionsToMove(llm: LinearLayoutManager, scroll: Int, itemSize: Int): Int {
+            if (0 == itemSize) return 0
             var positionsToMove: Int
             positionsToMove = roundUpToBlockSize(abs(scroll) / itemSize)
             if (positionsToMove < blocksize)
