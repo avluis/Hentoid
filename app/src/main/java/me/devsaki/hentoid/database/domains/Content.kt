@@ -24,6 +24,7 @@ import me.devsaki.hentoid.activities.sources.ExHentaiActivity
 import me.devsaki.hentoid.activities.sources.HdPornComicsActivity
 import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity
+import me.devsaki.hentoid.activities.sources.HiperdexActivity
 import me.devsaki.hentoid.activities.sources.HitomiActivity
 import me.devsaki.hentoid.activities.sources.ImhentaiActivity
 import me.devsaki.hentoid.activities.sources.LusciousActivity
@@ -38,6 +39,7 @@ import me.devsaki.hentoid.activities.sources.PixivActivity
 import me.devsaki.hentoid.activities.sources.PorncomixActivity
 import me.devsaki.hentoid.activities.sources.PururinActivity
 import me.devsaki.hentoid.activities.sources.SimplyActivity
+import me.devsaki.hentoid.activities.sources.TmoActivity
 import me.devsaki.hentoid.activities.sources.ToonilyActivity
 import me.devsaki.hentoid.activities.sources.TsuminoActivity
 import me.devsaki.hentoid.database.domains.ImageFile.Companion.fromImageUrl
@@ -215,6 +217,9 @@ data class Content(
                 Site.EDOUJIN -> EdoujinActivity::class.java
                 Site.DEVIANTART -> DeviantArtActivity::class.java
                 Site.MANGAGO -> MangagoActivity::class.java
+                Site.HIPERDEX -> HiperdexActivity::class.java
+                Site.NOVELCROW -> HiperdexActivity::class.java
+                Site.TMO -> TmoActivity::class.java
                 else -> BaseWebActivity::class.java
             }
         }
@@ -295,8 +300,18 @@ data class Content(
                     ""
                 ).replace(site.url + "/api/v1/library", "")
 
-                Site.EDOUJIN, Site.LUSCIOUS -> return url.replace(
+                Site.EDOUJIN, Site.LUSCIOUS, Site.HIPERDEX -> return url.replace(
                     site.url.replace("/manga/", ""),
+                    ""
+                )
+
+                Site.NOVELCROW -> return url.replace(
+                    site.url.replace("/comic/", ""),
+                    ""
+                )
+
+                Site.TMO -> return url.replace(
+                    site.url.replace("/contents/", ""),
                     ""
                 )
 
@@ -369,13 +384,11 @@ data class Content(
                 return expression.replace(".html", "")
             }
 
-            Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.NHENTAI, Site.PANDA, Site.TSUMINO -> return url.replace(
-                "/",
-                ""
-            )
+            Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.NHENTAI, Site.PANDA, Site.TSUMINO
+                -> return url.replace("/", "")
 
             Site.MUSES -> return url.replace("/comics/album/", "").replace("/", ".")
-            Site.FAKKU2, Site.HENTAIFOX, Site.PORNCOMIX, Site.MANHWA, Site.TOONILY, Site.IMHENTAI, Site.ALLPORNCOMIC, Site.MULTPORN, Site.EDOUJIN, Site.SIMPLY, Site.DEVIANTART -> {
+            Site.FAKKU2, Site.HENTAIFOX, Site.PORNCOMIX, Site.MANHWA, Site.TOONILY, Site.IMHENTAI, Site.ALLPORNCOMIC, Site.MULTPORN, Site.EDOUJIN, Site.SIMPLY, Site.DEVIANTART, Site.HIPERDEX, Site.NOVELCROW, Site.TMO -> {
                 // Last part of the URL
                 paths = url.split("/")
                 return paths[paths.size - 1]

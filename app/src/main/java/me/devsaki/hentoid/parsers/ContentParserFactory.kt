@@ -14,6 +14,7 @@ import me.devsaki.hentoid.parsers.content.ExhentaiContent
 import me.devsaki.hentoid.parsers.content.HdPornComicsContent
 import me.devsaki.hentoid.parsers.content.Hentai2ReadContent
 import me.devsaki.hentoid.parsers.content.HentaifoxContent
+import me.devsaki.hentoid.parsers.content.HiperdexContent
 import me.devsaki.hentoid.parsers.content.HitomiContent
 import me.devsaki.hentoid.parsers.content.ImhentaiContent
 import me.devsaki.hentoid.parsers.content.LusciousContent
@@ -24,10 +25,12 @@ import me.devsaki.hentoid.parsers.content.MrmContent
 import me.devsaki.hentoid.parsers.content.MultpornContent
 import me.devsaki.hentoid.parsers.content.MusesContent
 import me.devsaki.hentoid.parsers.content.NhentaiContent
+import me.devsaki.hentoid.parsers.content.NovelcrowContent
 import me.devsaki.hentoid.parsers.content.PixivContent
 import me.devsaki.hentoid.parsers.content.PorncomixContent
 import me.devsaki.hentoid.parsers.content.PururinContent
 import me.devsaki.hentoid.parsers.content.SimplyContent
+import me.devsaki.hentoid.parsers.content.TmoContent
 import me.devsaki.hentoid.parsers.content.ToonilyContent
 import me.devsaki.hentoid.parsers.content.TsuminoContent
 import me.devsaki.hentoid.parsers.images.ASMHentaiParser
@@ -41,6 +44,7 @@ import me.devsaki.hentoid.parsers.images.ExHentaiParser
 import me.devsaki.hentoid.parsers.images.HdPornComicsParser
 import me.devsaki.hentoid.parsers.images.Hentai2ReadParser
 import me.devsaki.hentoid.parsers.images.HentaifoxParser
+import me.devsaki.hentoid.parsers.images.HiperdexParser
 import me.devsaki.hentoid.parsers.images.HitomiParser
 import me.devsaki.hentoid.parsers.images.ImageListParser
 import me.devsaki.hentoid.parsers.images.ImhentaiParser
@@ -52,10 +56,12 @@ import me.devsaki.hentoid.parsers.images.MrmParser
 import me.devsaki.hentoid.parsers.images.MultpornParser
 import me.devsaki.hentoid.parsers.images.MusesParser
 import me.devsaki.hentoid.parsers.images.NhentaiParser
+import me.devsaki.hentoid.parsers.images.NovelcrowParser
 import me.devsaki.hentoid.parsers.images.PixivParser
 import me.devsaki.hentoid.parsers.images.PorncomixParser
 import me.devsaki.hentoid.parsers.images.PururinParser
 import me.devsaki.hentoid.parsers.images.SimplyParser
+import me.devsaki.hentoid.parsers.images.TmoParser
 import me.devsaki.hentoid.parsers.images.ToonilyParser
 import me.devsaki.hentoid.parsers.images.TsuminoParser
 
@@ -89,6 +95,9 @@ object ContentParserFactory {
             Site.EDOUJIN -> EdoujinContent::class.java
             Site.DEVIANTART -> DeviantArtContent::class.java
             Site.MANGAGO -> MangagoContent::class.java
+            Site.HIPERDEX -> HiperdexContent::class.java
+            Site.NOVELCROW -> NovelcrowContent::class.java
+            Site.TMO -> TmoContent::class.java
             else -> DummyContent::class.java
         }
     }
@@ -125,6 +134,9 @@ object ContentParserFactory {
             Site.EDOUJIN -> EdoujinParser()
             Site.DEVIANTART -> DeviantArtParser()
             Site.MANGAGO -> MangagoParser()
+            Site.HIPERDEX -> HiperdexParser()
+            Site.NOVELCROW -> NovelcrowParser()
+            Site.TMO -> TmoParser()
             else -> DummyParser()
         }
     }

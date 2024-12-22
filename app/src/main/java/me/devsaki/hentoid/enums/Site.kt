@@ -79,6 +79,9 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     ANCHIRA(31, "Anchira", "https://anchira.to", R.drawable.ic_site_anchira),
     DEVIANTART(32, "DeviantArt", "https://www.deviantart.com/", R.drawable.ic_site_deviantart),
     MANGAGO(33, "Mangago", "https://www.mangago.me/", R.drawable.ic_site_mangago),
+    HIPERDEX(34, "Hiperdex", "https://hiperdex.com/", R.drawable.ic_hentoid_shape),
+    NOVELCROW(35, "Novelcrow", "https://novelcrow.com/", R.drawable.ic_hentoid_shape),
+    TMO(36, "TMOHentai", "https://tmohentai.com/", R.drawable.ic_hentoid_shape),
     NONE(98, "none", "", R.drawable.ic_attribute_source), // External library; fallback site
     PANDA(
         99,
