@@ -18,10 +18,10 @@ class TmoContent : BaseContentParser() {
     @Selector(value = "#bigcontainer #cover a", attr = "href", defValue = "")
     private lateinit var galleryUrl: String
 
-    @Selector(value = "#cover img")
+    @Selector(value = "img.content-thumbnail-cover[title='cover']")
     private var cover: Element? = null
 
-    @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
+    @Selector(value = ".panel-title", defValue = "")
     private lateinit var title: String
 
     // Fallback value for title (see #449)
@@ -31,28 +31,19 @@ class TmoContent : BaseContentParser() {
     @Selector(value = "#tags time", attr = "datetime", defValue = "")
     private lateinit var uploadDate: String
 
-    @Selector(value = "#info a[href*='/artist']")
+    @Selector(value = ".tag a[href*='[searchBy]=artist']")
     private var artists: List<Element>? = null
 
-    @Selector(value = "#info a[href^='/group/']")
-    private var circles: List<Element>? = null
-
-    @Selector(value = "#info a[href*='/tag']")
+    @Selector(value = "a.tag[href*='?genders']")
     private var tags: List<Element>? = null
 
-    @Selector(value = "#info a[href*='/parody']")
-    private var series: List<Element>? = null
-
-    @Selector(value = "#info a[href*='/character']")
-    private var characters: List<Element>? = null
+    @Selector(value = "a.tag[href*='[searchBy]=tag']")
+    private var tags2: List<Element>? = null
 
     @Selector(value = "#info a[href*='/language']")
     private var languages: List<Element>? = null
 
-    @Selector(value = "#info a[href*='/category']")
-    private var categories: List<Element>? = null
-
-    @Selector(value = "#thumbnail-container img[data-src]")
+    @Selector(value = ".panel-body img[data-toggle]")
     private var thumbs: List<Element>? = null
 
 
@@ -87,15 +78,6 @@ class TmoContent : BaseContentParser() {
             AttributeType.ARTIST,
             artists,
             false,
-            "name",
-            Site.TMO
-        )
-        parseAttributes(
-            attributes,
-            AttributeType.CIRCLE,
-            circles,
-            false,
-            "name",
             Site.TMO
         )
         parseAttributes(
@@ -103,23 +85,13 @@ class TmoContent : BaseContentParser() {
             AttributeType.TAG,
             tags,
             false,
-            "name",
             Site.TMO
         )
         parseAttributes(
             attributes,
-            AttributeType.SERIE,
-            series,
+            AttributeType.TAG,
+            tags2,
             false,
-            "name",
-            Site.TMO
-        )
-        parseAttributes(
-            attributes,
-            AttributeType.CHARACTER,
-            characters,
-            false,
-            "name",
             Site.TMO
         )
         parseAttributes(
@@ -127,15 +99,6 @@ class TmoContent : BaseContentParser() {
             AttributeType.LANGUAGE,
             languages,
             false,
-            "name",
-            Site.TMO
-        )
-        parseAttributes(
-            attributes,
-            AttributeType.CATEGORY,
-            categories,
-            false,
-            "name",
             Site.TMO
         )
         content.putAttributes(attributes)
