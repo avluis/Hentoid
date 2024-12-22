@@ -35,6 +35,7 @@ import me.devsaki.hentoid.activities.sources.MrmActivity
 import me.devsaki.hentoid.activities.sources.MultpornActivity
 import me.devsaki.hentoid.activities.sources.MusesActivity
 import me.devsaki.hentoid.activities.sources.NhentaiActivity
+import me.devsaki.hentoid.activities.sources.NovelcrowActivity
 import me.devsaki.hentoid.activities.sources.PixivActivity
 import me.devsaki.hentoid.activities.sources.PorncomixActivity
 import me.devsaki.hentoid.activities.sources.PururinActivity
@@ -218,7 +219,7 @@ data class Content(
                 Site.DEVIANTART -> DeviantArtActivity::class.java
                 Site.MANGAGO -> MangagoActivity::class.java
                 Site.HIPERDEX -> HiperdexActivity::class.java
-                Site.NOVELCROW -> HiperdexActivity::class.java
+                Site.NOVELCROW -> NovelcrowActivity::class.java
                 Site.TMO -> TmoActivity::class.java
                 else -> BaseWebActivity::class.java
             }
