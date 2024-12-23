@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -24,10 +25,6 @@ class TmoContent : BaseContentParser() {
     @Selector(value = ".panel-title", defValue = "")
     private lateinit var title: String
 
-    // Fallback value for title (see #449)
-    @Selector(value = "#info h1", defValue = NO_TITLE)
-    private lateinit var titleAlt: String
-
     @Selector(value = "#tags time", attr = "datetime", defValue = "")
     private lateinit var uploadDate: String
 
@@ -40,7 +37,7 @@ class TmoContent : BaseContentParser() {
     @Selector(value = "a.tag[href*='[searchBy]=tag']")
     private var tags2: List<Element>? = null
 
-    @Selector(value = "#info a[href*='/language']")
+    @Selector(value = ".content-property .flag-icon")
     private var languages: List<Element>? = null
 
     @Selector(value = ".panel-body img[data-toggle]")
@@ -67,7 +64,7 @@ class TmoContent : BaseContentParser() {
             content.coverImageUrl = getImgSrc(it)
         }
         var titleDef = title.trim()
-        if (titleDef.isEmpty()) titleDef = titleAlt.trim()
+        if (titleDef.isEmpty()) titleDef = NO_TITLE
         content.title = cleanup(titleDef)
         // e.g. 2022-03-20T00:09:43.309901+00:00
         content.uploadDate = parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")
@@ -94,13 +91,13 @@ class TmoContent : BaseContentParser() {
             false,
             Site.TMO
         )
-        parseAttributes(
-            attributes,
-            AttributeType.LANGUAGE,
-            languages,
-            false,
-            Site.TMO
-        )
+
+        languages?.firstOrNull()?.let {
+            if (it.attr("class").contains("flag-icon-es")) {
+                attributes.add(Attribute(AttributeType.LANGUAGE, "Español", "", Site.TMO))
+            }
+        }
+
         content.putAttributes(attributes)
         if (updateImages) {
             thumbs?.let {
