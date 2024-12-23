@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.7/hentoid1207-761.apk",
-  "versionCode": "761",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.8/hentoid1208-762.apk",
+  "versionCode": "762",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/v1.20.0/hentoid1200-747.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -16,7 +16,6 @@
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"441"},
 	  {"sourceName":"NHENTAI", "status":"RED", "fixedByBuild":"442"},
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"449"},
-	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"480"},
 	  {"sourceName":"MRM", "status":"ORANGE", "fixedByBuild":"467"},
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"500"},
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"565"},
@@ -32,6 +31,7 @@
 	  {"sourceName":"NHENTAI", "status":"ORANGE", "fixedByBuild":"755"},
 	  {"sourceName":"PURURIN", "status":"BLACK", "fixedByBuild":"760"},
 	  {"sourceName":"NHENTAI", "status":"RED", "fixedByBuild":"761" },
+	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"762" },
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"GREY"},
